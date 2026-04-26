@@ -1,13 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net8.0;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageId>ChartForgeX</PackageId>
+    <Version>0.1.0</Version>
     <Authors>Evotec</Authors>
     <Description>Dependency-free SVG/HTML/PNG chart rendering for .NET reports and dashboards.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>charts;svg;html;png;reports;dashboard;zero-dependency</PackageTags>
+    <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Copyright>Copyright (c) Evotec</Copyright>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

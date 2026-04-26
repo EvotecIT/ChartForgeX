@@ -1,43 +1,38 @@
-# Architecture
+# ChartForgeX Architecture Notes
 
-ChartForgeX uses a renderer-independent model.
+ChartForgeX should stay easy to extend without letting renderer files become oversized. The library is intentionally dependency-free at runtime, so structure matters more than outsourcing complexity.
 
-```text
-User code
-  -> Chart / Series / Theme
-  -> Layout and scale calculation
-  -> Renderer
-       -> SVG
-       -> HTML
-       -> PNG
-       -> future PDF / Office / interactive HTML
-```
+## File Size
 
-## Core objects
+- Keep production source files under roughly 800 lines.
+- Split earlier when a file mixes unrelated responsibilities, even if it is below the limit.
+- Prefer small folders by concern over a flat project root.
+- The smoke test runner enforces this budget for project source files outside `bin` and `obj`.
 
-- `Chart` - title, axes, options, and series collection.
-- `ChartSeries` - data points and chart kind.
-- `ChartTheme` - colors, typography, stroke sizes, visual mood.
-- `SvgChartRenderer` - high quality static renderer.
-- `HtmlChartRenderer` - wraps SVG in a fragment or standalone document.
-- `PngChartRenderer` - dependency-free raster renderer.
+## Build Standards
 
-## HtmlForgeX reuse
+- Treat warnings as errors in every project.
+- Generate XML documentation for the core library.
+- Do not add `NoWarn` suppressions in project, props, or targets files.
+- Keep the core package free of runtime package dependencies; private build-time reference assemblies are allowed only where required for targeting.
+- The smoke test runner enforces these project settings so quality does not depend on memory.
 
-HtmlForgeX should treat a chart as a renderable component:
+## Renderer Layout
 
-```csharp
-Html.Div(section => {
-    section.Raw(chart.ToHtmlFragment());
-});
-```
+- Keep each output format in its own folder, for example `Svg`, `Raster`, and `Html`.
+- Use partial classes for renderer internals when one renderer naturally has multiple responsibilities.
+- Split renderer partials by behavior, such as entry point, axes/layout, series drawing, labels, and helpers.
+- Keep the public renderer surface in the main file.
 
-Later, this can become a first-class fluent API:
+## Public API Layout
 
-```csharp
-page.Section(section => section
-    .Header("Domain Security")
-    .Chart(chart));
-```
+- Keep user-facing chart configuration APIs close to `Core`.
+- Use focused option/enumeration files for concepts that are likely to grow.
+- Add XML documentation for public members as they are introduced.
 
-The important part is that HtmlForgeX should not know whether the chart is SVG, PNG, or interactive HTML. It should only know that `IHtmlRenderable` or equivalent can emit markup.
+## Growth Rules
+
+- Add a test with every new chart behavior.
+- Add an example when a feature affects visual output.
+- Keep warnings as errors enabled and avoid suppressions unless there is a documented reason.
+- Prefer SVG fidelity first; PNG is a fallback and should not drive design decisions.

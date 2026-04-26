@@ -1,0 +1,53 @@
+using System;
+
+namespace ChartForgeX.Tests;
+
+internal static partial class SmokeTests {
+    internal static (string Name, Action Run)[] Tests { get; } = {
+        ("Source files stay under architecture line budget", SourceFilesStayUnderArchitectureLineBudget),
+        ("Project files keep strict build settings", ProjectFilesKeepStrictBuildSettings),
+        ("NuGet package metadata stays publish-ready", NuGetPackageMetadataStaysPublishReady),
+        ("SVG escapes text and renders inline vectors", SvgEscapesText),
+        ("HTML page is static and JavaScript-free", HtmlPageIsStatic),
+        ("Rendered markup stays self-contained", RenderedMarkupStaysSelfContained),
+        ("PNG renderer emits a valid RGBA PNG", PngIsValid),
+        ("Area baseline does not pollute the x-axis", AreaBaselineDoesNotPolluteXAxis),
+        ("X-axis labels render in SVG", XAxisLabelsRender),
+        ("Smooth series render as Bezier paths", SmoothSeriesRenderAsBezierPaths),
+        ("Data labels render when enabled", DataLabelsRenderWhenEnabled),
+        ("Data labels use readable edge-aware SVG styling", DataLabelsUseReadableEdgeAwareStyling),
+        ("Custom value formatter affects SVG values", CustomValueFormatterAffectsSvgValues),
+        ("Long formatted y-axis labels reserve plot space", LongFormattedYAxisLabelsReservePlotSpace),
+        ("Annotations render in SVG", AnnotationsRenderInSvg),
+        ("Annotation labels stay inside the plot", AnnotationLabelsStayInsidePlot),
+        ("SVG includes accessibility metadata", SvgIncludesAccessibilityMetadata),
+        ("SVG uses report-grade visual styling", SvgUsesReportGradeStyling),
+        ("Typography uses a native font stack and escapes custom families", TypographyUsesNativeFontStackAndEscapesCustomFamilies),
+        ("Report themes expose visual quality tokens", ReportThemesExposeVisualTokens),
+        ("Standalone HTML uses a visible page background", StandaloneHtmlUsesVisibleBackground),
+        ("HTML fragment is responsive and self-contained", HtmlFragmentIsResponsive),
+        ("Example gallery is static and links generated artifacts", ExampleGalleryIsStaticAndLinksGeneratedArtifacts),
+        ("Dense x-axis labels are automatically reduced", DenseXAxisLabelsAreAutomaticallyReduced),
+        ("Edge x-axis labels stay inside the plot", EdgeXAxisLabelsStayInsidePlot),
+        ("X-axis labels can be rotated", XAxisLabelsCanBeRotated),
+        ("Large SVG values use compact units", LargeSvgValuesUseCompactUnits),
+        ("Legend rows wrap without leaving the layout implicit", LegendRowsWrapWithRoleMarkers),
+        ("Multiple bar series render as grouped bars", MultipleBarSeriesRenderAsGroupedBars),
+        ("Horizontal bar series render category bars", HorizontalBarSeriesRenderCategoryBars),
+        ("Heatmap rows render matrix cells", HeatmapRowsRenderMatrixCells),
+        ("Gauge series render value arcs", GaugeSeriesRenderValueArcs),
+        ("Bullet series render target and range bars", BulletSeriesRenderTargetAndRangeBars),
+        ("Specialized charts escape text labels", SpecializedChartsEscapeTextLabels),
+        ("Waterfall series render cumulative change bars", WaterfallSeriesRenderCumulativeChangeBars),
+        ("Radar series render polar polygons", RadarSeriesRenderPolarPolygons),
+        ("Funnel series render staged segments", FunnelSeriesRenderStagedSegments),
+        ("Timeline items render date ranges", TimelineItemsRenderDateRanges),
+        ("Multiple bar series can render as stacked bars", MultipleBarSeriesCanRenderAsStackedBars),
+        ("Stacked bars can render total labels", StackedBarsCanRenderTotalLabels),
+        ("SVG output has no invalid numeric values", SvgHasNoInvalidNumbers),
+        ("Date x-axis labels render in SVG", DateXAxisLabelsRender),
+        ("Sparkline hides report chrome", SparklineHidesReportChrome),
+        ("Donut chart renders slices and labels", DonutChartRendersSlices),
+        ("Single-slice donut renders full ring", SingleSliceDonutRendersFullRing)
+    };
+}

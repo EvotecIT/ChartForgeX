@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Raster;
@@ -40,6 +41,60 @@ internal sealed class RgbaCanvas {
         for (var y = y1; y <= y2; y++) for (var x = x1; x <= x2; x++) {
             var dx = x + .5 - cx; var dy = y + .5 - cy;
             if (dx * dx + dy * dy <= r2) BlendPixel(x, y, color);
+        }
+    }
+
+    public void FillPolygon(IReadOnlyList<ChartPoint> points, ChartColor color) {
+        if (points.Count < 3) return;
+        var minY = double.PositiveInfinity;
+        var maxY = double.NegativeInfinity;
+        foreach (var point in points) {
+            minY = Math.Min(minY, point.Y);
+            maxY = Math.Max(maxY, point.Y);
+        }
+
+        var yStart = Math.Max(0, (int)Math.Floor(minY));
+        var yEnd = Math.Min(Height - 1, (int)Math.Ceiling(maxY));
+        var intersections = new List<double>(points.Count);
+
+        for (var y = yStart; y <= yEnd; y++) {
+            var scanY = y + 0.5;
+            intersections.Clear();
+
+            for (var i = 0; i < points.Count; i++) {
+                var a = points[i];
+                var b = points[(i + 1) % points.Count];
+                if ((a.Y <= scanY && b.Y > scanY) || (b.Y <= scanY && a.Y > scanY)) {
+                    var x = a.X + (scanY - a.Y) * (b.X - a.X) / (b.Y - a.Y);
+                    intersections.Add(x);
+                }
+            }
+
+            intersections.Sort();
+            for (var i = 0; i + 1 < intersections.Count; i += 2) {
+                var xStart = Math.Max(0, (int)Math.Floor(intersections[i]));
+                var xEnd = Math.Min(Width - 1, (int)Math.Ceiling(intersections[i + 1]));
+                for (var x = xStart; x <= xEnd; x++) BlendPixel(x, y, color);
+            }
+        }
+    }
+
+    public void FillRingSlice(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double endAngle, ChartColor color) {
+        var x1 = Math.Max(0, (int)Math.Floor(cx - outerRadius));
+        var y1 = Math.Max(0, (int)Math.Floor(cy - outerRadius));
+        var x2 = Math.Min(Width - 1, (int)Math.Ceiling(cx + outerRadius));
+        var y2 = Math.Min(Height - 1, (int)Math.Ceiling(cy + outerRadius));
+        var outer2 = outerRadius * outerRadius;
+        var inner2 = innerRadius * innerRadius;
+
+        for (var y = y1; y <= y2; y++) for (var x = x1; x <= x2; x++) {
+            var dx = x + .5 - cx;
+            var dy = y + .5 - cy;
+            var r2 = dx * dx + dy * dy;
+            if (r2 > outer2 || r2 < inner2) continue;
+            var angle = Math.Atan2(dy, dx);
+            if (angle < -Math.PI / 2) angle += Math.PI * 2;
+            if (angle >= startAngle && angle <= endAngle) BlendPixel(x, y, color);
         }
     }
 
