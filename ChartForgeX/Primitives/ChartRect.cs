@@ -31,7 +31,16 @@ public readonly struct ChartRect {
     /// <param name="y">The top coordinate.</param>
     /// <param name="width">The width in pixels.</param>
     /// <param name="height">The height in pixels.</param>
-    public ChartRect(double x, double y, double width, double height) { X = x; Y = y; Width = width; Height = height; }
+    public ChartRect(double x, double y, double width, double height) {
+        ChartPrimitiveGuards.Finite(x, nameof(x));
+        ChartPrimitiveGuards.Finite(y, nameof(y));
+        ChartPrimitiveGuards.NonNegativeFinite(width, nameof(width));
+        ChartPrimitiveGuards.NonNegativeFinite(height, nameof(height));
+        X = x;
+        Y = y;
+        Width = width;
+        Height = height;
+    }
 
     /// <summary>
     /// Gets the left edge.

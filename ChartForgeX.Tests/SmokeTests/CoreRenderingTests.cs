@@ -114,6 +114,22 @@ internal static partial class SmokeTests {
         Assert(!html.Contains("font-family:A;B{}", StringComparison.Ordinal), "HTML font-family values should not be able to break the style declaration.");
     }
 
+    private static void RenderingUsesInvariantCulture() {
+        var currentCulture = CultureInfo.CurrentCulture;
+        var currentUiCulture = CultureInfo.CurrentUICulture;
+        try {
+            CultureInfo.CurrentCulture = new CultureInfo("pl-PL");
+            CultureInfo.CurrentUICulture = new CultureInfo("pl-PL");
+            var css = ChartColor.FromRgba(1, 2, 3, 128).ToCss();
+            Assert(css == "rgba(1,2,3,0.502)", "CSS alpha values should use invariant decimal separators.");
+            var png = Chart.Create().AddDonut("Checks", Points(70, 20, 10)).ToPng();
+            Assert(png.Length > 64, "PNG rendering should stay valid under non-invariant cultures.");
+        } finally {
+            CultureInfo.CurrentCulture = currentCulture;
+            CultureInfo.CurrentUICulture = currentUiCulture;
+        }
+    }
+
     private static void ReportThemesExposeVisualTokens() {
         var theme = ChartTheme.ReportDark();
         Assert(theme.CardBorder.A > 0, "Report themes should define card borders.");
@@ -193,5 +209,41 @@ internal static partial class SmokeTests {
         Assert(chart.Options.IsSparkline, "Sparkline option should be enabled.");
         Assert(!svg.Contains(">Tiny trend</text>", StringComparison.Ordinal), "Sparkline should not render visible title text.");
         Assert(!svg.Contains("font-size=\"11\">0</text>", StringComparison.Ordinal), "Sparkline should not render axis tick labels.");
+    }
+
+    private static void PublicApiRejectsInvalidInputs() {
+        AssertThrows<ArgumentNullException>(() => Chart.Create().WithTitle(null!), "Chart titles should reject null values.");
+        AssertThrows<ArgumentNullException>(() => Chart.Create().Title = null!, "Chart title property should reject null values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithSize(0, 360), "Chart sizes should reject non-positive dimensions.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithPadding(1, double.NaN, 1, 1), "Chart padding should reject non-finite values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTickCount(1), "Tick counts should reject values below two.");
+        AssertThrows<ArgumentNullException>(() => Chart.Create().Options.Theme = null!, "Chart options should reject null themes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.TickCount = 1, "Chart options should reject invalid tick counts.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.XAxisLabelDensity = (ChartLabelDensity)999, "Chart options should reject unknown label density values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().WithPngFont(" "), "PNG font paths should reject empty values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().WithPngFont("font.ttc", faceName: " "), "PNG font face names should reject empty values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithPngFont("font.ttc", -1), "PNG font collection indexes should reject negative values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartSize(-1, 100), "ChartSize should reject non-positive dimensions.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartPadding.All(double.NegativeInfinity), "ChartPadding should reject non-finite values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartPoint(1, double.NaN), "ChartPoint should reject non-finite values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartRect(0, 0, -1, 10), "ChartRect should reject negative dimensions.");
+        AssertThrows<ArgumentNullException>(() => new ChartAxisLabel(1, null!), "Axis labels should reject null text.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartAxisLabel(double.NaN, "bad"), "Axis labels should reject non-finite values.");
+        AssertThrows<ArgumentNullException>(() => ChartTheme.Light().Palette = null!, "Themes should reject null palettes.");
+        AssertThrows<ArgumentException>(() => ChartTheme.Light().Palette = Array.Empty<ChartColor>(), "Themes should reject empty palettes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartTheme.Light().TitleFontSize = 0, "Themes should reject non-positive font sizes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartTheme.Light().ShadowOpacity = 2, "Themes should reject opacity values outside zero to one.");
+        AssertThrows<ArgumentNullException>(() => ChartTheme.Light().FontFamily = null!, "Themes should reject null font families.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", new[] { new ChartPoint(1, double.PositiveInfinity) }), "Series should reject non-finite point values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGauge("Score", 80, 100, 0), "Gauges should reject inverted scales.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddTimelineRange("Task", 10, 2), "Timelines should reject inverted ranges.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddHorizontalBand(1, 2, opacity: 1.5), "Band opacity should reject values outside zero to one.");
+        AssertThrows<ArgumentNullException>(() => ChartExtensions.GetPngFontInfo(null!), "PNG font diagnostics should reject null charts.");
+    }
+
+    private static void SpecializedChartsRejectMixedSeries() {
+        AssertThrows<InvalidOperationException>(() => Chart.Create().AddGauge("Score", 87).AddLine("Trend", Points(1, 2, 3)).ToSvg(), "SVG rendering should reject mixed specialized and cartesian series.");
+        AssertThrows<InvalidOperationException>(() => Chart.Create().AddDonut("Checks", Points(70, 20)).AddPie("Other", Points(1, 2)).ToPng(), "PNG rendering should reject multiple pie-like series.");
+        AssertThrows<InvalidOperationException>(() => Chart.Create().AddGauge("Score", 87).AddGauge("Other", 72).ToSvg(), "Single-panel specialized charts should reject multiple series.");
     }
 }

@@ -1,3 +1,5 @@
+using System;
+
 namespace ChartForgeX.Primitives;
 
 /// <summary>
@@ -62,7 +64,7 @@ public readonly struct ChartColor {
     /// Converts the color to a CSS color string.
     /// </summary>
     /// <returns>A hexadecimal or rgba CSS color string.</returns>
-    public string ToCss() => A == 255 ? ToHex() : $"rgba({R},{G},{B},{A / 255.0:0.###})";
+    public string ToCss() => A == 255 ? ToHex() : FormattableString.Invariant($"rgba({R},{G},{B},{A / 255.0:0.###})");
 
     /// <summary>
     /// Gets a fully transparent color.

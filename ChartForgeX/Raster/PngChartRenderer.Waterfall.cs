@@ -21,13 +21,18 @@ public sealed partial class PngChartRenderer {
         var bounds = WaterfallBounds(steps);
         var ticks = ChartTicks.Generate(bounds.MinY, bounds.MaxY, chart.Options.TickCount);
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
+        var tickFontSize = PngTickFontSize(chart);
+        var dataFontSize = chart.Options.Theme.DataLabelFontSize;
+        var bottomReserve = chart.Options.ShowAxes ? (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 32.0 : 60.0) : 0.0;
+        if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += 18 + PngLegendRowCount(chart) * (PngLegendFontSize(chart) + 6);
+        plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(1, plot.Height - bottomReserve));
         var slot = plot.Width / steps.Count;
         var barWidth = Math.Max(8, Math.Min(46, slot * 0.58));
         var positive = chart.Options.Theme.Positive;
         var negative = chart.Options.Theme.Negative;
         var total = chart.Options.Theme.Warning;
 
-        DrawWaterfallGrid(c, chart, plot, bounds, ticks);
+        DrawWaterfallGrid(c, chart, plot, bounds, ticks, tickFontSize);
         for (var i = 0; i < steps.Count; i++) {
             var step = steps[i];
             var centerX = plot.Left + slot * i + slot / 2;
@@ -38,26 +43,32 @@ public sealed partial class PngChartRenderer {
             var color = step.IsTotal ? total : step.Delta >= 0 ? positive : negative;
             if (i > 0) {
                 var connectorY = WaterfallY(plot, bounds, step.Start);
-                c.DrawLine(centerX - slot + barWidth / 2, connectorY, centerX - barWidth / 2, connectorY, chart.Options.Theme.Axis, 1);
+                c.DrawDashedLine(centerX - slot + barWidth / 2, connectorY, centerX - barWidth / 2, connectorY, ApplyOpacity(chart.Options.Theme.Axis, 0.72), 1, 4, 4);
             }
 
-            c.FillRect(centerX - barWidth / 2, top, barWidth, height, color);
+            DrawGradientBar(c, centerX - barWidth / 2, top, barWidth, height, Math.Min(6, barWidth / 4), color);
             if (chart.Options.ShowDataLabels) {
                 var label = step.IsTotal ? FormatValue(chart, step.End) : FormatSignedValue(chart, step.Delta);
-                var labelY = step.Delta >= 0 || step.IsTotal ? top - 12 : top + height + 6;
-                c.DrawTextTiny(centerX - EstimateTinyTextWidth(label) / 2.0, Clamp(labelY, plot.Top + 2, plot.Bottom - 10), label, chart.Options.Theme.Text, 1);
+                var labelY = step.Delta >= 0 || step.IsTotal ? top - 11 - dataFontSize : top + height + 13 - dataFontSize;
+                DrawReadablePngLabel(c, plot, centerX - EstimatePngEmphasizedTextWidth(label, dataFontSize) / 2.0, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize);
             }
 
             var categoryLabel = step.IsTotal ? "Total" : FormatX(chart, step.XValue);
-            c.DrawTextTiny(centerX - EstimateTinyTextWidth(categoryLabel) / 2.0, plot.Bottom + 10, categoryLabel, chart.Options.Theme.MutedText, 1);
+            c.DrawText(EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize), plot.Bottom + PngXAxisLabelOffset(chart) - tickFontSize + 1, categoryLabel, chart.Options.Theme.MutedText, tickFontSize);
         }
+
+        if (chart.Options.ShowAxes) DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart));
+        DrawLegend(c, chart);
     }
 
-    private static void DrawWaterfallGrid(RgbaCanvas c, Chart chart, ChartRect plot, ChartRange bounds, IReadOnlyList<double> ticks) {
+    private static void DrawWaterfallGrid(RgbaCanvas c, Chart chart, ChartRect plot, ChartRange bounds, IReadOnlyList<double> ticks, double fontSize) {
         foreach (var tick in ticks) {
             var y = WaterfallY(plot, bounds, tick);
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, 1);
-            if (chart.Options.ShowAxes) c.DrawTextTiny(12, y - 5, FormatValue(chart, tick), chart.Options.Theme.MutedText, 1);
+            if (chart.Options.ShowAxes) {
+                var label = FormatValue(chart, tick);
+                c.DrawText(Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize / 2.0, label, chart.Options.Theme.MutedText, fontSize);
+            }
         }
 
         var zeroY = WaterfallY(plot, bounds, 0);

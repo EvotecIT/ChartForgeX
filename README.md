@@ -10,9 +10,25 @@ ChartForgeX builds for `net472`, `netstandard2.0`, `net8.0`, and `net10.0`.
 
 The library has no runtime package dependencies. The `net472` target uses `Microsoft.NETFramework.ReferenceAssemblies.net472` only as a private build-time reference so the project can compile on non-Windows machines.
 
+## Install
+
+```powershell
+dotnet add package ChartForgeX
+```
+
+For local development from this repository, reference `ChartForgeX/ChartForgeX.csproj` directly and run the quality loop before publishing packages.
+
+Contribution and release notes live in `CONTRIBUTING.md`, `RELEASING.md`, and `CHANGELOG.md`.
+
 ## Quality gates
 
-Warnings are treated as errors from day one, including XML documentation warnings for public APIs. The repository also includes a dependency-free smoke test executable that verifies static SVG/HTML/PNG rendering behavior, keeps source files under the architecture line budget, rejects `NoWarn`, protects the core package from runtime package dependencies, and guards generated markup against scripts or external resources.
+Warnings are treated as errors from day one, including XML documentation warnings for public APIs. The repository also includes a smoke test suite that verifies static SVG/HTML/PNG rendering behavior, keeps source files under the architecture line budget, rejects `NoWarn`, protects the core package from runtime package dependencies, and guards generated markup against scripts or external resources.
+
+Run the smoke suite directly with:
+
+```powershell
+dotnet test .\ChartForgeX.Tests\ChartForgeX.Tests.csproj -c Release
+```
 
 Run the full local quality loop with:
 
@@ -20,7 +36,9 @@ Run the full local quality loop with:
 ./Build.ps1
 ```
 
-That restores, builds, runs smoke tests, regenerates example chart outputs and the static example gallery, packs the core library, and verifies the package has no runtime NuGet dependencies. The gallery is written to `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`.
+That restores, builds, runs smoke tests through `dotnet test`, regenerates example chart outputs and the static example gallery, packs the core library, creates a `.snupkg` symbol package, verifies package contents, verifies the package has no runtime NuGet dependencies, and installs the freshly packed package into a clean temporary console app. The gallery is written to `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`.
+
+The GitHub Actions workflow is configured for private repositories and requires a self-hosted runner with the labels `self-hosted` and `private`.
 
 ## Design principles
 
@@ -29,6 +47,7 @@ That restores, builds, runs smoke tests, regenerates example chart outputs and t
 - PNG export with real alpha transparency.
 - One chart model, multiple renderers.
 - JavaScript-free by default.
+- Public chart, option, theme, and primitive APIs fail fast on invalid values.
 - Optional interactive renderers can be added later without changing user code.
 - Themes are first-class, especially polished dark/light report modes.
 
@@ -78,6 +97,36 @@ chart.SavePng("chart.png");
 static IEnumerable<ChartPoint> Points(params double[] y) {
     for (var i = 0; i < y.Length; i++) yield return new ChartPoint(i + 1, y[i]);
 }
+```
+
+PNG output uses a dependency-free rasterizer. When a platform TrueType font can be loaded, PNG text is rendered from real font outlines; otherwise ChartForgeX falls back to its built-in tiny chart font. You can prefer a specific `.ttf` file or `.ttc` collection for report consistency:
+
+```csharp
+chart.WithPngFont("/Library/Fonts/Arial.ttf")
+     .SavePng("chart.png");
+```
+
+For TrueType collections, pass the optional zero-based face index when you need a specific face:
+
+```csharp
+chart.WithPngFont("/System/Library/Fonts/HelveticaNeue.ttc", collectionIndex: 0)
+     .SavePng("chart.png");
+```
+
+You can also select by family, subfamily, full, or PostScript face name:
+
+```csharp
+chart.WithPngFont("/System/Library/Fonts/HelveticaNeue.ttc", faceName: "Helvetica Neue")
+     .SavePng("chart.png");
+```
+
+SVG and HTML still use the theme `FontFamily` CSS stack. The PNG font path is optional and falls back automatically when the file is missing or unsupported.
+
+Use `GetPngFontInfo()` when you want to verify which font source PNG rendering will use:
+
+```csharp
+var font = chart.GetPngFontInfo();
+Console.WriteLine($"{font.Source}: {font.ResolvedFaceName}");
 ```
 
 Date/time x-values can be used without manual numeric conversion:
@@ -300,7 +349,7 @@ ChartForgeX should replace them for static report visuals. Keep JavaScript chart
 
 ## PNG/JPG approach
 
-PNG is supported as a dependency-free raster output. The current PNG renderer is intentionally simple and good enough for early report exports. SVG remains the source of truth for beauty, typography, gradients, annotation labels, and report-grade visual polish.
+PNG is supported as a dependency-free raster output. The current PNG renderer is intentionally simple, but it now shares the important report-layout rules: title/subtitle headers, scaled cartesian legends, rounded theme surfaces and borders, explicit x-axis label density, edge-aware tick labels, long formatted y-axis label space, axis titles, supersampled edges, compressed output, and alpha transparency. SVG remains the source of truth for beauty, typography, gradients, annotation labels, and report-grade visual polish.
 
 JPG is not included. JPG has no transparency and is a poor fit for charts with sharp lines/text. If needed later, expose it as optional export by flattening PNG/SVG onto a solid background.
 

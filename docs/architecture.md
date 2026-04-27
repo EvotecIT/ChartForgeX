@@ -15,6 +15,9 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Generate XML documentation for the core library.
 - Do not add `NoWarn` suppressions in project, props, or targets files.
 - Keep the core package free of runtime package dependencies; private build-time reference assemblies are allowed only where required for targeting.
+- Run repository smoke tests through `dotnet test` so local, CI, and IDE test flows share the same entry point.
+- Generate NuGet symbol packages with deterministic library builds.
+- Run GitHub Actions on private self-hosted runners only.
 - The smoke test runner enforces these project settings so quality does not depend on memory.
 
 ## Renderer Layout
@@ -29,6 +32,7 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Keep user-facing chart configuration APIs close to `Core`.
 - Use focused option/enumeration files for concepts that are likely to grow.
 - Add XML documentation for public members as they are introduced.
+- Validate public setters and constructors so invalid chart states fail near the caller rather than inside renderers.
 
 ## Growth Rules
 

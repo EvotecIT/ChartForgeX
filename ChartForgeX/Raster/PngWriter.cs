@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 
 namespace ChartForgeX.Raster;
@@ -20,25 +21,18 @@ internal static class PngWriter {
             Buffer.BlockCopy(rgba, src, raw, dst, width * 4);
             src += width * 4; dst += width * 4;
         }
-        WriteChunk(ms, "IDAT", ZlibStore(raw));
+        WriteChunk(ms, "IDAT", ZlibDeflate(raw));
         WriteChunk(ms, "IEND", Array.Empty<byte>());
         return ms.ToArray();
     }
 
-    private static byte[] ZlibStore(byte[] data) {
+    private static byte[] ZlibDeflate(byte[] data) {
         using var ms = new MemoryStream();
-        ms.WriteByte(0x78); ms.WriteByte(0x01);
-        var offset = 0;
-        while (offset < data.Length) {
-            var len = Math.Min(65535, data.Length - offset);
-            var final = offset + len >= data.Length;
-            ms.WriteByte((byte)(final ? 1 : 0));
-            ms.WriteByte((byte)(len & 255)); ms.WriteByte((byte)((len >> 8) & 255));
-            var nlen = (ushort)~len;
-            ms.WriteByte((byte)(nlen & 255)); ms.WriteByte((byte)((nlen >> 8) & 255));
-            ms.Write(data, offset, len);
-            offset += len;
+        ms.WriteByte(0x78); ms.WriteByte(0x9C);
+        using (var deflate = new DeflateStream(ms, CompressionLevel.Optimal, true)) {
+            deflate.Write(data, 0, data.Length);
         }
+
         WriteUInt(ms, Adler32(data));
         return ms.ToArray();
     }

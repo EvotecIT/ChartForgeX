@@ -14,19 +14,19 @@ public sealed partial class PngChartRenderer {
 
         var min = double.PositiveInfinity;
         var max = double.NegativeInfinity;
-        var labelWidth = 0;
         foreach (var item in items) {
             min = Math.Min(min, item.Start);
             max = Math.Max(max, item.End);
-            labelWidth = Math.Max(labelWidth, EstimateTinyTextWidth(item.Name));
         }
 
         if (Math.Abs(max - min) < 0.000001) max = min + 1;
         var span = max - min;
         min -= span * 0.04;
         max += span * 0.04;
-        plot = new ChartRect(plot.X + labelWidth + 12, plot.Y, Math.Max(1, plot.Width - labelWidth - 12), Math.Max(1, plot.Height - 42));
-        var rowHeight = Math.Max(10, Math.Min(24, plot.Height / items.Count * 0.52));
+        var tickFontSize = PngTickFontSize(chart);
+        var dataFontSize = chart.Options.Theme.DataLabelFontSize;
+        plot = ApplyPngTimelineReserve(chart, plot, items, tickFontSize);
+        var rowHeight = Math.Max(20, Math.Min(34, plot.Height / items.Count * 0.56));
         var slotHeight = plot.Height / items.Count;
         var ticks = ChartTicks.Generate(min, max, Math.Min(6, Math.Max(3, chart.Options.TickCount)));
 
@@ -35,7 +35,8 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowGrid) c.DrawLine(x, plot.Top, x, plot.Bottom, ChartColor.FromRgba(chart.Options.Theme.Grid.R, chart.Options.Theme.Grid.G, chart.Options.Theme.Grid.B, (byte)(chart.Options.Theme.Grid.A / 2)), 1);
             if (chart.Options.ShowAxes) {
                 var label = FormatTimelineTick(chart, tick);
-                c.DrawTextTiny(x - EstimateTinyTextWidth(label) / 2.0, plot.Bottom + 10, label, chart.Options.Theme.MutedText, 1);
+                var width = EstimatePngTextWidth(label, tickFontSize);
+                c.DrawText(Clamp(x - width / 2.0, plot.Left + 2, plot.Right - width - 2), plot.Bottom + 22 - tickFontSize + 1, label, chart.Options.Theme.MutedText, tickFontSize);
             }
         }
 
@@ -46,11 +47,30 @@ public sealed partial class PngChartRenderer {
             var x2 = ProjectTimelineX(item.End, min, max, plot);
             var left = Math.Min(x1, x2);
             var width = Math.Max(2, Math.Abs(x2 - x1));
-            if (chart.Options.ShowAxes) c.DrawTextTiny(plot.Left - EstimateTinyTextWidth(item.Name) - 8, y + rowHeight / 2 - 4, item.Name, chart.Options.Theme.MutedText, 1);
-            c.FillRect(left, y, width, rowHeight, item.Color);
+            if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y + rowHeight / 2, plot.Right, y + rowHeight / 2, ChartColor.FromRgba(chart.Options.Theme.Grid.R, chart.Options.Theme.Grid.G, chart.Options.Theme.Grid.B, (byte)(chart.Options.Theme.Grid.A / 3)), 1);
+            if (chart.Options.ShowAxes) c.DrawTextEmphasized(plot.Left - EstimatePngEmphasizedTextWidth(item.Name, tickFontSize) - 14, y + rowHeight / 2 - tickFontSize / 2, item.Name, chart.Options.Theme.MutedText, tickFontSize);
+            c.FillRoundedRect(left, y, width, rowHeight, Math.Min(8, rowHeight / 2), item.Color);
+            if (chart.Options.ShowDataLabels && width >= Math.Max(72, EstimatePngEmphasizedTextWidth("100d", dataFontSize) + 14)) {
+                var label = FormatTimelineDuration(item.Start, item.End);
+                DrawReadablePngLabel(c, left + width / 2 - EstimatePngEmphasizedTextWidth(label, dataFontSize) / 2.0, y + rowHeight / 2 - dataFontSize / 2, label, HeatmapTextColor(item.Color), item.Color, dataFontSize);
+            }
         }
 
-        if (chart.Options.ShowAxes) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, 1);
+        if (chart.Options.ShowAxes) {
+            c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, 1);
+            DrawTimelineAxisTitles(c, chart, plot);
+        }
+    }
+
+    private static ChartRect ApplyPngTimelineReserve(Chart chart, ChartRect plot, IReadOnlyList<TimelineItem> items, double tickFontSize) {
+        var widest = 0.0;
+        foreach (var item in items) widest = Math.Max(widest, EstimatePngEmphasizedTextWidth(item.Name, tickFontSize));
+        var yAxisReserve = string.IsNullOrWhiteSpace(chart.YAxisTitle) ? 0 : 28;
+        var desiredLeft = Math.Max(plot.Left, widest + yAxisReserve + 64);
+        var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 180);
+        var shift = Math.Max(0, Math.Min(desiredLeft, maxLeft) - plot.Left);
+        var bottomReserve = 52 + (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 0 : 18);
+        return new ChartRect(plot.X + shift, plot.Y, Math.Max(1, plot.Width - shift), Math.Max(1, plot.Height - bottomReserve));
     }
 
     private static bool IsTimelineChart(Chart chart) {
@@ -86,6 +106,22 @@ public sealed partial class PngChartRenderer {
         } catch (ArgumentException) {
             return FormatNumber(value);
         }
+    }
+
+    private static string FormatTimelineDuration(double start, double end) {
+        var days = Math.Max(1, (int)Math.Round(Math.Abs(end - start)));
+        return days.ToString(CultureInfo.InvariantCulture) + "d";
+    }
+
+    private static void DrawTimelineAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot) {
+        var theme = chart.Options.Theme;
+        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
+            var fontSize = PngAxisTitleFontSize(chart);
+            var width = EstimatePngEmphasizedTextWidth(chart.XAxisTitle, fontSize);
+            c.DrawTextEmphasized(Clamp(plot.Left + plot.Width / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2), plot.Bottom + 49 - fontSize + 1, chart.XAxisTitle, theme.MutedText, fontSize);
+        }
+
+        DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
     private readonly struct TimelineItem {

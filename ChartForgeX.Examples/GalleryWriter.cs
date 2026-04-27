@@ -2,13 +2,17 @@
 /// Writes the static example gallery page.
 /// </summary>
 public static class GalleryWriter {
+    private const string IndexFileName = "index.html";
+    private const string ComparisonFileName = "svg-png-comparison.html";
+    private const string ComparisonManifestFileName = "svg-png-comparison.json";
+
     /// <summary>
     /// Generates an index page for all chart HTML files in the output directory.
     /// </summary>
     /// <param name="output">The directory containing generated chart files.</param>
     public static void Write(string output) {
         var htmlFiles = Directory.EnumerateFiles(output, "*.html", SearchOption.TopDirectoryOnly)
-            .Where(file => !string.Equals(Path.GetFileName(file), "index.html", StringComparison.OrdinalIgnoreCase))
+            .Where(file => !IsGalleryShellFile(Path.GetFileName(file)))
             .OrderBy(file => Path.GetFileName(file), StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var sb = new System.Text.StringBuilder();
@@ -42,7 +46,8 @@ public static class GalleryWriter {
         sb.AppendLine("</main>");
         sb.AppendLine("</body>");
         sb.AppendLine("</html>");
-        File.WriteAllText(Path.Combine(output, "index.html"), sb.ToString());
+        File.WriteAllText(Path.Combine(output, IndexFileName), sb.ToString());
+        WriteComparison(output);
     }
 
     private static void AppendCard(System.Text.StringBuilder sb, string htmlFile) {
@@ -70,5 +75,224 @@ public static class GalleryWriter {
         return html.Substring(start + 7, end - start - 7).Trim();
     }
 
+    private static void WriteComparison(string output) {
+        var pairs = Directory.EnumerateFiles(output, "*.svg", SearchOption.TopDirectoryOnly)
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(name => !string.IsNullOrWhiteSpace(name) && File.Exists(Path.Combine(output, name + ".png")))
+            .Select(name => name!)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .Select(name => ReadComparisonAsset(output, name))
+            .ToArray();
+        var matchingPairs = pairs.Count(pair => pair.HasMatchingDimensions);
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<!doctype html>");
+        sb.AppendLine("<html lang=\"en\">");
+        sb.AppendLine("<head>");
+        sb.AppendLine("<meta charset=\"utf-8\">");
+        sb.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        sb.AppendLine("<title>ChartForgeX SVG/PNG visual comparison</title>");
+        sb.AppendLine("<style>");
+        sb.AppendLine(":root{color-scheme:dark;--bg:#0f172a;--panel:#111827;--frame:#020617;--line:#334155;--text:#e5e7eb;--muted:#94a3b8;--ok:#86efac;--warn:#fbbf24;--accent:#38bdf8}");
+        sb.AppendLine("*{box-sizing:border-box}body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif}");
+        sb.AppendLine("header{max-width:1500px;margin:0 auto 24px}h1{margin:0 0 6px;font-size:24px;line-height:1.15}p{margin:0;color:var(--muted)}.summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:#cbd5e1;font-size:12px;font-weight:700;text-decoration:none}.pill.ok{border-color:rgba(134,239,172,.45);color:var(--ok)}.pill.warn{border-color:rgba(251,191,36,.55);color:var(--warn)}a.pill:hover{border-color:rgba(56,189,248,.55);color:var(--accent)}main{display:grid;gap:24px;max-width:1500px;margin:0 auto}");
+        sb.AppendLine("section{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}section.mismatch{border-color:rgba(251,191,36,.6)}h2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;font-size:14px;color:#cbd5e1}.status{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}.status.ok{color:var(--ok);border-color:rgba(134,239,172,.45)}.status.warn{color:var(--warn);border-color:rgba(251,191,36,.55)}.pair{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}");
+        sb.AppendLine("figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8px;padding:10px;min-width:0}.caption{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin-bottom:8px}.dims{font-variant-numeric:tabular-nums;color:#cbd5e1}.format{color:var(--accent);font-weight:800;text-decoration:none}.format:hover{text-decoration:underline}.media{width:100%;min-height:140px;background-color:#020617;background-image:linear-gradient(45deg,#0b1120 25%,transparent 25%),linear-gradient(-45deg,#0b1120 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#0b1120 75%),linear-gradient(-45deg,transparent 75%,#0b1120 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;overflow:hidden}.media.overlay{position:relative}.media.overlay img,.media.overlay object{position:absolute;inset:0}.media.overlay img{opacity:.55}.media.overlay object{opacity:.7;mix-blend-mode:screen}object,img{display:block;width:100%;height:100%;object-fit:contain;background:transparent}");
+        sb.AppendLine("@media(max-width:1200px){.pair{grid-template-columns:1fr}}@media(max-width:900px){body{padding:16px}}");
+        sb.AppendLine("</style>");
+        sb.AppendLine("</head>");
+        sb.AppendLine("<body>");
+        sb.AppendLine("<header>");
+        sb.AppendLine("<h1>ChartForgeX SVG/PNG visual comparison</h1>");
+        sb.AppendLine("<p>Generated from current example exports. SVG is left, PNG is right.</p>");
+        sb.AppendLine("<div class=\"summary\"><span class=\"pill\">" + pairs.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + " chart pairs</span><span class=\"pill " + (matchingPairs == pairs.Length ? "ok" : "warn") + "\">" + matchingPairs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " dimension matches</span><a class=\"pill\" href=\"" + ComparisonManifestFileName + "\">manifest JSON</a></div>");
+        sb.AppendLine("</header>");
+        sb.AppendLine("<main>");
+
+        foreach (var pair in pairs) {
+            AppendComparisonCard(sb, pair);
+        }
+
+        sb.AppendLine("</main>");
+        sb.AppendLine("</body>");
+        sb.AppendLine("</html>");
+        File.WriteAllText(Path.Combine(output, ComparisonFileName), sb.ToString());
+        WriteComparisonManifest(output, pairs, matchingPairs);
+    }
+
+    private static ComparisonAsset ReadComparisonAsset(string output, string name) {
+        var svgFileName = Path.Combine(output, name + ".svg");
+        var pngFileName = Path.Combine(output, name + ".png");
+        return new ComparisonAsset(
+            name,
+            ReadSvgDimensions(svgFileName),
+            ReadPngDimensions(pngFileName),
+            ReadFileLength(svgFileName),
+            ReadFileLength(pngFileName));
+    }
+
+    private static void WriteComparisonManifest(string output, ComparisonAsset[] pairs, int matchingPairs) {
+        var manifest = new {
+            chartPairs = pairs.Length,
+            dimensionMatches = matchingPairs,
+            comparisonModes = new[] { "side-by-side", "overlay" },
+            charts = pairs.Select(pair => new {
+                name = pair.Name,
+                dimensionsMatch = pair.HasMatchingDimensions,
+                svg = new {
+                    width = pair.SvgDimensions.Width,
+                    height = pair.SvgDimensions.Height,
+                    bytes = pair.SvgBytes
+                },
+                png = new {
+                    width = pair.PngDimensions.Width,
+                    height = pair.PngDimensions.Height,
+                    bytes = pair.PngBytes
+                }
+            }).ToArray()
+        };
+        var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+        File.WriteAllText(Path.Combine(output, ComparisonManifestFileName), System.Text.Json.JsonSerializer.Serialize(manifest, options));
+    }
+
+    private static void AppendComparisonCard(System.Text.StringBuilder sb, ComparisonAsset pair) {
+        var name = pair.Name;
+        var svg = pair.SvgDimensions;
+        var png = pair.PngDimensions;
+        var aspectWidth = svg.Width > 0 ? svg.Width : png.Width;
+        var aspectHeight = svg.Height > 0 ? svg.Height : png.Height;
+        if (aspectWidth <= 0 || aspectHeight <= 0) {
+            aspectWidth = 16;
+            aspectHeight = 9;
+        }
+
+        var ratioStyle = " style=\"aspect-ratio:" + aspectWidth.ToString(System.Globalization.CultureInfo.InvariantCulture) + "/" + aspectHeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
+        var statusClass = pair.HasMatchingDimensions ? "ok" : "warn";
+        var statusText = pair.HasMatchingDimensions ? "Dimension match" : "Dimension mismatch";
+        sb.AppendLine("<section class=\"" + (pair.HasMatchingDimensions ? "match" : "mismatch") + "\">");
+        sb.AppendLine("<h2><span>" + EscapeHtml(name) + "</span><span class=\"status " + statusClass + "\">" + statusText + "</span></h2>");
+        sb.AppendLine("<div class=\"pair\">");
+        sb.AppendLine("<figure><figcaption class=\"caption\"><a class=\"format\" href=\"" + EscapeHtml(name) + ".svg\">SVG</a><span class=\"dims\">" + EscapeHtml(FormatDimensions(svg)) + "</span></figcaption><div class=\"media\"" + ratioStyle + "><object data=\"" + EscapeHtml(name) + ".svg\" type=\"image/svg+xml\"></object></div></figure>");
+        sb.AppendLine("<figure><figcaption class=\"caption\"><a class=\"format\" href=\"" + EscapeHtml(name) + ".png\">PNG</a><span class=\"dims\">" + EscapeHtml(FormatDimensions(png)) + "</span></figcaption><div class=\"media\"" + ratioStyle + "><img src=\"" + EscapeHtml(name) + ".png\" alt=\"" + EscapeHtml(name) + " PNG\"></div></figure>");
+        sb.AppendLine("<figure><figcaption class=\"caption\"><span class=\"format\">OVERLAY</span><span class=\"dims\">" + EscapeHtml(FormatDimensions(svg)) + "</span></figcaption><div class=\"media overlay\"" + ratioStyle + "><img src=\"" + EscapeHtml(name) + ".png\" alt=\"" + EscapeHtml(name) + " PNG overlay base\"><object data=\"" + EscapeHtml(name) + ".svg\" type=\"image/svg+xml\" aria-label=\"" + EscapeHtml(name) + " SVG overlay\"></object></div></figure>");
+        sb.AppendLine("</div>");
+        sb.AppendLine("</section>");
+    }
+
+    private static bool IsGalleryShellFile(string fileName) =>
+        string.Equals(fileName, IndexFileName, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(fileName, ComparisonFileName, StringComparison.OrdinalIgnoreCase);
+
+    private static AssetDimensions ReadSvgDimensions(string fileName) {
+        try {
+            var svg = File.ReadAllText(Path.GetFullPath(fileName));
+            var width = ReadSvgNumericAttribute(svg, "width");
+            var height = ReadSvgNumericAttribute(svg, "height");
+            if (width > 0 && height > 0) return new AssetDimensions(width, height);
+            var viewBox = ReadSvgAttribute(svg, "viewBox");
+            if (!string.IsNullOrWhiteSpace(viewBox)) {
+                var parts = viewBox.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 4 &&
+                    double.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var viewWidth) &&
+                    double.TryParse(parts[3], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var viewHeight)) {
+                    return new AssetDimensions((int)Math.Round(viewWidth), (int)Math.Round(viewHeight));
+                }
+            }
+        } catch (IOException) {
+        } catch (UnauthorizedAccessException) {
+        }
+
+        return default;
+    }
+
+    private static AssetDimensions ReadPngDimensions(string fileName) {
+        try {
+            var fullPath = Path.GetFullPath(fileName);
+            using var stream = File.OpenRead(fullPath);
+            var header = new byte[24];
+            if (stream.Read(header, 0, header.Length) != header.Length) return default;
+            if (header[0] != 137 || header[1] != 80 || header[2] != 78 || header[3] != 71) return default;
+            return new AssetDimensions(ReadBigEndianInt32(header, 16), ReadBigEndianInt32(header, 20));
+        } catch (IOException) {
+        } catch (UnauthorizedAccessException) {
+        }
+
+        return default;
+    }
+
+    private static string FormatDimensions(AssetDimensions dimensions) {
+        return dimensions.Width > 0 && dimensions.Height > 0
+            ? dimensions.Width.ToString(System.Globalization.CultureInfo.InvariantCulture) + "x" + dimensions.Height.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            : "unknown";
+    }
+
+    private static int ReadSvgNumericAttribute(string svg, string name) {
+        var value = ReadSvgAttribute(svg, name);
+        if (string.IsNullOrWhiteSpace(value)) return 0;
+        var digits = new string(value.TakeWhile(ch => char.IsDigit(ch) || ch == '.').ToArray());
+        return double.TryParse(digits, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number)
+            ? (int)Math.Round(number)
+            : 0;
+    }
+
+    private static string ReadSvgAttribute(string svg, string name) {
+        var marker = name + "=\"";
+        var start = svg.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (start < 0) return string.Empty;
+        start += marker.Length;
+        var end = svg.IndexOf('"', start);
+        return end > start ? svg.Substring(start, end - start) : string.Empty;
+    }
+
+    private static int ReadBigEndianInt32(byte[] bytes, int offset) {
+        return (bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
+    }
+
+    private static long ReadFileLength(string fileName) {
+        try {
+            return new FileInfo(fileName).Length;
+        } catch (IOException) {
+        } catch (UnauthorizedAccessException) {
+        }
+
+        return 0;
+    }
+
     private static string EscapeHtml(string value) => System.Net.WebUtility.HtmlEncode(value);
+
+    private readonly struct AssetDimensions {
+        public AssetDimensions(int width, int height) {
+            Width = width;
+            Height = height;
+        }
+
+        public int Width { get; }
+
+        public int Height { get; }
+    }
+
+    private readonly struct ComparisonAsset {
+        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes) {
+            Name = name;
+            SvgDimensions = svgDimensions;
+            PngDimensions = pngDimensions;
+            SvgBytes = svgBytes;
+            PngBytes = pngBytes;
+        }
+
+        public string Name { get; }
+
+        public AssetDimensions SvgDimensions { get; }
+
+        public AssetDimensions PngDimensions { get; }
+
+        public long SvgBytes { get; }
+
+        public long PngBytes { get; }
+
+        public bool HasMatchingDimensions =>
+            SvgDimensions.Width > 0 &&
+            SvgDimensions.Height > 0 &&
+            SvgDimensions.Width == PngDimensions.Width &&
+            SvgDimensions.Height == PngDimensions.Height;
+    }
 }

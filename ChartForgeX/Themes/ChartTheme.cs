@@ -1,3 +1,4 @@
+using System;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Themes;
@@ -6,6 +7,24 @@ namespace ChartForgeX.Themes;
 /// Defines colors, typography, and surface styling used by chart renderers.
 /// </summary>
 public sealed class ChartTheme {
+    private ChartColor[] _palette = {
+        ChartColor.FromRgb(37,99,235), ChartColor.FromRgb(14,165,233), ChartColor.FromRgb(16,185,129),
+        ChartColor.FromRgb(245,158,11), ChartColor.FromRgb(239,68,68), ChartColor.FromRgb(139,92,246),
+        ChartColor.FromRgb(236,72,153), ChartColor.FromRgb(20,184,166)
+    };
+    private double _cornerRadius = 18;
+    private double _plotCornerRadius = 14;
+    private double _strokeWidth = 3;
+    private double _shadowOpacity = 0.14;
+    private double _titleFontSize = 26;
+    private double _subtitleFontSize = 13;
+    private double _axisTitleFontSize = 12;
+    private double _tickLabelFontSize = 11;
+    private double _legendFontSize = 12;
+    private double _dataLabelFontSize = 11;
+    private double _markerRadius = 3.25;
+    private string _fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
     /// <summary>
     /// Gets or sets the full chart background color.
     /// </summary>
@@ -69,11 +88,14 @@ public sealed class ChartTheme {
     /// <summary>
     /// Gets or sets the default series palette.
     /// </summary>
-    public ChartColor[] Palette { get; set; } = {
-        ChartColor.FromRgb(37,99,235), ChartColor.FromRgb(14,165,233), ChartColor.FromRgb(16,185,129),
-        ChartColor.FromRgb(245,158,11), ChartColor.FromRgb(239,68,68), ChartColor.FromRgb(139,92,246),
-        ChartColor.FromRgb(236,72,153), ChartColor.FromRgb(20,184,166)
-    };
+    public ChartColor[] Palette {
+        get => _palette;
+        set {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value.Length == 0) throw new ArgumentException("Palette must contain at least one color.", nameof(value));
+            _palette = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether renderers should draw an outer card surface.
@@ -83,62 +105,98 @@ public sealed class ChartTheme {
     /// <summary>
     /// Gets or sets the outer card corner radius.
     /// </summary>
-    public double CornerRadius { get; set; } = 18;
+    public double CornerRadius {
+        get => _cornerRadius;
+        set => _cornerRadius = NonNegative(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the plot area corner radius.
     /// </summary>
-    public double PlotCornerRadius { get; set; } = 14;
+    public double PlotCornerRadius {
+        get => _plotCornerRadius;
+        set => _plotCornerRadius = NonNegative(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the default stroke width used by capable renderers.
     /// </summary>
-    public double StrokeWidth { get; set; } = 3;
+    public double StrokeWidth {
+        get => _strokeWidth;
+        set => _strokeWidth = ValidatePositive(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the opacity used for the SVG card shadow.
     /// </summary>
-    public double ShadowOpacity { get; set; } = 0.14;
+    public double ShadowOpacity {
+        get => _shadowOpacity;
+        set => _shadowOpacity = UnitInterval(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the title font size used by SVG and HTML renderers.
     /// </summary>
-    public double TitleFontSize { get; set; } = 26;
+    public double TitleFontSize {
+        get => _titleFontSize;
+        set => _titleFontSize = ValidatePositive(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the subtitle font size used by SVG and HTML renderers.
     /// </summary>
-    public double SubtitleFontSize { get; set; } = 13;
+    public double SubtitleFontSize {
+        get => _subtitleFontSize;
+        set => _subtitleFontSize = ValidatePositive(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the axis title font size used by SVG renderers.
     /// </summary>
-    public double AxisTitleFontSize { get; set; } = 12;
+    public double AxisTitleFontSize {
+        get => _axisTitleFontSize;
+        set => _axisTitleFontSize = ValidatePositive(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the tick label font size used by SVG renderers.
     /// </summary>
-    public double TickLabelFontSize { get; set; } = 11;
+    public double TickLabelFontSize {
+        get => _tickLabelFontSize;
+        set => _tickLabelFontSize = ValidatePositive(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the legend font size used by SVG renderers.
     /// </summary>
-    public double LegendFontSize { get; set; } = 12;
+    public double LegendFontSize {
+        get => _legendFontSize;
+        set => _legendFontSize = ValidatePositive(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the data label font size used by SVG renderers.
     /// </summary>
-    public double DataLabelFontSize { get; set; } = 11;
+    public double DataLabelFontSize {
+        get => _dataLabelFontSize;
+        set => _dataLabelFontSize = ValidatePositive(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the marker radius used by SVG line and scatter renderers.
     /// </summary>
-    public double MarkerRadius { get; set; } = 3.25;
+    public double MarkerRadius {
+        get => _markerRadius;
+        set => _markerRadius = NonNegative(value, nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the CSS font-family used by vector and HTML renderers.
     /// </summary>
-    public string FontFamily { get; set; } = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    public string FontFamily {
+        get => _fontFamily;
+        set => _fontFamily = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>
     /// Creates the default light report theme.
@@ -182,4 +240,19 @@ public sealed class ChartTheme {
     /// </summary>
     /// <returns>A dark report chart theme.</returns>
     public static ChartTheme ReportDark() => Dark();
+
+    private static double ValidatePositive(double value, string parameterName) {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite and greater than zero.");
+        return value;
+    }
+
+    private static double NonNegative(double value, string parameterName) {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value < 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite and non-negative.");
+        return value;
+    }
+
+    private static double UnitInterval(double value, string parameterName) {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value < 0 || value > 1) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be between zero and one.");
+        return value;
+    }
 }

@@ -32,6 +32,8 @@ internal static partial class SmokeTests {
         var svg = Chart.Create()
             .WithSize(720, 420)
             .WithDataLabels()
+            .WithXAxis("Control")
+            .WithYAxis("Domain group")
             .WithHeatmapScale(ChartHeatmapScale.Semantic)
             .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
             .WithXLabels("SPF", "DMARC", "DNSSEC")
@@ -42,6 +44,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"heatmap\"", StringComparison.Ordinal), "Heatmaps should expose a role marker.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-row-label\"") == 2, "Heatmaps should expose row label markers.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-column-label\"") == 3, "Heatmaps should expose column label markers.");
+        Assert(svg.Contains("data-cfx-role=\"heatmap-x-axis-title\"", StringComparison.Ordinal), "Heatmaps should mark the x-axis title.");
+        Assert(svg.Contains("data-cfx-role=\"heatmap-y-axis-title\"", StringComparison.Ordinal), "Heatmaps should mark the y-axis title.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-scale-label\"") == 2, "Heatmap scales should expose min and max labels.");
         Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Semantic heatmaps should expose positive cell status.");
         Assert(svg.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Semantic heatmaps should expose warning cell status.");
         Assert(svg.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Semantic heatmaps should expose negative cell status.");
@@ -52,6 +57,13 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Primary</text>", StringComparison.Ordinal), "Heatmaps should render row labels.");
         Assert(svg.Contains(">DMARC</text>", StringComparison.Ordinal), "Heatmaps should render column labels.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Heatmaps should render optional data labels.");
+        var edgeSvg = Chart.Create()
+            .WithSize(520, 320)
+            .WithXLabels("Very long first control", "Middle", "Very long final control")
+            .AddHeatmapRow("Domains", Points(100, 60, 0))
+            .ToSvg();
+        Assert(edgeSvg.Contains("data-cfx-role=\"heatmap-column-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"start\"", StringComparison.Ordinal), "Left-edge heatmap column labels should start-align.");
+        Assert(edgeSvg.Contains("data-cfx-role=\"heatmap-column-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge heatmap column labels should end-align.");
     }
 
     private static void GaugeSeriesRenderValueArcs() {
@@ -93,6 +105,9 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-target-label\"") == 2, "Bullet rows should render target value labels.");
         Assert(svg.Contains("data-cfx-role=\"bullet-axis\"", StringComparison.Ordinal), "Bullet charts should expose an axis group marker.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-axis-tick\"") == 3, "Bullet charts should render three axis ticks.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-axis-label\"") == 3, "Bullet charts should render three axis tick labels.");
+        Assert(svg.Contains("data-cfx-role=\"bullet-axis-label\" x=\"", StringComparison.Ordinal) && svg.Contains("text-anchor=\"start\"", StringComparison.Ordinal), "Left-edge bullet axis labels should start-align.");
+        Assert(svg.Contains("data-cfx-role=\"bullet-axis-label\" x=\"", StringComparison.Ordinal) && svg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge bullet axis labels should end-align.");
         Assert(svg.Contains(">DMARC enforcement</text>", StringComparison.Ordinal), "Bullet charts should render row labels.");
         Assert(svg.Contains(">88%</text>", StringComparison.Ordinal), "Bullet charts should render value labels.");
         Assert(svg.Contains(">target 95%</text>", StringComparison.Ordinal), "Bullet charts should render target labels.");
@@ -128,6 +143,8 @@ internal static partial class SmokeTests {
         var svg = Chart.Create()
             .WithSize(760, 420)
             .WithDataLabels()
+            .WithXAxis("Change")
+            .WithYAxis("Open findings")
             .WithXLabels("Opened", "Resolved", "Suppressed", "New risk")
             .AddWaterfall("Finding delta", Points(18, -42, -12, 9), ChartColor.FromRgb(52, 211, 153))
             .ToSvg();
@@ -140,6 +157,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("fill=\"#EF4444\"", StringComparison.Ordinal), "Waterfall negative bars should use the negative theme color.");
         Assert(svg.Contains("role=\"img\" aria-label=\"Opened: +18, positive\"", StringComparison.Ordinal), "Waterfall bars should expose accessible summaries.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"waterfall-connector\"") == 4, "Waterfall bars should render connectors between cumulative steps.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"waterfall-x-axis-label\"") == 5, "Waterfall charts should mark all category labels.");
+        Assert(svg.Contains("data-cfx-role=\"waterfall-x-axis-title\"", StringComparison.Ordinal), "Waterfall charts should mark the x-axis title.");
+        Assert(svg.Contains("data-cfx-role=\"waterfall-y-axis-title\"", StringComparison.Ordinal), "Waterfall charts should mark the y-axis title.");
         Assert(svg.Contains(">Opened</text>", StringComparison.Ordinal), "Waterfall charts should render category labels.");
         Assert(svg.Contains(">Total</text>", StringComparison.Ordinal), "Waterfall charts should render a total category.");
         Assert(svg.Contains(">+18</text>", StringComparison.Ordinal), "Waterfall charts should render positive delta labels.");
@@ -157,7 +177,11 @@ internal static partial class SmokeTests {
             .ToSvg();
         Assert(svg.Contains("data-cfx-role=\"radar-chart\"", StringComparison.Ordinal), "Radar charts should expose a role marker.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"radar-area\"") == 2, "Two radar series should render two filled polygons.");
+        Assert(svg.Contains("role=\"img\" aria-label=\"Current: Mail auth 92%, DNSSEC 74%, TLS 88%, CT 96%, Policy 81%\"", StringComparison.Ordinal), "Radar series should expose accessible summaries.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"radar-spoke\"") == 5, "Five radar categories should render five spokes.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"radar-axis-label\"") == 5, "Radar charts should expose category label markers.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"radar-ring-label\"") > 0, "Radar charts should expose ring value label markers.");
+        Assert(GetAttribute(svg, "data-cfx-role=\"radar-axis-label\"", "x") >= 24, "Radar axis labels should stay inside the SVG viewport.");
         Assert(svg.Contains(">Mail auth</text>", StringComparison.Ordinal), "Radar charts should render category labels.");
         Assert(svg.Contains(">92%</text>", StringComparison.Ordinal), "Radar charts should render optional data labels.");
         Assert(Chart.Create().AddRadar("Current", Points(92, 74, 88, 96, 81)).ToPng().Length > 64, "Radar charts should render PNG output.");
@@ -175,6 +199,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("role=\"img\" aria-label=\"Verified: 318, retained 75.7%, drop-off 24.3%\"", StringComparison.Ordinal), "Funnel segments should expose accessible summaries.");
         Assert(svg.Contains(">Discovered</text>", StringComparison.Ordinal), "Funnel charts should render stage labels.");
         Assert(svg.Contains(">420</text>", StringComparison.Ordinal), "Funnel charts should render stage values.");
+        Assert(GetAttribute(svg, "data-cfx-role=\"funnel-retention\"", "x") < 760, "Funnel retention labels should stay inside the SVG viewport.");
         Assert(svg.Contains(">75.7% retained</text>", StringComparison.Ordinal), "Funnel charts should render retained percentage labels.");
         Assert(svg.Contains(">-24.3% from prev</text>", StringComparison.Ordinal), "Funnel charts should render previous-stage drop-off labels.");
         Assert(Chart.Create().AddFunnel("Funnel", Points(420, 318, 174, 96)).ToPng().Length > 64, "Funnel charts should render PNG output.");
@@ -184,11 +209,20 @@ internal static partial class SmokeTests {
         var svg = Chart.Create()
             .WithSize(760, 420)
             .WithDataLabels()
+            .WithXAxis("Schedule")
+            .WithYAxis("Workstream")
             .AddTimelineItem("Certificate renewal", new DateTime(2026, 1, 1), new DateTime(2026, 2, 1), ChartColor.FromRgb(37, 99, 235))
             .AddTimelineItem("DMARC rollout", new DateTime(2026, 1, 15), new DateTime(2026, 3, 1), ChartColor.FromRgb(14, 165, 233))
             .ToSvg();
         Assert(svg.Contains("data-cfx-role=\"timeline\"", StringComparison.Ordinal), "Timelines should expose a role marker.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"timeline-item\"") == 2, "Two timeline items should render two ranges.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"timeline-row-label\"") == 2, "Timelines should mark row labels for layout regression checks.");
+        Assert(svg.Contains("role=\"img\" aria-label=\"Certificate renewal: Jan 1 to Feb 1, duration 31d\"", StringComparison.Ordinal), "Timeline items should expose accessible summaries.");
+        Assert(svg.Contains("data-cfx-duration=\"31d\"", StringComparison.Ordinal), "Timeline items should expose duration metadata.");
+        Assert(svg.Contains("data-cfx-role=\"timeline-x-axis-title\"", StringComparison.Ordinal), "Timelines should mark the x-axis title.");
+        Assert(svg.Contains("data-cfx-role=\"timeline-y-axis-title\"", StringComparison.Ordinal), "Timelines should mark the y-axis title.");
+        Assert(GetAttribute(svg, "data-cfx-role=\"timeline-row-label\"", "x") > 100, "Timeline row labels should reserve enough left-side space.");
+        Assert(GetAttribute(svg, "data-cfx-role=\"timeline-tick-label\"", "x") >= GetAttribute(svg, "data-cfx-role=\"timeline-row-label\"", "x") + 14, "Timeline tick labels should stay inside the plotted timeline area.");
         Assert(svg.Contains(">Certificate renewal</text>", StringComparison.Ordinal), "Timelines should render row labels.");
         Assert(svg.Contains(">31d</text>", StringComparison.Ordinal), "Timelines should render optional duration labels.");
     }

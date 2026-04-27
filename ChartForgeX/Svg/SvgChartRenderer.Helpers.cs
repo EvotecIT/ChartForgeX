@@ -20,8 +20,8 @@ public sealed partial class SvgChartRenderer {
             sb.AppendLine($"<g data-cfx-role=\"legend-row\" transform=\"translate(0 {F(y)})\">");
             foreach (var item in row.Items) {
                 var c = Color(chart, item.Index);
-                sb.AppendLine($"<circle cx=\"{F(item.X)}\" cy=\"-4\" r=\"5\" fill=\"{c.ToCss()}\"/>");
-                sb.AppendLine($"<text x=\"{F(item.X + 12)}\" y=\"0\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"600\">{Escape(chart.Series[item.Index].Name)}</text>");
+                DrawLegendSymbol(sb, chart.Series[item.Index].Kind, item.X, -4, c, t.CardBackground);
+                sb.AppendLine($"<text x=\"{F(item.X + 26)}\" y=\"0\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"600\">{Escape(chart.Series[item.Index].Name)}</text>");
             }
 
             sb.AppendLine("</g>");
@@ -39,7 +39,7 @@ public sealed partial class SvgChartRenderer {
         rows.Add(row);
         var x = LegendStartX;
         for (var i = 0; i < chart.Series.Count; i++) {
-            var itemWidth = 28 + EstimateTextWidth(chart.Series[i].Name, chart.Options.Theme.LegendFontSize) + 18;
+            var itemWidth = 34 + EstimateTextWidth(chart.Series[i].Name, chart.Options.Theme.LegendFontSize) + 18;
             if (row.Items.Count > 0 && x + itemWidth > maxX) {
                 row = new LegendRow();
                 rows.Add(row);
@@ -52,6 +52,20 @@ public sealed partial class SvgChartRenderer {
 
         return rows;
     }
+
+    private static void DrawLegendSymbol(StringBuilder sb, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background) {
+        if (IsLineLikeLegend(kind)) {
+            sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(y)}\" x2=\"{F(x + 18)}\" y2=\"{F(y)}\" stroke=\"{color.ToCss()}\" stroke-width=\"2.4\" stroke-linecap=\"round\"/>");
+            sb.AppendLine($"<circle cx=\"{F(x + 9)}\" cy=\"{F(y)}\" r=\"4\" fill=\"{color.ToCss()}\" stroke=\"{background.ToCss()}\" stroke-width=\"1.6\"/>");
+        } else if (kind == ChartSeriesKind.Scatter) {
+            sb.AppendLine($"<circle cx=\"{F(x + 9)}\" cy=\"{F(y)}\" r=\"4\" fill=\"{color.ToCss()}\" stroke=\"{background.ToCss()}\" stroke-width=\"1.6\"/>");
+        } else {
+            sb.AppendLine($"<rect x=\"{F(x)}\" y=\"{F(y - 5)}\" width=\"10\" height=\"10\" rx=\"2\" fill=\"{color.ToCss()}\"/>");
+        }
+    }
+
+    private static bool IsLineLikeLegend(ChartSeriesKind kind) =>
+        kind == ChartSeriesKind.Line || kind == ChartSeriesKind.Area || kind == ChartSeriesKind.Radar;
 
     private static void DrawLabelPill(StringBuilder sb, Chart chart, string label, double x, double y, ChartColor textColor, string anchor, ChartRect plot) {
         var t = chart.Options.Theme;
@@ -120,6 +134,13 @@ public sealed partial class SvgChartRenderer {
         return "middle";
     }
 
+    private static double EdgeAwareTextX(string label, double x, ChartRect plot, double fontSize) {
+        var halfWidth = EstimateTextWidth(label, fontSize) / 2;
+        if (x - halfWidth < plot.Left) return plot.Left;
+        if (x + halfWidth > plot.Right) return plot.Right;
+        return x;
+    }
+
     private static string RotatedAnchor(string label, double x, ChartRect plot, double angle, double fontSize) {
         var projectedWidth = EstimateTextWidth(label, fontSize) * Math.Abs(Math.Cos(angle * Math.PI / 180));
         if (x - projectedWidth < plot.Left) return "start";
@@ -171,18 +192,36 @@ public sealed partial class SvgChartRenderer {
         var densityFactor = chart.Options.XAxisLabelDensity == ChartLabelDensity.Dense ? 0.72 : chart.Options.XAxisLabelDensity == ChartLabelDensity.Relaxed ? 1.35 : 1.0;
         var minSpacing = Math.Max(28, (widest + 18) * densityFactor);
         var maxCount = Math.Max(2, (int)Math.Floor(plot.Width / minSpacing) + 1);
-        if (labels.Length <= maxCount) return labels.Select(label => label.Value).ToArray();
+        if (labels.Length <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.Theme.TickLabelFontSize, 6)) return labels.Select(label => label.Value).ToArray();
 
+        var lastLabel = labels[labels.Length - 1];
         var step = Math.Max(1, (int)Math.Ceiling((labels.Length - 1) / (double)(maxCount - 1)));
-        var ticks = new List<double>();
-        ticks.Add(labels[0].Value);
+        var selected = new List<ChartAxisLabel>();
+        selected.Add(labels[0]);
         for (var i = step; i < labels.Length - 1; i += step) {
-            var distanceToLast = Math.Abs(ProjectX(labels[i].Value, range, plot) - ProjectX(labels[labels.Length - 1].Value, range, plot));
-            if (distanceToLast >= minSpacing * 0.95) ticks.Add(labels[i].Value);
+            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.Theme.TickLabelFontSize) >= 6 &&
+                LabelGap(labels[i], lastLabel, range, plot, chart.Options.Theme.TickLabelFontSize) >= 6) selected.Add(labels[i]);
         }
 
-        ticks.Add(labels[labels.Length - 1].Value);
-        return ticks;
+        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.Theme.TickLabelFontSize) < 6) selected.RemoveAt(selected.Count - 1);
+        selected.Add(lastLabel);
+        return selected.Select(label => label.Value).ToArray();
+    }
+
+    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, double fontSize, double minGap) {
+        for (var i = 1; i < labels.Count; i++) {
+            if (LabelGap(labels[i - 1], labels[i], range, plot, fontSize) < minGap) return false;
+        }
+
+        return true;
+    }
+
+    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, double fontSize) {
+        var leftWidth = EstimateTextWidth(left.Text, fontSize);
+        var rightWidth = EstimateTextWidth(right.Text, fontSize);
+        var leftX = Clamp(ProjectX(left.Value, range, plot) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
+        var rightX = Clamp(ProjectX(right.Value, range, plot) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
+        return rightX - (leftX + leftWidth);
     }
 
     private static IReadOnlyList<double> GetHorizontalCategoryTicks(Chart chart, ChartRange range) {

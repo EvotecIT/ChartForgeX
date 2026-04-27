@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
@@ -44,8 +45,8 @@ public sealed class ChartSeries {
     /// <param name="kind">The series rendering kind.</param>
     /// <param name="points">The ordered data points.</param>
     public ChartSeries(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points) {
-        Name = name;
+        Name = name ?? throw new ArgumentNullException(nameof(name));
         Kind = kind;
-        Points.AddRange(points);
+        Points.AddRange(ChartGuards.Points(points, nameof(points)));
     }
 }

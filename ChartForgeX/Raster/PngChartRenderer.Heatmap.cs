@@ -28,30 +28,43 @@ public sealed partial class PngChartRenderer {
 
         var columnValues = new List<double>();
         foreach (var column in columns) columnValues.Add(column);
-        var labelWidth = 0;
-        foreach (var row in rows) labelWidth = Math.Max(labelWidth, EstimateTinyTextWidth(row.Name));
-        plot = new ChartRect(plot.X + labelWidth + 12, plot.Y, Math.Max(1, plot.Width - labelWidth - 12), Math.Max(1, plot.Height - 42));
-        var gap = Math.Min(4, Math.Max(1, Math.Min(plot.Width / columnValues.Count, plot.Height / rows.Count) * 0.04));
+        var tickFontSize = PngTickFontSize(chart);
+        var dataFontSize = chart.Options.Theme.DataLabelFontSize;
+        var labelWidth = 0.0;
+        foreach (var row in rows) labelWidth = Math.Max(labelWidth, EstimatePngEmphasizedTextWidth(row.Name, tickFontSize));
+        var bottomReserve = 56 + (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 0 : 20);
+        plot = new ChartRect(plot.X + labelWidth + 14, plot.Y, Math.Max(1, plot.Width - labelWidth - 14), Math.Max(1, plot.Height - bottomReserve));
+        var gap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columnValues.Count, plot.Height / rows.Count) * 0.05));
         var cellWidth = Math.Max(1, (plot.Width - gap * (columnValues.Count - 1)) / columnValues.Count);
         var cellHeight = Math.Max(1, (plot.Height - gap * (rows.Count - 1)) / rows.Count);
+        var radius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
 
         for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
             var series = rows[rowIndex];
             var y = plot.Top + rowIndex * (cellHeight + gap);
-            c.DrawTextTiny(plot.Left - EstimateTinyTextWidth(series.Name) - 8, y + cellHeight / 2 - 4, series.Name, chart.Options.Theme.MutedText, 1);
+            c.DrawTextEmphasized(plot.Left - EstimatePngEmphasizedTextWidth(series.Name, tickFontSize) - 10, y + cellHeight / 2 - tickFontSize / 2, series.Name, chart.Options.Theme.MutedText, tickFontSize);
             for (var columnIndex = 0; columnIndex < columnValues.Count; columnIndex++) {
                 var value = FindHeatmapValue(series, columnValues[columnIndex]);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
                 var color = HeatmapColor(chart, series.Color, value, min, max);
-                c.FillRect(x, y, cellWidth, cellHeight, color);
+                c.FillRoundedRect(x, y, cellWidth, cellHeight, radius, color);
+                c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, 0.32));
+                if (chart.Options.ShowDataLabels && cellWidth >= EstimatePngEmphasizedTextWidth("100%", dataFontSize) + 12 && cellHeight >= dataFontSize + 10) {
+                    var label = FormatValue(chart, value);
+                    DrawReadablePngLabel(c, x + cellWidth / 2 - EstimatePngEmphasizedTextWidth(label, dataFontSize) / 2.0, y + cellHeight / 2 - dataFontSize / 2, label, HeatmapTextColor(color), color, dataFontSize);
+                }
             }
         }
 
         for (var columnIndex = 0; columnIndex < columnValues.Count; columnIndex++) {
             var label = FormatX(chart, columnValues[columnIndex]);
-            var x = plot.Left + columnIndex * (cellWidth + gap) + cellWidth / 2 - EstimateTinyTextWidth(label) / 2.0;
-            c.DrawTextTiny(x, plot.Bottom + 10, label, chart.Options.Theme.MutedText, 1);
+            var width = EstimatePngEmphasizedTextWidth(label, tickFontSize);
+            var x = Clamp(plot.Left + columnIndex * (cellWidth + gap) + cellWidth / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2);
+            c.DrawTextEmphasized(x, plot.Bottom + 21 - tickFontSize + 1, label, chart.Options.Theme.MutedText, tickFontSize);
         }
+
+        DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart));
+        DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
     }
 
     private static bool IsHeatmapChart(Chart chart) {
@@ -70,6 +83,31 @@ public sealed partial class PngChartRenderer {
         if (ratio < 0.60) return Blend(t.Negative, t.Warning, ratio / 0.60 * 0.42);
         if (ratio < 0.80) return Blend(t.Warning, t.Positive, (ratio - 0.60) / 0.20 * 0.5);
         return Blend(t.Warning, t.Positive, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
+    }
+
+    private static ChartColor HeatmapTextColor(ChartColor color) {
+        var luminance = (0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B) / 255.0;
+        return luminance > 0.54 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
+    }
+
+    private static void DrawHeatmapScale(RgbaCanvas c, Chart chart, ChartRect plot, double min, double max, ChartColor? highColor, double fontSize) {
+        const int steps = 5;
+        const double width = 118;
+        const double height = 8;
+        var x = plot.Right - width;
+        var y = plot.Bottom + 32;
+        var stepWidth = width / steps;
+
+        for (var i = 0; i < steps; i++) {
+            var ratio = i / (double)(steps - 1);
+            var value = min + (max - min) * ratio;
+            c.FillRoundedRect(x + i * stepWidth, y, stepWidth + 1, height, 2, HeatmapColor(chart, highColor, value, min, max));
+        }
+
+        var minLabel = FormatValue(chart, min);
+        var maxLabel = FormatValue(chart, max);
+        c.DrawText(x, y + 24 - fontSize + 1, minLabel, chart.Options.Theme.MutedText, fontSize);
+        c.DrawText(x + width - EstimatePngTextWidth(maxLabel, fontSize), y + 24 - fontSize + 1, maxLabel, chart.Options.Theme.MutedText, fontSize);
     }
 
     private static double HeatmapRatio(double value, double min, double max) {

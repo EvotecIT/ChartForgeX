@@ -40,6 +40,13 @@ public static class ChartExtensions {
     public static byte[] ToPng(this Chart chart) => new PngChartRenderer().Render(chart);
 
     /// <summary>
+    /// Resolves the font that would be used when rendering the chart to PNG.
+    /// </summary>
+    /// <param name="chart">The chart to inspect.</param>
+    /// <returns>The PNG font resolution details.</returns>
+    public static PngFontInfo GetPngFontInfo(this Chart chart) => PngChartRenderer.GetFontInfo(chart);
+
+    /// <summary>
     /// Saves a chart as an SVG file.
     /// </summary>
     /// <param name="chart">The chart to render.</param>

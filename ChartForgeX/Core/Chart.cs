@@ -11,25 +11,42 @@ namespace ChartForgeX.Core;
 /// Represents a renderer-independent chart definition.
 /// </summary>
 public sealed class Chart {
+    private string _title = string.Empty;
+    private string _subtitle = string.Empty;
+    private string _xAxisTitle = string.Empty;
+    private string _yAxisTitle = string.Empty;
+
     /// <summary>
     /// Gets or sets the chart title.
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public string Title {
+        get => _title;
+        set => _title = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the chart subtitle.
     /// </summary>
-    public string Subtitle { get; set; } = string.Empty;
+    public string Subtitle {
+        get => _subtitle;
+        set => _subtitle = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the x-axis title.
     /// </summary>
-    public string XAxisTitle { get; set; } = string.Empty;
+    public string XAxisTitle {
+        get => _xAxisTitle;
+        set => _xAxisTitle = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>
     /// Gets or sets the y-axis title.
     /// </summary>
-    public string YAxisTitle { get; set; } = string.Empty;
+    public string YAxisTitle {
+        get => _yAxisTitle;
+        set => _yAxisTitle = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>
     /// Gets the chart options.
@@ -57,28 +74,28 @@ public sealed class Chart {
     /// </summary>
     /// <param name="title">The chart title.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithTitle(string title) { Title = title; return this; }
+    public Chart WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
 
     /// <summary>
     /// Sets the chart subtitle.
     /// </summary>
     /// <param name="subtitle">The chart subtitle.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithSubtitle(string subtitle) { Subtitle = subtitle; return this; }
+    public Chart WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
 
     /// <summary>
     /// Sets the x-axis title.
     /// </summary>
     /// <param name="title">The x-axis title.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithXAxis(string title) { XAxisTitle = title; return this; }
+    public Chart WithXAxis(string title) { XAxisTitle = title ?? throw new ArgumentNullException(nameof(title)); return this; }
 
     /// <summary>
     /// Sets the y-axis title.
     /// </summary>
     /// <param name="title">The y-axis title.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithYAxis(string title) { YAxisTitle = title; return this; }
+    public Chart WithYAxis(string title) { YAxisTitle = title ?? throw new ArgumentNullException(nameof(title)); return this; }
 
     /// <summary>
     /// Sets the rendered chart size.
@@ -86,7 +103,10 @@ public sealed class Chart {
     /// <param name="width">The width in pixels.</param>
     /// <param name="height">The height in pixels.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithSize(int width, int height) { Options.Size = new ChartSize(width, height); return this; }
+    public Chart WithSize(int width, int height) {
+        Options.Size = new ChartSize(width, height);
+        return this;
+    }
 
     /// <summary>
     /// Sets the chart padding around the plot area.
@@ -96,21 +116,46 @@ public sealed class Chart {
     /// <param name="right">The right padding in pixels.</param>
     /// <param name="bottom">The bottom padding in pixels.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithPadding(double left, double top, double right, double bottom) { Options.Padding = new ChartPadding(left, top, right, bottom); return this; }
+    public Chart WithPadding(double left, double top, double right, double bottom) {
+        Options.Padding = new ChartPadding(left, top, right, bottom);
+        return this;
+    }
 
     /// <summary>
     /// Sets the chart theme.
     /// </summary>
     /// <param name="theme">The theme to use.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithTheme(ChartTheme theme) { Options.Theme = theme; return this; }
+    public Chart WithTheme(ChartTheme theme) { Options.Theme = theme ?? throw new ArgumentNullException(nameof(theme)); return this; }
 
     /// <summary>
     /// Sets the CSS font-family used by vector and HTML renderers.
     /// </summary>
     /// <param name="fontFamily">The CSS font-family stack.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithFontFamily(string fontFamily) { Options.Theme.FontFamily = fontFamily; return this; }
+    public Chart WithFontFamily(string fontFamily) { Options.Theme.FontFamily = fontFamily ?? throw new ArgumentNullException(nameof(fontFamily)); return this; }
+
+    /// <summary>
+    /// Sets the preferred TrueType font file or TrueType collection used by the PNG renderer.
+    /// </summary>
+    /// <param name="fontPath">The path to a .ttf or .ttc font file. Pass null to use automatic PNG font discovery.</param>
+    /// <param name="collectionIndex">The optional zero-based face index for .ttc font collections.</param>
+    /// <param name="faceName">The optional family, subfamily, full, or PostScript face name to select.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithPngFont(string? fontPath, int? collectionIndex = null, string? faceName = null) {
+        Options.PngFontPath = fontPath;
+        Options.PngFontCollectionIndex = collectionIndex;
+        Options.PngFontFaceName = faceName;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the preferred PNG font and selects a face by family, subfamily, full, or PostScript name.
+    /// </summary>
+    /// <param name="fontPath">The path to a .ttf or .ttc font file.</param>
+    /// <param name="faceName">The face name to select.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithPngFont(string? fontPath, string? faceName) => WithPngFont(fontPath, null, faceName);
 
     /// <summary>
     /// Sets whether the rendered background should be transparent.
@@ -166,7 +211,11 @@ public sealed class Chart {
     /// </summary>
     /// <param name="count">The preferred tick count.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithTickCount(int count) { Options.TickCount = count; return this; }
+    public Chart WithTickCount(int count) {
+        if (count < 2) throw new ArgumentOutOfRangeException(nameof(count), count, "Tick count must be at least two.");
+        Options.TickCount = count;
+        return this;
+    }
 
     /// <summary>
     /// Sets how aggressively explicit x-axis labels should be reduced when space is limited.
@@ -180,7 +229,7 @@ public sealed class Chart {
     /// </summary>
     /// <param name="degrees">The label angle in degrees. Values are clamped by renderers when needed.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithXAxisLabelAngle(double degrees) { Options.XAxisLabelAngle = degrees; return this; }
+    public Chart WithXAxisLabelAngle(double degrees) { ChartGuards.Finite(degrees, nameof(degrees)); Options.XAxisLabelAngle = degrees; return this; }
 
     /// <summary>
     /// Sets whether point and bar values should be rendered as data labels.
@@ -252,8 +301,9 @@ public sealed class Chart {
     /// <param name="labels">The labels to place at x values 1 through N.</param>
     /// <returns>The current chart.</returns>
     public Chart WithXLabels(params string[] labels) {
+        if (labels == null) throw new ArgumentNullException(nameof(labels));
         Options.XAxisLabels.Clear();
-        for (var i = 0; i < labels.Length; i++) Options.XAxisLabels.Add(new ChartAxisLabel(i + 1, labels[i]));
+        for (var i = 0; i < labels.Length; i++) Options.XAxisLabels.Add(new ChartAxisLabel(i + 1, labels[i] ?? throw new ArgumentNullException(nameof(labels))));
         return this;
     }
 
@@ -263,8 +313,11 @@ public sealed class Chart {
     /// <param name="labels">The labels to render at numeric x values.</param>
     /// <returns>The current chart.</returns>
     public Chart WithXLabels(IEnumerable<ChartAxisLabel> labels) {
+        if (labels == null) throw new ArgumentNullException(nameof(labels));
         Options.XAxisLabels.Clear();
-        Options.XAxisLabels.AddRange(labels.ToArray());
+        var materialized = labels.ToArray();
+        foreach (var label in materialized) ChartGuards.Finite(label.Value, nameof(labels));
+        Options.XAxisLabels.AddRange(materialized);
         return this;
     }
 
@@ -275,6 +328,8 @@ public sealed class Chart {
     /// <param name="format">The date/time format string used for labels.</param>
     /// <returns>The current chart.</returns>
     public Chart WithXDateLabels(IEnumerable<DateTime> dates, string format = "MMM d") {
+        if (dates == null) throw new ArgumentNullException(nameof(dates));
+        if (format == null) throw new ArgumentNullException(nameof(format));
         Options.XAxisLabels.Clear();
         foreach (var date in dates) Options.XAxisLabels.Add(new ChartAxisLabel(date, date.ToString(format, CultureInfo.InvariantCulture)));
         return this;
@@ -362,6 +417,10 @@ public sealed class Chart {
     /// <param name="color">An optional gauge accent color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddGauge(string name, double value, double min = 0, double max = 100, ChartColor? color = null) {
+        ChartGuards.Finite(value, nameof(value));
+        ChartGuards.Finite(min, nameof(min));
+        ChartGuards.Finite(max, nameof(max));
+        if (max <= min) throw new ArgumentOutOfRangeException(nameof(max), max, "Gauge maximum must be greater than minimum.");
         Series.Add(new ChartSeries(name, ChartSeriesKind.Gauge, new[] { new ChartPoint(min, value), new ChartPoint(max, value) }) { Color = color });
         return this;
     }
@@ -378,11 +437,22 @@ public sealed class Chart {
     /// <param name="color">An optional value accent color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddBullet(string name, double value, double target, double min = 0, double max = 100, IEnumerable<double>? rangeEnds = null, ChartColor? color = null) {
+        ChartGuards.Finite(value, nameof(value));
+        ChartGuards.Finite(target, nameof(target));
+        ChartGuards.Finite(min, nameof(min));
+        ChartGuards.Finite(max, nameof(max));
+        if (max <= min) throw new ArgumentOutOfRangeException(nameof(max), max, "Bullet maximum must be greater than minimum.");
         var points = new List<ChartPoint> {
             new(min, value),
             new(max, target)
         };
-        if (rangeEnds != null) points.AddRange(rangeEnds.Select(rangeEnd => new ChartPoint(rangeEnd, rangeEnd)));
+        if (rangeEnds != null) {
+            foreach (var rangeEnd in rangeEnds) {
+                ChartGuards.Finite(rangeEnd, nameof(rangeEnds));
+                points.Add(new ChartPoint(rangeEnd, rangeEnd));
+            }
+        }
+
         Series.Add(new ChartSeries(name, ChartSeriesKind.Bullet, points) { Color = color });
         return this;
     }
@@ -433,6 +503,9 @@ public sealed class Chart {
     /// <param name="color">An optional item color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddTimelineRange(string name, double start, double end, ChartColor? color = null) {
+        ChartGuards.Finite(start, nameof(start));
+        ChartGuards.Finite(end, nameof(end));
+        if (end < start) throw new ArgumentOutOfRangeException(nameof(end), end, "Timeline end must be greater than or equal to start.");
         Series.Add(new ChartSeries(name, ChartSeriesKind.Timeline, new[] { new ChartPoint(start, end) }) { Color = color });
         return this;
     }
@@ -461,6 +534,7 @@ public sealed class Chart {
     /// <param name="color">An optional annotation color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHorizontalLine(double value, string label = "", ChartColor? color = null) {
+        ChartGuards.Finite(value, nameof(value));
         Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalLine, value, null, label, color ?? Options.Theme.Axis, 1));
         return this;
     }
@@ -473,6 +547,7 @@ public sealed class Chart {
     /// <param name="color">An optional annotation color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddVerticalLine(double value, string label = "", ChartColor? color = null) {
+        ChartGuards.Finite(value, nameof(value));
         Annotations.Add(new ChartAnnotation(ChartAnnotationKind.VerticalLine, value, null, label, color ?? Options.Theme.Axis, 1));
         return this;
     }
@@ -487,6 +562,9 @@ public sealed class Chart {
     /// <param name="opacity">The band opacity.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHorizontalBand(double start, double end, string label = "", ChartColor? color = null, double opacity = 0.14) {
+        ChartGuards.Finite(start, nameof(start));
+        ChartGuards.Finite(end, nameof(end));
+        ChartGuards.UnitInterval(opacity, nameof(opacity));
         Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, start, end, label, color ?? Options.Theme.Axis, opacity));
         return this;
     }
@@ -501,12 +579,15 @@ public sealed class Chart {
     /// <param name="opacity">The band opacity.</param>
     /// <returns>The current chart.</returns>
     public Chart AddVerticalBand(double start, double end, string label = "", ChartColor? color = null, double opacity = 0.14) {
+        ChartGuards.Finite(start, nameof(start));
+        ChartGuards.Finite(end, nameof(end));
+        ChartGuards.UnitInterval(opacity, nameof(opacity));
         Annotations.Add(new ChartAnnotation(ChartAnnotationKind.VerticalBand, start, end, label, color ?? Options.Theme.Axis, opacity));
         return this;
     }
 
     private Chart Add(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points, ChartColor? color, bool smooth = false) {
-        Series.Add(new ChartSeries(name, kind, points) { Color = color, Smooth = smooth });
+        Series.Add(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), kind, ChartGuards.Points(points, nameof(points))) { Color = color, Smooth = smooth });
         return this;
     }
 }

@@ -51,11 +51,18 @@ public sealed partial class SvgChartRenderer {
 
         for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
             var x = plot.Left + columnIndex * (cellWidth + gap) + cellWidth / 2;
-            sb.AppendLine($"<text data-cfx-role=\"heatmap-column-label\" x=\"{F(x)}\" y=\"{F(plot.Bottom + 22)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">{Escape(FormatX(chart, columns[columnIndex]))}</text>");
+            var label = FormatX(chart, columns[columnIndex]);
+            var anchor = EdgeAwareAnchor(label, x, plot, t.TickLabelFontSize);
+            var labelX = EdgeAwareTextX(label, x, plot, t.TickLabelFontSize);
+            sb.AppendLine($"<text data-cfx-role=\"heatmap-column-label\" x=\"{F(labelX)}\" y=\"{F(plot.Bottom + 22)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">{Escape(label)}</text>");
         }
 
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text x=\"{F(plot.Left + plot.Width / 2)}\" y=\"{F(plot.Bottom + 48)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
-        if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) sb.AppendLine($"<text transform=\"translate(26 {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text data-cfx-role=\"heatmap-x-axis-title\" x=\"{F(plot.Left + plot.Width / 2)}\" y=\"{F(plot.Bottom + 48)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
+        if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
+            var widestRowLabel = rows.Max(series => EstimateTextWidth(series.Name, t.TickLabelFontSize));
+            var axisX = Math.Max(24, plot.Left - widestRowLabel - 48);
+            sb.AppendLine($"<text data-cfx-role=\"heatmap-y-axis-title\" transform=\"translate({F(axisX)} {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+        }
 
         DrawHeatmapScale(sb, chart, plot, min, max, rows[0].Color);
         sb.AppendLine("</g>");
@@ -63,7 +70,8 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartRect ApplyHeatmapLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<ChartSeries> rows, IReadOnlyList<double> columns) {
         var t = chart.Options.Theme;
-        var leftReserve = rows.Max(series => EstimateTextWidth(series.Name, t.TickLabelFontSize)) + 58;
+        var yAxisReserve = string.IsNullOrWhiteSpace(chart.YAxisTitle) ? 0 : 28;
+        var leftReserve = rows.Max(series => EstimateTextWidth(series.Name, t.TickLabelFontSize)) + yAxisReserve + 58;
         var bottomReserve = 56 + (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 0 : 20);
         var desiredLeft = Math.Max(plot.Left, leftReserve);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 220);
@@ -87,8 +95,8 @@ public sealed partial class SvgChartRenderer {
             sb.AppendLine($"<rect data-cfx-role=\"heatmap-scale-step\" data-cfx-status=\"{HeatmapStatus(HeatmapRatio(value, min, max))}\" x=\"{F(x + i * width / steps)}\" y=\"{F(y)}\" width=\"{F(width / steps + 0.5)}\" height=\"{F(height)}\" rx=\"2\" fill=\"{color.ToCss()}\"/>");
         }
 
-        sb.AppendLine($"<text x=\"{F(x)}\" y=\"{F(y + 24)}\" text-anchor=\"start\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, min))}</text>");
-        sb.AppendLine($"<text x=\"{F(x + width)}\" y=\"{F(y + 24)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, max))}</text>");
+        sb.AppendLine($"<text data-cfx-role=\"heatmap-scale-label\" x=\"{F(x)}\" y=\"{F(y + 24)}\" text-anchor=\"start\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, min))}</text>");
+        sb.AppendLine($"<text data-cfx-role=\"heatmap-scale-label\" x=\"{F(x + width)}\" y=\"{F(y + 24)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, max))}</text>");
     }
 
     private static ChartColor HeatmapColor(Chart chart, ChartColor? highColor, double value, double min, double max) {

@@ -22,8 +22,9 @@ public readonly struct ChartAxisLabel {
     /// <param name="value">The numeric axis value.</param>
     /// <param name="text">The label text.</param>
     public ChartAxisLabel(double value, string text) {
+        ChartGuards.Finite(value, nameof(value));
         Value = value;
-        Text = text;
+        Text = text ?? throw new ArgumentNullException(nameof(text));
     }
 
     /// <summary>
@@ -33,6 +34,6 @@ public readonly struct ChartAxisLabel {
     /// <param name="text">The label text.</param>
     public ChartAxisLabel(DateTime value, string text) {
         Value = value.ToOADate();
-        Text = text;
+        Text = text ?? throw new ArgumentNullException(nameof(text));
     }
 }

@@ -31,7 +31,16 @@ public readonly struct ChartPadding {
     /// <param name="top">The top padding in pixels.</param>
     /// <param name="right">The right padding in pixels.</param>
     /// <param name="bottom">The bottom padding in pixels.</param>
-    public ChartPadding(double left, double top, double right, double bottom) { Left = left; Top = top; Right = right; Bottom = bottom; }
+    public ChartPadding(double left, double top, double right, double bottom) {
+        ChartPrimitiveGuards.NonNegativeFinite(left, nameof(left));
+        ChartPrimitiveGuards.NonNegativeFinite(top, nameof(top));
+        ChartPrimitiveGuards.NonNegativeFinite(right, nameof(right));
+        ChartPrimitiveGuards.NonNegativeFinite(bottom, nameof(bottom));
+        Left = left;
+        Top = top;
+        Right = right;
+        Bottom = bottom;
+    }
 
     /// <summary>
     /// Creates padding with the same value on every side.

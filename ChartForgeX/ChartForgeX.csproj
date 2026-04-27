@@ -6,10 +6,16 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageId>ChartForgeX</PackageId>
     <Version>0.1.0</Version>
     <Authors>Evotec</Authors>
     <Description>Dependency-free SVG/HTML/PNG chart rendering for .NET reports and dashboards.</Description>
+    <PackageReleaseNotes>Initial preview of dependency-free SVG, HTML, and PNG chart rendering.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;svg;html;png;reports;dashboard;zero-dependency</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
@@ -24,5 +30,6 @@
 
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\CHANGELOG.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

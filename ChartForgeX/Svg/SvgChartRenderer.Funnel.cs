@@ -15,7 +15,11 @@ public sealed partial class SvgChartRenderer {
 
         var t = chart.Options.Theme;
         var max = values.Max(point => point.Y);
-        var plot = new ChartRect(basePlot.Left + 70, basePlot.Top + 18, Math.Max(120, basePlot.Width - 140), Math.Max(90, basePlot.Height - 62));
+        var metricsReserve = values.Length > 1 ? Math.Min(168, Math.Max(126, basePlot.Width * 0.22)) : 0;
+        var innerLeft = basePlot.Left + 44;
+        var innerRight = basePlot.Right - 44 - metricsReserve;
+        var plot = new ChartRect(innerLeft, basePlot.Top + 18, Math.Max(120, innerRight - innerLeft), Math.Max(90, basePlot.Height - 62));
+        var metricsX = Math.Min(basePlot.Right - metricsReserve + 10, plot.Right + 18);
         var gap = Math.Min(10, Math.Max(4, plot.Height / values.Length * 0.08));
         var segmentHeight = Math.Max(18, (plot.Height - gap * (values.Length - 1)) / values.Length);
         sb.AppendLine("<g data-cfx-role=\"funnel-chart\">");
@@ -43,12 +47,14 @@ public sealed partial class SvgChartRenderer {
             var centerX = plot.Left + plot.Width / 2;
             var centerY = y + segmentHeight / 2;
             var labelColor = FunnelTextColor(color);
-            sb.AppendLine($"<text data-cfx-role=\"funnel-label\" x=\"{F(centerX)}\" y=\"{F(centerY - 4)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{labelColor.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"2.5\" paint-order=\"stroke fill\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"800\">{Escape(label)}</text>");
-            sb.AppendLine($"<text data-cfx-role=\"funnel-value\" x=\"{F(centerX)}\" y=\"{F(centerY + 15)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{labelColor.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"2.5\" paint-order=\"stroke fill\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.DataLabelFontSize)}\" font-weight=\"750\">{Escape(value)}</text>");
+            var labelStroke = FunnelTextHalo(labelColor, t.CardBackground);
+            sb.AppendLine($"<text data-cfx-role=\"funnel-label\" x=\"{F(centerX)}\" y=\"{F(centerY - 4)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{labelColor.ToCss()}\" stroke=\"{labelStroke.ToCss()}\" stroke-width=\"1.8\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"800\">{Escape(label)}</text>");
+            sb.AppendLine($"<text data-cfx-role=\"funnel-value\" x=\"{F(centerX)}\" y=\"{F(centerY + 15)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{labelColor.ToCss()}\" stroke=\"{labelStroke.ToCss()}\" stroke-width=\"1.8\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.DataLabelFontSize)}\" font-weight=\"750\">{Escape(value)}</text>");
             if (i > 0) {
-                sb.AppendLine($"<line data-cfx-role=\"funnel-dropoff-line\" x1=\"{F(bottomRight + 8)}\" y1=\"{F(y + gap * -0.35)}\" x2=\"{F(bottomRight + 8)}\" y2=\"{F(y + segmentHeight * 0.45)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.1\" stroke-dasharray=\"3 4\" opacity=\"0.62\"/>");
-                sb.AppendLine($"<text data-cfx-role=\"funnel-retention\" x=\"{F(plot.Right + 16)}\" y=\"{F(centerY - 3)}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"700\">{Escape(FormatPercent(retention))} retained</text>");
-                sb.AppendLine($"<text data-cfx-role=\"funnel-dropoff\" x=\"{F(plot.Right + 16)}\" y=\"{F(centerY + 14)}\" fill=\"{t.Negative.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">-{Escape(FormatPercent(dropOff))} from prev</text>");
+                var guideX = Math.Min(metricsX - 10, bottomRight + 8);
+                sb.AppendLine($"<line data-cfx-role=\"funnel-dropoff-line\" x1=\"{F(guideX)}\" y1=\"{F(y + gap * -0.35)}\" x2=\"{F(guideX)}\" y2=\"{F(y + segmentHeight * 0.45)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.1\" stroke-dasharray=\"3 4\" opacity=\"0.62\"/>");
+                sb.AppendLine($"<text data-cfx-role=\"funnel-retention\" x=\"{F(metricsX)}\" y=\"{F(centerY - 3)}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"700\">{Escape(FormatPercent(retention))} retained</text>");
+                sb.AppendLine($"<text data-cfx-role=\"funnel-dropoff\" x=\"{F(metricsX)}\" y=\"{F(centerY + 14)}\" fill=\"{t.Negative.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">-{Escape(FormatPercent(dropOff))} from prev</text>");
             }
         }
 
@@ -64,4 +70,7 @@ public sealed partial class SvgChartRenderer {
         var luminance = (0.2126 * background.R + 0.7152 * background.G + 0.0722 * background.B) / 255;
         return luminance > 0.58 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
     }
+
+    private static ChartColor FunnelTextHalo(ChartColor text, ChartColor cardBackground) =>
+        text.R > 240 && text.G > 240 && text.B > 240 ? cardBackground : ChartColor.Transparent;
 }

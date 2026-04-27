@@ -14,11 +14,14 @@ public sealed partial class PngChartRenderer {
         }
 
         if (rows.Count == 0) return;
-        var labelReserve = 132d;
-        var valueReserve = 74d;
+        var labelFontSize = PngLegendFontSize(chart);
+        var valueFontSize = chart.Options.Theme.DataLabelFontSize;
+        var tickFontSize = PngTickFontSize(chart);
+        var labelReserve = BulletLabelReserve(chart, rows, labelFontSize);
+        var valueReserve = BulletValueReserve(chart, rows, valueFontSize);
         var plot = new ChartRect(basePlot.X + labelReserve, basePlot.Y + 18, Math.Max(80, basePlot.Width - labelReserve - valueReserve), Math.Max(80, basePlot.Height - 54));
         var rowHeight = Math.Min(64, plot.Height / Math.Max(1, rows.Count));
-        var barHeight = Math.Max(14, Math.Min(24, rowHeight * 0.38));
+        var barHeight = Math.Max(16, Math.Min(26, rowHeight * 0.38));
 
         for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
             var row = rows[rowIndex];
@@ -28,15 +31,22 @@ public sealed partial class PngChartRenderer {
             if (Math.Abs(max - min) < 0.000001) max = min + 1;
             var accent = row.Series.Color ?? chart.Options.Theme.Palette[row.Index % chart.Options.Theme.Palette.Length];
 
-            c.DrawTextTiny(basePlot.Left, y - 7, row.Series.Name, chart.Options.Theme.Text, 1);
-            DrawBulletRanges(c, row.Series, plot, y, barHeight, min, max, accent);
-            var value = Clamp(BulletValue(row.Series), min, max);
-            var target = Clamp(BulletTarget(row.Series), min, max);
+            var actualValue = BulletValue(row.Series);
+            var targetValue = BulletTarget(row.Series);
+            var value = Clamp(actualValue, min, max);
+            var target = Clamp(targetValue, min, max);
             var valueX = BulletX(plot, min, max, value);
             var targetX = BulletX(plot, min, max, target);
-            c.FillRect(plot.Left, y - barHeight * 0.22, Math.Max(2, valueX - plot.Left), barHeight * 0.44, accent);
+            var status = BulletStatus(actualValue, targetValue);
+            var statusColor = BulletStatusColor(chart, status);
+            c.DrawTextEmphasized(basePlot.Left, y - labelFontSize / 2.0, row.Series.Name, chart.Options.Theme.Text, labelFontSize);
+            DrawBulletRanges(c, row.Series, plot, y, barHeight, min, max, accent);
+            DrawGradientBar(c, plot.Left, y - barHeight * 0.24, Math.Max(2, valueX - plot.Left), barHeight * 0.48, barHeight * 0.24, accent);
             c.DrawLine(targetX, y - barHeight * 0.65, targetX, y + barHeight * 0.65, chart.Options.Theme.Text, 3);
-            c.DrawTextTiny(plot.Right + 10, y - 7, FormatValue(chart, BulletValue(row.Series)), chart.Options.Theme.Text, 1);
+            DrawBulletTargetLabel(c, chart, FormatValue(chart, targetValue), targetX, y - barHeight * 0.92, plot, tickFontSize);
+            c.DrawCircle(plot.Right + 8, y, 5.2, chart.Options.Theme.CardBackground);
+            c.DrawCircle(plot.Right + 8, y, 3.5, statusColor);
+            c.DrawTextEmphasized(plot.Right + 18, y - valueFontSize / 2.0, FormatValue(chart, actualValue), chart.Options.Theme.Text, valueFontSize);
         }
 
         DrawBulletAxis(c, chart, plot, rows[0].Series, basePlot.Bottom - 12);
@@ -51,7 +61,7 @@ public sealed partial class PngChartRenderer {
             var x = BulletX(plot, min, max, previous);
             var width = BulletX(plot, min, max, end) - x;
             var alpha = (byte)Math.Max(24, 72 - i * 14);
-            c.FillRect(x, y - barHeight / 2, width, barHeight, ChartColor.FromRgba(accent.R, accent.G, accent.B, alpha));
+            c.FillRoundedRect(x, y - barHeight / 2, width, barHeight, barHeight / 2, ChartColor.FromRgba(accent.R, accent.G, accent.B, alpha));
             previous = end;
         }
     }
@@ -67,8 +77,17 @@ public sealed partial class PngChartRenderer {
             var x = BulletX(plot, min, max, tick);
             c.DrawLine(x, y - 4, x, y + 4, chart.Options.Theme.Axis, 1);
             var label = FormatValue(chart, tick);
-            c.DrawTextTiny(x - EstimateTinyTextWidth(label) / 2.0, y + 10, label, chart.Options.Theme.MutedText, 1);
+            var fontSize = PngTickFontSize(chart);
+            c.DrawText(EdgeAwarePngLabelX(label, x, plot, fontSize), y + 20 - fontSize + 1, label, chart.Options.Theme.MutedText, fontSize);
         }
+    }
+
+    private static void DrawBulletTargetLabel(RgbaCanvas c, Chart chart, string label, double x, double y, ChartRect plot, double fontSize) {
+        var text = "target " + label;
+        var width = EstimatePngEmphasizedTextWidth(text, fontSize);
+        var safeX = Clamp(x - width / 2.0, plot.Left + 2, plot.Right - width - 2);
+        var halo = ReadableLabelHalo(chart);
+        DrawReadablePngLabel(c, safeX, y - fontSize + 1, text, chart.Options.Theme.MutedText, halo, fontSize);
     }
 
     private static bool IsBulletChart(Chart chart) {
@@ -102,6 +121,28 @@ public sealed partial class PngChartRenderer {
         ends.Sort();
         ends.Add(max);
         return ends;
+    }
+
+    private static string BulletStatus(double value, double target) {
+        if (value < target - 0.000001) return "below-target";
+        if (value > target + 0.000001) return "above-target";
+        return "meets-target";
+    }
+
+    private static ChartColor BulletStatusColor(Chart chart, string status) {
+        return status == "below-target" ? chart.Options.Theme.Negative : chart.Options.Theme.Positive;
+    }
+
+    private static double BulletLabelReserve(Chart chart, IReadOnlyList<BulletRow> rows, double fontSize) {
+        var widest = 0.0;
+        foreach (var row in rows) widest = Math.Max(widest, EstimatePngEmphasizedTextWidth(row.Series.Name, fontSize));
+        return Math.Min(220, Math.Max(112, widest + 28));
+    }
+
+    private static double BulletValueReserve(Chart chart, IReadOnlyList<BulletRow> rows, double fontSize) {
+        var widest = 0.0;
+        foreach (var row in rows) widest = Math.Max(widest, EstimatePngEmphasizedTextWidth(FormatValue(chart, BulletValue(row.Series)), fontSize));
+        return Math.Min(120, Math.Max(72, widest + 30));
     }
 
     private readonly struct BulletRow {

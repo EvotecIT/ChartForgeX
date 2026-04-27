@@ -91,8 +91,11 @@ public sealed partial class SvgChartRenderer {
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(y)}\" x2=\"{F(plot.Right)}\" y2=\"{F(y)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.1\"/>");
         foreach (var tick in ticks) {
             var x = BulletX(plot, min, max, tick);
+            var label = FormatValue(chart, tick);
+            var anchor = EdgeAwareAnchor(label, x, plot, t.TickLabelFontSize);
+            var safeX = EdgeAwareTextX(label, x, plot, t.TickLabelFontSize);
             sb.AppendLine($"<line data-cfx-role=\"bullet-axis-tick\" x1=\"{F(x)}\" y1=\"{F(y - 4)}\" x2=\"{F(x)}\" y2=\"{F(y + 4)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.1\"/>");
-            sb.AppendLine($"<text data-cfx-role=\"bullet-axis-label\" x=\"{F(x)}\" y=\"{F(y + 20)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, tick))}</text>");
+            sb.AppendLine($"<text data-cfx-role=\"bullet-axis-label\" x=\"{F(safeX)}\" y=\"{F(y + 20)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(label)}</text>");
         }
         sb.AppendLine("</g>");
     }

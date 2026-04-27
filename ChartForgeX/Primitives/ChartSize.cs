@@ -19,5 +19,10 @@ public readonly struct ChartSize {
     /// </summary>
     /// <param name="width">The chart width in pixels.</param>
     /// <param name="height">The chart height in pixels.</param>
-    public ChartSize(int width, int height) { Width = width; Height = height; }
+    public ChartSize(int width, int height) {
+        ChartPrimitiveGuards.Positive(width, nameof(width));
+        ChartPrimitiveGuards.Positive(height, nameof(height));
+        Width = width;
+        Height = height;
+    }
 }

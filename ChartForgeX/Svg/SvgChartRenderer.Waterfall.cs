@@ -48,7 +48,7 @@ public sealed partial class SvgChartRenderer {
                 DrawDataLabel(sb, chart, label, centerX, labelY, plot);
             }
 
-            DrawXAxisLabel(sb, chart, plot, WaterfallLabel(chart, step), centerX, plot.Bottom + XAxisLabelOffset(chart), Clamp(chart.Options.XAxisLabelAngle, -80, 80));
+            DrawXAxisLabel(sb, chart, plot, WaterfallLabel(chart, step), centerX, plot.Bottom + XAxisLabelOffset(chart), Clamp(chart.Options.XAxisLabelAngle, -80, 80), "waterfall-x-axis-label");
         }
 
         DrawLegend(sb, chart, chart.Options.Size.Width, chart.Options.Size.Height);
@@ -60,7 +60,7 @@ public sealed partial class SvgChartRenderer {
         foreach (var tick in ticks) {
             var y = WaterfallY(plot, bounds, tick);
             if (chart.Options.ShowGrid) sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(y)}\" x2=\"{F(plot.Right)}\" y2=\"{F(y)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"1\"/>");
-            if (chart.Options.ShowAxes) sb.AppendLine($"<text x=\"{F(plot.Left - 12)}\" y=\"{F(y + 4)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, tick))}</text>");
+            if (chart.Options.ShowAxes) sb.AppendLine($"<text data-cfx-role=\"waterfall-y-axis-label\" x=\"{F(plot.Left - 12)}\" y=\"{F(y + 4)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, tick))}</text>");
         }
 
         var zeroY = WaterfallY(plot, bounds, 0);
@@ -68,8 +68,12 @@ public sealed partial class SvgChartRenderer {
         if (!chart.Options.ShowAxes) return;
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Bottom)}\" x2=\"{F(plot.Right)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Top)}\" x2=\"{F(plot.Left)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text x=\"{F(plot.Left + plot.Width / 2)}\" y=\"{F(plot.Bottom + XAxisTitleOffset(chart))}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
-        if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) sb.AppendLine($"<text transform=\"translate(26 {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text data-cfx-role=\"waterfall-x-axis-title\" x=\"{F(plot.Left + plot.Width / 2)}\" y=\"{F(plot.Bottom + XAxisTitleOffset(chart))}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
+        if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
+            var widestTick = ticks.Max(tick => EstimateTextWidth(FormatValue(chart, tick), t.TickLabelFontSize));
+            var axisX = Math.Max(24, plot.Left - widestTick - 48);
+            sb.AppendLine($"<text data-cfx-role=\"waterfall-y-axis-title\" transform=\"translate({F(axisX)} {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+        }
     }
 
     private static List<WaterfallStep> BuildWaterfallSteps(ChartSeries series) {

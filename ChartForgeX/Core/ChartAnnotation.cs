@@ -1,3 +1,4 @@
+using System;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
@@ -46,10 +47,13 @@ public sealed class ChartAnnotation {
     /// <param name="color">The annotation color.</param>
     /// <param name="opacity">The annotation opacity used for band fills.</param>
     public ChartAnnotation(ChartAnnotationKind kind, double value, double? endValue, string label, ChartColor color, double opacity) {
+        ChartGuards.Finite(value, nameof(value));
+        if (endValue.HasValue) ChartGuards.Finite(endValue.Value, nameof(endValue));
+        ChartGuards.UnitInterval(opacity, nameof(opacity));
         Kind = kind;
         Value = value;
         EndValue = endValue;
-        Label = label;
+        Label = label ?? throw new ArgumentNullException(nameof(label));
         Color = color;
         Opacity = opacity;
     }

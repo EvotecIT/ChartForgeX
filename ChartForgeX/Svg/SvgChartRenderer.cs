@@ -22,6 +22,7 @@ public sealed partial class SvgChartRenderer {
     /// <param name="chart">The chart to render.</param>
     /// <returns>SVG markup.</returns>
     public string Render(Chart chart) {
+        ChartGuards.RenderCompatibility(chart);
         var o = chart.Options;
         var t = o.Theme;
         var w = o.Size.Width;
@@ -134,11 +135,11 @@ public sealed partial class SvgChartRenderer {
 
         DrawAnnotationBands(sb, chart, plot, map);
         DrawGrid(sb, chart, plot, xTicks, yTicks, map);
-        DrawAnnotationLines(sb, chart, plot, map);
         sb.AppendLine($"<g clip-path=\"url(#{id}-plotClip)\">");
         for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, i, plot, range, map, id);
         if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(sb, chart, plot, map);
         sb.AppendLine("</g>");
+        DrawAnnotationLines(sb, chart, plot, map);
         DrawLegend(sb, chart, w, h);
         sb.AppendLine("</g>");
         sb.AppendLine("</svg>");
@@ -203,16 +204,17 @@ public sealed partial class SvgChartRenderer {
         if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) sb.AppendLine($"<text transform=\"translate(26 {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
     }
 
-    private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle) {
+    private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle, string? role = null) {
         var t = chart.Options.Theme;
+        var roleAttribute = string.IsNullOrWhiteSpace(role) ? string.Empty : $" data-cfx-role=\"{role}\"";
         if (Math.Abs(angle) < 0.001) {
             var anchor = EdgeAwareAnchor(label, x, plot, t.TickLabelFontSize);
-            sb.AppendLine($"<text x=\"{F(x)}\" y=\"{F(y)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(label)}</text>");
+            sb.AppendLine($"<text{roleAttribute} x=\"{F(x)}\" y=\"{F(y)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(label)}</text>");
             return;
         }
 
         var rotatedAnchor = RotatedAnchor(label, x, plot, angle, t.TickLabelFontSize);
-        sb.AppendLine($"<text x=\"{F(x)}\" y=\"{F(y)}\" text-anchor=\"{rotatedAnchor}\" dominant-baseline=\"middle\" transform=\"rotate({F(angle)} {F(x)} {F(y)})\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(label)}</text>");
+        sb.AppendLine($"<text{roleAttribute} x=\"{F(x)}\" y=\"{F(y)}\" text-anchor=\"{rotatedAnchor}\" dominant-baseline=\"middle\" transform=\"rotate({F(angle)} {F(x)} {F(y)})\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(label)}</text>");
     }
 
     private static void DrawAnnotationBands(StringBuilder sb, Chart chart, ChartRect plot, ChartMapper map) {
