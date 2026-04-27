@@ -155,50 +155,15 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawHeader(RgbaCanvas c, Chart chart) {
         var theme = chart.Options.Theme;
-        var titleFontSize = theme.TitleFontSize;
-        c.DrawTextEmphasized(40, 52 - titleFontSize + 1, chart.Title, theme.Text, titleFontSize);
+        var maxWidth = Math.Max(24, chart.Options.Size.Width - 80);
+        var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, theme.TitleFontSize);
+        var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth);
+        if (title.Length > 0) c.DrawTextEmphasized(40, 52 - titleFontSize + 1, title, theme.Text, titleFontSize);
         if (!string.IsNullOrWhiteSpace(chart.Subtitle)) {
-            var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, chart.Options.Size.Width - 84, theme.SubtitleFontSize);
-            c.DrawText(42, 79 - subtitleFontSize + 1, chart.Subtitle, theme.MutedText, subtitleFontSize);
-        }
-    }
-
-    private static void DrawLegend(RgbaCanvas c, Chart chart) {
-        if (!chart.Options.ShowLegend || chart.Series.Count == 0) return;
-        var theme = chart.Options.Theme;
-        var fontSize = PngLegendFontSize(chart);
-        var symbolWidth = 18;
-        var rowHeight = fontSize + 6;
-        var x = 40.0;
-        var y = chart.Options.Size.Height - 34.0 - (PngLegendRowCount(chart) - 1) * rowHeight;
-        var maxX = Math.Max(80, chart.Options.Size.Width - 40);
-
-        for (var i = 0; i < chart.Series.Count; i++) {
-            var label = chart.Series[i].Name;
-            var itemWidth = symbolWidth + 10 + EstimatePngEmphasizedTextWidth(label, fontSize) + 18;
-            if (i > 0 && x + itemWidth > maxX) {
-                x = 40;
-                y += rowHeight;
-            }
-
-            if (y > chart.Options.Size.Height - 10) break;
-            var color = chart.Series[i].Color ?? theme.Palette[i % theme.Palette.Length];
-            DrawLegendSymbol(c, chart.Series[i].Kind, x, y - 5, color, theme.CardBackground);
-            c.DrawTextEmphasized(x + symbolWidth + 8, y - fontSize + 3, label, theme.MutedText, fontSize);
-            x += itemWidth;
-        }
-    }
-
-    private static void DrawLegendSymbol(RgbaCanvas c, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background) {
-        if (IsLineLikeLegend(kind)) {
-            c.DrawLine(x, y, x + 18, y, color, 2);
-            c.DrawCircle(x + 9, y, 4.2, background);
-            c.DrawCircle(x + 9, y, 3.1, color);
-        } else if (kind == ChartSeriesKind.Scatter) {
-            c.DrawCircle(x + 9, y, 4.2, background);
-            c.DrawCircle(x + 9, y, 3.4, color);
-        } else {
-            c.FillRoundedRect(x, y - 5, 10, 10, 2, color);
+            var subtitleMaxWidth = Math.Max(24, chart.Options.Size.Width - 84);
+            var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, subtitleMaxWidth, theme.SubtitleFontSize);
+            var subtitle = TrimPngLabelToWidth(chart.Subtitle, subtitleFontSize, subtitleMaxWidth);
+            if (subtitle.Length > 0) c.DrawText(42, 79 - subtitleFontSize + 1, subtitle, theme.MutedText, subtitleFontSize);
         }
     }
 
@@ -424,8 +389,9 @@ public sealed partial class PngChartRenderer {
             var totalLabel = FormatValue(chart, total);
             const double totalFontSize = 24;
             var nameFontSize = chart.Options.Theme.TickLabelFontSize;
-            c.DrawTextEmphasized(cx - EstimatePngEmphasizedTextWidth(totalLabel, totalFontSize) / 2.0, cy - totalFontSize / 2.0 - 2, totalLabel, chart.Options.Theme.Text, totalFontSize);
-            c.DrawTextEmphasized(cx - EstimatePngEmphasizedTextWidth(series.Name, nameFontSize) / 2.0, cy + 19 - nameFontSize + 1, series.Name, chart.Options.Theme.MutedText, nameFontSize);
+            var centerLabelWidth = Math.Max(24, inner * 1.55);
+            DrawPngTextEmphasizedCenteredX(c, cx, cy - totalFontSize / 2.0 - 2, totalLabel, chart.Options.Theme.Text, totalFontSize, centerLabelWidth);
+            DrawPngTextEmphasizedCenteredX(c, cx, cy + 19 - nameFontSize + 1, series.Name, chart.Options.Theme.MutedText, nameFontSize, centerLabelWidth);
         }
 
         if (chart.Options.ShowLegend) DrawSliceLegend(c, chart, values, plot, total);
@@ -444,8 +410,12 @@ public sealed partial class PngChartRenderer {
         for (var i = 0; i < values.Count; i++) {
             var color = chart.Options.Theme.Palette[i % chart.Options.Theme.Palette.Length];
             var percent = FormatPercent(values[i].Y / total);
+            var label = SliceLabel(chart, values[i], i);
+            var labelMaxWidth = Math.Max(12, plot.Right - 36 - (x + swatchSize + 8) - EstimatePngTextWidth(percent, fontSize));
+            var labelFontSize = TextFontSizeForEmphasizedWidth(label, labelMaxWidth, fontSize);
+            label = TrimReadablePngLabelToWidth(label, labelFontSize, labelMaxWidth);
             c.FillRect(x, y - swatchSize + 1, swatchSize, swatchSize, color);
-            c.DrawTextEmphasized(x + swatchSize + 8, y - fontSize + 3, SliceLabel(chart, values[i], i), chart.Options.Theme.Text, fontSize);
+            if (label.Length > 0) c.DrawTextEmphasized(x + swatchSize + 8, y - labelFontSize + 3, label, chart.Options.Theme.Text, labelFontSize);
             c.DrawText(plot.Right - EstimatePngTextWidth(percent, fontSize) - 12, y - fontSize + 3, percent, chart.Options.Theme.MutedText, fontSize);
             y += fontSize + 10;
         }
@@ -459,36 +429,6 @@ public sealed partial class PngChartRenderer {
     }
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
-
-    private static void DrawReadablePngLabel(RgbaCanvas c, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize) {
-        var strongHalo = ApplyOpacity(halo, 0.72);
-        var softHalo = ApplyOpacity(halo, 0.45);
-        c.DrawText(x - 1, y, label, strongHalo, fontSize);
-        c.DrawText(x + 1, y, label, strongHalo, fontSize);
-        c.DrawText(x, y - 1, label, strongHalo, fontSize);
-        c.DrawText(x, y + 1, label, strongHalo, fontSize);
-        c.DrawText(x - 1, y - 1, label, softHalo, fontSize);
-        c.DrawText(x + 1, y - 1, label, softHalo, fontSize);
-        c.DrawText(x - 1, y + 1, label, softHalo, fontSize);
-        c.DrawText(x + 1, y + 1, label, softHalo, fontSize);
-        c.DrawTextEmphasized(x, y, label, text, fontSize);
-    }
-
-    private static void DrawReadablePngLabel(RgbaCanvas c, ChartRect plot, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize) {
-        var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-        var height = EstimatePngTextHeight(fontSize);
-        DrawReadablePngLabel(c, Clamp(x, plot.Left + 2, plot.Right - width - 2), Clamp(y, plot.Top + 2, plot.Bottom - height - 2), label, text, halo, fontSize);
-    }
-
-    private static ChartColor ReadableLabelHalo(Chart chart) {
-        var color = chart.Options.Theme.CardBackground;
-        return color.A == 0 ? ChartColor.White : color;
-    }
-
-    private static ChartColor ApplyOpacity(ChartColor color, double opacity) {
-        var alpha = (byte)Math.Max(0, Math.Min(255, Math.Round(color.A * Math.Max(0, Math.Min(1, opacity)))));
-        return ChartColor.FromRgba(color.R, color.G, color.B, alpha);
-    }
 
     private static byte[] WritePng(RgbaCanvas canvas) => PngWriter.WriteRgba(canvas.Width, canvas.Height, canvas.ToOutputPixels());
 
@@ -569,21 +509,6 @@ public sealed partial class PngChartRenderer {
         }
 
         return FormatNumber(value);
-    }
-
-    private static double EstimatePngTextWidth(string value, double fontSize) => Math.Ceiling(RgbaCanvas.MeasureTextWidth(value, fontSize, CurrentOutlineFont));
-    private static double EstimatePngEmphasizedTextWidth(string value, double fontSize) => Math.Ceiling(RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, CurrentOutlineFont));
-    private static double EstimatePngTextHeight(double fontSize) => RgbaCanvas.MeasureTextHeight(fontSize, CurrentOutlineFont);
-    private static double PngTickFontSize(Chart chart) => chart.Options.Theme.TickLabelFontSize;
-    private static double PngAxisTitleFontSize(Chart chart) => chart.Options.Theme.AxisTitleFontSize;
-    private static double PngLegendFontSize(Chart chart) => chart.Options.Theme.LegendFontSize;
-    private static int DetailTextScale(Chart chart) => chart.Options.Size.Width >= 1000 && chart.Options.Size.Height >= 560 ? 2 : 1;
-    private static double TextFontSizeForWidth(string value, double maxWidth, double preferredFontSize) {
-        for (var fontSize = Math.Max(8, preferredFontSize); fontSize > 8; fontSize -= 1) {
-            if (EstimatePngTextWidth(value, fontSize) <= maxWidth) return fontSize;
-        }
-
-        return 8;
     }
 
     private static bool IsPieLike(Chart chart) => chart.Series.Count > 0 && (chart.Series[0].Kind == ChartSeriesKind.Pie || chart.Series[0].Kind == ChartSeriesKind.Donut);

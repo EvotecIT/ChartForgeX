@@ -68,11 +68,11 @@ public sealed partial class SvgChartRenderer {
         if (!chart.Options.ShowAxes) return;
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Bottom)}\" x2=\"{F(plot.Right)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Top)}\" x2=\"{F(plot.Left)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text data-cfx-role=\"waterfall-x-axis-title\" x=\"{F(plot.Left + plot.Width / 2)}\" y=\"{F(plot.Bottom + XAxisTitleOffset(chart))}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
+        DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart), "waterfall-x-axis-title");
         if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
             var widestTick = ticks.Max(tick => EstimateTextWidth(FormatValue(chart, tick), t.TickLabelFontSize));
             var axisX = Math.Max(24, plot.Left - widestTick - 48);
-            sb.AppendLine($"<text data-cfx-role=\"waterfall-y-axis-title\" transform=\"translate({F(axisX)} {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+            DrawSvgYAxisTitle(sb, chart, plot, axisX, "waterfall-y-axis-title");
         }
     }
 

@@ -54,8 +54,8 @@ public sealed partial class PngChartRenderer {
             var centerX = plot.Left + plot.Width / 2;
             var centerY = y + segmentHeight / 2;
             var labelColor = FunnelTextColor(color);
-            var labelFontSize = TextFontSizeForWidth(label, Math.Max(36, Math.Min(topWidth, bottomWidth) - 18), chart.Options.Theme.LegendFontSize);
-            var valueFontSize = TextFontSizeForWidth(value, Math.Max(36, Math.Min(topWidth, bottomWidth) - 18), chart.Options.Theme.DataLabelFontSize);
+            var labelFontSize = TextFontSizeForEmphasizedWidth(label, Math.Max(36, Math.Min(topWidth, bottomWidth) - 18), chart.Options.Theme.LegendFontSize);
+            var valueFontSize = TextFontSizeForEmphasizedWidth(value, Math.Max(36, Math.Min(topWidth, bottomWidth) - 18), chart.Options.Theme.DataLabelFontSize);
             var labelY = centerY - labelFontSize - 2;
             var valueY = centerY + 4;
             var halo = FunnelTextHalo(labelColor, chart.Options.Theme.CardBackground);
@@ -68,8 +68,8 @@ public sealed partial class PngChartRenderer {
                 var retentionLabel = FormatPercent(retention) + " retained";
                 var dropOffLabel = "-" + FormatPercent(dropOff) + " from prev";
                 var metricFontSize = Math.Min(
-                    TextFontSizeForWidth(retentionLabel, Math.Max(32, basePlot.Right - metricsX - 6), PngTickFontSize(chart)),
-                    TextFontSizeForWidth(dropOffLabel, Math.Max(32, basePlot.Right - metricsX - 6), PngTickFontSize(chart)));
+                    TextFontSizeForEmphasizedWidth(retentionLabel, Math.Max(32, basePlot.Right - metricsX - 6), PngTickFontSize(chart)),
+                    TextFontSizeForEmphasizedWidth(dropOffLabel, Math.Max(32, basePlot.Right - metricsX - 6), PngTickFontSize(chart)));
                 c.DrawDashedLine(guideX, y - gap * 0.35, guideX, y + segmentHeight * 0.45, chart.Options.Theme.Axis, 1, 3, 4);
                 c.DrawTextEmphasized(metricsX, centerY - metricFontSize - 4, retentionLabel, chart.Options.Theme.MutedText, metricFontSize);
                 c.DrawTextEmphasized(metricsX, centerY + 4, dropOffLabel, chart.Options.Theme.Negative, metricFontSize);

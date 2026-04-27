@@ -48,8 +48,9 @@ public sealed partial class SvgChartRenderer {
             var centerY = y + segmentHeight / 2;
             var labelColor = FunnelTextColor(color);
             var labelStroke = FunnelTextHalo(labelColor, t.CardBackground);
-            sb.AppendLine($"<text data-cfx-role=\"funnel-label\" x=\"{F(centerX)}\" y=\"{F(centerY - 4)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{labelColor.ToCss()}\" stroke=\"{labelStroke.ToCss()}\" stroke-width=\"1.8\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"800\">{Escape(label)}</text>");
-            sb.AppendLine($"<text data-cfx-role=\"funnel-value\" x=\"{F(centerX)}\" y=\"{F(centerY + 15)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{labelColor.ToCss()}\" stroke=\"{labelStroke.ToCss()}\" stroke-width=\"1.8\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.DataLabelFontSize)}\" font-weight=\"750\">{Escape(value)}</text>");
+            var labelWidth = Math.Max(36, Math.Min(topWidth, bottomWidth) - 18);
+            DrawSvgTextCenteredX(sb, chart, "funnel-label", label, centerX, centerY - 4, labelColor, t.LegendFontSize, labelWidth, "800", labelStroke, 1.8);
+            DrawSvgTextCenteredX(sb, chart, "funnel-value", value, centerX, centerY + 15, labelColor, t.DataLabelFontSize, labelWidth, "750", labelStroke, 1.8);
             if (i > 0) {
                 var guideX = Math.Min(metricsX - 10, bottomRight + 8);
                 sb.AppendLine($"<line data-cfx-role=\"funnel-dropoff-line\" x1=\"{F(guideX)}\" y1=\"{F(y + gap * -0.35)}\" x2=\"{F(guideX)}\" y2=\"{F(y + segmentHeight * 0.45)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.1\" stroke-dasharray=\"3 4\" opacity=\"0.62\"/>");

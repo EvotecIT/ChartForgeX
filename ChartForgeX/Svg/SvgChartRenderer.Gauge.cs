@@ -35,10 +35,14 @@ public sealed partial class SvgChartRenderer {
         sb.AppendLine($"<path data-cfx-role=\"gauge-track\" d=\"{BuildGaugeArc(cx, cy, radius, start, end)}\" fill=\"none\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(stroke)}\" stroke-linecap=\"round\" opacity=\"0.62\"/>");
         sb.AppendLine($"<path data-cfx-role=\"gauge-value\" d=\"{BuildGaugeArc(cx, cy, radius, start, valueEnd)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(stroke)}\" stroke-linecap=\"round\"/>");
 
-        sb.AppendLine($"<text data-cfx-role=\"gauge-label\" x=\"{F(cx)}\" y=\"{F(cy - radius * 0.1)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(Math.Max(34, t.TitleFontSize * 1.65))}\" font-weight=\"850\">{Escape(valueLabel)}</text>");
-        sb.AppendLine($"<text x=\"{F(cx)}\" y=\"{F(cy + 34)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"650\">{Escape(series.Name)}</text>");
-        sb.AppendLine($"<circle data-cfx-role=\"gauge-status-marker\" data-cfx-status=\"{status}\" cx=\"{F(cx - EstimateTextWidth(statusLabel, t.TickLabelFontSize) / 2 - 9)}\" cy=\"{F(cy + 53)}\" r=\"4\" fill=\"{statusColor.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"1.5\"/>");
-        sb.AppendLine($"<text data-cfx-role=\"gauge-status-label\" x=\"{F(cx)}\" y=\"{F(cy + 57)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">{Escape(statusLabel)}</text>");
+        var labelWidth = Math.Max(48, Math.Min(plot.Width - 24, radius * 1.8));
+        DrawSvgTextCenteredX(sb, chart, "gauge-label", valueLabel, cx, cy - radius * 0.1, t.Text, Math.Max(34, t.TitleFontSize * 1.65), labelWidth, "850");
+        DrawSvgTextCenteredX(sb, chart, string.Empty, series.Name, cx, cy + 34, t.MutedText, t.LegendFontSize, labelWidth, "650", middleBaseline: false);
+        var statusFontSize = TextFontSizeForSvgWidth(statusLabel, labelWidth, t.TickLabelFontSize);
+        statusLabel = TrimSvgLabelToWidth(statusLabel, statusFontSize, labelWidth);
+        var statusLeft = cx - EstimateTextWidth(statusLabel, statusFontSize) / 2.0;
+        sb.AppendLine($"<circle data-cfx-role=\"gauge-status-marker\" data-cfx-status=\"{status}\" cx=\"{F(statusLeft - 9)}\" cy=\"{F(cy + 53)}\" r=\"4\" fill=\"{statusColor.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"1.5\"/>");
+        sb.AppendLine($"<text data-cfx-role=\"gauge-status-label\" x=\"{F(statusLeft)}\" y=\"{F(cy + 57)}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(statusFontSize)}\" font-weight=\"650\">{Escape(statusLabel)}</text>");
         sb.AppendLine($"<text x=\"{F(cx - radius)}\" y=\"{F(cy + 27)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, min))}</text>");
         sb.AppendLine($"<text x=\"{F(cx + radius)}\" y=\"{F(cy + 27)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(FormatValue(chart, max))}</text>");
         sb.AppendLine("</g>");

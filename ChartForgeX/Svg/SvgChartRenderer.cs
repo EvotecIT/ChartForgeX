@@ -148,8 +148,9 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawHeader(StringBuilder sb, Chart chart) {
         var t = chart.Options.Theme;
-        sb.AppendLine($"<text x=\"40\" y=\"52\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TitleFontSize)}\" font-weight=\"750\">{Escape(chart.Title)}</text>");
-        if (!string.IsNullOrWhiteSpace(chart.Subtitle)) sb.AppendLine($"<text x=\"40\" y=\"79\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.SubtitleFontSize)}\">{Escape(chart.Subtitle)}</text>");
+        var maxWidth = Math.Max(24, chart.Options.Size.Width - 80);
+        DrawSvgTextLeft(sb, chart, "chart-title", chart.Title, 40, 52, t.Text, t.TitleFontSize, maxWidth, "750");
+        if (!string.IsNullOrWhiteSpace(chart.Subtitle)) DrawSvgTextLeft(sb, chart, "chart-subtitle", chart.Subtitle, 40, 79, t.MutedText, t.SubtitleFontSize, maxWidth, "400");
     }
 
     private static void DrawGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> xTicks, IReadOnlyList<double> yTicks, ChartMapper map) {
@@ -173,8 +174,8 @@ public sealed partial class SvgChartRenderer {
         if (!o.ShowAxes) return;
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Bottom)}\" x2=\"{F(plot.Right)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Top)}\" x2=\"{F(plot.Left)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text x=\"{F(plot.Left + plot.Width/2)}\" y=\"{F(plot.Bottom+XAxisTitleOffset(chart))}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
-        if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) sb.AppendLine($"<text transform=\"translate(26 {F(plot.Top + plot.Height/2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+        DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart));
+        DrawSvgYAxisTitle(sb, chart, plot, 26);
     }
 
     private static void DrawHorizontalBarGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> xTicks, IReadOnlyList<double> categoryTicks, ChartMapper map) {
@@ -200,8 +201,8 @@ public sealed partial class SvgChartRenderer {
         if (!o.ShowAxes) return;
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Bottom)}\" x2=\"{F(plot.Right)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
         sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Top)}\" x2=\"{F(plot.Left)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"1.2\"/>");
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text x=\"{F(plot.Left + plot.Width / 2)}\" y=\"{F(plot.Bottom + XAxisTitleOffset(chart))}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
-        if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) sb.AppendLine($"<text transform=\"translate(26 {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+        DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart));
+        DrawSvgYAxisTitle(sb, chart, plot, 26);
     }
 
     private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle, string? role = null) {
@@ -292,8 +293,9 @@ public sealed partial class SvgChartRenderer {
         }
 
         if (series.Kind == ChartSeriesKind.Donut) {
-            sb.AppendLine($"<text x=\"{F(cx)}\" y=\"{F(cy - 2)}\" text-anchor=\"middle\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"24\" font-weight=\"800\">{Escape(FormatValue(chart, total))}</text>");
-            sb.AppendLine($"<text x=\"{F(cx)}\" y=\"{F(cy + 19)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(series.Name)}</text>");
+            var centerLabelWidth = Math.Max(24, inner * 1.55);
+            DrawSvgTextCenteredX(sb, chart, string.Empty, FormatValue(chart, total), cx, cy - 2, t.Text, 24, centerLabelWidth, "800");
+            DrawSvgTextCenteredX(sb, chart, string.Empty, series.Name, cx, cy + 19, t.MutedText, t.TickLabelFontSize, centerLabelWidth, "400");
         }
 
         if (chart.Options.ShowLegend) DrawSliceLegend(sb, chart, values, plot, total);
@@ -306,9 +308,12 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < values.Count; i++) {
             var color = chart.Options.Theme.Palette[i % chart.Options.Theme.Palette.Length];
             var label = SliceLabel(chart, values[i], i);
+            var percent = FormatPercent(values[i].Y / total);
+            var maxLabelWidth = Math.Max(12, plot.Right - 36 - (x + 16) - EstimateTextWidth(percent, t.LegendFontSize));
+            label = TrimSvgLabelToWidth(label, t.LegendFontSize, maxLabelWidth);
             sb.AppendLine($"<rect x=\"{F(x)}\" y=\"{F(y - 9)}\" width=\"10\" height=\"10\" rx=\"2\" fill=\"{color.ToCss()}\"/>");
             sb.AppendLine($"<text x=\"{F(x + 16)}\" y=\"{F(y)}\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"650\">{Escape(label)}</text>");
-            sb.AppendLine($"<text x=\"{F(plot.Right - 12)}\" y=\"{F(y)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\">{FormatPercent(values[i].Y / total)}</text>");
+            sb.AppendLine($"<text x=\"{F(plot.Right - 12)}\" y=\"{F(y)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\">{percent}</text>");
             y += 22;
         }
     }

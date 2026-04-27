@@ -63,7 +63,7 @@ public sealed partial class PngChartRenderer {
             var endY = cy + Math.Sin(angle) * radius;
             c.DrawLine(cx, cy, endX, endY, chart.Options.Theme.Grid, 1);
             var label = FormatX(chart, categories[i]);
-            var fontSize = TextFontSizeForWidth(label, Math.Max(44, RadarLabelWidth(chart, angle)), tickFontSize);
+            var fontSize = TextFontSizeForEmphasizedWidth(label, Math.Max(44, RadarLabelWidth(chart, angle)), tickFontSize);
             var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
             var labelX = Clamp(endX + Math.Cos(angle) * (18 + fontSize * 0.35) - labelWidth / 2.0, chart.Options.Padding.Left + 2, chart.Options.Size.Width - chart.Options.Padding.Right - labelWidth - 2);
             var labelY = Clamp(endY + Math.Sin(angle) * (18 + fontSize * 0.35) - fontSize / 2, chart.Options.Padding.Top + 12, chart.Options.Size.Height - chart.Options.Padding.Bottom - 18);

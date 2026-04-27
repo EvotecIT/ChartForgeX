@@ -31,7 +31,8 @@ public sealed partial class SvgChartRenderer {
         for (var rowIndex = 0; rowIndex < rows.Length; rowIndex++) {
             var series = rows[rowIndex];
             var y = plot.Top + rowIndex * (cellHeight + gap);
-            sb.AppendLine($"<text data-cfx-role=\"heatmap-row-label\" x=\"{F(plot.Left - 12)}\" y=\"{F(y + cellHeight / 2)}\" text-anchor=\"end\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">{Escape(series.Name)}</text>");
+            var rowLabel = TrimSvgLabelToWidth(series.Name, t.TickLabelFontSize, Math.Max(8, plot.Left - chart.Options.Padding.Left - 2));
+            sb.AppendLine($"<text data-cfx-role=\"heatmap-row-label\" x=\"{F(plot.Left - 12)}\" y=\"{F(y + cellHeight / 2)}\" text-anchor=\"end\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">{Escape(rowLabel)}</text>");
             for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
                 var column = columns[columnIndex];
                 var value = FindHeatmapValue(series, column);
@@ -44,7 +45,7 @@ public sealed partial class SvgChartRenderer {
                 sb.AppendLine($"<rect data-cfx-role=\"heatmap-cell\" data-cfx-row=\"{rowIndex}\" data-cfx-column=\"{columnIndex}\" data-cfx-status=\"{status}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(x)}\" y=\"{F(y)}\" width=\"{F(cellWidth)}\" height=\"{F(cellHeight)}\" rx=\"{F(radius)}\" fill=\"{color.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-opacity=\"0.32\"/>");
                 if (chart.Options.ShowDataLabels && cellWidth >= 34 && cellHeight >= 20) {
                     var label = FormatValue(chart, value);
-                    sb.AppendLine($"<text data-cfx-role=\"data-label\" x=\"{F(x + cellWidth / 2)}\" y=\"{F(y + cellHeight / 2)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{HeatmapTextColor(color).ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.DataLabelFontSize)}\" font-weight=\"750\">{Escape(label)}</text>");
+                    DrawSvgTextCenteredX(sb, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, HeatmapTextColor(color), t.DataLabelFontSize, cellWidth - 6, "750");
                 }
             }
         }
@@ -52,16 +53,17 @@ public sealed partial class SvgChartRenderer {
         for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
             var x = plot.Left + columnIndex * (cellWidth + gap) + cellWidth / 2;
             var label = FormatX(chart, columns[columnIndex]);
+            label = TrimSvgLabelToWidth(label, t.TickLabelFontSize, Math.Max(8, cellWidth + gap));
             var anchor = EdgeAwareAnchor(label, x, plot, t.TickLabelFontSize);
             var labelX = EdgeAwareTextX(label, x, plot, t.TickLabelFontSize);
             sb.AppendLine($"<text data-cfx-role=\"heatmap-column-label\" x=\"{F(labelX)}\" y=\"{F(plot.Bottom + 22)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">{Escape(label)}</text>");
         }
 
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) sb.AppendLine($"<text data-cfx-role=\"heatmap-x-axis-title\" x=\"{F(plot.Left + plot.Width / 2)}\" y=\"{F(plot.Bottom + 48)}\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.XAxisTitle)}</text>");
+        DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + 48, "heatmap-x-axis-title");
         if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
             var widestRowLabel = rows.Max(series => EstimateTextWidth(series.Name, t.TickLabelFontSize));
             var axisX = Math.Max(24, plot.Left - widestRowLabel - 48);
-            sb.AppendLine($"<text data-cfx-role=\"heatmap-y-axis-title\" transform=\"translate({F(axisX)} {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.AxisTitleFontSize)}\" font-weight=\"600\">{Escape(chart.YAxisTitle)}</text>");
+            DrawSvgYAxisTitle(sb, chart, plot, axisX, "heatmap-y-axis-title");
         }
 
         DrawHeatmapScale(sb, chart, plot, min, max, rows[0].Color);

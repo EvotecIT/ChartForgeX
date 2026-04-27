@@ -20,8 +20,9 @@ public sealed partial class SvgChartRenderer {
             sb.AppendLine($"<g data-cfx-role=\"legend-row\" transform=\"translate(0 {F(y)})\">");
             foreach (var item in row.Items) {
                 var c = Color(chart, item.Index);
+                var label = SvgLegendLabel(chart, item.Index, w);
                 DrawLegendSymbol(sb, chart.Series[item.Index].Kind, item.X, -4, c, t.CardBackground);
-                sb.AppendLine($"<text x=\"{F(item.X + 26)}\" y=\"0\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"600\">{Escape(chart.Series[item.Index].Name)}</text>");
+                sb.AppendLine($"<text x=\"{F(item.X + 26)}\" y=\"0\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\" font-weight=\"600\">{Escape(label)}</text>");
             }
 
             sb.AppendLine("</g>");
@@ -39,7 +40,8 @@ public sealed partial class SvgChartRenderer {
         rows.Add(row);
         var x = LegendStartX;
         for (var i = 0; i < chart.Series.Count; i++) {
-            var itemWidth = 34 + EstimateTextWidth(chart.Series[i].Name, chart.Options.Theme.LegendFontSize) + 18;
+            var label = SvgLegendLabel(chart, i, width);
+            var itemWidth = 34 + EstimateTextWidth(label, chart.Options.Theme.LegendFontSize) + 18;
             if (row.Items.Count > 0 && x + itemWidth > maxX) {
                 row = new LegendRow();
                 rows.Add(row);
@@ -52,6 +54,11 @@ public sealed partial class SvgChartRenderer {
 
         return rows;
     }
+
+    private static string SvgLegendLabel(Chart chart, int index, int width) =>
+        TrimSvgLabelToWidth(chart.Series[index].Name, chart.Options.Theme.LegendFontSize, LegendLabelMaxWidth(width));
+
+    private static double LegendLabelMaxWidth(int width) => Math.Max(48, Math.Min(220, width * 0.34));
 
     private static void DrawLegendSymbol(StringBuilder sb, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background) {
         if (IsLineLikeLegend(kind)) {
@@ -79,6 +86,9 @@ public sealed partial class SvgChartRenderer {
     private static void DrawDataLabel(StringBuilder sb, Chart chart, string label, double x, double y, ChartRect plot, string role = "data-label") {
         var t = chart.Options.Theme;
         var fontSize = t.DataLabelFontSize;
+        label = TrimSvgLabelToWidth(label, fontSize, Math.Max(8, plot.Width - 8));
+        if (label.Length == 0) return;
+
         var safeY = Clamp(y, plot.Top + fontSize * 0.7, plot.Bottom - fontSize * 0.35);
         var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
         var safeX = Clamp(x, plot.Left + 4, plot.Right - 4);
@@ -88,6 +98,9 @@ public sealed partial class SvgChartRenderer {
     private static void DrawHorizontalValueLabel(StringBuilder sb, Chart chart, string label, double x, double y, string anchor, ChartRect plot) {
         var t = chart.Options.Theme;
         var fontSize = t.DataLabelFontSize;
+        label = TrimSvgLabelToWidth(label, fontSize, Math.Max(8, plot.Width - 8));
+        if (label.Length == 0) return;
+
         var width = EstimateTextWidth(label, fontSize);
         var effectiveAnchor = anchor == "end" ? "end" : "start";
         var safeX = effectiveAnchor == "end"
@@ -152,6 +165,67 @@ public sealed partial class SvgChartRenderer {
         var width = 0.0;
         foreach (var ch in text) width += char.IsWhiteSpace(ch) ? fontSize * 0.34 : char.IsUpper(ch) ? fontSize * 0.62 : fontSize * 0.54;
         return width;
+    }
+
+    private static string TrimSvgLabelToWidth(string value, double fontSize, double maxWidth) {
+        if (string.IsNullOrEmpty(value) || EstimateTextWidth(value, fontSize) <= maxWidth) return value;
+        const string suffix = "...";
+        if (EstimateTextWidth(suffix, fontSize) > maxWidth) return string.Empty;
+
+        var low = 0;
+        var high = value.Length;
+        while (low < high) {
+            var mid = low + (high - low + 1) / 2;
+            var candidate = value.Substring(0, mid).TrimEnd() + suffix;
+            if (EstimateTextWidth(candidate, fontSize) <= maxWidth) low = mid;
+            else high = mid - 1;
+        }
+
+        return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
+    }
+
+    private static double TextFontSizeForSvgWidth(string text, double maxWidth, double preferredFontSize, double minFontSize = 8) {
+        if (string.IsNullOrEmpty(text) || maxWidth <= 0) return preferredFontSize;
+        var fontSize = preferredFontSize;
+        while (fontSize > minFontSize && EstimateTextWidth(text, fontSize) > maxWidth) fontSize -= 0.5;
+        return Math.Max(minFontSize, fontSize);
+    }
+
+    private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true) {
+        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), fontSize);
+        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        if (fittedText.Length == 0) return;
+
+        var roleAttribute = string.IsNullOrEmpty(role) ? string.Empty : $" data-cfx-role=\"{role}\"";
+        var baselineAttribute = middleBaseline ? " dominant-baseline=\"middle\"" : string.Empty;
+        var strokeAttribute = stroke.HasValue && strokeWidth > 0
+            ? $" stroke=\"{stroke.Value.ToCss()}\" stroke-width=\"{F(strokeWidth)}\" paint-order=\"stroke fill\" stroke-linejoin=\"round\""
+            : string.Empty;
+        sb.AppendLine($"<text{roleAttribute} x=\"{F(centerX)}\" y=\"{F(y)}\" text-anchor=\"middle\"{baselineAttribute} fill=\"{fill.ToCss()}\"{strokeAttribute} font-family=\"{SvgFontFamily(chart.Options.Theme.FontFamily)}\" font-size=\"{F(fittedFontSize)}\" font-weight=\"{fontWeight}\">{Escape(fittedText)}</text>");
+    }
+
+    private static void DrawSvgTextLeft(StringBuilder sb, Chart chart, string role, string text, double x, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight) {
+        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), fontSize);
+        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        if (fittedText.Length == 0) return;
+        var roleAttribute = string.IsNullOrEmpty(role) ? string.Empty : $" data-cfx-role=\"{role}\"";
+        sb.AppendLine($"<text{roleAttribute} x=\"{F(x)}\" y=\"{F(y)}\" fill=\"{fill.ToCss()}\" font-family=\"{SvgFontFamily(chart.Options.Theme.FontFamily)}\" font-size=\"{F(fittedFontSize)}\" font-weight=\"{fontWeight}\">{Escape(fittedText)}</text>");
+    }
+
+    private static void DrawSvgXAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double y, string role = "") {
+        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
+        DrawSvgTextCenteredX(sb, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false);
+    }
+
+    private static void DrawSvgYAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double axisX, string role = "") {
+        if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
+        var t = chart.Options.Theme;
+        var maxWidth = Math.Max(40, plot.Height * 0.72);
+        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, t.AxisTitleFontSize);
+        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        if (text.Length == 0) return;
+        var roleAttribute = string.IsNullOrWhiteSpace(role) ? string.Empty : $" data-cfx-role=\"{role}\"";
+        sb.AppendLine($"<text{roleAttribute} transform=\"translate({F(axisX)} {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(fontSize)}\" font-weight=\"600\">{Escape(text)}</text>");
     }
 
     private static ChartColor Color(Chart chart, int index) => chart.Series[index].Color ?? chart.Options.Theme.Palette[index % chart.Options.Theme.Palette.Length];

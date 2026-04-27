@@ -139,6 +139,58 @@ internal static partial class SmokeTests {
         }
     }
 
+    private static void SpecializedChartsFitLongSvgLabels() {
+        const string longLabel = "Extremely long remediation status label that must fit";
+        var funnel = Chart.Create()
+            .WithSize(320, 220)
+            .WithXLabels(longLabel, "Verified")
+            .AddFunnel("Funnel", Points(96, 72))
+            .ToSvg();
+        Assert(funnel.Contains("data-cfx-role=\"funnel-label\"", StringComparison.Ordinal), "Funnel charts should mark fitted segment labels.");
+        Assert(funnel.Contains("...</text>", StringComparison.Ordinal), "Funnel segment labels should shorten when a stage is narrower than the label.");
+
+        var gauge = Chart.Create()
+            .WithSize(260, 180)
+            .WithValueFormatter(_ => longLabel)
+            .AddGauge(longLabel, 87)
+            .ToSvg();
+        Assert(gauge.Contains("data-cfx-role=\"gauge-label\"", StringComparison.Ordinal), "Gauges should mark fitted value labels.");
+        Assert(gauge.Contains("...</text>", StringComparison.Ordinal), "Gauge labels should shorten when values or names exceed the dial label width.");
+
+        var donut = Chart.Create()
+            .WithSize(280, 180)
+            .WithXLabels(longLabel)
+            .AddDonut(longLabel, Points(100))
+            .ToSvg();
+        Assert(donut.Contains("...</text>", StringComparison.Ordinal), "Donut center and legend labels should shorten when their available width is constrained.");
+
+        var bullet = Chart.Create()
+            .WithSize(320, 220)
+            .WithValueFormatter(_ => longLabel)
+            .AddBullet(longLabel, 82, 90)
+            .ToSvg();
+        Assert(bullet.Contains("data-cfx-role=\"bullet-row-label\"", StringComparison.Ordinal), "Bullet charts should mark fitted row labels.");
+        Assert(bullet.Contains("...</text>", StringComparison.Ordinal), "Bullet row, value, and target labels should shorten when reserves are constrained.");
+
+        var heatmap = Chart.Create()
+            .WithSize(320, 220)
+            .WithDataLabels()
+            .WithValueFormatter(_ => longLabel)
+            .WithXLabels(longLabel)
+            .AddHeatmapRow(longLabel, Points(96))
+            .ToSvg();
+        Assert(heatmap.Contains("data-cfx-role=\"heatmap-row-label\"", StringComparison.Ordinal), "Heatmaps should mark fitted row labels.");
+        Assert(heatmap.Contains("...</text>", StringComparison.Ordinal), "Heatmap row, column, and cell labels should shorten inside constrained regions.");
+
+        var timeline = Chart.Create()
+            .WithSize(320, 220)
+            .WithXDateLabels(new[] { new DateTime(2026, 1, 1), new DateTime(2026, 1, 15) }, longLabel)
+            .AddTimelineItem(longLabel, new DateTime(2026, 1, 1), new DateTime(2026, 1, 15))
+            .ToSvg();
+        Assert(timeline.Contains("data-cfx-role=\"timeline-row-label\"", StringComparison.Ordinal), "Timelines should mark fitted row labels.");
+        Assert(timeline.Contains("...</text>", StringComparison.Ordinal), "Timeline row and tick labels should shorten when their reserved regions are constrained.");
+    }
+
     private static void WaterfallSeriesRenderCumulativeChangeBars() {
         var svg = Chart.Create()
             .WithSize(760, 420)

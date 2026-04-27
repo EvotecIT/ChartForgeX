@@ -40,32 +40,37 @@ public sealed partial class PngChartRenderer {
     private static void DrawAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot) {
         var theme = chart.Options.Theme;
         if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
-            var fontSize = PngXAxisTitleFontSize(chart);
-            var width = EstimatePngEmphasizedTextWidth(chart.XAxisTitle, fontSize);
-            c.DrawTextEmphasized(Clamp(plot.Left + plot.Width / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2), plot.Bottom + PngXAxisTitleOffset(chart) - fontSize + 1, chart.XAxisTitle, theme.MutedText, fontSize);
+            DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart), PngXAxisTitleFontSize(chart));
         }
 
         DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
     private static void DrawDetailAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, int textScale) {
-        var theme = chart.Options.Theme;
         if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
-            var fontSize = PngAxisTitleFontSize(chart);
-            var width = EstimatePngEmphasizedTextWidth(chart.XAxisTitle, fontSize);
-            c.DrawTextEmphasized(Clamp(plot.Left + plot.Width / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2), plot.Bottom + 48 - fontSize + 1, chart.XAxisTitle, theme.MutedText, fontSize);
+            DrawPngXAxisTitle(c, chart, plot, plot.Bottom + 48, PngAxisTitleFontSize(chart));
         }
 
         DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
+    private static void DrawPngXAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double baselineY, double preferredFontSize) {
+        var fontSize = TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, plot.Width - 4), preferredFontSize);
+        var label = TrimReadablePngLabelToWidth(chart.XAxisTitle, fontSize, Math.Max(48, plot.Width - 4));
+        if (label.Length == 0) return;
+        var width = EstimatePngEmphasizedTextWidth(label, fontSize);
+        c.DrawTextEmphasized(Clamp(plot.Left + plot.Width / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2), baselineY - fontSize + 1, label, chart.Options.Theme.MutedText, fontSize);
+    }
+
     private static void DrawYAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double preferredFontSize) {
         if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
-        var fontSize = TextFontSizeForWidth(chart.YAxisTitle, Math.Max(40, plot.Height * 0.72), preferredFontSize);
-        var width = EstimatePngEmphasizedTextWidth(chart.YAxisTitle, fontSize);
+        var fontSize = TextFontSizeForEmphasizedWidth(chart.YAxisTitle, Math.Max(40, plot.Height * 0.72), preferredFontSize);
+        var label = TrimReadablePngLabelToWidth(chart.YAxisTitle, fontSize, Math.Max(40, plot.Height * 0.72));
+        if (label.Length == 0) return;
+        var width = EstimatePngEmphasizedTextWidth(label, fontSize);
         var height = EstimatePngTextHeight(fontSize);
         var axisX = Clamp(28, 18, Math.Max(18, plot.Left - height - 14));
-        c.DrawTextRotatedEmphasized(axisX, plot.Top + plot.Height / 2.0, chart.YAxisTitle, chart.Options.Theme.MutedText, fontSize, -90, width / 2.0, height / 2.0);
+        c.DrawTextRotatedEmphasized(axisX, plot.Top + plot.Height / 2.0, label, chart.Options.Theme.MutedText, fontSize, -90, width / 2.0, height / 2.0);
     }
 
     private static ChartRect ApplyHorizontalBarReserve(Chart chart, ChartRect plot, IReadOnlyList<double> categories) {
@@ -117,7 +122,8 @@ public sealed partial class PngChartRenderer {
         var rows = 1;
         var maxX = Math.Max(80, chart.Options.Size.Width - 40);
         for (var i = 0; i < chart.Series.Count; i++) {
-            var itemWidth = symbolWidth + 10 + EstimatePngEmphasizedTextWidth(chart.Series[i].Name, fontSize) + 18;
+            var label = PngLegendLabel(chart, i);
+            var itemWidth = symbolWidth + 10 + EstimatePngEmphasizedTextWidth(label, fontSize) + 18;
             if (i > 0 && x + itemWidth > maxX) {
                 rows++;
                 x = 40;
@@ -142,7 +148,7 @@ public sealed partial class PngChartRenderer {
         return PngXAxisLabelOffset(chart) + (Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? 23 : 48);
     }
 
-    private static double PngXAxisTitleFontSize(Chart chart) => TextFontSizeForWidth(chart.XAxisTitle, Math.Max(48, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right), PngAxisTitleFontSize(chart));
+    private static double PngXAxisTitleFontSize(Chart chart) => TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right), PngAxisTitleFontSize(chart));
 
     private static double HorizontalCategoryFontSize(Chart chart) => PngTickFontSize(chart);
 
@@ -199,7 +205,7 @@ public sealed partial class PngChartRenderer {
         return widest == 0 ? 0 : Math.Min(104, widest + 20);
     }
 
-    private static double HorizontalValueLabelFontSize(Chart chart) => TextFontSizeForWidth("100%", 72, chart.Options.Theme.DataLabelFontSize);
+    private static double HorizontalValueLabelFontSize(Chart chart) => TextFontSizeForEmphasizedWidth("100%", 72, chart.Options.Theme.DataLabelFontSize);
 
     private static void ApplyHorizontalValueBounds(Chart chart, ChartRange range, IReadOnlyList<double> xTicks) {
         var min = xTicks[0];

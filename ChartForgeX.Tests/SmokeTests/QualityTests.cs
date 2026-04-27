@@ -282,11 +282,32 @@ internal static partial class SmokeTests {
     private static void PngRendererUsesEmphasizedReportText() {
         var root = FindRepositoryRoot();
         var canvas = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.cs"));
-        var renderer = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.cs"));
+        var renderer = string.Join("\n", Directory.EnumerateFiles(Path.Combine(root, "ChartForgeX", "Raster"), "PngChartRenderer*.cs", SearchOption.TopDirectoryOnly)
+            .OrderBy(file => file, StringComparer.Ordinal)
+            .Select(File.ReadAllText));
         Assert(canvas.Contains("DrawTextEmphasized", StringComparison.Ordinal), "PNG raster canvas should expose an emphasized text path for SVG font-weight parity.");
         Assert(canvas.Contains("MeasureTextEmphasizedWidth", StringComparison.Ordinal), "PNG raster canvas should measure emphasized text with its extra painted width.");
         Assert(renderer.Contains("DrawTextEmphasized", StringComparison.Ordinal), "PNG chart renderer should use emphasized text for report-grade title, legend, and data labels.");
         Assert(renderer.Contains("EstimatePngEmphasizedTextWidth", StringComparison.Ordinal), "PNG chart renderer should center and clamp emphasized labels using emphasized text width.");
+        Assert(renderer.Contains("TextFontSizeForEmphasizedWidth", StringComparison.Ordinal), "PNG chart renderer should size emphasized labels using emphasized width so future long labels fit.");
+        Assert(renderer.Contains("FitReadablePngLabelFontSize", StringComparison.Ordinal), "PNG chart renderer should shrink clamped readable labels before positioning them.");
+        Assert(renderer.Contains("TrimReadablePngLabelToWidth", StringComparison.Ordinal), "PNG chart renderer should shorten readable labels that cannot fit after shrinking.");
+        Assert(renderer.Contains("DrawReadablePngLabelCentered", StringComparison.Ordinal), "PNG chart renderer should share centered bounded readable label placement for rectangular chart surfaces.");
+        Assert(renderer.Contains("DrawPngTextEmphasizedCenteredX", StringComparison.Ordinal), "PNG chart renderer should share centered emphasized text placement for center labels.");
+        Assert(renderer.Contains("double maxWidth", StringComparison.Ordinal), "PNG centered emphasized text should support bounded fitting for center labels.");
+        Assert(renderer.Contains("PngLegendLabel", StringComparison.Ordinal), "PNG chart renderer should draw and measure bounded legend labels consistently.");
+        Assert(renderer.Contains("TrimPngLabelToWidth", StringComparison.Ordinal), "PNG chart renderer should trim regular-weight text such as subtitles after fitting font size.");
+        var pngAxes = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Axes.cs"));
+        Assert(pngAxes.Contains("DrawPngXAxisTitle", StringComparison.Ordinal), "PNG chart renderer should share bounded x-axis title placement.");
+        Assert(pngAxes.Contains("TrimReadablePngLabelToWidth(chart.YAxisTitle", StringComparison.Ordinal), "PNG chart renderer should trim y-axis titles after fitting font size.");
+        var svgHelpers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Helpers.cs"));
+        Assert(svgHelpers.Contains("TrimSvgLabelToWidth", StringComparison.Ordinal), "SVG chart renderer should share bounded label trimming for long formatter output.");
+        Assert(svgHelpers.Contains("TextFontSizeForSvgWidth", StringComparison.Ordinal), "SVG chart renderer should shrink labels before trimming when chart surfaces are constrained.");
+        Assert(svgHelpers.Contains("DrawSvgTextCenteredX", StringComparison.Ordinal), "SVG chart renderer should share centered bounded label placement for specialized chart surfaces.");
+        Assert(svgHelpers.Contains("DrawSvgTextLeft", StringComparison.Ordinal), "SVG chart renderer should share left-aligned bounded label placement for header text.");
+        Assert(svgHelpers.Contains("SvgLegendLabel", StringComparison.Ordinal), "SVG chart renderer should draw and measure bounded legend labels consistently.");
+        Assert(svgHelpers.Contains("DrawSvgXAxisTitle", StringComparison.Ordinal), "SVG chart renderer should share bounded x-axis title placement.");
+        Assert(svgHelpers.Contains("DrawSvgYAxisTitle", StringComparison.Ordinal), "SVG chart renderer should share bounded y-axis title placement.");
     }
 
     private static void PngChartRendererUsesThemeSizedText() {
@@ -496,6 +517,28 @@ internal static partial class SmokeTests {
         var pixels = ReadPngRgba(chart.ToPng(), out _, out _);
         var haloPixels = CountNearColor(pixels, 255, 255, 255, 16);
         Assert(haloPixels > 20, $"PNG data labels should render a light halo so labels stay readable over plotted marks. Actual halo pixels: {haloPixels}.");
+    }
+
+    private static void PngReadableLabelsFitInsidePlotBounds() {
+        var chart = Chart.Create()
+            .WithSize(180, 120)
+            .WithPadding(24, 16, 18, 24)
+            .WithDataLabels()
+            .WithValueFormatter(_ => "Extremely long remediation status label that must fit")
+            .AddBar("Values", Points(72), ChartColor.FromRgb(37, 99, 235));
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowCard = false;
+        chart.Options.ShowGrid = false;
+        chart.Options.ShowHeader = false;
+        chart.Options.ShowLegend = false;
+        chart.Options.ShowPlotBackground = false;
+
+        var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
+        var labelPixels = CountNearColor(pixels, 15, 23, 42, 32);
+        var rightEdgeLabelPixels = CountNearColorInRect(pixels, width, width - 4, 0, 4, height, 15, 23, 42, 32);
+
+        Assert(labelPixels > 8, "PNG readable labels should remain visible after fitting long formatter output.");
+        Assert(rightEdgeLabelPixels == 0, $"PNG readable labels should fit before clamping instead of being clipped at the canvas edge. Actual right-edge label pixels: {rightEdgeLabelPixels}.");
     }
 
     private static void PngHeatmapsRenderCellValueLabels() {

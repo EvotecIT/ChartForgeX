@@ -46,6 +46,15 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Data labels should be identifiable in SVG output.");
         Assert(svg.Contains("paint-order=\"stroke fill\"", StringComparison.Ordinal), "Data labels should render with a text halo for readability.");
         Assert(svg.Contains("dominant-baseline=\"middle\"", StringComparison.Ordinal), "Data labels should use stable vertical alignment.");
+
+        var longSvg = Chart.Create()
+            .WithSize(220, 140)
+            .WithDataLabels()
+            .WithValueFormatter(_ => "Extremely long remediation status label that must fit")
+            .AddBar("Values", Points(72))
+            .ToSvg();
+        Assert(longSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Long SVG data labels should still render as identifiable data labels.");
+        Assert(longSvg.Contains(">Extremely long...</text>", StringComparison.Ordinal), "SVG data labels should shorten formatter output that cannot fit inside the plot.");
     }
 
     private static void CustomValueFormatterAffectsSvgValues() {
@@ -67,6 +76,33 @@ internal static partial class SmokeTests {
             .ToSvg();
         Assert(GetAttribute(svg, "<clipPath", "x") > 76, "Long formatted y-axis labels should push the SVG plot area to the right.");
         Assert(svg.Contains("$1,000,000 ms", StringComparison.Ordinal) || svg.Contains("$1,200,000 ms", StringComparison.Ordinal), "Long formatted y-axis labels should render.");
+    }
+
+    private static void LongAxisTitlesFitAvailableSpace() {
+        const string longTitle = "Extremely long remediation status axis title that must fit inside the chart";
+        var svg = Chart.Create()
+            .WithSize(240, 180)
+            .WithXAxis(longTitle)
+            .WithYAxis(longTitle)
+            .AddLine("Values", Points(10, 20, 30))
+            .ToSvg();
+        Assert(svg.Contains("...</text>", StringComparison.Ordinal), "SVG axis titles should shorten when the chart cannot fit the full title.");
+        Assert(Chart.Create().WithSize(240, 180).WithXAxis(longTitle).WithYAxis(longTitle).AddLine("Values", Points(10, 20, 30)).ToPng().Length > 64, "PNG axis titles should render valid output when long titles require fitting.");
+    }
+
+    private static void LongHeaderTextFitsAvailableSpace() {
+        const string longTitle = "Extremely long remediation posture report title that should fit inside the chart header";
+        const string longSubtitle = "Detailed subtitle with enough operational context to exceed a compact chart width";
+        var chart = Chart.Create()
+            .WithSize(260, 180)
+            .WithTitle(longTitle)
+            .WithSubtitle(longSubtitle)
+            .AddLine("Values", Points(10, 20, 30));
+        var svg = chart.ToSvg();
+        Assert(svg.Contains("data-cfx-role=\"chart-title\"", StringComparison.Ordinal), "SVG header titles should expose a stable role marker.");
+        Assert(svg.Contains("data-cfx-role=\"chart-subtitle\"", StringComparison.Ordinal), "SVG header subtitles should expose a stable role marker.");
+        Assert(svg.Contains("...</text>", StringComparison.Ordinal), "SVG header text should shorten when it cannot fit in the chart width.");
+        Assert(chart.ToPng().Length > 64, "PNG header text should render valid output when long title and subtitle fitting is required.");
     }
 
     private static void AnnotationsRenderInSvg() {
@@ -187,6 +223,12 @@ internal static partial class SmokeTests {
             .ToSvg();
         Assert(svg.Contains("data-cfx-role=\"legend\"", StringComparison.Ordinal), "SVG should expose a semantic legend group.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"legend-row\"") > 1, "Long legends should wrap into multiple rows.");
+
+        var longSvg = Chart.Create().WithSize(320, 220)
+            .AddLine("Extremely long certificate transparency drift monitor", Points(1, 2, 3))
+            .AddLine("Extremely long DNSSEC posture remediation backlog", Points(2, 3, 4))
+            .ToSvg();
+        Assert(longSvg.Contains("...</text>", StringComparison.Ordinal), "SVG legends should shorten series names that exceed the bounded legend lane.");
     }
 
     private static void SvgHasNoInvalidNumbers() {

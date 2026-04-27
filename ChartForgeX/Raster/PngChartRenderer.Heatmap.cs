@@ -30,9 +30,11 @@ public sealed partial class PngChartRenderer {
         foreach (var column in columns) columnValues.Add(column);
         var tickFontSize = PngTickFontSize(chart);
         var dataFontSize = chart.Options.Theme.DataLabelFontSize;
-        var labelWidth = 0.0;
-        foreach (var row in rows) labelWidth = Math.Max(labelWidth, EstimatePngEmphasizedTextWidth(row.Name, tickFontSize));
+        var rawLabelWidth = 0.0;
+        foreach (var row in rows) rawLabelWidth = Math.Max(rawLabelWidth, EstimatePngEmphasizedTextWidth(row.Name, tickFontSize));
+        var labelWidth = Math.Min(rawLabelWidth, Math.Max(0, plot.Width - 220));
         var bottomReserve = 56 + (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 0 : 20);
+        var rowLabelMaxWidth = Math.Max(8, labelWidth);
         plot = new ChartRect(plot.X + labelWidth + 14, plot.Y, Math.Max(1, plot.Width - labelWidth - 14), Math.Max(1, plot.Height - bottomReserve));
         var gap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columnValues.Count, plot.Height / rows.Count) * 0.05));
         var cellWidth = Math.Max(1, (plot.Width - gap * (columnValues.Count - 1)) / columnValues.Count);
@@ -42,7 +44,8 @@ public sealed partial class PngChartRenderer {
         for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
             var series = rows[rowIndex];
             var y = plot.Top + rowIndex * (cellHeight + gap);
-            c.DrawTextEmphasized(plot.Left - EstimatePngEmphasizedTextWidth(series.Name, tickFontSize) - 10, y + cellHeight / 2 - tickFontSize / 2, series.Name, chart.Options.Theme.MutedText, tickFontSize);
+            var rowLabel = TrimReadablePngLabelToWidth(series.Name, tickFontSize, rowLabelMaxWidth);
+            c.DrawTextEmphasized(plot.Left - EstimatePngEmphasizedTextWidth(rowLabel, tickFontSize) - 10, y + cellHeight / 2 - tickFontSize / 2, rowLabel, chart.Options.Theme.MutedText, tickFontSize);
             for (var columnIndex = 0; columnIndex < columnValues.Count; columnIndex++) {
                 var value = FindHeatmapValue(series, columnValues[columnIndex]);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
@@ -51,13 +54,14 @@ public sealed partial class PngChartRenderer {
                 c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, 0.32));
                 if (chart.Options.ShowDataLabels && cellWidth >= EstimatePngEmphasizedTextWidth("100%", dataFontSize) + 12 && cellHeight >= dataFontSize + 10) {
                     var label = FormatValue(chart, value);
-                    DrawReadablePngLabel(c, x + cellWidth / 2 - EstimatePngEmphasizedTextWidth(label, dataFontSize) / 2.0, y + cellHeight / 2 - dataFontSize / 2, label, HeatmapTextColor(color), color, dataFontSize);
+                    DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, HeatmapTextColor(color), color, dataFontSize);
                 }
             }
         }
 
         for (var columnIndex = 0; columnIndex < columnValues.Count; columnIndex++) {
             var label = FormatX(chart, columnValues[columnIndex]);
+            label = TrimReadablePngLabelToWidth(label, tickFontSize, Math.Max(8, cellWidth + gap));
             var width = EstimatePngEmphasizedTextWidth(label, tickFontSize);
             var x = Clamp(plot.Left + columnIndex * (cellWidth + gap) + cellWidth / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2);
             c.DrawTextEmphasized(x, plot.Bottom + 21 - tickFontSize + 1, label, chart.Options.Theme.MutedText, tickFontSize);

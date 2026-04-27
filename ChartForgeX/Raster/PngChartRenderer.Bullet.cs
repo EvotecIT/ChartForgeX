@@ -39,14 +39,16 @@ public sealed partial class PngChartRenderer {
             var targetX = BulletX(plot, min, max, target);
             var status = BulletStatus(actualValue, targetValue);
             var statusColor = BulletStatusColor(chart, status);
-            c.DrawTextEmphasized(basePlot.Left, y - labelFontSize / 2.0, row.Series.Name, chart.Options.Theme.Text, labelFontSize);
+            var rowLabel = TrimReadablePngLabelToWidth(row.Series.Name, labelFontSize, Math.Max(8, labelReserve - 16));
+            if (rowLabel.Length > 0) c.DrawTextEmphasized(basePlot.Left, y - labelFontSize / 2.0, rowLabel, chart.Options.Theme.Text, labelFontSize);
             DrawBulletRanges(c, row.Series, plot, y, barHeight, min, max, accent);
             DrawGradientBar(c, plot.Left, y - barHeight * 0.24, Math.Max(2, valueX - plot.Left), barHeight * 0.48, barHeight * 0.24, accent);
             c.DrawLine(targetX, y - barHeight * 0.65, targetX, y + barHeight * 0.65, chart.Options.Theme.Text, 3);
             DrawBulletTargetLabel(c, chart, FormatValue(chart, targetValue), targetX, y - barHeight * 0.92, plot, tickFontSize);
             c.DrawCircle(plot.Right + 8, y, 5.2, chart.Options.Theme.CardBackground);
             c.DrawCircle(plot.Right + 8, y, 3.5, statusColor);
-            c.DrawTextEmphasized(plot.Right + 18, y - valueFontSize / 2.0, FormatValue(chart, actualValue), chart.Options.Theme.Text, valueFontSize);
+            var valueLabel = TrimReadablePngLabelToWidth(FormatValue(chart, actualValue), valueFontSize, Math.Max(8, valueReserve - 24));
+            if (valueLabel.Length > 0) c.DrawTextEmphasized(plot.Right + 18, y - valueFontSize / 2.0, valueLabel, chart.Options.Theme.Text, valueFontSize);
         }
 
         DrawBulletAxis(c, chart, plot, rows[0].Series, basePlot.Bottom - 12);
@@ -84,6 +86,9 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawBulletTargetLabel(RgbaCanvas c, Chart chart, string label, double x, double y, ChartRect plot, double fontSize) {
         var text = "target " + label;
+        text = TrimReadablePngLabelToWidth(text, fontSize, Math.Max(8, plot.Width - 4));
+        if (text.Length == 0) return;
+
         var width = EstimatePngEmphasizedTextWidth(text, fontSize);
         var safeX = Clamp(x - width / 2.0, plot.Left + 2, plot.Right - width - 2);
         var halo = ReadableLabelHalo(chart);
