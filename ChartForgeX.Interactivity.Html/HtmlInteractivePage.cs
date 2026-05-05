@@ -18,8 +18,8 @@ internal static class HtmlInteractivePage {
     }
 
     internal static void AppendDocumentEnd(StringBuilder sb, string? scriptNonce) {
-        var nonce = scriptNonce == null ? string.Empty : " nonce=\"" + HtmlInteractiveChartRenderer.EscapeHtml(scriptNonce) + "\"";
-        sb.AppendLine("<script" + nonce + ">");
+        HtmlInteractiveMarkup.AppendStartTag(sb, "script", HtmlInteractiveMarkup.OptionalAttr("nonce", scriptNonce));
+        sb.AppendLine();
         sb.AppendLine(HtmlInteractiveAssets.Script);
         sb.AppendLine("</script>");
         sb.AppendLine("</body>");

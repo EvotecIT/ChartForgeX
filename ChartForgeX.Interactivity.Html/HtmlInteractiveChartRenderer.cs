@@ -45,10 +45,17 @@ public sealed class HtmlInteractiveChartRenderer {
         if (options == null) throw new ArgumentNullException(nameof(options));
         var scope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
         var chartId = options.Interaction.ChartId ?? scope;
-        var group = options.Interaction.GroupName == null ? string.Empty : " data-cfx-interaction-group=\"" + EscapeHtml(options.Interaction.GroupName) + "\"";
         var sb = new StringBuilder();
-        sb.AppendLine("<section class=\"cfx-interactive-chart\" data-cfx-chart-id=\"" + EscapeHtml(chartId) + "\" data-cfx-interaction-features=\"" + EscapeHtml(options.Interaction.Features.ToString()) + "\"" + group + ">");
-        sb.AppendLine("<div class=\"cfx-toolbar\">" + BuildToolbar(options) + "</div>");
+        HtmlInteractiveMarkup.AppendStartTag(
+            sb,
+            "section",
+            HtmlInteractiveMarkup.Attr("class", "cfx-interactive-chart"),
+            HtmlInteractiveMarkup.Attr("data-cfx-chart-id", chartId),
+            HtmlInteractiveMarkup.Attr("data-cfx-interaction-features", options.Interaction.Features.ToString()),
+            HtmlInteractiveMarkup.OptionalAttr("data-cfx-interaction-group", options.Interaction.GroupName));
+        sb.AppendLine();
+        HtmlInteractiveMarkup.AppendElement(sb, "div", BuildToolbar(options), HtmlInteractiveMarkup.Attr("class", "cfx-toolbar"));
+        sb.AppendLine();
         sb.AppendLine("<div class=\"cfx-stage\">");
         sb.AppendLine(chart.ToSvg(scope));
         sb.AppendLine("<div class=\"cfx-brush-box\" hidden></div>");
@@ -61,28 +68,39 @@ public sealed class HtmlInteractiveChartRenderer {
     private static string BuildToolbar(HtmlChartInteractionOptions options) {
         var sb = new StringBuilder();
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
-            sb.Append("<button class=\"cfx-tool\" type=\"button\" data-cfx-zoom=\"in\" title=\"Zoom in\">Zoom +</button>");
-            sb.Append("<button class=\"cfx-tool\" type=\"button\" data-cfx-zoom=\"out\" title=\"Zoom out\">Zoom -</button>");
+            AppendToolbarButton(sb, "Zoom +", HtmlInteractiveMarkup.Attr("data-cfx-zoom", "in"), HtmlInteractiveMarkup.Attr("title", "Zoom in"));
+            AppendToolbarButton(sb, "Zoom -", HtmlInteractiveMarkup.Attr("data-cfx-zoom", "out"), HtmlInteractiveMarkup.Attr("title", "Zoom out"));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Pan)) {
-            sb.Append("<button class=\"cfx-tool\" type=\"button\" data-cfx-mode-button=\"pan\" aria-pressed=\"false\" title=\"Pan chart\">Pan</button>");
+            AppendToolbarButton(sb, "Pan", HtmlInteractiveMarkup.Attr("data-cfx-mode-button", "pan"), HtmlInteractiveMarkup.Attr("aria-pressed", "false"), HtmlInteractiveMarkup.Attr("title", "Pan chart"));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Brush)) {
-            sb.Append("<button class=\"cfx-tool\" type=\"button\" data-cfx-mode-button=\"brush\" aria-pressed=\"false\" title=\"Brush select region\">Brush</button>");
+            AppendToolbarButton(sb, "Brush", HtmlInteractiveMarkup.Attr("data-cfx-mode-button", "brush"), HtmlInteractiveMarkup.Attr("aria-pressed", "false"), HtmlInteractiveMarkup.Attr("title", "Brush select region"));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Export)) {
-            sb.Append("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"svg\" title=\"Download SVG\">SVG</button>");
-            sb.Append("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"png\" title=\"Download PNG\">PNG</button>");
+            AppendToolbarButton(sb, "SVG", HtmlInteractiveMarkup.Attr("data-cfx-export", "svg"), HtmlInteractiveMarkup.Attr("title", "Download SVG"));
+            AppendToolbarButton(sb, "PNG", HtmlInteractiveMarkup.Attr("data-cfx-export", "png"), HtmlInteractiveMarkup.Attr("title", "Download PNG"));
         }
 
         if (options.IncludeResetButton) {
-            sb.Append("<button class=\"cfx-tool\" type=\"button\" data-cfx-reset=\"true\">Reset</button>");
+            AppendToolbarButton(sb, "Reset", HtmlInteractiveMarkup.Attr("data-cfx-reset", "true"));
         }
 
         return sb.ToString();
+    }
+
+    private static void AppendToolbarButton(StringBuilder sb, string label, params HtmlInteractiveMarkup.HtmlAttribute?[] attributes) {
+        var merged = new HtmlInteractiveMarkup.HtmlAttribute?[attributes.Length + 2];
+        merged[0] = HtmlInteractiveMarkup.Attr("class", "cfx-tool");
+        merged[1] = HtmlInteractiveMarkup.Attr("type", "button");
+        for (var i = 0; i < attributes.Length; i++) {
+            merged[i + 2] = attributes[i];
+        }
+
+        sb.Append(HtmlInteractiveMarkup.Button(label, merged));
     }
 
     internal static string EscapeHtml(string value) => System.Net.WebUtility.HtmlEncode(value);
