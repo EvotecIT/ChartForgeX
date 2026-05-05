@@ -1124,6 +1124,8 @@ new[] { scoreChart, trendChart, findingsChart }.SaveInteractiveHtmlDashboard("in
 });
 ```
 
+Host pages can listen for `cfxviewport`, `cfxselect`, `cfxseries`, `cfxbrush`, `cfxexport`, `cfxreset`, and `cfxsync` on each `.cfx-interactive-chart` element to connect ChartForgeX dashboards to filters, details panes, topology inspectors, or external report controls.
+
 Other adapters such as Blazor, WinForms, WPF, MAUI, or Web Components can consume the same interaction contracts without changing the core SVG/HTML/PNG renderers.
 
 ## Why not Chart.js / ApexCharts?

@@ -96,6 +96,9 @@ public sealed class HtmlInteractiveChartRenderer {
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
   };
   const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
+  const emitHostEvent = (root, name, detail) => {
+    root.dispatchEvent(new CustomEvent(name, { detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
+  };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
@@ -121,6 +124,7 @@ public sealed class HtmlInteractiveChartRenderer {
     const state = getState(root);
     state.zoom *= factor;
     applyViewport(root, state);
+    emitHostEvent(root, 'cfxviewport', { state: getState(root) });
     emitSync(root, { action: 'viewport', state: getState(root) });
   };
   const serializeSvg = (root) => {
@@ -136,7 +140,7 @@ public sealed class HtmlInteractiveChartRenderer {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    root.dispatchEvent(new CustomEvent('cfxexport', { detail: { format, chartId: root.dataset.cfxChartId || '' } }));
+    emitHostEvent(root, 'cfxexport', { format });
   };
   const svgSize = (svg) => {
     const viewBox = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
@@ -197,12 +201,14 @@ public sealed class HtmlInteractiveChartRenderer {
     if (series === undefined) return;
     const muted = item.dataset.cfxMuted !== 'true';
     setSeriesMuted(root, series, muted);
+    emitHostEvent(root, 'cfxseries', { series, muted });
     emitSync(root, { action: 'series', series, muted });
   };
   const toggleSelection = (root, node) => {
     if (!hasFeature(root, 'Selection')) return;
     const selected = !node.classList.contains('cfx-selected');
     setNodeSelected(node, selected);
+    emitHostEvent(root, 'cfxselect', { label: text(node), selected });
     emitSync(root, { action: 'selection', label: text(node), selected });
   };
   const setNodeSelected = (node, selected) => {
@@ -303,8 +309,11 @@ public sealed class HtmlInteractiveChartRenderer {
         if (!drag || drag.id !== event.pointerId) return;
         if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
-          root.dispatchEvent(new CustomEvent('cfxbrush', { detail: { bounds: root.dataset.cfxBrush } }));
+          emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
           emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
+        } else if (drag.mode === 'pan') {
+          emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+          emitSync(root, { action: 'viewport', state: getState(root) });
         }
         stage.releasePointerCapture(event.pointerId);
         drag = null;
@@ -314,6 +323,8 @@ public sealed class HtmlInteractiveChartRenderer {
     const reset = root.querySelector('[data-cfx-reset]');
     if (reset) reset.addEventListener('click', () => {
       resetViewport(root);
+      emitHostEvent(root, 'cfxreset', {});
+      emitHostEvent(root, 'cfxviewport', { state: getState(root) });
       emitSync(root, { action: 'viewport', state: getState(root) });
       root.querySelectorAll('.cfx-selected').forEach((node) => {
         node.classList.remove('cfx-selected');
