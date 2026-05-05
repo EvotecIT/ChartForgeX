@@ -25,6 +25,19 @@ ChartForgeX.Interactivity.Html.<version>.nupkg
 ChartForgeX.Interactivity.Html.<version>.snupkg
 ```
 
+## Build Timeouts
+
+`Build.ps1` time-limits every `dotnet` validation step so a stuck restore, build, test, example, pack, or package-consumer run fails with a named timeout instead of hanging indefinitely.
+
+- `-DotNetCommandTimeoutSeconds` controls the general restore/build/test/example/pack timeout. The default is 900 seconds.
+- `-PackageConsumerTimeoutSeconds` controls the final temporary-console-app package smoke run. The default is 180 seconds.
+
+If a private runner is under heavy load, rerun with a larger timeout rather than skipping package or visual validation:
+
+```powershell
+./Build.ps1 -Configuration Release -DotNetCommandTimeoutSeconds 1800 -PackageConsumerTimeoutSeconds 300
+```
+
 ## Package Invariants
 
 - `ChartForgeX` and `ChartForgeX.Interactivity` must not contain runtime NuGet dependencies.

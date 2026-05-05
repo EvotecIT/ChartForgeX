@@ -105,6 +105,8 @@ internal static partial class SmokeTests {
         }
 
         var releaseGuide = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "RELEASING.md"));
+        Assert(releaseGuide.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal) && releaseGuide.Contains("PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Release guidance should document build timeout controls.");
+        Assert(releaseGuide.Contains("fails with a named timeout", StringComparison.Ordinal), "Release guidance should explain timeout failures as actionable build signals.");
         Assert(releaseGuide.Contains("-UpdateVisualBaseline", StringComparison.Ordinal), "Release guidance should explain intentional visual-baseline refreshes.");
         Assert(releaseGuide.Contains("clipped SVG text", StringComparison.Ordinal) && releaseGuide.Contains("PNG edge pressure", StringComparison.Ordinal), "Release guidance should explain the visual-baseline quality gates.");
     }
