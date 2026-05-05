@@ -8,7 +8,7 @@ internal static partial class SmokeTests {
     private static void SourceFilesStayUnderArchitectureLineBudget() {
         const int lineBudget = 800;
         var root = FindRepositoryRoot();
-        var oversized = new[] { "ChartForgeX", "ChartForgeX.Examples", "ChartForgeX.Tests" }
+        var oversized = new[] { "ChartForgeX", "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.Html", "ChartForgeX.Examples", "ChartForgeX.Tests" }
             .Where(sourceRoot => Directory.Exists(Path.Combine(root, sourceRoot)))
             .SelectMany(sourceRoot => Directory.EnumerateFiles(Path.Combine(root, sourceRoot), "*.cs", SearchOption.AllDirectories))
             .Where(file => !IsGeneratedPath(file))
@@ -56,6 +56,9 @@ internal static partial class SmokeTests {
     private static void ExampleAppClearsGeneratedOutputBeforeWriting() {
         var program = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "Program.cs"));
         Assert(program.Contains("Directory.Delete(output, recursive: true)", StringComparison.Ordinal), "Example generation should wipe stale output before writing comparison artifacts.");
+        Assert(program.Contains("SaveInteractiveHtml", StringComparison.Ordinal), "Example generation should include a visible interactive HTML adapter demo.");
+        Assert(program.Contains("SaveInteractiveHtmlDashboard", StringComparison.Ordinal), "Example generation should include a visible synchronized dashboard adapter demo.");
+        Assert(program.Contains("ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts", StringComparison.Ordinal), "Interactive example should exercise the competitive review toolbar features.");
     }
 
     private static void EuropeRevenueMapRoutesTargetRenderedMarkers() {

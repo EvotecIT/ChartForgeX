@@ -62,6 +62,15 @@ Future formats should be built as native emitters over the shared scene model:
 
 Runtime graphics dependencies are not part of the core roadmap.
 
+## Interactivity Direction
+
+Interactive behavior should be opt-in and host-specific:
+
+- `ChartForgeX.Interactivity` defines the shared contracts: tooltips, selection, legend toggles, keyboard navigation, zoom, pan, brush ranges, synchronized charts, and export commands.
+- `ChartForgeX.Interactivity.Html` emits self-contained single-chart pages and multi-chart dashboards with small vanilla JavaScript for report review workflows, including zoom, pan, brush selection events, same-page chart group synchronization, legend toggles, keyboard activation, and inline SVG/PNG export.
+- Future Blazor, WinForms, WPF, MAUI, or Web Components adapters should consume the same contracts instead of inventing incompatible interaction models.
+- The core SVG/HTML/PNG renderers should stay deterministic, script-free, and safe for static reports.
+
 ## Current Quality Gate
 
 The generated example suite writes:

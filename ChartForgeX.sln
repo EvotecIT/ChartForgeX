@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -8,6 +8,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Examples", "ChartForgeX.Examples\ChartForgeX.Examples.csproj", "{52B7C43E-25BF-4C8D-8FBB-D3D98B48A44A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Tests", "ChartForgeX.Tests\ChartForgeX.Tests.csproj", "{D2FDF752-67BC-42F7-86BA-63E842014381}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Interactivity", "ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj", "{C1768939-79CF-41EF-A471-B7A753A954DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj", "{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +59,30 @@ Global
 		{D2FDF752-67BC-42F7-86BA-63E842014381}.Release|x64.Build.0 = Release|Any CPU
 		{D2FDF752-67BC-42F7-86BA-63E842014381}.Release|x86.ActiveCfg = Release|Any CPU
 		{D2FDF752-67BC-42F7-86BA-63E842014381}.Release|x86.Build.0 = Release|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Debug|x86.Build.0 = Debug|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Release|x64.Build.0 = Release|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Release|x86.ActiveCfg = Release|Any CPU
+		{C1768939-79CF-41EF-A471-B7A753A954DF}.Release|x86.Build.0 = Release|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Debug|x86.Build.0 = Debug|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|x64.Build.0 = Release|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|x86.ActiveCfg = Release|Any CPU
+		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

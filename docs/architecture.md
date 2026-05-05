@@ -27,6 +27,16 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Split renderer partials by behavior, such as entry point, axes/layout, series drawing, labels, and helpers.
 - Keep the public renderer surface in the main file.
 
+## Interactivity Layout
+
+- Keep static rendering in `ChartForgeX`; it must remain deterministic and script-free.
+- Keep host-neutral interaction contracts in `ChartForgeX.Interactivity`.
+- Keep host-specific adapters in sibling packages such as `ChartForgeX.Interactivity.Html`.
+- Add browser or desktop behavior only through an adapter package, never by making the core HTML renderer require JavaScript.
+- Pack adapters separately and validate them from a clean consumer app so package dependency drift is caught before release.
+- Keep at least one generated example page for each adapter so interaction work remains visible in the local gallery.
+- Let adapter dashboards reuse the same per-chart section and script runtime as single-chart pages so interaction behavior stays consistent.
+
 ## Public API Layout
 
 - Keep user-facing chart configuration APIs close to `Core`.

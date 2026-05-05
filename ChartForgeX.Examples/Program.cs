@@ -1,5 +1,7 @@
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
@@ -38,6 +40,13 @@ var dnssec = Chart.Create()
     .AddVerticalBand(6, 7, "weekend", ChartColor.FromRgb(96, 165, 250), 0.10);
 
 SaveChart(dnssec, "domain-security-dark");
+dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.html"), options => {
+    options.PageTitle = "Domain Security Interactive";
+    options.IdScope = "domain-security-interactive";
+    options.Interaction.ChartId = "domain-security-interactive";
+    options.Interaction.GroupName = "example-gallery";
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+});
 
 var bars = Chart.Create()
     .WithTitle("Certificate Transparency Volume")
@@ -75,6 +84,13 @@ var grouped = Chart.Create()
     .AddHorizontalLine(40, "review threshold", ChartColor.FromRgb(245, 158, 11));
 
 SaveChart(grouped, "security-findings-grouped-light");
+new[] { dnssec, bars, grouped }.SaveInteractiveHtmlDashboard(Path.Combine(output, "executive-interactive-dashboard.html"), options => {
+    options.PageTitle = "Executive Interactive Dashboard";
+    options.IdScope = "executive-interactive-dashboard";
+    options.Columns = 2;
+    options.Interaction.GroupName = "example-gallery";
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+});
 
 var horizontal = Chart.Create()
     .WithTitle("Domain Control Composition")

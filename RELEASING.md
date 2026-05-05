@@ -5,7 +5,7 @@ This repository is private, so releases should run on the private self-hosted Gi
 ## Checklist
 
 1. Choose and add package license metadata before a public NuGet release.
-2. Update `Version` and `PackageReleaseNotes` in `ChartForgeX/ChartForgeX.csproj`.
+2. Update `Version` and package release metadata in `ChartForgeX/ChartForgeX.csproj`, `ChartForgeX.Interactivity/ChartForgeX.Interactivity.csproj`, and `ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj`.
 3. Move relevant entries from `CHANGELOG.md` `Unreleased` into the release version.
 4. Run:
 
@@ -14,20 +14,25 @@ This repository is private, so releases should run on the private self-hosted Gi
 ```
 
 5. Inspect generated examples at `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`.
-6. Publish both package files from `ChartForgeX/bin/Release`:
+6. Publish the package files from `artifacts/packages/Release`:
 
 ```text
 ChartForgeX.<version>.nupkg
 ChartForgeX.<version>.snupkg
+ChartForgeX.Interactivity.<version>.nupkg
+ChartForgeX.Interactivity.<version>.snupkg
+ChartForgeX.Interactivity.Html.<version>.nupkg
+ChartForgeX.Interactivity.Html.<version>.snupkg
 ```
 
 ## Package Invariants
 
-- The core `.nupkg` must not contain runtime NuGet dependencies.
+- `ChartForgeX` and `ChartForgeX.Interactivity` must not contain runtime NuGet dependencies.
+- `ChartForgeX.Interactivity.Html` must depend on the matching local `ChartForgeX` and `ChartForgeX.Interactivity` packages.
 - `README.md` and `CHANGELOG.md` must be included in the package root.
 - XML documentation should be present for every target framework.
-- The `.snupkg` symbol package must be generated alongside the `.nupkg`.
-- A clean temporary `net8.0` console app must be able to install the freshly packed local package and render SVG, HTML, and PNG output.
+- A `.snupkg` symbol package must be generated alongside every `.nupkg`.
+- A clean temporary `net8.0` console app must be able to install the freshly packed HTML interactivity package and render SVG, HTML, PNG, and interactive HTML output.
 
 ## Visual Baseline
 

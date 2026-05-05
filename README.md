@@ -16,7 +16,7 @@ The library has no runtime package dependencies. The `net472` target uses `Micro
 dotnet add package ChartForgeX
 ```
 
-For local development from this repository, reference `ChartForgeX/ChartForgeX.csproj` directly and run the quality loop before publishing packages.
+For local development from this repository, reference `ChartForgeX/ChartForgeX.csproj` directly for static rendering, add `ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj` when testing the optional HTML adapter, and run the quality loop before publishing packages.
 
 Contribution and release notes live in `CONTRIBUTING.md`, `RELEASING.md`, and `CHANGELOG.md`.
 The dependency-free rendering quality direction is documented in `docs/dependency-free-quality-roadmap.md`.
@@ -37,7 +37,7 @@ Run the full local quality loop with:
 ./Build.ps1
 ```
 
-That restores, builds, runs smoke tests through `dotnet test`, regenerates example chart outputs and the static example gallery, packs the core library, creates a `.snupkg` symbol package, verifies package contents, verifies the package has no runtime NuGet dependencies, and installs the freshly packed package into a clean temporary console app. The generated demo entry points are `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/catalog.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/quality-dashboard.html`, and `ChartForgeX.Examples/bin/Release/net8.0/output/svg-png-comparison.html`. The catalog includes map/geography, theme, brand-kit, palette-swatch, pictorial-symbol, pictorial-Isotype, point-color customization, and word-cloud-control picker pages so visual choices can be reviewed in HTML, SVG, and PNG.
+That restores, builds, runs smoke tests through `dotnet test`, regenerates example chart outputs and the static example gallery, packs `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html` into `artifacts/packages/Release`, creates matching `.snupkg` symbol packages, verifies package contents and dependency invariants, and installs the freshly packed HTML interactivity adapter into a clean temporary console app. The generated demo entry points are `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/catalog.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/quality-dashboard.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/svg-png-comparison.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/domain-security-interactive.html`, and `ChartForgeX.Examples/bin/Release/net8.0/output/executive-interactive-dashboard.html`. The catalog includes map/geography, theme, brand-kit, palette-swatch, pictorial-symbol, pictorial-Isotype, point-color customization, word-cloud-control, and interactive demo pages so visual choices can be reviewed in HTML, SVG, PNG, and opt-in self-contained HTML interactivity.
 
 The GitHub Actions workflow is configured for private repositories and requires a self-hosted runner with the labels `self-hosted` and `private`.
 
@@ -49,7 +49,7 @@ The GitHub Actions workflow is configured for private repositories and requires 
 - One chart model, multiple renderers.
 - JavaScript-free by default.
 - Public chart, option, theme, and primitive APIs fail fast on invalid values.
-- Optional interactive renderers can be added later without changing user code.
+- Optional interactive renderers live in adapter packages without changing static renderer behavior.
 - Themes are first-class, especially polished dark/light report modes.
 
 ## Current package layout
@@ -63,6 +63,8 @@ ChartForgeX
 │   ├── Svg                     # beautiful SVG renderer
 │   ├── Html                    # standalone page and HTML fragment renderer
 │   └── Raster                  # minimal PNG renderer and PNG writer
+├── ChartForgeX.Interactivity    # host-neutral interaction contracts
+├── ChartForgeX.Interactivity.Html # self-contained HTML/SVG adapter
 ├── ChartForgeX.Examples         # sample console app
 ├── docs
 └── Build.ps1
@@ -1097,13 +1099,32 @@ That gives HtmlForgeX:
 - easy email/report/document embedding;
 - deterministic output for screenshots and PDFs.
 
-For interactive dashboards, add a separate package later:
+For interactive dashboards, keep the static renderer untouched and opt into host-specific interactivity:
 
 ```text
-ChartForgeX.Interactive.Html
+ChartForgeX.Interactivity
+ChartForgeX.Interactivity.Html
 ```
 
-That package may optionally emit small vanilla JS for hover, tooltip, zoom, selection, and data toggles. It should not affect the static renderer.
+`ChartForgeX.Interactivity` holds host-neutral contracts for tooltips, selection, legend toggles, keyboard navigation, zoom, pan, brush ranges, synchronized charts, and export commands. `ChartForgeX.Interactivity.Html` is the first adapter and emits self-contained HTML/SVG with small vanilla JavaScript for report-friendly tooltips, click/keyboard selection, legend toggles, zoom buttons, wheel zoom, pan mode, brush-region selection events, same-page chart group synchronization, inline SVG/PNG download, and reset controls:
+
+```csharp
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
+
+chart.SaveInteractiveHtml("interactive-report.html", options => {
+    options.Interaction.GroupName = "executive-dashboard";
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+});
+
+new[] { scoreChart, trendChart, findingsChart }.SaveInteractiveHtmlDashboard("interactive-dashboard.html", options => {
+    options.Columns = 2;
+    options.Interaction.GroupName = "executive-dashboard";
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+});
+```
+
+Other adapters such as Blazor, WinForms, WPF, MAUI, or Web Components can consume the same interaction contracts without changing the core SVG/HTML/PNG renderers.
 
 ## Why not Chart.js / ApexCharts?
 
