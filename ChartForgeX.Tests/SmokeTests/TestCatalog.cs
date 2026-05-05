@@ -12,7 +12,7 @@ internal static partial class SmokeTests {
         ("NuGet package metadata stays publish-ready", NuGetPackageMetadataStaysPublishReady),
         ("README documents chart catalog", ReadmeDocumentsChartCatalog),
         ("Visual baseline is structured and actionable", VisualBaselineIsStructuredAndActionable),
-        ("GitHub Actions use private runners", GitHubActionsUsePrivateRunners),
+        ("GitHub Actions use self-hosted runners", GitHubActionsUsePrivateRunners),
         ("SVG escapes text and renders inline vectors", SvgEscapesText),
         ("HTML page is static and JavaScript-free", HtmlPageIsStatic),
         ("Rendered markup stays self-contained", RenderedMarkupStaysSelfContained),

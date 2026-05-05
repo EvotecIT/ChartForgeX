@@ -252,9 +252,10 @@ internal static partial class SmokeTests {
         foreach (var workflow in workflows) {
             var text = File.ReadAllText(workflow);
             Assert(text.Contains("self-hosted", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should use self-hosted private runners: " + Path.GetFileName(workflow));
-            Assert(text.Contains("private", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should require the private runner label: " + Path.GetFileName(workflow));
+            Assert(text.Contains("Linux", StringComparison.OrdinalIgnoreCase) && text.Contains("X64", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should require labels available on the self-hosted Linux runners: " + Path.GetFileName(workflow));
             Assert(text.Contains("actions/setup-dotnet", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should install the expected .NET SDK: " + Path.GetFileName(workflow));
             Assert(text.Contains("actions/upload-artifact", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should preserve packages and gallery output: " + Path.GetFileName(workflow));
+            Assert(text.Contains("artifacts/packages/Release", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should upload packages from Build.ps1 artifact output: " + Path.GetFileName(workflow));
             Assert(!ContainsAny(text, "ubuntu-latest", "windows-latest", "macos-latest"), "GitHub Actions workflows should not use public hosted runner labels: " + Path.GetFileName(workflow));
         }
     }

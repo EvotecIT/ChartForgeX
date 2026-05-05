@@ -15,7 +15,8 @@ jobs:
     name: Build, test, examples, pack
     runs-on:
       - self-hosted
-      - private
+      - Linux
+      - X64
     timeout-minutes: 20
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -39,8 +40,8 @@ jobs:
         with:
           name: chartforgex-packages
           path: |
-            ChartForgeX/bin/Release/*.nupkg
-            ChartForgeX/bin/Release/*.snupkg
+            artifacts/packages/Release/*.nupkg
+            artifacts/packages/Release/*.snupkg
           if-no-files-found: error
 
       - name: Upload example gallery
