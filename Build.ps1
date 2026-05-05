@@ -8,6 +8,9 @@ param(
 
     [switch] $UpdateVisualBaseline,
 
+    [ValidateRange(1, 86400)]
+    [int] $DotNetCommandTimeoutSeconds = 900,
+
     [ValidateRange(1, 3600)]
     [int] $PackageConsumerTimeoutSeconds = 180
 )
@@ -133,12 +136,31 @@ function Assert-VisualBaseline {
     }
 }
 
-function Invoke-DotNetPackageConsumer {
+function Invoke-DotNetCommand {
     param(
-        [Parameter(Mandatory = $true)] [int] $TimeoutSeconds
+        [Parameter(Mandatory = $true)] [string[]] $Arguments,
+        [Parameter(Mandatory = $true)] [string] $Description,
+        [Parameter(Mandatory = $true)] [int] $TimeoutSeconds,
+        [switch] $Quiet
     )
 
-    $process = Start-Process -FilePath 'dotnet' -ArgumentList @('run', '-c', 'Release', '--no-restore') -NoNewWindow -PassThru
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = 'dotnet'
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = [bool]$Quiet
+    $startInfo.RedirectStandardError = [bool]$Quiet
+    foreach ($argument in $Arguments) {
+        [void] $startInfo.ArgumentList.Add($argument)
+    }
+
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    $standardOutput = $null
+    $standardError = $null
+    if ($Quiet) {
+        $standardOutput = $process.StandardOutput.ReadToEndAsync()
+        $standardError = $process.StandardError.ReadToEndAsync()
+    }
+
     if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
         try {
             $process.Kill($true)
@@ -146,11 +168,20 @@ function Invoke-DotNetPackageConsumer {
             $process.Kill()
         }
 
-        throw "Package consumer validation timed out after $TimeoutSeconds second(s)."
+        throw "$Description timed out after $TimeoutSeconds second(s): dotnet $($Arguments -join ' ')"
     }
 
     if ($process.ExitCode -ne 0) {
-        throw "Package consumer validation failed with exit code $($process.ExitCode)."
+        if ($Quiet) {
+            $output = $standardOutput.GetAwaiter().GetResult()
+            $errorOutput = $standardError.GetAwaiter().GetResult()
+            $tail = (($output, $errorOutput) -join [Environment]::NewLine).Trim()
+            if ($tail.Length -gt 0) {
+                throw "$Description failed with exit code $($process.ExitCode): $tail"
+            }
+        }
+
+        throw "$Description failed with exit code $($process.ExitCode)."
     }
 }
 
@@ -171,12 +202,12 @@ try {
         throw 'Visual baseline updates require examples to run. Remove -SkipExamples.'
     }
 
-    dotnet restore .\ChartForgeX.sln
-    dotnet build $solution -c $Configuration --no-restore
-    dotnet test $tests -c $Configuration --no-build --no-restore
+    Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+    Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+    Invoke-DotNetCommand -Arguments @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore') -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
 
     if (-not $SkipExamples) {
-        dotnet run --project $examples -c $Configuration --no-build
+        Invoke-DotNetCommand -Arguments @('run', '--project', $examples, '-c', $Configuration, '--no-build') -Description 'Example generation' -TimeoutSeconds $DotNetCommandTimeoutSeconds
         $comparisonManifest = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output/svg-png-comparison.json"
         if (-not (Test-Path $comparisonManifest)) {
             throw "SVG/PNG comparison manifest was not generated: $comparisonManifest"
@@ -208,7 +239,7 @@ try {
         )
 
         foreach ($packageProject in $packageProjects) {
-            dotnet pack $packageProject.Project -c $Configuration --no-build --output $packageRoot
+            Invoke-DotNetCommand -Arguments @('pack', $packageProject.Project, '-c', $Configuration, '--no-build', '--output', $packageRoot) -Description "$($packageProject.Id) package creation" -TimeoutSeconds $DotNetCommandTimeoutSeconds
         }
 
         $packages = @(Get-ChildItem $packageRoot -Filter 'ChartForgeX*.nupkg' | Sort-Object Name)
@@ -287,7 +318,7 @@ try {
             New-Item -ItemType Directory -Path $consumerRoot | Out-Null
             Push-Location $consumerRoot
             try {
-                dotnet new console --framework net8.0 --no-restore | Out-Null
+                Invoke-DotNetCommand -Arguments @('new', 'console', '--framework', 'net8.0', '--no-restore') -Description 'Package consumer project creation' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                 @"
 <configuration>
   <config>
@@ -299,7 +330,7 @@ try {
   </packageSources>
 </configuration>
 "@ | Set-Content -Path (Join-Path $consumerRoot 'NuGet.config') -Encoding UTF8
-                dotnet add package ChartForgeX.Interactivity.Html --version $htmlPackageVersion --source $packageRoot | Out-Null
+                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion, '--source', $packageRoot) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                 @"
 using ChartForgeX;
 using ChartForgeX.Core;
@@ -329,7 +360,7 @@ var dashboard = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options =>
 if (!dashboard.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard surface missing.");
 if (!dashboard.Contains("data-cfx-chart-id=\"package-dashboard-2\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard child chart IDs missing.");
 "@ | Set-Content -Path (Join-Path $consumerRoot 'Program.cs') -Encoding UTF8
-                Invoke-DotNetPackageConsumer -TimeoutSeconds $PackageConsumerTimeoutSeconds
+                Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
             } finally {
                 Pop-Location
             }
