@@ -86,6 +86,7 @@ internal static partial class SmokeTests {
         ("SVG interactive regions support static hover and focus", SvgInteractiveRegionsSupportStaticHoverAndFocus),
         ("Interactivity contracts are host neutral", InteractivityContractsAreHostNeutral),
         ("Interactive HTML wraps SVG without external dependencies", InteractiveHtmlWrapsSvgWithoutExternalDependencies),
+        ("Interactive HTML escapes host provided attributes", InteractiveHtmlEscapesHostProvidedAttributes),
         ("Interactive HTML dashboard synchronizes multiple charts", InteractiveHtmlDashboardSynchronizesMultipleCharts),
         ("Typography uses a native font stack and escapes custom families", TypographyUsesNativeFontStackAndEscapesCustomFamilies),
         ("Brand kits apply reusable tokens", BrandKitsApplyReusableTokens),

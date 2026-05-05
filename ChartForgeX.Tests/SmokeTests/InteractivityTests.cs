@@ -76,6 +76,25 @@ internal static partial class SmokeTests {
         Assert(noReset.Contains("data-cfx-interaction-features=\"Tooltips\"", StringComparison.Ordinal), "Interactive HTML should honor narrowed feature profiles.");
     }
 
+    private static void InteractiveHtmlEscapesHostProvidedAttributes() {
+        var html = SampleChart().ToInteractiveHtmlPage(options => {
+            options.PageTitle = "A < B & \"C\"";
+            options.ScriptNonce = "nonce\" data-bad=\"1";
+            options.Interaction.ChartId = "chart\" onmouseover=\"bad";
+            options.Interaction.GroupName = "group<one>&\"two\"";
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Export);
+        });
+
+        Assert(html.Contains("<title>A &lt; B &amp; &quot;C&quot;</title>", StringComparison.Ordinal), "Interactive HTML should escape page titles.");
+        Assert(html.Contains("<script nonce=\"nonce&quot; data-bad=&quot;1\">", StringComparison.Ordinal), "Interactive HTML should escape CSP nonces without creating extra attributes.");
+        Assert(html.Contains("data-cfx-chart-id=\"chart&quot; onmouseover=&quot;bad\"", StringComparison.Ordinal), "Interactive HTML should escape host-provided chart IDs.");
+        Assert(html.Contains("data-cfx-interaction-group=\"group&lt;one&gt;&amp;&quot;two&quot;\"", StringComparison.Ordinal), "Interactive HTML should escape synchronized group names.");
+        Assert(!html.Contains("data-bad=\"1\"", StringComparison.Ordinal), "Escaped nonces should not become additional HTML attributes.");
+        Assert(!html.Contains("onmouseover=\"bad\"", StringComparison.Ordinal), "Escaped chart IDs should not become event handler attributes.");
+        Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-zoom=\"in\" title=\"Zoom in\">Zoom +</button>", StringComparison.Ordinal), "Typed toolbar rendering should preserve zoom button markup.");
+        Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"png\" title=\"Download PNG\">PNG</button>", StringComparison.Ordinal), "Typed toolbar rendering should preserve PNG export button markup.");
+    }
+
     private static void InteractiveHtmlDashboardSynchronizesMultipleCharts() {
         var html = new[] { SampleChart(), SampleChart() }.ToInteractiveHtmlDashboardPage(options => {
             options.PageTitle = "Executive interactive dashboard";
