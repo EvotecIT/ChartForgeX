@@ -20,6 +20,9 @@ internal static partial class SmokeTests {
         Assert(script.Contains("lib/$framework/$($packageProject.Assembly).$extension", StringComparison.Ordinal), "Build script should verify package framework assets.");
         Assert(script.Contains("ChartForgeX-package-consumer", StringComparison.Ordinal), "Build script should verify package consumption from a clean project.");
         Assert(script.Contains("globalPackagesFolder", StringComparison.Ordinal), "Build script should isolate the package consumer cache so same-version local packages are retested.");
+        Assert(script.Contains("PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Build script should time-limit package consumer validation.");
+        Assert(script.Contains("Invoke-DotNetPackageConsumer", StringComparison.Ordinal), "Build script should keep package consumer process handling isolated.");
+        Assert(script.Contains("Package consumer validation timed out", StringComparison.Ordinal), "Build script should fail loudly when package consumer validation hangs.");
         Assert(script.Contains("dotnet add package ChartForgeX.Interactivity.Html", StringComparison.Ordinal), "Build script should install the freshest adapter package in the consumer smoke test.");
         Assert(script.Contains("ToInteractiveHtmlPage", StringComparison.Ordinal), "Build script should verify interactive HTML package consumption from a clean project.");
         Assert(script.Contains("ToInteractiveHtmlDashboardPage", StringComparison.Ordinal), "Build script should verify interactive dashboard package consumption from a clean project.");

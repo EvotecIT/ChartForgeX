@@ -6,7 +6,10 @@ param(
 
     [switch] $SkipPack,
 
-    [switch] $UpdateVisualBaseline
+    [switch] $UpdateVisualBaseline,
+
+    [ValidateRange(1, 3600)]
+    [int] $PackageConsumerTimeoutSeconds = 180
 )
 
 function Assert-VisualComparisonHealth {
@@ -127,6 +130,27 @@ function Assert-VisualBaseline {
         if (-not $baselineCharts.ContainsKey($actual.name)) {
             throw "SVG/PNG generated chart is missing from visual baseline: $($actual.name). Update $VisualBaselinePath."
         }
+    }
+}
+
+function Invoke-DotNetPackageConsumer {
+    param(
+        [Parameter(Mandatory = $true)] [int] $TimeoutSeconds
+    )
+
+    $process = Start-Process -FilePath 'dotnet' -ArgumentList @('run', '-c', 'Release', '--no-restore') -NoNewWindow -PassThru
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        try {
+            $process.Kill($true)
+        } catch {
+            $process.Kill()
+        }
+
+        throw "Package consumer validation timed out after $TimeoutSeconds second(s)."
+    }
+
+    if ($process.ExitCode -ne 0) {
+        throw "Package consumer validation failed with exit code $($process.ExitCode)."
     }
 }
 
@@ -305,7 +329,7 @@ var dashboard = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options =>
 if (!dashboard.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard surface missing.");
 if (!dashboard.Contains("data-cfx-chart-id=\"package-dashboard-2\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard child chart IDs missing.");
 "@ | Set-Content -Path (Join-Path $consumerRoot 'Program.cs') -Encoding UTF8
-                dotnet run -c Release --no-restore | Out-Null
+                Invoke-DotNetPackageConsumer -TimeoutSeconds $PackageConsumerTimeoutSeconds
             } finally {
                 Pop-Location
             }
