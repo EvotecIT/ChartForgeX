@@ -22,6 +22,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("globalPackagesFolder", StringComparison.Ordinal), "Build script should isolate the package consumer cache so same-version local packages are retested.");
         Assert(script.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal), "Build script should time-limit all dotnet validation commands.");
         Assert(script.Contains("Invoke-DotNetCommand", StringComparison.Ordinal), "Build script should route dotnet calls through one timeout-aware command runner.");
+        Assert(script.Contains("$startInfo.WorkingDirectory = (Get-Location).ProviderPath", StringComparison.Ordinal), "Build script should run wrapped dotnet commands from the active PowerShell location.");
         Assert(script.Contains("timed out after $TimeoutSeconds", StringComparison.Ordinal), "Build script should fail loudly when a dotnet validation step hangs.");
         Assert(script.Contains("PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Build script should time-limit package consumer validation.");
         Assert(script.Contains("Package consumer validation", StringComparison.Ordinal), "Build script should name package consumer validation errors.");

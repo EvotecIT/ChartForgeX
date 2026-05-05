@@ -146,6 +146,7 @@ function Invoke-DotNetCommand {
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = 'dotnet'
+    $startInfo.WorkingDirectory = (Get-Location).ProviderPath
     $startInfo.UseShellExecute = $false
     $startInfo.RedirectStandardOutput = [bool]$Quiet
     $startInfo.RedirectStandardError = [bool]$Quiet
