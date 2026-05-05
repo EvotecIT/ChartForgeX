@@ -36,20 +36,9 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var title = options.PageTitle ?? "ChartForgeX interactive dashboard";
         var scope = options.IdScope ?? HtmlInteractiveChartRenderer.Slugify(title);
         var groupName = options.Interaction.GroupName ?? scope;
-        var nonce = options.ScriptNonce == null ? string.Empty : " nonce=\"" + HtmlInteractiveChartRenderer.EscapeHtml(options.ScriptNonce) + "\"";
 
         var sb = new StringBuilder();
-        sb.AppendLine("<!doctype html>");
-        sb.AppendLine("<html lang=\"en\">");
-        sb.AppendLine("<head>");
-        sb.AppendLine("<meta charset=\"utf-8\">");
-        sb.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-        sb.AppendLine("<title>" + HtmlInteractiveChartRenderer.EscapeHtml(title) + "</title>");
-        sb.AppendLine("<style>");
-        sb.AppendLine(HtmlInteractiveChartRenderer.InteractiveStyle);
-        sb.AppendLine("</style>");
-        sb.AppendLine("</head>");
-        sb.AppendLine("<body>");
+        HtmlInteractivePage.AppendDocumentStart(sb, title);
         sb.AppendLine("<main class=\"cfx-shell\">");
         sb.AppendLine("<div class=\"cfx-dashboard\" style=\"--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\">");
         for (var i = 0; i < chartArray.Length; i++) {
@@ -59,11 +48,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
 
         sb.AppendLine("</div>");
         sb.AppendLine("</main>");
-        sb.AppendLine("<script" + nonce + ">");
-        sb.AppendLine(HtmlInteractiveChartRenderer.InteractiveScript);
-        sb.AppendLine("</script>");
-        sb.AppendLine("</body>");
-        sb.AppendLine("</html>");
+        HtmlInteractivePage.AppendDocumentEnd(sb, options.ScriptNonce);
         return sb.ToString();
     }
 

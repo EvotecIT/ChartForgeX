@@ -36,4 +36,9 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\CHANGELOG.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\interactive.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.css" />
+    <EmbeddedResource Include="Assets\interactive.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.js" />
+  </ItemGroup>
 </Project>
