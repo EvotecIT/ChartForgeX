@@ -133,6 +133,31 @@ For a single chart, `WithXAxisBounds(minimum, maximum)` and `WithYAxisBounds(min
 
 Use `WithXAxisVisible(false)` or `WithYAxisVisible(false)` when an infographic-style chart should keep one axis worth of labels while removing the other axis line, ticks, and title. Use `WithAxisLines(false)` when tick labels and titles should remain but the axis rules and zero-lines should disappear. For example, horizontal scorecards often keep category labels on the left and hide the numeric value axis plus the remaining axis rule.
 
+Topology diagrams live in `ChartForgeX.Topology` because they are diagram models, not dashboard pages or data collectors. `TopologyChart` owns reusable groups, nodes, edges, deterministic layout hints, validation, SVG rendering, and a tiny HTML wrapper that embeds the SVG in a neutral `<div>`. HtmlForgeX can later host the rendered SVG in cards, filters, tabs, and inspector panels, while TestimoX or another product can map its own collected data into the model.
+
+```csharp
+using ChartForgeX.Topology;
+
+var topology = TopologyDemoCharts.SiteTopologyDemo();
+topology.SaveSvg("site-topology.svg");
+topology.SaveHtml("site-topology.html");
+topology.SavePng("site-topology.png");
+```
+
+Use groups for regions or clusters, nodes for assets or logical objects, and edges for connections or dependencies. Labels, secondary labels, `Href`, `Tooltip`, `Metrics`, and `Metadata` are preserved as escaped SVG text, native `<title>` tooltips, link attributes, and `data-*` hooks so host applications can add interactivity later without ChartForgeX shipping JavaScript. V1 layout modes are deterministic: `Manual`, `RegionGrid`, `HubAndSpoke`, `Layered`, and `Matrix`; force-directed or physics layouts are intentionally out of scope for static report output.
+
+Use `TopologyView` when the same topology model needs multiple static perspectives, such as a regional card, a selected replication path, or a critical-links export:
+
+```csharp
+var emeaSvg = topology.ToSvg(new TopologyRenderOptions {
+    View = new TopologyView {
+        Id = "emea",
+        Title = "EMEA Topology",
+        GroupIds = { "EMEA" }
+    }
+});
+```
+
 Generated numeric x-axis ticks can be formatted independently from y-axis values and data labels. The same formatter is used by numeric timeline and Gantt summaries:
 
 ```csharp
@@ -224,6 +249,7 @@ var observed = Chart.Create()
 | Heatmap | `AddHeatmapRow` | Matrix values and coverage grids |
 | Calendar heatmap | `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` | Contribution-style day grids for activity, uptime, and habit tracking |
 | Dotted map | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints` | Travel-map and operations-map views with generated land-dot layers, focused regional viewports, highlighted points, and connector routes |
+| Topology | `TopologyChart`, `TopologyNode`, `TopologyEdge`, `TopologyGroup`, `TopologySvgRenderer` | Deterministic SVG-first topology diagrams for grouped regions, dependencies, site links, replication paths, subnets, and service maps |
 | US state geographic map | `AddUsStateGeoMap`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Projected geographic choropleth maps for state-level dashboards |
 | US state tile map | `AddUsStateTileMap`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Dependency-free regional choropleth tile maps for equal-area state dashboards |
 | Gauge | `AddGauge` | Single score or KPI |

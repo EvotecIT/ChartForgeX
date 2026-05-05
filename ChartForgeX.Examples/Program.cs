@@ -129,6 +129,7 @@ var heatmap = Chart.Create()
 
 SaveChart(heatmap, "control-coverage-heatmap-dark");
 MapExamples.Write(output, DemoPngOutputScale);
+TopologyExamples.Write(output);
 
 var gauge = Chart.Create()
     .WithTitle("Security Posture Score")
