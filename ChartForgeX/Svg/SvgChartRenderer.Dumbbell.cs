@@ -23,11 +23,7 @@ public sealed partial class SvgChartRenderer {
             var color = PointColor(chart, series, index, item);
             var label = FormatValue(chart, start.Y) + "-" + FormatValue(chart, end.Y);
 
-            sb.AppendLine($"<g data-cfx-role=\"dumbbell\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-x=\"{F(start.X)}\" data-cfx-start=\"{F(start.Y)}\" data-cfx-end=\"{F(end.Y)}\" data-cfx-delta=\"{F(end.Y - start.Y)}\" role=\"img\" aria-label=\"{Escape(label)}\">");
-            sb.AppendLine($"<line data-cfx-role=\"dumbbell-connector\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" x1=\"{F(x)}\" y1=\"{F(yStart)}\" x2=\"{F(x)}\" y2=\"{F(yEnd)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.DumbbellConnectorStrokeWidth)}\" stroke-linecap=\"round\" opacity=\"0.42\"/>");
-            sb.AppendLine($"<circle data-cfx-role=\"dumbbell-start\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-value=\"{F(start.Y)}\" cx=\"{F(x)}\" cy=\"{F(yStart)}\" r=\"{F(radius)}\" fill=\"{startColor.ToCss()}\" stroke=\"{chart.Options.Theme.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.MarkerStrokeWidth)}\"/>");
-            sb.AppendLine($"<circle data-cfx-role=\"dumbbell-end\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-value=\"{F(end.Y)}\" cx=\"{F(x)}\" cy=\"{F(yEnd)}\" r=\"{F(radius)}\" fill=\"{color.ToCss()}\" stroke=\"{chart.Options.Theme.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.MarkerStrokeWidth)}\"/>");
-            sb.AppendLine("</g>");
+            WriteDumbbellSummary(sb, chart, index, item, start.X, start.Y, end.Y, label, color, startColor, x, yStart, yEnd, radius);
             if (ShouldDrawDataLabels(chart, series)) {
                 var placement = DataLabelPlacement(chart, series);
                 var top = Math.Min(yStart, yEnd);
@@ -46,5 +42,72 @@ public sealed partial class SvgChartRenderer {
                 }
             }
         }
+    }
+
+    private static void WriteDumbbellSummary(
+        StringBuilder sb,
+        Chart chart,
+        int seriesIndex,
+        int pointIndex,
+        double valueX,
+        double startValue,
+        double endValue,
+        string label,
+        ChartColor endColor,
+        ChartColor startColor,
+        double x,
+        double yStart,
+        double yEnd,
+        double radius) {
+        var endColorCss = endColor.ToCss();
+        var writer = new SvgMarkupWriter(1024);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "dumbbell")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-x", valueX)
+            .Attribute("data-cfx-start", startValue)
+            .Attribute("data-cfx-end", endValue)
+            .Attribute("data-cfx-delta", endValue - startValue)
+            .Attribute("role", "img")
+            .Attribute("aria-label", label)
+            .EndStartElement()
+            .Line()
+            .StartElement("line")
+            .Attribute("data-cfx-role", "dumbbell-connector")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("x1", x)
+            .Attribute("y1", yStart)
+            .Attribute("x2", x)
+            .Attribute("y2", yEnd)
+            .Attribute("stroke", endColorCss)
+            .Attribute("stroke-width", ChartVisualPrimitives.DumbbellConnectorStrokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .Attribute("opacity", ChartVisualPrimitives.DumbbellConnectorOpacity)
+            .EndEmptyElement()
+            .Line();
+        WriteDumbbellMarker(writer, "dumbbell-start", seriesIndex, pointIndex, startValue, x, yStart, radius, startColor.ToCss(), chart.Options.Theme.CardBackground.ToCss());
+        WriteDumbbellMarker(writer, "dumbbell-end", seriesIndex, pointIndex, endValue, x, yEnd, radius, endColorCss, chart.Options.Theme.CardBackground.ToCss());
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteDumbbellMarker(SvgMarkupWriter writer, string role, int seriesIndex, int pointIndex, double value, double x, double y, double radius, string fill, string stroke) {
+        writer
+            .StartElement("circle")
+            .Attribute("data-cfx-role", role)
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-value", value)
+            .Attribute("cx", x)
+            .Attribute("cy", y)
+            .Attribute("r", radius)
+            .Attribute("fill", fill)
+            .Attribute("stroke", stroke)
+            .Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth)
+            .EndEmptyElement()
+            .Line();
     }
 }
