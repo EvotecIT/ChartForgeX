@@ -1154,6 +1154,54 @@
       }
     },
     {
+      "name": "wellness-calories-intake-dashboard",
+      "width": 1280,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 46,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 2800000,
+        "minDistinctColors": 1600,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "wellness-layered-radial-progress",
+      "width": 560,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1100000,
+        "minDistinctColors": 1200,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "wellness-weight-data-gauge",
+      "width": 896,
+      "height": 768,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 2700000,
+        "minDistinctColors": 1300,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "word-cloud-control-showcase-grid",
       "width": 934,
       "height": 412,

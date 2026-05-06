@@ -176,19 +176,25 @@ public sealed partial class SvgChartRenderer {
             var ym = cy + Math.Sin(mid) * radius;
             var x2 = cx + Math.Cos(start + Math.PI * 2) * radius;
             var y2 = cy + Math.Sin(start + Math.PI * 2) * radius;
-            return $"M {F(x1)} {F(y1)} A {F(radius)} {F(radius)} 0 0 1 {F(xm)} {F(ym)} A {F(radius)} {F(radius)} 0 0 1 {F(x2)} {F(y2)}";
+            return new SvgPathDataBuilder()
+                .MoveTo(x1, y1)
+                .ArcTo(radius, radius, 0, false, true, xm, ym)
+                .ArcTo(radius, radius, 0, false, true, x2, y2)
+                .Build();
         }
 
-        var largeArc = end - start > Math.PI ? 1 : 0;
-        return BuildRadialBarArcSegment(cx, cy, radius, start, end, largeArc);
+        return BuildRadialBarArcSegment(cx, cy, radius, start, end, end - start > Math.PI);
     }
 
-    private static string BuildRadialBarArcSegment(double cx, double cy, double radius, double start, double end, int largeArc) {
+    private static string BuildRadialBarArcSegment(double cx, double cy, double radius, double start, double end, bool largeArc) {
         var x1 = cx + Math.Cos(start) * radius;
         var y1 = cy + Math.Sin(start) * radius;
         var x2 = cx + Math.Cos(end) * radius;
         var y2 = cy + Math.Sin(end) * radius;
-        return $"M {F(x1)} {F(y1)} A {F(radius)} {F(radius)} 0 {largeArc} 1 {F(x2)} {F(y2)}";
+        return new SvgPathDataBuilder()
+            .MoveTo(x1, y1)
+            .ArcTo(radius, radius, 0, largeArc, true, x2, y2)
+            .Build();
     }
 
     private sealed class RadialBarLegendRow {

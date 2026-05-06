@@ -32,27 +32,62 @@ public sealed partial class SvgChartRenderer {
         var valueLabel = FormatValue(chart, value);
         var statusLabel = status.Replace("-", " ");
         var summary = series.Name + ": " + valueLabel + ", " + statusLabel;
+        var writer = new SvgMarkupWriter(1024);
 
-        sb.AppendLine($"<g data-cfx-role=\"gauge\" data-cfx-status=\"{status}\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-value=\"{F(value)}\" data-cfx-min=\"{F(min)}\" data-cfx-max=\"{F(max)}\" data-cfx-percent=\"{F(ratio)}\" role=\"img\" aria-label=\"{Escape(summary)}\">");
-        sb.AppendLine($"<path data-cfx-role=\"gauge-track\" d=\"{BuildGaugeArc(cx, cy, radius, start, end)}\" fill=\"none\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(stroke)}\" stroke-linecap=\"round\" opacity=\"{F(ChartVisualPrimitives.GaugeTrackOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"gauge-value\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-value=\"{F(value)}\" data-cfx-percent=\"{F(ratio)}\" d=\"{BuildGaugeArc(cx, cy, radius, start, valueEnd)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(stroke)}\" stroke-linecap=\"round\"/>");
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "gauge")
+            .Attribute("data-cfx-status", status)
+            .Attribute("data-cfx-label", series.Name)
+            .Attribute("data-cfx-value", value)
+            .Attribute("data-cfx-min", min)
+            .Attribute("data-cfx-max", max)
+            .Attribute("data-cfx-percent", ratio)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .EndStartElement()
+            .Line();
+        WriteGaugePath(writer, "gauge-track", null, 0, 0, BuildGaugeArc(cx, cy, radius, start, end), t.Grid.ToCss(), stroke, ChartVisualPrimitives.GaugeTrackOpacity);
+        WriteGaugePath(writer, "gauge-value", series.Name, value, ratio, BuildGaugeArc(cx, cy, radius, start, valueEnd), color.ToCss(), stroke);
 
         var labelWidth = Math.Max(48, Math.Min(plot.Width - 24, radius * 1.8));
         if (showLabels) {
-            DrawSvgTextCenteredX(sb, chart, "gauge-label", valueLabel, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor, t.Text, Math.Max(34, t.TitleFontSize * 1.65), labelWidth, "850");
-            DrawSvgTextCenteredX(sb, chart, "gauge-title", series.Name, cx, cy + ChartVisualPrimitives.GaugeTitleOffsetY, t.MutedText, t.LegendFontSize, labelWidth, "650", middleBaseline: false);
+            DrawSvgTextCenteredX(writer, chart, "gauge-label", valueLabel, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor, t.Text, Math.Max(34, t.TitleFontSize * 1.65), labelWidth, "850");
+            DrawSvgTextCenteredX(writer, chart, "gauge-title", series.Name, cx, cy + ChartVisualPrimitives.GaugeTitleOffsetY, t.MutedText, t.LegendFontSize, labelWidth, "650", middleBaseline: false);
             var statusFontSize = TextFontSizeForSvgWidth(statusLabel, labelWidth, t.TickLabelFontSize);
             statusLabel = TrimSvgLabelToWidth(statusLabel, statusFontSize, labelWidth);
             var statusLeft = cx - EstimateTextWidth(statusLabel, statusFontSize) / 2.0;
-            sb.AppendLine($"<circle data-cfx-role=\"gauge-status-marker\" data-cfx-status=\"{status}\" cx=\"{F(statusLeft - ChartVisualPrimitives.GaugeStatusMarkerOffsetX)}\" cy=\"{F(cy + ChartVisualPrimitives.GaugeStatusMarkerOffsetY)}\" r=\"{F(ChartVisualPrimitives.StatusMarkerRadius)}\" fill=\"{statusColor.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.StatusMarkerStrokeWidth)}\"/>");
-            sb.AppendLine($"<text data-cfx-role=\"gauge-status-label\" x=\"{F(statusLeft)}\" y=\"{F(cy + ChartVisualPrimitives.GaugeStatusTextOffsetY)}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(statusFontSize)}\" font-weight=\"650\">{Escape(statusLabel)}</text>");
+            writer
+                .StartElement("circle")
+                .Attribute("data-cfx-role", "gauge-status-marker")
+                .Attribute("data-cfx-status", status)
+                .Attribute("cx", statusLeft - ChartVisualPrimitives.GaugeStatusMarkerOffsetX)
+                .Attribute("cy", cy + ChartVisualPrimitives.GaugeStatusMarkerOffsetY)
+                .Attribute("r", ChartVisualPrimitives.StatusMarkerRadius)
+                .Attribute("fill", statusColor.ToCss())
+                .Attribute("stroke", t.CardBackground.ToCss())
+                .Attribute("stroke-width", ChartVisualPrimitives.StatusMarkerStrokeWidth)
+                .EndEmptyElement()
+                .Line()
+                .StartElement("text")
+                .Attribute("data-cfx-role", "gauge-status-label")
+                .Attribute("x", statusLeft)
+                .Attribute("y", cy + ChartVisualPrimitives.GaugeStatusTextOffsetY)
+                .Attribute("fill", t.MutedText.ToCss())
+                .Attribute("font-family", t.FontFamily)
+                .Attribute("font-size", statusFontSize)
+                .Attribute("font-weight", "650")
+                .Text(statusLabel)
+                .EndElement()
+                .Line();
         }
         if (chart.Options.ShowAxes) {
             var axisLabelWidth = Math.Max(32, radius * 0.76);
-            DrawSvgTextCenteredX(sb, chart, "gauge-min-label", FormatValue(chart, min), cx - radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, t.TickLabelFontSize, axisLabelWidth, "400");
-            DrawSvgTextCenteredX(sb, chart, "gauge-max-label", FormatValue(chart, max), cx + radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, t.TickLabelFontSize, axisLabelWidth, "400");
+            DrawSvgTextCenteredX(writer, chart, "gauge-min-label", FormatValue(chart, min), cx - radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, t.TickLabelFontSize, axisLabelWidth, "400");
+            DrawSvgTextCenteredX(writer, chart, "gauge-max-label", FormatValue(chart, max), cx + radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, t.TickLabelFontSize, axisLabelWidth, "400");
         }
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static string BuildGaugeArc(double cx, double cy, double radius, double start, double end) {
@@ -60,8 +95,32 @@ public sealed partial class SvgChartRenderer {
         var y1 = cy + Math.Sin(start) * radius;
         var x2 = cx + Math.Cos(end) * radius;
         var y2 = cy + Math.Sin(end) * radius;
-        var largeArc = end - start > Math.PI ? 1 : 0;
-        return $"M {F(x1)} {F(y1)} A {F(radius)} {F(radius)} 0 {largeArc} 1 {F(x2)} {F(y2)}";
+        return new SvgPathDataBuilder()
+            .MoveTo(x1, y1)
+            .ArcTo(radius, radius, 0, end - start > Math.PI, true, x2, y2)
+            .Build();
+    }
+
+    private static void WriteGaugePath(SvgMarkupWriter writer, string role, string? label, double value, double percent, string path, string color, double strokeWidth, double? opacity = null) {
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", role);
+        if (label != null) {
+            writer
+                .Attribute("data-cfx-label", label)
+                .Attribute("data-cfx-value", value)
+                .Attribute("data-cfx-percent", percent);
+        }
+
+        writer
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", color)
+            .Attribute("stroke-width", strokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .OptionalAttribute("opacity", opacity)
+            .EndEmptyElement()
+            .Line();
     }
 
     private static string GaugeStatus(double ratio) {

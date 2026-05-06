@@ -207,6 +207,7 @@ internal static partial class SmokeTests {
         ("Gauge series render value arcs", GaugeSeriesRenderValueArcs),
         ("Circle series render single progress rings", CircleSeriesRenderSingleProgressRings),
         ("Radial bar series render progress rings", RadialBarSeriesRenderProgressRings),
+        ("Layered radial series render independent arc layers", LayeredRadialSeriesRenderIndependentArcLayers),
         ("Donut and radial center labels are optional", DonutAndRadialCenterLabelsAreOptional),
         ("Text style overrides render across roles", TextStyleOverridesRenderAcrossRoles),
         ("Gantt tasks render progress dependencies and milestones", GanttTasksRenderProgressDependenciesAndMilestones),

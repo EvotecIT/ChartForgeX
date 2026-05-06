@@ -53,6 +53,11 @@ public sealed class ChartSeries {
     public List<double> PointSliceOffsets { get; } = new();
 
     /// <summary>
+    /// Gets radial arc layer definitions for layered radial charts.
+    /// </summary>
+    public List<ChartRadialLayer> RadialLayers { get; } = new();
+
+    /// <summary>
     /// Gets or sets a value indicating whether capable renderers should smooth connected line segments.
     /// </summary>
     public bool Smooth { get; set; }

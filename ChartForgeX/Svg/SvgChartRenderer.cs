@@ -120,6 +120,7 @@ public sealed partial class SvgChartRenderer {
             sb.AppendLine("</svg>");
             return sb.ToString();
         }
+        if (IsLayeredRadialChart(chart)) { DrawLayeredRadial(sb, chart, plot); DrawLegend(sb, chart, w, h); sb.AppendLine("</g>"); sb.AppendLine("</svg>"); return sb.ToString(); }
         if (IsBulletChart(chart)) {
             DrawBullet(sb, chart, plot, id);
             DrawLegend(sb, chart, w, h);
@@ -685,7 +686,7 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartRect PlotArea(Chart chart) {
         var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(chart.Options);
-        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart)) return plot;
+        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart)) return plot;
 
         if (ShouldDrawLegend(chart) && IsTopLegend(chart.Options.LegendPosition)) {
             var reserve = LegendBottomReserve(chart);
