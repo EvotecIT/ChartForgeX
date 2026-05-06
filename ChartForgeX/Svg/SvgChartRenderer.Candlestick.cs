@@ -33,11 +33,7 @@ public sealed partial class SvgChartRenderer {
             var fillOpacity = rising ? ChartVisualPrimitives.CandlestickRisingFillOpacity : ChartVisualPrimitives.CandlestickFallingFillOpacity;
             var status = rising ? "rising" : "falling";
 
-            sb.AppendLine($"<g data-cfx-role=\"candlestick\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-x=\"{F(open.X)}\" data-cfx-open=\"{F(open.Y)}\" data-cfx-high=\"{F(high.Y)}\" data-cfx-low=\"{F(low.Y)}\" data-cfx-close=\"{F(close.Y)}\" data-cfx-status=\"{status}\" role=\"img\" aria-label=\"{Escape(summary)}\">");
-            sb.AppendLine($"<title>{Escape(summary)}</title>");
-            sb.AppendLine($"<line data-cfx-role=\"candlestick-wick\" x1=\"{F(x)}\" y1=\"{F(yHigh)}\" x2=\"{F(x)}\" y2=\"{F(yLow)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.CandlestickStrokeWidth)}\" stroke-linecap=\"round\" opacity=\"{F(ChartVisualPrimitives.CandlestickWickOpacity)}\"/>");
-            sb.AppendLine($"<rect data-cfx-role=\"candlestick-body\" x=\"{F(x - candleWidth / 2)}\" y=\"{F(bodyTop)}\" width=\"{F(candleWidth)}\" height=\"{F(bodyHeight)}\" rx=\"{F(ChartVisualPrimitives.CandlestickBodyRadius)}\" fill=\"{color.ToCss()}\" fill-opacity=\"{F(fillOpacity)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.CandlestickStrokeWidth)}\"/>");
-            sb.AppendLine("</g>");
+            WriteCandlestickSummary(sb, index, item, open.X, open.Y, high.Y, low.Y, close.Y, status, summary, color, x, yHigh, yLow, candleWidth, bodyTop, bodyHeight, fillOpacity);
             var label = FormatValue(chart, close.Y);
             if (ShouldDrawDataLabels(chart, series)) {
                 var placement = DataLabelPlacement(chart, series);
@@ -57,5 +53,75 @@ public sealed partial class SvgChartRenderer {
                 }
             }
         }
+    }
+
+    private static void WriteCandlestickSummary(
+        StringBuilder sb,
+        int seriesIndex,
+        int pointIndex,
+        double valueX,
+        double open,
+        double high,
+        double low,
+        double close,
+        string status,
+        string summary,
+        ChartColor color,
+        double x,
+        double yHigh,
+        double yLow,
+        double candleWidth,
+        double bodyTop,
+        double bodyHeight,
+        double fillOpacity) {
+        var colorCss = color.ToCss();
+        var writer = new SvgMarkupWriter(1024);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "candlestick")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-x", valueX)
+            .Attribute("data-cfx-open", open)
+            .Attribute("data-cfx-high", high)
+            .Attribute("data-cfx-low", low)
+            .Attribute("data-cfx-close", close)
+            .Attribute("data-cfx-status", status)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .EndStartElement()
+            .Line()
+            .StartElement("title")
+            .Text(summary)
+            .EndElement()
+            .Line()
+            .StartElement("line")
+            .Attribute("data-cfx-role", "candlestick-wick")
+            .Attribute("x1", x)
+            .Attribute("y1", yHigh)
+            .Attribute("x2", x)
+            .Attribute("y2", yLow)
+            .Attribute("stroke", colorCss)
+            .Attribute("stroke-width", ChartVisualPrimitives.CandlestickStrokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .Attribute("opacity", ChartVisualPrimitives.CandlestickWickOpacity)
+            .EndEmptyElement()
+            .Line()
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "candlestick-body")
+            .Attribute("x", x - candleWidth / 2)
+            .Attribute("y", bodyTop)
+            .Attribute("width", candleWidth)
+            .Attribute("height", bodyHeight)
+            .Attribute("rx", ChartVisualPrimitives.CandlestickBodyRadius)
+            .Attribute("fill", colorCss)
+            .Attribute("fill-opacity", fillOpacity)
+            .Attribute("stroke", colorCss)
+            .Attribute("stroke-width", ChartVisualPrimitives.CandlestickStrokeWidth)
+            .EndEmptyElement()
+            .Line()
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
     }
 }
