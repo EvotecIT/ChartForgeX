@@ -125,6 +125,11 @@ public enum ChartSeriesKind {
     RadialBar,
 
     /// <summary>
+    /// Renders one or more independently styled radial arc layers.
+    /// </summary>
+    LayeredRadial,
+
+    /// <summary>
     /// Renders compact value, target, and qualitative range bars.
     /// </summary>
     Bullet,

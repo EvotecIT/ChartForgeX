@@ -15,6 +15,7 @@ internal static class ChartGuards {
         ChartSeriesKind.Gauge,
         ChartSeriesKind.Circle,
         ChartSeriesKind.RadialBar,
+        ChartSeriesKind.LayeredRadial,
         ChartSeriesKind.Bullet,
         ChartSeriesKind.Waterfall,
         ChartSeriesKind.Radar,
@@ -175,6 +176,7 @@ internal static class ChartGuards {
             kind == ChartSeriesKind.UsStateGeoMap ||
             kind == ChartSeriesKind.Circle ||
             kind == ChartSeriesKind.RadialBar ||
+            kind == ChartSeriesKind.LayeredRadial ||
             kind == ChartSeriesKind.Waterfall ||
             kind == ChartSeriesKind.Funnel ||
             kind == ChartSeriesKind.Treemap ||
@@ -213,6 +215,7 @@ internal static class ChartGuards {
         }
         else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) ValidateScalePair(chart.Series[0], kind.ToString());
         else if (kind == ChartSeriesKind.RadialBar) ValidateRadialBar(chart.Series[0]);
+        else if (kind == ChartSeriesKind.LayeredRadial) ValidateLayeredRadial(chart.Series[0]);
         else if (kind == ChartSeriesKind.Bullet) ValidateBullets(chart.Series);
         else if (kind == ChartSeriesKind.Timeline) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
@@ -237,6 +240,13 @@ internal static class ChartGuards {
         if (series.Points.Count == 0) throw new InvalidOperationException("RadialBar charts require at least one value.");
         foreach (var point in series.Points) {
             if (point.Y < 0 || point.Y > 100) throw new InvalidOperationException("RadialBar chart values must be between zero and 100.");
+        }
+    }
+
+    private static void ValidateLayeredRadial(ChartSeries series) {
+        if (series.RadialLayers.Count == 0) throw new InvalidOperationException("LayeredRadial charts require at least one layer.");
+        foreach (var layer in series.RadialLayers) {
+            if (layer.Maximum <= layer.Minimum) throw new InvalidOperationException("LayeredRadial layer maximum must be greater than minimum.");
         }
     }
 

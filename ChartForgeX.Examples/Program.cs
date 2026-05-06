@@ -255,7 +255,7 @@ var sharedAxisGrid = ChartGrid.Create()
 SaveGrid(sharedAxisGrid, "shared-axis-coverage-grid");
 
 ExpressiveExamples.Write(output, DemoPngOutputScale);
-
+WellnessDashboardExamples.Write(output, DemoPngOutputScale);
 
 var funnel = Chart.Create()
     .WithTitle("Domain Remediation Funnel")

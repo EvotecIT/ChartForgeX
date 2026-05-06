@@ -70,6 +70,10 @@ public sealed partial class PngChartRenderer {
                 DrawRadialBar(c, chart, plot);
                 return c;
             }
+            if (IsLayeredRadialChart(chart)) {
+                DrawSpecialChart(DrawLayeredRadial);
+                return c;
+            }
             if (IsBulletChart(chart)) {
                 DrawSpecialChart(DrawBullet);
                 return c;

@@ -23,7 +23,17 @@ public sealed partial class SvgChartRenderer {
         var barHeight = Math.Max(6, Math.Min(30, rowHeight * chart.Options.ProgressBarThicknessRatio));
         var startX = plot.Left + labelWidth + 12;
         var startY = plot.Top + Math.Max(0, (plot.Height - rowHeight * values.Length) / 2);
-        sb.AppendLine($"<g data-cfx-role=\"progress-bar-chart\" data-cfx-maximum=\"{F(maximum)}\" data-cfx-show-values=\"{(showValues ? "true" : "false")}\" data-cfx-show-handles=\"{(showHandles ? "true" : "false")}\" data-cfx-bar-thickness-ratio=\"{F(chart.Options.ProgressBarThicknessRatio)}\" data-cfx-track-opacity=\"{F(chart.Options.ProgressTrackOpacity)}\">");
+        var writer = new SvgMarkupWriter(2048);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "progress-bar-chart")
+            .Attribute("data-cfx-maximum", maximum)
+            .Attribute("data-cfx-show-values", showValues)
+            .Attribute("data-cfx-show-handles", showHandles)
+            .Attribute("data-cfx-bar-thickness-ratio", chart.Options.ProgressBarThicknessRatio)
+            .Attribute("data-cfx-track-opacity", chart.Options.ProgressTrackOpacity)
+            .EndStartElement()
+            .Line();
         for (var i = 0; i < values.Length; i++) {
             var point = values[i];
             var y = startY + i * rowHeight + rowHeight / 2;
@@ -35,12 +45,23 @@ public sealed partial class SvgChartRenderer {
             var ratio = Clamp(point.Y / maximum, 0, 1);
             var filledWidth = barArea * ratio;
             if (label.Length > 0) {
-                sb.AppendLine($"<text data-cfx-role=\"progress-label\" data-cfx-point=\"{i}\" x=\"{F(plot.Left + labelWidth - 8)}\" y=\"{F(y + labelFontSize / 3.0)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(labelFontSize)}\" font-weight=\"700\">{Escape(label)}</text>");
+                WriteProgressText(writer, "progress-label", i, plot.Left + labelWidth - 8, y + labelFontSize / 3.0, label, t.MutedText.ToCss(), t.FontFamily, labelFontSize, "700", "end");
             }
-            sb.AppendLine($"<rect data-cfx-role=\"progress-track\" data-cfx-point=\"{i}\" x=\"{F(startX)}\" y=\"{F(y - barHeight / 2)}\" width=\"{F(barArea)}\" height=\"{F(barHeight)}\" rx=\"{F(barHeight / 2)}\" fill=\"{PictorialOpacity(t.Grid, chart.Options.ProgressTrackOpacity).ToCss()}\"/>");
-            sb.AppendLine($"<rect data-cfx-role=\"progress-fill\" data-cfx-point=\"{i}\" data-cfx-value=\"{F(point.Y)}\" data-cfx-ratio=\"{F(ratio)}\" x=\"{F(startX)}\" y=\"{F(y - barHeight / 2)}\" width=\"{F(filledWidth)}\" height=\"{F(barHeight)}\" rx=\"{F(barHeight / 2)}\" fill=\"{color.ToCss()}\"/>");
+            WriteProgressRect(writer, "progress-track", i, startX, y - barHeight / 2, barArea, barHeight, barHeight / 2, PictorialOpacity(t.Grid, chart.Options.ProgressTrackOpacity).ToCss());
+            WriteProgressRect(writer, "progress-fill", i, startX, y - barHeight / 2, filledWidth, barHeight, barHeight / 2, color.ToCss(), point.Y, ratio);
             if (showHandles) {
-                sb.AppendLine($"<circle data-cfx-role=\"progress-handle\" data-cfx-point=\"{i}\" cx=\"{F(startX + filledWidth)}\" cy=\"{F(y)}\" r=\"{F(Math.Max(5, barHeight * 0.62))}\" fill=\"{t.CardBackground.ToCss()}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(Math.Max(2, barHeight * 0.18))}\"/>");
+                writer
+                    .StartElement("circle")
+                    .Attribute("data-cfx-role", "progress-handle")
+                    .Attribute("data-cfx-point", i)
+                    .Attribute("cx", startX + filledWidth)
+                    .Attribute("cy", y)
+                    .Attribute("r", Math.Max(5, barHeight * 0.62))
+                    .Attribute("fill", t.CardBackground.ToCss())
+                    .Attribute("stroke", color.ToCss())
+                    .Attribute("stroke-width", Math.Max(2, barHeight * 0.18))
+                    .EndEmptyElement()
+                    .Line();
             }
             if (showValues) {
                 var valueMaxWidth = Math.Max(8, valueWidth - 4);
@@ -48,16 +69,53 @@ public sealed partial class SvgChartRenderer {
                 var valueFontSize = TextFontSizeForSvgWidth(rawValue, valueMaxWidth, t.DataLabelFontSize);
                 var value = TrimSvgLabelToWidth(rawValue, valueFontSize, valueMaxWidth);
                 if (value.Length > 0) {
-                    sb.AppendLine($"<text data-cfx-role=\"progress-value\" data-cfx-point=\"{i}\" x=\"{F(startX + barArea + 12)}\" y=\"{F(y + valueFontSize / 3.0)}\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(valueFontSize)}\" font-weight=\"800\">{Escape(value)}</text>");
+                    WriteProgressText(writer, "progress-value", i, startX + barArea + 12, y + valueFontSize / 3.0, value, t.Text.ToCss(), t.FontFamily, valueFontSize, "800");
                 }
             }
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static ChartColor ProgressItemColor(ChartSeries series, ChartTheme theme, int index) {
         if (index < series.PointColors.Count && series.PointColors[index].HasValue) return series.PointColors[index]!.Value;
         return series.Color ?? theme.Palette[index % theme.Palette.Length];
+    }
+
+    private static void WriteProgressRect(SvgMarkupWriter writer, string role, int pointIndex, double x, double y, double width, double height, double radius, string fill, double? value = null, double? ratio = null) {
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", role)
+            .Attribute("data-cfx-point", pointIndex);
+        if (value.HasValue) writer.Attribute("data-cfx-value", value.Value);
+        if (ratio.HasValue) writer.Attribute("data-cfx-ratio", ratio.Value);
+        writer
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("width", width)
+            .Attribute("height", height)
+            .Attribute("rx", radius)
+            .Attribute("fill", fill)
+            .EndEmptyElement()
+            .Line();
+    }
+
+    private static void WriteProgressText(SvgMarkupWriter writer, string role, int pointIndex, double x, double y, string text, string fill, string fontFamily, double fontSize, string fontWeight, string? anchor = null) {
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", role)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("x", x)
+            .Attribute("y", y);
+        if (anchor != null) writer.Attribute("text-anchor", anchor);
+        writer
+            .Attribute("fill", fill)
+            .Attribute("font-family", fontFamily)
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", fontWeight)
+            .Text(text)
+            .EndElement()
+            .Line();
     }
 }

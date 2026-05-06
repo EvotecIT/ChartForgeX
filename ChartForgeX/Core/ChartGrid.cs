@@ -368,6 +368,7 @@ public sealed class ChartGrid {
                 series.Kind == ChartSeriesKind.Gauge ||
                 series.Kind == ChartSeriesKind.Circle ||
                 series.Kind == ChartSeriesKind.RadialBar ||
+                series.Kind == ChartSeriesKind.LayeredRadial ||
                 series.Kind == ChartSeriesKind.Bullet ||
                 series.Kind == ChartSeriesKind.Waterfall ||
                 series.Kind == ChartSeriesKind.Radar ||
@@ -417,6 +418,7 @@ public sealed class ChartGrid {
             series.Kind != ChartSeriesKind.Gauge &&
             series.Kind != ChartSeriesKind.Circle &&
             series.Kind != ChartSeriesKind.RadialBar &&
+            series.Kind != ChartSeriesKind.LayeredRadial &&
             series.Kind != ChartSeriesKind.Bullet &&
             series.Kind != ChartSeriesKind.Waterfall &&
             series.Kind != ChartSeriesKind.Radar &&

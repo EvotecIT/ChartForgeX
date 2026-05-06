@@ -268,6 +268,7 @@ var observed = Chart.Create()
 | Gauge | `AddGauge` | Single score or KPI |
 | Circle | `AddCircle`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale` | Compact single-value progress KPIs with tunable ring sizing |
 | Radial bar | `AddRadialBar`, `WithRadialBarCenterLabel`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` | Circular progress rings for multiple KPI percentages with tunable radius and stroke weight |
+| Layered radial | `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap` | Independently styled radial arc layers for target rings, progress overlays, split gauges, and segmented dashboard indicators |
 | Bullet | `AddBullet` | Value, target, and qualitative ranges |
 | Waterfall | `AddWaterfall` | Cumulative positive and negative changes |
 | Radar | `AddRadar` | Multi-axis profile comparison |
@@ -866,6 +867,24 @@ var coverage = Chart.Create()
     .WithRadialBarRadiusScale(1.08)
     .WithRadialBarStrokeScale(1.18)
     .AddRadialBar("Average coverage", Points(92, 74, 88, 96));
+```
+
+Layered radial charts are for custom radial compositions where every arc needs its own radius, stroke, value scale, angle range, cap, or separators:
+
+```csharp
+var calories = Chart.Create()
+    .WithTitle("Layered Radial Progress")
+    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " kcal")
+    .AddLayeredRadial("Calories left", new[] {
+        new ChartRadialLayer("Available area", 100, 0, 100, ChartColor.FromHex("#F1F2F6"))
+            .WithGeometry(1, 0.18)
+            .WithLineCap(ChartRadialLayerCap.Butt),
+        new ChartRadialLayer("Target ring", 100, 0, 100, ChartColor.FromHex("#FFCD62"))
+            .WithGeometry(0.93, 0.035)
+            .WithLineCap(ChartRadialLayerCap.Butt),
+        new ChartRadialLayer("Current", 1240, 0, 2700, ChartColor.FromHex("#FF9F4A"))
+            .WithGeometry(0.93, 0.14)
+    });
 ```
 
 Waterfall charts are available for explaining cumulative change:

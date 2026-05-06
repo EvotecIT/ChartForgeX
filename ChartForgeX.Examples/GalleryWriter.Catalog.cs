@@ -64,6 +64,12 @@ public static partial class GalleryWriter {
             "control-readiness-lollipop-dark",
             "warnings-sparkline"),
         new(
+            "Wellness Dashboards",
+            "Composed mobile-style health and nutrition cards plus generic layered radial primitives.",
+            "wellness-layered-radial-progress",
+            "wellness-weight-data-gauge",
+            "wellness-calories-intake-dashboard"),
+        new(
             "Maps and Geography",
             "Dotted world maps, focused regional viewports, route overlays, and value-colored region maps.",
             "travel-dotted-map-dark",
