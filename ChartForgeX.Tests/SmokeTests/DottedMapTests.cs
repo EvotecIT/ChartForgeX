@@ -256,6 +256,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("<title>Spain to Warsaw:", StringComparison.Ordinal), "Dotted map connectors should expose native SVG hover titles.");
         Assert(svg.Contains("stroke=\"#22C55E\"", StringComparison.Ordinal), "Dotted map connectors should honor explicit connector colors.");
         Assert(chart.ToPng().Length > 64, "Dotted map connector routes should render PNG output.");
+        var labeledRouteSvg = chart.WithDataLabels().ToSvg();
+        Assert(CountOccurrences(labeledRouteSvg, "data-cfx-role=\"dotted-map-connector-label\"") == 2, "Dotted map connector labels should render when map data labels are enabled.");
+        Assert(labeledRouteSvg.Contains(">Spain to Warsaw<", StringComparison.Ordinal), "Non-latency dotted-map route labels should render as host-visible route text.");
         var verticalRouteSvg = Chart.Create()
             .WithSize(520, 360)
             .WithMapViewport(ChartMapViewport.Africa())

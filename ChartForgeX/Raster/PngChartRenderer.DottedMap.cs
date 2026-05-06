@@ -113,7 +113,31 @@ public sealed partial class PngChartRenderer {
             DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, ApplyOpacity(t.PlotBackground, 0.72), strokeWidth + 3.2);
             DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, color, strokeWidth);
             c.FillPolygon(DottedMapConnectorArrowPoints(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot), ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.78));
+            if (ShouldDrawDataLabels(chart, series)) {
+                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.5);
+                var label = CompactDottedMapConnectorLabel(connector.Label);
+                var textWidth = RgbaCanvas.MeasureTextEmphasizedWidth(label, 12, null);
+                c.FillRoundedRect(labelPoint.X - textWidth / 2 - 5, labelPoint.Y - Math.Max(25, dot * 4), textWidth + 10, 20, 9, ApplyOpacity(t.PlotBackground, 0.78));
+                c.DrawTextEmphasized(labelPoint.X - textWidth / 2, labelPoint.Y - Math.Max(21, dot * 3.4), label, connector.Color ?? series.Color ?? t.Warning, 12);
+            }
         }
+    }
+
+    private static ChartPoint DottedMapConnectorPoint(double x1, double y1, double controlX, double controlY, double x2, double y2, double t) {
+        var oneMinus = 1 - t;
+        return new ChartPoint(
+            oneMinus * oneMinus * x1 + 2 * oneMinus * t * controlX + t * t * x2,
+            oneMinus * oneMinus * y1 + 2 * oneMinus * t * controlY + t * t * y2);
+    }
+
+    private static string CompactDottedMapConnectorLabel(string label) {
+        var ms = label.LastIndexOf(" ms", StringComparison.OrdinalIgnoreCase);
+        if (ms > 0) {
+            var start = label.LastIndexOf(' ', ms - 1);
+            if (start >= 0 && ms + 3 <= label.Length) return label.Substring(start + 1, ms - start + 2);
+        }
+
+        return label.Length <= 24 ? label : label.Substring(0, 21) + "...";
     }
 
     private static ChartPoint DottedMapConnectorControlPoint(double x1, double y1, double x2, double y2, ChartRect map, double dot) {

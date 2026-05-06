@@ -1,0 +1,285 @@
+namespace ChartForgeX.Topology;
+
+/// <summary>
+/// Defines deterministic topology layout modes.
+/// </summary>
+public enum TopologyLayoutMode {
+    /// <summary>Use coordinates supplied on groups and nodes.</summary>
+    Manual,
+    /// <summary>Place groups in a deterministic grid and place unpositioned nodes inside their groups.</summary>
+    GroupGrid,
+    /// <summary>Place a hub near the center and branch nodes around it.</summary>
+    HubAndSpoke,
+    /// <summary>Place nodes by metadata layer in a deterministic layered flow.</summary>
+    Layered,
+    /// <summary>Place nodes in a deterministic matrix.</summary>
+    Matrix
+}
+
+/// <summary>
+/// Defines deterministic layout flow direction for layout modes that support ordered layers.
+/// </summary>
+public enum TopologyLayoutDirection {
+    /// <summary>Place layers from top to bottom.</summary>
+    TopToBottom,
+    /// <summary>Place layers from left to right.</summary>
+    LeftToRight
+}
+
+/// <summary>
+/// Defines common topology view presets that compose render options without changing the source model.
+/// </summary>
+public enum TopologyViewPreset {
+    /// <summary>Use normal rendering defaults.</summary>
+    Default,
+    /// <summary>Render group containers and labels.</summary>
+    Grouped,
+    /// <summary>Render nodes and edges without group containers.</summary>
+    Ungrouped,
+    /// <summary>Render an edge-focused connectivity view.</summary>
+    Connectivity,
+    /// <summary>Render a dependency-oriented view.</summary>
+    Dependency,
+    /// <summary>Render an offender-focused view that highlights warning and critical elements.</summary>
+    Offenders,
+    /// <summary>Render a compact topology suitable for dense dashboard cards.</summary>
+    Compact,
+    /// <summary>Render a metric-driven topology where edge metric labels are emphasized.</summary>
+    MetricLabels
+}
+
+/// <summary>
+/// Defines how topology nodes should be presented.
+/// </summary>
+public enum TopologyNodeDisplayMode {
+    /// <summary>Render full node cards.</summary>
+    Card,
+    /// <summary>Render smaller node cards.</summary>
+    CompactCard,
+    /// <summary>Render compact icon tiles with labels below the tile.</summary>
+    Tile,
+    /// <summary>Render single-line pill nodes.</summary>
+    Pill,
+    /// <summary>Render icon-only nodes.</summary>
+    Icon,
+    /// <summary>Render small status dots.</summary>
+    Dot
+}
+
+/// <summary>
+/// Defines how card-like topology node subtitles should be rendered.
+/// </summary>
+public enum TopologyCardSubtitleMode {
+    /// <summary>Render subtitles as plain muted text.</summary>
+    Text,
+    /// <summary>Render subtitles as compact chips inside the node card.</summary>
+    Chip
+}
+
+/// <summary>
+/// Defines how topology legends are sourced.
+/// </summary>
+public enum TopologyLegendMode {
+    /// <summary>Use only the legend provided on the chart.</summary>
+    Explicit,
+    /// <summary>Infer a legend only when the chart does not provide one.</summary>
+    AutoWhenMissing,
+    /// <summary>Infer a legend from the chart data.</summary>
+    Auto,
+    /// <summary>Merge inferred legend items with explicitly provided legend items.</summary>
+    Merge
+}
+
+/// <summary>
+/// Describes topology health state.
+/// </summary>
+public enum TopologyHealthStatus {
+    /// <summary>The item is healthy.</summary>
+    Healthy,
+    /// <summary>The item needs attention.</summary>
+    Warning,
+    /// <summary>The item is failing or degraded enough to be critical.</summary>
+    Critical,
+    /// <summary>The item health is unknown.</summary>
+    Unknown,
+    /// <summary>The item is disabled or intentionally muted.</summary>
+    Disabled
+}
+
+/// <summary>
+/// Describes topology node kind.
+/// </summary>
+public enum TopologyNodeKind {
+    /// <summary>A generic topology node.</summary>
+    Generic,
+    /// <summary>A logical group or cluster node.</summary>
+    Group,
+    /// <summary>A location, region, site, or geography node.</summary>
+    Location,
+    /// <summary>A hub or central node.</summary>
+    Hub,
+    /// <summary>A branch, spoke, or satellite node.</summary>
+    Branch,
+    /// <summary>A server or compute node.</summary>
+    Server,
+    /// <summary>A service topology node.</summary>
+    Service,
+    /// <summary>An endpoint topology node.</summary>
+    Endpoint,
+    /// <summary>A gateway topology node.</summary>
+    Gateway,
+    /// <summary>A cloud topology node.</summary>
+    Cloud,
+    /// <summary>A database topology node.</summary>
+    Database,
+    /// <summary>A storage topology node.</summary>
+    Storage,
+    /// <summary>A network topology node.</summary>
+    Network,
+    /// <summary>A network segment, subnet, VLAN, or similar topology node.</summary>
+    NetworkSegment,
+    /// <summary>A namespace, domain, tenant, or boundary node.</summary>
+    Namespace,
+    /// <summary>An application topology node.</summary>
+    Application,
+    /// <summary>A process or workflow topology node.</summary>
+    Process,
+    /// <summary>A queue or stream topology node.</summary>
+    Queue,
+    /// <summary>A person topology node.</summary>
+    Person,
+    /// <summary>A team or organizational unit topology node.</summary>
+    Team,
+    /// <summary>A certificate topology node.</summary>
+    Certificate
+}
+
+/// <summary>
+/// Describes topology edge kind.
+/// </summary>
+public enum TopologyEdgeKind {
+    /// <summary>A generic topology edge.</summary>
+    Generic,
+    /// <summary>A generic link or relationship edge.</summary>
+    Link,
+    /// <summary>A replication topology edge.</summary>
+    Replication,
+    /// <summary>A connectivity topology edge.</summary>
+    Connectivity,
+    /// <summary>A dependency topology edge.</summary>
+    Dependency,
+    /// <summary>A trust topology edge.</summary>
+    Trust,
+    /// <summary>A mapping, assignment, ownership, or membership edge.</summary>
+    Mapping,
+    /// <summary>An authentication-path topology edge.</summary>
+    AuthenticationPath,
+    /// <summary>A certificate-chain topology edge.</summary>
+    CertificateChain,
+    /// <summary>A data-flow topology edge.</summary>
+    DataFlow,
+    /// <summary>An ownership topology edge.</summary>
+    Ownership,
+    /// <summary>A membership topology edge.</summary>
+    Membership
+}
+
+/// <summary>
+/// Describes edge direction marker behavior.
+/// </summary>
+public enum TopologyDirection {
+    /// <summary>No direction marker.</summary>
+    None,
+    /// <summary>Source to target direction marker.</summary>
+    Forward,
+    /// <summary>Target to source direction marker.</summary>
+    Backward,
+    /// <summary>Bidirectional markers.</summary>
+    Bidirectional
+}
+
+/// <summary>
+/// Describes edge path routing.
+/// </summary>
+public enum TopologyEdgeRouting {
+    /// <summary>Route edges as straight lines.</summary>
+    Straight,
+    /// <summary>Route edges as cubic curves.</summary>
+    Curved,
+    /// <summary>Route edges as orthogonal paths.</summary>
+    Orthogonal
+}
+
+/// <summary>
+/// Describes explicit edge line styling.
+/// </summary>
+public enum TopologyEdgeLineStyle {
+    /// <summary>Choose line styling from edge health status.</summary>
+    Auto,
+    /// <summary>Render a solid line regardless of health status.</summary>
+    Solid,
+    /// <summary>Render a dashed line regardless of health status.</summary>
+    Dashed,
+    /// <summary>Render a dotted line regardless of health status.</summary>
+    Dotted
+}
+
+/// <summary>
+/// Describes a preferred edge attachment side on a topology node.
+/// </summary>
+public enum TopologyEdgePort {
+    /// <summary>Choose the attachment side from node positions.</summary>
+    Auto,
+    /// <summary>Attach to the top side of the node.</summary>
+    Top,
+    /// <summary>Attach to the right side of the node.</summary>
+    Right,
+    /// <summary>Attach to the bottom side of the node.</summary>
+    Bottom,
+    /// <summary>Attach to the left side of the node.</summary>
+    Left
+}
+
+/// <summary>
+/// Describes the type of item shown in a topology legend.
+/// </summary>
+public enum TopologyLegendItemKind {
+    /// <summary>A health-status legend item.</summary>
+    Status,
+    /// <summary>A node-kind legend item.</summary>
+    Node,
+    /// <summary>An edge-kind legend item.</summary>
+    Edge
+}
+
+/// <summary>
+/// Describes topology severity for legends and future adapters.
+/// </summary>
+public enum TopologySeverity {
+    /// <summary>No severity.</summary>
+    None,
+    /// <summary>Informational severity.</summary>
+    Info,
+    /// <summary>Low severity.</summary>
+    Low,
+    /// <summary>Medium severity.</summary>
+    Medium,
+    /// <summary>High severity.</summary>
+    High,
+    /// <summary>Critical severity.</summary>
+    Critical
+}
+
+/// <summary>
+/// Describes reusable SVG marker kinds.
+/// </summary>
+public enum TopologyMarkerKind {
+    /// <summary>No marker.</summary>
+    None,
+    /// <summary>An arrow marker.</summary>
+    Arrow,
+    /// <summary>A circle marker.</summary>
+    Circle,
+    /// <summary>A diamond marker.</summary>
+    Diamond
+}

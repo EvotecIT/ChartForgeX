@@ -135,7 +135,29 @@ public sealed partial class SvgChartRenderer {
             sb.AppendLine($"<path data-cfx-role=\"dotted-map-connector-halo\" data-cfx-connector=\"{i}\" d=\"{renderedD}\" fill=\"none\" stroke=\"{t.PlotBackground.ToCss()}\" stroke-width=\"{F(strokeWidth + 3.2)}\" stroke-opacity=\"0.72\" stroke-linecap=\"round\"/>");
             sb.AppendLine($"<path class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"dotted-map-connector\" data-cfx-connector=\"{i}\" data-cfx-label=\"{Escape(connector.Label)}\" data-cfx-from-longitude=\"{F(connector.FromLongitude)}\" data-cfx-from-latitude=\"{F(connector.FromLatitude)}\" data-cfx-to-longitude=\"{F(connector.ToLongitude)}\" data-cfx-to-latitude=\"{F(connector.ToLatitude)}\" data-cfx-rendered-from-x=\"{F(renderedFrom.X)}\" data-cfx-rendered-from-y=\"{F(renderedFrom.Y)}\" data-cfx-rendered-to-x=\"{F(renderedTo.X)}\" data-cfx-rendered-to-y=\"{F(renderedTo.Y)}\" data-cfx-control-x=\"{F(control.X)}\" data-cfx-control-y=\"{F(control.Y)}\" style=\"--cfx-interactive-focus-stroke-width:{F(focusStrokeWidth)}\" role=\"img\" aria-label=\"{Escape(summary)}\" d=\"{renderedD}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(strokeWidth)}\" stroke-opacity=\"0.72\" stroke-linecap=\"round\"><title>{Escape(summary)}</title></path>");
             sb.AppendLine($"<path data-cfx-role=\"dotted-map-connector-arrow\" data-cfx-connector=\"{i}\" data-cfx-label=\"{Escape(connector.Label)}\" d=\"{BuildDottedMapConnectorArrowPath(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot)}\" fill=\"{color.ToCss()}\" fill-opacity=\"0.78\" stroke=\"{t.PlotBackground.ToCss()}\" stroke-opacity=\"0.78\" stroke-width=\"{F(Math.Max(0.8, strokeWidth * 0.48))}\" stroke-linejoin=\"round\"><title>{Escape(summary)}</title></path>");
+            if (ShouldDrawDataLabels(chart, series)) {
+                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.5);
+                var label = CompactDottedMapConnectorLabel(connector.Label);
+                sb.AppendLine($"<text data-cfx-role=\"dotted-map-connector-label\" data-cfx-connector=\"{i}\" data-cfx-label=\"{Escape(connector.Label)}\" x=\"{F(labelPoint.X)}\" y=\"{F(labelPoint.Y - Math.Max(7, dot * 2.2))}\" text-anchor=\"middle\" fill=\"{color.ToCss()}\" stroke=\"{t.PlotBackground.ToCss()}\" stroke-width=\"3\" paint-order=\"stroke\" font-size=\"12\" font-weight=\"700\">{Escape(label)}</text>");
+            }
         }
+    }
+
+    private static ChartPoint DottedMapConnectorPoint(double x1, double y1, double controlX, double controlY, double x2, double y2, double t) {
+        var oneMinus = 1 - t;
+        return new ChartPoint(
+            oneMinus * oneMinus * x1 + 2 * oneMinus * t * controlX + t * t * x2,
+            oneMinus * oneMinus * y1 + 2 * oneMinus * t * controlY + t * t * y2);
+    }
+
+    private static string CompactDottedMapConnectorLabel(string label) {
+        var ms = label.LastIndexOf(" ms", StringComparison.OrdinalIgnoreCase);
+        if (ms > 0) {
+            var start = label.LastIndexOf(' ', ms - 1);
+            if (start >= 0 && ms + 3 <= label.Length) return label.Substring(start + 1, ms - start + 2);
+        }
+
+        return label.Length <= 24 ? label : label.Substring(0, 21) + "...";
     }
 
     private static ChartPoint DottedMapConnectorControlPoint(double x1, double y1, double x2, double y2, ChartRect map, double dot) {

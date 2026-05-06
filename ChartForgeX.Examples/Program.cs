@@ -9,7 +9,7 @@ var output = Path.Combine(AppContext.BaseDirectory, "output");
 if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
 Directory.CreateDirectory(output);
 const ChartPngOutputScale DemoPngOutputScale = ChartPngOutputScale.Retina;
-
+if (args.Any(arg => string.Equals(arg, "--topology-only", StringComparison.OrdinalIgnoreCase))) { TopologyExamples.Write(output); Console.WriteLine("Generated topology files in: " + Path.Combine(output, "topology-demo")); return; }
 void SaveChart(Chart chart, string name) {
     chart.WithPngOutputScale(DemoPngOutputScale);
     chart.SaveSvg(Path.Combine(output, name + ".svg"));
@@ -129,6 +129,7 @@ var heatmap = Chart.Create()
 
 SaveChart(heatmap, "control-coverage-heatmap-dark");
 MapExamples.Write(output, DemoPngOutputScale);
+TopologyExamples.Write(output);
 
 var gauge = Chart.Create()
     .WithTitle("Security Posture Score")

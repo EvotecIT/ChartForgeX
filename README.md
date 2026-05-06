@@ -133,6 +133,44 @@ For a single chart, `WithXAxisBounds(minimum, maximum)` and `WithYAxisBounds(min
 
 Use `WithXAxisVisible(false)` or `WithYAxisVisible(false)` when an infographic-style chart should keep one axis worth of labels while removing the other axis line, ticks, and title. Use `WithAxisLines(false)` when tick labels and titles should remain but the axis rules and zero-lines should disappear. For example, horizontal scorecards often keep category labels on the left and hide the numeric value axis plus the remaining axis rule.
 
+Topology diagrams live in `ChartForgeX.Topology` because they are diagram models, not dashboard pages or data collectors. `TopologyChart` owns reusable groups, nodes, edges, deterministic layout hints, validation, SVG rendering, PNG rendering, and a tiny HTML wrapper that embeds the SVG in a neutral `<div>`. Complete topology HTML pages include lightweight click selection by default and dispatch `cfx-topology-select` / `cfx-topology-clear`; set `EnableHtmlInteractions = false` when HtmlForgeX or another host wants to own all behavior. HtmlForgeX can later host the rendered SVG in cards, filters, tabs, and inspector panels, while TestimoX or another product can map its own collected data into the model.
+
+```csharp
+using ChartForgeX.Topology;
+
+var topology = TopologyChart.Create()
+    .WithId("site-topology")
+    .WithTitle("Site Topology")
+    .WithLayout(TopologyLayoutMode.Manual)
+    .WithLegend(TopologyLegend.Default()
+        .AddNodeKind("Hub site", TopologyNodeKind.Hub, symbol: "H")
+        .AddNodeKind("Branch site", TopologyNodeKind.Branch, symbol: "B")
+        .AddEdgeKind("Site link", TopologyEdgeKind.Link))
+    .AddGroup("EMEA", "EMEA", 40, 90, 320, 220, TopologyHealthStatus.Warning, "56 sites")
+    .AddNode("emea-hub", "EMEA Hub", 120, 160, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "EMEA", href: "/topology/sites/emea-hub", tooltip: "EMEA hub site", symbol: "H")
+    .AddNode("branch-de", "DE Branch", 120, 250, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, "EMEA", symbol: "B")
+    .AddEdge("emea-de", "emea-hub", "branch-de", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Forward)
+    .WithEdgePorts("emea-de", TopologyEdgePort.Bottom, TopologyEdgePort.Top);
+
+topology.SaveSvg("site-topology.svg");
+topology.SaveHtml("site-topology.html");
+topology.SavePng("site-topology.png");
+```
+
+Use groups for regions or clusters, nodes for assets or logical objects, and edges for connections or dependencies. Labels, secondary labels, tertiary labels, `Href`, `Tooltip`, `Metrics`, and `Metadata` are preserved as escaped SVG text, native `<title>` tooltips, link attributes, and `data-*` hooks so host applications can attach inspectors, filters, or selection panels. Edges can use explicit source/target ports, route lanes, and `.WithEdgeLineStyle("edge-id", TopologyEdgeLineStyle.Dashed)`, which is useful for screenshot-style site-link maps, replication paths, and selected-object connectivity spokes where links need to enter a card from a specific side or show relationship type separately from health. Route labels can stack primary, secondary, and tertiary text directly from edge labels or from `EdgeLabelMetricKey`, `EdgeSecondaryLabelMetricKey`, and `EdgeTertiaryLabelMetricKey`; `.WithEdgeMetricLabels("lag", "queue", "transport")` applies the metric label stack in one call, which keeps transport, cost/bandwidth, latency, queue, and last-success details host-selectable without rebuilding the chart. Nodes can use chart-wide display modes, per-node overrides such as `.WithNodeDisplay("branch-cluster", TopologyNodeDisplayMode.Dot, "+12")`, or kind-wide overrides such as `.WithNodesDisplay(TopologyNodeKind.Server, TopologyNodeDisplayMode.Card)` when a mixed diagram needs site tiles plus wider server or bridgehead cards. `TopologyNodeDisplayMode.Tile` renders compact site tiles with centered glyphs and labels below the tile, `IncludeTileSubtitles` adds a small subtitle chip when subnet, role, or site metadata needs to stay visible, and `CardSubtitleMode = TopologyCardSubtitleMode.Chip` renders card subtitles as status-like chips for server or bridgehead cards. Groups can use `.WithGroupSymbol("region-id", "region")` for small header marks and `.WithGroupColor("region-id", "#8B5CF6")` for region identity color that stays independent from health status. Nodes can use `.WithNodeColor("node-id", "#2563EB")` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes. Render options can mark selected groups, nodes, and edges with `.WithSelectedGroup(...)`, `.WithSelectedNode(...)`, and `.WithSelectedEdge(...)`; SVG emits `data-cfx-selected` and selected CSS classes while PNG gets matching selected outlines, which lets a host render selected-site or selected-path states without filtering the topology. Edges can use `.WithEdgeMuted("edge-id")` for quiet internal hierarchy lines. Disable `IncludeEdgeLabelBackplates` when latency labels should sit directly on route lines. V1 layout modes are deterministic: `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, and `Matrix`; force-directed or physics layouts are intentionally out of scope for static report output. `Layered` can flow top-to-bottom or left-to-right with `TopologyLayoutDirection`.
+
+Use `TopologyView` when the same topology model needs multiple static perspectives, such as a regional card, a selected replication path, or a critical-links export:
+
+```csharp
+var emeaSvg = topology.ToSvg(new TopologyRenderOptions {
+    View = new TopologyView {
+        Id = "emea",
+        Title = "EMEA Topology",
+        GroupIds = { "EMEA" }
+    }
+});
+```
+
 Generated numeric x-axis ticks can be formatted independently from y-axis values and data labels. The same formatter is used by numeric timeline and Gantt summaries:
 
 ```csharp
@@ -224,6 +262,7 @@ var observed = Chart.Create()
 | Heatmap | `AddHeatmapRow` | Matrix values and coverage grids |
 | Calendar heatmap | `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` | Contribution-style day grids for activity, uptime, and habit tracking |
 | Dotted map | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints` | Travel-map and operations-map views with generated land-dot layers, focused regional viewports, highlighted points, and connector routes |
+| Topology | `TopologyChart`, `TopologyNode`, `TopologyEdge`, `TopologyGroup`, `TopologySvgRenderer` | Deterministic SVG-first topology diagrams for grouped regions, dependencies, site links, replication paths, subnets, and service maps |
 | US state geographic map | `AddUsStateGeoMap`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Projected geographic choropleth maps for state-level dashboards |
 | US state tile map | `AddUsStateTileMap`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Dependency-free regional choropleth tile maps for equal-area state dashboards |
 | Gauge | `AddGauge` | Single score or KPI |
