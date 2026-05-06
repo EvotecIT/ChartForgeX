@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Interactivity",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj", "{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Benchmarks", "ChartForgeX.Benchmarks\ChartForgeX.Benchmarks.csproj", "{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|x64.Build.0 = Release|Any CPU
 		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|x86.ActiveCfg = Release|Any CPU
 		{2E6CD0A8-A623-4CB6-B4AD-3F25C65DE3BF}.Release|x86.Build.0 = Release|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Debug|x64.Build.0 = Debug|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Debug|x86.Build.0 = Debug|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Release|x64.ActiveCfg = Release|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Release|x64.Build.0 = Release|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Release|x86.ActiveCfg = Release|Any CPU
+		{E40E0799-A270-4FC2-B2A4-53FBD1C4761B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
