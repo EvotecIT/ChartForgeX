@@ -25,11 +25,69 @@ public sealed partial class SvgChartRenderer {
             var color = PointColor(chart, series, index, intervalIndex);
             var summary = FormatValue(chart, Math.Min(start.Y, end.Y)) + "-" + FormatValue(chart, Math.Max(start.Y, end.Y));
 
-            sb.AppendLine($"<rect data-cfx-role=\"range-bar\" data-cfx-series=\"{index}\" data-cfx-point=\"{intervalIndex}\" data-cfx-x=\"{F(start.X)}\" data-cfx-start=\"{F(start.Y)}\" data-cfx-end=\"{F(end.Y)}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(x - barWidth / 2)}\" y=\"{F(top)}\" width=\"{F(barWidth)}\" height=\"{F(height)}\" rx=\"{F(Math.Min(7, barWidth / 2))}\" fill=\"{color.ToCss()}\" opacity=\"0.88\"/>");
-            sb.AppendLine($"<line data-cfx-role=\"range-bar-cap\" data-cfx-series=\"{index}\" data-cfx-point=\"{intervalIndex}\" data-cfx-bound=\"start\" data-cfx-value=\"{F(start.Y)}\" x1=\"{F(x - barWidth * 0.75)}\" y1=\"{F(y1)}\" x2=\"{F(x + barWidth * 0.75)}\" y2=\"{F(y1)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.RangeBarCapStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<line data-cfx-role=\"range-bar-cap\" data-cfx-series=\"{index}\" data-cfx-point=\"{intervalIndex}\" data-cfx-bound=\"end\" data-cfx-value=\"{F(end.Y)}\" x1=\"{F(x - barWidth * 0.75)}\" y1=\"{F(y2)}\" x2=\"{F(x + barWidth * 0.75)}\" y2=\"{F(y2)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.RangeBarCapStrokeWidth)}\" stroke-linecap=\"round\"/>");
+            WriteRangeBarInterval(sb, index, intervalIndex, start.X, start.Y, end.Y, summary, color, x, y1, y2, top, height, barWidth);
             if (ShouldDrawDataLabels(chart, series)) DrawRangeBarLabel(sb, chart, series, intervalIndex, plot, reservedLabels, summary, x, y1, y2, top, height, barWidth);
         }
+    }
+
+    private static void WriteRangeBarInterval(
+        StringBuilder sb,
+        int seriesIndex,
+        int pointIndex,
+        double valueX,
+        double startValue,
+        double endValue,
+        string summary,
+        ChartColor color,
+        double x,
+        double y1,
+        double y2,
+        double top,
+        double height,
+        double barWidth) {
+        var colorCss = color.ToCss();
+        var writer = new SvgMarkupWriter(768);
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "range-bar")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-x", valueX)
+            .Attribute("data-cfx-start", startValue)
+            .Attribute("data-cfx-end", endValue)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .Attribute("x", x - barWidth / 2)
+            .Attribute("y", top)
+            .Attribute("width", barWidth)
+            .Attribute("height", height)
+            .Attribute("rx", Math.Min(7, barWidth / 2))
+            .Attribute("fill", colorCss)
+            .Attribute("opacity", ChartVisualPrimitives.RangeBarFillOpacity)
+            .EndEmptyElement()
+            .Line();
+        WriteRangeBarCap(writer, seriesIndex, pointIndex, "start", startValue, x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, colorCss);
+        WriteRangeBarCap(writer, seriesIndex, pointIndex, "end", endValue, x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, colorCss);
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteRangeBarCap(SvgMarkupWriter writer, int seriesIndex, int pointIndex, string bound, double value, double x1, double y1, double x2, double y2, string color) {
+        writer
+            .StartElement("line")
+            .Attribute("data-cfx-role", "range-bar-cap")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-bound", bound)
+            .Attribute("data-cfx-value", value)
+            .Attribute("x1", x1)
+            .Attribute("y1", y1)
+            .Attribute("x2", x2)
+            .Attribute("y2", y2)
+            .Attribute("stroke", color)
+            .Attribute("stroke-width", ChartVisualPrimitives.RangeBarCapStrokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .EndEmptyElement()
+            .Line();
     }
 
     private static void DrawRangeBarLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double y1, double y2, double top, double height, double barWidth) {

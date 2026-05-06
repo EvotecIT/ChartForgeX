@@ -67,6 +67,7 @@ internal static class ChartVisualPrimitives {
     public const double RangeAreaHaloStrokeExtra = 4;
     public const double RangeAreaMinStrokeWidth = 1.6;
     public const double RangeAreaLowerStrokeOpacity = 0.88;
+    public const double RangeBarFillOpacity = 0.88;
     public const double WaterfallConnectorStrokeWidth = 1.2;
     public const double WaterfallConnectorOpacity = 0.58;
     public const double WaterfallConnectorDash = 4;
