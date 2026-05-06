@@ -95,7 +95,7 @@ Next work:
 - decide whether geographic topology remains a dotted-map host pattern or becomes `TopologyLayoutMode.Geographic` - done with a topology-native layout while keeping dotted maps available for full map visuals
 - if it becomes topology-native, add latitude/longitude metadata or typed coordinates on nodes - done for nodes and groups
 - reuse existing map projection and viewport logic where possible, but make topology nodes/edges render on the projected coordinates - done with `ChartMapViewport` and equirectangular projection
-- improve route arcs, endpoint trimming, clustering, label placement, and region callouts for TestimoX-like regional views
+- improve route arcs, endpoint trimming, clustering, label placement, and region callouts for TestimoX-like regional views - route arcs now render through a shared quadratic map-arc primitive in SVG/PNG and edge labels use the arc midpoint
 - consider additional projection modes only if the static output gains a visible benefit
 - reuse or expose the dotted-map land layer behind topology nodes when a full world/region silhouette is needed - done for generated land dots and regional boundaries in SVG/PNG
 

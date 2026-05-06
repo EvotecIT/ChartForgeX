@@ -146,16 +146,20 @@ public sealed class TopologyPngRenderer {
             var color = highlight.IsEdgeHighlighted(edge) ? baseColor : WithAlpha(baseColor, (byte)Math.Round(255 * highlight.DimmedOpacity));
             var isSelected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var dash = EdgePngDash(edge);
-            for (var i = 0; i < points.Count - 1; i++) {
-                if (!edge.IsMuted && dash.Dashed) {
-                    canvas.DrawDashedLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, isSelected ? 3.4 : 2.2, dash.Dash, dash.Gap);
-                } else {
-                    canvas.DrawLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, isSelected ? 3.4 : edge.IsMuted ? 1.45 : 2.2);
-                }
-            }
+            var routePoints = IsGeographicCurve(chart, edge, nodes)
+                ? GeographicCurveSamplePoints(chart, edge, nodes, points)
+                : points;
+            DrawEdgeRoute(canvas, routePoints, color, isSelected ? 3.4 : edge.IsMuted ? 1.45 : 2.2, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap);
 
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, points[points.Count - 2], points[points.Count - 1], color);
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, points[1], points[0], color);
+            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color);
+            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color);
+        }
+    }
+
+    private static void DrawEdgeRoute(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, double width, bool dashed, double dash, double gap) {
+        for (var i = 0; i < points.Count - 1; i++) {
+            if (dashed) canvas.DrawDashedLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, width, dash, gap);
+            else canvas.DrawLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, width);
         }
     }
 

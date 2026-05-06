@@ -224,6 +224,70 @@ internal static class TopologyRenderPrimitives {
         return points[points.Count - 1];
     }
 
+    public static bool IsGeographicCurve(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
+        if (chart.LayoutMode != TopologyLayoutMode.Geographic) return false;
+        if (edge.Routing != TopologyEdgeRouting.Curved || edge.Waypoints.Count != 0) return false;
+        if (!nodes.TryGetValue(edge.SourceNodeId, out var source) || !nodes.TryGetValue(edge.TargetNodeId, out var target)) return false;
+        return source.Longitude.HasValue && source.Latitude.HasValue && target.Longitude.HasValue && target.Latitude.HasValue;
+    }
+
+    public static ChartPoint GeographicCurveControlPoint(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, IReadOnlyList<ChartPoint> points) {
+        if (!IsGeographicCurve(chart, edge, nodes) || points.Count < 2) return EdgeLabelPoint(points);
+
+        var start = points[0];
+        var end = points[points.Count - 1];
+        var dx = end.X - start.X;
+        var dy = end.Y - start.Y;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        if (length < 0.0001) return start;
+
+        var map = TopologyMapProjection.MapRect(chart);
+        var midX = (start.X + end.X) / 2;
+        var midY = (start.Y + end.Y) / 2;
+        var perpX = dy / length;
+        var perpY = -dx / length;
+
+        if (Math.Abs(dx) >= Math.Abs(dy)) {
+            if (perpY > 0) {
+                perpX = -perpX;
+                perpY = -perpY;
+            }
+        } else {
+            var mapCenterX = map.Left + map.Width / 2;
+            var awayFromCenter = midX < mapCenterX ? -1 : 1;
+            if (perpX * awayFromCenter < 0) {
+                perpX = -perpX;
+                perpY = -perpY;
+            }
+        }
+
+        var maximumCurve = Math.Min(88, Math.Min(map.Width, map.Height) * 0.24);
+        var curve = Clamp(length * 0.18 + Math.Abs(edge.RouteLane) * 0.4, 24, Math.Max(24, maximumCurve));
+        return new ChartPoint(
+            Clamp(midX + perpX * curve, map.Left + 4, map.Right - 4),
+            Clamp(midY + perpY * curve, map.Top + 4, map.Bottom - 4));
+    }
+
+    public static ChartPoint QuadraticPoint(ChartPoint start, ChartPoint control, ChartPoint end, double t) {
+        var clamped = Clamp(t, 0, 1);
+        var inverse = 1 - clamped;
+        return new ChartPoint(
+            inverse * inverse * start.X + 2 * inverse * clamped * control.X + clamped * clamped * end.X,
+            inverse * inverse * start.Y + 2 * inverse * clamped * control.Y + clamped * clamped * end.Y);
+    }
+
+    public static List<ChartPoint> GeographicCurveSamplePoints(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, IReadOnlyList<ChartPoint> points, int segments = 24) {
+        if (!IsGeographicCurve(chart, edge, nodes) || points.Count < 2) return points.ToList();
+
+        var start = points[0];
+        var end = points[points.Count - 1];
+        var control = GeographicCurveControlPoint(chart, edge, nodes, points);
+        var count = Math.Max(2, segments);
+        var samples = new List<ChartPoint>(count + 1);
+        for (var i = 0; i <= count; i++) samples.Add(QuadraticPoint(start, control, end, i / (double)count));
+        return samples;
+    }
+
     public static string EdgeLabel(TopologyEdge edge, string? metricKey, string? fallback) {
         if (!string.IsNullOrWhiteSpace(metricKey) && edge.Metrics.TryGetValue(metricKey!, out var value)) return value;
         return fallback ?? string.Empty;
@@ -243,7 +307,10 @@ internal static class TopologyRenderPrimitives {
             if (string.IsNullOrWhiteSpace(label) && string.IsNullOrWhiteSpace(secondary) && string.IsNullOrWhiteSpace(tertiary)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
 
-            var labelPoint = EdgeLabelPoint(EdgePoints(chart, edge, nodes));
+            var points = EdgePoints(chart, edge, nodes);
+            var labelPoint = IsGeographicCurve(chart, edge, nodes)
+                ? QuadraticPoint(points[0], GeographicCurveControlPoint(chart, edge, nodes, points), points[points.Count - 1], 0.5)
+                : EdgeLabelPoint(points);
             var maxText = Math.Max(label.Length, Math.Max(secondary.Length, tertiary.Length));
             var lineCount = (string.IsNullOrWhiteSpace(label) ? 0 : 1) + (string.IsNullOrWhiteSpace(secondary) ? 0 : 1) + (string.IsNullOrWhiteSpace(tertiary) ? 0 : 1);
             var width = Math.Max(48, maxText * 7.2 + 18);
@@ -280,6 +347,7 @@ internal static class TopologyRenderPrimitives {
         foreach (var edge in chart.Edges) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var points = EdgePoints(chart, edge, nodes);
+            if (IsGeographicCurve(chart, edge, nodes)) points = GeographicCurveSamplePoints(chart, edge, nodes, points, 12);
             for (var i = 0; i < points.Count - 1; i++) segments.Add(new EdgeSegment(edge, points[i], points[i + 1]));
         }
 
@@ -385,6 +453,8 @@ internal static class TopologyRenderPrimitives {
     public static string EscapeAttr(string value) => Escape(value).Replace("\"", "&quot;");
 
     public static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private static double Clamp(double value, double min, double max) => value < min ? min : value > max ? max : value;
 
     private const double EdgeEndpointGap = 7;
     private const double ParallelEdgeSpacing = 26;

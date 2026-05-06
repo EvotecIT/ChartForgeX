@@ -408,6 +408,8 @@ public sealed partial class TopologySvgRenderer {
             var highlighted = highlight.IsEdgeHighlighted(edge);
             var selected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var diagnostics = EdgeRouteDiagnostics(chart, edge, nodes);
+            var isGeographicCurve = IsGeographicCurve(chart, edge, nodes);
+            var curveControl = isGeographicCurve ? GeographicCurveControlPoint(chart, edge, nodes, points) : new ChartPoint(0, 0);
             var parent = AddOptionalLink(layer, edge.Href, prefix, options);
             var edgeGroup = parent.Element("g", group => {
                 group
@@ -434,10 +436,17 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-route-label-obstacle-hits", diagnostics.LabelObstacleHits)
                     .Attribute("data-route-overlap-score", diagnostics.RouteOverlapScore)
                     .Attribute("data-route-offset", routeOffset)
+                    .Attribute("data-route-curve", isGeographicCurve ? "geographic" : edge.Routing.ToString())
                     .Attribute("data-source-port", edge.SourcePort.ToString())
                     .Attribute("data-target-port", edge.TargetPort.ToString())
                     .Attribute("data-route-lane", edge.RouteLane)
                     .Attribute("data-waypoint-count", edge.Waypoints.Count);
+                if (isGeographicCurve) {
+                    group
+                        .Attribute("data-route-control-x", curveControl.X)
+                        .Attribute("data-route-control-y", curveControl.Y);
+                }
+
                 AddTopologyDataAttributes(group, "data-cfx-meta-", edge.Metadata, options.IncludeDataAttributes);
                 AddTopologyDataAttributes(group, "data-cfx-metric-", edge.Metrics, options.IncludeDataAttributes);
                 if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
@@ -447,7 +456,7 @@ public sealed partial class TopologySvgRenderer {
             edgeGroup.Element("path", path => {
                 path
                     .Class(prefix + "__edge")
-                    .Attribute("d", EdgePath(points, edge.Routing))
+                    .Attribute("d", EdgePath(chart, edge, nodes, points))
                     .Attribute("stroke", color)
                     .Attribute("stroke-width", selected ? 3.4 : edge.IsMuted ? 1.45 : 2.2)
                     .Attribute("stroke-dasharray", dash)
@@ -526,6 +535,18 @@ public sealed partial class TopologySvgRenderer {
         }
 
         return false;
+    }
+
+    private static string EdgePath(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, IReadOnlyList<ChartPoint> points) {
+        if (IsGeographicCurve(chart, edge, nodes) && points.Count >= 2) {
+            var control = GeographicCurveControlPoint(chart, edge, nodes, points);
+            return new SvgPathDataBuilder(64)
+                .MoveTo(points[0])
+                .QuadraticTo(control.X, control.Y, points[points.Count - 1].X, points[points.Count - 1].Y)
+                .Build();
+        }
+
+        return EdgePath(points, edge.Routing);
     }
 
     private static string EdgePath(IReadOnlyList<ChartPoint> points, TopologyEdgeRouting routing) {
