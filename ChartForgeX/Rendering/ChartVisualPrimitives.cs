@@ -14,6 +14,7 @@ internal static class ChartVisualPrimitives {
     public const double DumbbellMarkerMinRadius = 4.2;
     public const double DumbbellConnectorStrokeWidth = 3;
     public const double ErrorBarStrokeWidth = 2.2;
+    public const double ErrorBarRangeOpacity = 0.72;
     public const double ErrorBarPngHaloStrokeWidth = 5.8;
     public const double ErrorBarMarkerRadiusExtra = 0.25;
     public const double ErrorBarMarkerMinRadius = 3.5;

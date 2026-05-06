@@ -27,15 +27,103 @@ public sealed partial class SvgChartRenderer {
             var color = PointColor(chart, series, index, item);
             var summary = "value " + FormatValue(chart, center.Y) + ", range " + FormatValue(chart, lower.Y) + "-" + FormatValue(chart, upper.Y);
 
-            sb.AppendLine($"<g data-cfx-role=\"error-bar\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-x=\"{F(center.X)}\" data-cfx-value=\"{F(center.Y)}\" data-cfx-lower=\"{F(lower.Y)}\" data-cfx-upper=\"{F(upper.Y)}\" role=\"img\" aria-label=\"{Escape(summary)}\">");
-            sb.AppendLine($"<line data-cfx-role=\"error-range\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-lower=\"{F(lower.Y)}\" data-cfx-upper=\"{F(upper.Y)}\" x1=\"{F(x)}\" y1=\"{F(yUpper)}\" x2=\"{F(x)}\" y2=\"{F(yLower)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.ErrorBarStrokeWidth)}\" stroke-linecap=\"round\" opacity=\"0.72\"/>");
-            sb.AppendLine($"<line data-cfx-role=\"error-cap\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-bound=\"upper\" data-cfx-value=\"{F(upper.Y)}\" x1=\"{F(x - capWidth / 2)}\" y1=\"{F(yUpper)}\" x2=\"{F(x + capWidth / 2)}\" y2=\"{F(yUpper)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.ErrorBarStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<line data-cfx-role=\"error-cap\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-bound=\"lower\" data-cfx-value=\"{F(lower.Y)}\" x1=\"{F(x - capWidth / 2)}\" y1=\"{F(yLower)}\" x2=\"{F(x + capWidth / 2)}\" y2=\"{F(yLower)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.ErrorBarStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<circle data-cfx-role=\"error-marker\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-value=\"{F(center.Y)}\" cx=\"{F(x)}\" cy=\"{F(y)}\" r=\"{F(radius)}\" fill=\"{color.ToCss()}\" stroke=\"{chart.Options.Theme.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.MarkerStrokeWidth)}\"/>");
-            sb.AppendLine("</g>");
+            WriteErrorBarSummary(sb, chart, index, item, center.X, center.Y, lower.Y, upper.Y, summary, color, x, y, yLower, yUpper, radius, capWidth);
             var label = FormatValue(chart, center.Y);
             if (ShouldDrawDataLabels(chart, series)) DrawErrorBarLabel(sb, chart, series, item, plot, reservedLabels, label, x, y, yLower, yUpper, radius, capWidth);
         }
+    }
+
+    private static void WriteErrorBarSummary(
+        StringBuilder sb,
+        Chart chart,
+        int seriesIndex,
+        int pointIndex,
+        double valueX,
+        double value,
+        double lower,
+        double upper,
+        string summary,
+        ChartColor color,
+        double x,
+        double y,
+        double yLower,
+        double yUpper,
+        double radius,
+        double capWidth) {
+        var colorCss = color.ToCss();
+        var writer = new SvgMarkupWriter(1024);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "error-bar")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-x", valueX)
+            .Attribute("data-cfx-value", value)
+            .Attribute("data-cfx-lower", lower)
+            .Attribute("data-cfx-upper", upper)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .EndStartElement()
+            .Line();
+        WriteErrorBarRange(writer, seriesIndex, pointIndex, lower, upper, x, yUpper, x, yLower, colorCss);
+        WriteErrorBarCap(writer, seriesIndex, pointIndex, "upper", upper, x - capWidth / 2, yUpper, x + capWidth / 2, yUpper, colorCss);
+        WriteErrorBarCap(writer, seriesIndex, pointIndex, "lower", lower, x - capWidth / 2, yLower, x + capWidth / 2, yLower, colorCss);
+        writer
+            .StartElement("circle")
+            .Attribute("data-cfx-role", "error-marker")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-value", value)
+            .Attribute("cx", x)
+            .Attribute("cy", y)
+            .Attribute("r", radius)
+            .Attribute("fill", colorCss)
+            .Attribute("stroke", chart.Options.Theme.CardBackground.ToCss())
+            .Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth)
+            .EndEmptyElement()
+            .Line()
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteErrorBarRange(SvgMarkupWriter writer, int seriesIndex, int pointIndex, double lower, double upper, double x1, double y1, double x2, double y2, string color) {
+        writer
+            .StartElement("line")
+            .Attribute("data-cfx-role", "error-range")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-lower", lower)
+            .Attribute("data-cfx-upper", upper)
+            .Attribute("x1", x1)
+            .Attribute("y1", y1)
+            .Attribute("x2", x2)
+            .Attribute("y2", y2)
+            .Attribute("stroke", color)
+            .Attribute("stroke-width", ChartVisualPrimitives.ErrorBarStrokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .Attribute("opacity", ChartVisualPrimitives.ErrorBarRangeOpacity)
+            .EndEmptyElement()
+            .Line();
+    }
+
+    private static void WriteErrorBarCap(SvgMarkupWriter writer, int seriesIndex, int pointIndex, string bound, double value, double x1, double y1, double x2, double y2, string color) {
+        writer
+            .StartElement("line")
+            .Attribute("data-cfx-role", "error-cap")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-bound", bound)
+            .Attribute("data-cfx-value", value)
+            .Attribute("x1", x1)
+            .Attribute("y1", y1)
+            .Attribute("x2", x2)
+            .Attribute("y2", y2)
+            .Attribute("stroke", color)
+            .Attribute("stroke-width", ChartVisualPrimitives.ErrorBarStrokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .EndEmptyElement()
+            .Line();
     }
 
     private static void DrawErrorBarLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double y, double yLower, double yUpper, double radius, double capWidth) {
