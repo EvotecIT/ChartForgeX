@@ -17,7 +17,10 @@ internal static class ChartVisualPrimitives {
     public const double ErrorBarPngHaloStrokeWidth = 5.8;
     public const double ErrorBarMarkerRadiusExtra = 0.25;
     public const double ErrorBarMarkerMinRadius = 3.5;
+    public const double BubbleFillOpacity = 0.30;
+    public const double BubbleStrokeOpacity = 0.88;
     public const double BubbleStrokeWidth = 2;
+    public const double BubbleHighlightOpacity = 0.26;
     public const double LollipopStemMinStrokeWidth = 1.4;
     public const double LollipopStemOpacity = 0.58;
     public const double LollipopMarkerStrokeWidth = 2.1;

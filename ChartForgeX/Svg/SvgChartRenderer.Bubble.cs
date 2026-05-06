@@ -22,11 +22,47 @@ public sealed partial class SvgChartRenderer {
             var color = PointColor(chart, series, index, item);
             var summary = "x " + FormatValue(chart, center.X) + ", y " + FormatValue(chart, center.Y) + ", size " + FormatValue(chart, size);
 
-            sb.AppendLine($"<circle data-cfx-role=\"bubble\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-x=\"{F(center.X)}\" data-cfx-y=\"{F(center.Y)}\" data-cfx-size=\"{F(size)}\" cx=\"{F(x)}\" cy=\"{F(y)}\" r=\"{F(radius)}\" fill=\"{color.ToCss()}\" fill-opacity=\"0.30\" stroke=\"{color.ToCss()}\" stroke-opacity=\"0.88\" stroke-width=\"{F(ChartVisualPrimitives.BubbleStrokeWidth)}\" role=\"img\" aria-label=\"{Escape(summary)}\"/>");
-            sb.AppendLine($"<circle data-cfx-role=\"bubble-highlight\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-size=\"{F(size)}\" cx=\"{F(x - radius * 0.28)}\" cy=\"{F(y - radius * 0.28)}\" r=\"{F(Math.Max(1.4, radius * 0.18))}\" fill=\"{chart.Options.Theme.CardBackground.ToCss()}\" opacity=\"0.26\"/>");
+            WriteBubbleMarker(sb, chart, index, item, center.X, center.Y, size, x, y, radius, color, summary);
             var label = FormatValue(chart, size);
             if (ShouldDrawDataLabels(chart, series)) DrawBubbleLabel(sb, chart, series, item, plot, reservedLabels, label, x, y, radius);
         }
+    }
+
+    private static void WriteBubbleMarker(StringBuilder sb, Chart chart, int seriesIndex, int pointIndex, double valueX, double valueY, double size, double x, double y, double radius, ChartColor color, string summary) {
+        var writer = new SvgMarkupWriter(512);
+        writer
+            .StartElement("circle")
+            .Attribute("data-cfx-role", "bubble")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-x", valueX)
+            .Attribute("data-cfx-y", valueY)
+            .Attribute("data-cfx-size", size)
+            .Attribute("cx", x)
+            .Attribute("cy", y)
+            .Attribute("r", radius)
+            .Attribute("fill", color.ToCss())
+            .Attribute("fill-opacity", ChartVisualPrimitives.BubbleFillOpacity)
+            .Attribute("stroke", color.ToCss())
+            .Attribute("stroke-opacity", ChartVisualPrimitives.BubbleStrokeOpacity)
+            .Attribute("stroke-width", ChartVisualPrimitives.BubbleStrokeWidth)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .EndEmptyElement()
+            .Line()
+            .StartElement("circle")
+            .Attribute("data-cfx-role", "bubble-highlight")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-size", size)
+            .Attribute("cx", x - radius * 0.28)
+            .Attribute("cy", y - radius * 0.28)
+            .Attribute("r", Math.Max(1.4, radius * 0.18))
+            .Attribute("fill", chart.Options.Theme.CardBackground.ToCss())
+            .Attribute("opacity", ChartVisualPrimitives.BubbleHighlightOpacity)
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
     }
 
     private static void DrawBubbleLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double y, double radius) {
