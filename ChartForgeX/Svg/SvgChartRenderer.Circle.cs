@@ -33,13 +33,56 @@ public sealed partial class SvgChartRenderer {
         var summary = series.Name + ": " + valueLabel + ", " + statusLabel;
         var showLabels = series.ShowDataLabels != false;
 
-        sb.AppendLine($"<g data-cfx-role=\"circle-chart\" data-cfx-status=\"{status}\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-value=\"{F(value)}\" data-cfx-min=\"{F(min)}\" data-cfx-max=\"{F(max)}\" data-cfx-percent=\"{F(ratio)}\" data-cfx-radius-scale=\"{F(chart.Options.CircleRadiusScale)}\" data-cfx-stroke-scale=\"{F(chart.Options.CircleStrokeScale)}\" role=\"img\" aria-label=\"{Escape(summary)}\">");
-        sb.AppendLine($"<path data-cfx-role=\"circle-track\" d=\"{BuildRadialBarArc(cx, cy, radius, start, start + Math.PI * 2)}\" fill=\"none\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(stroke)}\" stroke-linecap=\"round\" opacity=\"{F(ChartVisualPrimitives.CircleTrackOpacity)}\"/>");
+        var writer = new SvgMarkupWriter(2048);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "circle-chart")
+            .Attribute("data-cfx-status", status)
+            .Attribute("data-cfx-label", series.Name)
+            .Attribute("data-cfx-value", value)
+            .Attribute("data-cfx-min", min)
+            .Attribute("data-cfx-max", max)
+            .Attribute("data-cfx-percent", ratio)
+            .Attribute("data-cfx-radius-scale", chart.Options.CircleRadiusScale)
+            .Attribute("data-cfx-stroke-scale", chart.Options.CircleStrokeScale)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .EndStartElement()
+            .Line();
+        WriteCirclePath(
+            writer,
+            "circle-track",
+            null,
+            0,
+            0,
+            BuildRadialBarArc(cx, cy, radius, start, start + Math.PI * 2),
+            t.Grid.ToCss(),
+            stroke,
+            ChartVisualPrimitives.CircleTrackOpacity);
         if (ratio > 0) {
-            sb.AppendLine($"<path data-cfx-role=\"circle-value\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-value=\"{F(value)}\" data-cfx-ratio=\"{F(ratio)}\" data-cfx-percent=\"{F(ratio)}\" d=\"{BuildRadialBarArc(cx, cy, radius, start, valueEnd)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(stroke)}\" stroke-linecap=\"round\"/>");
+            WriteCirclePath(
+                writer,
+                "circle-value",
+                series.Name,
+                value,
+                ratio,
+                BuildRadialBarArc(cx, cy, radius, start, valueEnd),
+                color.ToCss(),
+                stroke);
         }
 
-        sb.AppendLine($"<circle data-cfx-role=\"circle-center\" cx=\"{F(cx)}\" cy=\"{F(cy)}\" r=\"{F(Math.Max(18, radius - stroke * 0.82))}\" fill=\"{t.CardBackground.ToCss()}\" fill-opacity=\"{F(ChartVisualPrimitives.CircleCenterFillOpacity)}\" stroke=\"{t.Grid.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.CircleCenterStrokeOpacity)}\"/>");
+        writer
+            .StartElement("circle")
+            .Attribute("data-cfx-role", "circle-center")
+            .Attribute("cx", cx)
+            .Attribute("cy", cy)
+            .Attribute("r", Math.Max(18, radius - stroke * 0.82))
+            .Attribute("fill", t.CardBackground.ToCss())
+            .Attribute("fill-opacity", ChartVisualPrimitives.CircleCenterFillOpacity)
+            .Attribute("stroke", t.Grid.ToCss())
+            .Attribute("stroke-opacity", ChartVisualPrimitives.CircleCenterStrokeOpacity)
+            .EndEmptyElement()
+            .Line();
         if (showLabels) {
             var valueFontSize = Math.Max(24, Math.Min(t.TitleFontSize * 1.72, radius * 0.72));
             var titleFontSize = Math.Max(9, Math.Min(t.LegendFontSize, radius * 0.22));
@@ -47,17 +90,69 @@ public sealed partial class SvgChartRenderer {
             var centerGroupHeight = valueFontSize + centerLineGap + titleFontSize;
             var valueY = cy - centerGroupHeight / 2.0 + valueFontSize / 2.0;
             var titleY = valueY + valueFontSize / 2.0 + centerLineGap + titleFontSize / 2.0;
-            DrawSvgTextCenteredX(sb, chart, "circle-label", valueLabel, cx, valueY, t.Text, valueFontSize, labelWidth, "850", t.CardBackground, 3.2);
-            DrawSvgTextCenteredX(sb, chart, "circle-title", series.Name, cx, titleY, t.MutedText, titleFontSize, labelWidth, "700", t.CardBackground, 2.4);
+            DrawSvgTextCenteredX(writer, chart, "circle-label", valueLabel, cx, valueY, t.Text, valueFontSize, labelWidth, "850", t.CardBackground, 3.2);
+            DrawSvgTextCenteredX(writer, chart, "circle-title", series.Name, cx, titleY, t.MutedText, titleFontSize, labelWidth, "700", t.CardBackground, 2.4);
             if (chart.Options.ShowCircleStatusLabel) {
                 var statusFontSize = TextFontSizeForSvgWidth(statusLabel, labelWidth, t.TickLabelFontSize);
                 statusLabel = TrimSvgLabelToWidth(statusLabel, statusFontSize, labelWidth);
                 var statusLeft = cx - EstimateTextWidth(statusLabel, statusFontSize) / 2.0;
-                sb.AppendLine($"<circle data-cfx-role=\"circle-status-marker\" data-cfx-status=\"{status}\" cx=\"{F(statusLeft - 9)}\" cy=\"{F(cy + radius + 36)}\" r=\"{F(ChartVisualPrimitives.StatusMarkerRadius)}\" fill=\"{statusColor.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.StatusMarkerStrokeWidth)}\"/>");
-                sb.AppendLine($"<text data-cfx-role=\"circle-status-label\" x=\"{F(statusLeft)}\" y=\"{F(cy + radius + 40)}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(statusFontSize)}\" font-weight=\"650\">{Escape(statusLabel)}</text>");
+                writer
+                    .StartElement("circle")
+                    .Attribute("data-cfx-role", "circle-status-marker")
+                    .Attribute("data-cfx-status", status)
+                    .Attribute("cx", statusLeft - 9)
+                    .Attribute("cy", cy + radius + 36)
+                    .Attribute("r", ChartVisualPrimitives.StatusMarkerRadius)
+                    .Attribute("fill", statusColor.ToCss())
+                    .Attribute("stroke", t.CardBackground.ToCss())
+                    .Attribute("stroke-width", ChartVisualPrimitives.StatusMarkerStrokeWidth)
+                    .EndEmptyElement()
+                    .Line()
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "circle-status-label")
+                    .Attribute("x", statusLeft)
+                    .Attribute("y", cy + radius + 40)
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", t.FontFamily)
+                    .Attribute("font-size", statusFontSize)
+                    .Attribute("font-weight", "650")
+                    .Text(statusLabel)
+                    .EndElement()
+                    .Line();
             }
         }
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteCirclePath(
+        SvgMarkupWriter writer,
+        string role,
+        string? label,
+        double value,
+        double ratio,
+        string path,
+        string color,
+        double strokeWidth,
+        double? opacity = null) {
+        writer.StartElement("path").Attribute("data-cfx-role", role);
+        if (label != null) {
+            writer
+                .Attribute("data-cfx-label", label)
+                .Attribute("data-cfx-value", value)
+                .Attribute("data-cfx-ratio", ratio)
+                .Attribute("data-cfx-percent", ratio);
+        }
+
+        writer
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", color)
+            .Attribute("stroke-width", strokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .OptionalAttribute("opacity", opacity)
+            .EndEmptyElement()
+            .Line();
     }
 
     private static bool IsCircleChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Circle);
