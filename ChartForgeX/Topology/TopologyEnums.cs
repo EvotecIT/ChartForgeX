@@ -1,3 +1,5 @@
+using System;
+
 namespace ChartForgeX.Topology;
 
 /// <summary>
@@ -13,7 +15,11 @@ public enum TopologyLayoutMode {
     /// <summary>Place nodes by metadata layer in a deterministic layered flow.</summary>
     Layered,
     /// <summary>Place nodes in a deterministic matrix.</summary>
-    Matrix
+    Matrix,
+    /// <summary>Place groups in dense deterministic panels and pack each group's hub/branch nodes inside the panel.</summary>
+    DenseGrouped,
+    /// <summary>Project nodes and groups from longitude/latitude coordinates into the topology viewport.</summary>
+    Geographic
 }
 
 /// <summary>
@@ -24,6 +30,39 @@ public enum TopologyLayoutDirection {
     TopToBottom,
     /// <summary>Place layers from left to right.</summary>
     LeftToRight
+}
+
+/// <summary>
+/// Defines how nodes inside a topology group should be arranged by dense grouped layouts.
+/// </summary>
+public enum TopologyGroupLayoutPolicy {
+    /// <summary>Let the layout choose a deterministic default from the group contents.</summary>
+    Auto,
+    /// <summary>Place one hub-like node above deterministic branch rows.</summary>
+    HubAndBranch,
+    /// <summary>Place all group nodes in a compact deterministic grid.</summary>
+    Grid,
+    /// <summary>Place group nodes in paired rows, useful for replication partners or redundant controllers.</summary>
+    PairRows,
+    /// <summary>Place group nodes in a compact staggered mini-mesh, useful for dense replication or connectivity clusters.</summary>
+    MiniMesh,
+    /// <summary>Render group nodes as compact dots in a deterministic grid.</summary>
+    CollapsedDots
+}
+
+/// <summary>
+/// Describes topology edge layout values inferred by a layout engine instead of supplied by the caller.
+/// </summary>
+[Flags]
+public enum TopologyEdgeLayoutInference {
+    /// <summary>No edge layout values were inferred.</summary>
+    None = 0,
+    /// <summary>The source edge port was inferred.</summary>
+    SourcePort = 1,
+    /// <summary>The target edge port was inferred.</summary>
+    TargetPort = 2,
+    /// <summary>The edge route lane was inferred.</summary>
+    RouteLane = 4
 }
 
 /// <summary>
@@ -207,7 +246,9 @@ public enum TopologyEdgeRouting {
     /// <summary>Route edges as cubic curves.</summary>
     Curved,
     /// <summary>Route edges as orthogonal paths.</summary>
-    Orthogonal
+    Orthogonal,
+    /// <summary>Route edges as deterministic orthogonal paths that prefer lanes avoiding nearby topology obstacles.</summary>
+    ObstacleAvoidingOrthogonal
 }
 
 /// <summary>

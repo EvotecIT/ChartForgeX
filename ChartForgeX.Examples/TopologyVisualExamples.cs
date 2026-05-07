@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
-internal static class TopologyVisualExamples {
+internal static partial class TopologyVisualExamples {
     private const string AmerColor = "#16A34A";
     private const string EmeaColor = "#2563EB";
     private const string ApacColor = "#8B5CF6";
@@ -31,6 +31,7 @@ internal static class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-replication-health-hub", BuildReplicationHealthHub(), "Replication Health Hub", "Compact replication health view with central hub, grouped sites, dense dot nodes, and critical path emphasis.", routeOptions);
         SaveTopology(target, artifacts, "visual-directory-health-replication", BuildDirectoryHealthReplication(), "Directory Health Replication", "Small directory-health topology with site cards, domain controller nodes, and cross-site replication status.", routeOptions);
         SaveTopology(target, artifacts, "visual-service-dependency-map", BuildServiceDependencyMap(), "Service Dependency Map", "Generic service dependency topology showing upstream/downstream service health without TestimoX-specific types.");
+        SaveTopology(target, artifacts, "visual-geographic-topology-map", BuildGeographicTopologyMap(), "Geographic Topology Map", "Topology-native geographic layout with typed coordinates, projected site markers, curved WAN route arcs, labels, regional callouts, and SVG/PNG metadata hooks.", new TopologyRenderOptions { IncludeGroups = false, IncludeGeographicCallouts = true, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithSelectedGroup("APAC").WithSelectedNode("apac-hub").WithSelectedEdge("emea-apac"));
 
         SaveMap(target, artifacts, "visual-geographic-region-map", BuildGeographicRegionMap(), "Geographic Region Map", "Dotted-map chart with AMER, EMEA, and APAC hubs, weighted markers, and cross-region route overlays.");
         SaveMap(target, artifacts, "visual-site-distribution-map", BuildSiteDistributionMap(), "Site Distribution Map", "Dotted-map chart for site distribution, site health, and regional route overlays.");

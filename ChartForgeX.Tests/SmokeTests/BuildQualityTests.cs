@@ -28,6 +28,8 @@ internal static partial class SmokeTests {
         Assert(script.Contains("Package consumer validation", StringComparison.Ordinal), "Build script should name package consumer validation errors.");
         Assert(script.Contains("TimeoutSeconds $PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Build script should use the shorter package consumer timeout for the final smoke run.");
         Assert(script.Contains("'add', 'package', 'ChartForgeX.Interactivity.Html'", StringComparison.Ordinal), "Build script should install the freshest adapter package in the consumer smoke test.");
+        Assert(script.Contains("function Join-ProcessArguments", StringComparison.Ordinal), "Build script should keep a Windows PowerShell compatible argument fallback.");
+        Assert(script.Contains("$startInfo.Arguments = Join-ProcessArguments", StringComparison.Ordinal), "Build script should support ProcessStartInfo on runtimes without ArgumentList.");
         Assert(script.Contains("ToInteractiveHtmlPage", StringComparison.Ordinal), "Build script should verify interactive HTML package consumption from a clean project.");
         Assert(script.Contains("ToInteractiveHtmlDashboardPage", StringComparison.Ordinal), "Build script should verify interactive dashboard package consumption from a clean project.");
         Assert(script.Contains("<dependency\\s", StringComparison.Ordinal), "Build script should verify dependency-free package invariants.");
@@ -35,6 +37,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("function Assert-VisualComparisonHealth", StringComparison.Ordinal), "Build script should keep visual comparison health checks isolated.");
         Assert(script.Contains("function New-VisualBaseline", StringComparison.Ordinal), "Build script should keep visual-baseline generation isolated.");
         Assert(script.Contains("function Assert-VisualBaseline", StringComparison.Ordinal), "Build script should keep visual-baseline assertions isolated.");
+        Assert(script.Contains("function Assert-TopologyVisualCoverage", StringComparison.Ordinal), "Build script should keep topology visual coverage checks isolated.");
         Assert(script.Contains("$minimumChartPairs = 50", StringComparison.Ordinal), "Build script should enforce the current minimum example chart coverage.");
         Assert(script.Contains("$Comparison.chartPairs -lt $minimumChartPairs", StringComparison.Ordinal), "Build script should fail when generated SVG/PNG comparison coverage drops.");
         Assert(script.Contains("$Comparison.dimensionMatches -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when SVG/PNG dimensions drift apart.");
@@ -53,6 +56,9 @@ internal static partial class SmokeTests {
         Assert(script.Contains("$baselineCharts.ContainsKey($actual.name)", StringComparison.Ordinal), "Build script should fail when a generated chart lacks baseline coverage.");
         Assert(script.Contains("$actual.svg.visualNodes -lt $expected.svg.minVisualNodes", StringComparison.Ordinal), "Build script should fail when SVG visual complexity drops below baseline.");
         Assert(script.Contains("$actual.png.visiblePixels -lt $expected.png.minVisiblePixels", StringComparison.Ordinal), "Build script should fail when PNG visible content drops below baseline.");
+        Assert(script.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Build script should verify topology visual coverage manifest generation.");
+        Assert(script.Contains("visual-geographic-topology-map", StringComparison.Ordinal), "Build script should verify topology-native geographic visual coverage.");
+        Assert(script.Contains("data-route-curve=\"geographic\"", StringComparison.Ordinal), "Build script should verify geographic topology route-arc metadata.");
     }
 
     private static void VisualBaselineIsStructuredAndActionable() {

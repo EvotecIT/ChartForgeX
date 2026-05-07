@@ -85,6 +85,7 @@ public sealed class TopologyChartValidator {
             if (!IsPositive(group.Width)) Add(result, "group-width", "Group '" + group.Id + "' width must be positive.", group.Id);
             if (!IsPositive(group.Height)) Add(result, "group-height", "Group '" + group.Id + "' height must be positive.", group.Id);
             if (!IsFinite(group.X) || !IsFinite(group.Y)) Add(result, "group-coordinate", "Group '" + group.Id + "' coordinates must be finite.", group.Id);
+            ValidateCoordinatePair(result, "group", group.Id, group.Longitude, group.Latitude);
         }
 
         foreach (var duplicate in chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).GroupBy(group => group.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
@@ -100,6 +101,7 @@ public sealed class TopologyChartValidator {
             if (!IsPositive(node.Width)) Add(result, "node-width", "Node '" + node.Id + "' width must be positive.", node.Id);
             if (!IsPositive(node.Height)) Add(result, "node-height", "Node '" + node.Id + "' height must be positive.", node.Id);
             if (!IsFinite(node.X) || !IsFinite(node.Y)) Add(result, "node-coordinate", "Node '" + node.Id + "' coordinates must be finite.", node.Id);
+            ValidateCoordinatePair(result, "node", node.Id, node.Longitude, node.Latitude);
             if (!string.IsNullOrWhiteSpace(node.GroupId) && !groupIds.Contains(node.GroupId!)) {
                 Add(result, "missing-node-group", "Node '" + node.Id + "' references missing group '" + node.GroupId + "'.", node.Id);
             }
@@ -129,6 +131,17 @@ public sealed class TopologyChartValidator {
     private static bool IsPositive(double value) => IsFinite(value) && value > 0;
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
+
+    private static void ValidateCoordinatePair(TopologyValidationResult result, string itemKind, string itemId, double? longitude, double? latitude) {
+        if (longitude.HasValue != latitude.HasValue) {
+            Add(result, itemKind + "-geo-coordinate-pair", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(itemKind) + " '" + itemId + "' must set both longitude and latitude.", itemId);
+            return;
+        }
+
+        if (!longitude.HasValue || !latitude.HasValue) return;
+        if (!IsFinite(longitude.Value) || longitude.Value < -180 || longitude.Value > 180) Add(result, itemKind + "-longitude", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(itemKind) + " '" + itemId + "' longitude must be between -180 and 180 degrees.", itemId);
+        if (!IsFinite(latitude.Value) || latitude.Value < -90 || latitude.Value > 90) Add(result, itemKind + "-latitude", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(itemKind) + " '" + itemId + "' latitude must be between -90 and 90 degrees.", itemId);
+    }
 
     private static void Add(TopologyValidationResult result, string code, string message, string? itemId) {
         result.Errors.Add(new TopologyValidationIssue {
