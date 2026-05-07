@@ -19,7 +19,25 @@ dotnet add package ChartForgeX
 For local development from this repository, reference `ChartForgeX/ChartForgeX.csproj` directly for static rendering, add `ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj` when testing the optional HTML adapter, and run the quality loop before publishing packages.
 
 Contribution and release notes live in `CONTRIBUTING.md`, `RELEASING.md`, and `CHANGELOG.md`.
-The dependency-free rendering quality direction is documented in `docs/dependency-free-quality-roadmap.md`.
+The dependency-free rendering quality direction is documented in `docs/dependency-free-quality-roadmap.md`. Topology handoff notes live in `docs/topology-next-plan.md`, and non-chart visual block direction lives in `docs/visual-blocks.md`.
+
+## Release readiness handoff
+
+The current API is intended to be reusable by PowerBGInfo, ImagePlayground, HtmlForgeX, TestimoX, Office/Word/email generators, and other static-output hosts. Keep new work generic: no region-specific assumptions, no product-specific data collection, no `System.Drawing`, no JavaScript in the core static path, and no chart-shaped APIs for non-chart content.
+
+Already in place:
+
+- Static SVG/HTML/PNG chart rendering with dependency-free core packages and opt-in HTML interactivity adapters.
+- Dotted maps, reusable region maps, tile maps, and topology geographic projection through `ChartMapViewport` and data-driven map definitions.
+- Product-neutral topology diagrams with groups, nodes, edges, deterministic layouts, route diagnostics, selected states, metadata hooks, SVG/PNG output, and static HTML by default.
+- `SvgMarkupWriter`, `SvgDocument`, `SvgElement`, and path-data helpers for safer SVG emission across many renderers.
+
+Still open before calling the library future-complete:
+
+- Finish the last string/raw SVG cleanup. The renderer stack is not fully migrated to markup primitives yet; topology still has a `Raw(BuildBodyMarkup(...))` handoff, grid embeds scoped child SVG as raw markup, and some map/chart renderers still use targeted `StringBuilder` paths.
+- Add neutral visual blocks separately from charts: `ChartTable`, `ChartList`, `MetricCard` or `StatBlock`, and `VisualGrid`.
+- Keep dashboard shells in host projects. ChartForgeX should emit reusable visual fragments and data hooks; HtmlForgeX/TestimoX should own panels, filters, inspectors, tables, and collected product data.
+- Decide which topology/geographic examples should become formal visual baselines versus generated artifact and metadata validation.
 
 ## Quality gates
 
@@ -64,7 +82,8 @@ ChartForgeX
 │   ├── Themes                  # light/dark themes
 │   ├── Svg                     # beautiful SVG renderer
 │   ├── Html                    # standalone page and HTML fragment renderer
-│   └── Raster                  # minimal PNG renderer and PNG writer
+│   ├── Raster                  # minimal PNG renderer and PNG writer
+│   └── Topology                # product-neutral topology model and renderers
 ├── ChartForgeX.Interactivity    # host-neutral interaction contracts
 ├── ChartForgeX.Interactivity.Html # self-contained HTML/SVG adapter
 ├── ChartForgeX.Examples         # sample console app

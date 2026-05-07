@@ -1,28 +1,25 @@
 # ChartForgeX Topology Next Plan
 
-This branch starts from fresh `origin/main` at `d7d1ba2` (`Add SVG rendering engine foundation (#4)`).
+This document is an agent handoff map for the current topology surface. It is no longer a branch-start plan: obstacle-aware routing, dense grouped layout, geographic topology, static-default HTML, and topology-local interaction controls already exist.
 
 ## Current State
 
-`ChartForgeX.Topology` already owns a product-neutral topology model, validation, deterministic layout helpers, SVG rendering, PNG rendering, and a small HTML wrapper. It is suitable for embeddable diagrams, not full TestimoX dashboard pages.
+`ChartForgeX.Topology` owns a product-neutral topology model, validation, deterministic layout helpers, SVG rendering, PNG rendering, and a small HTML wrapper. It is suitable for embeddable diagrams and static report fragments, not full TestimoX dashboard pages.
 
-Representative topology and topology-adjacent demos already exist for:
+Already shipped topology capabilities:
 
-- logical topology explorer
-- replication mesh explorer
-- subnets and site-links map
-- geographic region/site distribution/WAN latency map visuals through dotted maps
-- DC connectivity topology
-- AD sites hierarchy
-- replication health hub topology
-- directory health replication topology
-- service dependency topology
+- groups, nodes, edges, legends, health states, ports, route lanes, manual waypoints, selected states, muted edges, metadata, metrics, tooltips, links, data attributes, and SVG/HTML/PNG output
+- deterministic layout modes: `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`
+- opt-in `TopologyEdgeRouting.ObstacleAvoidingOrthogonal` with route diagnostics for host inspection
+- dense grouped panel policies for hub/branch, grid, pair-row, mini-mesh, and collapsed-dot layouts
+- topology-native geographic projection through `ChartMapViewport`, with generated land dots, regional geometry where available, curved route arcs, and optional group callouts
+- static and script-free complete HTML pages by default; `EnableHtmlInteractions` opts into pointer/focus hover, click selection, keyboard selection, viewport controls, export controls, and synchronized state
 
-The present topology surface supports groups, nodes, edges, legends, health states, ports, route lanes, manual waypoints, selected states, muted edges, multi-line metric labels, tooltips, links, metadata/data attributes, SVG/HTML/PNG output, and basic HTML selection events.
+Representative topology and topology-adjacent demos already exist for logical topology exploration, replication meshes, subnets and site-link maps, geographic region/site distribution, WAN latency, DC connectivity, AD sites hierarchy, replication health, directory health, and service dependency topology.
 
 ## Boundary
 
-Keep ChartForgeX focused on reusable diagram rendering:
+Keep ChartForgeX focused on reusable visual output:
 
 - topology model and view filtering
 - deterministic layouts
@@ -40,124 +37,118 @@ Do not move these into ChartForgeX:
 
 HtmlForgeX/TestimoX should host ChartForgeX outputs inside dashboard panels and map real collected data into the generic topology model.
 
-## Main Gaps
+## Remaining Work
 
-### 1. Topology SVG Markup Migration
+### 1. Finish SVG Markup Cleanup
 
-The new SVG markup engine exists. `TopologySvgRenderer` now uses `SvgDocument`/`SvgElement` for the root SVG shell, SVG defs, background, header, group wrappers/cards/labels, edge wrappers, edge links, edge labels, node wrappers, node links, node bodies/cards/dots, node labels, node badges/subtitle chips, node icons/glyphs, node status overlays, legends, and edge paths, plus `SvgPathDataBuilder` for path data. The renderer is also split into focused partials for the main orchestration, node rendering, and legend rendering.
+The SVG markup engine exists, and topology now uses `SvgDocument`/`SvgElement` for the root shell, defs, background, header, group wrappers/cards/labels, edge wrappers, edge links, edge labels, node wrappers, node links, node bodies/cards/dots, node labels, node badges/subtitle chips, node icons/glyphs, node status overlays, legends, geographic callouts, and edge paths. It also uses `SvgPathDataBuilder` for path data and focused partials for node, legend, and geographic callout rendering.
+
+This is not a full repository-wide string-to-markup migration yet. Topology still hands a larger subtree through `Raw(BuildBodyMarkup(...))`; chart grids embed scoped child SVG as raw markup; dotted/region/tile maps and some hot chart paths still use targeted `StringBuilder` or raw text insertion where the migration has not paid for itself yet.
 
 Next work:
 
-- continue peeling out focused topology SVG partials or helper builders if edge/group rendering grows further
-- reduce the remaining `Raw(BuildBodyMarkup(...))` handoff once the SVG document API has a convenient way to compose larger reusable subtrees
-- preserve existing SVG output contracts: `data-cfx-role`, ids, data attributes, selected/highlight classes, href behavior, title tooltips, and accessibility metadata
+- remove the remaining topology `Raw(BuildBodyMarkup(...))` handoff when the SVG document API can compose larger reusable subtrees cleanly
 - keep path geometry helpers independent of SVG serialization so PNG parity remains intact
-- keep smoke tests asserting topology SVG is generated through the SVG engine and that unsafe strings/links still behave as before
+- preserve existing SVG contracts: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output
+- migrate remaining raw/string render paths only when tests can protect the exact host-facing output
 
-Suggested PR: `Migrate topology SVG renderer to SVG markup engine`.
+Suggested follow-up: `Finish topology SVG markup cleanup`.
 
-### 2. Obstacle-Aware Edge Routing
+### 2. Polish Dense Routing And Layout
 
-Current topology routing now has an opt-in `TopologyEdgeRouting.ObstacleAvoidingOrthogonal` mode backed by an internal `TopologyEdgeRouter`. The first implementation scores deterministic Manhattan lanes against node boxes, group header bands, estimated edge-label boxes, and route-to-route overlap. SVG edge wrappers expose route strategy, selected corridor, candidate count, fallback reason, segment count, node obstacle hits, label obstacle hits, and overlap score for host diagnostics.
-
-Remaining gaps are mostly breadth and polish: broader dense-layout fixtures, better candidate generation for crowded clusters, clearer fallback diagnostics, and more screenshot-like examples.
-
-Next work:
-
-- expand the extracted `TopologyEdgeRouter` with more candidate corridors and fallback reasons
-- preserve manual `Waypoints` as an explicit override while still emitting route diagnostics
-- tune label clearance and route-to-route overlap weights with dense replication/site-link fixtures
-- prefer stable deterministic output over physics-like movement
-- use the route diagnostics in denser examples and host-facing inspector mocks
-- add dense replication/site-link fixtures that prove routes do not cross node cards in common screenshot-like layouts
-
-Suggested PR: `Add obstacle-aware topology routing`.
-
-### 3. Better Dense Graph Layout
-
-Existing layout modes are deterministic and report-friendly: `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, and the new `DenseGrouped` panel layout. `DenseGrouped` covers the first dense screenshot class by packing groups into panels and placing each group's hub plus branch rows without manual coordinates. It also has typed group policies for hub/branch, grid, pair-row, mini-mesh, and collapsed-dot panels, SVG exposes both requested and applied policies, and inter-group dense links get outside-facing ports plus stable lanes when the caller has not supplied them. SVG edge wrappers also expose whether source port, target port, or route lane were inferred. More advanced dense replication meshes and subnet maps still need richer internal policies.
+Obstacle-aware routing and `DenseGrouped` are implemented. Remaining work is breadth and polish, not the first implementation.
 
 Next work:
 
-- extend per-group internal layout policies beyond the current hub/branch, pair-row, grid, mini-mesh, and collapsed-dot modes with lane-reservation policies
-- expand lane reservations into named group corridors and inspector-ready diagnostics for dense site-link examples
-- add optional node packing/compaction for dense card and tile diagrams
-- keep layout output deterministic and export-safe, avoiding force-directed simulation as the default
+- add denser replication/site-link fixtures that prove routes do not cross node cards in common screenshot-like layouts
+- tune label-clearance and route-overlap weights with those fixtures
+- expand candidate corridors and fallback reasons in `TopologyEdgeRouter`
+- extend per-group layout policies only where real dense examples need more than hub/branch, pair-row, grid, mini-mesh, and collapsed-dot modes
+- keep layout output deterministic and export-safe; force-directed simulation remains out of scope for the static default
 
-Suggested PR: `Add dense grouped topology layout`.
+Suggested follow-up: `Polish dense topology routing`.
 
-### 4. Geographic Topology Rendering
+### 3. Keep Geographic Topology Generic
 
-The geographic demos can still use the dotted-map chart family for full map-style weighted markers, labels, and routes. Topology now also has a first-class `Geographic` layout mode that projects typed node/group longitude and latitude through `ChartMapViewport`, emits a topology-native geographic frame, graticule, generated land-dot background, regional boundary/land-area geometry, and optional group callout summaries with health counts, and keeps node/edge/group topology semantics intact for SVG, HTML, and PNG output.
+`TopologyLayoutMode.Geographic` is now topology-native while dotted maps remain available for map-first weighted marker visuals.
 
 Next work:
 
-- decide whether geographic topology remains a dotted-map host pattern or becomes `TopologyLayoutMode.Geographic` - done with a topology-native layout while keeping dotted maps available for full map visuals
-- if it becomes topology-native, add latitude/longitude metadata or typed coordinates on nodes - done for nodes and groups
-- reuse existing map projection and viewport logic where possible, but make topology nodes/edges render on the projected coordinates - done with `ChartMapViewport` and equirectangular projection
-- improve route arcs, endpoint trimming, clustering, label placement, and region callouts for TestimoX-like regional views - route arcs now render through a shared quadratic map-arc primitive in SVG/PNG, edge labels use the arc midpoint, and coordinated groups can render opt-in callout summaries
-- consider additional projection modes only if the static output gains a visible benefit
-- reuse or expose the dotted-map land layer behind topology nodes when a full world/region silhouette is needed - done for generated land dots and regional boundaries in SVG/PNG
+- improve label placement, route arc trimming, clustering, and callout placement through generic fixtures
+- add more reusable map definitions only as data definitions, not renderer assumptions
+- keep identifiers and map data generic enough for US, Europe, cloud regions, tenants, inventory zones, and custom domains
+- add additional projection modes only when static output visibly benefits
 
 Suggested follow-up: `Polish topology geographic map visuals`.
 
-### 5. Dashboard-Level Composition
+### 4. Add Neutral Visual Blocks
 
-The screenshots show complete monitoring dashboards. ChartForgeX should not recreate the whole shell, but it can make hosting easier.
+`ChartGrid` is intentionally chart-only. Tables, lists, metric cards, status panels, and future infographic snippets should not be modeled as chart series.
+
+Next work:
+
+- introduce neutral visual contracts such as `ChartTable`, `ChartList`, `MetricCard` or `StatBlock`, and `VisualGrid`
+- reuse `ChartTheme`, `ChartColor`, `ChartPalettes`, transparent backgrounds, SVG/PNG/HTML export, and dependency-free rendering
+- keep the scope bounded: no spreadsheet engine, no arbitrary HTML renderer, no region-specific assumptions, and no external table library
+
+Suggested follow-up: `Add visual block primitives`.
+
+### 5. Hand Dashboard Composition To Hosts
+
+ChartForgeX should make host dashboards easier, but it should not become the dashboard shell.
 
 Next work in ChartForgeX:
 
 - provide topology fragments sized for common dashboard panel ratios
-- add focused view presets for selected region, selected site, selected path, critical links, affected links, and compact map cards
-- improve metadata/event contracts so HtmlForgeX/TestimoX can attach inspector panels without parsing labels
+- keep focused view presets for selected region, selected site, selected path, critical links, affected links, and compact map cards
+- improve metadata/event contracts where host panels need richer details without parsing labels
 
 Next work outside ChartForgeX:
 
-- HtmlForgeX topology host components for card/panel layout, controls, inspector slots, legends, and table/chart companions
-- TestimoX adapters that convert monitoring data into `TopologyChart`, dotted-map charts, and panel data models
+- HtmlForgeX topology host components for cards, panels, controls, inspector slots, legends, and chart/table companions
+- TestimoX adapters that convert monitoring data into `TopologyChart`, dotted-map charts, visual blocks, and panel data models
 
-Suggested PR after ChartForgeX routing/layout: `Add HtmlForgeX topology host panels`.
+Suggested follow-up: `Add HtmlForgeX topology host panels`.
 
-### 6. Deeper Browser-Side Interactions
+### 6. Align Browser Interaction Adapters
 
-Topology HTML stays static and script-free by default. When `EnableHtmlInteractions = true`, it provides pointer/focus hover, click selection, and keyboard selection with richer payloads. Hover highlights related nodes, edges, and groups, then dispatches `cfx-topology-hover` / `cfx-topology-hover-clear`. Arrow keys cycle focus through connected topology elements and dispatch `cfx-topology-navigate` with from/to details. A selected element dispatches id, kind, status, metadata, metrics, node/group/edge context, route diagnostics, geographic route-arc diagnostics, and related node/edge/group ids so host dashboards can drive inspector panels without reparsing the SVG. Hosts can also dispatch `cfx-topology-set-selection` and `cfx-topology-clear-selection` on the wrapper to synchronize external panels with the embedded topology. Large complete topology pages can opt into lightweight zoom, pan, wheel-zoom, reset, host-driven viewport state, SVG/PNG export controls, and same-page selection/viewport synchronization through `EnableHtmlViewportControls`, `EnableHtmlExportControls`, and `EnableHtmlSynchronizedState`. The general interactive chart wrapper still has brush and richer controls that topology does not yet reuse.
-
-Next work:
-
-- unify topology HTML with `ChartForgeX.Interactivity.Html` where practical - topology-local sync/export/viewport controls are in place; shared adapter reuse remains open
-- add optional zoom/pan controls for large topology diagrams - lightweight topology-local controls are in place; adapter-level reuse remains open
-- dispatch richer selection details: node/edge/group id, kind, status, metrics, metadata, source/target, connected edges - done for the default complete-page selection event
-- support hover highlighting, keyboard navigation, and host-controlled selection state - pointer/focus hover, keyboard activation, arrow-key graph navigation, and host selection events are in place
-- keep the default fragment static unless the caller opts into richer interactions
-
-Suggested PR: `Upgrade topology HTML interactions`.
-
-### 7. Visual Examples And Baselines
-
-The topology demo generator now includes a topology-native geographic map artifact (`visual-geographic-topology-map`) with typed coordinates, projected site markers, SVG/PNG route arcs, selected state, regional callout summaries, and route-control metadata. The basic `geographic-topology` demo also uses `TopologyLayoutMode.Geographic` instead of manually positioned map-like coordinates. `Build.ps1` now validates the topology visual manifest, required SVG/HTML/PNG artifacts, and key geographic route metadata during normal example validation.
+Topology HTML is static by default and has topology-local interaction support when callers opt in. The general interactive chart wrapper still has brush and richer controls that topology does not reuse.
 
 Next work:
 
-- decide whether topology artifacts should join the numeric `visual-baseline.json` gallery baseline or stay as manifest/metadata validation plus generated preview artifacts
+- unify topology HTML with `ChartForgeX.Interactivity.Html` where it reduces duplicated event/control code
+- keep complete topology HTML script-free unless `EnableHtmlInteractions = true`
+- preserve existing event names and payloads for hover, selection, navigation, viewport, export, and synchronized state
+
+Suggested follow-up: `Unify topology HTML interactions`.
+
+### 7. Decide Visual Baselines
+
+The example generator validates topology manifests, required SVG/HTML/PNG artifacts, and key geographic route metadata. Some topology examples may now deserve stronger visual baselines.
+
+Next work:
+
+- decide whether topology artifacts should join the numeric `visual-baseline.json` gallery baseline or stay as generated artifact plus metadata validation
 - keep dense, routed, and geographic examples small enough to inspect in PRs
-- use the visual manifest to track which screenshot families are represented by ChartForgeX versus dashboard host components
+- track which screenshot families are represented by ChartForgeX versus host dashboard components
 
 ## Recommended Order
 
-1. Migrate topology SVG rendering onto the SVG markup engine.
-2. Add obstacle-aware route planning with dense route tests.
-3. Add a dense grouped layout mode and example baselines.
-4. Add geographic topology adapter/layout once routing and markup are stable.
-5. Hand off dashboard composition to HtmlForgeX/TestimoX host components.
-6. Deepen browser interactions after the host contract is clear.
+1. Close the release API and documentation cleanup on the current PR branch.
+2. Finish topology SVG markup cleanup without changing public SVG contracts.
+3. Add dense routing/layout fixtures and polish based on real screenshot-like cases.
+4. Decide topology/geographic visual baseline coverage.
+5. Add neutral visual block primitives in a separate PR.
+6. Hand dashboard shells and product adapters to HtmlForgeX/TestimoX.
+7. Unify topology browser interaction code with the shared adapter after host needs settle.
 
-This order keeps serialization stable first, then improves the visual engine, then lets host dashboards consume a stronger and cleaner topology contract.
+This order keeps the public static-output contract stable first, then improves the renderer internals, then opens the reusable visual-block surface that PowerBGInfo, ImagePlayground, email, Word, and wallpaper scenarios need.
 
 ## Validation Loop
 
 Use the repo's existing quality loop before trusting visual changes:
 
-- `dotnet test ChartForgeX.Tests/ChartForgeX.Tests.csproj`
+- `dotnet test .\ChartForgeX.Tests\ChartForgeX.Tests.csproj -c Release`
 - `.\Build.ps1`
 - `.\Build.ps1 -UpdateVisualBaseline` when examples or baselines intentionally change
 - inspect generated SVG for stable data hooks and route diagnostics
