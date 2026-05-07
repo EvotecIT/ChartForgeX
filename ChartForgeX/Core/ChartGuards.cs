@@ -10,8 +10,8 @@ internal static class ChartGuards {
         ChartSeriesKind.Heatmap,
         ChartSeriesKind.CalendarHeatmap,
         ChartSeriesKind.DottedMap,
-        ChartSeriesKind.UsStateTileMap,
-        ChartSeriesKind.UsStateGeoMap,
+        ChartSeriesKind.TileMap,
+        ChartSeriesKind.RegionMap,
         ChartSeriesKind.Gauge,
         ChartSeriesKind.Circle,
         ChartSeriesKind.RadialBar,
@@ -172,8 +172,8 @@ internal static class ChartGuards {
         return kind == ChartSeriesKind.Gauge ||
             kind == ChartSeriesKind.CalendarHeatmap ||
             kind == ChartSeriesKind.DottedMap ||
-            kind == ChartSeriesKind.UsStateTileMap ||
-            kind == ChartSeriesKind.UsStateGeoMap ||
+            kind == ChartSeriesKind.TileMap ||
+            kind == ChartSeriesKind.RegionMap ||
             kind == ChartSeriesKind.Circle ||
             kind == ChartSeriesKind.RadialBar ||
             kind == ChartSeriesKind.LayeredRadial ||
@@ -209,7 +209,7 @@ internal static class ChartGuards {
             ValidateNonNegativeValues(chart.Series[0], kind);
         }
         else if (kind == ChartSeriesKind.DottedMap) ValidateMinimumPointCount(chart.Series, kind, 1);
-        else if (kind == ChartSeriesKind.UsStateTileMap || kind == ChartSeriesKind.UsStateGeoMap) {
+        else if (kind == ChartSeriesKind.TileMap || kind == ChartSeriesKind.RegionMap) {
             ValidateMinimumPointCount(chart.Series, kind, 1);
             ValidateNonNegativeValues(chart.Series[0], kind);
         }

@@ -124,12 +124,12 @@ public sealed partial class PngChartRenderer {
                 DrawSpecialChart(DrawDottedMap);
                 return c;
             }
-            if (IsUsStateGeoMapChart(chart)) {
-                DrawSpecialChart(DrawUsStateGeoMap);
+            if (IsRegionMapChart(chart)) {
+                DrawSpecialChart(DrawRegionMap);
                 return c;
             }
-            if (IsUsStateTileMapChart(chart)) {
-                DrawSpecialChart(DrawUsStateTileMap);
+            if (IsTileMapChart(chart)) {
+                DrawSpecialChart(DrawTileMap);
                 return c;
             }
             if (IsTimelineChart(chart)) {
@@ -276,9 +276,9 @@ public sealed partial class PngChartRenderer {
 
     private static bool ShowAxisLines(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowAxisLines;
 
-    private static bool IsMapChart(Chart chart) => IsCalendarHeatmapChart(chart) || IsDottedMapChart(chart) || IsUsStateGeoMapChart(chart) || IsUsStateTileMapChart(chart);
+    private static bool IsMapChart(Chart chart) => IsCalendarHeatmapChart(chart) || IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
 
-    private static bool IsSpatialMapChart(Chart chart) => IsDottedMapChart(chart) || IsUsStateGeoMapChart(chart) || IsUsStateTileMapChart(chart);
+    private static bool IsSpatialMapChart(Chart chart) => IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
 
     private static ChartRect SpatialMapPlotArea(Chart chart) {
         var o = chart.Options;

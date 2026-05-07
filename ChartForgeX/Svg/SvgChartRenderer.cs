@@ -290,8 +290,8 @@ public sealed partial class SvgChartRenderer {
         }
         if (IsCalendarHeatmapChart(chart)) { DrawCalendarHeatmap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsDottedMapChart(chart)) { DrawDottedMap(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
-        if (IsUsStateGeoMapChart(chart)) { DrawUsStateGeoMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
-        if (IsUsStateTileMapChart(chart)) { DrawUsStateTileMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
+        if (IsRegionMapChart(chart)) { DrawRegionMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
+        if (IsTileMapChart(chart)) { DrawTileMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTimelineChart(chart)) {
             DrawTimeline(sb, chart, plot, id);
             DrawLegend(sb, chart, w, h);

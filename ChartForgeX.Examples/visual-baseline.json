@@ -582,7 +582,7 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 257,
+        "minVisualNodes": 189,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -598,7 +598,7 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 246,
+        "minVisualNodes": 181,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -614,7 +614,7 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 285,
+        "minVisualNodes": 144,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -630,7 +630,7 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 218,
+        "minVisualNodes": 123,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -646,7 +646,7 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 106,
+        "minVisualNodes": 100,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -678,7 +678,7 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 176,
+        "minVisualNodes": 84,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -934,7 +934,7 @@
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 292,
+        "minVisualNodes": 158,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -946,27 +946,27 @@
       }
     },
     {
-      "name": "revenue-us-state-geo-map-light",
+      "name": "revenue-region-map-us-states-light",
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 58,
+        "minVisualNodes": 76,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1015616,
-        "minDistinctColors": 1799,
+        "minDistinctColors": 1024,
         "maxEdgeInkPixels": 0
       }
     },
     {
-      "name": "revenue-us-state-tile-map-light",
+      "name": "revenue-tile-map-us-states-light",
       "width": 980,
       "height": 500,
       "svg": {
-        "minVisualNodes": 63,
+        "minVisualNodes": 96,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },

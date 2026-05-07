@@ -110,7 +110,7 @@ internal static class TopologyMapProjection {
 
     private static bool IsWorldViewport(ChartMapViewport viewport) => Matches(viewport, WorldMapDots.MinimumLongitude, WorldMapDots.MaximumLongitude, WorldMapDots.MinimumLatitude, WorldMapDots.MaximumLatitude);
 
-    private static bool IsEuropeViewport(ChartMapViewport viewport) => Matches(viewport, -11, 35, 36, 66.5);
+    private static bool IsEuropeViewport(ChartMapViewport viewport) => Matches(viewport, -11, 35, 36, 72);
 
     private static bool IsNorthAmericaViewport(ChartMapViewport viewport) => Matches(viewport, -170, -50, 5, 72);
 

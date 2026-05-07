@@ -33,6 +33,7 @@ public sealed partial class SvgChartRenderer {
         var valueAttributes = valueRange.HasValue ? $" data-cfx-valued-point-count=\"{valuedPointCount}\" data-cfx-min-value=\"{F(valueRange.Value.Min)}\" data-cfx-max-value=\"{F(valueRange.Value.Max)}\"" : string.Empty;
         sb.AppendLine($"<g data-cfx-role=\"dotted-map\" data-cfx-map-kind=\"world-dotted\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-projection=\"equirectangular\" data-cfx-point-count=\"{series.Points.Count}\" data-cfx-visible-point-count=\"{visiblePoints}\" data-cfx-connector-count=\"{visibleConnectors}\"{valueAttributes} data-cfx-viewport=\"{Escape(viewport.Name)}\" data-cfx-viewport-min-longitude=\"{F(viewport.MinimumLongitude)}\" data-cfx-viewport-max-longitude=\"{F(viewport.MaximumLongitude)}\" data-cfx-viewport-min-latitude=\"{F(viewport.MinimumLatitude)}\" data-cfx-viewport-max-latitude=\"{F(viewport.MaximumLatitude)}\" data-cfx-min-longitude=\"{F(minLongitude)}\" data-cfx-max-longitude=\"{F(maxLongitude)}\" data-cfx-min-latitude=\"{F(minLatitude)}\" data-cfx-max-latitude=\"{F(maxLatitude)}\" role=\"group\" aria-label=\"{Escape(containerSummary)}\">");
         sb.AppendLine($"<g data-cfx-role=\"dotted-map-base-layer\" clip-path=\"url(#{id}-plotClip)\">");
+        DrawDottedMapSurface(sb, chart, map, dot);
         DrawDottedMapGraticule(sb, chart, viewport, map);
         DrawDottedMapViewportShape(sb, chart, viewport, map, dot);
         DrawDottedMapLandAreas(sb, chart, viewport, map);
@@ -44,9 +45,10 @@ public sealed partial class SvgChartRenderer {
                 var latitude = land.Y + offset.Y;
                 if (!IsInsideMapViewport(viewport, longitude, latitude)) continue;
                 if (!IsInsideDottedMapViewportShape(viewport, longitude, latitude)) continue;
+                if (!ShouldDrawDottedMapLandDot(viewport, longitude, latitude)) continue;
                 var x = ProjectMapX(map, viewport, longitude);
                 var y = ProjectMapY(map, viewport, latitude);
-                sb.AppendLine($"<circle data-cfx-role=\"dotted-map-land-dot\" cx=\"{F(x)}\" cy=\"{F(y)}\" r=\"{F(DottedMapLandDotRadius(dot, viewport))}\" fill=\"{landColor.ToCss()}\" opacity=\"{F(landOpacity)}\"/>");
+                AppendSvg(sb, 256, writer => writer.StartElement("circle").Attribute("data-cfx-role", "dotted-map-land-dot").Attribute("cx", x).Attribute("cy", y).Attribute("r", DottedMapLandDotRadius(dot, viewport)).Attribute("fill", landColor.ToCss()).Attribute("opacity", landOpacity).EndEmptyElement().Line());
             }
         }
 
@@ -67,9 +69,31 @@ public sealed partial class SvgChartRenderer {
             var latitude = DottedMapCoordinateText(point.Y, "N", "S");
             var longitude = DottedMapCoordinateText(point.X, "E", "W");
             var summary = value.HasValue ? label + ": " + FormatValue(chart, value.Value) + "; " + latitude + ", " + longitude : label + ": " + latitude + ", " + longitude;
-            var valueAttribute = value.HasValue ? $" data-cfx-value=\"{F(value.Value)}\" data-cfx-formatted-value=\"{Escape(FormatValue(chart, value.Value))}\"" : string.Empty;
-            sb.AppendLine($"<circle data-cfx-role=\"dotted-map-point-halo\" data-cfx-point=\"{i}\" cx=\"{F(x)}\" cy=\"{F(y)}\" r=\"{F(haloRadius)}\" fill=\"{color.ToCss()}\" opacity=\"0.18\"/>");
-            sb.AppendLine($"<circle class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"dotted-map-point\" data-cfx-point=\"{i}\" data-cfx-label=\"{Escape(label)}\"{valueAttribute} data-cfx-longitude=\"{F(point.X)}\" data-cfx-latitude=\"{F(point.Y)}\" data-cfx-longitude-label=\"{Escape(longitude)}\" data-cfx-latitude-label=\"{Escape(latitude)}\" role=\"img\" aria-label=\"{Escape(summary)}\" cx=\"{F(x)}\" cy=\"{F(y)}\" r=\"{F(pointRadius)}\" fill=\"{color.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(Math.Max(1, dot * 0.55))}\"><title>{Escape(summary)}</title></circle>");
+            AppendSvg(sb, 256, writer => writer.StartElement("circle").Attribute("data-cfx-role", "dotted-map-point-halo").Attribute("data-cfx-point", i).Attribute("cx", x).Attribute("cy", y).Attribute("r", haloRadius).Attribute("fill", color.ToCss()).Attribute("opacity", "0.18").EndEmptyElement().Line());
+            AppendSvg(sb, 768, writer => {
+                writer.StartElement("circle")
+                    .Attribute("class", "cfx-interactive-region")
+                    .Attribute("tabindex", "0")
+                    .Attribute("focusable", "true")
+                    .Attribute("data-cfx-role", "dotted-map-point")
+                    .Attribute("data-cfx-point", i)
+                    .Attribute("data-cfx-label", label);
+                if (value.HasValue) writer.Attribute("data-cfx-value", value.Value).Attribute("data-cfx-formatted-value", FormatValue(chart, value.Value));
+                writer.Attribute("data-cfx-longitude", point.X)
+                    .Attribute("data-cfx-latitude", point.Y)
+                    .Attribute("data-cfx-longitude-label", longitude)
+                    .Attribute("data-cfx-latitude-label", latitude)
+                    .Attribute("role", "img")
+                    .Attribute("aria-label", summary)
+                    .Attribute("cx", x)
+                    .Attribute("cy", y)
+                    .Attribute("r", pointRadius)
+                    .Attribute("fill", color.ToCss())
+                    .Attribute("stroke", t.CardBackground.ToCss())
+                    .Attribute("stroke-width", Math.Max(1, dot * 0.55));
+                writer.EndStartElement(); writer.StartElement("title").Text(summary).EndElement();
+                writer.EndElement().Line();
+            });
             if (ShouldDrawDataLabels(chart, series)) DrawDottedMapDataLabel(sb, chart, series, DottedMapDisplayLabel(chart, series, i), i, x, y, Math.Max(dot, pointRadius), map, reservedLabels);
         }
 
@@ -81,13 +105,13 @@ public sealed partial class SvgChartRenderer {
         for (var i = 1; i < 4; i++) {
             var longitude = viewport.MinimumLongitude + (viewport.MaximumLongitude - viewport.MinimumLongitude) * i / 4.0;
             var x = ProjectMapX(map, viewport, longitude);
-            sb.AppendLine($"<line data-cfx-role=\"dotted-map-graticule\" data-cfx-axis=\"longitude\" data-cfx-longitude=\"{F(longitude)}\" x1=\"{F(x)}\" y1=\"{F(map.Top)}\" x2=\"{F(x)}\" y2=\"{F(map.Bottom)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"0.8\" stroke-opacity=\"0.22\"/>");
+            AppendSvg(sb, 384, writer => writer.StartElement("line").Attribute("data-cfx-role", "dotted-map-graticule").Attribute("data-cfx-axis", "longitude").Attribute("data-cfx-longitude", longitude).Attribute("x1", x).Attribute("y1", map.Top).Attribute("x2", x).Attribute("y2", map.Bottom).Attribute("stroke", t.Grid.ToCss()).Attribute("stroke-width", "0.8").Attribute("stroke-opacity", "0.22").EndEmptyElement().Line());
         }
 
         for (var i = 1; i < 3; i++) {
             var latitude = viewport.MinimumLatitude + (viewport.MaximumLatitude - viewport.MinimumLatitude) * i / 3.0;
             var y = ProjectMapY(map, viewport, latitude);
-            sb.AppendLine($"<line data-cfx-role=\"dotted-map-graticule\" data-cfx-axis=\"latitude\" data-cfx-latitude=\"{F(latitude)}\" x1=\"{F(map.Left)}\" y1=\"{F(y)}\" x2=\"{F(map.Right)}\" y2=\"{F(y)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"0.8\" stroke-opacity=\"0.18\"/>");
+            AppendSvg(sb, 384, writer => writer.StartElement("line").Attribute("data-cfx-role", "dotted-map-graticule").Attribute("data-cfx-axis", "latitude").Attribute("data-cfx-latitude", latitude).Attribute("x1", map.Left).Attribute("y1", y).Attribute("x2", map.Right).Attribute("y2", y).Attribute("stroke", t.Grid.ToCss()).Attribute("stroke-width", "0.8").Attribute("stroke-opacity", "0.18").EndEmptyElement().Line());
         }
     }
 
@@ -108,7 +132,7 @@ public sealed partial class SvgChartRenderer {
             }
 
             path.Append(" Z");
-            sb.AppendLine($"<path data-cfx-role=\"dotted-map-viewport-shape\" data-cfx-viewport=\"{Escape(viewport.Name)}\" data-cfx-shape=\"{outlineIndex}\" d=\"{path}\" fill=\"{color.ToCss()}\" fill-opacity=\"0.10\" stroke=\"{color.ToCss()}\" stroke-opacity=\"0.46\" stroke-width=\"{F(Math.Max(1.2, dot * 0.42))}\"/>");
+            AppendSvg(sb, 512, writer => writer.StartElement("path").Attribute("data-cfx-role", "dotted-map-viewport-shape").Attribute("data-cfx-viewport", viewport.Name).Attribute("data-cfx-shape", outlineIndex).Attribute("d", path.ToString()).Attribute("fill", color.ToCss()).Attribute("fill-opacity", "0.10").Attribute("stroke", color.ToCss()).Attribute("stroke-opacity", "0.46").Attribute("stroke-width", Math.Max(1.2, dot * 0.42)).EndEmptyElement().Line());
         }
     }
 
@@ -132,13 +156,56 @@ public sealed partial class SvgChartRenderer {
             var summary = connector.Label + ": " + DottedMapCoordinateText(connector.FromLatitude, "N", "S") + ", " + DottedMapCoordinateText(connector.FromLongitude, "E", "W") + " to " + DottedMapCoordinateText(connector.ToLatitude, "N", "S") + ", " + DottedMapCoordinateText(connector.ToLongitude, "E", "W");
             var strokeWidth = Math.Max(1.2, dot * 0.78);
             var focusStrokeWidth = strokeWidth + Math.Max(1.4, dot * 0.5);
-            sb.AppendLine($"<path data-cfx-role=\"dotted-map-connector-halo\" data-cfx-connector=\"{i}\" d=\"{renderedD}\" fill=\"none\" stroke=\"{t.PlotBackground.ToCss()}\" stroke-width=\"{F(strokeWidth + 3.2)}\" stroke-opacity=\"0.72\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<path class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"dotted-map-connector\" data-cfx-connector=\"{i}\" data-cfx-label=\"{Escape(connector.Label)}\" data-cfx-from-longitude=\"{F(connector.FromLongitude)}\" data-cfx-from-latitude=\"{F(connector.FromLatitude)}\" data-cfx-to-longitude=\"{F(connector.ToLongitude)}\" data-cfx-to-latitude=\"{F(connector.ToLatitude)}\" data-cfx-rendered-from-x=\"{F(renderedFrom.X)}\" data-cfx-rendered-from-y=\"{F(renderedFrom.Y)}\" data-cfx-rendered-to-x=\"{F(renderedTo.X)}\" data-cfx-rendered-to-y=\"{F(renderedTo.Y)}\" data-cfx-control-x=\"{F(control.X)}\" data-cfx-control-y=\"{F(control.Y)}\" style=\"--cfx-interactive-focus-stroke-width:{F(focusStrokeWidth)}\" role=\"img\" aria-label=\"{Escape(summary)}\" d=\"{renderedD}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(strokeWidth)}\" stroke-opacity=\"0.72\" stroke-linecap=\"round\"><title>{Escape(summary)}</title></path>");
-            sb.AppendLine($"<path data-cfx-role=\"dotted-map-connector-arrow\" data-cfx-connector=\"{i}\" data-cfx-label=\"{Escape(connector.Label)}\" d=\"{BuildDottedMapConnectorArrowPath(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot)}\" fill=\"{color.ToCss()}\" fill-opacity=\"0.78\" stroke=\"{t.PlotBackground.ToCss()}\" stroke-opacity=\"0.78\" stroke-width=\"{F(Math.Max(0.8, strokeWidth * 0.48))}\" stroke-linejoin=\"round\"><title>{Escape(summary)}</title></path>");
+            AppendSvg(sb, 384, writer => writer.StartElement("path").Attribute("data-cfx-role", "dotted-map-connector-halo").Attribute("data-cfx-connector", i).Attribute("d", renderedD).Attribute("fill", "none").Attribute("stroke", t.PlotBackground.ToCss()).Attribute("stroke-width", strokeWidth + 3.2).Attribute("stroke-opacity", "0.72").Attribute("stroke-linecap", "round").EndEmptyElement().Line());
+            AppendSvg(sb, 1024, writer => {
+                writer.StartElement("path")
+                    .Attribute("class", "cfx-interactive-region")
+                    .Attribute("tabindex", "0")
+                    .Attribute("focusable", "true")
+                    .Attribute("data-cfx-role", "dotted-map-connector")
+                    .Attribute("data-cfx-connector", i)
+                    .Attribute("data-cfx-label", connector.Label)
+                    .Attribute("data-cfx-from-longitude", connector.FromLongitude)
+                    .Attribute("data-cfx-from-latitude", connector.FromLatitude)
+                    .Attribute("data-cfx-to-longitude", connector.ToLongitude)
+                    .Attribute("data-cfx-to-latitude", connector.ToLatitude)
+                    .Attribute("data-cfx-rendered-from-x", renderedFrom.X)
+                    .Attribute("data-cfx-rendered-from-y", renderedFrom.Y)
+                    .Attribute("data-cfx-rendered-to-x", renderedTo.X)
+                    .Attribute("data-cfx-rendered-to-y", renderedTo.Y)
+                    .Attribute("data-cfx-control-x", control.X)
+                    .Attribute("data-cfx-control-y", control.Y)
+                    .Attribute("style", "--cfx-interactive-focus-stroke-width:" + F(focusStrokeWidth))
+                    .Attribute("role", "img")
+                    .Attribute("aria-label", summary)
+                    .Attribute("d", renderedD)
+                    .Attribute("fill", "none")
+                    .Attribute("stroke", color.ToCss())
+                    .Attribute("stroke-width", strokeWidth)
+                    .Attribute("stroke-opacity", "0.72")
+                    .Attribute("stroke-linecap", "round");
+                writer.EndStartElement(); writer.StartElement("title").Text(summary).EndElement();
+                writer.EndElement().Line();
+            });
+            AppendSvg(sb, 768, writer => {
+                writer.StartElement("path")
+                    .Attribute("data-cfx-role", "dotted-map-connector-arrow")
+                    .Attribute("data-cfx-connector", i)
+                    .Attribute("data-cfx-label", connector.Label)
+                    .Attribute("d", BuildDottedMapConnectorArrowPath(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot))
+                    .Attribute("fill", color.ToCss())
+                    .Attribute("fill-opacity", "0.78")
+                    .Attribute("stroke", t.PlotBackground.ToCss())
+                    .Attribute("stroke-opacity", "0.78")
+                    .Attribute("stroke-width", Math.Max(0.8, strokeWidth * 0.48))
+                    .Attribute("stroke-linejoin", "round");
+                writer.EndStartElement(); writer.StartElement("title").Text(summary).EndElement();
+                writer.EndElement().Line();
+            });
             if (ShouldDrawDataLabels(chart, series)) {
                 var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.5);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
-                sb.AppendLine($"<text data-cfx-role=\"dotted-map-connector-label\" data-cfx-connector=\"{i}\" data-cfx-label=\"{Escape(connector.Label)}\" x=\"{F(labelPoint.X)}\" y=\"{F(labelPoint.Y - Math.Max(7, dot * 2.2))}\" text-anchor=\"middle\" fill=\"{color.ToCss()}\" stroke=\"{t.PlotBackground.ToCss()}\" stroke-width=\"3\" paint-order=\"stroke\" font-size=\"12\" font-weight=\"700\">{Escape(label)}</text>");
+                AppendSvg(sb, 512, writer => writer.StartElement("text").Attribute("data-cfx-role", "dotted-map-connector-label").Attribute("data-cfx-connector", i).Attribute("data-cfx-label", connector.Label).Attribute("x", labelPoint.X).Attribute("y", labelPoint.Y - Math.Max(7, dot * 2.2)).Attribute("text-anchor", "middle").Attribute("fill", color.ToCss()).Attribute("stroke", t.PlotBackground.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke").Attribute("font-size", "12").Attribute("font-weight", "700").Text(label).EndElement().Line());
             }
         }
     }
@@ -263,7 +330,7 @@ public sealed partial class SvgChartRenderer {
                 path.Append(F(ProjectMapX(map, viewport, point.X))).Append(' ').Append(F(ProjectMapY(map, viewport, point.Y)));
             }
 
-            sb.AppendLine($"<path data-cfx-role=\"dotted-map-boundary\" data-cfx-viewport=\"{Escape(viewport.Name)}\" data-cfx-boundary=\"{lineIndex}\" d=\"{path}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(strokeWidth)}\" stroke-opacity=\"{F(opacity)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>");
+            AppendSvg(sb, 512, writer => writer.StartElement("path").Attribute("data-cfx-role", "dotted-map-boundary").Attribute("data-cfx-viewport", viewport.Name).Attribute("data-cfx-boundary", lineIndex).Attribute("d", path.ToString()).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", strokeWidth).Attribute("stroke-opacity", opacity).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line());
         }
     }
 
@@ -284,7 +351,7 @@ public sealed partial class SvgChartRenderer {
             }
 
             path.Append(" Z");
-            sb.AppendLine($"<path data-cfx-role=\"dotted-map-land-area\" data-cfx-viewport=\"{Escape(viewport.Name)}\" data-cfx-boundary=\"{lineIndex}\" d=\"{path}\" fill=\"{color.ToCss()}\" fill-opacity=\"{F(opacity)}\"/>");
+            AppendSvg(sb, 512, writer => writer.StartElement("path").Attribute("data-cfx-role", "dotted-map-land-area").Attribute("data-cfx-viewport", viewport.Name).Attribute("data-cfx-boundary", lineIndex).Attribute("d", path.ToString()).Attribute("fill", color.ToCss()).Attribute("fill-opacity", opacity).EndEmptyElement().Line());
         }
     }
 
@@ -327,7 +394,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double DottedMapLandDotOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.28 : 0.58;
+        IsLightDottedMapSurface(plotBackground) ? 0.14 : 0.44;
 
     private static double DottedMapLandDotRadius(double dot, ChartMapViewport viewport) =>
         DottedMapBoundaryLines(viewport).Length == 0 ? dot / 2 : Math.Max(0.8, dot * 0.34);
@@ -451,7 +518,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var radius = Math.Min(6, placement.Bounds.Height / 2);
         DrawDottedMapLabelLeader(sb, chart, label, placement, pointX, pointY, dot);
-        sb.AppendLine($"<rect data-cfx-role=\"dotted-map-label-backdrop\" data-cfx-label=\"{Escape(label)}\" data-cfx-placement=\"{placement.Placement}\" x=\"{F(placement.Bounds.X)}\" y=\"{F(placement.Bounds.Y)}\" width=\"{F(placement.Bounds.Width)}\" height=\"{F(placement.Bounds.Height)}\" rx=\"{F(radius)}\" fill=\"{t.CardBackground.ToCss()}\" fill-opacity=\"0.86\" stroke=\"{t.PlotBorder.ToCss()}\" stroke-opacity=\"0.46\"/>");
+        AppendSvg(sb, 512, writer => writer.StartElement("rect").Attribute("data-cfx-role", "dotted-map-label-backdrop").Attribute("data-cfx-label", label).Attribute("data-cfx-placement", placement.Placement).Attribute("x", placement.Bounds.X).Attribute("y", placement.Bounds.Y).Attribute("width", placement.Bounds.Width).Attribute("height", placement.Bounds.Height).Attribute("rx", radius).Attribute("fill", t.CardBackground.ToCss()).Attribute("fill-opacity", "0.86").Attribute("stroke", t.PlotBorder.ToCss()).Attribute("stroke-opacity", "0.46").EndEmptyElement().Line());
         sb.AppendLine($"<text data-cfx-role=\"dotted-map-label\" data-cfx-label=\"{Escape(label)}\" data-cfx-placement=\"{placement.Placement}\" x=\"{F(placement.X)}\" y=\"{F(placement.Y)}\" text-anchor=\"{placement.Anchor}\" dominant-baseline=\"middle\" fill=\"{StyleColor(style, t.Text).ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"1.2\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(StyleFontSize(style, t.DataLabelFontSize))}\" font-weight=\"{StyleWeight(style, "700")}\"{SvgTextStyleAttributes(style)}>{Escape(label)}</text>");
     }
 
@@ -466,7 +533,7 @@ public sealed partial class SvgChartRenderer {
         var startX = pointX + dx / length * startGap;
         var startY = pointY + dy / length * startGap;
         var t = chart.Options.Theme;
-        sb.AppendLine($"<line data-cfx-role=\"dotted-map-label-leader\" data-cfx-label=\"{Escape(label)}\" data-cfx-placement=\"{placement.Placement}\" x1=\"{F(startX)}\" y1=\"{F(startY)}\" x2=\"{F(end.X)}\" y2=\"{F(end.Y)}\" stroke=\"{DottedMapBoundaryColor(t.PlotBackground, t.MutedText).ToCss()}\" stroke-opacity=\"0.52\" stroke-width=\"{F(Math.Max(0.85, dot * 0.22))}\" stroke-linecap=\"round\"/>");
+        AppendSvg(sb, 512, writer => writer.StartElement("line").Attribute("data-cfx-role", "dotted-map-label-leader").Attribute("data-cfx-label", label).Attribute("data-cfx-placement", placement.Placement).Attribute("x1", startX).Attribute("y1", startY).Attribute("x2", end.X).Attribute("y2", end.Y).Attribute("stroke", DottedMapBoundaryColor(t.PlotBackground, t.MutedText).ToCss()).Attribute("stroke-opacity", "0.52").Attribute("stroke-width", Math.Max(0.85, dot * 0.22)).Attribute("stroke-linecap", "round").EndEmptyElement().Line());
     }
 
     private static ChartPoint DottedMapLabelLeaderEndpoint(ChartLabelBounds bounds, double pointX, double pointY) {
@@ -603,7 +670,7 @@ public sealed partial class SvgChartRenderer {
         return Math.Abs(viewport.MinimumLongitude - (-11)) < 0.000001 &&
             Math.Abs(viewport.MaximumLongitude - 35) < 0.000001 &&
             Math.Abs(viewport.MinimumLatitude - 36) < 0.000001 &&
-            Math.Abs(viewport.MaximumLatitude - 66.5) < 0.000001;
+            Math.Abs(viewport.MaximumLatitude - 72) < 0.000001;
     }
 
     private static bool IsNorthAmericaDottedMapViewport(ChartMapViewport viewport) {

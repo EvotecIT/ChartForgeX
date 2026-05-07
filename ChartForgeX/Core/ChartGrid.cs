@@ -363,8 +363,8 @@ public sealed class ChartGrid {
             if (series.Kind == ChartSeriesKind.Heatmap ||
                 series.Kind == ChartSeriesKind.CalendarHeatmap ||
                 series.Kind == ChartSeriesKind.DottedMap ||
-                series.Kind == ChartSeriesKind.UsStateTileMap ||
-                series.Kind == ChartSeriesKind.UsStateGeoMap ||
+                series.Kind == ChartSeriesKind.TileMap ||
+                series.Kind == ChartSeriesKind.RegionMap ||
                 series.Kind == ChartSeriesKind.Gauge ||
                 series.Kind == ChartSeriesKind.Circle ||
                 series.Kind == ChartSeriesKind.RadialBar ||
@@ -413,8 +413,8 @@ public sealed class ChartGrid {
             series.Kind != ChartSeriesKind.Heatmap &&
             series.Kind != ChartSeriesKind.CalendarHeatmap &&
             series.Kind != ChartSeriesKind.DottedMap &&
-            series.Kind != ChartSeriesKind.UsStateTileMap &&
-            series.Kind != ChartSeriesKind.UsStateGeoMap &&
+            series.Kind != ChartSeriesKind.TileMap &&
+            series.Kind != ChartSeriesKind.RegionMap &&
             series.Kind != ChartSeriesKind.Gauge &&
             series.Kind != ChartSeriesKind.Circle &&
             series.Kind != ChartSeriesKind.RadialBar &&

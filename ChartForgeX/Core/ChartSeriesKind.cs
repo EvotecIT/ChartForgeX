@@ -100,14 +100,14 @@ public enum ChartSeriesKind {
     DottedMap,
 
     /// <summary>
-    /// Renders United States regions as a value-colored tile map.
+    /// Renders regions from a reusable tile-map definition as a cartogram.
     /// </summary>
-    UsStateTileMap,
+    TileMap,
 
     /// <summary>
-    /// Renders United States regions as a simplified geographic choropleth map.
+    /// Renders regions from a reusable map definition as a geographic choropleth map.
     /// </summary>
-    UsStateGeoMap,
+    RegionMap,
 
     /// <summary>
     /// Renders a single-value radial gauge.
