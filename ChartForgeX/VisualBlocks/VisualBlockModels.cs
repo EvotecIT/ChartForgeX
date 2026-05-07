@@ -300,6 +300,7 @@ public sealed class ChartTableColumn {
     public ChartTableColumn(string header, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null, string? format = null) {
         Header = header ?? throw new ArgumentNullException(nameof(header));
         VisualBlockGuards.EnumDefined(alignment, nameof(alignment));
+        if (width.HasValue) VisualBlockGuards.PositiveFinite(width.Value, nameof(width));
         Alignment = alignment;
         Width = width;
         Format = format;
@@ -336,14 +337,18 @@ public sealed class ChartTableRow {
 /// Describes one chart table cell.
 /// </summary>
 public sealed class ChartTableCell {
+    private string _text;
     private VisualTextAlignment? _alignment;
     private VisualStatus _status;
 
     /// <summary>Initializes a table cell.</summary>
-    public ChartTableCell(string text) => Text = text ?? throw new ArgumentNullException(nameof(text));
+    public ChartTableCell(string text) => _text = text ?? throw new ArgumentNullException(nameof(text));
 
     /// <summary>Gets or sets the cell text.</summary>
-    public string Text { get; set; }
+    public string Text {
+        get => _text;
+        set => _text = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>Gets or sets an optional text alignment override.</summary>
     public VisualTextAlignment? Alignment {
@@ -435,16 +440,20 @@ public sealed class ChartList : VisualBlock<ChartList> {
 /// Describes a chart list item.
 /// </summary>
 public sealed class ChartListItem {
+    private string _text;
     private VisualStatus _status;
 
     /// <summary>Initializes a list item.</summary>
     public ChartListItem(string text, string? value = null) {
-        Text = text ?? throw new ArgumentNullException(nameof(text));
+        _text = text ?? throw new ArgumentNullException(nameof(text));
         Value = value;
     }
 
     /// <summary>Gets or sets the item text.</summary>
-    public string Text { get; set; }
+    public string Text {
+        get => _text;
+        set => _text = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>Gets or sets an optional trailing value.</summary>
     public string? Value { get; set; }
@@ -655,5 +664,9 @@ public sealed class VisualGridItem {
 internal static class VisualBlockGuards {
     public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + typeof(TEnum).Name + " value.");
+    }
+
+    public static void PositiveFinite(double value, string parameterName) {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite and greater than zero.");
     }
 }
