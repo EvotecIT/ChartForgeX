@@ -9,6 +9,7 @@ namespace ChartForgeX.Topology;
 /// Renders topology charts into simple HTML wrappers with inline SVG.
 /// </summary>
 public sealed class TopologyHtmlRenderer {
+    private const string DefaultCssClassPrefix = "cfx-topology";
     private readonly TopologySvgRenderer _svg = new();
 
     /// <summary>
@@ -22,15 +23,19 @@ public sealed class TopologyHtmlRenderer {
         options ??= new TopologyRenderOptions();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
+        var cssPrefix = CssClassPrefix(options);
+        var wrapperClass = cssPrefix + "-wrapper";
+        var viewportClass = cssPrefix + "-viewport";
+        var controlsClass = cssPrefix + "-controls";
         var enableViewportControls = options.EnableHtmlInteractions && options.EnableHtmlViewportControls;
         var enableExportControls = options.EnableHtmlInteractions && options.EnableHtmlExportControls;
         var enableSync = options.EnableHtmlInteractions && options.EnableHtmlSynchronizedState && !string.IsNullOrWhiteSpace(options.HtmlSyncGroupName);
         var syncGroup = enableSync ? options.HtmlSyncGroupName!.Trim() : string.Empty;
         var sb = new StringBuilder();
-        sb.Append("<div class=\"cfx-topology-wrapper\" data-chart-id=\"").Append(EscapeAttr(id)).Append("\" data-layout-mode=\"").Append(chart.LayoutMode).Append("\" data-cfx-interactive=\"").Append(options.EnableHtmlInteractions ? "true" : "false").Append("\" data-cfx-viewport-controls=\"").Append(enableViewportControls ? "true" : "false").Append("\" data-cfx-export-controls=\"").Append(enableExportControls ? "true" : "false").Append("\" data-cfx-sync-enabled=\"").Append(enableSync ? "true" : "false").Append("\" data-cfx-sync-group=\"").Append(EscapeAttr(syncGroup)).Append("\" style=\"width:100%;max-width:").Append(chart.Viewport.Width.ToString("0.###", CultureInfo.InvariantCulture)).Append("px;box-sizing:border-box\">");
-        sb.Append("<div class=\"cfx-topology-viewport\">");
+        sb.Append("<div class=\"").Append(EscapeAttr(wrapperClass)).Append("\" data-chart-id=\"").Append(EscapeAttr(id)).Append("\" data-layout-mode=\"").Append(chart.LayoutMode).Append("\" data-cfx-interactive=\"").Append(options.EnableHtmlInteractions ? "true" : "false").Append("\" data-cfx-viewport-controls=\"").Append(enableViewportControls ? "true" : "false").Append("\" data-cfx-export-controls=\"").Append(enableExportControls ? "true" : "false").Append("\" data-cfx-sync-enabled=\"").Append(enableSync ? "true" : "false").Append("\" data-cfx-sync-group=\"").Append(EscapeAttr(syncGroup)).Append("\" style=\"width:100%;max-width:").Append(chart.Viewport.Width.ToString("0.###", CultureInfo.InvariantCulture)).Append("px;box-sizing:border-box\">");
+        sb.Append("<div class=\"").Append(EscapeAttr(viewportClass)).Append("\">");
         if (enableViewportControls || enableExportControls) {
-            sb.Append("<div class=\"cfx-topology-controls\" aria-label=\"Topology controls\">");
+            sb.Append("<div class=\"").Append(EscapeAttr(controlsClass)).Append("\" aria-label=\"Topology controls\">");
             if (enableViewportControls) {
                 sb.Append("<button type=\"button\" data-cfx-topology-zoom=\"in\" title=\"Zoom in\" aria-label=\"Zoom in\">+</button>")
                     .Append("<button type=\"button\" data-cfx-topology-zoom=\"out\" title=\"Zoom out\" aria-label=\"Zoom out\">-</button>")
@@ -62,6 +67,7 @@ public sealed class TopologyHtmlRenderer {
         options ??= new TopologyRenderOptions();
         var theme = chart.Theme ?? TopologyTheme.Light();
         var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX topology" : chart.Title!;
+        var cssPrefix = CssClassPrefix(options);
         var sb = new StringBuilder();
         sb.AppendLine("<!doctype html>");
         sb.AppendLine("<html lang=\"en\">");
@@ -69,18 +75,27 @@ public sealed class TopologyHtmlRenderer {
         sb.AppendLine("<meta charset=\"utf-8\">");
         sb.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
         sb.AppendLine("<title>" + Escape(title) + "</title>");
-        sb.AppendLine("<style>body{margin:0;min-height:100vh;background:" + EscapeAttr(theme.Background) + ";font-family:" + CssFontFamily(theme.FontFamily) + ";padding:24px;box-sizing:border-box}.cfx-topology-wrapper{margin:0 auto}.cfx-topology-viewport{position:relative}.cfx-topology-wrapper svg{max-width:100%;height:auto;display:block}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport{overflow:hidden;touch-action:none}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] svg{transform:translate(var(--cfx-topology-pan-x,0),var(--cfx-topology-pan-y,0)) scale(var(--cfx-topology-zoom,1));transform-origin:center center;transition:transform .12s ease;will-change:transform}.cfx-topology-controls{position:absolute;z-index:5;top:12px;left:12px;display:grid;gap:6px}.cfx-topology-controls button{min-width:34px;height:34px;border:1px solid rgba(37,99,235,.28);border-radius:6px;background:rgba(255,255,255,.92);color:#1e3a8a;cursor:pointer;font:700 12px/1 " + CssFontFamily(theme.FontFamily) + ";box-shadow:0 8px 18px rgba(15,23,42,.1)}.cfx-topology-controls button:hover,.cfx-topology-controls button:focus-visible,.cfx-topology-controls button[aria-pressed='true']{border-color:#2563eb;color:#0f172a;background:#eff6ff}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport{cursor:grab}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport:active{cursor:grabbing}.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge'],.cfx-topology-wrapper [data-cfx-role='topology-group']{cursor:pointer}.cfx-topology-wrapper .cfx-topology-html-selected{filter:drop-shadow(0 10px 18px rgba(37,99,235,.22))}.cfx-topology-wrapper .cfx-topology-html-muted{opacity:.32}.cfx-topology-wrapper .cfx-topology-html-related{opacity:1}.cfx-topology-wrapper .cfx-topology-html-hovered{filter:drop-shadow(0 8px 16px rgba(15,23,42,.16))}.cfx-topology-wrapper .cfx-topology-html-hover-muted{opacity:.42}.cfx-topology-wrapper .cfx-topology-html-hover-related{opacity:1}</style>");
+        sb.AppendLine("<style>" + StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), EscapeAttr(theme.Background)) + "</style>");
         sb.AppendLine("</head>");
         sb.AppendLine("<body>");
         sb.AppendLine(RenderFragment(chart, options));
-        if (options.EnableHtmlInteractions) sb.AppendLine(InteractionScript());
+        if (options.EnableHtmlInteractions) sb.AppendLine(InteractionScript(cssPrefix));
         sb.AppendLine("</body>");
         sb.AppendLine("</html>");
         return sb.ToString();
     }
 
-    private static string InteractionScript() {
-        return """
+    private static string StyleSheet(string cssPrefix, string fontFamily, string background) {
+        var stylesheet = "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:24px;box-sizing:border-box}.cfx-topology-wrapper{margin:0 auto}.cfx-topology-viewport{position:relative}.cfx-topology-wrapper svg{max-width:100%;height:auto;display:block}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport{overflow:hidden;touch-action:none}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] svg{transform:translate(var(--cfx-topology-pan-x,0),var(--cfx-topology-pan-y,0)) scale(var(--cfx-topology-zoom,1));transform-origin:center center;transition:transform .12s ease;will-change:transform}.cfx-topology-controls{position:absolute;z-index:5;top:12px;left:12px;display:grid;gap:6px}.cfx-topology-controls button{min-width:34px;height:34px;border:1px solid rgba(37,99,235,.28);border-radius:6px;background:rgba(255,255,255,.92);color:#1e3a8a;cursor:pointer;font:700 12px/1 " + fontFamily + ";box-shadow:0 8px 18px rgba(15,23,42,.1)}.cfx-topology-controls button:hover,.cfx-topology-controls button:focus-visible,.cfx-topology-controls button[aria-pressed='true']{border-color:#2563eb;color:#0f172a;background:#eff6ff}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport{cursor:grab}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport:active{cursor:grabbing}.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge'],.cfx-topology-wrapper [data-cfx-role='topology-group']{cursor:pointer}.cfx-topology-wrapper .cfx-topology-html-selected{filter:drop-shadow(0 10px 18px rgba(37,99,235,.22))}.cfx-topology-wrapper .cfx-topology-html-muted{opacity:.32}.cfx-topology-wrapper .cfx-topology-html-related{opacity:1}.cfx-topology-wrapper .cfx-topology-html-hovered{filter:drop-shadow(0 8px 16px rgba(15,23,42,.16))}.cfx-topology-wrapper .cfx-topology-html-hover-muted{opacity:.42}.cfx-topology-wrapper .cfx-topology-html-hover-related{opacity:1}";
+        return stylesheet
+            .Replace(".cfx-topology-wrapper", "." + cssPrefix + "-wrapper")
+            .Replace(".cfx-topology-viewport", "." + cssPrefix + "-viewport")
+            .Replace(".cfx-topology-controls", "." + cssPrefix + "-controls")
+            .Replace(".cfx-topology-html-", "." + cssPrefix + "-html-");
+    }
+
+    private static string InteractionScript(string cssPrefix) {
+        var script = """
 <script>
 (() => {
   for (const wrapper of document.querySelectorAll('.cfx-topology-wrapper[data-cfx-interactive="true"]')) {
@@ -594,6 +609,22 @@ public sealed class TopologyHtmlRenderer {
 })();
 </script>
 """;
+        return script
+            .Replace(".cfx-topology-wrapper", "." + cssPrefix + "-wrapper")
+            .Replace(".cfx-topology-viewport", "." + cssPrefix + "-viewport")
+            .Replace("cfx-topology-html-", cssPrefix + "-html-");
+    }
+
+    private static string CssClassPrefix(TopologyRenderOptions options) {
+        var value = string.IsNullOrWhiteSpace(options.CssClassPrefix) ? DefaultCssClassPrefix : options.CssClassPrefix!.Trim();
+        var sb = new StringBuilder(value.Length);
+        foreach (var ch in value) {
+            sb.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' ? ch : '-');
+        }
+
+        if (sb.Length == 0) return DefaultCssClassPrefix;
+        if (char.IsDigit(sb[0])) sb.Insert(0, "cfx-");
+        return sb.ToString();
     }
 
 }

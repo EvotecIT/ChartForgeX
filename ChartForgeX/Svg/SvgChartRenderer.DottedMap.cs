@@ -655,7 +655,6 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static bool IsVisibleMapCoordinate(ChartMapViewport viewport, double longitude, double latitude) {
-        if (IsWorldMapViewport(viewport)) return longitude >= viewport.MinimumLongitude && longitude <= viewport.MaximumLongitude && latitude >= -90 && latitude <= 90;
         return IsInsideMapViewport(viewport, longitude, latitude);
     }
 

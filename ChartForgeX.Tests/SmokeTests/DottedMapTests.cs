@@ -52,7 +52,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("<title>Spain: 40.417 N, 3.704 W</title>", StringComparison.Ordinal), "Dotted map hover titles should use trimmed labels.");
     }
 
-    private static void DottedMapClampsPolarPointsIntoVisibleMapBand() {
+    private static void DottedMapWorldViewportSuppressesPolarPointsOutsideMapBand() {
         var chart = Chart.Create()
             .WithSize(360, 220)
             .AddDottedMap("Extremes", new[] {
@@ -61,17 +61,15 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        var height = GetAttribute(svg, "<svg", "height");
-        var northY = GetAttribute(svg, "data-cfx-label=\"North Pole\"", "cy");
-        var southY = GetAttribute(svg, "data-cfx-label=\"South Pole\"", "cy");
-        Assert(northY >= 0 && northY <= height, "Dotted map north-pole points should remain inside the SVG viewport.");
-        Assert(southY >= 0 && southY <= height, "Dotted map south-pole points should remain inside the SVG viewport.");
-        Assert(svg.Contains("data-cfx-latitude=\"90\"", StringComparison.Ordinal), "Dotted map metadata should preserve the source latitude.");
-        Assert(svg.Contains("data-cfx-latitude=\"-90\"", StringComparison.Ordinal), "Dotted map metadata should preserve the source latitude.");
-        Assert(chart.ToPng().Length > 64, "Dotted maps with polar points should render PNG output.");
+        Assert(svg.Contains("data-cfx-point-count=\"2\"", StringComparison.Ordinal), "Dotted map containers should preserve the source point count.");
+        Assert(svg.Contains("data-cfx-visible-point-count=\"0\"", StringComparison.Ordinal), "The world viewport should not treat polar points outside its latitude band as visible.");
+        Assert(!svg.Contains("data-cfx-role=\"dotted-map-point\"", StringComparison.Ordinal), "Out-of-viewport polar points should not be clamped onto the visible map edge.");
+        Assert(!svg.Contains("data-cfx-label=\"North Pole\"", StringComparison.Ordinal), "Out-of-viewport polar point labels should not render at misleading edge positions.");
+        Assert(!svg.Contains("data-cfx-label=\"South Pole\"", StringComparison.Ordinal), "Out-of-viewport polar point labels should not render at misleading edge positions.");
+        Assert(chart.ToPng().Length > 64, "Dotted maps with out-of-viewport polar source data should render PNG output.");
     }
 
-    private static void DottedMapDataLabelsStayInsideFittedMapBand() {
+    private static void DottedMapDataLabelsSuppressPolarPointsOutsideMapBand() {
         var chart = Chart.Create()
             .WithSize(360, 220)
             .WithDataLabels()
@@ -81,13 +79,11 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        var height = GetAttribute(svg, "<svg", "height");
-        var labelY = GetAttribute(svg, "data-cfx-role=\"dotted-map-label\"", "y");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-label\"") == 2, "Dotted maps should render optional data labels for highlighted points.");
-        Assert(labelY >= 0 && labelY <= height, "Dotted map SVG data labels should remain inside the SVG viewport.");
-        Assert(svg.Contains("data-cfx-label=\"North Pole\"", StringComparison.Ordinal), "Dotted map SVG data labels should keep readable point names when the fitted map band has room.");
-        Assert(svg.Contains("data-cfx-placement=\"top\"", StringComparison.Ordinal), "Dotted map SVG data labels should expose placement metadata.");
-        Assert(chart.ToPng().Length > 64, "Dotted maps with data labels should render PNG output.");
+        Assert(svg.Contains("data-cfx-visible-point-count=\"0\"", StringComparison.Ordinal), "World dotted maps should suppress source points outside the actual visible latitude band.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-label\"") == 0, "Dotted map data labels should not render for out-of-viewport points.");
+        Assert(!svg.Contains("data-cfx-label=\"North Pole\"", StringComparison.Ordinal), "Out-of-viewport point labels should not be clamped into the fitted map band.");
+        Assert(!svg.Contains("data-cfx-label=\"South Pole\"", StringComparison.Ordinal), "Out-of-viewport point labels should not be clamped into the fitted map band.");
+        Assert(chart.ToPng().Length > 64, "Dotted maps with out-of-viewport data labels should render PNG output.");
     }
 
     private static void DottedMapClusteredLabelsUseAlternatePlacements() {

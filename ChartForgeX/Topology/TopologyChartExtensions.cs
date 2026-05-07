@@ -18,7 +18,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithId(this TopologyChart chart, string id) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Id = id;
+        chart.Id = RequiredText(id, nameof(id), "Topology chart ids");
         return chart;
     }
 
@@ -54,6 +54,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithLayout(this TopologyChart chart, TopologyLayoutMode layoutMode) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyLayoutMode), layoutMode, nameof(layoutMode), "Topology layout modes");
         chart.LayoutMode = layoutMode;
         return chart;
     }
@@ -67,6 +68,8 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithLayout(this TopologyChart chart, TopologyLayoutMode layoutMode, TopologyLayoutDirection layoutDirection) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyLayoutMode), layoutMode, nameof(layoutMode), "Topology layout modes");
+        ValidateEnum(typeof(TopologyLayoutDirection), layoutDirection, nameof(layoutDirection), "Topology layout directions");
         chart.LayoutMode = layoutMode;
         chart.LayoutDirection = layoutDirection;
         return chart;
@@ -80,6 +83,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithLayoutDirection(this TopologyChart chart, TopologyLayoutDirection layoutDirection) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyLayoutDirection), layoutDirection, nameof(layoutDirection), "Topology layout directions");
         chart.LayoutDirection = layoutDirection;
         return chart;
     }
@@ -94,6 +98,9 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithViewport(this TopologyChart chart, double width, double height, double padding = 24) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidatePositive(width, nameof(width), "Topology viewport widths");
+        ValidatePositive(height, nameof(height), "Topology viewport heights");
+        ValidateNonNegative(padding, nameof(padding), "Topology viewport padding");
         chart.Viewport = new TopologyViewport { Width = width, Height = height, Padding = padding };
         return chart;
     }
@@ -154,7 +161,14 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart AddGroup(this TopologyChart chart, string id, string label, double x, double y, double width, double height, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Groups.Add(new TopologyGroup { Id = id, Label = label, X = x, Y = y, Width = width, Height = height, Status = status, Subtitle = subtitle, Href = href, Tooltip = tooltip, CssClass = cssClass, Symbol = symbol, Color = color });
+        var groupId = RequiredText(id, nameof(id), "Topology group ids");
+        var groupLabel = RequiredText(label, nameof(label), "Topology group labels");
+        ValidateFinite(x, nameof(x), "Topology group x-coordinates");
+        ValidateFinite(y, nameof(y), "Topology group y-coordinates");
+        ValidateNonNegative(width, nameof(width), "Topology group widths");
+        ValidateNonNegative(height, nameof(height), "Topology group heights");
+        ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
+        chart.Groups.Add(new TopologyGroup { Id = groupId, Label = groupLabel, X = x, Y = y, Width = width, Height = height, Status = status, Subtitle = subtitle, Href = href, Tooltip = tooltip, CssClass = cssClass, Symbol = symbol, Color = color });
         return chart;
     }
 
@@ -180,7 +194,16 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Nodes.Add(new TopologyNode { Id = id, Label = label, X = x, Y = y, Kind = kind, Symbol = symbol, Status = status, GroupId = groupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color });
+        var nodeId = RequiredText(id, nameof(id), "Topology node ids");
+        var nodeLabel = RequiredText(label, nameof(label), "Topology node labels");
+        ValidateFinite(x, nameof(x), "Topology node x-coordinates");
+        ValidateFinite(y, nameof(y), "Topology node y-coordinates");
+        ValidatePositive(width, nameof(width), "Topology node widths");
+        ValidatePositive(height, nameof(height), "Topology node heights");
+        ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
+        ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
+        var nodeGroupId = string.IsNullOrWhiteSpace(groupId) ? null : groupId!.Trim();
+        chart.Nodes.Add(new TopologyNode { Id = nodeId, Label = nodeLabel, X = x, Y = y, Kind = kind, Symbol = symbol, Status = status, GroupId = nodeGroupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color });
         return chart;
     }
 
@@ -194,6 +217,8 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithNodeDisplay(this TopologyChart chart, string nodeId, TopologyNodeDisplayMode displayMode, string? badge = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
+        ValidateEnum(typeof(TopologyNodeDisplayMode), displayMode, nameof(displayMode), "Topology node display modes");
         foreach (var node in chart.Nodes) {
             if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
             node.DisplayMode = displayMode;
@@ -214,6 +239,8 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithNodesDisplay(this TopologyChart chart, TopologyNodeKind kind, TopologyNodeDisplayMode displayMode, string? badge = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
+        ValidateEnum(typeof(TopologyNodeDisplayMode), displayMode, nameof(displayMode), "Topology node display modes");
         foreach (var node in chart.Nodes) {
             if (node.Kind != kind) continue;
             node.DisplayMode = displayMode;
@@ -232,6 +259,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithNodeBadge(this TopologyChart chart, string nodeId, string? badge) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
         foreach (var node in chart.Nodes) {
             if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
             node.Badge = badge;
@@ -250,6 +278,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithNodeColor(this TopologyChart chart, string nodeId, string? color) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
         foreach (var node in chart.Nodes) {
             if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
             node.Color = color;
@@ -269,6 +298,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithNodeCoordinates(this TopologyChart chart, string nodeId, double longitude, double latitude) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
         ValidateCoordinate(longitude, latitude);
         foreach (var node in chart.Nodes) {
             if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
@@ -289,6 +319,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithGroupSymbol(this TopologyChart chart, string groupId, string? symbol) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
         foreach (var group in chart.Groups) {
             if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
             group.Symbol = symbol;
@@ -307,6 +338,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithGroupColor(this TopologyChart chart, string groupId, string? color) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
         foreach (var group in chart.Groups) {
             if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
             group.Color = color;
@@ -325,6 +357,8 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithGroupLayout(this TopologyChart chart, string groupId, TopologyGroupLayoutPolicy layoutPolicy) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
+        ValidateEnum(typeof(TopologyGroupLayoutPolicy), layoutPolicy, nameof(layoutPolicy), "Topology group layout policies");
         foreach (var group in chart.Groups) {
             if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
             group.LayoutPolicy = layoutPolicy;
@@ -344,6 +378,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithGroupCoordinates(this TopologyChart chart, string groupId, double longitude, double latitude) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
         ValidateCoordinate(longitude, latitude);
         foreach (var group in chart.Groups) {
             if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
@@ -375,7 +410,14 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart AddEdge(this TopologyChart chart, string id, string sourceNodeId, string targetNodeId, string? label = null, TopologyEdgeKind kind = TopologyEdgeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, TopologyDirection direction = TopologyDirection.None, TopologyEdgeRouting routing = TopologyEdgeRouting.Orthogonal, string? secondaryLabel = null, string? href = null, string? tooltip = null, string? cssClass = null, string? tertiaryLabel = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Edges.Add(new TopologyEdge { Id = id, SourceNodeId = sourceNodeId, TargetNodeId = targetNodeId, Label = label, Kind = kind, Status = status, Direction = direction, Routing = routing, SecondaryLabel = secondaryLabel, TertiaryLabel = tertiaryLabel, Href = href, Tooltip = tooltip, CssClass = cssClass });
+        var edgeId = RequiredText(id, nameof(id), "Topology edge ids");
+        var sourceId = RequiredText(sourceNodeId, nameof(sourceNodeId), "Topology edge source node ids");
+        var targetId = RequiredText(targetNodeId, nameof(targetNodeId), "Topology edge target node ids");
+        ValidateEnum(typeof(TopologyEdgeKind), kind, nameof(kind), "Topology edge kinds");
+        ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
+        ValidateEnum(typeof(TopologyDirection), direction, nameof(direction), "Topology directions");
+        ValidateEnum(typeof(TopologyEdgeRouting), routing, nameof(routing), "Topology edge routing modes");
+        chart.Edges.Add(new TopologyEdge { Id = edgeId, SourceNodeId = sourceId, TargetNodeId = targetId, Label = label, Kind = kind, Status = status, Direction = direction, Routing = routing, SecondaryLabel = secondaryLabel, TertiaryLabel = tertiaryLabel, Href = href, Tooltip = tooltip, CssClass = cssClass });
         return chart;
     }
 
@@ -388,6 +430,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithEdgeWaypoints(this TopologyChart chart, string edgeId, params ChartPoint[] waypoints) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
         foreach (var edge in chart.Edges) {
             if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
             edge.Waypoints.Clear();
@@ -408,6 +451,9 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithEdgePorts(this TopologyChart chart, string edgeId, TopologyEdgePort sourcePort, TopologyEdgePort targetPort) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
+        ValidateEnum(typeof(TopologyEdgePort), sourcePort, nameof(sourcePort), "Topology edge ports");
+        ValidateEnum(typeof(TopologyEdgePort), targetPort, nameof(targetPort), "Topology edge ports");
         foreach (var edge in chart.Edges) {
             if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
             edge.SourcePort = sourcePort;
@@ -427,6 +473,8 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithEdgeRouteLane(this TopologyChart chart, string edgeId, double routeLane) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
+        ValidateFinite(routeLane, nameof(routeLane), "Topology edge route lanes");
         foreach (var edge in chart.Edges) {
             if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
             edge.RouteLane = routeLane;
@@ -445,6 +493,8 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithEdgeLineStyle(this TopologyChart chart, string edgeId, TopologyEdgeLineStyle lineStyle) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
+        ValidateEnum(typeof(TopologyEdgeLineStyle), lineStyle, nameof(lineStyle), "Topology edge line styles");
         foreach (var edge in chart.Edges) {
             if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
             edge.LineStyle = lineStyle;
@@ -463,6 +513,7 @@ public static class TopologyChartExtensions {
     /// <returns>The current topology chart.</returns>
     public static TopologyChart WithEdgeMuted(this TopologyChart chart, string edgeId, bool isMuted = true) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
         foreach (var edge in chart.Edges) {
             if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
             edge.IsMuted = isMuted;
@@ -547,5 +598,30 @@ public static class TopologyChartExtensions {
         if (double.IsNaN(latitude) || double.IsInfinity(latitude)) throw new ArgumentOutOfRangeException(nameof(latitude), latitude, "Latitude must be a finite number.");
         if (longitude < -180 || longitude > 180) throw new ArgumentOutOfRangeException(nameof(longitude), longitude, "Longitude must be between -180 and 180 degrees.");
         if (latitude < -90 || latitude > 90) throw new ArgumentOutOfRangeException(nameof(latitude), latitude, "Latitude must be between -90 and 90 degrees.");
+    }
+
+    private static string RequiredText(string? value, string parameterName, string displayName) {
+        if (value == null) throw new ArgumentNullException(parameterName);
+        var trimmed = value.Trim();
+        if (trimmed.Length == 0) throw new ArgumentException(displayName + " must not be empty.", parameterName);
+        return trimmed;
+    }
+
+    private static void ValidateFinite(double value, string parameterName, string displayName) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, displayName + " must be finite numbers.");
+    }
+
+    private static void ValidatePositive(double value, string parameterName, string displayName) {
+        ValidateFinite(value, parameterName, displayName);
+        if (value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, displayName + " must be greater than zero.");
+    }
+
+    private static void ValidateNonNegative(double value, string parameterName, string displayName) {
+        ValidateFinite(value, parameterName, displayName);
+        if (value < 0) throw new ArgumentOutOfRangeException(parameterName, value, displayName + " must be zero or greater.");
+    }
+
+    private static void ValidateEnum(Type enumType, object value, string parameterName, string displayName) {
+        if (!Enum.IsDefined(enumType, value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + displayName.ToLowerInvariant() + ".");
     }
 }

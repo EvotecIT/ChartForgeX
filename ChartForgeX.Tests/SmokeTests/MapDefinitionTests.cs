@@ -124,6 +124,39 @@ internal static partial class SmokeTests {
         Assert(regionSvg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"12\"", StringComparison.Ordinal), "Region maps should accept common District of Columbia aliases.");
     }
 
+    private static void CustomMapDefinitionsPreserveRegionIdentifierCasing() {
+        var mapDefinition = new ChartMapDefinition("mixed-case", "Mixed Case", 10, 10, new[] {
+            new ChartMapRegion("de-BE", "Berlin", "M0 0L5 0L5 10L0 10Z"),
+            new ChartMapRegion("pl-MZ", "Mazowieckie", "M5 0L10 0L10 10L5 10Z")
+        });
+        var mapSvg = Chart.Create()
+            .WithSize(360, 220)
+            .WithMapLabels(false)
+            .AddRegionMap("Regions", mapDefinition, new[] {
+                new ChartRegionMapItem("de-BE", 10),
+                new ChartRegionMapItem("pl-MZ", 20)
+            })
+            .ToSvg();
+
+        var tileDefinition = new ChartTileMapDefinition("mixed-case-tiles", "Mixed Case Tiles", new[] {
+            new ChartTileMapRegion("tenant-A", "Tenant A", 0, 0),
+            new ChartTileMapRegion("tenant-b", "Tenant b", 1, 0)
+        });
+        var tileSvg = Chart.Create()
+            .WithSize(360, 220)
+            .WithMapLabels(false)
+            .AddTileMap("Tenants", tileDefinition, new[] {
+                new ChartRegionMapItem("tenant-A", 10),
+                new ChartRegionMapItem("tenant-b", 20)
+            })
+            .ToSvg();
+
+        Assert(mapSvg.Contains("data-cfx-region=\"de-BE\"", StringComparison.Ordinal), "Custom region maps should preserve caller-defined mixed-case identifiers.");
+        Assert(mapSvg.Contains("data-cfx-region=\"pl-MZ\"", StringComparison.Ordinal), "Custom region maps should not force country or subdivision identifiers to US-style uppercase.");
+        Assert(tileSvg.Contains("data-cfx-region=\"tenant-A\"", StringComparison.Ordinal), "Custom tile maps should preserve caller-defined mixed-case identifiers.");
+        Assert(tileSvg.Contains("data-cfx-region=\"tenant-b\"", StringComparison.Ordinal), "Custom tile maps should preserve lowercase identifiers.");
+    }
+
     private static void CustomMapDefinitionsValidateGeometryInputs() {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapDefinition("bad", "Bad", new ChartRect(0, 0, 0, 10), new[] { new ChartMapRegion("A", "A", "M0 0L1 0L1 1Z") }), "Map definitions should reject zero-width bounds.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapDefinition("bad", "Bad", new ChartRect(0, 0, 10, -1), new[] { new ChartMapRegion("A", "A", "M0 0L1 0L1 1Z") }), "Map definitions should reject negative-height bounds.");
@@ -151,6 +184,54 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-map-id=\"custom\"", StringComparison.Ordinal), "Custom region maps should render SVG from caller-supplied path data.");
         Assert(svg.Contains("fill-rule=\"evenodd\"", StringComparison.Ordinal), "Custom region-map SVG paths should use even-odd filling so interior holes remain holes.");
         Assert(chart.ToPng().Length > 64, "Custom region maps with comma-separated paths and interior holes should render PNG output.");
+    }
+
+    private static void CustomRegionMapPngPreservesInteriorHoles() {
+        var definition = new ChartMapDefinition("holes", "Holes", 12, 10, new[] {
+            new ChartMapRegion("A", "Alpha", "M0,0 10,0 10,10 0,10Z M2,2 8,2 8,8 2,8Z"),
+            new ChartMapRegion("B", "Beta", "M11,0 12,0 12,1 11,1Z")
+        });
+        var chart = Chart.Create()
+            .WithSize(240, 190)
+            .WithMapLabels(false)
+            .WithMapScaleLegend(false)
+            .AddRegionMap("Holes", definition, new[] {
+                new ChartRegionMapItem("A", 100, ChartColor.FromHex("#DC2626")),
+                new ChartRegionMapItem("B", 0)
+            });
+
+        var image = DecodePng(chart.ToPng());
+        var redCount = 0;
+        var minX = image.Width;
+        var maxX = 0;
+        var minY = image.Height;
+        var maxY = 0;
+        for (var y = 0; y < image.Height; y++) {
+            for (var x = 0; x < image.Width; x++) {
+                if (!IsStrongRegionRed(image.Pixel(x, y))) continue;
+                redCount++;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+
+        Assert(redCount > 500, "Region-map PNG regression should find a strong filled outer region before testing its hole.");
+        var centerX = (minX + maxX) / 2;
+        var centerY = (minY + maxY) / 2;
+        var centerRedPixels = 0;
+        for (var y = centerY - 4; y <= centerY + 4; y++) {
+            for (var x = centerX - 4; x <= centerX + 4; x++) {
+                if (IsStrongRegionRed(image.Pixel(x, y))) centerRedPixels++;
+            }
+        }
+
+        Assert(centerRedPixels == 0, "Region-map PNG rendering should preserve interior holes instead of filling every ring independently.");
+
+        static bool IsStrongRegionRed((byte R, byte G, byte B, byte A) pixel) {
+            return pixel.A > 200 && pixel.R > 170 && pixel.G < 90 && pixel.B < 90;
+        }
     }
 
     private static void CustomRegionMapsParseCommonSvgPathCommands() {

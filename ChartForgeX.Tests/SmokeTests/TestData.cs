@@ -307,6 +307,75 @@ internal static partial class SmokeTests {
         return double.Parse(text.Substring(start, end - start), CultureInfo.InvariantCulture);
     }
 
+    private static DecodedPng DecodePng(byte[] png) {
+        if (png.Length < 33 || png[0] != 137 || png[1] != 80 || png[2] != 78 || png[3] != 71) throw new InvalidOperationException("Invalid PNG signature.");
+        var index = 8;
+        var width = 0;
+        var height = 0;
+        using var idat = new MemoryStream();
+        while (index + 12 <= png.Length) {
+            var length = checked((int)ReadPngUInt(png, index));
+            index += 4;
+            var type = Encoding.ASCII.GetString(png, index, 4);
+            index += 4;
+            if (index + length + 4 > png.Length) throw new InvalidOperationException("Invalid PNG chunk length.");
+            if (type == "IHDR") {
+                width = (int)ReadPngUInt(png, index);
+                height = (int)ReadPngUInt(png, index + 4);
+                if (png[index + 8] != 8 || png[index + 9] != 6) throw new InvalidOperationException("Only 8-bit RGBA PNGs are supported by the smoke decoder.");
+            } else if (type == "IDAT") {
+                idat.Write(png, index, length);
+            } else if (type == "IEND") {
+                break;
+            }
+
+            index += length + 4;
+        }
+
+        var compressed = idat.ToArray();
+        if (width <= 0 || height <= 0 || compressed.Length <= 6) throw new InvalidOperationException("PNG is missing image data.");
+        using var compressedStream = new MemoryStream(compressed, 2, compressed.Length - 6);
+        using var deflate = new DeflateStream(compressedStream, CompressionMode.Decompress);
+        using var rawStream = new MemoryStream();
+        deflate.CopyTo(rawStream);
+        var raw = rawStream.ToArray();
+        var stride = width * 4;
+        if (raw.Length != height * (stride + 1)) throw new InvalidOperationException("Unexpected PNG scanline length.");
+        var pixels = new byte[width * height * 4];
+        var source = 0;
+        var target = 0;
+        for (var y = 0; y < height; y++) {
+            if (raw[source++] != 0) throw new InvalidOperationException("Only unfiltered PNG scanlines are supported by the smoke decoder.");
+            Buffer.BlockCopy(raw, source, pixels, target, stride);
+            source += stride;
+            target += stride;
+        }
+
+        return new DecodedPng(width, height, pixels);
+    }
+
+    private static uint ReadPngUInt(byte[] png, int index) {
+        return ((uint)png[index] << 24) | ((uint)png[index + 1] << 16) | ((uint)png[index + 2] << 8) | png[index + 3];
+    }
+
+    private readonly struct DecodedPng {
+        public readonly int Width;
+        public readonly int Height;
+        private readonly byte[] _pixels;
+
+        public DecodedPng(int width, int height, byte[] pixels) {
+            Width = width;
+            Height = height;
+            _pixels = pixels;
+        }
+
+        public (byte R, byte G, byte B, byte A) Pixel(int x, int y) {
+            if (x < 0 || x >= Width || y < 0 || y >= Height) throw new ArgumentOutOfRangeException(nameof(x));
+            var index = (y * Width + x) * 4;
+            return (_pixels[index], _pixels[index + 1], _pixels[index + 2], _pixels[index + 3]);
+        }
+    }
+
     private static void Assert(bool condition, string message) {
         if (!condition) throw new InvalidOperationException(message);
     }

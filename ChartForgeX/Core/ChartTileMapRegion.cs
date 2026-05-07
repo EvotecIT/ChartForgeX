@@ -47,7 +47,7 @@ public readonly struct ChartTileMapRegion {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Tile-map region names must not be empty.", nameof(name));
         if (column < 0) throw new ArgumentOutOfRangeException(nameof(column), column, "Tile-map columns must be zero or greater.");
         if (row < 0) throw new ArgumentOutOfRangeException(nameof(row), row, "Tile-map rows must be zero or greater.");
-        Code = code.Trim().ToUpperInvariant();
+        Code = code.Trim();
         Name = name.Trim();
         Column = column;
         Row = row;

@@ -60,8 +60,8 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether the SVG should include responsive sizing style.</summary>
     public bool UseResponsiveSvg { get; set; } = true;
 
-    /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions.</summary>
-    public bool EnableHtmlInteractions { get; set; } = true;
+    /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions. Defaults to static, script-free HTML.</summary>
+    public bool EnableHtmlInteractions { get; set; }
 
     /// <summary>Gets or sets whether interactive HTML pages should include lightweight zoom and pan controls.</summary>
     public bool EnableHtmlViewportControls { get; set; }

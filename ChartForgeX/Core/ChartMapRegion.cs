@@ -52,7 +52,7 @@ public readonly struct ChartMapRegion {
         if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Map region codes must not be empty.", nameof(code));
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Map region names must not be empty.", nameof(name));
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Map region paths must not be empty.", nameof(path));
-        Code = code.Trim().ToUpperInvariant();
+        Code = code.Trim();
         Name = name.Trim();
         Path = path.Trim();
         HasLabel = label.HasValue;

@@ -344,6 +344,34 @@ internal static partial class SmokeTests {
         Assert(result.Errors.Any(error => error.Code == "group-height"), "Topology validator should reject invalid group dimensions.");
     }
 
+    private static void TopologyFluentApisRejectInvalidInputs() {
+        AssertThrows<ArgumentException>(() => TopologyChart.Create().WithId(" "), "Topology chart ids should reject empty values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().WithViewport(0, 400), "Topology viewport widths should reject non-positive values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().WithLayout((TopologyLayoutMode)999), "Topology layout modes should reject undefined enum values close to the caller.");
+        AssertThrows<ArgumentException>(() => TopologyChart.Create().AddGroup(" ", "Group", 0, 0, 100, 80), "Topology groups should reject empty ids close to the caller.");
+        AssertThrows<ArgumentException>(() => TopologyChart.Create().AddGroup("g", " ", 0, 0, 100, 80), "Topology groups should reject empty labels close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddGroup("g", "Group", double.NaN, 0, 100, 80), "Topology groups should reject non-finite coordinates close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddGroup("g", "Group", 0, 0, -1, 80), "Topology groups should reject negative dimensions close to the caller while preserving auto-sized layout groups.");
+        AssertThrows<ArgumentException>(() => TopologyChart.Create().AddNode(" ", "Node", 0, 0), "Topology nodes should reject empty ids close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddNode("n", "Node", 0, 0, (TopologyNodeKind)999), "Topology nodes should reject undefined kind values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddNode("n", "Node", 0, 0, width: double.PositiveInfinity), "Topology nodes should reject non-finite dimensions close to the caller.");
+        AssertThrows<ArgumentException>(() => TopologyChart.Create().AddEdge(" ", "a", "b"), "Topology edges should reject empty ids close to the caller.");
+        AssertThrows<ArgumentException>(() => TopologyChart.Create().AddEdge("e", " ", "b"), "Topology edges should reject empty source node ids close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddEdge("e", "a", "b", kind: (TopologyEdgeKind)999), "Topology edges should reject undefined kind values close to the caller.");
+
+        var chart = TopologyChart.Create()
+            .AddGroup("g", "Group", 0, 0, 120, 90)
+            .AddNode("a", "A", 20, 20)
+            .AddNode("b", "B", 160, 20)
+            .AddEdge("a-b", "a", "b");
+
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.WithNodeDisplay("a", (TopologyNodeDisplayMode)999), "Topology node display APIs should reject undefined display modes close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.WithGroupLayout("g", (TopologyGroupLayoutPolicy)999), "Topology group layout APIs should reject undefined policies close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.WithEdgePorts("a-b", (TopologyEdgePort)999, TopologyEdgePort.Auto), "Topology edge port APIs should reject undefined ports close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.WithEdgeRouteLane("a-b", double.NaN), "Topology edge route lane APIs should reject non-finite values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.WithEdgeLineStyle("a-b", (TopologyEdgeLineStyle)999), "Topology edge line style APIs should reject undefined values close to the caller.");
+    }
+
     private static void TopologyViewsRenderFocusedSubsets() {
         var chart = CreateSampleTopologyChart();
         var svg = chart.ToSvg(new TopologyRenderOptions {
