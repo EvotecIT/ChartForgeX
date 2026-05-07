@@ -9,6 +9,16 @@ public sealed partial class ChartOptions {
     public ChartMapViewport MapViewport { get; set; } = ChartMapViewport.World();
 
     /// <summary>
+    /// Gets or sets the region-map geometry used by generic region map charts.
+    /// </summary>
+    public ChartMapDefinition? RegionMapDefinition { get; set; }
+
+    /// <summary>
+    /// Gets or sets the tile-map geometry used by tile map charts.
+    /// </summary>
+    public ChartTileMapDefinition? TileMapDefinition { get; set; }
+
+    /// <summary>
     /// Gets the connector lines rendered on capable map charts.
     /// </summary>
     public List<ChartMapConnector> MapConnectors { get; } = new();

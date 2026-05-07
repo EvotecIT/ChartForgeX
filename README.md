@@ -265,8 +265,8 @@ var observed = Chart.Create()
 | Calendar heatmap | `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` | Contribution-style day grids for activity, uptime, and habit tracking |
 | Dotted map | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints` | Travel-map and operations-map views with generated land-dot layers, focused regional viewports, highlighted points, and connector routes |
 | Topology | `TopologyChart`, `TopologyNode`, `TopologyEdge`, `TopologyGroup`, `TopologySvgRenderer` | Deterministic SVG-first topology diagrams for grouped regions, dependencies, site links, replication paths, subnets, and service maps |
-| US state geographic map | `AddUsStateGeoMap`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Projected geographic choropleth maps for state-level dashboards |
-| US state tile map | `AddUsStateTileMap`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Dependency-free regional choropleth tile maps for equal-area state dashboards |
+| Region map | `AddRegionMap`, `ChartMapCatalog`, `ChartMapDefinition`, `ChartMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Reusable geographic choropleth maps where map geometry is data and the renderer supplies the visual treatment |
+| Tile map | `AddTileMap`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Dependency-free regional choropleth tile maps where tile geography is data and the renderer supplies the visual treatment |
 | Gauge | `AddGauge` | Single score or KPI |
 | Circle | `AddCircle`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale` | Compact single-value progress KPIs with tunable ring sizing |
 | Radial bar | `AddRadialBar`, `WithRadialBarCenterLabel`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` | Circular progress rings for multiple KPI percentages with tunable radius and stroke weight |
@@ -801,13 +801,13 @@ var markets = Chart.Create()
 
 Use `ChartMapViewport.World()`, `Europe()`, `NorthAmerica()`, `SouthAmerica()`, `Africa()`, `Asia()`, `Oceania()`, `Poland()`, or `new ChartMapViewport(...)` to focus the dotted layer on a continent, country, or custom bounding box. Route and connector lines render on dotted maps when both endpoints are inside the selected viewport. Prefer `AddMapRouteBetweenPoints` or `AddMapConnectorBetweenPoints` when the line should target existing rendered markers; use coordinate-based `AddMapRoute` and `AddMapConnector` for arbitrary longitude/latitude overlays.
 
-US state geographic maps render projected state outlines with Alaska and Hawaii included:
+Region maps separate the map definition from the visual treatment. Built-in geographies are resolved by catalog ID, and custom definitions can be created from SVG path data with `ChartMapDefinition` and `ChartMapRegion`:
 
 ```csharp
-var states = Chart.Create()
-    .WithTitle("Revenue by state")
+var regions = Chart.Create()
+    .WithTitle("Revenue by region")
     .WithMapLabels(false)
-    .AddUsStateGeoMap("Revenue", new[] {
+    .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), new[] {
         new ChartRegionMapItem("California", 95),
         new ChartRegionMapItem("New York", 82),
         new ChartRegionMapItem("TX", 74),
@@ -815,12 +815,12 @@ var states = Chart.Create()
     });
 ```
 
-US state tile maps render state and DC values as a compact equal-area choropleth grid. This is a cartogram, not a geographic outline map:
+Tile maps use the same data model with a reusable grid definition. Built-in tile maps are also resolved by catalog ID, and custom equal-area layouts can be created with `ChartTileMapDefinition` and `ChartTileMapRegion`:
 
 ```csharp
-var states = Chart.Create()
-    .WithTitle("Revenue by state")
-    .AddUsStateTileMap("Revenue", new[] {
+var tiles = Chart.Create()
+    .WithTitle("Revenue by region")
+    .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] {
         new ChartRegionMapItem("California", 95),
         new ChartRegionMapItem("New York", 82),
         new ChartRegionMapItem("TX", 74),
@@ -828,8 +828,8 @@ var states = Chart.Create()
     });
 ```
 
-US state maps accept two-letter state codes, full state names, and common District of Columbia aliases, normalizing all rendered metadata to canonical codes.
-Geographic state-map labels render only when a region has enough room for the two-letter code. Use `WithMapLabels(false)` or `WithMapScaleLegend(false)` when a map is embedded in a compact card and hover/focus titles can carry the region identity.
+Map definitions can expose aliases such as short codes, full names, or common alternate names, normalizing all rendered metadata to canonical region codes.
+Geographic region labels render only when a region has enough room for the code. Use `WithMapLabels(false)` or `WithMapScaleLegend(false)` when a map is embedded in a compact card and hover/focus titles can carry the region identity.
 Map SVG containers expose summary metadata such as `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, `data-cfx-point-count`, `data-cfx-visible-point-count`, `data-cfx-valued-point-count`, `data-cfx-viewport`, region coverage counts, and `data-cfx-min-value`/`data-cfx-max-value` for value-colored maps, while highlighted points, connectors, and regions remain keyboard-focusable or hover-descriptive and include native hover titles.
 
 Gauges are available for single-value dashboard summaries:

@@ -397,9 +397,9 @@ public sealed partial class SvgChartRenderer {
 
     private static bool ShowAxisLines(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowAxisLines;
 
-    private static bool IsMapChart(Chart chart) => IsCalendarHeatmapChart(chart) || IsDottedMapChart(chart) || IsUsStateGeoMapChart(chart) || IsUsStateTileMapChart(chart);
+    private static bool IsMapChart(Chart chart) => IsCalendarHeatmapChart(chart) || IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
 
-    private static bool IsSpatialMapChart(Chart chart) => IsDottedMapChart(chart) || IsUsStateGeoMapChart(chart) || IsUsStateTileMapChart(chart);
+    private static bool IsSpatialMapChart(Chart chart) => IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
 
     private static ChartRect SpatialMapPlotArea(Chart chart) {
         var o = chart.Options;
@@ -596,18 +596,22 @@ public sealed partial class SvgChartRenderer {
             return title + " dotted world map for " + dottedMap.Name + " with " + dottedMap.Points.Count.ToString(CultureInfo.InvariantCulture) + " highlighted " + (dottedMap.Points.Count == 1 ? "point" : "points") + ".";
         }
 
-        var stateGeoMap = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.UsStateGeoMap);
-        if (stateGeoMap != null && stateGeoMap.Points.Count > 0) {
-            var data = UsStateMapValues(chart, stateGeoMap);
-            var missing = Math.Max(0, UsStateGeoShapes.Shapes.Length - data.Count);
-            return title + " US state geographic map for " + stateGeoMap.Name + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
+        var regionMap = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.RegionMap);
+        if (regionMap != null && regionMap.Points.Count > 0) {
+            var definition = chart.Options.RegionMapDefinition;
+            var data = MapValues(chart, regionMap);
+            var missing = definition == null ? 0 : Math.Max(0, definition.Regions.Count - data.Count);
+            var mapName = definition == null ? "region" : definition.Name;
+            return title + " region map for " + regionMap.Name + " on " + mapName + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
         }
 
-        var stateTileMap = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.UsStateTileMap);
-        if (stateTileMap != null && stateTileMap.Points.Count > 0) {
-            var data = UsStateMapValues(chart, stateTileMap);
-            var missing = Math.Max(0, UsStateTiles.Length - data.Count);
-            return title + " US state tile map for " + stateTileMap.Name + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
+        var tileMap = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.TileMap);
+        if (tileMap != null && tileMap.Points.Count > 0) {
+            var definition = chart.Options.TileMapDefinition;
+            var data = MapValues(chart, tileMap);
+            var missing = definition == null ? 0 : Math.Max(0, definition.Regions.Count - data.Count);
+            var mapName = definition == null ? "tile" : definition.Name;
+            return title + " tile map for " + tileMap.Name + " on " + mapName + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
         }
 
         var names = string.Join(", ", chart.Series.Select(series => series.Name).ToArray());

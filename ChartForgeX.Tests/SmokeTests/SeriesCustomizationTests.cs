@@ -298,26 +298,26 @@ internal static partial class SmokeTests {
 
         var tile = Chart.Create()
             .WithSize(520, 320)
-            .AddUsStateTileMap("Revenue", new[] {
+            .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 10),
                 new ChartRegionMapItem("NY", 100)
             }, ChartColor.FromHex("#14B8A6"));
         tile.Series[0].WithPointColor(1, "#F97316");
         var tileSvg = tile.ToSvg();
-        Assert(tileSvg.Contains("data-cfx-region=\"NY\"", StringComparison.Ordinal) && tileSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "US state tile map regions should honor point-specific colors in SVG.");
-        Assert(tile.ToPng().Length > 64, "US state tile map point colors should render PNG output.");
+        Assert(tileSvg.Contains("data-cfx-region=\"NY\"", StringComparison.Ordinal) && tileSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Tile map regions should honor point-specific colors in SVG.");
+        Assert(tile.ToPng().Length > 64, "Tile map point colors should render PNG output.");
 
         var geo = Chart.Create()
             .WithSize(520, 320)
             .WithMapLabels(false)
-            .AddUsStateGeoMap("Revenue", new[] {
+            .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 10),
                 new ChartRegionMapItem("NY", 100)
             }, ChartColor.FromHex("#14B8A6"));
         geo.Series[0].WithPointColor(1, "#0EA5E9");
         var geoSvg = geo.ToSvg();
-        Assert(geoSvg.Contains("data-cfx-region=\"NY\"", StringComparison.Ordinal) && geoSvg.Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "US state geographic map regions should honor point-specific colors in SVG.");
-        Assert(geo.ToPng().Length > 64, "US state geographic map point colors should render PNG output.");
+        Assert(geoSvg.Contains("data-cfx-region=\"NY\"", StringComparison.Ordinal) && geoSvg.Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Region map regions should honor point-specific colors in SVG.");
+        Assert(geo.ToPng().Length > 64, "Region map point colors should render PNG output.");
     }
 
     private static void DataLabelPlacementCanBeConfigured() {

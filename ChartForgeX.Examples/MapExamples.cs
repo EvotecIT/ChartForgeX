@@ -13,8 +13,8 @@ internal static class MapExamples {
         }
 
         SaveGrid(CreateMapViewportShowcaseGrid(), output, "map-viewport-showcase-grid", pngOutputScale);
-        Save(CreateUsStateGeoMap(), output, "revenue-us-state-geo-map-light", pngOutputScale);
-        Save(CreateUsStateTileMap(), output, "revenue-us-state-tile-map-light", pngOutputScale);
+        Save(CreateRegionMap(), output, "revenue-region-map-us-states-light", pngOutputScale);
+        Save(CreateTileMap(), output, "revenue-tile-map-us-states-light", pngOutputScale);
     }
 
     private static Chart CreateCalendarHeatmap() {
@@ -196,26 +196,27 @@ internal static class MapExamples {
             .AddMapRouteBetweenPoints("Spain to Germany", "Spain", "Germany", ChartColor.FromRgb(34, 197, 94));
     }
 
-    private static Chart CreateUsStateTileMap() {
+    private static Chart CreateTileMap() {
         return Chart.Create()
-            .WithTitle("Revenue State Tile Cartogram")
-            .WithSubtitle("Equal-area US state cartogram for compact regional comparison")
+            .WithTitle("Revenue Tile Map")
+            .WithSubtitle("Catalog-backed tile geography for compact regional comparison")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(980, 500)
             .WithLegend(false)
             .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
-            .AddUsStateTileMap("Revenue", StateRevenue(), ChartColor.FromRgb(37, 99, 235));
+            .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), StateRevenue(), ChartColor.FromRgb(37, 99, 235));
     }
 
-    private static Chart CreateUsStateGeoMap() {
+    private static Chart CreateRegionMap() {
         return Chart.Create()
-            .WithTitle("Revenue by State")
-            .WithSubtitle("Geographic US choropleth map with keyboard-focusable regions")
+            .WithTitle("Revenue Region Map")
+            .WithSubtitle("Catalog-backed SVG geometry with keyboard-focusable regions")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(980, 560)
             .WithLegend(false)
+            .WithMapLabels(false)
             .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
-            .AddUsStateGeoMap("Revenue", StateRevenue(), ChartColor.FromRgb(37, 99, 235));
+            .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), StateRevenue(), ChartColor.FromRgb(37, 99, 235));
     }
 
     private static IEnumerable<ChartRegionMapItem> StateRevenue() {

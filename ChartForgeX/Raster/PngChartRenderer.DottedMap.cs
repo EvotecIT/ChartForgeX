@@ -21,6 +21,7 @@ public sealed partial class PngChartRenderer {
         var reservedLabels = new List<ChartLabelBounds>();
         var valueRange = GetDottedMapValueRange(series);
 
+        DrawDottedMapSurface(c, chart, map, dot);
         DrawDottedMapGraticule(c, chart, viewport, map);
         DrawDottedMapViewportShape(c, chart, viewport, map, dot);
         DrawDottedMapLandAreas(c, chart, viewport, map);
@@ -32,6 +33,7 @@ public sealed partial class PngChartRenderer {
                 var latitude = land.Y + offset.Y;
                 if (!IsInsideMapViewport(viewport, longitude, latitude)) continue;
                 if (!IsInsideDottedMapViewportShape(viewport, longitude, latitude)) continue;
+                if (!ShouldDrawDottedMapLandDot(viewport, longitude, latitude)) continue;
                 var x = ProjectMapX(map, viewport, longitude);
                 var y = ProjectMapY(map, viewport, latitude);
                 var dotRadius = DottedMapLandDotRadius(dot, viewport);
@@ -59,6 +61,14 @@ public sealed partial class PngChartRenderer {
                 DrawDottedMapPngDataLabel(c, chart, series, label, i, x, y, Math.Max(dot, radius), map, reservedLabels);
             }
         }
+    }
+
+    private static void DrawDottedMapSurface(RgbaCanvas c, Chart chart, ChartRect map, double dot) {
+        var t = chart.Options.Theme;
+        var pad = Math.Max(10, dot * 3.8);
+        var radius = Math.Min(18, Math.Max(7, dot * 3.2));
+        c.FillRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(Blend(t.PlotBackground, t.Grid, 0.12), 0.16));
+        c.StrokeRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(t.PlotBorder, 0.16), 1);
     }
 
     private static void DrawDottedMapGraticule(RgbaCanvas c, Chart chart, ChartMapViewport viewport, ChartRect map) {
@@ -303,7 +313,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static double DottedMapLandDotOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.28 : 0.58;
+        IsLightDottedMapSurface(plotBackground) ? 0.14 : 0.44;
 
     private static double DottedMapLandDotRadius(double dot, ChartMapViewport viewport) =>
         DottedMapBoundaryLines(viewport).Length == 0 ? dot / 2 : Math.Max(0.8, dot * 0.34);
@@ -553,7 +563,7 @@ public sealed partial class PngChartRenderer {
         return Math.Abs(viewport.MinimumLongitude - (-11)) < 0.000001 &&
             Math.Abs(viewport.MaximumLongitude - 35) < 0.000001 &&
             Math.Abs(viewport.MinimumLatitude - 36) < 0.000001 &&
-            Math.Abs(viewport.MaximumLatitude - 66.5) < 0.000001;
+            Math.Abs(viewport.MaximumLatitude - 72) < 0.000001;
     }
 
     private static bool IsNorthAmericaDottedMapViewport(ChartMapViewport viewport) {

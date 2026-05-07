@@ -1,10 +1,17 @@
 using System;
+using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
+    private static void AppendSvg(StringBuilder sb, int capacity, Action<SvgMarkupWriter> write) {
+        var writer = new SvgMarkupWriter(capacity);
+        write(writer);
+        sb.Append(writer.Build());
+    }
+
     private static void DrawSvgTextCenteredX(SvgMarkupWriter writer, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true) {
         var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), fontSize);
         var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));

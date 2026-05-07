@@ -57,7 +57,7 @@ public readonly struct ChartMapViewport {
     /// <summary>
     /// Gets a Europe-focused viewport.
     /// </summary>
-    public static ChartMapViewport Europe() => new("Europe", -11, 35, 36, 66.5);
+    public static ChartMapViewport Europe() => new("Europe", -11, 35, 36, 72);
 
     /// <summary>
     /// Gets a North America-focused viewport.

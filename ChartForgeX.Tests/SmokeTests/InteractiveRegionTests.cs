@@ -31,8 +31,8 @@ internal static partial class SmokeTests {
         Assert(map.Contains("style=\"--cfx-interactive-focus-stroke-width:", StringComparison.Ordinal), "Dotted map connector routes should keep a route-sized focus stroke instead of inheriting tiny cell defaults.");
 
         var states = Chart.Create()
-            .AddUsStateTileMap("Revenue", new[] { new ChartRegionMapItem("CA", 95) })
+            .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 95) })
             .ToSvg();
-        Assert(states.Contains("class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"us-state-tile-map-region\"", StringComparison.Ordinal), "US state tile map regions should be keyboard-focusable interactive SVG regions.");
+        Assert(states.Contains("class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"tile-map-region\"", StringComparison.Ordinal), "Tile map regions should be keyboard-focusable interactive SVG regions.");
     }
 }

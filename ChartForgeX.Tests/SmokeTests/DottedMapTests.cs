@@ -164,11 +164,11 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-point\"") == 2, "Dotted map viewports should render only points inside the selected map window.");
         Assert(svg.Contains("data-cfx-label=\"Spain\"", StringComparison.Ordinal) && svg.Contains("data-cfx-label=\"Poland\"", StringComparison.Ordinal), "Regional dotted maps should keep in-viewport point labels.");
         Assert(!svg.Contains("data-cfx-label=\"United States\"", StringComparison.Ordinal), "Regional dotted maps should suppress out-of-viewport point marks.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-land-dot\"") > 300, "Europe dotted maps should use a dedicated land-dot layer for recognizable regional geography without overwhelming route and marker details.");
+        Assert(!svg.Contains("data-cfx-role=\"dotted-map-land-dot\"", StringComparison.Ordinal), "Regional dotted maps with filled boundaries should avoid a secondary dot texture that can read as stray data.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-land-area\"") > 10, "Regional dotted maps should render a quiet land-area layer so the map reads before dotted texture is added.");
-        Assert(svg.Contains("data-cfx-role=\"dotted-map-land-dot\"", StringComparison.Ordinal) && svg.Contains("opacity=\"0.28\"", StringComparison.Ordinal), "Light regional dotted maps should keep the land texture quiet enough for product-style overlays.");
+        Assert(svg.Contains("data-cfx-role=\"dotted-map-land-area\"", StringComparison.Ordinal), "Regional dotted maps should use filled geography rather than texture dots when boundary polygons are available.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-boundary\"") > 20, "Regional dotted maps should render subtle Natural Earth boundary paths so focused viewport cards read as geography at small sizes.");
-        Assert(GetAttribute(svg, "data-cfx-role=\"dotted-map-land-dot\"", "r") >= 0.8, "Regional dotted-map land dots should act as texture over the map land mass instead of carrying the shape by themselves.");
+        Assert(GetAttribute(svg, "data-cfx-role=\"dotted-map-boundary\"", "stroke-width") >= 0.65, "Regional dotted-map boundaries should remain readable after removing the secondary land-dot texture.");
         Assert(GetAttribute(svg, "data-cfx-role=\"dotted-map-point\"", "r") >= 3, "Highlighted dotted-map points should remain readable in compact grid panels.");
         var polandSvg = Chart.Create()
             .WithSize(420, 320)
