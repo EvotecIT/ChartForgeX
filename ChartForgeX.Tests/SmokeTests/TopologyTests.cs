@@ -338,12 +338,30 @@ internal static partial class SmokeTests {
     }
 
     private static void TopologyValidatorRejectsInvalidDimensions() {
-        var chart = CreateSampleTopologyChart();
-        chart.Nodes[0].Width = 0;
-        chart.Groups[0].Height = -1;
+        var chart = new TopologyChart();
+        chart.Groups.Add(new TopologyGroup { Id = "g", Label = "Group" });
         var result = new TopologyChartValidator().Validate(chart);
-        Assert(result.Errors.Any(error => error.Code == "node-width"), "Topology validator should reject invalid node dimensions.");
+        Assert(result.Errors.Any(error => error.Code == "group-width"), "Topology validator should reject invalid group dimensions.");
         Assert(result.Errors.Any(error => error.Code == "group-height"), "Topology validator should reject invalid group dimensions.");
+
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyViewport { Width = 0 }, "Topology viewport models should reject invalid widths close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyChart { LayoutMode = (TopologyLayoutMode)999 }, "Topology chart models should reject undefined layout modes close to the caller.");
+        AssertThrows<ArgumentNullException>(() => new TopologyChart { Viewport = null! }, "Topology chart models should reject null viewports close to the caller.");
+        AssertThrows<ArgumentNullException>(() => new TopologyGroup { Id = null! }, "Topology group models should reject null ids close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyGroup { X = double.NaN }, "Topology group models should reject non-finite coordinates close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyGroup { Width = -1 }, "Topology group models should reject negative dimensions close to the caller while preserving auto-sized zero dimensions.");
+        AssertThrows<ArgumentNullException>(() => new TopologyNode { Label = null! }, "Topology node models should reject null labels close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyNode { Kind = (TopologyNodeKind)999 }, "Topology node models should reject undefined kind values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyNode { DisplayMode = (TopologyNodeDisplayMode)999 }, "Topology node models should reject undefined display modes close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyNode { Width = 0 }, "Topology node models should reject non-positive dimensions close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyNode { Longitude = 181 }, "Topology node models should reject out-of-range longitudes close to the caller.");
+        AssertThrows<ArgumentNullException>(() => new TopologyEdge { SourceNodeId = null! }, "Topology edge models should reject null endpoint ids close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { Direction = (TopologyDirection)999 }, "Topology edge models should reject undefined directions close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { SourcePort = (TopologyEdgePort)999 }, "Topology edge models should reject undefined ports close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { RouteLane = double.NaN }, "Topology edge models should reject non-finite route lanes close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { LayoutInference = (TopologyEdgeLayoutInference)8 }, "Topology edge models should reject undefined layout-inference flag bits close to the caller.");
+        var inferred = new TopologyEdge { LayoutInference = TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort };
+        Assert(inferred.LayoutInference == (TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort), "Topology edge models should allow defined layout-inference flag combinations.");
     }
 
     private static void TopologyFluentApisRejectInvalidInputs() {

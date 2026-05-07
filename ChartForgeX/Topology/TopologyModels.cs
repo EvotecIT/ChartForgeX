@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -8,6 +9,10 @@ namespace ChartForgeX.Topology;
 /// Represents a renderer-independent topology diagram.
 /// </summary>
 public sealed class TopologyChart {
+    private TopologyLayoutMode _layoutMode = TopologyLayoutMode.Manual;
+    private TopologyLayoutDirection _layoutDirection = TopologyLayoutDirection.TopToBottom;
+    private TopologyViewport _viewport = new();
+
     /// <summary>
     /// Creates a new topology chart.
     /// </summary>
@@ -24,13 +29,28 @@ public sealed class TopologyChart {
     public string? Subtitle { get; set; }
 
     /// <summary>Gets or sets the deterministic layout mode.</summary>
-    public TopologyLayoutMode LayoutMode { get; set; } = TopologyLayoutMode.Manual;
+    public TopologyLayoutMode LayoutMode {
+        get => _layoutMode;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _layoutMode = value;
+        }
+    }
 
     /// <summary>Gets or sets the deterministic layout flow direction.</summary>
-    public TopologyLayoutDirection LayoutDirection { get; set; } = TopologyLayoutDirection.TopToBottom;
+    public TopologyLayoutDirection LayoutDirection {
+        get => _layoutDirection;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _layoutDirection = value;
+        }
+    }
 
     /// <summary>Gets the viewport used by renderers.</summary>
-    public TopologyViewport Viewport { get; set; } = new();
+    public TopologyViewport Viewport {
+        get => _viewport;
+        set => _viewport = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>Gets or sets the longitude/latitude window used by geographic topology layouts.</summary>
     public ChartMapViewport MapViewport { get; set; } = ChartMapViewport.World();
@@ -55,49 +75,125 @@ public sealed class TopologyChart {
 /// Defines the topology rendering viewport.
 /// </summary>
 public sealed class TopologyViewport {
+    private double _width = 1200;
+    private double _height = 700;
+    private double _padding = 24;
+
     /// <summary>Gets or sets the viewport width.</summary>
-    public double Width { get; set; } = 1200;
+    public double Width {
+        get => _width;
+        set {
+            TopologyModelGuards.PositiveFinite(value, nameof(value));
+            _width = value;
+        }
+    }
 
     /// <summary>Gets or sets the viewport height.</summary>
-    public double Height { get; set; } = 700;
+    public double Height {
+        get => _height;
+        set {
+            TopologyModelGuards.PositiveFinite(value, nameof(value));
+            _height = value;
+        }
+    }
 
     /// <summary>Gets or sets the viewport padding.</summary>
-    public double Padding { get; set; } = 24;
+    public double Padding {
+        get => _padding;
+        set {
+            TopologyModelGuards.NonNegativeFinite(value, nameof(value));
+            _padding = value;
+        }
+    }
 }
 
 /// <summary>
 /// Represents a logical topology region or cluster.
 /// </summary>
 public sealed class TopologyGroup {
+    private string _id = string.Empty;
+    private string _label = string.Empty;
+    private TopologyHealthStatus _status = TopologyHealthStatus.Unknown;
+    private double _x;
+    private double _y;
+    private double? _longitude;
+    private double? _latitude;
+    private double _width;
+    private double _height;
+    private TopologyGroupLayoutPolicy _layoutPolicy = TopologyGroupLayoutPolicy.Auto;
+    private TopologyGroupLayoutPolicy _appliedLayoutPolicy = TopologyGroupLayoutPolicy.Auto;
+
     /// <summary>Gets or sets the stable group identifier.</summary>
-    public string Id { get; set; } = string.Empty;
+    public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the group label.</summary>
-    public string Label { get; set; } = string.Empty;
+    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the optional group subtitle.</summary>
     public string? Subtitle { get; set; }
 
     /// <summary>Gets or sets the group status.</summary>
-    public TopologyHealthStatus Status { get; set; } = TopologyHealthStatus.Unknown;
+    public TopologyHealthStatus Status {
+        get => _status;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _status = value;
+        }
+    }
 
     /// <summary>Gets or sets the group x-coordinate.</summary>
-    public double X { get; set; }
+    public double X {
+        get => _x;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _x = value;
+        }
+    }
 
     /// <summary>Gets or sets the group y-coordinate.</summary>
-    public double Y { get; set; }
+    public double Y {
+        get => _y;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _y = value;
+        }
+    }
 
     /// <summary>Gets or sets the optional group longitude in degrees.</summary>
-    public double? Longitude { get; set; }
+    public double? Longitude {
+        get => _longitude;
+        set {
+            if (value.HasValue) TopologyModelGuards.Longitude(value.Value, nameof(value));
+            _longitude = value;
+        }
+    }
 
     /// <summary>Gets or sets the optional group latitude in degrees.</summary>
-    public double? Latitude { get; set; }
+    public double? Latitude {
+        get => _latitude;
+        set {
+            if (value.HasValue) TopologyModelGuards.Latitude(value.Value, nameof(value));
+            _latitude = value;
+        }
+    }
 
     /// <summary>Gets or sets the group width.</summary>
-    public double Width { get; set; }
+    public double Width {
+        get => _width;
+        set {
+            TopologyModelGuards.NonNegativeFinite(value, nameof(value));
+            _width = value;
+        }
+    }
 
     /// <summary>Gets or sets the group height.</summary>
-    public double Height { get; set; }
+    public double Height {
+        get => _height;
+        set {
+            TopologyModelGuards.NonNegativeFinite(value, nameof(value));
+            _height = value;
+        }
+    }
 
     /// <summary>Gets or sets an optional drill-down link.</summary>
     public string? Href { get; set; }
@@ -115,10 +211,22 @@ public sealed class TopologyGroup {
     public string? Color { get; set; }
 
     /// <summary>Gets or sets the preferred node arrangement policy for dense grouped layouts.</summary>
-    public TopologyGroupLayoutPolicy LayoutPolicy { get; set; } = TopologyGroupLayoutPolicy.Auto;
+    public TopologyGroupLayoutPolicy LayoutPolicy {
+        get => _layoutPolicy;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _layoutPolicy = value;
+        }
+    }
 
     /// <summary>Gets or sets the resolved node arrangement policy applied by layout preparation.</summary>
-    public TopologyGroupLayoutPolicy AppliedLayoutPolicy { get; set; } = TopologyGroupLayoutPolicy.Auto;
+    public TopologyGroupLayoutPolicy AppliedLayoutPolicy {
+        get => _appliedLayoutPolicy;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _appliedLayoutPolicy = value;
+        }
+    }
 
     /// <summary>Gets arbitrary metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
@@ -128,50 +236,116 @@ public sealed class TopologyGroup {
 /// Represents a topology node.
 /// </summary>
 public sealed class TopologyNode {
+    private string _id = string.Empty;
+    private string _label = string.Empty;
+    private TopologyNodeKind _kind = TopologyNodeKind.Generic;
+    private TopologyNodeDisplayMode? _displayMode;
+    private TopologyHealthStatus _status = TopologyHealthStatus.Unknown;
+    private double _x;
+    private double _y;
+    private double? _longitude;
+    private double? _latitude;
+    private double _width = 120;
+    private double _height = 64;
+
     /// <summary>Gets or sets the stable node identifier.</summary>
-    public string Id { get; set; } = string.Empty;
+    public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the node label.</summary>
-    public string Label { get; set; } = string.Empty;
+    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the optional node subtitle.</summary>
     public string? Subtitle { get; set; }
 
     /// <summary>Gets or sets the node kind.</summary>
-    public TopologyNodeKind Kind { get; set; } = TopologyNodeKind.Generic;
+    public TopologyNodeKind Kind {
+        get => _kind;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _kind = value;
+        }
+    }
 
     /// <summary>Gets or sets an optional short visual symbol used inside the node icon.</summary>
     public string? Symbol { get; set; }
 
     /// <summary>Gets or sets an optional node-specific display mode. When null, render options decide.</summary>
-    public TopologyNodeDisplayMode? DisplayMode { get; set; }
+    public TopologyNodeDisplayMode? DisplayMode {
+        get => _displayMode;
+        set {
+            if (value.HasValue) TopologyModelGuards.EnumDefined(value.Value, nameof(value));
+            _displayMode = value;
+        }
+    }
 
     /// <summary>Gets or sets optional short badge text such as a count, role, or collapsed-item marker.</summary>
     public string? Badge { get; set; }
 
     /// <summary>Gets or sets the node status.</summary>
-    public TopologyHealthStatus Status { get; set; } = TopologyHealthStatus.Unknown;
+    public TopologyHealthStatus Status {
+        get => _status;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _status = value;
+        }
+    }
 
     /// <summary>Gets or sets the optional parent group id.</summary>
     public string? GroupId { get; set; }
 
     /// <summary>Gets or sets the node x-coordinate.</summary>
-    public double X { get; set; }
+    public double X {
+        get => _x;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _x = value;
+        }
+    }
 
     /// <summary>Gets or sets the node y-coordinate.</summary>
-    public double Y { get; set; }
+    public double Y {
+        get => _y;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _y = value;
+        }
+    }
 
     /// <summary>Gets or sets the optional node longitude in degrees.</summary>
-    public double? Longitude { get; set; }
+    public double? Longitude {
+        get => _longitude;
+        set {
+            if (value.HasValue) TopologyModelGuards.Longitude(value.Value, nameof(value));
+            _longitude = value;
+        }
+    }
 
     /// <summary>Gets or sets the optional node latitude in degrees.</summary>
-    public double? Latitude { get; set; }
+    public double? Latitude {
+        get => _latitude;
+        set {
+            if (value.HasValue) TopologyModelGuards.Latitude(value.Value, nameof(value));
+            _latitude = value;
+        }
+    }
 
     /// <summary>Gets or sets the node width.</summary>
-    public double Width { get; set; } = 120;
+    public double Width {
+        get => _width;
+        set {
+            TopologyModelGuards.PositiveFinite(value, nameof(value));
+            _width = value;
+        }
+    }
 
     /// <summary>Gets or sets the node height.</summary>
-    public double Height { get; set; } = 64;
+    public double Height {
+        get => _height;
+        set {
+            TopologyModelGuards.PositiveFinite(value, nameof(value));
+            _height = value;
+        }
+    }
 
     /// <summary>Gets or sets an optional drill-down link.</summary>
     public string? Href { get; set; }
@@ -196,41 +370,108 @@ public sealed class TopologyNode {
 /// Represents a topology edge between two nodes.
 /// </summary>
 public sealed class TopologyEdge {
+    private string _id = string.Empty;
+    private string _sourceNodeId = string.Empty;
+    private string _targetNodeId = string.Empty;
+    private TopologyEdgeKind _kind = TopologyEdgeKind.Generic;
+    private TopologyHealthStatus _status = TopologyHealthStatus.Unknown;
+    private TopologyDirection _direction = TopologyDirection.None;
+    private TopologyEdgeRouting _routing = TopologyEdgeRouting.Orthogonal;
+    private TopologyEdgeLineStyle _lineStyle = TopologyEdgeLineStyle.Auto;
+    private TopologyEdgePort _sourcePort = TopologyEdgePort.Auto;
+    private TopologyEdgePort _targetPort = TopologyEdgePort.Auto;
+    private double _routeLane;
+    private TopologyEdgeLayoutInference _layoutInference = TopologyEdgeLayoutInference.None;
+
     /// <summary>Gets or sets the stable edge identifier.</summary>
-    public string Id { get; set; } = string.Empty;
+    public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the source node id.</summary>
-    public string SourceNodeId { get; set; } = string.Empty;
+    public string SourceNodeId { get => _sourceNodeId; set => _sourceNodeId = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the target node id.</summary>
-    public string TargetNodeId { get; set; } = string.Empty;
+    public string TargetNodeId { get => _targetNodeId; set => _targetNodeId = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the edge kind.</summary>
-    public TopologyEdgeKind Kind { get; set; } = TopologyEdgeKind.Generic;
+    public TopologyEdgeKind Kind {
+        get => _kind;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _kind = value;
+        }
+    }
 
     /// <summary>Gets or sets the edge status.</summary>
-    public TopologyHealthStatus Status { get; set; } = TopologyHealthStatus.Unknown;
+    public TopologyHealthStatus Status {
+        get => _status;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _status = value;
+        }
+    }
 
     /// <summary>Gets or sets the edge direction.</summary>
-    public TopologyDirection Direction { get; set; } = TopologyDirection.None;
+    public TopologyDirection Direction {
+        get => _direction;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _direction = value;
+        }
+    }
 
     /// <summary>Gets or sets the edge routing mode.</summary>
-    public TopologyEdgeRouting Routing { get; set; } = TopologyEdgeRouting.Orthogonal;
+    public TopologyEdgeRouting Routing {
+        get => _routing;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _routing = value;
+        }
+    }
 
     /// <summary>Gets or sets explicit edge line styling. Auto derives styling from health status.</summary>
-    public TopologyEdgeLineStyle LineStyle { get; set; } = TopologyEdgeLineStyle.Auto;
+    public TopologyEdgeLineStyle LineStyle {
+        get => _lineStyle;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _lineStyle = value;
+        }
+    }
 
     /// <summary>Gets or sets the preferred source attachment side.</summary>
-    public TopologyEdgePort SourcePort { get; set; } = TopologyEdgePort.Auto;
+    public TopologyEdgePort SourcePort {
+        get => _sourcePort;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _sourcePort = value;
+        }
+    }
 
     /// <summary>Gets or sets the preferred target attachment side.</summary>
-    public TopologyEdgePort TargetPort { get; set; } = TopologyEdgePort.Auto;
+    public TopologyEdgePort TargetPort {
+        get => _targetPort;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _targetPort = value;
+        }
+    }
 
     /// <summary>Gets or sets the deterministic orthogonal route lane offset in pixels.</summary>
-    public double RouteLane { get; set; }
+    public double RouteLane {
+        get => _routeLane;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _routeLane = value;
+        }
+    }
 
     /// <summary>Gets or sets which edge layout values were inferred during layout preparation.</summary>
-    public TopologyEdgeLayoutInference LayoutInference { get; set; } = TopologyEdgeLayoutInference.None;
+    public TopologyEdgeLayoutInference LayoutInference {
+        get => _layoutInference;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _layoutInference = value;
+        }
+    }
 
     /// <summary>Gets explicit route bend points used between the source and target nodes.</summary>
     public List<ChartPoint> Waypoints { get; } = new();
@@ -261,4 +502,40 @@ public sealed class TopologyEdge {
 
     /// <summary>Gets arbitrary edge metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
+}
+
+internal static class TopologyModelGuards {
+    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct {
+        if (typeof(TEnum) == typeof(TopologyEdgeLayoutInference)) {
+            var mask = TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort | TopologyEdgeLayoutInference.RouteLane;
+            var typed = (TopologyEdgeLayoutInference)(object)value;
+            if ((typed & ~mask) == 0) return;
+        }
+
+        if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + typeof(TEnum).Name + " value.");
+    }
+
+    public static void Finite(double value, string parameterName) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite.");
+    }
+
+    public static void PositiveFinite(double value, string parameterName) {
+        Finite(value, parameterName);
+        if (value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be greater than zero.");
+    }
+
+    public static void NonNegativeFinite(double value, string parameterName) {
+        Finite(value, parameterName);
+        if (value < 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be greater than or equal to zero.");
+    }
+
+    public static void Longitude(double value, string parameterName) {
+        Finite(value, parameterName);
+        if (value < -180 || value > 180) throw new ArgumentOutOfRangeException(parameterName, value, "Longitude must be between -180 and 180 degrees.");
+    }
+
+    public static void Latitude(double value, string parameterName) {
+        Finite(value, parameterName);
+        if (value < -90 || value > 90) throw new ArgumentOutOfRangeException(parameterName, value, "Latitude must be between -90 and 90 degrees.");
+    }
 }
