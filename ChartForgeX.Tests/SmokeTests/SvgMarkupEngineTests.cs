@@ -188,7 +188,7 @@ internal static partial class SmokeTests {
             .Attribute("type", "button")
             .BooleanAttribute("hidden")
             .EndStartElement()
-            .Text("A < B & C")
+            .Text("A < B & \"C\"")
             .EndElement()
             .StartElement("div")
             .Attribute("style", "width:100%;max-width:420px")
@@ -197,7 +197,7 @@ internal static partial class SmokeTests {
             .EndElement()
             .EndElement();
 
-        var expected = "<!doctype html>" + Environment.NewLine + "<section class=\"report\" data-title=\"A &lt; B &amp; &quot;C&quot;\" data-visible=\"true\"><button type=\"button\" hidden>A &lt; B &amp; C</button><div style=\"width:100%;max-width:420px\"><svg></svg></div></section>";
+        var expected = "<!doctype html>" + Environment.NewLine + "<section class=\"report\" data-title=\"A &lt; B &amp; &quot;C&quot;\" data-visible=\"true\"><button type=\"button\" hidden>A &lt; B &amp; &quot;C&quot;</button><div style=\"width:100%;max-width:420px\"><svg></svg></div></section>";
         Assert(
             writer.Build() == expected,
             "HTML markup writer should stream escaped text, escaped attributes, boolean attributes, trusted raw fragments, and invariant output.");
@@ -438,10 +438,14 @@ internal static partial class SmokeTests {
             File.ReadAllText(Path.Combine(root, "ChartForgeX", "Html", "HtmlChartGridRenderer.cs")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX", "VisualBlocks", "HtmlVisualBlockRenderer.cs")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX", "VisualBlocks", "HtmlVisualGridRenderer.cs")),
-            File.ReadAllText(Path.Combine(root, "ChartForgeX", "Topology", "TopologyHtmlRenderer.cs")));
+            File.ReadAllText(Path.Combine(root, "ChartForgeX", "Topology", "TopologyHtmlRenderer.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX.Interactivity.Html", "HtmlInteractivePage.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX.Interactivity.Html", "HtmlInteractiveChartRenderer.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX.Interactivity.Html", "HtmlInteractiveDashboardRenderer.cs")));
 
         Assert(writer.Contains("StringBuilder", StringComparison.Ordinal), "HTML markup writer should remain a streaming StringBuilder helper.");
         Assert(renderers.Contains("HtmlMarkupWriter", StringComparison.Ordinal), "Static HTML renderers should build wrapper markup through the shared HTML writer.");
+        Assert(!File.Exists(Path.Combine(root, "ChartForgeX.Interactivity.Html", "HtmlInteractiveMarkup.cs")), "Interactive HTML should reuse the shared core HTML writer instead of reintroducing a second markup helper.");
         Assert(!writer.Contains("HtmlForgeX", StringComparison.Ordinal) && !renderers.Contains("HtmlForgeX", StringComparison.Ordinal), "HTML markup engine should stay dependency-free.");
         Assert(!writer.Contains("XmlDocument", StringComparison.Ordinal) && !writer.Contains("XDocument", StringComparison.Ordinal), "HTML markup engine should not switch to DOM-based XML construction.");
     }

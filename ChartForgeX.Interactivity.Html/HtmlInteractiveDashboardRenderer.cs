@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ChartForgeX.Core;
+using ChartForgeX.Html;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -37,19 +37,18 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var scope = options.IdScope ?? HtmlInteractiveChartRenderer.Slugify(title);
         var groupName = options.Interaction.GroupName ?? scope;
 
-        var sb = new StringBuilder();
-        HtmlInteractivePage.AppendDocumentStart(sb, title);
-        sb.AppendLine("<main class=\"cfx-shell\">");
-        sb.AppendLine("<div class=\"cfx-dashboard\" style=\"--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\">");
+        var writer = HtmlInteractivePage.StartDocument(title);
+        writer.StartElement("main").Attribute("class", "cfx-shell").EndStartElement().Line()
+            .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {
             var childOptions = CreateChildOptions(options, scope, groupName, i);
-            sb.AppendLine(HtmlInteractiveChartRenderer.BuildChartSection(chartArray[i], childOptions, title));
+            writer.RawTrusted(HtmlInteractiveChartRenderer.BuildChartSection(chartArray[i], childOptions, title)).Line();
         }
 
-        sb.AppendLine("</div>");
-        sb.AppendLine("</main>");
-        HtmlInteractivePage.AppendDocumentEnd(sb, options.ScriptNonce);
-        return sb.ToString();
+        writer.EndElement().Line()
+            .EndElement().Line();
+        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce);
+        return writer.Build();
     }
 
     private static HtmlChartInteractionOptions CreateChildOptions(HtmlInteractiveDashboardOptions options, string scope, string groupName, int index) {

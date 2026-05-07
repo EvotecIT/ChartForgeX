@@ -97,7 +97,7 @@ internal sealed class HtmlMarkupWriter {
 
     public HtmlMarkupWriter Text(string? value) {
         EnsureTextCanBeWritten();
-        if (value != null) AppendEscapedText(value);
+        if (value != null) AppendEscapedText(value, escapeQuotes: true);
         return this;
     }
 
@@ -130,7 +130,7 @@ internal sealed class HtmlMarkupWriter {
     internal static string EscapeText(string value) {
         if (value == null) throw new ArgumentNullException(nameof(value));
         var builder = new StringBuilder(value.Length);
-        AppendEscapedText(builder, value, escapeQuotes: false);
+        AppendEscapedText(builder, value, escapeQuotes: true);
         return builder.ToString();
     }
 
@@ -172,8 +172,8 @@ internal sealed class HtmlMarkupWriter {
         _builder.Append(' ').Append(name);
     }
 
-    private void AppendEscapedText(string value) =>
-        AppendEscapedText(_builder, value, escapeQuotes: false);
+    private void AppendEscapedText(string value, bool escapeQuotes) =>
+        AppendEscapedText(_builder, value, escapeQuotes);
 
     private void AppendEscapedAttribute(string value) =>
         AppendEscapedText(_builder, value, escapeQuotes: true);
