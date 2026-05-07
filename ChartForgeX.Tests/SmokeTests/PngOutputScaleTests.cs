@@ -45,6 +45,26 @@ internal static partial class SmokeTests {
         }
     }
 
+    private static void OverlayPresetEmitsTransparentChromeFreePng() {
+        var chart = Chart.Create()
+            .WithSize(220, 90)
+            .WithOverlay()
+            .AddSmoothArea("CPU", Points(28, 34, 31, 45, 72, 66), ChartColor.FromRgb(20, 184, 166));
+
+        Assert(chart.Options.TransparentBackground, "Overlay charts should keep the PNG canvas transparent.");
+        Assert(!chart.Options.ShowCard && !chart.Options.ShowPlotBackground, "Overlay charts should not render report card or plot panel surfaces.");
+        Assert(!chart.Options.ShowAxes && !chart.Options.ShowGrid && !chart.Options.ShowLegend, "Overlay charts should suppress report axes, grid, and legend by default.");
+
+        var rgba = ReadPngRgba(chart.ToPng(), out var width, out var height);
+        Assert(width == 220 && height == 90, "Overlay PNG output should preserve requested dimensions.");
+        Assert(CountAlphaInRect(rgba, width, 0, 0, 12, 12) == 0, "Overlay PNG corners should stay fully transparent.");
+        Assert(CountAlphaInRect(rgba, width, 40, 24, 140, 42) > 0, "Overlay PNG should still draw visible chart marks.");
+
+        var svg = chart.ToSvg();
+        Assert(!svg.Contains("data-cfx-role=\"chart-card\"", StringComparison.Ordinal), "Overlay SVG should not render the report card surface.");
+        Assert(!svg.Contains("data-cfx-role=\"plot-background\"", StringComparison.Ordinal), "Overlay SVG should not render the plot background surface.");
+    }
+
     private static Chart BareLineChart() {
         var chart = Chart.Create()
             .WithSize(180, 120)

@@ -426,6 +426,7 @@ public sealed partial class Chart {
         Options.ShowAxes = !enabled;
         Options.ShowXAxis = !enabled;
         Options.ShowYAxis = !enabled;
+        Options.ShowAxisLines = !enabled;
         Options.ShowCard = !enabled;
         Options.ShowPlotBackground = !enabled;
         if (enabled) Options.Padding = new ChartPadding(8, 8, 8, 8);

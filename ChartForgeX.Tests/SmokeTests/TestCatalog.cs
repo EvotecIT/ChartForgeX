@@ -47,6 +47,7 @@ internal static partial class SmokeTests {
         ("PNG supersampling scale is configurable", PngSupersamplingScaleIsConfigurable),
         ("PNG output scale emits high-density assets", PngOutputScaleEmitsHighDensityAssets),
         ("PNG print scale survives dense chart stress", PngPrintScaleSurvivesDenseChartStress),
+        ("Overlay preset emits transparent chrome-free PNG", OverlayPresetEmitsTransparentChromeFreePng),
         ("PNG smooth series use curved raster paths", PngSmoothSeriesUseCurvedRasterPaths),
         ("PNG renderer renders report chrome", PngRendersReportChrome),
         ("PNG outline fonts use em-sized text", PngOutlineFontsUseEmSizedText),

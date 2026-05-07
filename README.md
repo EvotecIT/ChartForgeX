@@ -52,6 +52,8 @@ The GitHub Actions workflow is configured for private repositories and requires 
 - Optional interactive renderers live in adapter packages without changing static renderer behavior.
 - Themes are first-class, especially polished dark/light report modes.
 
+Use `WithOverlay()` when a chart is meant to sit on top of another image, wallpaper, or report canvas. The preset keeps PNG/SVG backgrounds transparent and suppresses report chrome such as cards, plot panels, axes, grid, and legends while leaving the data marks visible.
+
 ## Current package layout
 
 ```text
