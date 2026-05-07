@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text;
+using ChartForgeX.Core;
 using ChartForgeX.Topology;
 
 internal static class TopologyExamples {
@@ -202,6 +203,8 @@ internal static class TopologyExamples {
             .WithId("geographic-topology")
             .WithTitle("Geographic Topology")
             .WithSubtitle("Abstract region placement with clustered child sites and WAN latency labels.")
+            .WithLayout(TopologyLayoutMode.Geographic)
+            .WithMapViewport(ChartMapViewport.World())
             .WithViewport(1200, 680, 28)
             .WithLegend(TopologyLegend.Default().AddNodeKind("Region", TopologyNodeKind.Location, symbol: "R").AddEdgeKind("Connectivity", TopologyEdgeKind.Connectivity))
             .AddNode("amer", "AMER", 180, 270, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, null, "47 sites", "/geo/regions/amer", null, 128, 62)
@@ -217,7 +220,16 @@ internal static class TopologyExamples {
             .AddEdge("emea-apac", "emea", "apac", "92 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "WAN", "/geo/links/emea-apac")
             .AddEdge("amer-apac", "amer", "apac", "142 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "backup", "/geo/links/amer-apac")
             .AddEdge("amer-nva", "amer", "nva", "local", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved, href: "/geo/links/amer-nva")
-            .AddEdge("apac-anz", "apac", "anz", "down", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved, href: "/geo/links/apac-anz");
+            .AddEdge("apac-anz", "apac", "anz", "down", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved, href: "/geo/links/apac-anz")
+            .WithNodeCoordinates("amer", -98.5795, 39.8283)
+            .WithNodeCoordinates("emea", 12.4964, 41.9028)
+            .WithNodeCoordinates("apac", 105, 18)
+            .WithNodeCoordinates("nva", -74.006, 40.7128)
+            .WithNodeCoordinates("chi", -87.6298, 41.8781)
+            .WithNodeCoordinates("uk", -0.1276, 51.5072)
+            .WithNodeCoordinates("de", 8.6821, 50.1109)
+            .WithNodeCoordinates("sg", 103.8198, 1.3521)
+            .WithNodeCoordinates("anz", 151.2093, -33.8688);
         foreach (var node in chart.Nodes.Where(node => node.Kind is TopologyNodeKind.Branch or TopologyNodeKind.Server)) {
             node.DisplayMode = TopologyNodeDisplayMode.Dot;
             node.Badge = node.Symbol ?? node.Label.Split(' ')[0];

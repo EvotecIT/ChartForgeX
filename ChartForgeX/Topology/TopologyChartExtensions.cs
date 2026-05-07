@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Topology;
@@ -94,6 +95,18 @@ public static class TopologyChartExtensions {
     public static TopologyChart WithViewport(this TopologyChart chart, double width, double height, double padding = 24) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.Viewport = new TopologyViewport { Width = width, Height = height, Padding = padding };
+        return chart;
+    }
+
+    /// <summary>
+    /// Sets the longitude/latitude viewport used by geographic topology layouts.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="viewport">The map viewport.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithMapViewport(this TopologyChart chart, ChartMapViewport viewport) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        chart.MapViewport = viewport;
         return chart;
     }
 
@@ -247,6 +260,27 @@ public static class TopologyChartExtensions {
     }
 
     /// <summary>
+    /// Sets longitude/latitude coordinates for a topology node used by geographic layouts.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="nodeId">The node id.</param>
+    /// <param name="longitude">The longitude in degrees.</param>
+    /// <param name="latitude">The latitude in degrees.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithNodeCoordinates(this TopologyChart chart, string nodeId, double longitude, double latitude) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateCoordinate(longitude, latitude);
+        foreach (var node in chart.Nodes) {
+            if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
+            node.Longitude = longitude;
+            node.Latitude = latitude;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology node '" + nodeId + "' was not found.", nameof(nodeId));
+    }
+
+    /// <summary>
     /// Sets an optional short group symbol.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -276,6 +310,45 @@ public static class TopologyChartExtensions {
         foreach (var group in chart.Groups) {
             if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
             group.Color = color;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology group '" + groupId + "' was not found.", nameof(groupId));
+    }
+
+    /// <summary>
+    /// Sets the preferred node arrangement policy for a group when using dense grouped layouts.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="groupId">The group id.</param>
+    /// <param name="layoutPolicy">The dense group layout policy.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithGroupLayout(this TopologyChart chart, string groupId, TopologyGroupLayoutPolicy layoutPolicy) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        foreach (var group in chart.Groups) {
+            if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
+            group.LayoutPolicy = layoutPolicy;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology group '" + groupId + "' was not found.", nameof(groupId));
+    }
+
+    /// <summary>
+    /// Sets longitude/latitude coordinates for a topology group used by geographic layouts.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="groupId">The group id.</param>
+    /// <param name="longitude">The longitude in degrees.</param>
+    /// <param name="latitude">The latitude in degrees.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithGroupCoordinates(this TopologyChart chart, string groupId, double longitude, double latitude) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateCoordinate(longitude, latitude);
+        foreach (var group in chart.Groups) {
+            if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
+            group.Longitude = longitude;
+            group.Latitude = latitude;
             return chart;
         }
 
@@ -467,5 +540,12 @@ public static class TopologyChartExtensions {
         chart.Theme ??= TopologyTheme.Light();
         configure(chart.Theme);
         return chart;
+    }
+
+    private static void ValidateCoordinate(double longitude, double latitude) {
+        if (double.IsNaN(longitude) || double.IsInfinity(longitude)) throw new ArgumentOutOfRangeException(nameof(longitude), longitude, "Longitude must be a finite number.");
+        if (double.IsNaN(latitude) || double.IsInfinity(latitude)) throw new ArgumentOutOfRangeException(nameof(latitude), latitude, "Latitude must be a finite number.");
+        if (longitude < -180 || longitude > 180) throw new ArgumentOutOfRangeException(nameof(longitude), longitude, "Longitude must be between -180 and 180 degrees.");
+        if (latitude < -90 || latitude > 90) throw new ArgumentOutOfRangeException(nameof(latitude), latitude, "Latitude must be between -90 and 90 degrees.");
     }
 }

@@ -136,6 +136,90 @@ function Assert-VisualBaseline {
     }
 }
 
+function Assert-TopologyVisualCoverage {
+    param(
+        [Parameter(Mandatory = $true)] [string] $TopologyOutput
+    )
+
+    $manifestPath = Join-Path $TopologyOutput 'visual-capability-manifest.json'
+    if (-not (Test-Path $manifestPath)) {
+        throw "Topology visual coverage manifest was not generated: $manifestPath"
+    }
+
+    $manifest = Get-Content -Path $manifestPath -Raw | ConvertFrom-Json
+    $artifacts = @($manifest.artifacts)
+    if ($artifacts.Count -lt 12) {
+        throw "Topology visual coverage generated only $($artifacts.Count) artifact(s); expected at least 12. See $manifestPath."
+    }
+
+    $artifactNames = @{}
+    foreach ($artifact in $artifacts) {
+        $artifactNames[$artifact.name] = $artifact
+        foreach ($extension in @('svg', 'html', 'png')) {
+            $fileName = [string]$artifact.$extension
+            if ([string]::IsNullOrWhiteSpace($fileName)) {
+                throw "Topology visual artifact $($artifact.name) is missing a $extension file entry. See $manifestPath."
+            }
+
+            $filePath = Join-Path $TopologyOutput $fileName
+            if (-not (Test-Path $filePath)) {
+                throw "Topology visual artifact file was not generated: $filePath"
+            }
+
+            if ($extension -eq 'png' -and (Get-Item $filePath).Length -le 64) {
+                throw "Topology visual PNG artifact is unexpectedly small: $filePath"
+            }
+        }
+    }
+
+    foreach ($requiredName in @(
+        'visual-topology-explorer',
+        'visual-replication-mesh-explorer',
+        'visual-subnets-site-links-map',
+        'visual-geographic-topology-map',
+        'visual-geographic-region-map',
+        'visual-site-distribution-map',
+        'visual-wan-latency-map'
+    )) {
+        if (-not $artifactNames.ContainsKey($requiredName)) {
+            throw "Topology visual coverage manifest is missing required artifact: $requiredName. See $manifestPath."
+        }
+    }
+
+    $geographicSvg = Join-Path $TopologyOutput 'visual-geographic-topology-map.svg'
+    $geographicSource = Get-Content -Path $geographicSvg -Raw
+    foreach ($requiredFragment in @(
+        'data-layout-mode="Geographic"',
+        'data-cfx-role="topology-geographic-frame"',
+        'data-route-curve="geographic"',
+        'data-route-control-x',
+        'data-node-longitude',
+        'data-node-geo-visible',
+        'data-cfx-visual-role="topology-geographic-callout"',
+        'data-callout-node-count'
+    )) {
+        if (-not $geographicSource.Contains($requiredFragment)) {
+            throw "Topology geographic visual artifact is missing required SVG fragment '$requiredFragment'. See $geographicSvg."
+        }
+    }
+}
+
+function Join-ProcessArguments {
+    param(
+        [Parameter(Mandatory = $true)] [string[]] $Arguments
+    )
+
+    $escaped = foreach ($argument in $Arguments) {
+        if ($argument -match '^[A-Za-z0-9_./:\\=-]+$') {
+            $argument
+        } else {
+            '"' + ($argument -replace '(\\*)"', '$1$1\"' -replace '(\\+)$', '$1$1') + '"'
+        }
+    }
+
+    $escaped -join ' '
+}
+
 function Invoke-DotNetCommand {
     param(
         [Parameter(Mandatory = $true)] [string[]] $Arguments,
@@ -150,8 +234,12 @@ function Invoke-DotNetCommand {
     $startInfo.UseShellExecute = $false
     $startInfo.RedirectStandardOutput = [bool]$Quiet
     $startInfo.RedirectStandardError = [bool]$Quiet
-    foreach ($argument in $Arguments) {
-        [void] $startInfo.ArgumentList.Add($argument)
+    if ($null -ne $startInfo.ArgumentList) {
+        foreach ($argument in $Arguments) {
+            [void] $startInfo.ArgumentList.Add($argument)
+        }
+    } else {
+        $startInfo.Arguments = Join-ProcessArguments -Arguments $Arguments
     }
 
     $process = [System.Diagnostics.Process]::Start($startInfo)
@@ -222,6 +310,8 @@ try {
         }
 
         Assert-VisualBaseline -Comparison $comparison -VisualBaselinePath $visualBaselinePath -ComparisonManifest $comparisonManifest
+        $topologyOutput = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output/topology-demo"
+        Assert-TopologyVisualCoverage -TopologyOutput $topologyOutput
     }
 
     if (-not $SkipPack) {

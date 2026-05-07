@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
@@ -11,7 +12,7 @@ namespace ChartForgeX.Topology;
 /// <summary>
 /// Renders topology charts to dependency-free PNG images.
 /// </summary>
-public sealed class TopologyPngRenderer {
+public sealed partial class TopologyPngRenderer {
     /// <summary>
     /// Renders a topology chart to PNG bytes.
     /// </summary>
@@ -33,13 +34,65 @@ public sealed class TopologyPngRenderer {
         var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), null, Math.Max(1, options.PngOutputScale));
         canvas.Clear(Color(theme.Background));
         if (options.IncludeTitle) DrawHeader(canvas, prepared, theme);
+        if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicFrame(canvas, prepared, theme);
         if (options.IncludeGroups) DrawGroups(canvas, prepared, theme, options, highlight);
         DrawEdges(canvas, prepared, theme, options, highlight);
         if (options.IncludeEdgeLabels) DrawEdgeLabels(canvas, prepared, theme, options, highlight);
         DrawNodes(canvas, prepared, theme, options, highlight);
         if (options.IncludeStatusBadges) DrawStatusBadges(canvas, prepared, theme, options, highlight);
+        if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
         if (options.IncludeLegend && prepared.Legend != null) DrawLegend(canvas, prepared, theme);
         return PngWriter.WriteRgba(canvas.OutputWidth, canvas.OutputHeight, canvas.ToOutputPixels());
+    }
+
+    private static void DrawGeographicFrame(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme) {
+        var map = TopologyMapProjection.MapRect(chart);
+        canvas.FillRoundedRect(map.Left, map.Top, map.Width, map.Height, 16, Color(StatusFill(theme.Accent, theme.Background)));
+        canvas.StrokeRoundedRect(map.Left, map.Top, map.Width, map.Height, 16, Color(theme.Border), 1);
+        DrawGeographicLandLayer(canvas, chart, map, theme);
+        for (var i = 1; i < 4; i++) {
+            var longitude = chart.MapViewport.MinimumLongitude + (chart.MapViewport.MaximumLongitude - chart.MapViewport.MinimumLongitude) * i / 4.0;
+            var x = TopologyMapProjection.Project(map, chart.MapViewport, longitude, chart.MapViewport.MinimumLatitude).X;
+            canvas.DrawLine(x, map.Top, x, map.Bottom, WithAlpha(Color(theme.Border), 110), 0.8);
+        }
+
+        for (var i = 1; i < 3; i++) {
+            var latitude = chart.MapViewport.MinimumLatitude + (chart.MapViewport.MaximumLatitude - chart.MapViewport.MinimumLatitude) * i / 3.0;
+            var y = TopologyMapProjection.Project(map, chart.MapViewport, chart.MapViewport.MinimumLongitude, latitude).Y;
+            canvas.DrawLine(map.Left, y, map.Right, y, WithAlpha(Color(theme.Border), 88), 0.8);
+        }
+    }
+
+    private static void DrawGeographicLandLayer(RgbaCanvas canvas, TopologyChart chart, ChartRect map, TopologyTheme theme) {
+        var land = WithAlpha(Color(theme.MutedForeground), 28);
+        var boundaryColor = WithAlpha(Color(theme.MutedForeground), 56);
+        foreach (var boundary in TopologyMapProjection.BoundaryLines(chart.MapViewport)) {
+            var points = ProjectBoundary(boundary, map, chart.MapViewport);
+            if (TopologyMapProjection.CanFillBoundary(boundary)) canvas.FillPolygon(points, land);
+            for (var i = 1; i < points.Count; i++) canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, boundaryColor, 0.75);
+        }
+
+        var dotColor = WithAlpha(Color(theme.MutedForeground), 27);
+        var radius = TopologyMapProjection.LandDotRadius(map, chart.MapViewport);
+        foreach (var point in TopologyMapProjection.LandDots(chart.MapViewport)) {
+            foreach (var offset in TopologyMapProjection.LandOffsets(chart.MapViewport)) {
+                var longitude = point.X + offset.X;
+                var latitude = point.Y + offset.Y;
+                if (!TopologyMapProjection.IsVisible(chart.MapViewport, longitude, latitude)) continue;
+                var projected = TopologyMapProjection.Project(map, chart.MapViewport, longitude, latitude);
+                canvas.DrawCircle(projected.X, projected.Y, radius, dotColor);
+            }
+        }
+    }
+
+    private static List<ChartPoint> ProjectBoundary(ChartPoint[] boundary, ChartRect map, ChartMapViewport viewport) {
+        var points = new List<ChartPoint>(boundary.Length);
+        foreach (var item in boundary) {
+            var projected = TopologyMapProjection.Project(map, viewport, item.X, item.Y);
+            points.Add(new ChartPoint(projected.X, projected.Y));
+        }
+
+        return points;
     }
 
     private static void DrawHeader(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme) {
@@ -94,16 +147,20 @@ public sealed class TopologyPngRenderer {
             var color = highlight.IsEdgeHighlighted(edge) ? baseColor : WithAlpha(baseColor, (byte)Math.Round(255 * highlight.DimmedOpacity));
             var isSelected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var dash = EdgePngDash(edge);
-            for (var i = 0; i < points.Count - 1; i++) {
-                if (!edge.IsMuted && dash.Dashed) {
-                    canvas.DrawDashedLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, isSelected ? 3.4 : 2.2, dash.Dash, dash.Gap);
-                } else {
-                    canvas.DrawLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, isSelected ? 3.4 : edge.IsMuted ? 1.45 : 2.2);
-                }
-            }
+            var routePoints = IsGeographicCurve(chart, edge, nodes)
+                ? GeographicCurveSamplePoints(chart, edge, nodes, points)
+                : points;
+            DrawEdgeRoute(canvas, routePoints, color, isSelected ? 3.4 : edge.IsMuted ? 1.45 : 2.2, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap);
 
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, points[points.Count - 2], points[points.Count - 1], color);
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, points[1], points[0], color);
+            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color);
+            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color);
+        }
+    }
+
+    private static void DrawEdgeRoute(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, double width, bool dashed, double dash, double gap) {
+        for (var i = 0; i < points.Count - 1; i++) {
+            if (dashed) canvas.DrawDashedLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, width, dash, gap);
+            else canvas.DrawLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, width);
         }
     }
 

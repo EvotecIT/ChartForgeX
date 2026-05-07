@@ -63,6 +63,24 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions.</summary>
     public bool EnableHtmlInteractions { get; set; } = true;
 
+    /// <summary>Gets or sets whether interactive HTML pages should include lightweight zoom and pan controls.</summary>
+    public bool EnableHtmlViewportControls { get; set; }
+
+    /// <summary>Gets or sets whether interactive HTML pages should include lightweight SVG and PNG export controls.</summary>
+    public bool EnableHtmlExportControls { get; set; }
+
+    /// <summary>Gets or sets whether interactive HTML pages should synchronize selection and viewport state with wrappers in the same sync group.</summary>
+    public bool EnableHtmlSynchronizedState { get; set; }
+
+    /// <summary>Gets or sets the optional HTML synchronization group name used by topology wrappers on the same page.</summary>
+    public string? HtmlSyncGroupName { get; set; }
+
+    /// <summary>Gets or sets whether geographic topology layouts should render map callout summaries for coordinated groups.</summary>
+    public bool IncludeGeographicCallouts { get; set; }
+
+    /// <summary>Gets or sets the maximum number of geographic callout summaries to render.</summary>
+    public int GeographicCalloutMaxItems { get; set; } = 4;
+
     /// <summary>Gets or sets whether links should open in a new tab.</summary>
     public bool OpenLinksInNewTab { get; set; }
 

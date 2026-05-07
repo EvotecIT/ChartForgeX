@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Topology;
@@ -30,6 +31,9 @@ public sealed class TopologyChart {
 
     /// <summary>Gets the viewport used by renderers.</summary>
     public TopologyViewport Viewport { get; set; } = new();
+
+    /// <summary>Gets or sets the longitude/latitude window used by geographic topology layouts.</summary>
+    public ChartMapViewport MapViewport { get; set; } = ChartMapViewport.World();
 
     /// <summary>Gets the topology groups.</summary>
     public List<TopologyGroup> Groups { get; } = new();
@@ -83,6 +87,12 @@ public sealed class TopologyGroup {
     /// <summary>Gets or sets the group y-coordinate.</summary>
     public double Y { get; set; }
 
+    /// <summary>Gets or sets the optional group longitude in degrees.</summary>
+    public double? Longitude { get; set; }
+
+    /// <summary>Gets or sets the optional group latitude in degrees.</summary>
+    public double? Latitude { get; set; }
+
     /// <summary>Gets or sets the group width.</summary>
     public double Width { get; set; }
 
@@ -103,6 +113,12 @@ public sealed class TopologyGroup {
 
     /// <summary>Gets or sets an optional group accent color. When set, this colors the group shell independently from health status.</summary>
     public string? Color { get; set; }
+
+    /// <summary>Gets or sets the preferred node arrangement policy for dense grouped layouts.</summary>
+    public TopologyGroupLayoutPolicy LayoutPolicy { get; set; } = TopologyGroupLayoutPolicy.Auto;
+
+    /// <summary>Gets or sets the resolved node arrangement policy applied by layout preparation.</summary>
+    public TopologyGroupLayoutPolicy AppliedLayoutPolicy { get; set; } = TopologyGroupLayoutPolicy.Auto;
 
     /// <summary>Gets arbitrary metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
@@ -144,6 +160,12 @@ public sealed class TopologyNode {
 
     /// <summary>Gets or sets the node y-coordinate.</summary>
     public double Y { get; set; }
+
+    /// <summary>Gets or sets the optional node longitude in degrees.</summary>
+    public double? Longitude { get; set; }
+
+    /// <summary>Gets or sets the optional node latitude in degrees.</summary>
+    public double? Latitude { get; set; }
 
     /// <summary>Gets or sets the node width.</summary>
     public double Width { get; set; } = 120;
@@ -206,6 +228,9 @@ public sealed class TopologyEdge {
 
     /// <summary>Gets or sets the deterministic orthogonal route lane offset in pixels.</summary>
     public double RouteLane { get; set; }
+
+    /// <summary>Gets or sets which edge layout values were inferred during layout preparation.</summary>
+    public TopologyEdgeLayoutInference LayoutInference { get; set; } = TopologyEdgeLayoutInference.None;
 
     /// <summary>Gets explicit route bend points used between the source and target nodes.</summary>
     public List<ChartPoint> Waypoints { get; } = new();
