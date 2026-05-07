@@ -147,6 +147,19 @@ function Assert-TopologyVisualCoverage {
     }
 
     $manifest = Get-Content -Path $manifestPath -Raw | ConvertFrom-Json
+    if ([string]::IsNullOrWhiteSpace([string]$manifest.baselinePolicy) -or [string]$manifest.baselinePolicy -notlike '*outside visual-baseline.json*') {
+        throw "Topology visual coverage manifest must document why topology artifacts are gated outside visual-baseline.json. See $manifestPath."
+    }
+
+    if ([string]$manifest.baselineScope -ne 'visual-capability-manifest') {
+        throw "Topology visual coverage manifest must use baselineScope 'visual-capability-manifest'. See $manifestPath."
+    }
+
+    $baselineCandidates = @($manifest.baselineCandidates)
+    if ($baselineCandidates.Count -lt 4 -or -not ($baselineCandidates -contains 'visual-geographic-topology-map')) {
+        throw "Topology visual coverage manifest must list topology baseline candidates for future numeric baselines. See $manifestPath."
+    }
+
     $artifacts = @($manifest.artifacts)
     if ($artifacts.Count -lt 12) {
         throw "Topology visual coverage generated only $($artifacts.Count) artifact(s); expected at least 12. See $manifestPath."

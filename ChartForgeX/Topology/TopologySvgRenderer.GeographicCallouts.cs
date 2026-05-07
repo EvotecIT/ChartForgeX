@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
@@ -8,7 +7,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
-    private static void DrawGeographicCallouts(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
+    private static void AddGeographicCallouts(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         var callouts = TopologyGeographicCallouts.Build(chart, options, theme);
         if (callouts.Count == 0) return;
 
@@ -53,7 +52,7 @@ public sealed partial class TopologySvgRenderer {
             AddGeographicCalloutBody(element, callout, prefix, theme, selected, chart.Id);
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 
     private static void AddGeographicCalloutBody(SvgElement element, TopologyGeographicCallout callout, string prefix, TopologyTheme theme, bool selected, string? chartId) {

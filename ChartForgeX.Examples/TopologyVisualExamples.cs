@@ -466,7 +466,15 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("{");
         sb.AppendLine("  \"name\": \"ChartForgeX topology visual coverage\",");
         sb.AppendLine("  \"host\": \"HtmlForgeX-ready SVG/HTML/PNG artifacts\",");
-        sb.AppendLine("  \"interactiveContract\": \"Inline SVG elements expose ids, CSS classes, hrefs, title tooltips, and data-cfx/data-node/data-edge hooks. Complete topology HTML pages add click selection and cfx-topology-select/cfx-topology-clear events; hosts can disable that script and own the behavior.\",");
+        sb.AppendLine("  \"interactiveContract\": \"Inline SVG elements expose ids, CSS classes, hrefs, title tooltips, and data-cfx/data-node/data-edge hooks. Complete topology HTML pages are static by default and opt into cfx-topology-* interaction events when requested.\",");
+        sb.AppendLine("  \"baselinePolicy\": \"Topology, geographic topology, and topology-adjacent map artifacts are release-gated by this manifest, required SVG metadata hooks, SVG/HTML/PNG file generation, and PNG size checks. They intentionally stay outside visual-baseline.json until dense routing and geographic layout polish settle enough for numeric visual baselines.\",");
+        sb.AppendLine("  \"baselineScope\": \"visual-capability-manifest\",");
+        sb.AppendLine("  \"baselineCandidates\": [");
+        sb.AppendLine("    \"visual-topology-explorer\",");
+        sb.AppendLine("    \"visual-replication-mesh-explorer\",");
+        sb.AppendLine("    \"visual-subnets-site-links-map\",");
+        sb.AppendLine("    \"visual-geographic-topology-map\"");
+        sb.AppendLine("  ],");
         sb.AppendLine("  \"artifacts\": [");
         for (var i = 0; i < artifacts.Count; i++) {
             var artifact = artifacts[i];

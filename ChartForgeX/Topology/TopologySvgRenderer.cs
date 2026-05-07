@@ -63,33 +63,31 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-cfx-viewport-min-longitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MinimumLongitude) : null)
                 .Attribute("data-cfx-viewport-max-longitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MaximumLongitude) : null)
                 .Attribute("data-cfx-viewport-min-latitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MinimumLatitude) : null)
-                .Attribute("data-cfx-viewport-max-latitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MaximumLatitude) : null)
-                .Raw(BuildBodyMarkup(prepared, prefix, theme, options, id, highlight));
+                .Attribute("data-cfx-viewport-max-latitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MaximumLatitude) : null);
+            AddBodyElements(root, prepared, prefix, theme, options, id, highlight);
         });
 
         return document.ToMarkup();
     }
 
-    private static string BuildBodyMarkup(TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string id, TopologyHighlightState highlight) {
-        var sb = new StringBuilder();
-        sb.Append(ElementMarkup(new SvgElement("rect")
+    private static void AddBodyElements(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string id, TopologyHighlightState highlight) {
+        root.AddElement(new SvgElement("rect")
             .Class(prefix + "__background")
             .Attribute("width", "100%")
             .Attribute("height", "100%")
-            .Attribute("fill", theme.Background)));
-        if (options.IncludeTitle) DrawHeader(sb, chart, prefix, theme);
-        if (chart.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicFrame(sb, chart, prefix, theme);
-        if (options.IncludeGroups) DrawGroups(sb, chart, prefix, theme, options, highlight);
-        DrawEdges(sb, chart, prefix, theme, options, id, highlight);
-        DrawEdgeLabels(sb, chart, prefix, theme, options, highlight);
-        DrawNodes(sb, chart, prefix, theme, options, highlight);
-        if (options.IncludeStatusBadges) DrawNodeStatuses(sb, chart, prefix, theme, options, highlight);
-        if (chart.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(sb, chart, prefix, theme, options, highlight);
-        if (options.IncludeLegend && chart.Legend != null) DrawLegend(sb, chart, prefix, theme);
-        return sb.ToString();
+            .Attribute("fill", theme.Background));
+        if (options.IncludeTitle) AddHeader(root, chart, prefix, theme);
+        if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicFrame(root, chart, prefix, theme);
+        if (options.IncludeGroups) AddGroups(root, chart, prefix, theme, options, highlight);
+        AddEdges(root, chart, prefix, theme, options, id, highlight);
+        AddEdgeLabels(root, chart, prefix, theme, options, highlight);
+        AddNodes(root, chart, prefix, theme, options, highlight);
+        if (options.IncludeStatusBadges) AddNodeStatuses(root, chart, prefix, theme, options, highlight);
+        if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicCallouts(root, chart, prefix, theme, options, highlight);
+        if (options.IncludeLegend && chart.Legend != null) AddLegend(root, chart, prefix, theme);
     }
 
-    private static void DrawGeographicFrame(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme) {
+    private static void AddGeographicFrame(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme) {
         var map = TopologyMapProjection.MapRect(chart);
         var layer = new SvgElement("g")
             .Class(prefix + "__geo-frame")
@@ -142,7 +140,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("stroke-width", 0.8));
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 
     private static void DrawGeographicLandLayer(SvgElement layer, TopologyChart chart, ChartRect map, TopologyTheme theme) {
@@ -254,7 +252,7 @@ public sealed partial class TopologySvgRenderer {
         });
     }
 
-    private static void DrawHeader(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme) {
+    private static void AddHeader(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme) {
         if (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle)) return;
         var x = chart.Viewport.Padding;
         var y = chart.Viewport.Padding + 8;
@@ -280,10 +278,10 @@ public sealed partial class TopologySvgRenderer {
                 .Text(chart.Subtitle!));
         }
 
-        sb.Append(ElementMarkup(header));
+        root.AddElement(header);
     }
 
-    private static void DrawGroups(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
+    private static void AddGroups(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         var layer = new SvgElement("g")
             .Class(prefix + "__groups")
             .Attribute("data-cfx-role", "topology-groups");
@@ -352,7 +350,7 @@ public sealed partial class TopologySvgRenderer {
             }
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 
     private static string GroupAccentColor(TopologyGroup group, TopologyTheme theme) => string.IsNullOrWhiteSpace(group.Color) ? theme.StatusColor(group.Status) : group.Color!.Trim();
@@ -396,7 +394,7 @@ public sealed partial class TopologySvgRenderer {
             .Text(TrimTo(symbol, 3)));
     }
 
-    private static void DrawEdges(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string svgId, TopologyHighlightState highlight) {
+    private static void AddEdges(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string svgId, TopologyHighlightState highlight) {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var layer = new SvgElement("g")
             .Class(prefix + "__edges")
@@ -467,10 +465,10 @@ public sealed partial class TopologySvgRenderer {
             });
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 
-    private static void DrawEdgeLabels(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
+    private static void AddEdgeLabels(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         if (!options.IncludeEdgeLabels) return;
         var layer = new SvgElement("g")
             .Class(prefix + "__edge-labels")
@@ -505,7 +503,7 @@ public sealed partial class TopologySvgRenderer {
             });
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 
     private static void AddEdgeLabelLines(SvgElement group, TopologyEdgeLabelLayout layout, double cx, double cy, string primaryColor, string secondaryColor) {
@@ -610,12 +608,6 @@ public sealed partial class TopologySvgRenderer {
         }
 
         return sb.ToString().Trim('-').ToLowerInvariant();
-    }
-
-    private static string ElementMarkup(SvgElement element) {
-        var writer = new SvgMarkupWriter();
-        element.WriteTo(writer);
-        return writer.Build();
     }
 
     private static string BuildDescription(TopologyChart chart) {

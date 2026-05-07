@@ -1,12 +1,11 @@
 using System;
-using System.Text;
 using ChartForgeX.Svg;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
-    private static void DrawLegend(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme) {
+    private static void AddLegend(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme) {
         var legend = chart.Legend!;
         var x = chart.Viewport.Padding;
         var height = LegendHeight(legend);
@@ -88,6 +87,6 @@ public sealed partial class TopologySvgRenderer {
             });
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 }

@@ -1,0 +1,191 @@
+using System;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
+
+namespace ChartForgeX.VisualBlocks;
+
+/// <summary>
+/// Renders visual blocks to dependency-free PNG images.
+/// </summary>
+public sealed class PngVisualBlockRenderer {
+    /// <summary>Renders a visual block to PNG bytes.</summary>
+    public byte[] Render(IVisualBlock block) {
+        var canvas = RenderCanvas(block);
+        return PngWriter.WriteRgba(canvas.OutputWidth, canvas.OutputHeight, canvas.ToOutputPixels());
+    }
+
+    internal RgbaCanvas RenderCanvas(IVisualBlock block) {
+        VisualBlockRendering.Validate(block);
+        var options = block.Options;
+        var theme = options.Theme;
+        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, null, options.PngOutputScale);
+        canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
+        if (options.ShowCard && theme.UseCard) {
+            canvas.FillRoundedRect(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, theme.CardBackground);
+            canvas.StrokeRoundedRect(0.5, 0.5, Math.Max(1, options.Size.Width - 1), Math.Max(1, options.Size.Height - 1), theme.CornerRadius, theme.CardBorder, 1);
+        }
+
+        if (block is ChartTable table) DrawTable(canvas, table);
+        else if (block is ChartList list) DrawList(canvas, list);
+        else if (block is MetricCard card) DrawMetric(canvas, card);
+        return canvas;
+    }
+
+    private static void DrawHeading(RgbaCanvas canvas, IVisualBlock block, ref double y, double x, double width) {
+        var theme = block.Options.Theme;
+        if (block.Title.Length > 0) {
+            canvas.DrawTextEmphasized(x, y, FitText(block.Title, theme.TitleFontSize, width), theme.Text, theme.TitleFontSize);
+            y += theme.TitleFontSize + 8;
+        }
+
+        if (block.Subtitle.Length > 0) {
+            canvas.DrawText(x, y, FitText(block.Subtitle, theme.SubtitleFontSize, width), theme.MutedText, theme.SubtitleFontSize);
+            y += theme.SubtitleFontSize + 13;
+        } else if (block.Title.Length > 0) {
+            y += 8;
+        }
+    }
+
+    private static void DrawTable(RgbaCanvas canvas, ChartTable table) {
+        var options = table.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        DrawHeading(canvas, table, ref y, content.X, content.Width);
+        var headerHeight = table.Dense ? 26.0 : 32.0;
+        var rowHeight = table.Dense ? 24.0 : 31.0;
+        var widths = ColumnWidths(table, content.Width);
+        if (table.ShowHeader) {
+            canvas.FillRoundedRect(content.X, y, content.Width, headerHeight, Math.Min(6, theme.PlotCornerRadius), theme.PlotBackground);
+            canvas.StrokeRoundedRect(content.X, y, content.Width, headerHeight, Math.Min(6, theme.PlotCornerRadius), theme.PlotBorder, 1);
+            var x = content.X;
+            for (var i = 0; i < table.Columns.Count; i++) {
+                DrawAlignedText(canvas, table.Columns[i].Header, x + 9, y + 8, widths[i] - 18, table.Columns[i].Alignment, theme.Text, theme.SubtitleFontSize, true);
+                x += widths[i];
+            }
+
+            y += headerHeight + 4;
+        }
+
+        var maxRows = Math.Max(0, (int)Math.Floor((options.Size.Height - options.Padding.Bottom - y) / rowHeight));
+        for (var rowIndex = 0; rowIndex < table.Rows.Count && rowIndex < maxRows; rowIndex++) {
+            var row = table.Rows[rowIndex];
+            var rowBackground = row.Background ?? (table.RowStriping && rowIndex % 2 == 1 ? theme.PlotBackground.WithAlpha(110) : ChartColor.Transparent);
+            if (rowBackground.A > 0) canvas.FillRoundedRect(content.X, y, content.Width, rowHeight, 4, rowBackground);
+            var x = content.X;
+            for (var i = 0; i < row.Cells.Count; i++) {
+                var cell = row.Cells[i];
+                if (cell.Background.HasValue) canvas.FillRoundedRect(x + 2, y + 2, Math.Max(1, widths[i] - 4), Math.Max(1, rowHeight - 4), 4, cell.Background.Value);
+                var textX = x + 9;
+                var status = CellStatus(table, i, cell);
+                if (status != VisualStatus.None && table.StatusColumnIndex == i) {
+                    canvas.DrawCircle(x + 10, y + rowHeight / 2, 4, VisualBlockRendering.StatusColor(theme, status));
+                    textX += 12;
+                }
+
+                DrawAlignedText(canvas, cell.Text, textX, y + 8, widths[i] - (textX - x) - 7, cell.Alignment ?? table.Columns[i].Alignment, cell.Foreground ?? row.Foreground ?? theme.Text, table.Dense ? 10.5 : 11.5, false);
+                x += widths[i];
+            }
+
+            y += rowHeight;
+        }
+    }
+
+    private static void DrawList(RgbaCanvas canvas, ChartList list) {
+        var options = list.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        DrawHeading(canvas, list, ref y, content.X, content.Width);
+        var rowHeight = list.Dense ? 25.0 : 33.0;
+        var markerWidth = list.Marker == VisualListMarker.None ? 0 : 24;
+        var maxRows = Math.Max(0, (int)Math.Floor((options.Size.Height - options.Padding.Bottom - y) / rowHeight));
+        for (var i = 0; i < list.Items.Count && i < maxRows; i++) {
+            var item = list.Items[i];
+            DrawMarker(canvas, list, item, i, content.X + 8, y + rowHeight / 2);
+            var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, RgbaCanvas.MeasureTextWidth(item.Value!, 11.5, null) + 10);
+            DrawAlignedText(canvas, item.Text, content.X + markerWidth, y + 8, content.Width - markerWidth - valueWidth - 6, VisualTextAlignment.Left, theme.Text, list.Dense ? 11 : 12.5, true);
+            if (!string.IsNullOrEmpty(item.Value)) DrawAlignedText(canvas, item.Value!, content.X + content.Width - valueWidth, y + 8, valueWidth, VisualTextAlignment.Right, theme.MutedText, list.Dense ? 10.5 : 11.5, true);
+            y += rowHeight;
+        }
+    }
+
+    private static void DrawMetric(RgbaCanvas canvas, MetricCard card) {
+        var options = card.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
+        if (card.Status != VisualStatus.None) canvas.FillRect(0, 0, 7, options.Size.Height, statusColor);
+        var labelSize = Math.Max(11, theme.SubtitleFontSize);
+        var valueSize = Math.Min(54, Math.Max(26, options.Size.Height * 0.22));
+        canvas.DrawTextEmphasized(content.X, content.Y, FitText(card.Label, labelSize, content.Width), theme.MutedText, labelSize);
+        canvas.DrawTextEmphasized(content.X, content.Y + labelSize + 18, FitText(card.Value, valueSize, content.Width), theme.Text, valueSize);
+        if (card.Trend.Length > 0) canvas.DrawTextEmphasized(content.X, options.Size.Height - options.Padding.Bottom - 28, FitText(card.Trend, theme.SubtitleFontSize, content.Width), statusColor, theme.SubtitleFontSize);
+        if (card.Caption.Length > 0) canvas.DrawText(content.X, options.Size.Height - options.Padding.Bottom - 10, FitText(card.Caption, Math.Max(10, theme.SubtitleFontSize - 1), content.Width), theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1));
+    }
+
+    private static void DrawMarker(RgbaCanvas canvas, ChartList list, ChartListItem item, int index, double x, double y) {
+        if (list.Marker == VisualListMarker.None) return;
+        var theme = list.Options.Theme;
+        var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, index) : VisualBlockRendering.StatusColor(theme, item.Status);
+        if (list.Marker == VisualListMarker.Number) {
+            canvas.DrawTextEmphasized(x - 5, y - 7, (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), color, 11);
+            return;
+        }
+
+        if (list.Marker == VisualListMarker.Check) {
+            canvas.DrawCircle(x, y, 7, color.WithAlpha(55));
+            canvas.DrawCircleOutline(x, y, 7, color, 1);
+            if (item.IsChecked != false) {
+                canvas.DrawLine(x - 4, y, x - 1, y + 4, color, 1.6);
+                canvas.DrawLine(x - 1, y + 4, x + 5, y - 4, color, 1.6);
+            }
+
+            return;
+        }
+
+        canvas.DrawCircle(x, y, list.Marker == VisualListMarker.Status ? 6 : 4, color);
+    }
+
+    private static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, VisualTextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {
+        var fitted = FitText(text, fontSize, Math.Max(1, width));
+        var textWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, fontSize, null) : RgbaCanvas.MeasureTextWidth(fitted, fontSize, null);
+        var textX = alignment == VisualTextAlignment.Center ? x + (width - textWidth) / 2 : alignment == VisualTextAlignment.Right ? x + width - textWidth : x;
+        if (emphasized) canvas.DrawTextEmphasized(textX, y, fitted, color, fontSize);
+        else canvas.DrawText(textX, y, fitted, color, fontSize);
+    }
+
+    private static double[] ColumnWidths(ChartTable table, double totalWidth) {
+        var widths = new double[table.Columns.Count];
+        var fixedWidth = 0.0;
+        var flexible = 0;
+        for (var i = 0; i < table.Columns.Count; i++) {
+            if (table.Columns[i].Width.HasValue) { widths[i] = table.Columns[i].Width!.Value; fixedWidth += widths[i]; }
+            else flexible++;
+        }
+
+        var flexWidth = flexible == 0 ? 0 : Math.Max(24, (totalWidth - fixedWidth) / flexible);
+        for (var i = 0; i < widths.Length; i++) if (widths[i] <= 0) widths[i] = flexWidth;
+        return widths;
+    }
+
+    private static VisualStatus CellStatus(ChartTable table, int columnIndex, ChartTableCell cell) {
+        if (cell.Status != VisualStatus.None) return cell.Status;
+        return table.StatusColumnIndex == columnIndex ? VisualBlockRendering.ParseStatus(cell.Text) : VisualStatus.None;
+    }
+
+    private static string FitText(string value, double fontSize, double maxWidth) {
+        if (string.IsNullOrEmpty(value) || RgbaCanvas.MeasureTextWidth(value, fontSize, null) <= maxWidth) return value;
+        const string suffix = "...";
+        if (RgbaCanvas.MeasureTextWidth(suffix, fontSize, null) > maxWidth) return string.Empty;
+        var low = 0;
+        var high = value.Length;
+        while (low < high) {
+            var mid = (low + high + 1) / 2;
+            if (RgbaCanvas.MeasureTextWidth(value.Substring(0, mid) + suffix, fontSize, null) <= maxWidth) low = mid;
+            else high = mid - 1;
+        }
+
+        return value.Substring(0, low) + suffix;
+    }
+}

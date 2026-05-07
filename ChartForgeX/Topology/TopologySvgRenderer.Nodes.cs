@@ -1,12 +1,11 @@
 using System;
-using System.Text;
 using ChartForgeX.Svg;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
-    private static void DrawNodes(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
+    private static void AddNodes(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         var layer = new SvgElement("g")
             .Class(prefix + "__nodes")
             .Attribute("data-cfx-role", "topology-nodes");
@@ -42,7 +41,7 @@ public sealed partial class TopologySvgRenderer {
             group.AddElement(BuildNodeBadge(node, prefix, theme, color, displayMode));
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 
     private static string NodeAccentColor(TopologyNode node, TopologyTheme theme) => string.IsNullOrWhiteSpace(node.Color) ? theme.StatusColor(node.Status) : node.Color!.Trim();
@@ -356,7 +355,7 @@ public sealed partial class TopologySvgRenderer {
         };
     }
 
-    private static void DrawNodeStatuses(StringBuilder sb, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
+    private static void AddNodeStatuses(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         var layer = new SvgElement("g")
             .Class(prefix + "__status-badges")
             .Attribute("data-cfx-role", "topology-status-badges");
@@ -391,6 +390,6 @@ public sealed partial class TopologySvgRenderer {
             });
         }
 
-        sb.Append(ElementMarkup(layer));
+        root.AddElement(layer);
     }
 }

@@ -30,14 +30,15 @@ Already in place:
 - Static SVG/HTML/PNG chart rendering with dependency-free core packages and opt-in HTML interactivity adapters.
 - Dotted maps, reusable region maps, tile maps, and topology geographic projection through `ChartMapViewport` and data-driven map definitions.
 - Product-neutral topology diagrams with groups, nodes, edges, deterministic layouts, route diagnostics, selected states, metadata hooks, SVG/PNG output, and static HTML by default.
+- Neutral visual blocks for exact facts and compact report snippets: `ChartTable`, `ChartList`, `MetricCard`, and `VisualGrid`.
 - `SvgMarkupWriter`, `SvgDocument`, `SvgElement`, and path-data helpers for safer SVG emission across many renderers.
 
 Still open before calling the library future-complete:
 
-- Finish the last string/raw SVG cleanup. The renderer stack is not fully migrated to markup primitives yet; topology still has a `Raw(BuildBodyMarkup(...))` handoff, grid embeds scoped child SVG as raw markup, and some map/chart renderers still use targeted `StringBuilder` paths.
-- Add neutral visual blocks separately from charts: `ChartTable`, `ChartList`, `MetricCard` or `StatBlock`, and `VisualGrid`.
+- Finish the remaining string/raw SVG cleanup outside topology. Topology body composition now stays in the SVG element tree, but grid embeds scoped child SVG as raw markup, and some map/chart renderers still use targeted `StringBuilder` paths.
+- Broaden visual blocks based on real consumers: richer table/list formatting, icons, status palettes, and infographic snippets without becoming a spreadsheet or arbitrary HTML renderer.
 - Keep dashboard shells in host projects. ChartForgeX should emit reusable visual fragments and data hooks; HtmlForgeX/TestimoX should own panels, filters, inspectors, tables, and collected product data.
-- Decide which topology/geographic examples should become formal visual baselines versus generated artifact and metadata validation.
+- Promote topology/geographic examples into formal visual baselines only after dense routing and geographic layout polish are stable enough for numeric baseline thresholds.
 
 ## Quality gates
 
@@ -83,7 +84,8 @@ ChartForgeX
 │   ├── Svg                     # beautiful SVG renderer
 │   ├── Html                    # standalone page and HTML fragment renderer
 │   ├── Raster                  # minimal PNG renderer and PNG writer
-│   └── Topology                # product-neutral topology model and renderers
+│   ├── Topology                # product-neutral topology model and renderers
+│   └── VisualBlocks            # tables, lists, metric cards, mixed visual grids
 ├── ChartForgeX.Interactivity    # host-neutral interaction contracts
 ├── ChartForgeX.Interactivity.Html # self-contained HTML/SVG adapter
 ├── ChartForgeX.Examples         # sample console app
@@ -148,7 +150,40 @@ report.SavePng("scorecards.png");
 
 Use `Add(chart, columnSpan, rowSpan)` or `WithPanelSpan(index, columnSpan, rowSpan)` when a report needs a hero panel, wide trend, or tall narrative chart without creating a new chart type just for layout.
 
-`ChartGrid` is intentionally chart-only. Future visual blocks such as tables, lists, metric cards, status panels, and infographic snippets should use a neutral visual-block composition API instead of pretending those surfaces are chart series. That keeps PowerBGInfo, ImagePlayground, email, Word, and desktop wallpaper scenarios free to compose exact-fact blocks beside charts without locking non-chart content into this first grid contract.
+`ChartGrid` is intentionally chart-only. Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series. That keeps PowerBGInfo, ImagePlayground, email, Word, and desktop wallpaper scenarios free to compose exact-fact blocks beside charts without locking non-chart content into a chart-series contract.
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.VisualBlocks;
+
+var drives = ChartTable.Create()
+    .WithTheme(ChartTheme.TransparentOverlayDark())
+    .WithTransparentBackground()
+    .AddColumn("Drive")
+    .AddColumn("Used", VisualTextAlignment.Right, format: "0%")
+    .AddColumn("Free", VisualTextAlignment.Right)
+    .AddColumn("Status")
+    .AddRow("C:", 0.72, "128 GB", "OK")
+    .AddRow("D:", 0.91, "34 GB", "Warning")
+    .WithStatusColumn("Status")
+    .WithDenseMode();
+
+var card = MetricCard.Create()
+    .WithMetric("Patch compliance", 0.94, "P0")
+    .WithTrend("+4 pp")
+    .WithStatus(VisualStatus.Positive);
+
+var snapshot = VisualGrid.Create()
+    .WithTitle("System Snapshot")
+    .WithColumns(2)
+    .Add(chart)
+    .Add(drives)
+    .Add(card, columnSpan: 2);
+
+snapshot.SaveSvg("snapshot.svg");
+snapshot.SaveHtml("snapshot.html");
+snapshot.SavePng("snapshot.png");
+```
 
 ChartForgeX validates chart data before rendering so invalid report payloads fail close to the caller instead of producing partial markup or malformed PNGs. Public APIs reject non-finite numbers, invalid enum values, empty required data sets, malformed specialized series, negative proportional values, cyclic Sankey flows, and tree data with multiple roots or parents. HTML fragments and grids scope child SVG IDs per render, so repeated or identical charts can be safely embedded on the same page. When embedding raw SVG strings yourself, pass a stable scope such as `chart.ToSvg("panel-a")` or `grid.ToSvg("report-a")` to keep element IDs unique without giving up deterministic output.
 

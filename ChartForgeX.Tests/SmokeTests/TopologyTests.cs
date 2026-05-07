@@ -32,6 +32,8 @@ internal static partial class SmokeTests {
         Assert(source.Contains("new SvgElement(\"g\")", StringComparison.Ordinal), "Topology SVG edge and label groups should be built through the SVG element engine.");
         Assert(source.Contains("SvgPathDataBuilder", StringComparison.Ordinal), "Topology edge paths should use the shared SVG path data builder.");
         Assert(!source.Contains("AppendLine(\"<svg", StringComparison.Ordinal), "Topology SVG renderer should not hand-build the root svg element with raw string concatenation.");
+        Assert(!source.Contains("Raw(BuildBodyMarkup", StringComparison.Ordinal), "Topology SVG body layers should be attached as SVG element children instead of a raw body markup handoff.");
+        Assert(!source.Contains("BuildBodyMarkup", StringComparison.Ordinal), "Topology SVG body composition should remain in the SVG element tree.");
     }
 
     private static void TopologyDefaultLegendIsProductNeutral() {

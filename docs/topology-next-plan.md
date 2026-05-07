@@ -43,16 +43,16 @@ HtmlForgeX/TestimoX should host ChartForgeX outputs inside dashboard panels and 
 
 The SVG markup engine exists, and topology now uses `SvgDocument`/`SvgElement` for the root shell, defs, background, header, group wrappers/cards/labels, edge wrappers, edge links, edge labels, node wrappers, node links, node bodies/cards/dots, node labels, node badges/subtitle chips, node icons/glyphs, node status overlays, legends, geographic callouts, and edge paths. It also uses `SvgPathDataBuilder` for path data and focused partials for node, legend, and geographic callout rendering.
 
-This is not a full repository-wide string-to-markup migration yet. Topology still hands a larger subtree through `Raw(BuildBodyMarkup(...))`; chart grids embed scoped child SVG as raw markup; dotted/region/tile maps and some hot chart paths still use targeted `StringBuilder` or raw text insertion where the migration has not paid for itself yet.
+This is not a full repository-wide string-to-markup migration yet. Topology body composition now stays in the SVG element tree, but chart grids embed scoped child SVG as raw markup, and dotted/region/tile maps plus some hot chart paths still use targeted `StringBuilder` or raw text insertion where the migration has not paid for itself yet.
 
 Next work:
 
-- remove the remaining topology `Raw(BuildBodyMarkup(...))` handoff when the SVG document API can compose larger reusable subtrees cleanly
+- continue reducing non-topology raw/string render paths
 - keep path geometry helpers independent of SVG serialization so PNG parity remains intact
 - preserve existing SVG contracts: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output
 - migrate remaining raw/string render paths only when tests can protect the exact host-facing output
 
-Suggested follow-up: `Finish topology SVG markup cleanup`.
+Suggested follow-up: `Continue SVG markup cleanup outside topology`.
 
 ### 2. Polish Dense Routing And Layout
 
@@ -81,17 +81,17 @@ Next work:
 
 Suggested follow-up: `Polish topology geographic map visuals`.
 
-### 4. Add Neutral Visual Blocks
+### 4. Broaden Neutral Visual Blocks
 
-`ChartGrid` is intentionally chart-only. Tables, lists, metric cards, status panels, and future infographic snippets should not be modeled as chart series.
+The first neutral visual-block surface now exists in `ChartForgeX.VisualBlocks`: `ChartTable`, `ChartList`, `MetricCard`, and `VisualGrid`. `ChartGrid` remains intentionally chart-only.
 
 Next work:
 
-- introduce neutral visual contracts such as `ChartTable`, `ChartList`, `MetricCard` or `StatBlock`, and `VisualGrid`
-- reuse `ChartTheme`, `ChartColor`, `ChartPalettes`, transparent backgrounds, SVG/PNG/HTML export, and dependency-free rendering
+- broaden table/list/card styling from real PowerBGInfo, ImagePlayground, email, Word, and wallpaper examples
+- add small icon/status symbol options only when they stay renderer-owned and dependency-free
 - keep the scope bounded: no spreadsheet engine, no arbitrary HTML renderer, no region-specific assumptions, and no external table library
 
-Suggested follow-up: `Add visual block primitives`.
+Suggested follow-up: `Polish visual block primitives`.
 
 ### 5. Hand Dashboard Composition To Hosts
 
@@ -122,13 +122,14 @@ Next work:
 
 Suggested follow-up: `Unify topology HTML interactions`.
 
-### 7. Decide Visual Baselines
+### 7. Promote Visual Baselines When Stable
 
-The example generator validates topology manifests, required SVG/HTML/PNG artifacts, and key geographic route metadata. Some topology examples may now deserve stronger visual baselines.
+The example generator validates topology manifests, required SVG/HTML/PNG artifacts, PNG size, and key geographic route metadata. Topology and geographic topology examples intentionally stay outside `visual-baseline.json` for now; their current release gate is `visual-capability-manifest.json` plus required metadata checks in `Build.ps1`.
 
 Next work:
 
-- decide whether topology artifacts should join the numeric `visual-baseline.json` gallery baseline or stay as generated artifact plus metadata validation
+- promote topology artifacts into `visual-baseline.json` only after dense routing and geographic layout polish are stable enough for numeric baselines
+- start promotion from the manifest's `baselineCandidates` list
 - keep dense, routed, and geographic examples small enough to inspect in PRs
 - track which screenshot families are represented by ChartForgeX versus host dashboard components
 
@@ -137,8 +138,8 @@ Next work:
 1. Close the release API and documentation cleanup on the current PR branch.
 2. Finish topology SVG markup cleanup without changing public SVG contracts.
 3. Add dense routing/layout fixtures and polish based on real screenshot-like cases.
-4. Decide topology/geographic visual baseline coverage.
-5. Add neutral visual block primitives in a separate PR.
+4. Promote topology/geographic visual baseline coverage only after layout polish stabilizes.
+5. Polish visual block primitives from real consumer examples.
 6. Hand dashboard shells and product adapters to HtmlForgeX/TestimoX.
 7. Unify topology browser interaction code with the shared adapter after host needs settle.
 

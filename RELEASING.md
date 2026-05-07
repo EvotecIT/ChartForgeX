@@ -64,3 +64,9 @@ If a visual change is intentional, refresh the baseline with:
 ```
 
 Commit the refreshed baseline only with the renderer or example change that justifies it. Do not refresh the baseline to hide warnings, clipped text, edge pressure, or accidental PNG/SVG parity regressions.
+
+## Topology Visual Coverage
+
+Topology and geographic topology examples are not part of `visual-baseline.json` yet. They are release-gated through `ChartForgeX.Examples/bin/Release/net8.0/output/topology-demo/visual-capability-manifest.json`, required SVG metadata fragments, generated SVG/HTML/PNG artifacts, and PNG size checks.
+
+Keep that split until dense routing and geographic layout polish settle enough for numeric visual baselines. When promoting topology artifacts into the regular baseline, start with the manifest's `baselineCandidates` list and update `Build.ps1`, `ChartForgeX.Examples/visual-baseline.json`, and this release guide in the same PR.

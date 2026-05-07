@@ -38,6 +38,9 @@ internal static partial class SmokeTests {
         Assert(script.Contains("function New-VisualBaseline", StringComparison.Ordinal), "Build script should keep visual-baseline generation isolated.");
         Assert(script.Contains("function Assert-VisualBaseline", StringComparison.Ordinal), "Build script should keep visual-baseline assertions isolated.");
         Assert(script.Contains("function Assert-TopologyVisualCoverage", StringComparison.Ordinal), "Build script should keep topology visual coverage checks isolated.");
+        Assert(script.Contains("baselineScope 'visual-capability-manifest'", StringComparison.Ordinal), "Build script should document the topology visual baseline scope.");
+        Assert(script.Contains("outside visual-baseline.json", StringComparison.Ordinal), "Build script should require topology visual coverage to explain why it is not in the numeric visual baseline yet.");
+        Assert(script.Contains("baselineCandidates", StringComparison.Ordinal), "Build script should require topology baseline candidates for future promotion.");
         Assert(script.Contains("$minimumChartPairs = 50", StringComparison.Ordinal), "Build script should enforce the current minimum example chart coverage.");
         Assert(script.Contains("$Comparison.chartPairs -lt $minimumChartPairs", StringComparison.Ordinal), "Build script should fail when generated SVG/PNG comparison coverage drops.");
         Assert(script.Contains("$Comparison.dimensionMatches -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when SVG/PNG dimensions drift apart.");
@@ -116,5 +119,7 @@ internal static partial class SmokeTests {
         Assert(releaseGuide.Contains("fails with a named timeout", StringComparison.Ordinal), "Release guidance should explain timeout failures as actionable build signals.");
         Assert(releaseGuide.Contains("-UpdateVisualBaseline", StringComparison.Ordinal), "Release guidance should explain intentional visual-baseline refreshes.");
         Assert(releaseGuide.Contains("clipped SVG text", StringComparison.Ordinal) && releaseGuide.Contains("PNG edge pressure", StringComparison.Ordinal), "Release guidance should explain the visual-baseline quality gates.");
+        Assert(releaseGuide.Contains("Topology Visual Coverage", StringComparison.Ordinal), "Release guidance should document the topology visual coverage gate.");
+        Assert(releaseGuide.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Release guidance should document the topology visual coverage manifest.");
     }
 }
