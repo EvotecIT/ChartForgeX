@@ -42,7 +42,7 @@ public sealed class TopologyHtmlRenderer {
         sb.AppendLine("<meta charset=\"utf-8\">");
         sb.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
         sb.AppendLine("<title>" + Escape(title) + "</title>");
-        sb.AppendLine("<style>body{margin:0;min-height:100vh;background:" + EscapeAttr(theme.Background) + ";font-family:" + CssFontFamily(theme.FontFamily) + ";padding:24px;box-sizing:border-box}.cfx-topology-wrapper{margin:0 auto}.cfx-topology-wrapper svg{max-width:100%;height:auto;display:block}.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge'],.cfx-topology-wrapper [data-cfx-role='topology-group']{cursor:pointer}.cfx-topology-wrapper .cfx-topology-html-selected{filter:drop-shadow(0 10px 18px rgba(37,99,235,.22))}.cfx-topology-wrapper .cfx-topology-html-muted{opacity:.32}.cfx-topology-wrapper .cfx-topology-html-related{opacity:1}</style>");
+        sb.AppendLine("<style>body{margin:0;min-height:100vh;background:" + EscapeAttr(theme.Background) + ";font-family:" + CssFontFamily(theme.FontFamily) + ";padding:24px;box-sizing:border-box}.cfx-topology-wrapper{margin:0 auto}.cfx-topology-wrapper svg{max-width:100%;height:auto;display:block}.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge'],.cfx-topology-wrapper [data-cfx-role='topology-group']{cursor:pointer}.cfx-topology-wrapper .cfx-topology-html-selected{filter:drop-shadow(0 10px 18px rgba(37,99,235,.22))}.cfx-topology-wrapper .cfx-topology-html-muted{opacity:.32}.cfx-topology-wrapper .cfx-topology-html-related{opacity:1}.cfx-topology-wrapper .cfx-topology-html-hovered{filter:drop-shadow(0 8px 16px rgba(15,23,42,.16))}.cfx-topology-wrapper .cfx-topology-html-hover-muted{opacity:.42}.cfx-topology-wrapper .cfx-topology-html-hover-related{opacity:1}</style>");
         sb.AppendLine("</head>");
         sb.AppendLine("<body>");
         sb.AppendLine(RenderFragment(chart, options));
@@ -119,6 +119,13 @@ public sealed class TopologyHtmlRenderer {
         item.removeAttribute('aria-selected');
       });
     };
+    const clearHover = () => {
+      wrapper.removeAttribute('data-cfx-hover-kind');
+      wrapper.removeAttribute('data-cfx-hover-id');
+      wrapper.querySelectorAll('.cfx-topology-html-hovered,.cfx-topology-html-hover-muted,.cfx-topology-html-hover-related').forEach(item => {
+        item.classList.remove('cfx-topology-html-hovered', 'cfx-topology-html-hover-muted', 'cfx-topology-html-hover-related');
+      });
+    };
     const identity = element => {
       const role = element.getAttribute('data-cfx-role') || '';
       const base = {
@@ -163,6 +170,9 @@ public sealed class TopologyHtmlRenderer {
           lineStyle: attr(element, 'data-edge-line-style'),
           route: {
             strategy: attr(element, 'data-route-strategy'),
+            curve: attr(element, 'data-route-curve'),
+            controlX: attr(element, 'data-route-control-x'),
+            controlY: attr(element, 'data-route-control-y'),
             corridor: attr(element, 'data-route-corridor'),
             candidateCount: attr(element, 'data-route-candidate-count'),
             fallbackReason: attr(element, 'data-route-fallback-reason'),
@@ -198,6 +208,41 @@ public sealed class TopologyHtmlRenderer {
         return detail.kind === request.kind && detail.id === request.id;
       }) || null;
     };
+    const applyRelatedClasses = (detail, classPrefix, selfClass) => {
+      const relatedEdges = new Set(detail.related.edgeIds || []);
+      const relatedNodes = new Set(detail.related.nodeIds || []);
+      const relatedGroups = new Set(detail.related.groupIds || []);
+      const relatedClass = classPrefix + 'related';
+      const mutedClass = classPrefix + 'muted';
+      wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
+        const isSelf = detail.kind === 'edge' && attr(edge, 'data-edge-id') === detail.id;
+        const isRelated = isSelf || relatedEdges.has(attr(edge, 'data-edge-id'));
+        edge.classList.toggle(relatedClass, isRelated);
+        edge.classList.toggle(mutedClass, !isRelated);
+      });
+      wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
+        const isSelf = detail.kind === 'node' && attr(node, 'data-node-id') === detail.id;
+        const isRelated = isSelf || relatedNodes.has(attr(node, 'data-node-id'));
+        node.classList.toggle(relatedClass, isRelated);
+        node.classList.toggle(mutedClass, !isRelated && detail.kind !== 'group');
+      });
+      wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
+        const isSelf = detail.kind === 'group' && attr(group, 'data-group-id') === detail.id;
+        const isRelated = isSelf || relatedGroups.has(attr(group, 'data-group-id'));
+        group.classList.toggle(relatedClass, isRelated);
+      });
+      if (detail.element && selfClass) detail.element.classList.add(selfClass);
+    };
+    const hover = element => {
+      const detail = identity(element);
+      detail.related = related(detail);
+      clearHover();
+      wrapper.setAttribute('data-cfx-hover-kind', detail.kind);
+      wrapper.setAttribute('data-cfx-hover-id', detail.id);
+      applyRelatedClasses(detail, 'cfx-topology-html-hover-', 'cfx-topology-html-hovered');
+      delete detail.element;
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover', { bubbles: true, detail }));
+    };
     const select = element => {
       const detail = identity(element);
       detail.related = related(detail);
@@ -208,22 +253,22 @@ public sealed class TopologyHtmlRenderer {
       wrapper.setAttribute('data-cfx-selection-status', detail.status);
       element.classList.add('cfx-topology-html-selected');
       element.setAttribute('aria-selected', 'true');
-      const relatedEdges = new Set(detail.related.edgeIds || []);
-      const relatedNodes = new Set(detail.related.nodeIds || []);
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
-        const isRelated = relatedEdges.has(attr(edge, 'data-edge-id'));
-        edge.classList.toggle('cfx-topology-html-related', isRelated);
-        edge.classList.toggle('cfx-topology-html-muted', !isRelated);
-      });
-      wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
-        const isRelated = relatedNodes.has(attr(node, 'data-node-id'));
-        if (detail.kind === 'edge' || detail.kind === 'group') node.classList.toggle('cfx-topology-html-related', isRelated);
-      });
+      applyRelatedClasses({ ...detail, element }, 'cfx-topology-html-', '');
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, detail }));
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
       if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
+      element.addEventListener('pointerenter', () => hover(element));
+      element.addEventListener('pointerleave', () => {
+        clearHover();
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true }));
+      });
+      element.addEventListener('focus', () => hover(element));
+      element.addEventListener('blur', () => {
+        clearHover();
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true }));
+      });
     });
     wrapper.addEventListener('click', event => {
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;

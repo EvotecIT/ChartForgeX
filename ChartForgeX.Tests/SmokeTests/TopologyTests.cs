@@ -325,15 +325,24 @@ internal static partial class SmokeTests {
         Assert(html.Contains("metrics: collectPrefixed(element, 'data-cfx-metric-')", StringComparison.Ordinal), "Topology selection events should expose metric attributes as a host-friendly object.");
         Assert(html.Contains("layoutInference: attr(element, 'data-edge-layout-inference')", StringComparison.Ordinal), "Topology selection events should expose inferred edge layout diagnostics.");
         Assert(html.Contains("candidateCount: attr(element, 'data-route-candidate-count')", StringComparison.Ordinal), "Topology selection events should expose route diagnostics.");
+        Assert(html.Contains("curve: attr(element, 'data-route-curve')", StringComparison.Ordinal), "Topology selection events should expose geographic route diagnostics.");
+        Assert(html.Contains("controlX: attr(element, 'data-route-control-x')", StringComparison.Ordinal), "Topology selection events should expose geographic route control points.");
         Assert(html.Contains("detail.related = related(detail)", StringComparison.Ordinal), "Topology selection events should include related nodes, edges, groups, and edge summaries.");
         Assert(html.Contains("element.setAttribute('tabindex', '0')", StringComparison.Ordinal), "Topology HTML pages should make topology elements keyboard focusable.");
         Assert(html.Contains("event.key !== 'Enter' && event.key !== ' '", StringComparison.Ordinal), "Topology HTML pages should support keyboard activation.");
         Assert(html.Contains("cfx-topology-set-selection", StringComparison.Ordinal), "Topology HTML pages should allow hosts to drive selection state.");
         Assert(html.Contains("cfx-topology-clear-selection", StringComparison.Ordinal), "Topology HTML pages should allow hosts to clear selection state.");
+        Assert(html.Contains("cfx-topology-hover", StringComparison.Ordinal), "Topology HTML pages should dispatch host-friendly hover events.");
+        Assert(html.Contains("cfx-topology-hover-clear", StringComparison.Ordinal), "Topology HTML pages should dispatch host-friendly hover-clear events.");
+        Assert(html.Contains("data-cfx-hover-kind", StringComparison.Ordinal), "Topology HTML pages should track hovered topology element kind.");
+        Assert(html.Contains("data-cfx-hover-id", StringComparison.Ordinal), "Topology HTML pages should track hovered topology element id.");
+        Assert(html.Contains("cfx-topology-html-hover-related", StringComparison.Ordinal), "Topology HTML pages should mark hover-related elements.");
+        Assert(html.Contains("pointerenter", StringComparison.Ordinal) && html.Contains("focus', () => hover(element)", StringComparison.Ordinal), "Topology HTML pages should support pointer and keyboard-focus hover highlighting.");
 
         var staticHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = false });
         Assert(staticHtml.Contains("data-cfx-interactive=\"false\"", StringComparison.Ordinal), "Topology HTML interactions should be optional.");
         Assert(!staticHtml.Contains("cfx-topology-select", StringComparison.Ordinal), "Static topology HTML pages should omit the interaction script.");
+        Assert(!staticHtml.Contains("cfx-topology-hover", StringComparison.Ordinal), "Static topology HTML pages should omit hover interaction hooks.");
     }
 
     private static void TopologyValidatorReportsActionableErrors() {

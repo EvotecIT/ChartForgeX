@@ -120,14 +120,14 @@ Suggested PR after ChartForgeX routing/layout: `Add HtmlForgeX topology host pan
 
 ### 6. Deeper Browser-Side Interactions
 
-Topology HTML now provides click and keyboard selection with richer selection payloads. A selected element dispatches id, kind, status, metadata, metrics, node/group/edge context, route diagnostics, and related node/edge/group ids so host dashboards can drive inspector panels without reparsing the SVG. Hosts can also dispatch `cfx-topology-set-selection` and `cfx-topology-clear-selection` on the wrapper to synchronize external panels with the embedded topology. The general interactive chart wrapper still has zoom, pan, brush, export, synchronized charts, and richer controls that topology does not yet reuse.
+Topology HTML now provides pointer/focus hover, click selection, and keyboard selection with richer payloads. Hover highlights related nodes, edges, and groups, then dispatches `cfx-topology-hover` / `cfx-topology-hover-clear`. A selected element dispatches id, kind, status, metadata, metrics, node/group/edge context, route diagnostics, geographic route-arc diagnostics, and related node/edge/group ids so host dashboards can drive inspector panels without reparsing the SVG. Hosts can also dispatch `cfx-topology-set-selection` and `cfx-topology-clear-selection` on the wrapper to synchronize external panels with the embedded topology. The general interactive chart wrapper still has zoom, pan, brush, export, synchronized charts, and richer controls that topology does not yet reuse.
 
 Next work:
 
 - unify topology HTML with `ChartForgeX.Interactivity.Html` where practical
 - add optional zoom/pan controls for large topology diagrams
 - dispatch richer selection details: node/edge/group id, kind, status, metrics, metadata, source/target, connected edges - done for the default complete-page selection event
-- support hover highlighting, keyboard navigation, and host-controlled selection state - keyboard activation and host selection events are in place; hover highlighting remains open
+- support hover highlighting, keyboard navigation, and host-controlled selection state - pointer/focus hover, keyboard activation, and host selection events are in place; richer graph navigation remains open
 - keep the default fragment static unless the caller opts into richer interactions
 
 Suggested PR: `Upgrade topology HTML interactions`.
