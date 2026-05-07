@@ -209,6 +209,7 @@ internal static partial class SmokeTests {
         ("Map definitions accept region names and aliases", MapDefinitionsAcceptRegionNamesAndAliases),
         ("Custom map definitions validate geometry inputs", CustomMapDefinitionsValidateGeometryInputs),
         ("Custom region maps parse standard SVG path separators", CustomRegionMapsParseStandardSvgPathSeparators),
+        ("Custom region maps parse common SVG path commands", CustomRegionMapsParseCommonSvgPathCommands),
         ("Custom region maps preserve subunit bounds aspect ratio", CustomRegionMapsPreserveSubunitBoundsAspectRatio),
         ("Tile map labels can be hidden for compact cards", TileMapLabelsCanBeHiddenForCompactCards),
         ("Region map scale legend can be hidden for compact cards", RegionMapScaleLegendCanBeHiddenForCompactCards),

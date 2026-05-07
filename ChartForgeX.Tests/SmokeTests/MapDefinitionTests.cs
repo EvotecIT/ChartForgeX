@@ -153,6 +153,27 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng().Length > 64, "Custom region maps with comma-separated paths and interior holes should render PNG output.");
     }
 
+    private static void CustomRegionMapsParseCommonSvgPathCommands() {
+        var definition = new ChartMapDefinition("commands", "Commands", 100, 100, new[] {
+            new ChartMapRegion("A", "Alpha", "M10 10 H90 V45 C90 60 75 70 60 70 S30 80 20 55 Q12 38 10 10 Z"),
+            new ChartMapRegion("B", "Beta", "M35 35 h30 v18 t-30 0 z"),
+            new ChartMapRegion("C", "Gamma", "M25 82 A18 12 20 0 1 75 82 A18 12 20 0 1 25 82 Z")
+        });
+        var chart = Chart.Create()
+            .WithSize(420, 300)
+            .WithMapLabels(false)
+            .AddRegionMap("Commands", definition, new[] {
+                new ChartRegionMapItem("A", 10),
+                new ChartRegionMapItem("B", 20),
+                new ChartRegionMapItem("C", 30)
+            });
+
+        var svg = chart.ToSvg();
+        Assert(svg.Contains("data-cfx-map-id=\"commands\"", StringComparison.Ordinal), "Custom region maps should render SVG from common path command input.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"region-map-region\"") == 3, "Custom region maps should render each region after flattening common SVG path commands.");
+        Assert(chart.ToPng().Length > 64, "Custom region maps with H/V, curve, smooth, and arc commands should render PNG output.");
+    }
+
     private static void CustomRegionMapsPreserveSubunitBoundsAspectRatio() {
         var definition = new ChartMapDefinition("normalized", "Normalized", new ChartRect(0, 0, 1, 0.5), new[] {
             new ChartMapRegion("A", "Alpha", "M0,0 1,0 1,.5 0,.5Z")
