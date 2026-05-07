@@ -135,13 +135,11 @@ Next work:
 
 ## Recommended Order
 
-1. Close the release API and documentation cleanup on the current PR branch.
-2. Finish topology SVG markup cleanup without changing public SVG contracts.
-3. Add dense routing/layout fixtures and polish based on real screenshot-like cases.
-4. Promote topology/geographic visual baseline coverage only after layout polish stabilizes.
-5. Polish visual block primitives from real consumer examples.
-6. Hand dashboard shells and product adapters to HtmlForgeX/TestimoX.
-7. Unify topology browser interaction code with the shared adapter after host needs settle.
+1. Add dense routing/layout fixtures and polish based on real screenshot-like cases.
+2. Promote topology/geographic visual baseline coverage only after layout polish stabilizes.
+3. Polish visual block primitives from real consumer examples.
+4. Hand dashboard shells and product adapters to HtmlForgeX/TestimoX.
+5. Unify topology browser interaction code with the shared adapter after host needs settle.
 
 This order keeps the public static-output contract stable first, then improves the renderer internals, then opens the reusable visual-block surface that PowerBGInfo, ImagePlayground, email, Word, and wallpaper scenarios need.
 
