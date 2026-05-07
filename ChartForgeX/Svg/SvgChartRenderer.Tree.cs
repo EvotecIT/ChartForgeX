@@ -15,9 +15,14 @@ public sealed partial class SvgChartRenderer {
         if (model.Nodes.Count == 0 || model.Links.Count == 0) return;
         var t = chart.Options.Theme;
         var showLabels = chart.Series.First(series => series.Kind == ChartSeriesKind.Tree).ShowDataLabels != false;
-        sb.AppendLine("<g data-cfx-role=\"tree-chart\">");
-        DrawTreeNodeGradients(sb, chart, id);
-        foreach (var link in model.Links) DrawTreeLink(sb, chart, model, link);
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "tree-chart")
+            .EndStartElement()
+            .Line();
+        DrawTreeNodeGradients(writer, chart, id);
+        foreach (var link in model.Links) DrawTreeLink(writer, chart, model, link);
         foreach (var node in model.Nodes) {
             var fillIndex = node.Depth % Math.Max(1, t.Palette.Length);
             var summary = node.Label + ": level " + node.Depth.ToString(CultureInfo.InvariantCulture);
@@ -25,24 +30,71 @@ public sealed partial class SvgChartRenderer {
             var labelColor = HeatmapTextColor(t.Palette[fillIndex]);
             var borderStroke = ChartVisualPrimitives.TreeNodeBorderStrokeWidth;
             var borderInset = borderStroke / 2.0;
-            sb.AppendLine($"<rect data-cfx-role=\"tree-node\" data-cfx-node=\"{node.Index}\" data-cfx-depth=\"{node.Depth}\" data-cfx-label=\"{Escape(node.Label)}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(node.X)}\" y=\"{F(node.Y)}\" width=\"{F(model.NodeWidth)}\" height=\"{F(model.NodeHeight)}\" rx=\"{F(radius)}\" fill=\"url(#{id}-treeFill{fillIndex})\"/>");
-            sb.AppendLine($"<rect data-cfx-role=\"tree-node-border\" x=\"{F(node.X + borderInset)}\" y=\"{F(node.Y + borderInset)}\" width=\"{F(Math.Max(0, model.NodeWidth - borderStroke))}\" height=\"{F(Math.Max(0, model.NodeHeight - borderStroke))}\" rx=\"{F(Math.Max(0, radius - borderInset))}\" fill=\"none\" stroke=\"{TreeLabelHalo(labelColor).ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.TreeNodeBorderOpacity)}\" stroke-width=\"{F(borderStroke)}\" vector-effect=\"non-scaling-stroke\"/>");
-            if (showLabels) DrawTreeNodeLabel(sb, chart, node, model, labelColor);
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-role", "tree-node")
+                .Attribute("data-cfx-node", node.Index)
+                .Attribute("data-cfx-depth", node.Depth)
+                .Attribute("data-cfx-label", node.Label)
+                .Attribute("role", "img")
+                .Attribute("aria-label", summary)
+                .Attribute("x", node.X)
+                .Attribute("y", node.Y)
+                .Attribute("width", model.NodeWidth)
+                .Attribute("height", model.NodeHeight)
+                .Attribute("rx", radius)
+                .Attribute("fill", $"url(#{id}-treeFill{fillIndex})")
+                .EndEmptyElement()
+                .Line();
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-role", "tree-node-border")
+                .Attribute("x", node.X + borderInset)
+                .Attribute("y", node.Y + borderInset)
+                .Attribute("width", Math.Max(0, model.NodeWidth - borderStroke))
+                .Attribute("height", Math.Max(0, model.NodeHeight - borderStroke))
+                .Attribute("rx", Math.Max(0, radius - borderInset))
+                .Attribute("fill", "none")
+                .Attribute("stroke", TreeLabelHalo(labelColor).ToCss())
+                .Attribute("stroke-opacity", ChartVisualPrimitives.TreeNodeBorderOpacity)
+                .Attribute("stroke-width", borderStroke)
+                .Attribute("vector-effect", "non-scaling-stroke")
+                .EndEmptyElement()
+                .Line();
+            if (showLabels) DrawTreeNodeLabel(writer, chart, node, model, labelColor);
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
-    private static void DrawTreeNodeGradients(StringBuilder sb, Chart chart, string id) {
-        sb.AppendLine("<defs>");
+    private static void DrawTreeNodeGradients(SvgMarkupWriter writer, Chart chart, string id) {
+        writer.StartElement("defs").EndStartElement().Line();
         for (var i = 0; i < chart.Options.Theme.Palette.Length; i++) {
             var color = chart.Options.Theme.Palette[i];
-            sb.AppendLine($"<linearGradient id=\"{id}-treeFill{i}\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"{TreeNodeGradientTop(color).ToHex()}\"/><stop offset=\"100%\" stop-color=\"{TreeNodeGradientBottom(color).ToHex()}\"/></linearGradient>");
+            writer
+                .StartElement("linearGradient")
+                .Attribute("id", $"{id}-treeFill{i}")
+                .Attribute("x1", 0)
+                .Attribute("x2", 0)
+                .Attribute("y1", 0)
+                .Attribute("y2", 1)
+                .EndStartElement()
+                .StartElement("stop")
+                .Attribute("offset", "0%")
+                .Attribute("stop-color", TreeNodeGradientTop(color).ToHex())
+                .EndEmptyElement()
+                .StartElement("stop")
+                .Attribute("offset", "100%")
+                .Attribute("stop-color", TreeNodeGradientBottom(color).ToHex())
+                .EndEmptyElement()
+                .EndElement()
+                .Line();
         }
-        sb.AppendLine("</defs>");
+        writer.EndElement().Line();
     }
 
-    private static void DrawTreeLink(StringBuilder sb, Chart chart, TreeModel model, TreeLink link) {
+    private static void DrawTreeLink(SvgMarkupWriter writer, Chart chart, TreeModel model, TreeLink link) {
         var parent = model.Nodes[link.Parent];
         var child = model.Nodes[link.Child];
         var color = chart.Options.Theme.Palette[parent.Depth % chart.Options.Theme.Palette.Length];
@@ -53,7 +105,22 @@ public sealed partial class SvgChartRenderer {
         var gap = Math.Max(ChartVisualPrimitives.TreeLinkMinGap, (x1 - x0) / 2);
         var width = Math.Max(ChartVisualPrimitives.TreeLinkMinStrokeWidth, Math.Min(ChartVisualPrimitives.TreeLinkMaxStrokeWidth, ChartVisualPrimitives.TreeLinkMinStrokeWidth + link.Value / Math.Max(0.000001, model.MaxLinkValue) * ChartVisualPrimitives.TreeLinkStrokeWidthRange));
         var path = "M " + F(x0) + " " + F(y0) + " C " + F(x0 + gap) + " " + F(y0) + " " + F(x1 - gap) + " " + F(y1) + " " + F(x1) + " " + F(y1);
-        sb.AppendLine($"<path data-cfx-role=\"tree-link\" data-cfx-parent=\"{link.Parent}\" data-cfx-child=\"{link.Child}\" data-cfx-value=\"{F(link.Value)}\" data-cfx-parent-label=\"{Escape(parent.Label)}\" data-cfx-child-label=\"{Escape(child.Label)}\" d=\"{path}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.TreeLinkStrokeOpacity)}\" stroke-width=\"{F(width)}\" stroke-linecap=\"round\"/>");
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "tree-link")
+            .Attribute("data-cfx-parent", link.Parent)
+            .Attribute("data-cfx-child", link.Child)
+            .Attribute("data-cfx-value", link.Value)
+            .Attribute("data-cfx-parent-label", parent.Label)
+            .Attribute("data-cfx-child-label", child.Label)
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", color.ToCss())
+            .Attribute("stroke-opacity", ChartVisualPrimitives.TreeLinkStrokeOpacity)
+            .Attribute("stroke-width", width)
+            .Attribute("stroke-linecap", "round")
+            .EndEmptyElement()
+            .Line();
     }
 
     private static TreeModel BuildTreeModel(Chart chart, ChartRect plot) {
@@ -129,15 +196,40 @@ public sealed partial class SvgChartRenderer {
 
     private static double TreeNodeLabelFontSize(double baseSize) => Math.Max(ChartVisualPrimitives.TreeNodeLabelMinFontSize, baseSize);
 
-    private static void DrawTreeNodeLabel(StringBuilder sb, Chart chart, TreeNode node, TreeModel model, ChartColor labelColor) {
+    private static void DrawTreeNodeLabel(SvgMarkupWriter writer, Chart chart, TreeNode node, TreeModel model, ChartColor labelColor) {
         var fontSize = TreeNodeLabelFontSize(chart.Options.Theme.TickLabelFontSize);
         var maxWidth = model.NodeWidth - ChartVisualPrimitives.TreeNodeLabelHorizontalPadding * 2;
         var lines = TreeNodeLabelLines(node.Label, fontSize, maxWidth);
         var lineHeight = fontSize * ChartVisualPrimitives.TreeNodeLabelLineHeightFactor;
         var firstY = node.Y + model.NodeHeight / 2 - (lines.Length - 1) * lineHeight / 2;
         for (var i = 0; i < lines.Length; i++) {
-            DrawSvgTextCenteredX(sb, chart, "tree-node-label", lines[i], node.X + model.NodeWidth / 2, firstY + i * lineHeight, labelColor, fontSize, maxWidth, "800", TreeLabelHalo(labelColor), ChartVisualPrimitives.TreeLabelStrokeWidth);
+            DrawTreeNodeLabelLine(writer, chart, lines[i], node.X + model.NodeWidth / 2, firstY + i * lineHeight, labelColor, fontSize, maxWidth);
         }
+    }
+
+    private static void DrawTreeNodeLabelLine(SvgMarkupWriter writer, Chart chart, string text, double centerX, double y, ChartColor labelColor, double fontSize, double maxWidth) {
+        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), fontSize);
+        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        if (fittedText.Length == 0) return;
+
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "tree-node-label")
+            .Attribute("x", centerX)
+            .Attribute("y", y)
+            .Attribute("text-anchor", "middle")
+            .Attribute("dominant-baseline", "middle")
+            .Attribute("fill", labelColor.ToCss())
+            .Attribute("stroke", TreeLabelHalo(labelColor).ToCss())
+            .Attribute("stroke-width", ChartVisualPrimitives.TreeLabelStrokeWidth)
+            .Attribute("paint-order", "stroke fill")
+            .Attribute("stroke-linejoin", "round")
+            .Attribute("font-family", SvgFontFamily(chart.Options.Theme.FontFamily))
+            .Attribute("font-size", fittedFontSize)
+            .Attribute("font-weight", "800")
+            .Text(fittedText)
+            .EndElement()
+            .Line();
     }
 
     private static string[] TreeNodeLabelLines(string label, double fontSize, double maxWidth) {

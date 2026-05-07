@@ -28,7 +28,7 @@ public sealed partial class SvgChartRenderer {
         var cellHeight = Math.Max(1, (plot.Height - gap * (rows.Length - 1)) / rows.Length);
         var radius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
 
-        sb.AppendLine("<g data-cfx-role=\"heatmap\">");
+        var body = new StringBuilder();
         for (var rowIndex = 0; rowIndex < rows.Length; rowIndex++) {
             var series = rows[rowIndex];
             var y = plot.Top + rowIndex * (cellHeight + gap);
@@ -37,7 +37,7 @@ public sealed partial class SvgChartRenderer {
                 var rowLabelFontSize = TextFontSizeForSvgWidth(series.Name, rowLabelWidth, t.TickLabelFontSize);
                 var rowLabel = TrimSvgLabelToWidth(series.Name, rowLabelFontSize, rowLabelWidth);
                 if (rowLabel.Length > 0) {
-                    sb.AppendLine($"<text data-cfx-role=\"heatmap-row-label\" x=\"{F(plot.Left - 12)}\" y=\"{F(y + cellHeight / 2)}\" text-anchor=\"end\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(rowLabelFontSize)}\" font-weight=\"650\">{Escape(rowLabel)}</text>");
+                    WriteHeatmapRowLabel(body, chart, plot.Left - 12, y + cellHeight / 2, rowLabelFontSize, rowLabel);
                 }
             }
             for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
@@ -49,22 +49,22 @@ public sealed partial class SvgChartRenderer {
                 var color = HeatmapColor(chart, series.Color, value, min, max);
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
-                sb.AppendLine($"<rect class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"heatmap-cell\" data-cfx-row=\"{rowIndex}\" data-cfx-column=\"{columnIndex}\" data-cfx-status=\"{status}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(x)}\" y=\"{F(y)}\" width=\"{F(cellWidth)}\" height=\"{F(cellHeight)}\" rx=\"{F(radius)}\" fill=\"{color.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.HeatmapCellBorderOpacity)}\" stroke-width=\"{F(ChartVisualPrimitives.HeatmapCellBorderStrokeWidth)}\"><title>{Escape(summary)}</title></rect>");
+                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color);
                 if (ShouldDrawDataLabels(chart, series) && cellWidth >= 34 && cellHeight >= 20) {
                     var label = FormatValue(chart, value);
                     var pointIndex = HeatmapPointIndex(series, column);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawSvgTextCenteredX(sb, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, HeatmapTextColor(color), t.DataLabelFontSize, cellWidth - 6, "750", style: DataLabelStyle(chart, series, pointIndex));
+                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, HeatmapTextColor(color), t.DataLabelFontSize, cellWidth - 6, "750", style: DataLabelStyle(chart, series, pointIndex));
                     } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                         var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + cellWidth + 8;
                         var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
                         var connectorStartX = placement == ChartDataLabelPlacement.Left ? x : x + cellWidth;
                         var connectorEndX = placement == ChartDataLabelPlacement.Left ? x - 5 : x + cellWidth + 5;
-                        DrawHeatmapLabelConnector(sb, chart, rowIndex, columnIndex, connectorStartX, y + cellHeight / 2, connectorEndX);
-                        DrawHorizontalValueLabel(sb, chart, label, labelX, y + cellHeight / 2, anchor, basePlot, series, pointIndex);
+                        DrawHeatmapLabelConnector(body, chart, rowIndex, columnIndex, connectorStartX, y + cellHeight / 2, connectorEndX);
+                        DrawHorizontalValueLabel(body, chart, label, labelX, y + cellHeight / 2, anchor, basePlot, series, pointIndex);
                     } else {
-                        DrawDataLabel(sb, chart, label, x + cellWidth / 2, placement == ChartDataLabelPlacement.Above ? y - 8 : y + cellHeight + 12, plot, series: series, pointIndex: pointIndex);
+                        DrawDataLabel(body, chart, label, x + cellWidth / 2, placement == ChartDataLabelPlacement.Above ? y - 8 : y + cellHeight + 12, plot, series: series, pointIndex: pointIndex);
                     }
                 }
             }
@@ -80,19 +80,99 @@ public sealed partial class SvgChartRenderer {
                 if (label.Length == 0) continue;
                 var anchor = EdgeAwareAnchor(label, x, plot, labelFontSize);
                 var labelX = EdgeAwareTextX(label, x, plot, labelFontSize);
-                sb.AppendLine($"<text data-cfx-role=\"heatmap-column-label\" x=\"{F(labelX)}\" y=\"{F(plot.Bottom + 22)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(labelFontSize)}\" font-weight=\"650\">{Escape(label)}</text>");
+                WriteHeatmapColumnLabel(body, chart, labelX, plot.Bottom + 22, anchor, labelFontSize, label);
             }
 
-            DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + 48, "heatmap-x-axis-title");
+            DrawSvgXAxisTitle(body, chart, plot, plot.Bottom + 48, "heatmap-x-axis-title");
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
                 var widestRowLabel = rows.Max(series => EstimateTextWidth(series.Name, t.TickLabelFontSize));
                 var axisX = Math.Max(24, plot.Left - widestRowLabel - 48);
-                DrawSvgYAxisTitle(sb, chart, plot, axisX, "heatmap-y-axis-title");
+                DrawSvgYAxisTitle(body, chart, plot, axisX, "heatmap-y-axis-title");
             }
         }
 
-        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(sb, chart, plot, min, max, rows[0].Color);
-        sb.AppendLine("</g>");
+        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color);
+
+        var writer = new SvgMarkupWriter(body.Length + 128);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "heatmap")
+            .Raw(Environment.NewLine)
+            .Raw(body.ToString())
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteHeatmapRowLabel(StringBuilder sb, Chart chart, double x, double y, double fontSize, string label) {
+        var t = chart.Options.Theme;
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "heatmap-row-label")
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("text-anchor", "end")
+            .Attribute("dominant-baseline", "middle")
+            .Attribute("fill", t.MutedText.ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", "650")
+            .Text(label)
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string status, string summary, double x, double y, double width, double height, double radius, ChartColor color) {
+        var t = chart.Options.Theme;
+        var writer = new SvgMarkupWriter(768);
+        writer
+            .StartElement("rect")
+            .Attribute("class", "cfx-interactive-region")
+            .Attribute("tabindex", "0")
+            .Attribute("focusable", "true")
+            .Attribute("data-cfx-role", "heatmap-cell")
+            .Attribute("data-cfx-row", rowIndex)
+            .Attribute("data-cfx-column", columnIndex)
+            .Attribute("data-cfx-status", status)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("width", width)
+            .Attribute("height", height)
+            .Attribute("rx", radius)
+            .Attribute("fill", color.ToCss())
+            .Attribute("stroke", t.CardBackground.ToCss())
+            .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
+            .Attribute("stroke-width", ChartVisualPrimitives.HeatmapCellBorderStrokeWidth)
+            .EndStartElement()
+            .StartElement("title")
+            .Text(summary)
+            .EndElement()
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteHeatmapColumnLabel(StringBuilder sb, Chart chart, double x, double y, string anchor, double fontSize, string label) {
+        var t = chart.Options.Theme;
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "heatmap-column-label")
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("text-anchor", anchor)
+            .Attribute("fill", t.MutedText.ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", "650")
+            .Text(label)
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
     }
 
     private static ChartRect ApplyHeatmapLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<ChartSeries> rows, IReadOnlyList<double> columns) {
@@ -147,7 +227,7 @@ public sealed partial class SvgChartRenderer {
             var ratio = i / (double)(steps - 1);
             var value = min + (max - min) * ratio;
             var color = HeatmapColor(chart, highColor, value, min, max);
-            sb.AppendLine($"<rect data-cfx-role=\"heatmap-scale-step\" data-cfx-status=\"{HeatmapStatus(HeatmapRatio(value, min, max))}\" x=\"{F(x + i * width / steps)}\" y=\"{F(y)}\" width=\"{F(width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap)}\" height=\"{F(height)}\" rx=\"{F(ChartVisualPrimitives.HeatmapScaleRadius)}\" fill=\"{color.ToCss()}\"/>");
+            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, HeatmapStatus(HeatmapRatio(value, min, max)), color);
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);
@@ -158,15 +238,66 @@ public sealed partial class SvgChartRenderer {
         var maxFontSize = TextFontSizeForSvgWidth(maxLabel, labelMaxWidth, t.TickLabelFontSize);
         maxLabel = TrimSvgLabelToWidth(maxLabel, maxFontSize, labelMaxWidth);
         if (minLabel.Length > 0) {
-            sb.AppendLine($"<text data-cfx-role=\"heatmap-scale-label\" x=\"{F(x)}\" y=\"{F(y + ChartVisualPrimitives.HeatmapScaleLabelOffsetY)}\" text-anchor=\"start\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(minFontSize)}\">{Escape(minLabel)}</text>");
+            WriteHeatmapScaleLabel(sb, chart, x, y + ChartVisualPrimitives.HeatmapScaleLabelOffsetY, "start", minFontSize, minLabel);
         }
         if (maxLabel.Length > 0) {
-            sb.AppendLine($"<text data-cfx-role=\"heatmap-scale-label\" x=\"{F(x + width)}\" y=\"{F(y + ChartVisualPrimitives.HeatmapScaleLabelOffsetY)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(maxFontSize)}\">{Escape(maxLabel)}</text>");
+            WriteHeatmapScaleLabel(sb, chart, x + width, y + ChartVisualPrimitives.HeatmapScaleLabelOffsetY, "end", maxFontSize, maxLabel);
         }
     }
 
+    private static void WriteHeatmapScaleStep(StringBuilder sb, double x, double y, double width, double height, string status, ChartColor color) {
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "heatmap-scale-step")
+            .Attribute("data-cfx-status", status)
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("width", width)
+            .Attribute("height", height)
+            .Attribute("rx", ChartVisualPrimitives.HeatmapScaleRadius)
+            .Attribute("fill", color.ToCss())
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteHeatmapScaleLabel(StringBuilder sb, Chart chart, double x, double y, string anchor, double fontSize, string label) {
+        var t = chart.Options.Theme;
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "heatmap-scale-label")
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("text-anchor", anchor)
+            .Attribute("fill", t.MutedText.ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+            .Attribute("font-size", fontSize)
+            .Text(label)
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
     private static void DrawHeatmapLabelConnector(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, double startX, double y, double endX) {
-        sb.AppendLine($"<line data-cfx-role=\"data-label-connector\" data-cfx-row=\"{rowIndex}\" data-cfx-column=\"{columnIndex}\" x1=\"{F(startX)}\" y1=\"{F(y)}\" x2=\"{F(endX)}\" y2=\"{F(y)}\" stroke=\"{DataLabelConnectorColor(chart).ToCss()}\" stroke-width=\"{F(chart.Options.DataLabelConnectorStrokeWidth)}\" stroke-opacity=\"{F(chart.Options.DataLabelConnectorOpacity)}\" stroke-linecap=\"round\"/>");
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("line")
+            .Attribute("data-cfx-role", "data-label-connector")
+            .Attribute("data-cfx-row", rowIndex)
+            .Attribute("data-cfx-column", columnIndex)
+            .Attribute("x1", startX)
+            .Attribute("y1", y)
+            .Attribute("x2", endX)
+            .Attribute("y2", y)
+            .Attribute("stroke", DataLabelConnectorColor(chart).ToCss())
+            .Attribute("stroke-width", chart.Options.DataLabelConnectorStrokeWidth)
+            .Attribute("stroke-opacity", chart.Options.DataLabelConnectorOpacity)
+            .Attribute("stroke-linecap", "round")
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
     }
 
     private static ChartColor HeatmapColor(Chart chart, ChartColor? highColor, double value, double min, double max) {

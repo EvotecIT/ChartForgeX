@@ -25,18 +25,47 @@ public sealed partial class SvgChartRenderer {
         var tickLabelWidth = Math.Max(18, plot.Width / Math.Max(1, ticks.Count - 1) - 6);
         var rowLabelWidth = Math.Max(8, plot.Left - 24);
 
-        sb.AppendLine("<g data-cfx-role=\"timeline\">");
-        DrawTimelineItemGradients(sb, id, items);
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "timeline")
+            .EndStartElement()
+            .Line();
+        DrawTimelineItemGradients(writer, id, items);
         foreach (var tick in ticks) {
             var x = ProjectTimelineX(tick, min, max, plot);
-            if (chart.Options.ShowGrid) sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(plot.Top)}\" x2=\"{F(x)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.TimelineGridOpacity)}\"/>");
+            if (chart.Options.ShowGrid) {
+                writer
+                    .StartElement("line")
+                    .Attribute("x1", x)
+                    .Attribute("y1", plot.Top)
+                    .Attribute("x2", x)
+                    .Attribute("y2", plot.Bottom)
+                    .Attribute("stroke", t.Grid.ToCss())
+                    .Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth)
+                    .Attribute("opacity", ChartVisualPrimitives.TimelineGridOpacity)
+                    .EndEmptyElement()
+                    .Line();
+            }
+
             if (chart.Options.ShowAxes) {
                 var rawLabel = FormatTimelineTick(chart, tick);
                 var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelWidth, t.TickLabelFontSize);
                 var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, tickLabelWidth);
                 var anchor = EdgeAwareAnchor(label, x, plot, labelFontSize);
                 var labelX = EdgeAwareTextX(label, x, plot, labelFontSize);
-                sb.AppendLine($"<text data-cfx-role=\"timeline-tick-label\" x=\"{F(labelX)}\" y=\"{F(plot.Bottom + 22)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(labelFontSize)}\">{Escape(label)}</text>");
+                writer
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "timeline-tick-label")
+                    .Attribute("x", labelX)
+                    .Attribute("y", plot.Bottom + 22)
+                    .Attribute("text-anchor", anchor)
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", TimelineFontFamily(t.FontFamily))
+                    .Attribute("font-size", labelFontSize)
+                    .Text(label)
+                    .EndElement()
+                    .Line();
             }
         }
 
@@ -49,37 +78,90 @@ public sealed partial class SvgChartRenderer {
             var width = Math.Max(2, Math.Abs(x2 - x1));
             var duration = FormatTimelineDuration(chart, item.Start, item.End);
             var summary = BuildTimelineSummary(chart, item, duration);
-            if (chart.Options.ShowGrid) sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(y + rowHeight / 2)}\" x2=\"{F(plot.Right)}\" y2=\"{F(y + rowHeight / 2)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.TimelineRowGridOpacity)}\"/>");
+            if (chart.Options.ShowGrid) {
+                writer
+                    .StartElement("line")
+                    .Attribute("x1", plot.Left)
+                    .Attribute("y1", y + rowHeight / 2)
+                    .Attribute("x2", plot.Right)
+                    .Attribute("y2", y + rowHeight / 2)
+                    .Attribute("stroke", t.Grid.ToCss())
+                    .Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth)
+                    .Attribute("opacity", ChartVisualPrimitives.TimelineRowGridOpacity)
+                    .EndEmptyElement()
+                    .Line();
+            }
+
             if (chart.Options.ShowAxes) {
                 var rowLabelFontSize = TextFontSizeForSvgWidth(item.Name, rowLabelWidth, t.TickLabelFontSize);
                 var rowLabel = TrimSvgLabelToWidth(item.Name, rowLabelFontSize, rowLabelWidth);
-                sb.AppendLine($"<text data-cfx-role=\"timeline-row-label\" x=\"{F(plot.Left - 14)}\" y=\"{F(y + rowHeight / 2)}\" text-anchor=\"end\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(rowLabelFontSize)}\" font-weight=\"650\">{Escape(rowLabel)}</text>");
+                writer
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "timeline-row-label")
+                    .Attribute("x", plot.Left - 14)
+                    .Attribute("y", y + rowHeight / 2)
+                    .Attribute("text-anchor", "end")
+                    .Attribute("dominant-baseline", "middle")
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", TimelineFontFamily(t.FontFamily))
+                    .Attribute("font-size", rowLabelFontSize)
+                    .Attribute("font-weight", "650")
+                    .Text(rowLabel)
+                    .EndElement()
+                    .Line();
             }
-            DrawTimelineRangeBar(sb, chart, item, id, i, left, y, width, rowHeight, duration, summary);
+            DrawTimelineRangeBar(writer, chart, item, id, i, left, y, width, rowHeight, duration, summary);
             if (item.ShowDataLabels && width >= 72) {
-                DrawSvgTextCenteredX(sb, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, HeatmapTextColor(item.Color), t.DataLabelFontSize, width - 6, "750");
+                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, HeatmapTextColor(item.Color), t.DataLabelFontSize, width - 6, "750");
             }
         }
 
         if (chart.Options.ShowAxes) {
-            sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Bottom)}\" x2=\"{F(plot.Right)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.AxisStrokeWidth)}\"/>");
-            DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + 49, "timeline-x-axis-title");
+            writer
+                .StartElement("line")
+                .Attribute("x1", plot.Left)
+                .Attribute("y1", plot.Bottom)
+                .Attribute("x2", plot.Right)
+                .Attribute("y2", plot.Bottom)
+                .Attribute("stroke", t.Axis.ToCss())
+                .Attribute("stroke-width", ChartVisualPrimitives.AxisStrokeWidth)
+                .EndEmptyElement()
+                .Line();
+            DrawTimelineSvgXAxisTitle(writer, chart, plot, plot.Bottom + 49, "timeline-x-axis-title");
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
                 var widestLabel = items.Max(item => EstimateTextWidth(item.Name, t.TickLabelFontSize));
                 var axisX = Math.Max(24, plot.Left - widestLabel - 46);
-                DrawSvgYAxisTitle(sb, chart, plot, axisX, "timeline-y-axis-title");
+                DrawTimelineSvgYAxisTitle(writer, chart, plot, axisX, "timeline-y-axis-title");
             }
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
-    private static void DrawTimelineItemGradients(StringBuilder sb, string id, IReadOnlyList<TimelineItem> items) {
-        sb.AppendLine("<defs>");
+    private static void DrawTimelineItemGradients(SvgMarkupWriter writer, string id, IReadOnlyList<TimelineItem> items) {
+        writer.StartElement("defs").EndStartElement().Line();
         foreach (var item in items) {
-            sb.AppendLine($"<linearGradient id=\"{id}-timelineFill{item.SeriesIndex}\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"{TimelineItemGradientTop(item.Color).ToHex()}\"/><stop offset=\"100%\" stop-color=\"{TimelineItemGradientBottom(item.Color).ToHex()}\"/></linearGradient>");
+            writer
+                .StartElement("linearGradient")
+                .Attribute("id", id + "-timelineFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture))
+                .Attribute("x1", "0")
+                .Attribute("x2", "0")
+                .Attribute("y1", "0")
+                .Attribute("y2", "1")
+                .EndStartElement()
+                .StartElement("stop")
+                .Attribute("offset", "0%")
+                .Attribute("stop-color", TimelineItemGradientTop(item.Color).ToHex())
+                .EndEmptyElement()
+                .StartElement("stop")
+                .Attribute("offset", "100%")
+                .Attribute("stop-color", TimelineItemGradientBottom(item.Color).ToHex())
+                .EndEmptyElement()
+                .EndElement()
+                .Line();
         }
-        sb.AppendLine("</defs>");
+        writer.EndElement().Line();
     }
 
     private static List<TimelineItem> BuildTimelineItems(Chart chart) {
@@ -96,18 +178,123 @@ public sealed partial class SvgChartRenderer {
         return items;
     }
 
-    private static void DrawTimelineRangeBar(StringBuilder sb, Chart chart, TimelineItem item, string id, int row, double left, double y, double width, double rowHeight, string duration, string summary) {
+    private static void DrawTimelineRangeBar(SvgMarkupWriter writer, Chart chart, TimelineItem item, string id, int row, double left, double y, double width, double rowHeight, string duration, string summary) {
         var radius = Math.Min(ChartVisualPrimitives.TimelineItemCornerRadiusMax, rowHeight / 2);
         var highlightInset = Math.Min(radius, width / 3);
         var highlightEnd = left + width - highlightInset;
         var borderStroke = ChartVisualPrimitives.TimelineItemBorderStrokeWidth;
         var borderInset = borderStroke / 2.0;
-        sb.AppendLine($"<rect data-cfx-role=\"timeline-item\" data-cfx-row=\"{row}\" data-cfx-start=\"{F(item.Start)}\" data-cfx-end=\"{F(item.End)}\" data-cfx-duration=\"{Escape(duration)}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(left)}\" y=\"{F(y)}\" width=\"{F(width)}\" height=\"{F(rowHeight)}\" rx=\"{F(radius)}\" fill=\"url(#{id}-timelineFill{item.SeriesIndex})\"/>");
-        sb.AppendLine($"<rect data-cfx-role=\"timeline-item-border\" x=\"{F(left + borderInset)}\" y=\"{F(y + borderInset)}\" width=\"{F(Math.Max(0, width - borderStroke))}\" height=\"{F(Math.Max(0, rowHeight - borderStroke))}\" rx=\"{F(Math.Max(0, radius - borderInset))}\" fill=\"none\" stroke=\"{chart.Options.Theme.CardBackground.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.TimelineItemBorderOpacity)}\" stroke-width=\"{F(borderStroke)}\"/>");
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "timeline-item")
+            .Attribute("data-cfx-row", row)
+            .Attribute("data-cfx-start", item.Start)
+            .Attribute("data-cfx-end", item.End)
+            .Attribute("data-cfx-duration", duration)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .Attribute("x", left)
+            .Attribute("y", y)
+            .Attribute("width", width)
+            .Attribute("height", rowHeight)
+            .Attribute("rx", radius)
+            .Attribute("fill", "url(#" + id + "-timelineFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
+            .EndEmptyElement()
+            .Line();
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "timeline-item-border")
+            .Attribute("x", left + borderInset)
+            .Attribute("y", y + borderInset)
+            .Attribute("width", Math.Max(0, width - borderStroke))
+            .Attribute("height", Math.Max(0, rowHeight - borderStroke))
+            .Attribute("rx", Math.Max(0, radius - borderInset))
+            .Attribute("fill", "none")
+            .Attribute("stroke", chart.Options.Theme.CardBackground.ToCss())
+            .Attribute("stroke-opacity", ChartVisualPrimitives.TimelineItemBorderOpacity)
+            .Attribute("stroke-width", borderStroke)
+            .EndEmptyElement()
+            .Line();
         if (highlightEnd > left + highlightInset) {
-            sb.AppendLine($"<line data-cfx-role=\"timeline-item-highlight\" x1=\"{F(left + highlightInset)}\" y1=\"{F(y + ChartVisualPrimitives.TimelineItemHighlightOffsetY)}\" x2=\"{F(highlightEnd)}\" y2=\"{F(y + ChartVisualPrimitives.TimelineItemHighlightOffsetY)}\" stroke=\"#fff\" stroke-opacity=\"{F(ChartVisualPrimitives.TimelineItemHighlightOpacity)}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" stroke-linecap=\"round\"/>");
+            writer
+                .StartElement("line")
+                .Attribute("data-cfx-role", "timeline-item-highlight")
+                .Attribute("x1", left + highlightInset)
+                .Attribute("y1", y + ChartVisualPrimitives.TimelineItemHighlightOffsetY)
+                .Attribute("x2", highlightEnd)
+                .Attribute("y2", y + ChartVisualPrimitives.TimelineItemHighlightOffsetY)
+                .Attribute("stroke", "#fff")
+                .Attribute("stroke-opacity", ChartVisualPrimitives.TimelineItemHighlightOpacity)
+                .Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth)
+                .Attribute("stroke-linecap", "round")
+                .EndEmptyElement()
+                .Line();
         }
     }
+
+    private static void DrawTimelineSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
+        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
+        DrawTimelineSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+    }
+
+    private static void DrawTimelineSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
+        if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
+        var t = chart.Options.Theme;
+        var maxWidth = Math.Max(40, plot.Height * 0.72);
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
+        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        if (text.Length == 0) return;
+
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", role)
+            .Attribute("transform", "translate(" + F(axisX) + " " + F(plot.Top + plot.Height / 2) + ") rotate(-90)")
+            .Attribute("text-anchor", "middle")
+            .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
+            .Attribute("font-family", TimelineFontFamily(StyleFontFamily(chart, style)))
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", StyleWeight(style, "600"));
+        WriteTimelineSvgTextStyleAttributes(writer, style);
+        writer
+            .Text(text)
+            .EndElement()
+            .Line();
+    }
+
+    private static void DrawTimelineSvgTextCenteredX(SvgMarkupWriter writer, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, bool middleBaseline, ChartTextStyle? style) {
+        var preferredFontSize = StyleFontSize(style, fontSize);
+        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
+        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        if (fittedText.Length == 0) return;
+
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", role)
+            .Attribute("x", centerX)
+            .Attribute("y", y)
+            .Attribute("text-anchor", "middle");
+        if (middleBaseline) writer.Attribute("dominant-baseline", "middle");
+        writer
+            .Attribute("fill", StyleColor(style, fill).ToCss())
+            .Attribute("font-family", TimelineFontFamily(StyleFontFamily(chart, style)))
+            .Attribute("font-size", fittedFontSize)
+            .Attribute("font-weight", StyleWeight(style, fontWeight));
+        WriteTimelineSvgTextStyleAttributes(writer, style);
+        writer
+            .Text(fittedText)
+            .EndElement()
+            .Line();
+    }
+
+    private static void WriteTimelineSvgTextStyleAttributes(SvgMarkupWriter writer, ChartTextStyle? style) {
+        if (style == null) return;
+        if (style.Italic) writer.Attribute("font-style", "italic");
+        if (style.Underline) writer.Attribute("text-decoration", "underline");
+    }
+
+    private static string TimelineFontFamily(string value) =>
+        string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value;
 
     private static ChartRect ApplyTimelineReserve(Chart chart, ChartRect plot, IReadOnlyList<TimelineItem> items) {
         var t = chart.Options.Theme;

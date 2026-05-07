@@ -27,17 +27,18 @@ public sealed partial class SvgChartRenderer {
         var cy = plot.Top + plot.Height / 2 + 6;
         var radius = Math.Max(32, Math.Min(plot.Width, plot.Height) / 2 - 42);
 
-        sb.AppendLine("<g data-cfx-role=\"radar-chart\">");
+        WriteRadarChartStart(sb);
         DrawRadarGrid(sb, chart, plot, categories, ticks, max, cx, cy, radius);
         for (var seriesOrder = 0; seriesOrder < seriesItems.Length; seriesOrder++) {
             var item = seriesItems[seriesOrder];
             var color = item.series.Color ?? chart.Options.Theme.Palette[item.index % chart.Options.Theme.Palette.Length];
             var points = RadarPoints(item.series, categories, max, cx, cy, radius);
             var summary = BuildRadarSummary(chart, item.series, categories);
-            sb.AppendLine($"<path data-cfx-role=\"radar-area\" data-cfx-series=\"{item.index}\" role=\"img\" aria-label=\"{Escape(summary)}\" d=\"{RadarPath(points)}\" fill=\"{color.ToCss()}\" opacity=\"{F(ChartVisualPrimitives.RadarAreaOpacity)}\"/>");
-            sb.AppendLine($"<path data-cfx-role=\"radar-outline\" data-cfx-series=\"{item.index}\" d=\"{RadarPath(points)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.RadarOutlineStrokeWidth)}\" stroke-linejoin=\"round\"/>");
+            var path = RadarPath(points);
+            WriteRadarArea(sb, item.index, summary, path, color.ToCss());
+            WriteRadarOutline(sb, item.index, path, color.ToCss());
             for (var i = 0; i < points.Count; i++) {
-                sb.AppendLine($"<circle data-cfx-role=\"radar-point\" data-cfx-series=\"{item.index}\" data-cfx-point=\"{i}\" cx=\"{F(points[i].X)}\" cy=\"{F(points[i].Y)}\" r=\"{F(ChartVisualPrimitives.RadarPointRadius)}\" fill=\"{color.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.RadarPointStrokeWidth)}\"/>");
+                WriteRadarPoint(sb, item.index, i, points[i], color.ToCss(), t.CardBackground.ToCss());
                 if (ShouldDrawDataLabels(chart, item.series)) {
                     var labelPoint = RadarDataLabelPoint(chart, item.series, points[i], i, categories.Length, seriesOrder, seriesItems.Length);
                     DrawDataLabel(sb, chart, FormatValue(chart, RadarValue(item.series, categories[i])), labelPoint.X, labelPoint.Y, plot, series: item.series, pointIndex: RadarPointIndex(item.series, categories[i]));
@@ -46,7 +47,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         DrawLegend(sb, chart, chart.Options.Size.Width, chart.Options.Size.Height);
-        sb.AppendLine("</g>");
+        WriteRadarChartEnd(sb);
     }
 
     private static void DrawRadarGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> categories, IReadOnlyList<double> ticks, double max, double cx, double cy, double radius) {
@@ -54,7 +55,7 @@ public sealed partial class SvgChartRenderer {
         foreach (var tick in ticks) {
             if (tick <= 0) continue;
             var ring = RadarRing(categories.Count, cx, cy, radius * tick / max);
-            if (chart.Options.ShowGrid) sb.AppendLine($"<path data-cfx-role=\"radar-ring\" d=\"{RadarPath(ring)}\" fill=\"none\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.RadarRingOpacity)}\"/>");
+            if (chart.Options.ShowGrid) WriteRadarRing(sb, RadarPath(ring), t.Grid.ToCss());
             var isOuterTick = Math.Abs(tick - max) <= Math.Max(0.000001, max * 0.000001);
             if (chart.Options.ShowAxes && !isOuterTick) {
                 var label = FormatValue(chart, tick);
@@ -66,7 +67,7 @@ public sealed partial class SvgChartRenderer {
             var angle = RadarAngle(i, categories.Count);
             var endX = cx + Math.Cos(angle) * radius;
             var endY = cy + Math.Sin(angle) * radius;
-            if (chart.Options.ShowGrid) sb.AppendLine($"<line data-cfx-role=\"radar-spoke\" x1=\"{F(cx)}\" y1=\"{F(cy)}\" x2=\"{F(endX)}\" y2=\"{F(endY)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.RadarSpokeOpacity)}\"/>");
+            if (chart.Options.ShowGrid) WriteRadarSpoke(sb, cx, cy, endX, endY, t.Grid.ToCss());
             if (chart.Options.ShowAxes) DrawRadarAxisLabel(sb, chart, plot, categories[i], cx + Math.Cos(angle) * (radius + 24), cy + Math.Sin(angle) * (radius + 24), angle);
         }
     }
@@ -83,7 +84,122 @@ public sealed partial class SvgChartRenderer {
         var safeY = Clamp(y, labelBounds.Top + fontSize, labelBounds.Bottom - fontSize);
         var anchor = EdgeAwareAnchor(label, safeX, labelBounds, fontSize);
         if (anchor == "middle") anchor = Math.Cos(angle) > 0.32 ? "start" : Math.Cos(angle) < -0.32 ? "end" : "middle";
-        sb.AppendLine($"<text data-cfx-role=\"radar-axis-label\" x=\"{F(safeX)}\" y=\"{F(safeY)}\" text-anchor=\"{anchor}\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(fontSize)}\" font-weight=\"650\">{Escape(label)}</text>");
+        WriteRadarAxisLabel(sb, label, safeX, safeY, anchor, t.MutedText.ToCss(), SvgFontFamilyAttributeValue(t.FontFamily), fontSize);
+    }
+
+    private static void WriteRadarChartStart(StringBuilder sb) {
+        var writer = new SvgMarkupWriter(128);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "radar-chart")
+            .EndStartElement()
+            .Line();
+        sb.Append(writer.ToString());
+    }
+
+    private static void WriteRadarChartEnd(StringBuilder sb) {
+        sb.AppendLine("</g>");
+    }
+
+    private static void WriteRadarArea(StringBuilder sb, int seriesIndex, string summary, string path, string fill) {
+        var writer = new SvgMarkupWriter(512);
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "radar-area")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .Attribute("d", path)
+            .Attribute("fill", fill)
+            .Attribute("opacity", ChartVisualPrimitives.RadarAreaOpacity)
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteRadarOutline(StringBuilder sb, int seriesIndex, string path, string stroke) {
+        var writer = new SvgMarkupWriter(512);
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "radar-outline")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", stroke)
+            .Attribute("stroke-width", ChartVisualPrimitives.RadarOutlineStrokeWidth)
+            .Attribute("stroke-linejoin", "round")
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteRadarPoint(StringBuilder sb, int seriesIndex, int pointIndex, ChartPoint point, string fill, string stroke) {
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("circle")
+            .Attribute("data-cfx-role", "radar-point")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("cx", point.X)
+            .Attribute("cy", point.Y)
+            .Attribute("r", ChartVisualPrimitives.RadarPointRadius)
+            .Attribute("fill", fill)
+            .Attribute("stroke", stroke)
+            .Attribute("stroke-width", ChartVisualPrimitives.RadarPointStrokeWidth)
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteRadarRing(StringBuilder sb, string path, string stroke) {
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "radar-ring")
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", stroke)
+            .Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth)
+            .Attribute("opacity", ChartVisualPrimitives.RadarRingOpacity)
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteRadarSpoke(StringBuilder sb, double cx, double cy, double endX, double endY, string stroke) {
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("line")
+            .Attribute("data-cfx-role", "radar-spoke")
+            .Attribute("x1", cx)
+            .Attribute("y1", cy)
+            .Attribute("x2", endX)
+            .Attribute("y2", endY)
+            .Attribute("stroke", stroke)
+            .Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth)
+            .Attribute("opacity", ChartVisualPrimitives.RadarSpokeOpacity)
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteRadarAxisLabel(StringBuilder sb, string label, double x, double y, string anchor, string fill, string fontFamily, double fontSize) {
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "radar-axis-label")
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("text-anchor", anchor)
+            .Attribute("dominant-baseline", "middle")
+            .Attribute("fill", fill)
+            .Attribute("font-family", fontFamily)
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", "650")
+            .Text(label)
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
     }
 
     private static double SvgRadarLabelWidth(Chart chart, double angle) {
