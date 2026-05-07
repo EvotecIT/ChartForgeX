@@ -206,6 +206,8 @@ internal static partial class SmokeTests {
         ("Tile map renders reusable tile-map definition", TileMapRendersReusableTileMapDefinition),
         ("Map catalogs expose built-in definitions by ID", MapCatalogsExposeBuiltInDefinitionsById),
         ("Map definitions accept region names and aliases", MapDefinitionsAcceptRegionNamesAndAliases),
+        ("Custom map definitions validate geometry inputs", CustomMapDefinitionsValidateGeometryInputs),
+        ("Custom region maps parse standard SVG path separators", CustomRegionMapsParseStandardSvgPathSeparators),
         ("Tile map labels can be hidden for compact cards", TileMapLabelsCanBeHiddenForCompactCards),
         ("Region map scale legend can be hidden for compact cards", RegionMapScaleLegendCanBeHiddenForCompactCards),
         ("Region map labels only render when regions have room", RegionMapLabelsOnlyRenderWhenRegionsHaveRoom),

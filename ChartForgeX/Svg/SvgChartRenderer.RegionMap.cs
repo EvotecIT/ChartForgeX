@@ -54,6 +54,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("role", "img")
                     .Attribute("aria-label", summary)
                     .Attribute("d", path)
+                    .Attribute("fill-rule", "evenodd")
                     .Attribute("fill", color.ToCss())
                     .Attribute("stroke", t.CardBackground.ToCss())
                     .Attribute("stroke-width", "1.1");
@@ -145,9 +146,26 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double ReadMapPathNumber(string path, ref int index) {
-        while (index < path.Length && char.IsWhiteSpace(path[index])) index++;
+        while (index < path.Length && (char.IsWhiteSpace(path[index]) || path[index] == ',')) index++;
         var start = index;
-        while (index < path.Length && (char.IsDigit(path[index]) || path[index] == '-' || path[index] == '.')) index++;
+        if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
+        var hasDigit = false;
+        while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
+        if (index < path.Length && path[index] == '.') {
+            index++;
+            while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
+        }
+
+        if (!hasDigit) throw new InvalidOperationException("Invalid map path number.");
+        if (index < path.Length && (path[index] == 'e' || path[index] == 'E')) {
+            var exponent = index;
+            index++;
+            if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
+            var hasExponentDigit = false;
+            while (index < path.Length && char.IsDigit(path[index])) { index++; hasExponentDigit = true; }
+            if (!hasExponentDigit) index = exponent;
+        }
+
         return double.Parse(path.Substring(start, index - start), System.Globalization.CultureInfo.InvariantCulture);
     }
 

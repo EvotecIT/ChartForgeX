@@ -37,8 +37,8 @@ public sealed partial class PngChartRenderer {
             var value = hasValue ? entry.Value : 0;
             var color = hasValue ? HeatmapColor(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : MapNoDataColor(chart);
             var rings = ProjectMapRings(region.Path, definition.Bounds, map, out var regionBounds);
+            c.FillCompoundPolygon(rings, color);
             foreach (var points in rings) {
-                c.FillPolygon(points, color);
                 for (var i = 0; i < points.Count; i++) {
                     var next = points[(i + 1) % points.Count];
                     c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, t.CardBackground, 1.1);
@@ -124,9 +124,26 @@ public sealed partial class PngChartRenderer {
     }
 
     private static double ReadMapPathNumber(string path, ref int index) {
-        while (index < path.Length && char.IsWhiteSpace(path[index])) index++;
+        while (index < path.Length && (char.IsWhiteSpace(path[index]) || path[index] == ',')) index++;
         var start = index;
-        while (index < path.Length && (char.IsDigit(path[index]) || path[index] == '-' || path[index] == '.')) index++;
+        if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
+        var hasDigit = false;
+        while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
+        if (index < path.Length && path[index] == '.') {
+            index++;
+            while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
+        }
+
+        if (!hasDigit) throw new InvalidOperationException("Invalid map path number.");
+        if (index < path.Length && (path[index] == 'e' || path[index] == 'E')) {
+            var exponent = index;
+            index++;
+            if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
+            var hasExponentDigit = false;
+            while (index < path.Length && char.IsDigit(path[index])) { index++; hasExponentDigit = true; }
+            if (!hasExponentDigit) index = exponent;
+        }
+
         return double.Parse(path.Substring(start, index - start), System.Globalization.CultureInfo.InvariantCulture);
     }
 

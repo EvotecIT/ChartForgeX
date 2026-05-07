@@ -115,6 +115,35 @@ internal static partial class SmokeTests {
         Assert(regionSvg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"12\"", StringComparison.Ordinal), "Region maps should accept common District of Columbia aliases.");
     }
 
+    private static void CustomMapDefinitionsValidateGeometryInputs() {
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapDefinition("bad", "Bad", new ChartRect(0, 0, 0, 10), new[] { new ChartMapRegion("A", "A", "M0 0L1 0L1 1Z") }), "Map definitions should reject zero-width bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapDefinition("bad", "Bad", new ChartRect(0, 0, 10, -1), new[] { new ChartMapRegion("A", "A", "M0 0L1 0L1 1Z") }), "Map definitions should reject negative-height bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapDefinition("bad", "Bad", new ChartRect(0, 0, double.NaN, 10), new[] { new ChartMapRegion("A", "A", "M0 0L1 0L1 1Z") }), "Map definitions should reject non-finite bounds.");
+        AssertThrows<ArgumentException>(() => new ChartTileMapDefinition("bad", "Bad", new[] {
+            new ChartTileMapRegion("A", "Alpha", 0, 0),
+            new ChartTileMapRegion("B", "Beta", 0, 0)
+        }), "Tile-map definitions should reject overlapping tile coordinates.");
+    }
+
+    private static void CustomRegionMapsParseStandardSvgPathSeparators() {
+        var definition = new ChartMapDefinition("custom", "Custom", 10, 10, new[] {
+            new ChartMapRegion("A", "Alpha", "M0,0L10,0L10,10L0,10Z"),
+            new ChartMapRegion("B", "Beta", "M1e0-1L3,1L3,3L1,3ZM1.5,1.5L2.5,1.5L2.5,2.5L1.5,2.5Z")
+        });
+        var chart = Chart.Create()
+            .WithSize(360, 240)
+            .WithMapLabels(false)
+            .AddRegionMap("Custom", definition, new[] {
+                new ChartRegionMapItem("A", 10),
+                new ChartRegionMapItem("B", 20)
+            });
+
+        var svg = chart.ToSvg();
+        Assert(svg.Contains("data-cfx-map-id=\"custom\"", StringComparison.Ordinal), "Custom region maps should render SVG from caller-supplied path data.");
+        Assert(svg.Contains("fill-rule=\"evenodd\"", StringComparison.Ordinal), "Custom region-map SVG paths should use even-odd filling so interior holes remain holes.");
+        Assert(chart.ToPng().Length > 64, "Custom region maps with comma-separated paths and interior holes should render PNG output.");
+    }
+
     private static void TileMapLabelsCanBeHiddenForCompactCards() {
         var chart = Chart.Create()
             .WithSize(360, 220)

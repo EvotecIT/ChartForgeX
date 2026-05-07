@@ -51,8 +51,11 @@ public sealed class ChartTileMapDefinition {
         var materialized = regions.ToArray();
         if (materialized.Length == 0) throw new ArgumentException("Tile-map definitions must contain at least one region.", nameof(regions));
         _aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var occupied = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var region in materialized) {
             if (_aliases.ContainsKey(region.Code)) throw new ArgumentException("Duplicate tile-map region code: " + region.Code + ".", nameof(regions));
+            var tileKey = region.Column.ToString(System.Globalization.CultureInfo.InvariantCulture) + "," + region.Row.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (!occupied.Add(tileKey)) throw new ArgumentException("Duplicate tile-map cell: " + tileKey + ".", nameof(regions));
             AddAlias(region.Code, region.Code);
             AddAlias(region.Name, region.Code);
             foreach (var alias in region.Aliases) AddAlias(alias, region.Code);

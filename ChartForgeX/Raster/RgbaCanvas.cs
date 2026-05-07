@@ -107,6 +107,19 @@ internal sealed class RgbaCanvas {
         FillPolygonPixels(scaled, color, color);
     }
 
+    public void FillCompoundPolygon(IReadOnlyList<List<ChartPoint>> rings, ChartColor color) {
+        if (rings.Count == 0) return;
+        var scaled = new List<List<ChartPoint>>(rings.Count);
+        foreach (var ring in rings) {
+            if (ring.Count < 3) continue;
+            var scaledRing = new List<ChartPoint>(ring.Count);
+            foreach (var point in ring) scaledRing.Add(new ChartPoint(point.X * _scale, point.Y * _scale));
+            scaled.Add(scaledRing);
+        }
+
+        FillContoursPixels(scaled, color);
+    }
+
     public void FillPolygonVerticalGradient(IReadOnlyList<ChartPoint> points, ChartColor topColor, ChartColor bottomColor) {
         if (points.Count < 3) return;
         var scaled = new List<ChartPoint>(points.Count);

@@ -54,6 +54,7 @@ public sealed class ChartMapDefinition {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Map definition IDs must not be empty.", nameof(id));
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Map definition names must not be empty.", nameof(name));
         if (regions == null) throw new ArgumentNullException(nameof(regions));
+        ValidateBounds(bounds);
         Id = id.Trim();
         Name = name.Trim();
         Bounds = bounds;
@@ -94,4 +95,16 @@ public sealed class ChartMapDefinition {
 
         _aliases[alias] = code;
     }
+
+    private static void ValidateBounds(ChartRect bounds) {
+        if (!IsFinite(bounds.Left) || !IsFinite(bounds.Top) || !IsFinite(bounds.Width) || !IsFinite(bounds.Height)) {
+            throw new ArgumentOutOfRangeException(nameof(bounds), "Map definition bounds must be finite.");
+        }
+
+        if (bounds.Width <= 0 || bounds.Height <= 0) {
+            throw new ArgumentOutOfRangeException(nameof(bounds), "Map definition bounds must have positive width and height.");
+        }
+    }
+
+    private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 }
