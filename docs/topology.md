@@ -142,6 +142,7 @@ The example console app writes sample diagrams to `artifacts/topology-demo/` and
 - `geographic-topology.svg`
 - `dc-connectivity.svg`
 - `service-dependency.svg`
+- `visual-geographic-topology-map.svg`
 - `service-dependency-api-neighbors-view.svg`
 - `service-dependency-critical-dependencies-view.svg`
 - matching `.png` and `.html` files

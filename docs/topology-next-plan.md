@@ -132,6 +132,16 @@ Next work:
 
 Suggested PR: `Upgrade topology HTML interactions`.
 
+### 7. Visual Examples And Baselines
+
+The topology demo generator now includes a topology-native geographic map artifact (`visual-geographic-topology-map`) with typed coordinates, projected site markers, SVG/PNG route arcs, selected state, and route-control metadata. The basic `geographic-topology` demo also uses `TopologyLayoutMode.Geographic` instead of manually positioned map-like coordinates.
+
+Next work:
+
+- add automated visual baseline comparison coverage for topology-specific demo artifacts
+- keep dense, routed, and geographic examples small enough to inspect in PRs
+- use the visual manifest to track which screenshot families are represented by ChartForgeX versus dashboard host components
+
 ## Recommended Order
 
 1. Migrate topology SVG rendering onto the SVG markup engine.
