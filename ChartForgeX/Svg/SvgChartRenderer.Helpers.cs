@@ -10,34 +10,44 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
+    // Shared fitted text implementations live in SvgChartRenderer.TextHelpers.cs: DrawSvgTextCenteredX, DrawSvgTextLeft, DrawSvgXAxisTitle, DrawSvgYAxisTitle.
     private static void DrawLegend(StringBuilder sb, Chart chart, int w, int h) {
         if (!ShouldDrawLegend(chart)) return;
         var t = chart.Options.Theme;
         var area = LegendArea(chart, w, h);
         var rows = BuildLegendRows(chart, area.Width);
         var y = LegendStartY(chart, area, rows.Count);
-        sb.AppendLine($"<g data-cfx-role=\"legend\" data-cfx-position=\"{chart.Options.LegendPosition}\">");
+        var writer = new SvgMarkupWriter(4096);
+        writer.StartElement("g").Attribute("data-cfx-role", "legend").Attribute("data-cfx-position", chart.Options.LegendPosition.ToString()).EndStartElement().Line();
         foreach (var row in rows) {
             if (y > area.Bottom - 4) break;
             var xShift = LegendRowX(chart.Options.LegendPosition, area, row.Width);
-            sb.AppendLine($"<g data-cfx-role=\"legend-row\" transform=\"translate({F(area.X + xShift)} {F(y)})\">");
+            writer.StartElement("g").Attribute("data-cfx-role", "legend-row").Attribute("transform", "translate(" + F(area.X + xShift) + " " + F(y) + ")").EndStartElement().Line();
             foreach (var item in row.Items) {
                 var series = chart.Series[item.SeriesIndex];
-                var pointAttribute = item.PointIndex >= 0 ? $" data-cfx-point=\"{item.PointIndex}\"" : string.Empty;
-                sb.AppendLine($"<g data-cfx-role=\"legend-item\" data-cfx-series=\"{item.SeriesIndex}\"{pointAttribute} data-cfx-kind=\"{Escape(series.Kind.ToString())}\" data-cfx-label=\"{Escape(item.Label)}\">");
-                DrawLegendSymbol(sb, series.Kind, item.X, -4, item.Color, t.CardBackground);
+                writer.StartElement("g").Attribute("data-cfx-role", "legend-item").Attribute("data-cfx-series", item.SeriesIndex);
+                if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
+                writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).EndStartElement().Line();
+                DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground);
                 var style = chart.Options.LegendStyle;
                 var labelMaxWidth = Math.Max(8, item.Width - 30);
                 var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
                 var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
-                if (label.Length > 0) sb.AppendLine($"<text data-cfx-role=\"legend-label\" data-cfx-series=\"{item.SeriesIndex}\"{pointAttribute} x=\"{F(item.X + 26)}\" y=\"0\" fill=\"{StyleColor(style, t.MutedText).ToCss()}\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(labelFontSize)}\" font-weight=\"{StyleWeight(style, "600")}\"{SvgTextStyleAttributes(style)}>{Escape(label)}</text>");
-                sb.AppendLine("</g>");
+                if (label.Length > 0) {
+                    writer.StartElement("text").Attribute("data-cfx-role", "legend-label").Attribute("data-cfx-series", item.SeriesIndex);
+                    if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
+                    writer.Attribute("x", item.X + 26).Attribute("y", "0").Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", labelFontSize).Attribute("font-weight", StyleWeight(style, "600"));
+                    WriteSvgTextStyleAttributes(writer, style);
+                    writer.Raw(Escape(label)).EndElement().Line();
+                }
+                writer.EndElement().Line();
             }
 
-            sb.AppendLine("</g>");
+            writer.EndElement().Line();
             y += LegendRowHeight;
         }
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static List<LegendRow> BuildLegendRows(Chart chart, double width) {
@@ -148,18 +158,26 @@ public sealed partial class SvgChartRenderer {
 
     private static bool IsVerticalLegend(ChartLegendPosition position) => IsLeftLegend(position) || IsRightLegend(position);
 
-    private static void DrawLegendSymbol(StringBuilder sb, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background) {
+    private static void DrawLegendSymbol(SvgMarkupWriter writer, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background) {
         if (IsLineLikeLegend(kind)) {
-            sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(y)}\" x2=\"{F(x + 18)}\" y2=\"{F(y)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.LegendLineStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<circle cx=\"{F(x + 9)}\" cy=\"{F(y)}\" r=\"{F(ChartVisualPrimitives.LegendMarkerRadius)}\" fill=\"{color.ToCss()}\" stroke=\"{background.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.LegendMarkerStrokeWidth)}\"/>");
+            WriteLegendLineSymbol(writer, x, y, color);
+            WriteLegendCircleSymbol(writer, x, y, color, background);
         } else if (kind == ChartSeriesKind.Scatter || kind == ChartSeriesKind.Bubble) {
-            sb.AppendLine($"<circle cx=\"{F(x + 9)}\" cy=\"{F(y)}\" r=\"{F(ChartVisualPrimitives.LegendMarkerRadius)}\" fill=\"{color.ToCss()}\" stroke=\"{background.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.LegendMarkerStrokeWidth)}\"/>");
+            WriteLegendCircleSymbol(writer, x, y, color, background);
         } else if (kind == ChartSeriesKind.Candlestick || kind == ChartSeriesKind.Ohlc) {
-            sb.AppendLine($"<line x1=\"{F(x + 9)}\" y1=\"{F(y - 6)}\" x2=\"{F(x + 9)}\" y2=\"{F(y + 6)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.LegendFinanceStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<rect x=\"{F(x + 4)}\" y=\"{F(y - ChartVisualPrimitives.LegendFinanceBodyHeight / 2)}\" width=\"{F(ChartVisualPrimitives.LegendFinanceBodyWidth)}\" height=\"{F(ChartVisualPrimitives.LegendFinanceBodyHeight)}\" rx=\"1.5\" fill=\"{color.ToCss()}\"/>");
+            writer.StartElement("line").Attribute("x1", x + 9).Attribute("y1", y - 6).Attribute("x2", x + 9).Attribute("y2", y + 6).Attribute("stroke", color.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.LegendFinanceStrokeWidth).Attribute("stroke-linecap", "round").EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("x", x + 4).Attribute("y", y - ChartVisualPrimitives.LegendFinanceBodyHeight / 2).Attribute("width", ChartVisualPrimitives.LegendFinanceBodyWidth).Attribute("height", ChartVisualPrimitives.LegendFinanceBodyHeight).Attribute("rx", "1.5").Attribute("fill", color.ToCss()).EndEmptyElement().Line();
         } else {
-            sb.AppendLine($"<rect x=\"{F(x)}\" y=\"{F(y - 5)}\" width=\"10\" height=\"10\" rx=\"2\" fill=\"{color.ToCss()}\"/>");
+            writer.StartElement("rect").Attribute("x", x).Attribute("y", y - 5).Attribute("width", "10").Attribute("height", "10").Attribute("rx", "2").Attribute("fill", color.ToCss()).EndEmptyElement().Line();
         }
+    }
+
+    private static void WriteLegendLineSymbol(SvgMarkupWriter writer, double x, double y, ChartColor color) {
+        writer.StartElement("line").Attribute("x1", x).Attribute("y1", y).Attribute("x2", x + 18).Attribute("y2", y).Attribute("stroke", color.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.LegendLineStrokeWidth).Attribute("stroke-linecap", "round").EndEmptyElement().Line();
+    }
+
+    private static void WriteLegendCircleSymbol(SvgMarkupWriter writer, double x, double y, ChartColor color, ChartColor background) {
+        writer.StartElement("circle").Attribute("cx", x + 9).Attribute("cy", y).Attribute("r", ChartVisualPrimitives.LegendMarkerRadius).Attribute("fill", color.ToCss()).Attribute("stroke", background.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.LegendMarkerStrokeWidth).EndEmptyElement().Line();
     }
 
     private static bool IsLineLikeLegend(ChartSeriesKind kind) =>
@@ -175,8 +193,10 @@ public sealed partial class SvgChartRenderer {
         var placement = PlaceLabelPill(x, width, anchor, plot);
         var textX = placement.Anchor == "end" ? placement.X - 9 : placement.X + 9;
         var rectY = Clamp(y - 16, plot.Top + 5, plot.Bottom - 27);
-        sb.AppendLine($"<rect data-cfx-role=\"annotation-label\" data-cfx-label=\"{Escape(label)}\" x=\"{F(placement.RectX)}\" y=\"{F(rectY)}\" width=\"{F(width)}\" height=\"23\" rx=\"5\" fill=\"{t.CardBackground.ToCss()}\" opacity=\"0.92\" stroke=\"{textColor.ToCss()}\" stroke-opacity=\"0.36\"/>");
-        sb.AppendLine($"<text data-cfx-role=\"annotation-label-text\" data-cfx-label=\"{Escape(label)}\" x=\"{F(textX)}\" y=\"{F(rectY + 16)}\" text-anchor=\"{placement.Anchor}\" fill=\"{textColor.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(fontSize)}\" font-weight=\"750\">{Escape(label)}</text>");
+        var writer = new SvgMarkupWriter(512);
+        writer.StartElement("rect").Attribute("data-cfx-role", "annotation-label").Attribute("data-cfx-label", label).Attribute("x", placement.RectX).Attribute("y", rectY).Attribute("width", width).Attribute("height", "23").Attribute("rx", "5").Attribute("fill", t.CardBackground.ToCss()).Attribute("opacity", "0.92").Attribute("stroke", textColor.ToCss()).Attribute("stroke-opacity", "0.36").EndEmptyElement().Line();
+        writer.StartElement("text").Attribute("data-cfx-role", "annotation-label-text").Attribute("data-cfx-label", label).Attribute("x", textX).Attribute("y", rectY + 16).Attribute("text-anchor", placement.Anchor).Attribute("fill", textColor.ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily)).Attribute("font-size", fontSize).Attribute("font-weight", "750").Raw(Escape(label)).EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static void DrawDataLabel(StringBuilder sb, Chart chart, string label, double x, double y, ChartRect plot, string role = "data-label", ChartSeries? series = null, int pointIndex = -1) {
@@ -189,7 +209,9 @@ public sealed partial class SvgChartRenderer {
         var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + fontSize / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - fontSize / 2.0);
         var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
         var safeX = EdgeAwareTextX(label, x, plot, fontSize);
-        sb.AppendLine($"<text data-cfx-role=\"{role}\" x=\"{F(safeX)}\" y=\"{F(safeY)}\" text-anchor=\"{anchor}\" dominant-baseline=\"middle\" fill=\"{StyleColor(style, t.Text).ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"3\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(StyleFontSize(style, fontSize))}\" font-weight=\"{StyleWeight(style, "700")}\"{SvgTextStyleAttributes(style)}>{Escape(label)}</text>");
+        var writer = new SvgMarkupWriter(512);
+        WriteSvgDataLabelText(writer, chart, style, role, label, safeX, safeY, anchor, t.Text, t.CardBackground, fontSize);
+        sb.Append(writer.Build());
     }
 
     private static bool ShouldDrawDataLabels(Chart chart, ChartSeries series) => series.ShowDataLabels ?? chart.Options.ShowDataLabels;
@@ -232,7 +254,9 @@ public sealed partial class SvgChartRenderer {
         }
 
         var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + fontSize / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - fontSize / 2.0);
-        sb.AppendLine($"<text data-cfx-role=\"data-label\" x=\"{F(safeX)}\" y=\"{F(safeY)}\" text-anchor=\"{effectiveAnchor}\" dominant-baseline=\"middle\" fill=\"{StyleColor(style, t.Text).ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"3\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(StyleFontSize(style, fontSize))}\" font-weight=\"{StyleWeight(style, "700")}\"{SvgTextStyleAttributes(style)}>{Escape(label)}</text>");
+        var writer = new SvgMarkupWriter(512);
+        WriteSvgDataLabelText(writer, chart, style, "data-label", label, safeX, safeY, effectiveAnchor, t.Text, t.CardBackground, fontSize);
+        sb.Append(writer.Build());
     }
 
     private static bool ReserveSvgHorizontalLabel(string label, double x, double y, string anchor, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved) {
@@ -337,46 +361,6 @@ public sealed partial class SvgChartRenderer {
         var fontSize = preferredFontSize;
         while (fontSize > minFontSize && EstimateTextWidth(text, fontSize) > maxWidth) fontSize -= 0.5;
         return Math.Max(minFontSize, fontSize);
-    }
-
-    private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, ChartTextStyle? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
-        if (fittedText.Length == 0) return;
-
-        var roleAttribute = string.IsNullOrEmpty(role) ? string.Empty : $" data-cfx-role=\"{role}\"";
-        var baselineAttribute = middleBaseline ? " dominant-baseline=\"middle\"" : string.Empty;
-        var strokeAttribute = stroke.HasValue && strokeWidth > 0
-            ? $" stroke=\"{stroke.Value.ToCss()}\" stroke-width=\"{F(strokeWidth)}\" paint-order=\"stroke fill\" stroke-linejoin=\"round\""
-            : string.Empty;
-        sb.AppendLine($"<text{roleAttribute} x=\"{F(centerX)}\" y=\"{F(y)}\" text-anchor=\"middle\"{baselineAttribute} fill=\"{StyleColor(style, fill).ToCss()}\"{strokeAttribute} font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(fittedFontSize)}\" font-weight=\"{StyleWeight(style, fontWeight)}\"{SvgTextStyleAttributes(style)}>{Escape(fittedText)}</text>");
-    }
-
-    private static void DrawSvgTextLeft(StringBuilder sb, Chart chart, string role, string text, double x, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartTextStyle? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
-        if (fittedText.Length == 0) return;
-        var roleAttribute = string.IsNullOrEmpty(role) ? string.Empty : $" data-cfx-role=\"{role}\"";
-        sb.AppendLine($"<text{roleAttribute} x=\"{F(x)}\" y=\"{F(y)}\" fill=\"{StyleColor(style, fill).ToCss()}\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(fittedFontSize)}\" font-weight=\"{StyleWeight(style, fontWeight)}\"{SvgTextStyleAttributes(style)}>{Escape(fittedText)}</text>");
-    }
-
-    private static void DrawSvgXAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double y, string role = "") {
-        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(sb, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
-    }
-
-    private static void DrawSvgYAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double axisX, string role = "") {
-        if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
-        var t = chart.Options.Theme;
-        var maxWidth = Math.Max(40, plot.Height * 0.72);
-        var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
-        if (text.Length == 0) return;
-        var roleAttribute = string.IsNullOrWhiteSpace(role) ? string.Empty : $" data-cfx-role=\"{role}\"";
-        sb.AppendLine($"<text{roleAttribute} transform=\"translate({F(axisX)} {F(plot.Top + plot.Height / 2)}) rotate(-90)\" text-anchor=\"middle\" fill=\"{StyleColor(style, t.MutedText).ToCss()}\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(fontSize)}\" font-weight=\"{StyleWeight(style, "600")}\"{SvgTextStyleAttributes(style)}>{Escape(text)}</text>");
     }
 
     private static ChartColor StyleColor(ChartTextStyle? style, ChartColor fallback) => style?.Color ?? fallback;
