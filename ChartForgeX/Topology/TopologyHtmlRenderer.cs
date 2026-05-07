@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using ChartForgeX.Html;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -31,29 +32,39 @@ public sealed class TopologyHtmlRenderer {
         var enableExportControls = options.EnableHtmlInteractions && options.EnableHtmlExportControls;
         var enableSync = options.EnableHtmlInteractions && options.EnableHtmlSynchronizedState && !string.IsNullOrWhiteSpace(options.HtmlSyncGroupName);
         var syncGroup = enableSync ? options.HtmlSyncGroupName!.Trim() : string.Empty;
-        var sb = new StringBuilder();
-        sb.Append("<div class=\"").Append(EscapeAttr(wrapperClass)).Append("\" data-chart-id=\"").Append(EscapeAttr(id)).Append("\" data-layout-mode=\"").Append(chart.LayoutMode).Append("\" data-cfx-interactive=\"").Append(options.EnableHtmlInteractions ? "true" : "false").Append("\" data-cfx-viewport-controls=\"").Append(enableViewportControls ? "true" : "false").Append("\" data-cfx-export-controls=\"").Append(enableExportControls ? "true" : "false").Append("\" data-cfx-sync-enabled=\"").Append(enableSync ? "true" : "false").Append("\" data-cfx-sync-group=\"").Append(EscapeAttr(syncGroup)).Append("\" style=\"width:100%;max-width:").Append(chart.Viewport.Width.ToString("0.###", CultureInfo.InvariantCulture)).Append("px;box-sizing:border-box\">");
-        sb.Append("<div class=\"").Append(EscapeAttr(viewportClass)).Append("\">");
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("div")
+            .Attribute("class", wrapperClass)
+            .Attribute("data-chart-id", id)
+            .Attribute("data-layout-mode", chart.LayoutMode.ToString())
+            .Attribute("data-cfx-interactive", options.EnableHtmlInteractions)
+            .Attribute("data-cfx-viewport-controls", enableViewportControls)
+            .Attribute("data-cfx-export-controls", enableExportControls)
+            .Attribute("data-cfx-sync-enabled", enableSync)
+            .Attribute("data-cfx-sync-group", syncGroup)
+            .Attribute("style", "width:100%;max-width:" + chart.Viewport.Width.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box")
+            .EndStartElement();
+        writer.StartElement("div").Attribute("class", viewportClass).EndStartElement();
         if (enableViewportControls || enableExportControls) {
-            sb.Append("<div class=\"").Append(EscapeAttr(controlsClass)).Append("\" aria-label=\"Topology controls\">");
+            writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", "Topology controls").EndStartElement();
             if (enableViewportControls) {
-                sb.Append("<button type=\"button\" data-cfx-topology-zoom=\"in\" title=\"Zoom in\" aria-label=\"Zoom in\">+</button>")
-                    .Append("<button type=\"button\" data-cfx-topology-zoom=\"out\" title=\"Zoom out\" aria-label=\"Zoom out\">-</button>")
-                    .Append("<button type=\"button\" data-cfx-topology-mode=\"pan\" title=\"Pan topology\" aria-label=\"Pan topology\" aria-pressed=\"false\">Pan</button>")
-                    .Append("<button type=\"button\" data-cfx-topology-reset=\"true\" title=\"Reset viewport\" aria-label=\"Reset viewport\">0</button>");
+                WriteButton(writer, "data-cfx-topology-zoom", "in", "Zoom in", "Zoom in", null, "+");
+                WriteButton(writer, "data-cfx-topology-zoom", "out", "Zoom out", "Zoom out", null, "-");
+                WriteButton(writer, "data-cfx-topology-mode", "pan", "Pan topology", "Pan topology", false, "Pan");
+                WriteButton(writer, "data-cfx-topology-reset", "true", "Reset viewport", "Reset viewport", null, "0");
             }
 
             if (enableExportControls) {
-                sb.Append("<button type=\"button\" data-cfx-topology-export=\"svg\" title=\"Export SVG\" aria-label=\"Export SVG\">SVG</button>")
-                    .Append("<button type=\"button\" data-cfx-topology-export=\"png\" title=\"Export PNG\" aria-label=\"Export PNG\">PNG</button>");
+                WriteButton(writer, "data-cfx-topology-export", "svg", "Export SVG", "Export SVG", null, "SVG");
+                WriteButton(writer, "data-cfx-topology-export", "png", "Export PNG", "Export PNG", null, "PNG");
             }
 
-            sb.Append("</div>");
+            writer.EndElement();
         }
 
-        sb.Append(_svg.Render(chart, options));
-        sb.Append("</div></div>");
-        return sb.ToString();
+        writer.RawTrusted(_svg.Render(chart, options));
+        writer.EndElement().EndElement();
+        return writer.Build();
     }
 
     /// <summary>
@@ -68,21 +79,30 @@ public sealed class TopologyHtmlRenderer {
         var theme = chart.Theme ?? TopologyTheme.Light();
         var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX topology" : chart.Title!;
         var cssPrefix = CssClassPrefix(options);
-        var sb = new StringBuilder();
-        sb.AppendLine("<!doctype html>");
-        sb.AppendLine("<html lang=\"en\">");
-        sb.AppendLine("<head>");
-        sb.AppendLine("<meta charset=\"utf-8\">");
-        sb.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-        sb.AppendLine("<title>" + Escape(title) + "</title>");
-        sb.AppendLine("<style>" + StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), EscapeAttr(theme.Background)) + "</style>");
-        sb.AppendLine("</head>");
-        sb.AppendLine("<body>");
-        sb.AppendLine(RenderFragment(chart, options));
-        if (options.EnableHtmlInteractions) sb.AppendLine(InteractionScript(cssPrefix));
-        sb.AppendLine("</body>");
-        sb.AppendLine("</html>");
-        return sb.ToString();
+        var writer = new HtmlMarkupWriter();
+        writer.Doctype().Line()
+            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("head").EndStartElement().Line();
+        HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), EscapeAttr(theme.Background)));
+        writer.EndElement().Line()
+            .StartElement("body").EndStartElement().Line()
+            .RawTrusted(RenderFragment(chart, options)).Line();
+        if (options.EnableHtmlInteractions) writer.RawTrusted(InteractionScript(cssPrefix)).Line();
+        writer.EndElement().Line()
+            .EndElement().Line();
+        return writer.Build();
+    }
+
+    private static void WriteButton(HtmlMarkupWriter writer, string dataAttribute, string dataValue, string title, string ariaLabel, bool? pressed, string text) {
+        writer.StartElement("button")
+            .Attribute("type", "button")
+            .Attribute(dataAttribute, dataValue)
+            .Attribute("title", title)
+            .Attribute("aria-label", ariaLabel)
+            .Attribute("aria-pressed", pressed)
+            .EndStartElement()
+            .Text(text)
+            .EndElement();
     }
 
     private static string StyleSheet(string cssPrefix, string fontFamily, string background) {

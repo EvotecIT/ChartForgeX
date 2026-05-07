@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using ChartForgeX.Html;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.Tests;
@@ -173,6 +174,48 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(
             () => new SvgMarkupWriter().StartElement("circle").Attribute("r", double.NaN),
             "SVG markup writer should reject non-finite numeric attributes.");
+    }
+
+    private static void HtmlMarkupWriterStreamsEscapedElements() {
+        var writer = new HtmlMarkupWriter();
+        writer.Doctype().Line()
+            .StartElement("section")
+            .Attribute("class", "report")
+            .Attribute("data-title", "A < B & \"C\"")
+            .Attribute("data-visible", true)
+            .EndStartElement()
+            .StartElement("button")
+            .Attribute("type", "button")
+            .BooleanAttribute("hidden")
+            .EndStartElement()
+            .Text("A < B & C")
+            .EndElement()
+            .StartElement("div")
+            .Attribute("style", "width:100%;max-width:420px")
+            .EndStartElement()
+            .RawTrusted("<svg></svg>")
+            .EndElement()
+            .EndElement();
+
+        var expected = "<!doctype html>" + Environment.NewLine + "<section class=\"report\" data-title=\"A &lt; B &amp; &quot;C&quot;\" data-visible=\"true\"><button type=\"button\" hidden>A &lt; B &amp; C</button><div style=\"width:100%;max-width:420px\"><svg></svg></div></section>";
+        Assert(
+            writer.Build() == expected,
+            "HTML markup writer should stream escaped text, escaped attributes, boolean attributes, trusted raw fragments, and invariant output.");
+    }
+
+    private static void HtmlMarkupWriterRejectsIncompleteMarkup() {
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("section").EndStartElement();
+
+        AssertThrows<InvalidOperationException>(
+            () => writer.Build(),
+            "HTML markup writer should reject incomplete element stacks before callers publish malformed markup.");
+        AssertThrows<ArgumentException>(
+            () => new HtmlMarkupWriter().StartElement("data role"),
+            "HTML markup writer should reject invalid element names.");
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => new HtmlMarkupWriter().StartElement("div").Attribute("data-value", double.NaN),
+            "HTML markup writer should reject non-finite numeric attributes.");
     }
 
     private static void SvgPathDataBuilderFormatsDeterministicPaths() {
@@ -384,5 +427,22 @@ internal static partial class SmokeTests {
         Assert(writer.Contains("StringBuilder", StringComparison.Ordinal), "SVG markup writer should remain a streaming StringBuilder helper.");
         Assert(!writer.Contains("HtmlForgeX", StringComparison.Ordinal) && !pathBuilder.Contains("HtmlForgeX", StringComparison.Ordinal) && !pathData.Contains("HtmlForgeX", StringComparison.Ordinal) && !transformData.Contains("HtmlForgeX", StringComparison.Ordinal) && !styleData.Contains("HtmlForgeX", StringComparison.Ordinal) && !viewBoxData.Contains("HtmlForgeX", StringComparison.Ordinal) && !pointData.Contains("HtmlForgeX", StringComparison.Ordinal) && !ast.Contains("HtmlForgeX", StringComparison.Ordinal), "SVG markup engine should not depend on HtmlForgeX.");
         Assert(!writer.Contains("XmlDocument", StringComparison.Ordinal) && !writer.Contains("XDocument", StringComparison.Ordinal) && !ast.Contains("XmlDocument", StringComparison.Ordinal) && !ast.Contains("XDocument", StringComparison.Ordinal), "SVG markup engine should not switch to DOM-based XML construction.");
+    }
+
+    private static void HtmlMarkupEngineStaysDependencyFreeAndAdopted() {
+        var root = FindRepositoryRoot();
+        var writer = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Html", "HtmlMarkupWriter.cs"));
+        var renderers = string.Join(
+            Environment.NewLine,
+            File.ReadAllText(Path.Combine(root, "ChartForgeX", "Html", "HtmlChartRenderer.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX", "Html", "HtmlChartGridRenderer.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX", "VisualBlocks", "HtmlVisualBlockRenderer.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX", "VisualBlocks", "HtmlVisualGridRenderer.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX", "Topology", "TopologyHtmlRenderer.cs")));
+
+        Assert(writer.Contains("StringBuilder", StringComparison.Ordinal), "HTML markup writer should remain a streaming StringBuilder helper.");
+        Assert(renderers.Contains("HtmlMarkupWriter", StringComparison.Ordinal), "Static HTML renderers should build wrapper markup through the shared HTML writer.");
+        Assert(!writer.Contains("HtmlForgeX", StringComparison.Ordinal) && !renderers.Contains("HtmlForgeX", StringComparison.Ordinal), "HTML markup engine should stay dependency-free.");
+        Assert(!writer.Contains("XmlDocument", StringComparison.Ordinal) && !writer.Contains("XDocument", StringComparison.Ordinal), "HTML markup engine should not switch to DOM-based XML construction.");
     }
 }

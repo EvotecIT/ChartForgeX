@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using ChartForgeX.Html;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
@@ -20,38 +21,33 @@ public sealed class HtmlVisualGridRenderer {
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
         var scope = NextScope();
         var columns = Math.Min(grid.Columns, grid.Items.Count);
-        var sb = new StringBuilder();
-        sb.Append("<section class=\"chartforgex-visual-grid");
-        if (grid.PanelFit == VisualGridPanelFit.Stretch) sb.Append(" fit-stretch");
-        sb.Append("\" style=\"--cfx-visual-grid-columns:").Append(columns.ToString(CultureInfo.InvariantCulture));
-        sb.Append(";--cfx-visual-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
-        sb.Append(";--cfx-visual-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
-        if (grid.PanelSize.HasValue) {
-            sb.Append(";--cfx-visual-grid-panel-width:").Append(grid.PanelSize.Value.Width.ToString(CultureInfo.InvariantCulture)).Append("px");
-            sb.Append(";--cfx-visual-grid-panel-height:").Append(grid.PanelSize.Value.Height.ToString(CultureInfo.InvariantCulture)).Append("px");
-        }
-
-        sb.Append("\">");
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("section")
+            .Attribute("class", grid.PanelFit == VisualGridPanelFit.Stretch ? "chartforgex-visual-grid fit-stretch" : "chartforgex-visual-grid")
+            .Attribute("style", GridStyle(grid, columns))
+            .EndStartElement();
         if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
-            sb.Append("<header class=\"chartforgex-visual-grid-header\">");
-            if (grid.Title.Length > 0) sb.Append("<h1>").Append(VisualBlockRendering.Escape(grid.Title)).Append("</h1>");
-            if (grid.Subtitle.Length > 0) sb.Append("<p>").Append(VisualBlockRendering.Escape(grid.Subtitle)).Append("</p>");
-            sb.Append("</header>");
+            writer.StartElement("header").Attribute("class", "chartforgex-visual-grid-header").EndStartElement();
+            if (grid.Title.Length > 0) writer.StartElement("h1").EndStartElement().Text(grid.Title).EndElement();
+            if (grid.Subtitle.Length > 0) writer.StartElement("p").EndStartElement().Text(grid.Subtitle).EndElement();
+            writer.EndElement();
         }
 
-        sb.Append("<div class=\"chartforgex-visual-grid-body\">");
+        writer.StartElement("div").Attribute("class", "chartforgex-visual-grid-body").EndStartElement();
         for (var i = 0; i < grid.Items.Count; i++) {
             var item = grid.Items[i];
             var columnSpan = Math.Min(item.ColumnSpan, columns);
-            sb.Append("<article class=\"chartforgex-visual-grid-panel\" aria-label=\"").Append(VisualBlockRendering.Escape(ItemTitle(item))).Append("\"");
-            if (columnSpan > 1 || item.RowSpan > 1) sb.Append(" style=\"grid-column:span ").Append(columnSpan.ToString(CultureInfo.InvariantCulture)).Append(";grid-row:span ").Append(item.RowSpan.ToString(CultureInfo.InvariantCulture)).Append("\"");
-            sb.Append(">");
-            sb.Append(item.Chart != null ? _chartRenderer.Render(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : _blockRenderer.Render(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture)));
-            sb.Append("</article>");
+            writer.StartElement("article")
+                .Attribute("class", "chartforgex-visual-grid-panel")
+                .Attribute("aria-label", ItemTitle(item))
+                .Attribute("style", PanelSpanStyle(columnSpan, item.RowSpan))
+                .EndStartElement()
+                .RawTrusted(item.Chart != null ? _chartRenderer.Render(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : _blockRenderer.Render(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture)))
+                .EndElement();
         }
 
-        sb.Append("</div></section>");
-        return sb.ToString();
+        writer.EndElement().EndElement();
+        return writer.Build();
     }
 
     /// <summary>Renders a visual grid as a complete HTML document.</summary>
@@ -61,7 +57,17 @@ public sealed class HtmlVisualGridRenderer {
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
         var background = theme.Background.A == 0 ? theme.CardBackground.ToCss() : theme.Background.ToCss();
         var title = grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title;
-        return "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>" + VisualBlockRendering.Escape(title) + "</title>\n<style>" + BuildCss(background, theme.Text.ToCss(), theme.MutedText.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize) + "</style>\n</head>\n<body>\n" + RenderFragment(grid) + "\n</body>\n</html>";
+        var writer = new HtmlMarkupWriter();
+        writer.Doctype().Line()
+            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("head").EndStartElement().Line();
+        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(background, theme.Text.ToCss(), theme.MutedText.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize));
+        writer.EndElement().Line()
+            .StartElement("body").EndStartElement().Line()
+            .RawTrusted(RenderFragment(grid)).Line()
+            .EndElement().Line()
+            .EndElement();
+        return writer.Build();
     }
 
     private static string BuildCss(string background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize) {
@@ -71,6 +77,24 @@ public sealed class HtmlVisualGridRenderer {
     private static string ItemTitle(VisualGridItem item) {
         if (item.Chart != null) return item.Chart.Title.Length == 0 ? "Chart" : item.Chart.Title;
         return item.Block?.AccessibleName ?? "Visual block";
+    }
+
+    private static string GridStyle(VisualGrid grid, int columns) {
+        var sb = new StringBuilder();
+        sb.Append("--cfx-visual-grid-columns:").Append(columns.ToString(CultureInfo.InvariantCulture));
+        sb.Append(";--cfx-visual-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
+        sb.Append(";--cfx-visual-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
+        if (grid.PanelSize.HasValue) {
+            sb.Append(";--cfx-visual-grid-panel-width:").Append(grid.PanelSize.Value.Width.ToString(CultureInfo.InvariantCulture)).Append("px");
+            sb.Append(";--cfx-visual-grid-panel-height:").Append(grid.PanelSize.Value.Height.ToString(CultureInfo.InvariantCulture)).Append("px");
+        }
+
+        return sb.ToString();
+    }
+
+    private static string? PanelSpanStyle(int columnSpan, int rowSpan) {
+        if (columnSpan == 1 && rowSpan == 1) return null;
+        return "grid-column:span " + columnSpan.ToString(CultureInfo.InvariantCulture) + ";grid-row:span " + rowSpan.ToString(CultureInfo.InvariantCulture);
     }
 
     private static string NextScope() {
