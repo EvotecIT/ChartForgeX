@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ChartForgeX.Rendering;
 
@@ -5,10 +6,10 @@ namespace ChartForgeX.Core;
 
 internal static class BuiltInMapDefinitions {
     private static ChartMapDefinition? _usStates;
-    private static ChartMapDefinition[]? _all;
+    private static IReadOnlyList<ChartMapDefinition>? _all;
 
     public static IReadOnlyList<ChartMapDefinition> All() {
-        return _all ??= new[] { UsStates() };
+        return _all ??= Array.AsReadOnly(new[] { UsStates() });
     }
 
     public static bool TryGet(string id, out ChartMapDefinition definition) {

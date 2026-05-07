@@ -9,6 +9,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public sealed class ChartMapDefinition {
     private readonly ChartMapRegion[] _regions;
+    private readonly IReadOnlyList<ChartMapRegion> _regionsView;
     private readonly Dictionary<string, string> _aliases;
 
     /// <summary>
@@ -29,7 +30,7 @@ public sealed class ChartMapDefinition {
     /// <summary>
     /// Gets the drawable regions.
     /// </summary>
-    public IReadOnlyList<ChartMapRegion> Regions => _regions;
+    public IReadOnlyList<ChartMapRegion> Regions => _regionsView;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartMapDefinition"/> class with bounds starting at zero.
@@ -70,6 +71,7 @@ public sealed class ChartMapDefinition {
 
         if (materialized.Count == 0) throw new ArgumentException("Map definitions must contain at least one region.", nameof(regions));
         _regions = materialized.ToArray();
+        _regionsView = Array.AsReadOnly(_regions);
     }
 
     /// <summary>

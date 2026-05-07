@@ -83,34 +83,20 @@ public sealed partial class PngChartRenderer {
     }
 
     private static List<List<ChartPoint>> ProjectMapRings(string path, ChartRect source, ChartRect target, out ChartRect bounds) {
-        var rings = new List<List<ChartPoint>>();
-        List<ChartPoint>? current = null;
+        var rings = ChartMapPathParser.ParseRings(path);
         var minX = double.PositiveInfinity;
         var maxX = double.NegativeInfinity;
         var minY = double.PositiveInfinity;
         var maxY = double.NegativeInfinity;
-        for (var i = 0; i < path.Length; i++) {
-            var command = path[i];
-            if (command == 'M' || command == 'L') {
-                i++;
-                var x = ReadMapPathNumber(path, ref i);
-                var y = ReadMapPathNumber(path, ref i);
-                if (command == 'M') {
-                    current = new List<ChartPoint>();
-                    rings.Add(current);
-                }
-
-                var point = ProjectMapPoint(new ChartPoint(x, y), source, target);
+        for (var ringIndex = 0; ringIndex < rings.Count; ringIndex++) {
+            var ring = rings[ringIndex];
+            for (var i = 0; i < ring.Count; i++) {
+                var point = ProjectMapPoint(ring[i], source, target);
                 if (point.X < minX) minX = point.X;
                 if (point.X > maxX) maxX = point.X;
                 if (point.Y < minY) minY = point.Y;
                 if (point.Y > maxY) maxY = point.Y;
-                current?.Add(point);
-                i--;
-            } else if (command == 'Z') {
-                current = null;
-            } else if (!char.IsWhiteSpace(command)) {
-                throw new InvalidOperationException("Unsupported map path command.");
+                ring[i] = point;
             }
         }
 
@@ -123,30 +109,6 @@ public sealed partial class PngChartRenderer {
         return bounds.Width >= EstimatePngEmphasizedTextWidth(code, fontSize) + 8 && bounds.Height >= fontSize + 5;
     }
 
-    private static double ReadMapPathNumber(string path, ref int index) {
-        while (index < path.Length && (char.IsWhiteSpace(path[index]) || path[index] == ',')) index++;
-        var start = index;
-        if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
-        var hasDigit = false;
-        while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
-        if (index < path.Length && path[index] == '.') {
-            index++;
-            while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
-        }
-
-        if (!hasDigit) throw new InvalidOperationException("Invalid map path number.");
-        if (index < path.Length && (path[index] == 'e' || path[index] == 'E')) {
-            var exponent = index;
-            index++;
-            if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
-            var hasExponentDigit = false;
-            while (index < path.Length && char.IsDigit(path[index])) { index++; hasExponentDigit = true; }
-            if (!hasExponentDigit) index = exponent;
-        }
-
-        return double.Parse(path.Substring(start, index - start), System.Globalization.CultureInfo.InvariantCulture);
-    }
-
     private static ChartPoint ProjectMapPoint(ChartPoint point, ChartRect source, ChartRect target) {
         var x = target.Left + (point.X - source.Left) / source.Width * target.Width;
         var y = target.Top + (point.Y - source.Top) / source.Height * target.Height;
@@ -154,7 +116,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartRect FitRegionMap(ChartMapDefinition definition, ChartRect plot) {
-        var aspect = definition.Bounds.Width / Math.Max(1, definition.Bounds.Height);
+        var aspect = definition.Bounds.Width / definition.Bounds.Height;
         var width = Math.Min(plot.Width, plot.Height * aspect);
         var height = width / aspect;
         if (height > plot.Height) {

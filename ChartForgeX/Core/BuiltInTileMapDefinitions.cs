@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 
 namespace ChartForgeX.Core;
 
 internal static class BuiltInTileMapDefinitions {
     private static ChartTileMapDefinition? _usStates;
-    private static ChartTileMapDefinition[]? _all;
+    private static IReadOnlyList<ChartTileMapDefinition>? _all;
 
     public static IReadOnlyList<ChartTileMapDefinition> All() {
-        return _all ??= new[] { UsStates() };
+        return _all ??= Array.AsReadOnly(new[] { UsStates() });
     }
 
     public static bool TryGet(string id, out ChartTileMapDefinition definition) {

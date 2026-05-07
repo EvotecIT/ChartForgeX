@@ -117,24 +117,18 @@ public sealed partial class SvgChartRenderer {
         var maxX = double.NegativeInfinity;
         var minY = double.PositiveInfinity;
         var maxY = double.NegativeInfinity;
-        for (var i = 0; i < path.Length; i++) {
-            var command = path[i];
-            if (command == 'M' || command == 'L') {
-                i++;
-                var x = ReadMapPathNumber(path, ref i);
-                var y = ReadMapPathNumber(path, ref i);
-                var point = ProjectMapPoint(new ChartPoint(x, y), source, target);
+        foreach (var ring in ChartMapPathParser.ParseRings(path)) {
+            if (ring.Count == 0) continue;
+            for (var i = 0; i < ring.Count; i++) {
+                var point = ProjectMapPoint(ring[i], source, target);
                 if (point.X < minX) minX = point.X;
                 if (point.X > maxX) maxX = point.X;
                 if (point.Y < minY) minY = point.Y;
                 if (point.Y > maxY) maxY = point.Y;
-                sb.Append(command).Append(F(point.X)).Append(' ').Append(F(point.Y));
-                i--;
-            } else if (command == 'Z') {
-                sb.Append('Z');
-            } else if (!char.IsWhiteSpace(command)) {
-                throw new InvalidOperationException("Unsupported map path command.");
+                sb.Append(i == 0 ? 'M' : 'L').Append(F(point.X)).Append(' ').Append(F(point.Y));
             }
+
+            sb.Append('Z');
         }
 
         bounds = double.IsInfinity(minX) ? new ChartRect(0, 0, 0, 0) : new ChartRect(minX, minY, Math.Max(0, maxX - minX), Math.Max(0, maxY - minY));
@@ -145,30 +139,6 @@ public sealed partial class SvgChartRenderer {
         return bounds.Width >= EstimateTextWidth(code, fontSize) + 8 && bounds.Height >= fontSize + 5;
     }
 
-    private static double ReadMapPathNumber(string path, ref int index) {
-        while (index < path.Length && (char.IsWhiteSpace(path[index]) || path[index] == ',')) index++;
-        var start = index;
-        if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
-        var hasDigit = false;
-        while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
-        if (index < path.Length && path[index] == '.') {
-            index++;
-            while (index < path.Length && char.IsDigit(path[index])) { index++; hasDigit = true; }
-        }
-
-        if (!hasDigit) throw new InvalidOperationException("Invalid map path number.");
-        if (index < path.Length && (path[index] == 'e' || path[index] == 'E')) {
-            var exponent = index;
-            index++;
-            if (index < path.Length && (path[index] == '-' || path[index] == '+')) index++;
-            var hasExponentDigit = false;
-            while (index < path.Length && char.IsDigit(path[index])) { index++; hasExponentDigit = true; }
-            if (!hasExponentDigit) index = exponent;
-        }
-
-        return double.Parse(path.Substring(start, index - start), System.Globalization.CultureInfo.InvariantCulture);
-    }
-
     private static ChartPoint ProjectMapPoint(ChartPoint point, ChartRect source, ChartRect target) {
         var x = target.Left + (point.X - source.Left) / source.Width * target.Width;
         var y = target.Top + (point.Y - source.Top) / source.Height * target.Height;
@@ -176,7 +146,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartRect FitRegionMap(ChartMapDefinition definition, ChartRect plot) {
-        var aspect = definition.Bounds.Width / Math.Max(1, definition.Bounds.Height);
+        var aspect = definition.Bounds.Width / definition.Bounds.Height;
         var width = Math.Min(plot.Width, plot.Height * aspect);
         var height = width / aspect;
         if (height > plot.Height) {

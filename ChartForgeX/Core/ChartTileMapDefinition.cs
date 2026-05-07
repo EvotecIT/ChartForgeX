@@ -9,6 +9,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public sealed class ChartTileMapDefinition {
     private readonly ChartTileMapRegion[] _regions;
+    private readonly IReadOnlyList<ChartTileMapRegion> _regionsView;
     private readonly Dictionary<string, string> _aliases;
 
     /// <summary>
@@ -34,7 +35,7 @@ public sealed class ChartTileMapDefinition {
     /// <summary>
     /// Gets the drawable regions.
     /// </summary>
-    public IReadOnlyList<ChartTileMapRegion> Regions => _regions;
+    public IReadOnlyList<ChartTileMapRegion> Regions => _regionsView;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartTileMapDefinition"/> class.
@@ -62,6 +63,7 @@ public sealed class ChartTileMapDefinition {
         }
 
         _regions = materialized;
+        _regionsView = Array.AsReadOnly(_regions);
         ColumnCount = _regions.Max(region => region.Column) + 1;
         RowCount = _regions.Max(region => region.Row) + 1;
     }

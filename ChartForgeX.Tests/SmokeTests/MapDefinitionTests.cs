@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
@@ -89,6 +91,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => ChartTileMapCatalog.Get("missing"), "Tile-map catalogs should throw clear errors for unknown IDs.");
     }
 
+    private static void MapCatalogsAndDefinitionsExposeImmutableLists() {
+        Assert(!(ChartMapCatalog.All() is ChartMapDefinition[]), "Map catalogs should not expose mutable backing arrays.");
+        Assert(!(ChartTileMapCatalog.All() is ChartTileMapDefinition[]), "Tile-map catalogs should not expose mutable backing arrays.");
+        Assert(!(ChartMapCatalog.Get("us-states").Regions is ChartMapRegion[]), "Map definitions should not expose mutable region arrays.");
+        Assert(!(ChartTileMapCatalog.Get("us-states").Regions is ChartTileMapRegion[]), "Tile-map definitions should not expose mutable region arrays.");
+    }
+
     private static void MapDefinitionsAcceptRegionNamesAndAliases() {
         var regions = new[] {
             new ChartRegionMapItem("california", 90),
@@ -127,8 +136,8 @@ internal static partial class SmokeTests {
 
     private static void CustomRegionMapsParseStandardSvgPathSeparators() {
         var definition = new ChartMapDefinition("custom", "Custom", 10, 10, new[] {
-            new ChartMapRegion("A", "Alpha", "M0,0L10,0L10,10L0,10Z"),
-            new ChartMapRegion("B", "Beta", "M1e0-1L3,1L3,3L1,3ZM1.5,1.5L2.5,1.5L2.5,2.5L1.5,2.5Z")
+            new ChartMapRegion("A", "Alpha", "M0,0 10,0 10,10 0,10Z"),
+            new ChartMapRegion("B", "Beta", "M1e0-1L3,1L3,3L1,3z m.5,.5 l1,0 0,1 -1,0 z")
         });
         var chart = Chart.Create()
             .WithSize(360, 240)
@@ -142,6 +151,25 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-map-id=\"custom\"", StringComparison.Ordinal), "Custom region maps should render SVG from caller-supplied path data.");
         Assert(svg.Contains("fill-rule=\"evenodd\"", StringComparison.Ordinal), "Custom region-map SVG paths should use even-odd filling so interior holes remain holes.");
         Assert(chart.ToPng().Length > 64, "Custom region maps with comma-separated paths and interior holes should render PNG output.");
+    }
+
+    private static void CustomRegionMapsPreserveSubunitBoundsAspectRatio() {
+        var definition = new ChartMapDefinition("normalized", "Normalized", new ChartRect(0, 0, 1, 0.5), new[] {
+            new ChartMapRegion("A", "Alpha", "M0,0 1,0 1,.5 0,.5Z")
+        });
+        var chart = Chart.Create()
+            .WithSize(420, 300)
+            .WithMapLabels(false)
+            .WithMapScaleLegend(false)
+            .AddRegionMap("Normalized", definition, new[] {
+                new ChartRegionMapItem("A", 10)
+            });
+
+        var svg = chart.ToSvg();
+        var path = GetStringAttribute(svg, "data-cfx-region=\"A\"", "d");
+        var bounds = GetPathBounds(path);
+        Assert(bounds.Width > bounds.Height * 1.8 && bounds.Width < bounds.Height * 2.2, "Region maps should preserve valid source bounds below one unit instead of clamping height to one.");
+        Assert(chart.ToPng().Length > 64, "Subunit-bounds custom region maps should render PNG output.");
     }
 
     private static void TileMapLabelsCanBeHiddenForCompactCards() {
@@ -271,5 +299,37 @@ internal static partial class SmokeTests {
         var values = new ChartRegionMapItem[regions.Count];
         for (var i = 0; i < regions.Count; i++) values[i] = new ChartRegionMapItem(regions[i].Code, 10 + i);
         return values;
+    }
+
+    private static ChartRect GetPathBounds(string path) {
+        var numbers = new List<double>();
+        var start = -1;
+        for (var i = 0; i <= path.Length; i++) {
+            var value = i < path.Length ? path[i] : ' ';
+            if (char.IsDigit(value) || value == '-' || value == '+' || value == '.' || value == 'e' || value == 'E') {
+                if (start < 0) start = i;
+                continue;
+            }
+
+            if (start >= 0) {
+                numbers.Add(double.Parse(path.Substring(start, i - start), CultureInfo.InvariantCulture));
+                start = -1;
+            }
+        }
+
+        var minX = double.PositiveInfinity;
+        var maxX = double.NegativeInfinity;
+        var minY = double.PositiveInfinity;
+        var maxY = double.NegativeInfinity;
+        for (var i = 0; i + 1 < numbers.Count; i += 2) {
+            var x = numbers[i];
+            var y = numbers[i + 1];
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+
+        return new ChartRect(minX, minY, maxX - minX, maxY - minY);
     }
 }
