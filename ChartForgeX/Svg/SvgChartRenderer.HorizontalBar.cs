@@ -23,7 +23,7 @@ public sealed partial class SvgChartRenderer {
             var width = Math.Abs(valueX - baseX);
             var y = map.Y(p.X) + layout.Offset - layout.BarHeight / 2;
             var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarHeight / 2) : Math.Min(7, layout.BarHeight / 2);
-            sb.AppendLine($"<rect data-cfx-role=\"horizontal-bar\" data-cfx-series=\"{index}\" data-cfx-point=\"{pointIndex}\" data-cfx-category=\"{F(p.X)}\" data-cfx-value=\"{F(p.Y)}\" data-cfx-base=\"{F(baseValue)}\" x=\"{F(left)}\" y=\"{F(y)}\" width=\"{F(width)}\" height=\"{F(layout.BarHeight)}\" rx=\"{F(radius)}\" fill=\"{BarFill(chart, s, index, pointIndex, id)}\" opacity=\"{F(ChartVisualPrimitives.BarFillOpacity)}\"/>");
+            WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, BarFill(chart, s, index, pointIndex, id));
             DrawSvgBarHighlight(sb, left, y, width, layout.BarHeight);
             if (ShouldDrawDataLabels(chart, s)) {
                 var label = FormatValue(chart, p.Y);
@@ -45,6 +45,28 @@ public sealed partial class SvgChartRenderer {
                 }
             }
         }
+    }
+
+    private static void WriteHorizontalBar(StringBuilder sb, int seriesIndex, int pointIndex, double category, double value, double baseValue, double x, double y, double width, double height, double radius, string fill) {
+        var writer = new SvgMarkupWriter(512);
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "horizontal-bar")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-category", category)
+            .Attribute("data-cfx-value", value)
+            .Attribute("data-cfx-base", baseValue)
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("width", width)
+            .Attribute("height", height)
+            .Attribute("rx", radius)
+            .Attribute("fill", fill)
+            .Attribute("opacity", ChartVisualPrimitives.BarFillOpacity)
+            .EndEmptyElement()
+            .Line();
+        sb.Append(writer.Build());
     }
 
     private static HorizontalBarLayoutInfo HorizontalBarLayout(Chart chart, ChartRect plot, int seriesIndex) {

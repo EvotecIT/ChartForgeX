@@ -48,8 +48,23 @@ public sealed partial class SvgChartRenderer {
         var endText = end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var containerSummary = series.Name + " calendar heatmap from " + startText + " to " + endText + " with " + filledDays.ToString(CultureInfo.InvariantCulture) + " filled days and " + emptyDays.ToString(CultureInfo.InvariantCulture) + " empty days";
 
-        sb.AppendLine($"<g data-cfx-role=\"calendar-heatmap\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-start-date=\"{startText}\" data-cfx-end-date=\"{endText}\" data-cfx-day-count=\"{totalDays}\" data-cfx-filled-day-count=\"{filledDays}\" data-cfx-empty-day-count=\"{emptyDays}\" data-cfx-min-value=\"{F(sourceMin)}\" data-cfx-max-value=\"{F(sourceMax)}\" role=\"group\" aria-label=\"{Escape(containerSummary)}\">");
-        DrawCalendarHeatmapSvgAxes(sb, chart, start, maxDate, x0, y0, cell, gap);
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "calendar-heatmap")
+            .Attribute("data-cfx-label", series.Name)
+            .Attribute("data-cfx-start-date", startText)
+            .Attribute("data-cfx-end-date", endText)
+            .Attribute("data-cfx-day-count", totalDays)
+            .Attribute("data-cfx-filled-day-count", filledDays)
+            .Attribute("data-cfx-empty-day-count", emptyDays)
+            .Attribute("data-cfx-min-value", sourceMin)
+            .Attribute("data-cfx-max-value", sourceMax)
+            .Attribute("role", "group")
+            .Attribute("aria-label", containerSummary)
+            .EndStartElement()
+            .Line();
+        DrawCalendarHeatmapSvgAxes(writer, chart, start, maxDate, x0, y0, cell, gap);
         for (var day = start; day <= end; day = day.AddDays(1)) {
             var column = (day - start).Days / 7;
             var row = (int)day.DayOfWeek;
@@ -63,20 +78,62 @@ public sealed partial class SvgChartRenderer {
             var y = y0 + row * (cell + gap);
             var dateText = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             var summary = hasValue ? series.Name + ", " + dateText + ": " + FormatValue(chart, value) : series.Name + ", " + dateText + ": No data";
-            sb.AppendLine($"<rect class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"calendar-heatmap-cell\" data-cfx-date=\"{dateText}\" data-cfx-week-index=\"{column}\" data-cfx-weekday-index=\"{row}\" data-cfx-value=\"{F(value)}\" data-cfx-level=\"{level}\" data-cfx-empty=\"{(!hasValue).ToString().ToLowerInvariant()}\" data-cfx-status=\"{status}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(x)}\" y=\"{F(y)}\" width=\"{F(cell)}\" height=\"{F(cell)}\" rx=\"{F(radius)}\" fill=\"{color.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.HeatmapCellBorderOpacity)}\" stroke-width=\"{F(ChartVisualPrimitives.HeatmapCellBorderStrokeWidth)}\"><title>{Escape(summary)}</title></rect>");
+            writer
+                .StartElement("rect")
+                .Attribute("class", "cfx-interactive-region")
+                .Attribute("tabindex", "0")
+                .Attribute("focusable", "true")
+                .Attribute("data-cfx-role", "calendar-heatmap-cell")
+                .Attribute("data-cfx-date", dateText)
+                .Attribute("data-cfx-week-index", column)
+                .Attribute("data-cfx-weekday-index", row)
+                .Attribute("data-cfx-value", value)
+                .Attribute("data-cfx-level", level)
+                .Attribute("data-cfx-empty", !hasValue)
+                .Attribute("data-cfx-status", status)
+                .Attribute("role", "img")
+                .Attribute("aria-label", summary)
+                .Attribute("x", x)
+                .Attribute("y", y)
+                .Attribute("width", cell)
+                .Attribute("height", cell)
+                .Attribute("rx", radius)
+                .Attribute("fill", color.ToCss())
+                .Attribute("stroke", t.CardBackground.ToCss())
+                .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
+                .Attribute("stroke-width", ChartVisualPrimitives.HeatmapCellBorderStrokeWidth)
+                .EndStartElement()
+                .StartElement("title")
+                .Text(summary)
+                .EndElement()
+                .EndElement()
+                .Line();
         }
 
-        if (chart.Options.ShowHeatmapScale) DrawCalendarHeatmapSvgScale(sb, chart, series, min, max, x0 + gridWidth, y0 + gridHeight + 20, cell, hasEmptyCells);
-        sb.AppendLine("</g>");
+        if (chart.Options.ShowHeatmapScale) DrawCalendarHeatmapSvgScale(writer, chart, series, min, max, x0 + gridWidth, y0 + gridHeight + 20, cell, hasEmptyCells);
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
-    private static void DrawCalendarHeatmapSvgAxes(StringBuilder sb, Chart chart, DateTime start, DateTime end, double x0, double y0, double cell, double gap) {
+    private static void DrawCalendarHeatmapSvgAxes(SvgMarkupWriter writer, Chart chart, DateTime start, DateTime end, double x0, double y0, double cell, double gap) {
         if (!chart.Options.ShowAxes) return;
         var t = chart.Options.Theme;
         var rows = new[] { (1, "Mon"), (3, "Wed"), (5, "Fri") };
         foreach (var item in rows) {
             var y = y0 + item.Item1 * (cell + gap) + cell / 2;
-            sb.AppendLine($"<text data-cfx-role=\"calendar-heatmap-weekday-label\" x=\"{F(x0 - 8)}\" y=\"{F(y)}\" text-anchor=\"end\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{item.Item2}</text>");
+            writer
+                .StartElement("text")
+                .Attribute("data-cfx-role", "calendar-heatmap-weekday-label")
+                .Attribute("x", x0 - 8)
+                .Attribute("y", y)
+                .Attribute("text-anchor", "end")
+                .Attribute("dominant-baseline", "middle")
+                .Attribute("fill", t.MutedText.ToCss())
+                .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+                .Attribute("font-size", t.TickLabelFontSize)
+                .Text(item.Item2)
+                .EndElement()
+                .Line();
         }
 
         var month = new DateTime(start.Year, start.Month, 1);
@@ -86,7 +143,19 @@ public sealed partial class SvgChartRenderer {
             var column = Math.Max(0, (month - start).Days / 7);
             var x = x0 + column * (cell + gap);
             if (x - lastX >= 28) {
-                sb.AppendLine($"<text data-cfx-role=\"calendar-heatmap-month-label\" x=\"{F(x)}\" y=\"{F(y0 - 8)}\" text-anchor=\"start\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\" font-weight=\"650\">{month.ToString("MMM", CultureInfo.InvariantCulture)}</text>");
+                writer
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "calendar-heatmap-month-label")
+                    .Attribute("x", x)
+                    .Attribute("y", y0 - 8)
+                    .Attribute("text-anchor", "start")
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+                    .Attribute("font-size", t.TickLabelFontSize)
+                    .Attribute("font-weight", "650")
+                    .Text(month.ToString("MMM", CultureInfo.InvariantCulture))
+                    .EndElement()
+                    .Line();
                 lastX = x;
             }
 
@@ -94,7 +163,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void DrawCalendarHeatmapSvgScale(StringBuilder sb, Chart chart, ChartSeries series, double min, double max, double right, double y, double cell, bool showNoData) {
+    private static void DrawCalendarHeatmapSvgScale(SvgMarkupWriter writer, Chart chart, ChartSeries series, double min, double max, double right, double y, double cell, bool showNoData) {
         var t = chart.Options.Theme;
         var size = Math.Max(7, Math.Min(12, cell));
         var gap = Math.Max(2, size * 0.28);
@@ -104,18 +173,70 @@ public sealed partial class SvgChartRenderer {
         var lessLabelX = x - 8;
         if (showNoData) {
             var noData = CalendarHeatmapEmptyColor(chart);
-            sb.AppendLine($"<rect data-cfx-role=\"calendar-heatmap-scale-no-data\" data-cfx-status=\"empty\" x=\"{F(x)}\" y=\"{F(y)}\" width=\"{F(size)}\" height=\"{F(size)}\" rx=\"{F(Math.Min(3, size * 0.22))}\" fill=\"{noData.ToCss()}\"><title>No data</title></rect>");
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-role", "calendar-heatmap-scale-no-data")
+                .Attribute("data-cfx-status", "empty")
+                .Attribute("x", x)
+                .Attribute("y", y)
+                .Attribute("width", size)
+                .Attribute("height", size)
+                .Attribute("rx", Math.Min(3, size * 0.22))
+                .Attribute("fill", noData.ToCss())
+                .EndStartElement()
+                .StartElement("title")
+                .Text("No data")
+                .EndElement()
+                .EndElement()
+                .Line();
             x += size + gap;
         }
 
-        sb.AppendLine($"<text data-cfx-role=\"calendar-heatmap-scale-label\" x=\"{F(lessLabelX)}\" y=\"{F(y + size / 2)}\" text-anchor=\"end\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">Less</text>");
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "calendar-heatmap-scale-label")
+            .Attribute("x", lessLabelX)
+            .Attribute("y", y + size / 2)
+            .Attribute("text-anchor", "end")
+            .Attribute("dominant-baseline", "middle")
+            .Attribute("fill", t.MutedText.ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+            .Attribute("font-size", t.TickLabelFontSize)
+            .Text("Less")
+            .EndElement()
+            .Line();
         for (var i = 0; i < 5; i++) {
             var value = min + (max - min) * (i / 4.0);
             var ratio = CalendarHeatmapRatio(value, min, max);
             var color = CalendarHeatmapColor(chart, series, null, value, min, max);
-            sb.AppendLine($"<rect data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"{i}\" data-cfx-value=\"{F(value)}\" data-cfx-status=\"{HeatmapStatus(ratio)}\" x=\"{F(x + i * (size + gap))}\" y=\"{F(y)}\" width=\"{F(size)}\" height=\"{F(size)}\" rx=\"{F(Math.Min(3, size * 0.22))}\" fill=\"{color.ToCss()}\"/>");
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-role", "calendar-heatmap-scale-step")
+                .Attribute("data-cfx-level", i)
+                .Attribute("data-cfx-value", value)
+                .Attribute("data-cfx-status", HeatmapStatus(ratio))
+                .Attribute("x", x + i * (size + gap))
+                .Attribute("y", y)
+                .Attribute("width", size)
+                .Attribute("height", size)
+                .Attribute("rx", Math.Min(3, size * 0.22))
+                .Attribute("fill", color.ToCss())
+                .EndEmptyElement()
+                .Line();
         }
-        sb.AppendLine($"<text data-cfx-role=\"calendar-heatmap-scale-label\" x=\"{F(x + width + 8)}\" y=\"{F(y + size / 2)}\" text-anchor=\"start\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">More</text>");
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "calendar-heatmap-scale-label")
+            .Attribute("x", x + width + 8)
+            .Attribute("y", y + size / 2)
+            .Attribute("text-anchor", "start")
+            .Attribute("dominant-baseline", "middle")
+            .Attribute("fill", t.MutedText.ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+            .Attribute("font-size", t.TickLabelFontSize)
+            .Text("More")
+            .EndElement()
+            .Line();
     }
 
     private static ChartColor CalendarHeatmapColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {

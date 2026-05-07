@@ -31,14 +31,24 @@ public sealed partial class SvgChartRenderer {
         var middleLine = BuildLinePath(middlePath, false);
         var summary = series.Name + " interval area with " + lower.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " point(s)";
 
-        sb.AppendLine($"<g data-cfx-role=\"range-area-series\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{lower.Count}\" role=\"img\" aria-label=\"{Escape(summary)}\">");
-        sb.AppendLine($"<path data-cfx-role=\"range-area\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{lower.Count}\" d=\"{BuildClosedPolygonPath(upperPath, lowerPath)}\" fill=\"url(#{id}-area{index})\" opacity=\"{F(ChartVisualPrimitives.RangeAreaFillOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"range-area-midline\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{middle.Count}\" d=\"{middleLine}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.RangeAreaMidlineStrokeWidth)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-dasharray=\"{F(ChartVisualPrimitives.RangeAreaDash)} {F(ChartVisualPrimitives.RangeAreaGap)}\" opacity=\"{F(ChartVisualPrimitives.RangeAreaMidlineOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"range-area-upper-halo\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{upper.Count}\" d=\"{upperLine}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" opacity=\"{F(ChartVisualPrimitives.StrokeHaloOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"range-area-lower-halo\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{lower.Count}\" d=\"{lowerLine}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" opacity=\"{F(ChartVisualPrimitives.StrokeHaloOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"range-area-upper\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{upper.Count}\" d=\"{upperLine}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth))}\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"range-area-lower\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{lower.Count}\" d=\"{lowerLine}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth))}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" opacity=\"{F(ChartVisualPrimitives.RangeAreaLowerStrokeOpacity)}\"/>");
-        sb.AppendLine("</g>");
+        var writer = new SvgMarkupWriter(2048);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "range-area-series")
+            .Attribute("data-cfx-series", index)
+            .Attribute("data-cfx-interval-count", lower.Count)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .EndStartElement()
+            .Line();
+        WriteRangeAreaPath(writer, "range-area", index, lower.Count, BuildClosedPolygonPath(upperPath, lowerPath), $"url(#{id}-area{index})", null, null, null);
+        WriteRangeAreaPath(writer, "range-area-midline", index, middle.Count, middleLine, "none", color.ToCss(), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaMidlineOpacity, true);
+        WriteRangeAreaPath(writer, "range-area-upper-halo", index, upper.Count, upperLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, ChartVisualPrimitives.StrokeHaloOpacity);
+        WriteRangeAreaPath(writer, "range-area-lower-halo", index, lower.Count, lowerLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, ChartVisualPrimitives.StrokeHaloOpacity);
+        WriteRangeAreaPath(writer, "range-area-upper", index, upper.Count, upperLine, "none", color.ToCss(), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth), null);
+        WriteRangeAreaPath(writer, "range-area-lower", index, lower.Count, lowerLine, "none", color.ToCss(), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth), ChartVisualPrimitives.RangeAreaLowerStrokeOpacity);
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
 
         if (!ShouldDrawDataLabels(chart, series)) return;
         var reservedLabels = new List<ChartLabelBounds>();
@@ -52,5 +62,30 @@ public sealed partial class SvgChartRenderer {
             var label = FormatValue(chart, low.Y) + "-" + FormatValue(chart, high.Y);
             DrawRangeIntervalLabel(sb, chart, series, item, plot, reservedLabels, label, x, yLow, yHigh);
         }
+    }
+
+    private static void WriteRangeAreaPath(SvgMarkupWriter writer, string role, int seriesIndex, int intervalCount, string path, string fill, string? stroke, double? strokeWidth, double? opacity, bool dashed = false) {
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", role)
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-interval-count", intervalCount)
+            .Attribute("d", path)
+            .Attribute("fill", fill);
+        if (stroke != null) {
+            writer
+                .Attribute("stroke", stroke)
+                .Attribute("stroke-width", strokeWidth.GetValueOrDefault())
+                .Attribute("stroke-linecap", "round")
+                .Attribute("stroke-linejoin", "round");
+            if (dashed) {
+                writer.Attribute("stroke-dasharray", SvgMarkupWriter.FormatNumber(ChartVisualPrimitives.RangeAreaDash) + " " + SvgMarkupWriter.FormatNumber(ChartVisualPrimitives.RangeAreaGap));
+            }
+        }
+
+        writer
+            .OptionalAttribute("opacity", opacity)
+            .EndEmptyElement()
+            .Line();
     }
 }

@@ -30,8 +30,13 @@ public sealed partial class SvgChartRenderer {
         var gap = Math.Min(10, Math.Max(4, plot.Height / values.Length * 0.08));
         var segmentHeights = FunnelSegmentHeights(values, plot.Height, gap);
         var y = plot.Top;
-        sb.AppendLine("<g data-cfx-role=\"funnel-chart\">");
-        DrawFunnelPointGradients(sb, id, series);
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "funnel-chart")
+            .EndStartElement()
+            .Line();
+        DrawFunnelPointGradients(writer, id, series);
 
         for (var i = 0; i < values.Length; i++) {
             var segmentHeight = segmentHeights[i];
@@ -56,7 +61,24 @@ public sealed partial class SvgChartRenderer {
             var dropOff = i == 0 ? 0 : FunnelDropOff(values[i].Y, values[i - 1].Y);
             var summary = label + ": " + value + ", retained " + FormatPercent(retention);
             if (i > 0) summary += ", drop-off " + FormatPercent(dropOff);
-            sb.AppendLine($"<path data-cfx-role=\"funnel-segment\" data-cfx-point=\"{i}\" data-cfx-label=\"{Escape(label)}\" data-cfx-value=\"{F(values[i].Y)}\" data-cfx-retention=\"{F(retention)}\" data-cfx-dropoff=\"{F(dropOff)}\" role=\"img\" aria-label=\"{Escape(summary)}\" d=\"M {F(topLeft)} {F(segmentY)} L {F(topRight)} {F(segmentY)} L {F(bottomRight)} {F(segmentY + segmentDrawHeight)} L {F(bottomLeft)} {F(segmentY + segmentDrawHeight)} Z\" fill=\"{fill}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.FunnelSegmentStrokeWidth)}\" stroke-opacity=\"{F(ChartVisualPrimitives.FunnelSegmentStrokeOpacity)}\" stroke-linejoin=\"round\"/>");
+            writer
+                .StartElement("path")
+                .Attribute("data-cfx-role", "funnel-segment")
+                .Attribute("data-cfx-point", i)
+                .Attribute("data-cfx-label", label)
+                .Attribute("data-cfx-value", values[i].Y)
+                .Attribute("data-cfx-retention", retention)
+                .Attribute("data-cfx-dropoff", dropOff)
+                .Attribute("role", "img")
+                .Attribute("aria-label", summary)
+                .Attribute("d", $"M {F(topLeft)} {F(segmentY)} L {F(topRight)} {F(segmentY)} L {F(bottomRight)} {F(segmentY + segmentDrawHeight)} L {F(bottomLeft)} {F(segmentY + segmentDrawHeight)} Z")
+                .Attribute("fill", fill)
+                .Attribute("stroke", t.CardBackground.ToCss())
+                .Attribute("stroke-width", ChartVisualPrimitives.FunnelSegmentStrokeWidth)
+                .Attribute("stroke-opacity", ChartVisualPrimitives.FunnelSegmentStrokeOpacity)
+                .Attribute("stroke-linejoin", "round")
+                .EndEmptyElement()
+                .Line();
 
             var centerX = plot.Left + plot.Width / 2;
             var centerY = segmentY + segmentDrawHeight / 2;
@@ -64,15 +86,17 @@ public sealed partial class SvgChartRenderer {
             var labelStroke = FunnelTextHalo(labelColor, t.CardBackground);
             var labelWidth = Math.Max(36, Math.Min(topWidth, bottomWidth) - 18);
             if (showLabels) {
+                var labelWriter = new StringBuilder();
                 if (values[i].Y <= 0) {
                     var zeroLabelX = topRight + 12;
                     var zeroLabelWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
-                    DrawSvgTextLeft(sb, chart, "funnel-label", label, zeroLabelX, centerY - 6, t.Text, t.LegendFontSize, zeroLabelWidth, "800");
-                    DrawSvgTextLeft(sb, chart, "funnel-value", value, zeroLabelX, centerY + 13, t.MutedText, t.DataLabelFontSize, zeroLabelWidth, "750");
+                    DrawSvgTextLeft(labelWriter, chart, "funnel-label", label, zeroLabelX, centerY - 6, t.Text, t.LegendFontSize, zeroLabelWidth, "800");
+                    DrawSvgTextLeft(labelWriter, chart, "funnel-value", value, zeroLabelX, centerY + 13, t.MutedText, t.DataLabelFontSize, zeroLabelWidth, "750");
                 } else {
-                    DrawSvgTextCenteredX(sb, chart, "funnel-label", label, centerX, centerY - 4, labelColor, t.LegendFontSize, labelWidth, "800", labelStroke, 1.8);
-                    DrawSvgTextCenteredX(sb, chart, "funnel-value", value, centerX, centerY + 15, labelColor, t.DataLabelFontSize, labelWidth, "750", labelStroke, 1.8);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, centerY - 4, labelColor, t.LegendFontSize, labelWidth, "800", labelStroke, 1.8);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, centerY + 15, labelColor, t.DataLabelFontSize, labelWidth, "750", labelStroke, 1.8);
                 }
+                writer.Raw(labelWriter.ToString());
             }
             if (showLabels && i > 0) {
                 var guideX = Math.Min(metricsX - 10, bottomRight + 8);
@@ -80,15 +104,30 @@ public sealed partial class SvgChartRenderer {
                 var retentionLabel = FormatPercent(retention) + " retained";
                 var dropOffLabel = FormatFunnelDropOffLabel(dropOff, values[i - 1].Y);
                 var dropOffColor = values[i - 1].Y <= 0 ? t.MutedText : t.Negative;
-                sb.AppendLine($"<line data-cfx-role=\"funnel-dropoff-line\" x1=\"{F(guideX)}\" y1=\"{F(segmentY + gap * -0.35)}\" x2=\"{F(guideX)}\" y2=\"{F(segmentY + segmentDrawHeight * 0.55)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.FunnelDropoffLineStrokeWidth)}\" stroke-dasharray=\"3 4\" opacity=\"{F(ChartVisualPrimitives.FunnelDropoffLineOpacity)}\"/>");
-                DrawSvgTextLeft(sb, chart, "funnel-retention", retentionLabel, metricsX, centerY - 3, t.MutedText, t.TickLabelFontSize, metricMaxWidth, "700");
-                DrawSvgTextLeft(sb, chart, "funnel-dropoff", dropOffLabel, metricsX, centerY + 14, dropOffColor, t.TickLabelFontSize, metricMaxWidth, "650");
+                writer
+                    .StartElement("line")
+                    .Attribute("data-cfx-role", "funnel-dropoff-line")
+                    .Attribute("x1", guideX)
+                    .Attribute("y1", segmentY + gap * -0.35)
+                    .Attribute("x2", guideX)
+                    .Attribute("y2", segmentY + segmentDrawHeight * 0.55)
+                    .Attribute("stroke", t.Axis.ToCss())
+                    .Attribute("stroke-width", ChartVisualPrimitives.FunnelDropoffLineStrokeWidth)
+                    .Attribute("stroke-dasharray", "3 4")
+                    .Attribute("opacity", ChartVisualPrimitives.FunnelDropoffLineOpacity)
+                    .EndEmptyElement()
+                    .Line();
+                var metricsWriter = new StringBuilder();
+                DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, centerY - 3, t.MutedText, t.TickLabelFontSize, metricMaxWidth, "700");
+                DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, centerY + 14, dropOffColor, t.TickLabelFontSize, metricMaxWidth, "650");
+                writer.Raw(metricsWriter.ToString());
             }
 
             y += segmentHeight + gap;
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static double[] FunnelSegmentHeights(ChartPoint[] values, double plotHeight, double gap) {
@@ -132,20 +171,39 @@ public sealed partial class SvgChartRenderer {
         baseline <= 0 ? "prev stage was 0" :
         dropOff <= 0 ? "0% from prev" : "-" + FormatPercent(dropOff) + " from prev";
 
-    private static void DrawFunnelPointGradients(StringBuilder sb, string id, ChartSeries series) {
+    private static void DrawFunnelPointGradients(SvgMarkupWriter writer, string id, ChartSeries series) {
         var wroteDefs = false;
         for (var i = 0; i < series.PointColors.Count; i++) {
             if (!series.PointColors[i].HasValue) continue;
             if (!wroteDefs) {
-                sb.AppendLine("<defs>");
+                writer.StartElement("defs").EndStartElement().Line();
                 wroteDefs = true;
             }
 
             var color = series.PointColors[i]!.Value;
-            sb.AppendLine($"<linearGradient id=\"{id}-funnelPointFill{i}\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"{color.ToHex()}\" stop-opacity=\"1\"/><stop offset=\"100%\" stop-color=\"{color.ToHex()}\" stop-opacity=\"0.78\"/></linearGradient>");
+            writer
+                .StartElement("linearGradient")
+                .Attribute("id", $"{id}-funnelPointFill{i}")
+                .Attribute("x1", "0")
+                .Attribute("x2", "1")
+                .Attribute("y1", "0")
+                .Attribute("y2", "1")
+                .EndStartElement()
+                .StartElement("stop")
+                .Attribute("offset", "0%")
+                .Attribute("stop-color", color.ToHex())
+                .Attribute("stop-opacity", "1")
+                .EndEmptyElement()
+                .StartElement("stop")
+                .Attribute("offset", "100%")
+                .Attribute("stop-color", color.ToHex())
+                .Attribute("stop-opacity", "0.78")
+                .EndEmptyElement()
+                .EndElement()
+                .Line();
         }
 
-        if (wroteDefs) sb.AppendLine("</defs>");
+        if (wroteDefs) writer.EndElement().Line();
     }
 
     private static ChartColor FunnelSegmentColor(Chart chart, ChartSeries series, int pointIndex) =>

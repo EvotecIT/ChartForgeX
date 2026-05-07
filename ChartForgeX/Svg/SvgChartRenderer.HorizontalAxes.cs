@@ -19,29 +19,45 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < xTicks.Count; i++) {
             var x = map.X(xTicks[i]);
             var label = TrimSvgLabelToWidth(xLabels[i], tickFontSize, xLabelMaxWidth);
-            if (o.ShowGrid) sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(plot.Top)}\" x2=\"{F(x)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.HorizontalBarValueGridOpacity)}\"/>");
+            if (o.ShowGrid) WriteHorizontalAxisLine(sb, null, x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), ChartVisualPrimitives.GridStrokeWidth, ChartVisualPrimitives.HorizontalBarValueGridOpacity);
             if (ShowXAxis(chart) && label.Length > 0) DrawXAxisLabel(sb, chart, plot, label, x, plot.Bottom + 21, 0, maxWidth: xLabelMaxWidth);
         }
 
         foreach (var category in categoryTicks) {
             var y = map.Y(category);
-            if (o.ShowGrid) sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(y)}\" x2=\"{F(plot.Right)}\" y2=\"{F(y)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.HorizontalBarCategoryGridOpacity)}\"/>");
+            if (o.ShowGrid) WriteHorizontalAxisLine(sb, null, plot.Left, y, plot.Right, y, t.Grid.ToCss(), ChartVisualPrimitives.GridStrokeWidth, ChartVisualPrimitives.HorizontalBarCategoryGridOpacity);
             if (ShowYAxis(chart)) DrawHorizontalCategoryLabel(sb, chart, plot, FormatX(chart, category), y);
         }
 
         var zeroX = map.X(0);
         if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroX > plot.Left && zeroX < plot.Right) {
-            sb.AppendLine($"<line x1=\"{F(zeroX)}\" y1=\"{F(plot.Top)}\" x2=\"{F(zeroX)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.ZeroAxisStrokeWidth)}\"/>");
+            WriteHorizontalAxisLine(sb, null, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
         }
 
         if (ShowXAxis(chart)) {
-            if (ShowAxisLines(chart)) sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Bottom)}\" x2=\"{F(plot.Right)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.AxisStrokeWidth)}\"/>");
+            if (ShowAxisLines(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart, xLabels));
         }
         if (ShowYAxis(chart)) {
-            if (ShowAxisLines(chart)) sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Top)}\" x2=\"{F(plot.Left)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.AxisStrokeWidth)}\"/>");
+            if (ShowAxisLines(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgYAxisTitle(sb, chart, plot, 26);
         }
+    }
+
+    private static void WriteHorizontalAxisLine(StringBuilder sb, string? role, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double? opacity = null) {
+        var writer = new SvgMarkupWriter(256);
+        writer.StartElement("line");
+        writer.Attribute("data-cfx-role", role);
+        writer
+            .Attribute("x1", x1)
+            .Attribute("y1", y1)
+            .Attribute("x2", x2)
+            .Attribute("y2", y2)
+            .Attribute("stroke", stroke)
+            .Attribute("stroke-width", strokeWidth);
+        if (opacity.HasValue) writer.Attribute("opacity", opacity.Value);
+        writer.EndEmptyElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static ChartRect ApplyHorizontalBarReserve(Chart chart, ChartRect plot, IReadOnlyList<double> categoryTicks) {
@@ -74,8 +90,28 @@ public sealed partial class SvgChartRenderer {
             var lineFontSize = TextFontSizeForSvgWidth(lines[i], maxWidth, fontSize);
             var line = TrimSvgLabelToWidth(lines[i], lineFontSize, maxWidth);
             if (line.Length == 0) continue;
-            sb.AppendLine($"<text data-cfx-role=\"horizontal-category-label\" data-cfx-line=\"{i}\" x=\"{F(plot.Left - 12)}\" y=\"{F(firstBaseline + i * lineHeight)}\" text-anchor=\"end\" fill=\"{StyleColor(style, t.MutedText).ToCss()}\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(lineFontSize)}\" font-weight=\"{StyleWeight(style, "600")}\"{SvgTextStyleAttributes(style)}>{Escape(line)}</text>");
+            WriteHorizontalCategoryLabelLine(sb, chart, style, i, plot.Left - 12, firstBaseline + i * lineHeight, StyleColor(style, t.MutedText).ToCss(), lineFontSize, line);
         }
+    }
+
+    private static void WriteHorizontalCategoryLabelLine(StringBuilder sb, Chart chart, ChartTextStyle style, int lineIndex, double x, double y, string fill, double fontSize, string label) {
+        var writer = new SvgMarkupWriter(384);
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "horizontal-category-label")
+            .Attribute("data-cfx-line", lineIndex)
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("text-anchor", "end")
+            .Attribute("fill", fill)
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", StyleWeight(style, "600"))
+            .Raw(SvgTextStyleAttributes(style))
+            .Text(label)
+            .EndElement()
+            .Line();
+        sb.Append(writer.Build());
     }
 
     private static double SvgHorizontalCategoryWrapWidth(Chart chart) => Math.Max(90, Math.Min(230, chart.Options.Size.Width * 0.28));

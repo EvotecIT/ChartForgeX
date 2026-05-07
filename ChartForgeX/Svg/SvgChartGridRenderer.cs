@@ -34,27 +34,69 @@ public sealed class SvgChartGridRenderer {
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
         var background = theme.Background.A == 0 ? theme.CardBackground.ToCss() : theme.Background.ToCss();
         var id = "cfx-grid-" + StableHash(idScope ?? string.Empty, grid.Title, grid.Charts.Count.ToString(CultureInfo.InvariantCulture));
-        var sb = new StringBuilder();
-        sb.AppendLine("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + layout.Width.ToString(CultureInfo.InvariantCulture) + "\" height=\"" + layout.Height.ToString(CultureInfo.InvariantCulture) + "\" viewBox=\"0 0 " + layout.Width.ToString(CultureInfo.InvariantCulture) + " " + layout.Height.ToString(CultureInfo.InvariantCulture) + "\" role=\"img\" aria-labelledby=\"" + id + "-title " + id + "-desc\" preserveAspectRatio=\"xMidYMid meet\" shape-rendering=\"geometricPrecision\" text-rendering=\"geometricPrecision\" style=\"max-width:100%;height:auto;display:block\">");
-        sb.AppendLine("<title id=\"" + id + "-title\">" + Escape(grid.Title.Length == 0 ? "ChartForgeX chart grid" : grid.Title) + "</title>");
-        sb.AppendLine("<desc id=\"" + id + "-desc\">" + Escape("Static chart grid containing " + grid.Charts.Count.ToString(CultureInfo.InvariantCulture) + " charts.") + "</desc>");
-        sb.AppendLine("<rect width=\"100%\" height=\"100%\" fill=\"" + background + "\"/>");
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("svg")
+            .Attribute("xmlns", "http://www.w3.org/2000/svg")
+            .Attribute("width", layout.Width)
+            .Attribute("height", layout.Height)
+            .Attribute("viewBox", "0 0 " + layout.Width.ToString(CultureInfo.InvariantCulture) + " " + layout.Height.ToString(CultureInfo.InvariantCulture))
+            .Attribute("role", "img")
+            .Attribute("aria-labelledby", id + "-title " + id + "-desc")
+            .Attribute("preserveAspectRatio", "xMidYMid meet")
+            .Attribute("shape-rendering", "geometricPrecision")
+            .Attribute("text-rendering", "geometricPrecision")
+            .Attribute("style", "max-width:100%;height:auto;display:block")
+            .EndStartElement()
+            .Line()
+            .StartElement("title")
+            .Attribute("id", id + "-title")
+            .Text(grid.Title.Length == 0 ? "ChartForgeX chart grid" : grid.Title)
+            .EndElement()
+            .Line()
+            .StartElement("desc")
+            .Attribute("id", id + "-desc")
+            .Text("Static chart grid containing " + grid.Charts.Count.ToString(CultureInfo.InvariantCulture) + " charts.")
+            .EndElement()
+            .Line()
+            .StartElement("rect")
+            .Attribute("width", "100%")
+            .Attribute("height", "100%")
+            .Attribute("fill", background)
+            .EndEmptyElement()
+            .Line();
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
             var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) sb.AppendLine("<text data-cfx-role=\"grid-title\" x=\"" + grid.Padding.ToString(CultureInfo.InvariantCulture) + "\" y=\"" + (grid.Padding + titleFontSize * 0.62).ToString(CultureInfo.InvariantCulture) + "\" fill=\"" + StyleColor(grid.TitleStyle, theme.Text).ToCss() + "\" font-family=\"" + Escape(StyleFontFamily(grid.TitleStyle, theme.FontFamily)) + "\" font-size=\"" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "\" font-weight=\"" + Escape(StyleWeight(grid.TitleStyle, "800")) + "\"" + SvgTextStyleAttributes(grid.TitleStyle) + ">" + Escape(FitText(grid.Title, titleFontSize, headerWidth)) + "</text>");
-            if (grid.Subtitle.Length > 0) sb.AppendLine("<text data-cfx-role=\"grid-subtitle\" x=\"" + (grid.Padding + 2).ToString(CultureInfo.InvariantCulture) + "\" y=\"" + (grid.Padding + titleFontSize + subtitleFontSize).ToString(CultureInfo.InvariantCulture) + "\" fill=\"" + StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss() + "\" font-family=\"" + Escape(StyleFontFamily(grid.SubtitleStyle, theme.FontFamily)) + "\" font-size=\"" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "\" font-weight=\"" + Escape(StyleWeight(grid.SubtitleStyle, "400")) + "\"" + SvgTextStyleAttributes(grid.SubtitleStyle) + ">" + Escape(FitText(grid.Subtitle, subtitleFontSize, headerWidth)) + "</text>");
+            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, FitText(grid.Title, titleFontSize, headerWidth));
+            if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, FitText(grid.Subtitle, subtitleFontSize, headerWidth));
         }
 
         for (var i = 0; i < layout.Cells.Count; i++) {
             var cell = layout.Cells[i];
             var childSvg = _chartRenderer.Render(cell.Chart, id + "-cell-" + i.ToString(CultureInfo.InvariantCulture));
-            sb.AppendLine(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height));
+            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height)).Line();
         }
 
-        sb.AppendLine("</svg>");
-        return sb.ToString();
+        writer.EndElement().Line();
+        return writer.Build();
+    }
+
+    private static void WriteGridText(SvgMarkupWriter writer, string role, double x, double y, string fill, string fontFamily, double fontSize, string fontWeight, ChartTextStyle style, string text) {
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", role)
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("fill", fill)
+            .Attribute("font-family", fontFamily)
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", fontWeight)
+            .Raw(SvgTextStyleAttributes(style))
+            .Text(text)
+            .EndElement()
+            .Line();
     }
 
     private static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");

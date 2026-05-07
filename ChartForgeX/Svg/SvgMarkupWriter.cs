@@ -180,9 +180,6 @@ internal sealed class SvgMarkupWriter {
                 case '"' when escapeQuotes:
                     builder.Append("&quot;");
                     break;
-                case '\'' when escapeQuotes:
-                    builder.Append("&#39;");
-                    break;
                 default:
                     builder.Append(ch);
                     break;

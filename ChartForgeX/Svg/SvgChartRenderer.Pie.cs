@@ -31,6 +31,7 @@ public sealed partial class SvgChartRenderer {
         var start = -Math.PI / 2;
         var sliceRole = series.Kind == ChartSeriesKind.Donut ? "donut-slice" : "pie-slice";
         var outsideLabels = new List<PieLabelCandidate>();
+        var writer = new SvgMarkupWriter(4096);
 
         for (var i = 0; i < values.Length; i++) {
             var point = values[i].Point;
@@ -43,9 +44,23 @@ public sealed partial class SvgChartRenderer {
             var offset = PieSliceOffset(series, pointIndex) * radius;
             var sliceCx = cx + Math.Cos(mid) * offset;
             var sliceCy = cy + Math.Sin(mid) * offset;
-            var donutMetadata = series.Kind == ChartSeriesKind.Donut ? $" data-cfx-inner-radius-ratio=\"{F(chart.Options.DonutInnerRadiusRatio)}\"" : string.Empty;
-            var offsetMetadata = offset > 0 ? $" data-cfx-slice-offset=\"{F(PieSliceOffset(series, pointIndex))}\"" : string.Empty;
-            sb.AppendLine($"<path data-cfx-role=\"{sliceRole}\" data-cfx-point=\"{pointIndex}\" data-cfx-label=\"{Escape(label)}\" data-cfx-value=\"{F(point.Y)}\" data-cfx-percent=\"{F(percent)}\"{donutMetadata}{offsetMetadata} d=\"{BuildSlicePath(sliceCx, sliceCy, radius, inner, start, end)}\" fill=\"{PieSliceFill(chart, series, pointIndex, id)}\" fill-rule=\"evenodd\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.SliceSeparatorStrokeWidth)}\"/>");
+            writer
+                .StartElement("path")
+                .Attribute("data-cfx-role", sliceRole)
+                .Attribute("data-cfx-point", pointIndex)
+                .Attribute("data-cfx-label", label)
+                .Attribute("data-cfx-value", point.Y)
+                .Attribute("data-cfx-percent", percent);
+            if (series.Kind == ChartSeriesKind.Donut) writer.Attribute("data-cfx-inner-radius-ratio", chart.Options.DonutInnerRadiusRatio);
+            if (offset > 0) writer.Attribute("data-cfx-slice-offset", PieSliceOffset(series, pointIndex));
+            writer
+                .Attribute("d", BuildSlicePath(sliceCx, sliceCy, radius, inner, start, end))
+                .Attribute("fill", PieSliceFill(chart, series, pointIndex, id))
+                .Attribute("fill-rule", "evenodd")
+                .Attribute("stroke", t.CardBackground.ToCss())
+                .Attribute("stroke-width", ChartVisualPrimitives.SliceSeparatorStrokeWidth)
+                .EndEmptyElement()
+                .Line();
 
             if (ShouldDrawDataLabels(chart, series) && sweep > 0.22) {
                 var placement = DataLabelPlacement(chart, series);
@@ -63,11 +78,29 @@ public sealed partial class SvgChartRenderer {
                     var maxLabelWidth = Math.Max(24, radius * 1.08);
                     var fontSize = TextFontSizeForSvgWidth(sliceText, maxLabelWidth, StyleFontSize(style, t.DataLabelFontSize));
                     sliceText = TrimSvgLabelToWidth(sliceText, fontSize, maxLabelWidth);
-                    if (sliceText.Length > 0) sb.AppendLine($"<text data-cfx-role=\"data-label\" x=\"{F(x)}\" y=\"{F(y)}\" text-anchor=\"middle\" fill=\"{StyleColor(style, t.CardBackground).ToCss()}\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(fontSize)}\" font-weight=\"{StyleWeight(style, "750")}\"{SvgTextStyleAttributes(style)}>{Escape(sliceText)}</text>");
+                    if (sliceText.Length > 0) {
+                        writer
+                            .StartElement("text")
+                            .Attribute("data-cfx-role", "data-label")
+                            .Attribute("x", x)
+                            .Attribute("y", y)
+                            .Attribute("text-anchor", "middle")
+                            .Attribute("fill", StyleColor(style, t.CardBackground).ToCss())
+                            .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style)))
+                            .Attribute("font-size", fontSize)
+                            .Attribute("font-weight", StyleWeight(style, "750"));
+                        WritePieTextStyleAttributes(writer, style);
+                        writer
+                            .Text(sliceText)
+                            .EndElement()
+                            .Line();
+                    }
                 } else if (isSideLabel) {
                     outsideLabels.Add(new PieLabelCandidate(pointIndex, sliceText, mid, x, y - 4, sliceCx, sliceCy, isLeftSide));
                 } else {
-                    DrawPieLabelConnector(sb, chart, series, pointIndex, sliceCx, sliceCy, radius, mid, x, y - 4);
+                    DrawPieLabelConnector(writer, chart, series, pointIndex, sliceCx, sliceCy, radius, mid, x, y - 4);
+                    sb.Append(writer.Build());
+                    writer = new SvgMarkupWriter(1024);
                     DrawDataLabel(sb, chart, sliceText, x, y, plot, series: series, pointIndex: pointIndex);
                 }
             }
@@ -75,6 +108,7 @@ public sealed partial class SvgChartRenderer {
             start = end;
         }
 
+        sb.Append(writer.Build());
         DrawPieOutsideLabels(sb, chart, outsideLabels, radius, plot, series);
 
         if (series.Kind == ChartSeriesKind.Donut && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false) {
@@ -87,8 +121,10 @@ public sealed partial class SvgChartRenderer {
             var centerGroupHeight = valueFontSize + centerLineGap + labelFontSize;
             var valueY = cy - centerGroupHeight / 2.0 + valueFontSize / 2.0;
             var labelY = valueY + valueFontSize / 2.0 + centerLineGap + labelFontSize / 2.0;
-            DrawSvgTextCenteredX(sb, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850");
-            DrawSvgTextCenteredX(sb, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650");
+            var centerWriter = new SvgMarkupWriter(512);
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850");
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650");
+            sb.Append(centerWriter.Build());
         }
 
         if (chart.Options.ShowLegend) DrawSliceLegend(sb, chart, series, legendValues, plot, total);
@@ -99,7 +135,13 @@ public sealed partial class SvgChartRenderer {
         var area = SliceLegendArea(chart, plot, values);
         var rows = BuildSliceLegendRows(chart, series, values, total, area.Width);
         var y = SliceLegendStartY(chart, area, rows.Count);
-        sb.AppendLine($"<g data-cfx-role=\"slice-legend\" data-cfx-position=\"{chart.Options.LegendPosition}\">");
+        var writer = new SvgMarkupWriter(2048);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "slice-legend")
+            .Attribute("data-cfx-position", chart.Options.LegendPosition.ToString())
+            .EndStartElement()
+            .Line();
         foreach (var row in rows) {
             if (y > area.Bottom - 4) break;
             var x = SliceLegendRowX(chart, area, row.Width);
@@ -110,19 +152,73 @@ public sealed partial class SvgChartRenderer {
                 var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, t.LegendFontSize);
                 var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
                 if (item.IsZero) {
-                    sb.AppendLine($"<rect data-cfx-role=\"slice-legend-swatch\" data-cfx-point=\"{item.PointIndex}\" data-cfx-zero=\"true\" x=\"{F(itemX)}\" y=\"{F(y - ChartVisualPrimitives.SliceLegendSwatchSize + 1)}\" width=\"{F(ChartVisualPrimitives.SliceLegendSwatchSize)}\" height=\"{F(ChartVisualPrimitives.SliceLegendSwatchSize)}\" rx=\"{F(ChartVisualPrimitives.SliceLegendSwatchRadius)}\" fill=\"{item.Color.ToCss()}\" fill-opacity=\"{F(ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity)}\" stroke=\"{item.Color.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.PolarAreaZeroSlotStrokeOpacity)}\"/>");
+                    writer
+                        .StartElement("rect")
+                        .Attribute("data-cfx-role", "slice-legend-swatch")
+                        .Attribute("data-cfx-point", item.PointIndex)
+                        .Attribute("data-cfx-zero", true)
+                        .Attribute("x", itemX)
+                        .Attribute("y", y - ChartVisualPrimitives.SliceLegendSwatchSize + 1)
+                        .Attribute("width", ChartVisualPrimitives.SliceLegendSwatchSize)
+                        .Attribute("height", ChartVisualPrimitives.SliceLegendSwatchSize)
+                        .Attribute("rx", ChartVisualPrimitives.SliceLegendSwatchRadius)
+                        .Attribute("fill", item.Color.ToCss())
+                        .Attribute("fill-opacity", ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity)
+                        .Attribute("stroke", item.Color.ToCss())
+                        .Attribute("stroke-opacity", ChartVisualPrimitives.PolarAreaZeroSlotStrokeOpacity)
+                        .EndEmptyElement()
+                        .Line();
                 } else {
-                    sb.AppendLine($"<rect data-cfx-role=\"slice-legend-swatch\" data-cfx-point=\"{item.PointIndex}\" x=\"{F(itemX)}\" y=\"{F(y - ChartVisualPrimitives.SliceLegendSwatchSize + 1)}\" width=\"{F(ChartVisualPrimitives.SliceLegendSwatchSize)}\" height=\"{F(ChartVisualPrimitives.SliceLegendSwatchSize)}\" rx=\"{F(ChartVisualPrimitives.SliceLegendSwatchRadius)}\" fill=\"{item.Color.ToCss()}\"/>");
+                    writer
+                        .StartElement("rect")
+                        .Attribute("data-cfx-role", "slice-legend-swatch")
+                        .Attribute("data-cfx-point", item.PointIndex)
+                        .Attribute("x", itemX)
+                        .Attribute("y", y - ChartVisualPrimitives.SliceLegendSwatchSize + 1)
+                        .Attribute("width", ChartVisualPrimitives.SliceLegendSwatchSize)
+                        .Attribute("height", ChartVisualPrimitives.SliceLegendSwatchSize)
+                        .Attribute("rx", ChartVisualPrimitives.SliceLegendSwatchRadius)
+                        .Attribute("fill", item.Color.ToCss())
+                        .EndEmptyElement()
+                        .Line();
                 }
                 var labelColor = item.IsZero ? t.MutedText : t.Text;
-                if (label.Length > 0) sb.AppendLine($"<text data-cfx-role=\"slice-legend-label\" data-cfx-point=\"{item.PointIndex}\" x=\"{F(itemX + ChartVisualPrimitives.SliceLegendSwatchSize + 6)}\" y=\"{F(y)}\" fill=\"{labelColor.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(labelFontSize)}\" font-weight=\"650\">{Escape(label)}</text>");
-                sb.AppendLine($"<text data-cfx-role=\"slice-legend-percent\" data-cfx-point=\"{item.PointIndex}\" x=\"{F(itemX + item.Width - 10)}\" y=\"{F(y)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.LegendFontSize)}\">{item.Percent}</text>");
+                if (label.Length > 0) {
+                    writer
+                        .StartElement("text")
+                        .Attribute("data-cfx-role", "slice-legend-label")
+                        .Attribute("data-cfx-point", item.PointIndex)
+                        .Attribute("x", itemX + ChartVisualPrimitives.SliceLegendSwatchSize + 6)
+                        .Attribute("y", y)
+                        .Attribute("fill", labelColor.ToCss())
+                        .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                        .Attribute("font-size", labelFontSize)
+                        .Attribute("font-weight", "650")
+                        .Text(label)
+                        .EndElement()
+                        .Line();
+                }
+
+                writer
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "slice-legend-percent")
+                    .Attribute("data-cfx-point", item.PointIndex)
+                    .Attribute("x", itemX + item.Width - 10)
+                    .Attribute("y", y)
+                    .Attribute("text-anchor", "end")
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                    .Attribute("font-size", t.LegendFontSize)
+                    .Text(item.Percent)
+                    .EndElement()
+                    .Line();
             }
 
             y += SliceLegendRowHeight(chart);
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static ChartRect PieChartPlot(Chart chart, ChartRect plot, IReadOnlyList<IndexedPieValue> values) {
@@ -246,7 +342,9 @@ public sealed partial class SvgChartRenderer {
             var maxLabelWidth = label.IsLeftSide ? label.X - plot.Left - 6 : plot.Right - label.X - 6;
             var text = TrimSvgLabelToWidth(label.Text, fontSize, Math.Max(8, maxLabelWidth));
             if (text.Length == 0) continue;
-            DrawPieLabelConnector(sb, chart, series, label.PointIndex, label.SliceCx, label.SliceCy, radius, label.Angle, label.X, label.Y);
+            var writer = new SvgMarkupWriter(256);
+            DrawPieLabelConnector(writer, chart, series, label.PointIndex, label.SliceCx, label.SliceCy, radius, label.Angle, label.X, label.Y);
+            sb.Append(writer.Build());
             DrawHorizontalValueLabel(sb, chart, text, label.X, label.Y, anchor, plot, series, label.PointIndex);
         }
     }
@@ -286,7 +384,13 @@ public sealed partial class SvgChartRenderer {
     private static ChartColor PieConnectorColor(Chart chart, ChartSeries series, int pointIndex) =>
         chart.Options.DataLabelConnectorColor ?? PieSliceColor(chart, series, pointIndex);
 
-    private static void DrawPieLabelConnector(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, double cx, double cy, double radius, double angle, double labelX, double labelY) {
+    private static void WritePieTextStyleAttributes(SvgMarkupWriter writer, ChartTextStyle? style) {
+        if (style == null) return;
+        if (style.Italic) writer.Attribute("font-style", "italic");
+        if (style.Underline) writer.Attribute("text-decoration", "underline");
+    }
+
+    private static void DrawPieLabelConnector(SvgMarkupWriter writer, Chart chart, ChartSeries series, int pointIndex, double cx, double cy, double radius, double angle, double labelX, double labelY) {
         var cos = Math.Cos(angle);
         var sin = Math.Sin(angle);
         var startX = cx + cos * radius * 1.01;
@@ -309,7 +413,20 @@ public sealed partial class SvgChartRenderer {
             d = $"M {F(startX)} {F(startY)} L {F(elbowX)} {F(elbowY)} L {F(tickStartX)} {F(labelY)} L {F(targetX)} {F(labelY)}";
         }
 
-        sb.AppendLine($"<path data-cfx-role=\"data-label-connector\" data-cfx-point=\"{pointIndex}\" data-cfx-connector-style=\"{chart.Options.DataLabelConnectorStyle}\" d=\"{d}\" fill=\"none\" stroke=\"{PieConnectorColor(chart, series, pointIndex).ToCss()}\" stroke-width=\"{F(chart.Options.DataLabelConnectorStrokeWidth)}\" stroke-opacity=\"{F(chart.Options.DataLabelConnectorOpacity)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>");
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "data-label-connector")
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-connector-style", chart.Options.DataLabelConnectorStyle.ToString())
+            .Attribute("d", d)
+            .Attribute("fill", "none")
+            .Attribute("stroke", PieConnectorColor(chart, series, pointIndex).ToCss())
+            .Attribute("stroke-width", chart.Options.DataLabelConnectorStrokeWidth)
+            .Attribute("stroke-opacity", chart.Options.DataLabelConnectorOpacity)
+            .Attribute("stroke-linecap", "round")
+            .Attribute("stroke-linejoin", "round")
+            .EndEmptyElement()
+            .Line();
     }
 
     private sealed class PieLabelCandidate {
