@@ -30,12 +30,7 @@ public sealed partial class SvgChartRenderer {
             var summary = "open " + FormatValue(chart, open.Y) + ", high " + FormatValue(chart, high.Y) + ", low " + FormatValue(chart, low.Y) + ", close " + FormatValue(chart, close.Y);
             var status = rising ? "rising" : "falling";
 
-            sb.AppendLine($"<g data-cfx-role=\"ohlc\" data-cfx-series=\"{index}\" data-cfx-point=\"{item}\" data-cfx-x=\"{F(open.X)}\" data-cfx-open=\"{F(open.Y)}\" data-cfx-high=\"{F(high.Y)}\" data-cfx-low=\"{F(low.Y)}\" data-cfx-close=\"{F(close.Y)}\" data-cfx-status=\"{status}\" role=\"img\" aria-label=\"{Escape(summary)}\">");
-            sb.AppendLine($"<title>{Escape(summary)}</title>");
-            sb.AppendLine($"<line data-cfx-role=\"ohlc-stem\" x1=\"{F(x)}\" y1=\"{F(yHigh)}\" x2=\"{F(x)}\" y2=\"{F(yLow)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.OhlcStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<line data-cfx-role=\"ohlc-open\" x1=\"{F(x - tickWidth)}\" y1=\"{F(yOpen)}\" x2=\"{F(x)}\" y2=\"{F(yOpen)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.OhlcStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine($"<line data-cfx-role=\"ohlc-close\" x1=\"{F(x)}\" y1=\"{F(yClose)}\" x2=\"{F(x + tickWidth)}\" y2=\"{F(yClose)}\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.OhlcStrokeWidth)}\" stroke-linecap=\"round\"/>");
-            sb.AppendLine("</g>");
+            WriteOhlcSummary(sb, index, item, open.X, open.Y, high.Y, low.Y, close.Y, status, summary, color, x, yOpen, yHigh, yLow, yClose, tickWidth);
             var label = FormatValue(chart, close.Y);
             if (ShouldDrawDataLabels(chart, series)) {
                 var placement = DataLabelPlacement(chart, series);
@@ -54,5 +49,66 @@ public sealed partial class SvgChartRenderer {
                 }
             }
         }
+    }
+
+    private static void WriteOhlcSummary(
+        StringBuilder sb,
+        int seriesIndex,
+        int pointIndex,
+        double valueX,
+        double open,
+        double high,
+        double low,
+        double close,
+        string status,
+        string summary,
+        ChartColor color,
+        double x,
+        double yOpen,
+        double yHigh,
+        double yLow,
+        double yClose,
+        double tickWidth) {
+        var colorCss = color.ToCss();
+        var writer = new SvgMarkupWriter(1024);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "ohlc")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-x", valueX)
+            .Attribute("data-cfx-open", open)
+            .Attribute("data-cfx-high", high)
+            .Attribute("data-cfx-low", low)
+            .Attribute("data-cfx-close", close)
+            .Attribute("data-cfx-status", status)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .EndStartElement()
+            .Line()
+            .StartElement("title")
+            .Text(summary)
+            .EndElement()
+            .Line();
+        WriteOhlcLine(writer, "ohlc-stem", x, yHigh, x, yLow, colorCss);
+        WriteOhlcLine(writer, "ohlc-open", x - tickWidth, yOpen, x, yOpen, colorCss);
+        WriteOhlcLine(writer, "ohlc-close", x, yClose, x + tickWidth, yClose, colorCss);
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteOhlcLine(SvgMarkupWriter writer, string role, double x1, double y1, double x2, double y2, string color) {
+        writer
+            .StartElement("line")
+            .Attribute("data-cfx-role", role)
+            .Attribute("x1", x1)
+            .Attribute("y1", y1)
+            .Attribute("x2", x2)
+            .Attribute("y2", y2)
+            .Attribute("stroke", color)
+            .Attribute("stroke-width", ChartVisualPrimitives.OhlcStrokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .EndEmptyElement()
+            .Line();
     }
 }
