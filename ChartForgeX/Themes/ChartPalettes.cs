@@ -15,7 +15,7 @@ public static class ChartPalettes {
         if (colors == null) throw new System.ArgumentNullException(nameof(colors));
         if (colors.Length == 0) throw new System.ArgumentException("Palette must contain at least one color.", nameof(colors));
         var palette = new ChartColor[colors.Length];
-        for (var i = 0; i < colors.Length; i++) palette[i] = ChartColor.FromHex(colors[i]);
+        for (var i = 0; i < colors.Length; i++) palette[i] = ChartColor.Parse(colors[i]);
         return palette;
     }
 
@@ -89,5 +89,13 @@ public static class ChartPalettes {
         ChartColor.FromRgb(34,197,94), ChartColor.FromRgb(56,189,248), ChartColor.FromRgb(250,204,21),
         ChartColor.FromRgb(192,132,252), ChartColor.FromRgb(248,113,113), ChartColor.FromRgb(45,212,191),
         ChartColor.FromRgb(251,146,60), ChartColor.FromRgb(163,230,53)
+    };
+
+    /// <summary>
+    /// Gets a bright overlay palette for transparent operational dashboards and wallpapers.
+    /// </summary>
+    public static ChartColor[] CommandCenter => new[] {
+        ChartColors.Blue400, ChartColors.Cyan400, ChartColors.Emerald400, ChartColors.Orange400,
+        ChartColors.Red400, ChartColors.Violet400, ChartColors.Pink400, ChartColors.Teal400
     };
 }

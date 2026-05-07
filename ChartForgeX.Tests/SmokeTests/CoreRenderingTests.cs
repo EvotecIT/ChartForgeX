@@ -364,15 +364,25 @@ internal static partial class SmokeTests {
         theme.Palette = palette;
         palette[0] = ChartColor.White;
         Assert(theme.Palette[0].R == ChartColor.Black.R && theme.Palette[0].G == ChartColor.Black.G && theme.Palette[0].B == ChartColor.Black.B, "Themes should snapshot assigned palettes instead of retaining caller-owned arrays.");
+        Assert(ChartColors.Emerald400.WithAlpha(172).A == 172, "Named chart colors should support explicit alpha values.");
+        Assert(ChartColors.Emerald400.WithOpacity(0.5).A == 128, "Named chart colors should support opacity helpers.");
+        Assert(ChartColors.Emerald400.WithAlpha(172).ToHexRgba() == "#34D399AC", "Named chart colors should round-trip to RGBA hex.");
+        Assert(ChartColors.GetNamedColors().Count >= 142, "ChartForgeX should expose the stable System.Drawing/CSS named color set.");
+        Assert(ChartColors.TryGet("RebeccaPurple", out var rebecca) && rebecca.ToHex() == "#663399", "Named color lookup should include modern CSS colors.");
+        Assert(ChartColor.Parse("DarkSlateGrey").ToHex() == ChartColors.DarkSlateGray.ToHex(), "Named color parsing should support grey aliases.");
+        Assert(ChartColor.Parse("#34D399").ToHex() == ChartColors.Emerald400.ToHex(), "Color parsing should keep hex support.");
         var pastel = ChartPalettes.Pastel;
         pastel[0] = ChartColor.Black;
         Assert(ChartPalettes.Pastel[0].R != ChartColor.Black.R || ChartPalettes.Pastel[0].G != ChartColor.Black.G || ChartPalettes.Pastel[0].B != ChartColor.Black.B, "Palette presets should return fresh arrays so callers can mutate local copies safely.");
-        foreach (var namedTheme in new[] { ChartTheme.Colorblind(), ChartTheme.Aurora(), ChartTheme.Editorial(), ChartTheme.Candy(), ChartTheme.Terminal(), ChartTheme.Minimal() }) {
+        var overlayTheme = ChartTheme.TransparentOverlayDark();
+        Assert(overlayTheme.Background.A == 0 && overlayTheme.CardBackground.A > 0 && overlayTheme.CardBackground.A < 255, "Transparent overlay themes should keep the chart background clear and use a translucent card.");
+        Assert(overlayTheme.Palette.Length >= 8, "Transparent overlay themes should expose a broad operational palette.");
+        foreach (var namedTheme in new[] { ChartTheme.Colorblind(), ChartTheme.Aurora(), ChartTheme.Editorial(), ChartTheme.Candy(), ChartTheme.Terminal(), ChartTheme.TransparentOverlayDark(), ChartTheme.Minimal() }) {
             Assert(namedTheme.Palette.Length >= 8, "Built-in style themes should provide broad qualitative palettes.");
             Assert(namedTheme.FontFamily.Length > 0, "Built-in style themes should define a font stack.");
             Assert(namedTheme.Text.A > 0 && namedTheme.MutedText.A > 0 && namedTheme.Grid.A > 0, "Built-in style themes should define core visual tokens.");
         }
-        foreach (var preset in new[] { ChartPalettes.Report, ChartPalettes.Colorblind, ChartPalettes.Vivid, ChartPalettes.Pastel, ChartPalettes.Editorial, ChartPalettes.Jewel, ChartPalettes.Terminal }) {
+        foreach (var preset in new[] { ChartPalettes.Report, ChartPalettes.Colorblind, ChartPalettes.Vivid, ChartPalettes.Pastel, ChartPalettes.Editorial, ChartPalettes.Jewel, ChartPalettes.Terminal, ChartPalettes.CommandCenter }) {
             Assert(preset.Length >= 8, "Reusable palette presets should provide enough colors for multi-series charts.");
         }
     }

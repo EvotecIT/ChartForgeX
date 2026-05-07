@@ -582,6 +582,32 @@ public sealed class ChartTheme {
     };
 
     /// <summary>
+    /// Creates a transparent dark overlay theme for charts rendered on existing imagery or wallpapers.
+    /// </summary>
+    /// <returns>A transparent overlay chart theme.</returns>
+    public static ChartTheme TransparentOverlayDark() => new() {
+        Background = ChartColors.Transparent,
+        CardBackground = ChartColors.Slate950.WithAlpha(172),
+        PlotBackground = ChartColors.Transparent,
+        CardBorder = ChartColors.Slate400.WithAlpha(64),
+        PlotBorder = ChartColors.Slate400.WithAlpha(34),
+        Text = ChartColors.White,
+        MutedText = ChartColors.Slate200.WithAlpha(230),
+        Grid = ChartColors.Slate400.WithAlpha(42),
+        Axis = ChartColors.Slate200.WithAlpha(110),
+        Positive = ChartColors.Emerald400,
+        Warning = ChartColors.Orange400,
+        Negative = ChartColors.Red400,
+        CornerRadius = 8,
+        PlotCornerRadius = 4,
+        ShadowOpacity = 0,
+        StrokeWidth = 2.7,
+        MarkerRadius = 3,
+        FontFamily = ChartFontStacks.SystemSans,
+        Palette = ChartPalettes.CommandCenter
+    };
+
+    /// <summary>
     /// Creates a crisp minimal theme for dense business dashboards.
     /// </summary>
     /// <returns>A minimal chart theme.</returns>
@@ -616,9 +642,7 @@ public sealed class ChartTheme {
         return value;
     }
 
-    private static ChartColor WithAlpha(ChartColor color, byte alpha) =>
-        ChartColor.FromRgba(color.R, color.G, color.B, alpha);
+    private static ChartColor WithAlpha(ChartColor color, byte alpha) => color.WithAlpha(alpha);
 
-    private static ChartColor WithMinimumAlpha(ChartColor color, byte alpha) =>
-        ChartColor.FromRgba(color.R, color.G, color.B, color.A < alpha ? alpha : color.A);
+    private static ChartColor WithMinimumAlpha(ChartColor color, byte alpha) => color.WithAlpha(color.A < alpha ? alpha : color.A);
 }

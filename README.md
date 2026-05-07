@@ -380,10 +380,23 @@ Choose a visual system by audience first, then adjust palette or surface details
 | Accessibility-first categorical comparison | `ChartTheme.Colorblind()` | `ChartBrandKit.Accessible()` |
 | Playful scorecard, education, pictorial view | `ChartTheme.Candy()` | `ChartBrandKit.Product()` with pictorial shapes |
 | Dense operations or command-center view | `ChartTheme.Terminal()` | `ChartBrandKit.Accessible()` with `ChartSurfaceStyle.Compact` |
+| Transparent charts over imagery or wallpapers | `ChartTheme.TransparentOverlayDark()` | `ChartBrandKit.Accessible()` with `ChartSurfaceStyle.Glass` |
 
 Themes are complete visual presets for one chart. Brand kits are reusable brand tokens that can be layered onto charts, grids, or themes.
 
-Reusable palette presets are available through `ChartPalettes.Report`, `Colorblind`, `Vivid`, `Pastel`, `PeopleInfographic`, `Editorial`, `Jewel`, and `Terminal`. Each property returns a fresh array, so callers can safely modify a local copy before passing it to `WithPalette(...)`.
+Reusable palette presets are available through `ChartPalettes.Report`, `Colorblind`, `Vivid`, `Pastel`, `PeopleInfographic`, `Editorial`, `Jewel`, `Terminal`, and `CommandCenter`. Each property returns a fresh array, so callers can safely modify a local copy before passing it to `WithPalette(...)`.
+
+Named dependency-free color tokens are available through `ChartColors`, including the stable CSS/System.Drawing web color names (`AliceBlue`, `CornflowerBlue`, `DarkSlateGray`, `RebeccaPurple`, `WhiteSmoke`, and the `Grey` aliases) plus common report and overlay tokens such as `Slate950`, `Slate200`, `Blue400`, `Cyan400`, `Teal400`, `Emerald400`, `Orange400`, `Red400`, and `Violet400`. `ChartColor.Parse(...)` accepts names or hex, and `ChartColor` also has `WithAlpha(...)`, `WithOpacity(...)`, and `ToHexRgba()` helpers for transparent chart surfaces:
+
+```csharp
+var overlay = Chart.Create()
+    .WithTheme(ChartTheme.TransparentOverlayDark())
+    .WithPalette(ChartPalettes.CommandCenter)
+    .AddDonut("Disk C", Points(72, 28), ChartColors.Red400);
+
+var panel = ChartColors.Slate950.WithAlpha(172);
+var named = ChartColor.Parse("RebeccaPurple");
+```
 
 You can also paste colors directly from a design tool:
 

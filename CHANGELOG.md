@@ -10,6 +10,7 @@
 - Added explicit SVG ID scope overloads for deterministic raw SVG embedding.
 - Added expressive built-in themes, CSS font stack presets, and fluent theme/palette customization helpers.
 - Added reusable brand kits and curated brand-kit presets for executive, product, people-infographic, editorial, and accessible report styles.
+- Added named `ChartColors`, stable CSS/System.Drawing web color lookup, alpha/opacity helpers, a command-center palette, and a transparent dark overlay theme for charts rendered over imagery or wallpapers.
 - Added sunburst partition charts for nested hierarchy composition.
 - Added pictorial charts with built-in repeated symbol rows, configurable columns/max scale, true partial symbol fills, value-per-symbol Isotype scaling with wrapped icon rows, optional value labels, symbol scale/empty-opacity controls, per-item colors, and custom SVG path symbols with PNG fallback shapes.
 - Added slider-style progress-bar charts for infographic controls and compact survey scorecards, with handle visibility, thickness, and track-opacity controls.

@@ -56,6 +56,23 @@ public readonly struct ChartColor {
     public static ChartColor FromRgba(byte r, byte g, byte b, byte a) => new(r, g, b, a);
 
     /// <summary>
+    /// Creates a copy of this color with a different alpha channel.
+    /// </summary>
+    /// <param name="alpha">The alpha channel.</param>
+    /// <returns>A chart color with the requested alpha channel.</returns>
+    public ChartColor WithAlpha(byte alpha) => new(R, G, B, alpha);
+
+    /// <summary>
+    /// Creates a copy of this color with opacity expressed as a unit interval.
+    /// </summary>
+    /// <param name="opacity">The opacity from zero to one.</param>
+    /// <returns>A chart color with the requested opacity.</returns>
+    public ChartColor WithOpacity(double opacity) {
+        if (double.IsNaN(opacity) || double.IsInfinity(opacity) || opacity < 0 || opacity > 1) throw new ArgumentOutOfRangeException(nameof(opacity), opacity, "Opacity must be between zero and one.");
+        return WithAlpha((byte)Math.Round(opacity * 255));
+    }
+
+    /// <summary>
     /// Creates a color from #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.
     /// </summary>
     /// <param name="hex">The hexadecimal color string.</param>
@@ -84,10 +101,45 @@ public readonly struct ChartColor {
     }
 
     /// <summary>
+    /// Parses a named color or a hexadecimal color string.
+    /// </summary>
+    /// <param name="value">The named color or hexadecimal color string.</param>
+    /// <returns>A chart color.</returns>
+    public static ChartColor Parse(string value) {
+        if (TryParse(value, out var color)) return color;
+        throw new ArgumentException("Color must be a known ChartForgeX color name or use #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.", nameof(value));
+    }
+
+    /// <summary>
+    /// Attempts to parse a named color or a hexadecimal color string.
+    /// </summary>
+    /// <param name="value">The named color or hexadecimal color string.</param>
+    /// <param name="color">The parsed chart color.</param>
+    /// <returns>True when parsing succeeds.</returns>
+    public static bool TryParse(string? value, out ChartColor color) {
+        color = default;
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var trimmed = value!.Trim();
+        if (ChartColors.TryGet(trimmed, out color)) return true;
+        try {
+            color = FromHex(trimmed);
+            return true;
+        } catch (ArgumentException) {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Converts the color to a hexadecimal RGB string.
     /// </summary>
     /// <returns>A CSS-compatible hexadecimal color string.</returns>
     public string ToHex() => $"#{R:X2}{G:X2}{B:X2}";
+
+    /// <summary>
+    /// Converts the color to a hexadecimal RGBA string.
+    /// </summary>
+    /// <returns>A CSS-compatible hexadecimal color string with alpha.</returns>
+    public string ToHexRgba() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";
 
     /// <summary>
     /// Converts the color to a CSS color string.
