@@ -19,10 +19,11 @@ public sealed class HtmlVisualGridRenderer {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
         var scope = NextScope();
+        var columns = Math.Min(grid.Columns, grid.Items.Count);
         var sb = new StringBuilder();
         sb.Append("<section class=\"chartforgex-visual-grid");
         if (grid.PanelFit == VisualGridPanelFit.Stretch) sb.Append(" fit-stretch");
-        sb.Append("\" style=\"--cfx-visual-grid-columns:").Append(grid.Columns.ToString(CultureInfo.InvariantCulture));
+        sb.Append("\" style=\"--cfx-visual-grid-columns:").Append(columns.ToString(CultureInfo.InvariantCulture));
         sb.Append(";--cfx-visual-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
         sb.Append(";--cfx-visual-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
         if (grid.PanelSize.HasValue) {
@@ -41,7 +42,7 @@ public sealed class HtmlVisualGridRenderer {
         sb.Append("<div class=\"chartforgex-visual-grid-body\">");
         for (var i = 0; i < grid.Items.Count; i++) {
             var item = grid.Items[i];
-            var columnSpan = Math.Min(item.ColumnSpan, grid.Columns);
+            var columnSpan = Math.Min(item.ColumnSpan, columns);
             sb.Append("<article class=\"chartforgex-visual-grid-panel\" aria-label=\"").Append(VisualBlockRendering.Escape(ItemTitle(item))).Append("\"");
             if (columnSpan > 1 || item.RowSpan > 1) sb.Append(" style=\"grid-column:span ").Append(columnSpan.ToString(CultureInfo.InvariantCulture)).Append(";grid-row:span ").Append(item.RowSpan.ToString(CultureInfo.InvariantCulture)).Append("\"");
             sb.Append(">");

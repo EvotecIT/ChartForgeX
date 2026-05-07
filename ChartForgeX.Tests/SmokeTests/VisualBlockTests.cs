@@ -91,6 +91,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("Trend", StringComparison.Ordinal), "VisualGrid should embed chart SVG.");
         Assert(grid.ToHtmlPage().Contains("chartforgex-visual-grid", StringComparison.Ordinal), "VisualGrid should render a static HTML page.");
         Assert(grid.ToPng().Length > 64, "VisualGrid should render PNG output.");
+
+        var sparseGrid = VisualGrid.Create()
+            .WithColumns(6)
+            .Add(MetricCard.Create().WithMetric("One", 1))
+            .Add(MetricCard.Create().WithMetric("Two", 2));
+        Assert(sparseGrid.ToHtmlFragment().Contains("--cfx-visual-grid-columns:2", StringComparison.Ordinal), "VisualGrid HTML should clamp columns to populated item count like SVG/PNG layout.");
     }
 
     private static void VisualBlocksRejectInvalidInputsCloseToCaller() {
