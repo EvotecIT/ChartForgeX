@@ -22,9 +22,11 @@ public sealed partial class SvgChartRenderer {
 
         if (lower.Count == 0) return;
         var path = BuildRangeBandPath(lower, upper);
-        sb.AppendLine($"<path data-cfx-role=\"range-band\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{lower.Count}\" d=\"{path}\" fill=\"{color.ToCss()}\" opacity=\"{F(ChartVisualPrimitives.RangeBandFillOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"range-band-upper\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{upper.Count}\" d=\"{BuildLinePath(upper, false)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.RangeBandBoundaryStrokeWidth)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" opacity=\"{F(ChartVisualPrimitives.RangeBandBoundaryOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"range-band-lower\" data-cfx-series=\"{index}\" data-cfx-interval-count=\"{lower.Count}\" d=\"{BuildLinePath(lower, false)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.RangeBandBoundaryStrokeWidth)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" opacity=\"{F(ChartVisualPrimitives.RangeBandBoundaryOpacity)}\"/>");
+        var writer = new SvgMarkupWriter(1024);
+        WriteRangeBandArea(writer, index, lower.Count, path, color.ToCss());
+        WriteRangeBandBoundary(writer, "range-band-upper", index, upper.Count, BuildLinePath(upper, false), color.ToCss());
+        WriteRangeBandBoundary(writer, "range-band-lower", index, lower.Count, BuildLinePath(lower, false), color.ToCss());
+        sb.Append(writer.Build());
         if (ShouldDrawDataLabels(chart, series)) {
             var reservedLabels = new List<ChartLabelBounds>();
             for (var pointIndex = 0; pointIndex + 1 < series.Points.Count; pointIndex += 2) {
@@ -38,6 +40,36 @@ public sealed partial class SvgChartRenderer {
                 DrawRangeIntervalLabel(sb, chart, series, item, plot, reservedLabels, label, x, yLow, yHigh);
             }
         }
+    }
+
+    private static void WriteRangeBandArea(SvgMarkupWriter writer, int seriesIndex, int intervalCount, string path, string color) {
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "range-band")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-interval-count", intervalCount)
+            .Attribute("d", path)
+            .Attribute("fill", color)
+            .Attribute("opacity", ChartVisualPrimitives.RangeBandFillOpacity)
+            .EndEmptyElement()
+            .Line();
+    }
+
+    private static void WriteRangeBandBoundary(SvgMarkupWriter writer, string role, int seriesIndex, int intervalCount, string path, string color) {
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", role)
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-interval-count", intervalCount)
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", color)
+            .Attribute("stroke-width", ChartVisualPrimitives.RangeBandBoundaryStrokeWidth)
+            .Attribute("stroke-linecap", "round")
+            .Attribute("stroke-linejoin", "round")
+            .Attribute("opacity", ChartVisualPrimitives.RangeBandBoundaryOpacity)
+            .EndEmptyElement()
+            .Line();
     }
 
     private static void DrawRangeIntervalLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double yLow, double yHigh) {

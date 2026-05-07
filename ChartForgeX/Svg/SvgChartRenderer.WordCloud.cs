@@ -15,16 +15,47 @@ public sealed partial class SvgChartRenderer {
         var series = chart.Series.First(item => item.Kind == ChartSeriesKind.WordCloud);
         var t = chart.Options.Theme;
         var maximumTerms = chart.Options.WordCloudMaximumTerms.HasValue ? chart.Options.WordCloudMaximumTerms.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "all";
-        sb.AppendLine($"<g data-cfx-role=\"word-cloud\" data-cfx-density=\"{F(chart.Options.WordCloudDensity)}\" data-cfx-maximum-terms=\"{maximumTerms}\" data-cfx-edge-padding=\"{F(ChartWordCloudLayout.EdgePadding(plot))}\">");
+        var fontFamily = string.IsNullOrWhiteSpace(t.FontFamily) ? "system-ui, sans-serif" : t.FontFamily;
+        var writer = new SvgMarkupWriter(2048);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "word-cloud")
+            .Attribute("data-cfx-density", chart.Options.WordCloudDensity)
+            .Attribute("data-cfx-maximum-terms", maximumTerms)
+            .Attribute("data-cfx-edge-padding", ChartWordCloudLayout.EdgePadding(plot))
+            .EndStartElement()
+            .Line();
         for (var i = 0; i < terms.Count; i++) {
             var term = terms[i];
             var color = WordCloudTermColor(series, t, term.PointIndex, i);
-            var transform = Math.Abs(term.Angle) < 0.001 ? string.Empty : $" transform=\"rotate({F(term.Angle)} {F(term.X)} {F(term.Y)})\"";
             var summary = term.Text + ": " + FormatValue(chart, term.Value);
-            sb.AppendLine($"<text data-cfx-role=\"word-cloud-term\" data-cfx-point=\"{term.PointIndex}\" data-cfx-text=\"{Escape(term.Text)}\" data-cfx-value=\"{F(term.Value)}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(term.X)}\" y=\"{F(term.Y)}\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"{color.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(term.FontSize)}\" font-weight=\"800\"{transform}>{Escape(term.Text)}</text>");
+            writer
+                .StartElement("text")
+                .Attribute("data-cfx-role", "word-cloud-term")
+                .Attribute("data-cfx-point", term.PointIndex)
+                .Attribute("data-cfx-text", term.Text)
+                .Attribute("data-cfx-value", term.Value)
+                .Attribute("role", "img")
+                .Attribute("aria-label", summary)
+                .Attribute("x", term.X)
+                .Attribute("y", term.Y)
+                .Attribute("text-anchor", "middle")
+                .Attribute("dominant-baseline", "middle")
+                .Attribute("fill", color.ToCss())
+                .Attribute("font-family", fontFamily)
+                .Attribute("font-size", term.FontSize)
+                .Attribute("font-weight", "800");
+            if (Math.Abs(term.Angle) >= 0.001) {
+                writer.Attribute("transform", $"rotate({F(term.Angle)} {F(term.X)} {F(term.Y)})");
+            }
+            writer
+                .Text(term.Text)
+                .EndElement()
+                .Line();
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static ChartColor WordCloudTermColor(ChartSeries series, ChartTheme theme, int pointIndex, int renderIndex) {
