@@ -33,18 +33,47 @@ public sealed partial class SvgChartRenderer {
         var startXs = new double[items.Count];
         var endXs = new double[items.Count];
 
-        sb.AppendLine("<g data-cfx-role=\"gantt-chart\">");
-        DrawGanttItemGradients(sb, id, items);
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "gantt-chart")
+            .EndStartElement()
+            .Line();
+        DrawGanttItemGradients(writer, id, items);
         foreach (var tick in ticks) {
             var x = ProjectTimelineX(tick, min, max, plot);
-            if (chart.Options.ShowGrid) sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(plot.Top)}\" x2=\"{F(x)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.TimelineGridOpacity)}\"/>");
+            if (chart.Options.ShowGrid) {
+                writer
+                    .StartElement("line")
+                    .Attribute("x1", F(x))
+                    .Attribute("y1", F(plot.Top))
+                    .Attribute("x2", F(x))
+                    .Attribute("y2", F(plot.Bottom))
+                    .Attribute("stroke", t.Grid.ToCss())
+                    .Attribute("stroke-width", F(ChartVisualPrimitives.GridStrokeWidth))
+                    .Attribute("opacity", F(ChartVisualPrimitives.TimelineGridOpacity))
+                    .EndEmptyElement()
+                    .Line();
+            }
+
             if (chart.Options.ShowAxes) {
                 var rawLabel = FormatTimelineTick(chart, tick);
                 var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelWidth, t.TickLabelFontSize);
                 var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, tickLabelWidth);
                 var anchor = EdgeAwareAnchor(label, x, plot, labelFontSize);
                 var labelX = EdgeAwareTextX(label, x, plot, labelFontSize);
-                sb.AppendLine($"<text data-cfx-role=\"gantt-tick-label\" x=\"{F(labelX)}\" y=\"{F(plot.Bottom + 22)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(labelFontSize)}\">{Escape(label)}</text>");
+                writer
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "gantt-tick-label")
+                    .Attribute("x", F(labelX))
+                    .Attribute("y", F(plot.Bottom + 22))
+                    .Attribute("text-anchor", anchor)
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", GanttFontFamily(t.FontFamily))
+                    .Attribute("font-size", F(labelFontSize))
+                    .Raw(Escape(label))
+                    .EndElement()
+                    .Line();
             }
         }
 
@@ -54,50 +83,103 @@ public sealed partial class SvgChartRenderer {
             rowCenters[i] = centerY;
             startXs[i] = ProjectTimelineX(item.Start, min, max, plot);
             endXs[i] = ProjectTimelineX(item.End, min, max, plot);
-            if (chart.Options.ShowGrid) sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(centerY)}\" x2=\"{F(plot.Right)}\" y2=\"{F(centerY)}\" stroke=\"{t.Grid.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" opacity=\"{F(ChartVisualPrimitives.TimelineRowGridOpacity)}\"/>");
+            if (chart.Options.ShowGrid) {
+                writer
+                    .StartElement("line")
+                    .Attribute("x1", F(plot.Left))
+                    .Attribute("y1", F(centerY))
+                    .Attribute("x2", F(plot.Right))
+                    .Attribute("y2", F(centerY))
+                    .Attribute("stroke", t.Grid.ToCss())
+                    .Attribute("stroke-width", F(ChartVisualPrimitives.GridStrokeWidth))
+                    .Attribute("opacity", F(ChartVisualPrimitives.TimelineRowGridOpacity))
+                    .EndEmptyElement()
+                    .Line();
+            }
+
             if (chart.Options.ShowAxes) {
                 var rowLabelFontSize = TextFontSizeForSvgWidth(item.Name, rowLabelWidth, t.TickLabelFontSize);
                 var rowLabel = TrimSvgLabelToWidth(item.Name, rowLabelFontSize, rowLabelWidth);
-                sb.AppendLine($"<text data-cfx-role=\"gantt-row-label\" x=\"{F(plot.Left - 14)}\" y=\"{F(centerY)}\" text-anchor=\"end\" dominant-baseline=\"middle\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(rowLabelFontSize)}\" font-weight=\"650\">{Escape(rowLabel)}</text>");
+                writer
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "gantt-row-label")
+                    .Attribute("x", F(plot.Left - 14))
+                    .Attribute("y", F(centerY))
+                    .Attribute("text-anchor", "end")
+                    .Attribute("dominant-baseline", "middle")
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", GanttFontFamily(t.FontFamily))
+                    .Attribute("font-size", F(rowLabelFontSize))
+                    .Attribute("font-weight", "650")
+                    .Raw(Escape(rowLabel))
+                    .EndElement()
+                    .Line();
             }
         }
 
         for (var i = 0; i < items.Count; i++) {
-            if (items[i].DependsOn >= 0 && items[i].DependsOn < i) DrawGanttDependency(sb, plot, endXs[items[i].DependsOn], rowCenters[items[i].DependsOn], startXs[i], rowCenters[i], t.Axis);
+            if (items[i].DependsOn >= 0 && items[i].DependsOn < i) DrawGanttDependency(writer, plot, endXs[items[i].DependsOn], rowCenters[items[i].DependsOn], startXs[i], rowCenters[i], t.Axis);
         }
 
-        if (chart.Options.GanttToday.HasValue) DrawGanttToday(sb, chart, plot, min, max);
+        if (chart.Options.GanttToday.HasValue) DrawGanttToday(writer, chart, plot, min, max);
 
         for (var i = 0; i < items.Count; i++) {
             var item = items[i];
             if (item.Milestone) {
-                DrawGanttMilestone(sb, chart, item, id, startXs[i], rowCenters[i], rowHeight);
+                DrawGanttMilestone(writer, chart, item, id, startXs[i], rowCenters[i], rowHeight);
                 continue;
             }
 
             var left = Math.Min(startXs[i], endXs[i]);
             var width = Math.Max(2, Math.Abs(endXs[i] - startXs[i]));
-            DrawGanttTask(sb, chart, item, id, i, left, rowCenters[i] - rowHeight / 2, width, rowHeight);
+            DrawGanttTask(writer, chart, item, id, i, left, rowCenters[i] - rowHeight / 2, width, rowHeight);
         }
 
         if (chart.Options.ShowAxes) {
-            sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(plot.Bottom)}\" x2=\"{F(plot.Right)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.AxisStrokeWidth)}\"/>");
-            DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + 49, "gantt-x-axis-title");
+            writer
+                .StartElement("line")
+                .Attribute("x1", F(plot.Left))
+                .Attribute("y1", F(plot.Bottom))
+                .Attribute("x2", F(plot.Right))
+                .Attribute("y2", F(plot.Bottom))
+                .Attribute("stroke", t.Axis.ToCss())
+                .Attribute("stroke-width", F(ChartVisualPrimitives.AxisStrokeWidth))
+                .EndEmptyElement()
+                .Line();
+            DrawGanttSvgXAxisTitle(writer, chart, plot, plot.Bottom + 49, "gantt-x-axis-title");
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
                 var widestLabel = items.Max(item => EstimateTextWidth(item.Name, t.TickLabelFontSize));
-                DrawSvgYAxisTitle(sb, chart, plot, Math.Max(24, plot.Left - widestLabel - 46), "gantt-y-axis-title");
+                DrawGanttSvgYAxisTitle(writer, chart, plot, Math.Max(24, plot.Left - widestLabel - 46), "gantt-y-axis-title");
             }
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
-    private static void DrawGanttItemGradients(StringBuilder sb, string id, IReadOnlyList<GanttItem> items) {
-        sb.AppendLine("<defs>");
+    private static void DrawGanttItemGradients(SvgMarkupWriter writer, string id, IReadOnlyList<GanttItem> items) {
+        writer.StartElement("defs").EndStartElement().Line();
         foreach (var item in items) {
-            sb.AppendLine($"<linearGradient id=\"{id}-ganttFill{item.SeriesIndex}\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"{GanttTaskGradientTop(item.Color).ToHex()}\"/><stop offset=\"100%\" stop-color=\"{GanttTaskGradientBottom(item.Color).ToHex()}\"/></linearGradient>");
+            writer
+                .StartElement("linearGradient")
+                .Attribute("id", id + "-ganttFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture))
+                .Attribute("x1", "0")
+                .Attribute("x2", "0")
+                .Attribute("y1", "0")
+                .Attribute("y2", "1")
+                .EndStartElement()
+                .StartElement("stop")
+                .Attribute("offset", "0%")
+                .Attribute("stop-color", GanttTaskGradientTop(item.Color).ToHex())
+                .EndEmptyElement()
+                .StartElement("stop")
+                .Attribute("offset", "100%")
+                .Attribute("stop-color", GanttTaskGradientBottom(item.Color).ToHex())
+                .EndEmptyElement()
+                .EndElement()
+                .Line();
         }
-        sb.AppendLine("</defs>");
+        writer.EndElement().Line();
     }
 
     private static List<GanttItem> BuildGanttItems(Chart chart) {
@@ -114,44 +196,220 @@ public sealed partial class SvgChartRenderer {
         return items;
     }
 
-    private static void DrawGanttTask(StringBuilder sb, Chart chart, GanttItem item, string id, int row, double left, double y, double width, double height) {
+    private static void DrawGanttTask(SvgMarkupWriter writer, Chart chart, GanttItem item, string id, int row, double left, double y, double width, double height) {
         var t = chart.Options.Theme;
         var radius = Math.Min(ChartVisualPrimitives.GanttTaskCornerRadiusMax, height / 2);
         var progressWidth = Math.Max(0, width * item.Progress);
         var summary = item.Name + ": " + FormatTimelineTick(chart, item.Start) + " to " + FormatTimelineTick(chart, item.End) + ", " + FormatPercent(item.Progress) + " complete";
         var borderStroke = ChartVisualPrimitives.GanttTaskBorderStrokeWidth;
         var borderInset = borderStroke / 2.0;
-        sb.AppendLine($"<rect data-cfx-role=\"gantt-task\" data-cfx-row=\"{row}\" data-cfx-start=\"{F(item.Start)}\" data-cfx-end=\"{F(item.End)}\" data-cfx-progress=\"{F(item.Progress)}\" role=\"img\" aria-label=\"{Escape(summary)}\" x=\"{F(left)}\" y=\"{F(y)}\" width=\"{F(width)}\" height=\"{F(height)}\" rx=\"{F(radius)}\" fill=\"{item.Color.ToCss()}\" opacity=\"{F(ChartVisualPrimitives.GanttTaskTrackOpacity)}\"/>");
-        if (progressWidth > 0.5) sb.AppendLine($"<rect data-cfx-role=\"gantt-progress\" x=\"{F(left)}\" y=\"{F(y)}\" width=\"{F(progressWidth)}\" height=\"{F(height)}\" rx=\"{F(radius)}\" fill=\"url(#{id}-ganttFill{item.SeriesIndex})\"/>");
-        sb.AppendLine($"<rect data-cfx-role=\"gantt-task-border\" x=\"{F(left + borderInset)}\" y=\"{F(y + borderInset)}\" width=\"{F(Math.Max(0, width - borderStroke))}\" height=\"{F(Math.Max(0, height - borderStroke))}\" rx=\"{F(Math.Max(0, radius - borderInset))}\" fill=\"none\" stroke=\"{t.CardBackground.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.GanttTaskBorderOpacity)}\" stroke-width=\"{F(borderStroke)}\"/>");
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "gantt-task")
+            .Attribute("data-cfx-row", row)
+            .Attribute("data-cfx-start", F(item.Start))
+            .Attribute("data-cfx-end", F(item.End))
+            .Attribute("data-cfx-progress", F(item.Progress))
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .Attribute("x", F(left))
+            .Attribute("y", F(y))
+            .Attribute("width", F(width))
+            .Attribute("height", F(height))
+            .Attribute("rx", F(radius))
+            .Attribute("fill", item.Color.ToCss())
+            .Attribute("opacity", F(ChartVisualPrimitives.GanttTaskTrackOpacity))
+            .EndEmptyElement()
+            .Line();
+        if (progressWidth > 0.5) {
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-role", "gantt-progress")
+                .Attribute("x", F(left))
+                .Attribute("y", F(y))
+                .Attribute("width", F(progressWidth))
+                .Attribute("height", F(height))
+                .Attribute("rx", F(radius))
+                .Attribute("fill", "url(#" + id + "-ganttFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
+                .EndEmptyElement()
+                .Line();
+        }
+
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "gantt-task-border")
+            .Attribute("x", F(left + borderInset))
+            .Attribute("y", F(y + borderInset))
+            .Attribute("width", F(Math.Max(0, width - borderStroke)))
+            .Attribute("height", F(Math.Max(0, height - borderStroke)))
+            .Attribute("rx", F(Math.Max(0, radius - borderInset)))
+            .Attribute("fill", "none")
+            .Attribute("stroke", t.CardBackground.ToCss())
+            .Attribute("stroke-opacity", F(ChartVisualPrimitives.GanttTaskBorderOpacity))
+            .Attribute("stroke-width", F(borderStroke))
+            .EndEmptyElement()
+            .Line();
         var inset = Math.Min(radius, width / 3);
-        if (width > inset * 2 + 3) sb.AppendLine($"<line data-cfx-role=\"gantt-task-highlight\" x1=\"{F(left + inset)}\" y1=\"{F(y + ChartVisualPrimitives.GanttTaskHighlightOffsetY)}\" x2=\"{F(left + width - inset)}\" y2=\"{F(y + ChartVisualPrimitives.GanttTaskHighlightOffsetY)}\" stroke=\"#fff\" stroke-opacity=\"{F(ChartVisualPrimitives.GanttTaskHighlightOpacity)}\" stroke-width=\"{F(ChartVisualPrimitives.GridStrokeWidth)}\" stroke-linecap=\"round\"/>");
-        if (item.ShowDataLabels && width >= 74) DrawSvgTextCenteredX(sb, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, HeatmapTextColor(item.Color), t.DataLabelFontSize, width - 8, "750", t.CardBackground, 2.2);
+        if (width > inset * 2 + 3) {
+            writer
+                .StartElement("line")
+                .Attribute("data-cfx-role", "gantt-task-highlight")
+                .Attribute("x1", F(left + inset))
+                .Attribute("y1", F(y + ChartVisualPrimitives.GanttTaskHighlightOffsetY))
+                .Attribute("x2", F(left + width - inset))
+                .Attribute("y2", F(y + ChartVisualPrimitives.GanttTaskHighlightOffsetY))
+                .Attribute("stroke", "#fff")
+                .Attribute("stroke-opacity", F(ChartVisualPrimitives.GanttTaskHighlightOpacity))
+                .Attribute("stroke-width", F(ChartVisualPrimitives.GridStrokeWidth))
+                .Attribute("stroke-linecap", "round")
+                .EndEmptyElement()
+                .Line();
+        }
+
+        if (item.ShowDataLabels && width >= 74) DrawGanttSvgTextCenteredX(writer, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, HeatmapTextColor(item.Color), t.DataLabelFontSize, width - 8, "750", t.CardBackground, 2.2);
     }
 
-    private static void DrawGanttMilestone(StringBuilder sb, Chart chart, GanttItem item, string id, double x, double centerY, double rowHeight) {
+    private static void DrawGanttMilestone(SvgMarkupWriter writer, Chart chart, GanttItem item, string id, double x, double centerY, double rowHeight) {
         var size = Math.Max(8, rowHeight * 0.44);
         var summary = item.Name + ": milestone at " + FormatTimelineTick(chart, item.Start);
         var points = F(x) + "," + F(centerY - size) + " " + F(x + size) + "," + F(centerY) + " " + F(x) + "," + F(centerY + size) + " " + F(x - size) + "," + F(centerY);
-        sb.AppendLine($"<polygon data-cfx-role=\"gantt-milestone\" data-cfx-start=\"{F(item.Start)}\" role=\"img\" aria-label=\"{Escape(summary)}\" points=\"{points}\" fill=\"url(#{id}-ganttFill{item.SeriesIndex})\" stroke=\"{chart.Options.Theme.CardBackground.ToCss()}\" stroke-opacity=\"{F(ChartVisualPrimitives.GanttTaskBorderOpacity)}\" stroke-width=\"{F(ChartVisualPrimitives.GanttTaskBorderStrokeWidth)}\"/>");
+        writer
+            .StartElement("polygon")
+            .Attribute("data-cfx-role", "gantt-milestone")
+            .Attribute("data-cfx-start", F(item.Start))
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .Attribute("points", points)
+            .Attribute("fill", "url(#" + id + "-ganttFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
+            .Attribute("stroke", chart.Options.Theme.CardBackground.ToCss())
+            .Attribute("stroke-opacity", F(ChartVisualPrimitives.GanttTaskBorderOpacity))
+            .Attribute("stroke-width", F(ChartVisualPrimitives.GanttTaskBorderStrokeWidth))
+            .EndEmptyElement()
+            .Line();
     }
 
-    private static void DrawGanttDependency(StringBuilder sb, ChartRect plot, double fromX, double fromY, double toX, double toY, ChartColor color) {
+    private static void DrawGanttDependency(SvgMarkupWriter writer, ChartRect plot, double fromX, double fromY, double toX, double toY, ChartColor color) {
         var midX = Clamp(fromX + Math.Max(ChartVisualPrimitives.GanttDependencyMinMidOffset, (toX - fromX) / 2), plot.Left, plot.Right);
         var endX = Clamp(toX - ChartVisualPrimitives.GanttDependencyEndpointInset, plot.Left, plot.Right);
         var targetX = Clamp(toX, plot.Left, plot.Right);
         var path = "M " + F(Clamp(fromX + ChartVisualPrimitives.GanttDependencyEndpointInset, plot.Left, plot.Right)) + " " + F(fromY) + " H " + F(midX) + " V " + F(toY) + " H " + F(endX);
-        sb.AppendLine($"<path data-cfx-role=\"gantt-dependency\" d=\"{path}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GanttDependencyStrokeWidth)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-dasharray=\"{F(ChartVisualPrimitives.GanttDependencyDash)} {F(ChartVisualPrimitives.GanttDependencyGap)}\" opacity=\"{F(ChartVisualPrimitives.GanttDependencyOpacity)}\"/>");
-        sb.AppendLine($"<path data-cfx-role=\"gantt-dependency-arrow\" d=\"M {F(endX)} {F(toY - ChartVisualPrimitives.GanttDependencyArrowSize)} L {F(targetX)} {F(toY)} L {F(endX)} {F(toY + ChartVisualPrimitives.GanttDependencyArrowSize)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GanttDependencyStrokeWidth)}\" stroke-linecap=\"round\" stroke-linejoin=\"round\" opacity=\"{F(ChartVisualPrimitives.GanttDependencyOpacity)}\"/>");
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "gantt-dependency")
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", color.ToCss())
+            .Attribute("stroke-width", F(ChartVisualPrimitives.GanttDependencyStrokeWidth))
+            .Attribute("stroke-linecap", "round")
+            .Attribute("stroke-linejoin", "round")
+            .Attribute("stroke-dasharray", F(ChartVisualPrimitives.GanttDependencyDash) + " " + F(ChartVisualPrimitives.GanttDependencyGap))
+            .Attribute("opacity", F(ChartVisualPrimitives.GanttDependencyOpacity))
+            .EndEmptyElement()
+            .Line();
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "gantt-dependency-arrow")
+            .Attribute("d", "M " + F(endX) + " " + F(toY - ChartVisualPrimitives.GanttDependencyArrowSize) + " L " + F(targetX) + " " + F(toY) + " L " + F(endX) + " " + F(toY + ChartVisualPrimitives.GanttDependencyArrowSize))
+            .Attribute("fill", "none")
+            .Attribute("stroke", color.ToCss())
+            .Attribute("stroke-width", F(ChartVisualPrimitives.GanttDependencyStrokeWidth))
+            .Attribute("stroke-linecap", "round")
+            .Attribute("stroke-linejoin", "round")
+            .Attribute("opacity", F(ChartVisualPrimitives.GanttDependencyOpacity))
+            .EndEmptyElement()
+            .Line();
     }
 
-    private static void DrawGanttToday(StringBuilder sb, Chart chart, ChartRect plot, double min, double max) {
+    private static void DrawGanttToday(SvgMarkupWriter writer, Chart chart, ChartRect plot, double min, double max) {
         var t = chart.Options.Theme;
         var x = ProjectTimelineX(chart.Options.GanttToday!.Value, min, max, plot);
         if (x < plot.Left || x > plot.Right) return;
-        sb.AppendLine($"<line data-cfx-role=\"gantt-today\" x1=\"{F(x)}\" y1=\"{F(plot.Top)}\" x2=\"{F(x)}\" y2=\"{F(plot.Bottom)}\" stroke=\"{t.Warning.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.GanttTodayStrokeWidth)}\" stroke-dasharray=\"6 5\"/>");
-        DrawSvgTextCenteredX(sb, chart, "gantt-today-label", "Today", x, plot.Top - 8, t.Warning, t.TickLabelFontSize, 62, "750", t.CardBackground, 2.2, middleBaseline: false);
+        writer
+            .StartElement("line")
+            .Attribute("data-cfx-role", "gantt-today")
+            .Attribute("x1", F(x))
+            .Attribute("y1", F(plot.Top))
+            .Attribute("x2", F(x))
+            .Attribute("y2", F(plot.Bottom))
+            .Attribute("stroke", t.Warning.ToCss())
+            .Attribute("stroke-width", F(ChartVisualPrimitives.GanttTodayStrokeWidth))
+            .Attribute("stroke-dasharray", "6 5")
+            .EndEmptyElement()
+            .Line();
+        DrawGanttSvgTextCenteredX(writer, chart, "gantt-today-label", "Today", x, plot.Top - 8, t.Warning, t.TickLabelFontSize, 62, "750", t.CardBackground, 2.2, middleBaseline: false);
     }
+
+    private static void DrawGanttSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
+        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
+        DrawGanttSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+    }
+
+    private static void DrawGanttSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
+        if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
+        var t = chart.Options.Theme;
+        var maxWidth = Math.Max(40, plot.Height * 0.72);
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
+        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        if (text.Length == 0) return;
+
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", role)
+            .Attribute("transform", "translate(" + F(axisX) + " " + F(plot.Top + plot.Height / 2) + ") rotate(-90)")
+            .Attribute("text-anchor", "middle")
+            .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
+            .Attribute("font-family", GanttFontFamily(StyleFontFamily(chart, style)))
+            .Attribute("font-size", F(fontSize))
+            .Attribute("font-weight", StyleWeight(style, "600"));
+        WriteGanttSvgTextStyleAttributes(writer, style);
+        writer
+            .Raw(Escape(text))
+            .EndElement()
+            .Line();
+    }
+
+    private static void DrawGanttSvgTextCenteredX(SvgMarkupWriter writer, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, ChartTextStyle? style = null) {
+        var preferredFontSize = StyleFontSize(style, fontSize);
+        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
+        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        if (fittedText.Length == 0) return;
+
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", role)
+            .Attribute("x", F(centerX))
+            .Attribute("y", F(y))
+            .Attribute("text-anchor", "middle");
+        if (middleBaseline) writer.Attribute("dominant-baseline", "middle");
+        writer.Attribute("fill", StyleColor(style, fill).ToCss());
+        if (stroke.HasValue && strokeWidth > 0) {
+            writer
+                .Attribute("stroke", stroke.Value.ToCss())
+                .Attribute("stroke-width", F(strokeWidth))
+                .Attribute("paint-order", "stroke fill")
+                .Attribute("stroke-linejoin", "round");
+        }
+
+        writer
+            .Attribute("font-family", GanttFontFamily(StyleFontFamily(chart, style)))
+            .Attribute("font-size", F(fittedFontSize))
+            .Attribute("font-weight", StyleWeight(style, fontWeight));
+        WriteGanttSvgTextStyleAttributes(writer, style);
+        writer
+            .Raw(Escape(fittedText))
+            .EndElement()
+            .Line();
+    }
+
+    private static void WriteGanttSvgTextStyleAttributes(SvgMarkupWriter writer, ChartTextStyle? style) {
+        if (style == null) return;
+        if (style.Italic) writer.Attribute("font-style", "italic");
+        if (style.Underline) writer.Attribute("text-decoration", "underline");
+    }
+
+    private static string GanttFontFamily(string value) =>
+        string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value;
 
     private static ChartRect ApplyGanttReserve(Chart chart, ChartRect plot, IReadOnlyList<GanttItem> items) {
         var t = chart.Options.Theme;

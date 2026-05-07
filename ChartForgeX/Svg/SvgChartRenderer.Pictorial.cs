@@ -33,7 +33,21 @@ public sealed partial class SvgChartRenderer {
         var startY = plot.Top + Math.Max(0, (plot.Height - totalHeight) / 2);
         var customSymbol = chart.Options.PictorialSvgPathData != null;
         var valuePerSymbolMetadata = valuePerSymbol.HasValue ? F(valuePerSymbol.Value) : "proportional";
-        sb.AppendLine($"<g data-cfx-role=\"pictorial-chart\" data-cfx-shape=\"{chart.Options.PictorialShape}\" data-cfx-custom-symbol=\"{(customSymbol ? "true" : "false")}\" data-cfx-png-fallback-shape=\"{chart.Options.PictorialPngFallbackShape}\" data-cfx-columns=\"{columns}\" data-cfx-maximum=\"{F(max)}\" data-cfx-value-per-symbol=\"{valuePerSymbolMetadata}\" data-cfx-show-values=\"{(showValues ? "true" : "false")}\" data-cfx-symbol-scale=\"{F(chart.Options.PictorialSymbolScale)}\" data-cfx-empty-opacity=\"{F(chart.Options.PictorialEmptyOpacity)}\">");
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "pictorial-chart")
+            .Attribute("data-cfx-shape", chart.Options.PictorialShape.ToString())
+            .Attribute("data-cfx-custom-symbol", customSymbol)
+            .Attribute("data-cfx-png-fallback-shape", chart.Options.PictorialPngFallbackShape.ToString())
+            .Attribute("data-cfx-columns", columns)
+            .Attribute("data-cfx-maximum", max)
+            .Attribute("data-cfx-value-per-symbol", valuePerSymbolMetadata)
+            .Attribute("data-cfx-show-values", showValues)
+            .Attribute("data-cfx-symbol-scale", chart.Options.PictorialSymbolScale)
+            .Attribute("data-cfx-empty-opacity", chart.Options.PictorialEmptyOpacity)
+            .EndStartElement()
+            .Line();
         var symbolRow = 0;
         for (var i = 0; i < values.Length; i++) {
             var rowsForItem = symbolRows[i];
@@ -44,7 +58,20 @@ public sealed partial class SvgChartRenderer {
             var labelFontSize = TextFontSizeForSvgWidth(rawLabel, labelMaxWidth, t.TickLabelFontSize);
             var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, labelMaxWidth);
             if (label.Length > 0) {
-                sb.AppendLine($"<text data-cfx-role=\"pictorial-label\" data-cfx-point=\"{i}\" x=\"{F(plot.Left + labelWidth - 8)}\" y=\"{F(labelY + labelFontSize / 3.0)}\" text-anchor=\"end\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(labelFontSize)}\" font-weight=\"700\">{Escape(label)}</text>");
+                writer
+                    .StartElement("text")
+                    .Attribute("data-cfx-role", "pictorial-label")
+                    .Attribute("data-cfx-point", i)
+                    .Attribute("x", plot.Left + labelWidth - 8)
+                    .Attribute("y", labelY + labelFontSize / 3.0)
+                    .Attribute("text-anchor", "end")
+                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                    .Attribute("font-size", labelFontSize)
+                    .Attribute("font-weight", "700")
+                    .Raw(Escape(label))
+                    .EndElement()
+                    .Line();
             }
             var color = PictorialItemColor(series, t, i);
             var filled = valuePerSymbol.HasValue ? values[i].Y / valuePerSymbol.Value : values[i].Y / max * columns;
@@ -55,7 +82,7 @@ public sealed partial class SvgChartRenderer {
                     var x = startX + column * (symbolSize + gap);
                     var emptyColor = PictorialOpacity(t.Grid, chart.Options.PictorialEmptyOpacity);
                     var symbolId = id + "-pictorial-" + i.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + row.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + column.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                    DrawPictorialSymbol(sb, chart.Options, symbolId, x + symbolSize / 2, y, symbolSize / 2, color, emptyColor, amount, row);
+                    DrawPictorialSymbol(writer, chart.Options, symbolId, x + symbolSize / 2, y, symbolSize / 2, color, emptyColor, amount, row);
                 }
             }
 
@@ -65,14 +92,29 @@ public sealed partial class SvgChartRenderer {
                 var valueFontSize = TextFontSizeForSvgWidth(rawValue, valueMaxWidth, t.DataLabelFontSize);
                 var value = TrimSvgLabelToWidth(rawValue, valueFontSize, valueMaxWidth);
                 if (value.Length > 0) {
-                    sb.AppendLine($"<text data-cfx-role=\"pictorial-value\" data-cfx-point=\"{i}\" data-cfx-label=\"{Escape(label)}\" data-cfx-value=\"{F(values[i].Y)}\" x=\"{F(startX + symbolArea + 12)}\" y=\"{F(labelY + valueFontSize / 3.0)}\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(valueFontSize)}\" font-weight=\"800\">{Escape(value)}</text>");
+                    writer
+                        .StartElement("text")
+                        .Attribute("data-cfx-role", "pictorial-value")
+                        .Attribute("data-cfx-point", i)
+                        .Attribute("data-cfx-label", label)
+                        .Attribute("data-cfx-value", values[i].Y)
+                        .Attribute("x", startX + symbolArea + 12)
+                        .Attribute("y", labelY + valueFontSize / 3.0)
+                        .Attribute("fill", t.Text.ToCss())
+                        .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                        .Attribute("font-size", valueFontSize)
+                        .Attribute("font-weight", "800")
+                        .Raw(Escape(value))
+                        .EndElement()
+                        .Line();
                 }
             }
 
             symbolRow += rowsForItem;
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
     private static int[] BuildPictorialSymbolRows(ChartPoint[] values, int columns, double? valuePerSymbol) {
@@ -84,55 +126,157 @@ public sealed partial class SvgChartRenderer {
         return rows;
     }
 
-    private static void DrawPictorialSymbol(StringBuilder sb, ChartOptions options, string symbolId, double cx, double cy, double radius, ChartColor fillColor, ChartColor emptyColor, double fillAmount, int row) {
+    private static void DrawPictorialSymbol(SvgMarkupWriter writer, ChartOptions options, string symbolId, double cx, double cy, double radius, ChartColor fillColor, ChartColor emptyColor, double fillAmount, int row) {
         var fill = F(fillAmount);
-        sb.AppendLine($"<g data-cfx-role=\"pictorial-symbol\" data-cfx-fill=\"{fill}\" data-cfx-row=\"{row}\" data-cfx-partial-fill=\"{(fillAmount > 0 && fillAmount < 1 ? "clip" : "none")}\">");
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "pictorial-symbol")
+            .Attribute("data-cfx-fill", fill)
+            .Attribute("data-cfx-row", row)
+            .Attribute("data-cfx-partial-fill", fillAmount > 0 && fillAmount < 1 ? "clip" : "none")
+            .EndStartElement()
+            .Line();
         if (fillAmount <= 0) {
-            AppendPictorialSymbolShape(sb, options, cx, cy, radius, emptyColor, "empty");
+            AppendPictorialSymbolShape(writer, options, cx, cy, radius, emptyColor, "empty");
         } else if (fillAmount >= 1) {
-            AppendPictorialSymbolShape(sb, options, cx, cy, radius, fillColor, "fill");
+            AppendPictorialSymbolShape(writer, options, cx, cy, radius, fillColor, "fill");
         } else {
-            AppendPictorialSymbolShape(sb, options, cx, cy, radius, emptyColor, "empty");
-            sb.AppendLine($"<clipPath id=\"{symbolId}-clip\"><rect x=\"{F(cx - radius)}\" y=\"{F(cy - radius)}\" width=\"{F(radius * 2 * fillAmount)}\" height=\"{F(radius * 2)}\"/></clipPath>");
-            sb.AppendLine($"<g clip-path=\"url(#{symbolId}-clip)\">");
-            AppendPictorialSymbolShape(sb, options, cx, cy, radius, fillColor, "partial-fill");
-            sb.AppendLine("</g>");
+            AppendPictorialSymbolShape(writer, options, cx, cy, radius, emptyColor, "empty");
+            writer
+                .StartElement("clipPath")
+                .Attribute("id", symbolId + "-clip")
+                .EndStartElement()
+                .StartElement("rect")
+                .Attribute("x", cx - radius)
+                .Attribute("y", cy - radius)
+                .Attribute("width", radius * 2 * fillAmount)
+                .Attribute("height", radius * 2)
+                .EndEmptyElement()
+                .EndElement()
+                .Line()
+                .StartElement("g")
+                .Attribute("clip-path", "url(#" + symbolId + "-clip)")
+                .EndStartElement()
+                .Line();
+            AppendPictorialSymbolShape(writer, options, cx, cy, radius, fillColor, "partial-fill");
+            writer.EndElement().Line();
         }
 
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
     }
 
-    private static void AppendPictorialSymbolShape(StringBuilder sb, ChartOptions options, double cx, double cy, double radius, ChartColor color, string layer) {
+    private static void AppendPictorialSymbolShape(SvgMarkupWriter writer, ChartOptions options, double cx, double cy, double radius, ChartColor color, string layer) {
         if (options.PictorialSvgPathData != null) {
             var vb = options.PictorialSvgPathViewBox;
             var scaleX = radius * 2 / vb.Width;
             var scaleY = radius * 2 / vb.Height;
-            sb.AppendLine($"<path data-cfx-symbol-layer=\"{layer}\" data-cfx-custom-symbol=\"true\" d=\"{options.PictorialSvgPathData}\" transform=\"translate({F(cx - radius)} {F(cy - radius)}) scale({F(scaleX)} {F(scaleY)}) translate({F(-vb.X)} {F(-vb.Y)})\" fill=\"{color.ToCss()}\"/>");
+            writer
+                .StartElement("path")
+                .Attribute("data-cfx-symbol-layer", layer)
+                .Attribute("data-cfx-custom-symbol", "true")
+                .Attribute("d", options.PictorialSvgPathData)
+                .Attribute("transform", $"translate({F(cx - radius)} {F(cy - radius)}) scale({F(scaleX)} {F(scaleY)}) translate({F(-vb.X)} {F(-vb.Y)})")
+                .Attribute("fill", color.ToCss())
+                .EndEmptyElement()
+                .Line();
             return;
         }
 
         var shape = options.PictorialShape;
         if (shape == ChartPictorialShape.Square) {
-            sb.AppendLine($"<rect data-cfx-symbol-layer=\"{layer}\" x=\"{F(cx - radius)}\" y=\"{F(cy - radius)}\" width=\"{F(radius * 2)}\" height=\"{F(radius * 2)}\" rx=\"{F(radius * 0.26)}\" fill=\"{color.ToCss()}\"/>");
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-symbol-layer", layer)
+                .Attribute("x", cx - radius)
+                .Attribute("y", cy - radius)
+                .Attribute("width", radius * 2)
+                .Attribute("height", radius * 2)
+                .Attribute("rx", radius * 0.26)
+                .Attribute("fill", color.ToCss())
+                .EndEmptyElement()
+                .Line();
         } else if (shape == ChartPictorialShape.Diamond) {
-            sb.AppendLine($"<path data-cfx-symbol-layer=\"{layer}\" d=\"M {F(cx)} {F(cy - radius)} L {F(cx + radius)} {F(cy)} L {F(cx)} {F(cy + radius)} L {F(cx - radius)} {F(cy)} Z\" fill=\"{color.ToCss()}\"/>");
+            WritePictorialPath(writer, layer, $"M {F(cx)} {F(cy - radius)} L {F(cx + radius)} {F(cy)} L {F(cx)} {F(cy + radius)} L {F(cx - radius)} {F(cy)} Z", color);
         } else if (shape == ChartPictorialShape.Triangle) {
-            sb.AppendLine($"<path data-cfx-symbol-layer=\"{layer}\" d=\"M {F(cx)} {F(cy - radius)} L {F(cx + radius)} {F(cy + radius)} L {F(cx - radius)} {F(cy + radius)} Z\" fill=\"{color.ToCss()}\"/>");
+            WritePictorialPath(writer, layer, $"M {F(cx)} {F(cy - radius)} L {F(cx + radius)} {F(cy + radius)} L {F(cx - radius)} {F(cy + radius)} Z", color);
         } else if (shape == ChartPictorialShape.Star) {
-            sb.AppendLine($"<path data-cfx-symbol-layer=\"{layer}\" d=\"{BuildStarPath(cx, cy, radius, radius * 0.44)}\" fill=\"{color.ToCss()}\"/>");
+            WritePictorialPath(writer, layer, BuildStarPath(cx, cy, radius, radius * 0.44), color);
         } else if (shape == ChartPictorialShape.Heart) {
-            sb.AppendLine($"<path data-cfx-symbol-layer=\"{layer}\" d=\"{BuildHeartPath(cx, cy, radius)}\" fill=\"{color.ToCss()}\"/>");
+            WritePictorialPath(writer, layer, BuildHeartPath(cx, cy, radius), color);
         } else if (shape == ChartPictorialShape.Shield) {
-            sb.AppendLine($"<path data-cfx-symbol-layer=\"{layer}\" d=\"M {F(cx)} {F(cy - radius)} C {F(cx + radius * 0.72)} {F(cy - radius * 0.72)} {F(cx + radius * 0.82)} {F(cy - radius * 0.64)} {F(cx + radius * 0.82)} {F(cy - radius * 0.22)} C {F(cx + radius * 0.82)} {F(cy + radius * 0.48)} {F(cx + radius * 0.35)} {F(cy + radius * 0.85)} {F(cx)} {F(cy + radius)} C {F(cx - radius * 0.35)} {F(cy + radius * 0.85)} {F(cx - radius * 0.82)} {F(cy + radius * 0.48)} {F(cx - radius * 0.82)} {F(cy - radius * 0.22)} C {F(cx - radius * 0.82)} {F(cy - radius * 0.64)} {F(cx - radius * 0.72)} {F(cy - radius * 0.72)} {F(cx)} {F(cy - radius)} Z\" fill=\"{color.ToCss()}\"/>");
+            WritePictorialPath(writer, layer, $"M {F(cx)} {F(cy - radius)} C {F(cx + radius * 0.72)} {F(cy - radius * 0.72)} {F(cx + radius * 0.82)} {F(cy - radius * 0.64)} {F(cx + radius * 0.82)} {F(cy - radius * 0.22)} C {F(cx + radius * 0.82)} {F(cy + radius * 0.48)} {F(cx + radius * 0.35)} {F(cy + radius * 0.85)} {F(cx)} {F(cy + radius)} C {F(cx - radius * 0.35)} {F(cy + radius * 0.85)} {F(cx - radius * 0.82)} {F(cy + radius * 0.48)} {F(cx - radius * 0.82)} {F(cy - radius * 0.22)} C {F(cx - radius * 0.82)} {F(cy - radius * 0.64)} {F(cx - radius * 0.72)} {F(cy - radius * 0.72)} {F(cx)} {F(cy - radius)} Z", color);
         } else if (shape == ChartPictorialShape.Check) {
-            sb.AppendLine($"<path data-cfx-symbol-layer=\"{layer}\" d=\"M {F(cx - radius * 0.72)} {F(cy - radius * 0.02)} L {F(cx - radius * 0.22)} {F(cy + radius * 0.52)} L {F(cx + radius * 0.76)} {F(cy - radius * 0.56)}\" fill=\"none\" stroke=\"{color.ToCss()}\" stroke-width=\"{F(Math.Max(2, radius * 0.34))}\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>");
+            writer
+                .StartElement("path")
+                .Attribute("data-cfx-symbol-layer", layer)
+                .Attribute("d", $"M {F(cx - radius * 0.72)} {F(cy - radius * 0.02)} L {F(cx - radius * 0.22)} {F(cy + radius * 0.52)} L {F(cx + radius * 0.76)} {F(cy - radius * 0.56)}")
+                .Attribute("fill", "none")
+                .Attribute("stroke", color.ToCss())
+                .Attribute("stroke-width", Math.Max(2, radius * 0.34))
+                .Attribute("stroke-linecap", "round")
+                .Attribute("stroke-linejoin", "round")
+                .EndEmptyElement()
+                .Line();
         } else if (shape == ChartPictorialShape.Person) {
-            sb.AppendLine($"<g data-cfx-symbol-layer=\"{layer}\" fill=\"{color.ToCss()}\"><circle cx=\"{F(cx)}\" cy=\"{F(cy - radius * 0.48)}\" r=\"{F(radius * 0.34)}\"/><path d=\"M {F(cx - radius * 0.64)} {F(cy + radius * 0.74)} C {F(cx - radius * 0.56)} {F(cy + radius * 0.02)} {F(cx - radius * 0.34)} {F(cy - radius * 0.04)} {F(cx)} {F(cy - radius * 0.04)} C {F(cx + radius * 0.34)} {F(cy - radius * 0.04)} {F(cx + radius * 0.56)} {F(cy + radius * 0.02)} {F(cx + radius * 0.64)} {F(cy + radius * 0.74)} Z\"/></g>");
+            writer
+                .StartElement("g")
+                .Attribute("data-cfx-symbol-layer", layer)
+                .Attribute("fill", color.ToCss())
+                .EndStartElement()
+                .StartElement("circle")
+                .Attribute("cx", cx)
+                .Attribute("cy", cy - radius * 0.48)
+                .Attribute("r", radius * 0.34)
+                .EndEmptyElement()
+                .StartElement("path")
+                .Attribute("d", $"M {F(cx - radius * 0.64)} {F(cy + radius * 0.74)} C {F(cx - radius * 0.56)} {F(cy + radius * 0.02)} {F(cx - radius * 0.34)} {F(cy - radius * 0.04)} {F(cx)} {F(cy - radius * 0.04)} C {F(cx + radius * 0.34)} {F(cy - radius * 0.04)} {F(cx + radius * 0.56)} {F(cy + radius * 0.02)} {F(cx + radius * 0.64)} {F(cy + radius * 0.74)} Z")
+                .EndEmptyElement()
+                .EndElement()
+                .Line();
         } else if (shape == ChartPictorialShape.PersonDress) {
-            sb.AppendLine($"<g data-cfx-symbol-layer=\"{layer}\" fill=\"{color.ToCss()}\"><circle cx=\"{F(cx)}\" cy=\"{F(cy - radius * 0.55)}\" r=\"{F(radius * 0.30)}\"/><path d=\"M {F(cx)} {F(cy - radius * 0.12)} L {F(cx + radius * 0.62)} {F(cy + radius * 0.72)} L {F(cx - radius * 0.62)} {F(cy + radius * 0.72)} Z\"/><rect x=\"{F(cx - radius * 0.30)}\" y=\"{F(cy - radius * 0.18)}\" width=\"{F(radius * 0.60)}\" height=\"{F(radius * 0.36)}\" rx=\"{F(radius * 0.14)}\"/></g>");
+            writer
+                .StartElement("g")
+                .Attribute("data-cfx-symbol-layer", layer)
+                .Attribute("fill", color.ToCss())
+                .EndStartElement()
+                .StartElement("circle")
+                .Attribute("cx", cx)
+                .Attribute("cy", cy - radius * 0.55)
+                .Attribute("r", radius * 0.30)
+                .EndEmptyElement()
+                .StartElement("path")
+                .Attribute("d", $"M {F(cx)} {F(cy - radius * 0.12)} L {F(cx + radius * 0.62)} {F(cy + radius * 0.72)} L {F(cx - radius * 0.62)} {F(cy + radius * 0.72)} Z")
+                .EndEmptyElement()
+                .StartElement("rect")
+                .Attribute("x", cx - radius * 0.30)
+                .Attribute("y", cy - radius * 0.18)
+                .Attribute("width", radius * 0.60)
+                .Attribute("height", radius * 0.36)
+                .Attribute("rx", radius * 0.14)
+                .EndEmptyElement()
+                .EndElement()
+                .Line();
         } else {
-            sb.AppendLine($"<circle data-cfx-symbol-layer=\"{layer}\" cx=\"{F(cx)}\" cy=\"{F(cy)}\" r=\"{F(radius)}\" fill=\"{color.ToCss()}\"/>");
+            writer
+                .StartElement("circle")
+                .Attribute("data-cfx-symbol-layer", layer)
+                .Attribute("cx", cx)
+                .Attribute("cy", cy)
+                .Attribute("r", radius)
+                .Attribute("fill", color.ToCss())
+                .EndEmptyElement()
+                .Line();
         }
+    }
+
+    private static void WritePictorialPath(SvgMarkupWriter writer, string layer, string path, ChartColor color) {
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-symbol-layer", layer)
+            .Attribute("d", path)
+            .Attribute("fill", color.ToCss())
+            .EndEmptyElement()
+            .Line();
     }
 
     private static ChartColor PictorialOpacity(ChartColor color, double opacity) =>

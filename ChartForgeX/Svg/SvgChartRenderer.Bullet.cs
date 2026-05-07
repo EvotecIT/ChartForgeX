@@ -23,7 +23,12 @@ public sealed partial class SvgChartRenderer {
         var rowHeight = Math.Min(64, plot.Height / Math.Max(1, rows.Length));
         var barHeight = Math.Max(16, Math.Min(26, rowHeight * 0.38));
 
-        sb.AppendLine("<g data-cfx-role=\"bullet-chart\">");
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "bullet-chart")
+            .EndStartElement()
+            .Line();
         for (var rowIndex = 0; rowIndex < rows.Length; rowIndex++) {
             var row = rows[rowIndex];
             var y = plot.Top + rowHeight * rowIndex + rowHeight / 2;
@@ -45,29 +50,82 @@ public sealed partial class SvgChartRenderer {
             var valueLabel = TrimSvgLabelToWidth(rawValueLabel, valueLabelFontSize, valueLabelMaxWidth);
             var showLabels = row.series.ShowDataLabels != false;
 
-            sb.AppendLine($"<g data-cfx-role=\"bullet-row\" data-cfx-series=\"{row.index}\" data-cfx-status=\"{status}\" data-cfx-label=\"{Escape(row.series.Name)}\" data-cfx-value=\"{F(actualValue)}\" data-cfx-target=\"{F(targetValue)}\" data-cfx-min=\"{F(min)}\" data-cfx-max=\"{F(max)}\" role=\"group\" aria-label=\"{Escape(rowSummary)}\">");
-            if (showLabels && rowLabel.Length > 0) sb.AppendLine($"<text data-cfx-role=\"bullet-row-label\" x=\"{F(basePlot.Left)}\" y=\"{F(y + 4)}\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(rowLabelFontSize)}\" font-weight=\"700\">{Escape(rowLabel)}</text>");
-            DrawBulletRanges(sb, row.series, plot, y, barHeight, min, max, accent);
+            writer
+                .StartElement("g")
+                .Attribute("data-cfx-role", "bullet-row")
+                .Attribute("data-cfx-series", row.index)
+                .Attribute("data-cfx-status", status)
+                .Attribute("data-cfx-label", row.series.Name)
+                .Attribute("data-cfx-value", F(actualValue))
+                .Attribute("data-cfx-target", F(targetValue))
+                .Attribute("data-cfx-min", F(min))
+                .Attribute("data-cfx-max", F(max))
+                .Attribute("role", "group")
+                .Attribute("aria-label", rowSummary)
+                .EndStartElement()
+                .Line();
+            if (showLabels && rowLabel.Length > 0) {
+                WriteBulletText(writer, "bullet-row-label", basePlot.Left, y + 4, rowLabel, t.Text.ToCss(), BulletFontFamily(t.FontFamily), rowLabelFontSize, "700");
+            }
+            DrawBulletRanges(writer, row.series, plot, y, barHeight, min, max, accent);
 
             var value = Clamp(actualValue, min, max);
             var target = Clamp(targetValue, min, max);
             var valueX = BulletX(plot, min, max, value);
             var targetX = BulletX(plot, min, max, target);
-            sb.AppendLine($"<rect data-cfx-role=\"bullet-value\" data-cfx-series=\"{row.index}\" data-cfx-value=\"{F(actualValue)}\" x=\"{F(plot.Left)}\" y=\"{F(y - barHeight * 0.24)}\" width=\"{F(Math.Max(2, valueX - plot.Left))}\" height=\"{F(barHeight * 0.48)}\" rx=\"{F(barHeight * 0.24)}\" fill=\"url(#{id}-seriesFill{row.index})\"/>");
-            sb.AppendLine($"<line data-cfx-role=\"bullet-target\" data-cfx-series=\"{row.index}\" data-cfx-target=\"{F(targetValue)}\" x1=\"{F(targetX)}\" y1=\"{F(y - barHeight * 0.68)}\" x2=\"{F(targetX)}\" y2=\"{F(y + barHeight * 0.68)}\" stroke=\"{t.Text.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.BulletTargetStrokeWidth)}\" stroke-linecap=\"round\"/>");
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-role", "bullet-value")
+                .Attribute("data-cfx-series", row.index)
+                .Attribute("data-cfx-value", F(actualValue))
+                .Attribute("x", F(plot.Left))
+                .Attribute("y", F(y - barHeight * 0.24))
+                .Attribute("width", F(Math.Max(2, valueX - plot.Left)))
+                .Attribute("height", F(barHeight * 0.48))
+                .Attribute("rx", F(barHeight * 0.24))
+                .Attribute("fill", "url(#" + id + "-seriesFill" + row.index + ")")
+                .EndEmptyElement()
+                .Line()
+                .StartElement("line")
+                .Attribute("data-cfx-role", "bullet-target")
+                .Attribute("data-cfx-series", row.index)
+                .Attribute("data-cfx-target", F(targetValue))
+                .Attribute("x1", F(targetX))
+                .Attribute("y1", F(y - barHeight * 0.68))
+                .Attribute("x2", F(targetX))
+                .Attribute("y2", F(y + barHeight * 0.68))
+                .Attribute("stroke", t.Text.ToCss())
+                .Attribute("stroke-width", F(ChartVisualPrimitives.BulletTargetStrokeWidth))
+                .Attribute("stroke-linecap", "round")
+                .EndEmptyElement()
+                .Line();
             if (showLabels) {
-                DrawBulletTargetLabel(sb, chart, FormatValue(chart, targetValue), targetX, y - barHeight * 0.92, plot);
-                sb.AppendLine($"<circle data-cfx-role=\"bullet-status-marker\" data-cfx-status=\"{status}\" cx=\"{F(plot.Right + 8)}\" cy=\"{F(y)}\" r=\"{F(ChartVisualPrimitives.StatusMarkerRadius)}\" fill=\"{statusColor.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.StatusMarkerStrokeWidth)}\"/>");
-                if (valueLabel.Length > 0) sb.AppendLine($"<text data-cfx-role=\"bullet-value-label\" x=\"{F(plot.Right + 18)}\" y=\"{F(y + 4)}\" fill=\"{t.Text.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(valueLabelFontSize)}\" font-weight=\"800\">{Escape(valueLabel)}</text>");
+                DrawBulletTargetLabel(writer, chart, FormatValue(chart, targetValue), targetX, y - barHeight * 0.92, plot);
+                writer
+                    .StartElement("circle")
+                    .Attribute("data-cfx-role", "bullet-status-marker")
+                    .Attribute("data-cfx-status", status)
+                    .Attribute("cx", F(plot.Right + 8))
+                    .Attribute("cy", F(y))
+                    .Attribute("r", F(ChartVisualPrimitives.StatusMarkerRadius))
+                    .Attribute("fill", statusColor.ToCss())
+                    .Attribute("stroke", t.CardBackground.ToCss())
+                    .Attribute("stroke-width", F(ChartVisualPrimitives.StatusMarkerStrokeWidth))
+                    .EndEmptyElement()
+                    .Line();
+                if (valueLabel.Length > 0) {
+                    WriteBulletText(writer, "bullet-value-label", plot.Right + 18, y + 4, valueLabel, t.Text.ToCss(), BulletFontFamily(t.FontFamily), valueLabelFontSize, "800");
+                }
             }
-            sb.AppendLine("</g>");
+            writer.EndElement().Line();
         }
 
-        DrawBulletAxis(sb, chart, plot, rows[0].series, basePlot.Bottom - 12);
-        sb.AppendLine("</g>");
+        DrawBulletAxis(writer, chart, plot, rows[0].series, basePlot.Bottom - 12);
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
-    private static void DrawBulletTargetLabel(StringBuilder sb, Chart chart, string label, double x, double y, ChartRect plot) {
+    private static void DrawBulletTargetLabel(SvgMarkupWriter writer, Chart chart, string label, double x, double y, ChartRect plot) {
         var t = chart.Options.Theme;
         var text = "target " + label;
         var maxWidth = Math.Max(8, plot.Width - 8);
@@ -81,10 +139,26 @@ public sealed partial class SvgChartRenderer {
         if (anchor == "start") safeX = Clamp(x, plot.Left + 4, plot.Right - width - 4);
         if (anchor == "end") safeX = Clamp(x, plot.Left + width + 4, plot.Right - 4);
         var safeY = Clamp(y, plot.Top + fontSize, plot.Bottom - 4);
-        sb.AppendLine($"<text data-cfx-role=\"bullet-target-label\" x=\"{F(safeX)}\" y=\"{F(safeY)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"3\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(fontSize)}\" font-weight=\"650\">{Escape(text)}</text>");
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", "bullet-target-label")
+            .Attribute("x", F(safeX))
+            .Attribute("y", F(safeY))
+            .Attribute("text-anchor", anchor)
+            .Attribute("fill", t.MutedText.ToCss())
+            .Attribute("stroke", t.CardBackground.ToCss())
+            .Attribute("stroke-width", "3")
+            .Attribute("paint-order", "stroke fill")
+            .Attribute("stroke-linejoin", "round")
+            .Attribute("font-family", BulletFontFamily(t.FontFamily))
+            .Attribute("font-size", F(fontSize))
+            .Attribute("font-weight", "650")
+            .Raw(Escape(text))
+            .EndElement()
+            .Line();
     }
 
-    private static void DrawBulletRanges(StringBuilder sb, ChartSeries series, ChartRect plot, double y, double barHeight, double min, double max, ChartColor accent) {
+    private static void DrawBulletRanges(SvgMarkupWriter writer, ChartSeries series, ChartRect plot, double y, double barHeight, double min, double max, ChartColor accent) {
         var previous = min;
         var ends = BulletRangeEnds(series, min, max);
         for (var i = 0; i < ends.Length; i++) {
@@ -93,30 +167,83 @@ public sealed partial class SvgChartRenderer {
             var x = BulletX(plot, min, max, previous);
             var width = BulletX(plot, min, max, end) - x;
             var opacity = Math.Max(0.10, 0.30 - i * 0.055);
-            sb.AppendLine($"<rect data-cfx-role=\"bullet-range\" x=\"{F(x)}\" y=\"{F(y - barHeight / 2)}\" width=\"{F(width)}\" height=\"{F(barHeight)}\" rx=\"{F(barHeight / 2)}\" fill=\"{accent.ToCss()}\" opacity=\"{F(opacity)}\"/>");
+            writer
+                .StartElement("rect")
+                .Attribute("data-cfx-role", "bullet-range")
+                .Attribute("x", F(x))
+                .Attribute("y", F(y - barHeight / 2))
+                .Attribute("width", F(width))
+                .Attribute("height", F(barHeight))
+                .Attribute("rx", F(barHeight / 2))
+                .Attribute("fill", accent.ToCss())
+                .Attribute("opacity", F(opacity))
+                .EndEmptyElement()
+                .Line();
             previous = end;
         }
     }
 
-    private static void DrawBulletAxis(StringBuilder sb, Chart chart, ChartRect plot, ChartSeries reference, double y) {
+    private static void DrawBulletAxis(SvgMarkupWriter writer, Chart chart, ChartRect plot, ChartSeries reference, double y) {
         if (!chart.Options.ShowAxes) return;
         var t = chart.Options.Theme;
         var min = BulletMin(reference);
         var max = BulletMax(reference);
         if (Math.Abs(max - min) < 0.000001) max = min + 1;
         var ticks = new[] { min, min + (max - min) / 2, max };
-        sb.AppendLine("<g data-cfx-role=\"bullet-axis\">");
-        sb.AppendLine($"<line x1=\"{F(plot.Left)}\" y1=\"{F(y)}\" x2=\"{F(plot.Right)}\" y2=\"{F(y)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.BulletAxisStrokeWidth)}\"/>");
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "bullet-axis")
+            .EndStartElement()
+            .Line()
+            .StartElement("line")
+            .Attribute("x1", F(plot.Left))
+            .Attribute("y1", F(y))
+            .Attribute("x2", F(plot.Right))
+            .Attribute("y2", F(y))
+            .Attribute("stroke", t.Axis.ToCss())
+            .Attribute("stroke-width", F(ChartVisualPrimitives.BulletAxisStrokeWidth))
+            .EndEmptyElement()
+            .Line();
         foreach (var tick in ticks) {
             var x = BulletX(plot, min, max, tick);
             var label = FormatValue(chart, tick);
             var anchor = EdgeAwareAnchor(label, x, plot, t.TickLabelFontSize);
             var safeX = EdgeAwareTextX(label, x, plot, t.TickLabelFontSize);
-            sb.AppendLine($"<line data-cfx-role=\"bullet-axis-tick\" x1=\"{F(x)}\" y1=\"{F(y - 4)}\" x2=\"{F(x)}\" y2=\"{F(y + 4)}\" stroke=\"{t.Axis.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.BulletAxisStrokeWidth)}\"/>");
-            sb.AppendLine($"<text data-cfx-role=\"bullet-axis-label\" x=\"{F(safeX)}\" y=\"{F(y + 20)}\" text-anchor=\"{anchor}\" fill=\"{t.MutedText.ToCss()}\" font-family=\"{SvgFontFamily(t.FontFamily)}\" font-size=\"{F(t.TickLabelFontSize)}\">{Escape(label)}</text>");
+            writer
+                .StartElement("line")
+                .Attribute("data-cfx-role", "bullet-axis-tick")
+                .Attribute("x1", F(x))
+                .Attribute("y1", F(y - 4))
+                .Attribute("x2", F(x))
+                .Attribute("y2", F(y + 4))
+                .Attribute("stroke", t.Axis.ToCss())
+                .Attribute("stroke-width", F(ChartVisualPrimitives.BulletAxisStrokeWidth))
+                .EndEmptyElement()
+                .Line();
+            WriteBulletText(writer, "bullet-axis-label", safeX, y + 20, label, t.MutedText.ToCss(), BulletFontFamily(t.FontFamily), t.TickLabelFontSize, null, anchor);
         }
-        sb.AppendLine("</g>");
+        writer.EndElement().Line();
     }
+
+    private static void WriteBulletText(SvgMarkupWriter writer, string role, double x, double y, string text, string fill, string fontFamily, double fontSize, string? fontWeight, string? textAnchor = null) {
+        writer
+            .StartElement("text")
+            .Attribute("data-cfx-role", role)
+            .Attribute("x", F(x))
+            .Attribute("y", F(y));
+        if (textAnchor != null) writer.Attribute("text-anchor", textAnchor);
+        writer
+            .Attribute("fill", fill)
+            .Attribute("font-family", fontFamily)
+            .Attribute("font-size", F(fontSize));
+        if (fontWeight != null) writer.Attribute("font-weight", fontWeight);
+        writer
+            .Raw(Escape(text))
+            .EndElement()
+            .Line();
+    }
+
+    private static string BulletFontFamily(string value) => string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value;
 
     private static double BulletMin(ChartSeries series) => series.Points[0].X;
 
