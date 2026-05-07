@@ -13,19 +13,42 @@ public sealed partial class SvgChartRenderer {
         if (model.Nodes.Count == 0 || model.Root < 0) return;
         var series = chart.Series.First(item => item.Kind == ChartSeriesKind.Sunburst);
         var showLabels = series.ShowDataLabels != false;
-        sb.AppendLine("<g data-cfx-role=\"sunburst-chart\">");
-        foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) DrawSunburstSegment(sb, chart, model, node, showLabels);
-        sb.AppendLine("</g>");
+        var writer = new SvgMarkupWriter(4096);
+        writer
+            .StartElement("g")
+            .Attribute("data-cfx-role", "sunburst-chart")
+            .EndStartElement()
+            .Line();
+        foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) DrawSunburstSegment(writer, chart, model, node, showLabels);
+        writer.EndElement().Line();
+        sb.Append(writer.Build());
     }
 
-    private static void DrawSunburstSegment(StringBuilder sb, Chart chart, ChartSunburstModel model, ChartSunburstNode node, bool showLabels) {
+    private static void DrawSunburstSegment(SvgMarkupWriter writer, Chart chart, ChartSunburstModel model, ChartSunburstNode node, bool showLabels) {
         var t = chart.Options.Theme;
         var color = SunburstNodeColor(chart, node);
         var sweep = node.EndAngle - node.StartAngle;
         if (sweep <= 0 || node.OuterRadius <= node.InnerRadius) return;
         var percent = node.Index == model.Root ? 1 : node.Value / Math.Max(0.000001, model.Nodes[model.Root].Value);
         var summary = node.Label + ": " + FormatValue(chart, node.Value) + ", " + FormatPercent(percent);
-        sb.AppendLine($"<path data-cfx-role=\"sunburst-segment\" data-cfx-node=\"{node.Index}\" data-cfx-parent=\"{node.Parent}\" data-cfx-depth=\"{node.Depth}\" data-cfx-label=\"{Escape(node.Label)}\" data-cfx-value=\"{F(node.Value)}\" data-cfx-percent=\"{F(percent)}\" role=\"img\" aria-label=\"{Escape(summary)}\" d=\"{BuildSlicePath(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, node.EndAngle)}\" fill=\"{color.ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"{F(ChartVisualPrimitives.SliceSeparatorStrokeWidth)}\" fill-opacity=\"0.96\"/>");
+        writer
+            .StartElement("path")
+            .Attribute("data-cfx-role", "sunburst-segment")
+            .Attribute("data-cfx-node", node.Index)
+            .Attribute("data-cfx-parent", node.Parent)
+            .Attribute("data-cfx-depth", node.Depth)
+            .Attribute("data-cfx-label", node.Label)
+            .Attribute("data-cfx-value", node.Value)
+            .Attribute("data-cfx-percent", percent)
+            .Attribute("role", "img")
+            .Attribute("aria-label", summary)
+            .Attribute("d", BuildSlicePath(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, node.EndAngle))
+            .Attribute("fill", color.ToCss())
+            .Attribute("stroke", t.CardBackground.ToCss())
+            .Attribute("stroke-width", ChartVisualPrimitives.SliceSeparatorStrokeWidth)
+            .Attribute("fill-opacity", 0.96)
+            .EndEmptyElement()
+            .Line();
         if (!showLabels) return;
         var ringWidth = node.OuterRadius - node.InnerRadius;
         if (ringWidth < 18) return;
@@ -43,7 +66,7 @@ public sealed partial class SvgChartRenderer {
         var y = model.CenterY + Math.Sin(angle) * radius + fontSize / 3.0;
         var labelColor = HeatmapTextColor(color);
         var halo = TreeLabelHalo(labelColor);
-        DrawSvgTextCenteredX(sb, chart, "sunburst-label", label, x, y, labelColor, fontSize, labelSpace, "800", halo, 3);
+        DrawSvgTextCenteredX(writer, chart, "sunburst-label", label, x, y, labelColor, fontSize, labelSpace, "800", halo, 3);
     }
 
     private static double SunburstSvgLabelSpace(ChartSunburstNode node, double sweep, double ringWidth) {
