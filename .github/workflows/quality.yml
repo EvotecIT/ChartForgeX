@@ -24,10 +24,10 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
@@ -36,7 +36,7 @@ jobs:
         run: ./Build.ps1 -Configuration Release
 
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: chartforgex-packages
           path: |
@@ -45,7 +45,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload example gallery
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: chartforgex-example-gallery
           path: ChartForgeX.Examples/bin/Release/net8.0/output
