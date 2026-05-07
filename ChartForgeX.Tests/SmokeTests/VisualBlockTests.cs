@@ -97,6 +97,26 @@ internal static partial class SmokeTests {
             .Add(MetricCard.Create().WithMetric("One", 1))
             .Add(MetricCard.Create().WithMetric("Two", 2));
         Assert(sparseGrid.ToHtmlFragment().Contains("--cfx-visual-grid-columns:2", StringComparison.Ordinal), "VisualGrid HTML should clamp columns to populated item count like SVG/PNG layout.");
+
+        var fixedGrid = VisualGrid.Create()
+            .WithColumns(2)
+            .WithPadding(32)
+            .WithPanelSize(500, 320)
+            .Add(chart)
+            .Add(metric);
+        var fixedHtml = fixedGrid.ToHtmlPage();
+        Assert(fixedHtml.Contains("padding:var(--cfx-visual-grid-padding,24px)", StringComparison.Ordinal), "VisualGrid HTML should apply grid padding on the grid container where the custom property is scoped.");
+        Assert(fixedHtml.Contains("grid-template-columns:repeat(var(--cfx-visual-grid-columns),var(--cfx-visual-grid-panel-width,minmax(0,1fr)))", StringComparison.Ordinal), "VisualGrid HTML should honor fixed panel widths when PanelSize is configured.");
+        Assert(fixedHtml.Contains("grid-auto-flow:row dense", StringComparison.Ordinal), "VisualGrid HTML should use dense placement like SVG/PNG layout.");
+        Assert(fixedHtml.Contains(".chartforgex-visual-grid-panel svg{width:100%;height:100%", StringComparison.Ordinal), "VisualGrid HTML contain mode should scale embedded SVGs to fixed panel bounds.");
+
+        var stretchGrid = VisualGrid.Create()
+            .WithPanelSize(500, 320)
+            .WithPanelFit(VisualGridPanelFit.Stretch)
+            .Add(chart);
+        var stretchSvg = stretchGrid.ToSvg("visual-grid-stretch");
+        Assert(stretchSvg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal) && stretchSvg.Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "VisualGrid SVG stretch mode should remove child aspect-ratio locking.");
+        Assert(stretchGrid.ToHtmlFragment().Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "VisualGrid HTML stretch mode should remove embedded SVG aspect-ratio locking.");
     }
 
     private static void VisualBlocksRejectInvalidInputsCloseToCaller() {
@@ -104,6 +124,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => ChartTable.Create().WithColumns(), "ChartTable should reject empty column sets.");
         AssertThrows<ArgumentException>(() => ChartTable.Create().WithColumns("A").AddRow("a", "b"), "ChartTable should reject row values that do not match columns.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartTable.Create().AddColumn("Bad", (VisualTextAlignment)999), "ChartTable columns should reject unknown alignments.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").AddColumn("B"), "ChartTable should reject adding columns after rows exist.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Alignment = (VisualTextAlignment)999, "ChartTable cells should reject unknown alignment overrides.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Status = (VisualStatus)999, "ChartTable cells should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartList.Create().Marker = (VisualListMarker)999, "ChartList marker property should reject unknown marker values.");

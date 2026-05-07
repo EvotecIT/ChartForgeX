@@ -229,17 +229,22 @@ public sealed class ChartTable : VisualBlock<ChartTable> {
         if (headers.Length == 0) throw new ArgumentException("Table must contain at least one column.", nameof(headers));
         if (_rows.Count > 0 && _rows[0].Cells.Count != headers.Length) throw new InvalidOperationException("Existing table rows do not match the new column count.");
         _columns.Clear();
-        foreach (var header in headers) AddColumn(header);
+        foreach (var header in headers) AddColumnCore(header);
         if (_statusColumnIndex.HasValue && _statusColumnIndex.Value >= _columns.Count) _statusColumnIndex = null;
         return this;
     }
 
     /// <summary>Adds one table column.</summary>
     public ChartTable AddColumn(string header, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null, string? format = null) {
+        if (_rows.Count > 0) throw new InvalidOperationException("Table columns cannot be added after rows have been populated. Use WithColumns to replace the full column set with the same count.");
+        AddColumnCore(header, alignment, width, format);
+        return this;
+    }
+
+    private void AddColumnCore(string header, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null, string? format = null) {
         if (header == null) throw new ArgumentNullException(nameof(header));
         if (width.HasValue && (double.IsNaN(width.Value) || double.IsInfinity(width.Value) || width.Value <= 0)) throw new ArgumentOutOfRangeException(nameof(width), width, "Column width must be finite and greater than zero.");
         _columns.Add(new ChartTableColumn(header, alignment, width, format));
-        return this;
     }
 
     /// <summary>Adds a table row.</summary>

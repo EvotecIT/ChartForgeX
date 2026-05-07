@@ -29,7 +29,7 @@ public sealed partial class TopologySvgRenderer {
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
         var theme = prepared.Theme ?? TopologyTheme.Light();
-        var prefix = string.IsNullOrWhiteSpace(options.CssClassPrefix) ? "cfx-topology" : options.CssClassPrefix!;
+        var prefix = NormalizeCssClassPrefix(options.CssClassPrefix, "cfx-topology");
         var id = SanitizeId(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!);
         var w = prepared.Viewport.Width;
         var h = prepared.Viewport.Height;

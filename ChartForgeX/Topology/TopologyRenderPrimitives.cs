@@ -16,6 +16,18 @@ internal static class TopologyRenderPrimitives {
     public const double LegendBottomPadding = 16;
     public const int NodeLabelMaxLength = 18;
 
+    public static string NormalizeCssClassPrefix(string? value, string fallback) {
+        value = string.IsNullOrWhiteSpace(value) ? fallback : value!.Trim();
+        var sb = new StringBuilder(value.Length);
+        foreach (var ch in value) {
+            sb.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' ? ch : '-');
+        }
+
+        if (sb.Length == 0) return fallback;
+        if (char.IsDigit(sb[0])) sb.Insert(0, "cfx-");
+        return sb.ToString();
+    }
+
     public static double LegendHeight(TopologyLegend legend) {
         var rows = Math.Max(1, (int)Math.Ceiling(legend.Items.Count / (double)LegendColumns));
         return LegendFirstItemOffsetY + (rows - 1) * LegendItemRowHeight + LegendBottomPadding;

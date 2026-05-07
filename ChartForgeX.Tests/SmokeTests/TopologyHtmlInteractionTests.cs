@@ -85,5 +85,10 @@ internal static partial class SmokeTests {
         Assert(prefixedHtml.Contains(".report-topology-wrapper[data-cfx-interactive=\"true\"]", StringComparison.Ordinal), "Topology interaction selectors should honor CssClassPrefix.");
         Assert(prefixedHtml.Contains("report-topology-html-selected", StringComparison.Ordinal), "Topology interaction state classes should honor CssClassPrefix.");
         Assert(!prefixedHtml.Contains("class=\"cfx-topology-wrapper\"", StringComparison.Ordinal), "Prefixed topology HTML should not keep hardcoded wrapper class names.");
+
+        var sanitizedPrefixHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, CssClassPrefix = "123 report topology" });
+        Assert(sanitizedPrefixHtml.Contains("class=\"cfx-123-report-topology-wrapper\"", StringComparison.Ordinal), "Topology HTML should sanitize wrapper CSS prefixes.");
+        Assert(sanitizedPrefixHtml.Contains("class=\"cfx-123-report-topology\"", StringComparison.Ordinal), "Topology embedded SVG should use the same sanitized CSS prefix as the HTML wrapper.");
+        Assert(!sanitizedPrefixHtml.Contains("123 report topology", StringComparison.Ordinal), "Topology HTML should not emit unsanitized CSS prefixes.");
     }
 }

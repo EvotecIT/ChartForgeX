@@ -37,12 +37,13 @@ public sealed class HtmlVisualGridRenderer {
         for (var i = 0; i < grid.Items.Count; i++) {
             var item = grid.Items[i];
             var columnSpan = Math.Min(item.ColumnSpan, columns);
+            var childSvg = item.Chart != null ? _chartRenderer.Render(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : _blockRenderer.Render(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture));
             writer.StartElement("article")
                 .Attribute("class", "chartforgex-visual-grid-panel")
                 .Attribute("aria-label", ItemTitle(item))
                 .Attribute("style", PanelSpanStyle(columnSpan, item.RowSpan))
                 .EndStartElement()
-                .RawTrusted(item.Chart != null ? _chartRenderer.Render(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : _blockRenderer.Render(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture)))
+                .RawTrusted(PrepareChildSvg(childSvg, grid.PanelFit == VisualGridPanelFit.Stretch))
                 .EndElement();
         }
 
@@ -71,7 +72,7 @@ public sealed class HtmlVisualGridRenderer {
     }
 
     private static string BuildCss(string background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize) {
-        return "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block}.chartforgex-visual-grid.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){body{padding:16px}.chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}";
+        return "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),var(--cfx-visual-grid-panel-width,minmax(0,1fr)));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:100%;max-height:100%;display:block}.chartforgex-visual-grid.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}";
     }
 
     private static string ItemTitle(VisualGridItem item) {
@@ -95,6 +96,25 @@ public sealed class HtmlVisualGridRenderer {
     private static string? PanelSpanStyle(int columnSpan, int rowSpan) {
         if (columnSpan == 1 && rowSpan == 1) return null;
         return "grid-column:span " + columnSpan.ToString(CultureInfo.InvariantCulture) + ";grid-row:span " + rowSpan.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string PrepareChildSvg(string svg, bool stretch) {
+        if (!stretch) return svg;
+        var tagEnd = svg.IndexOf('>');
+        if (tagEnd < 0) return svg;
+        var open = svg.Substring(0, tagEnd);
+        open = SetSvgAttribute(open, "preserveAspectRatio", "none");
+        return open + svg.Substring(tagEnd);
+    }
+
+    private static string SetSvgAttribute(string openTag, string name, string value) {
+        var attribute = " " + name + "=\"";
+        var start = openTag.IndexOf(attribute, StringComparison.Ordinal);
+        if (start < 0) return openTag + attribute + VisualBlockRendering.Escape(value) + "\"";
+        var valueStart = start + attribute.Length;
+        var valueEnd = openTag.IndexOf('"', valueStart);
+        if (valueEnd < 0) return openTag;
+        return openTag.Substring(0, valueStart) + VisualBlockRendering.Escape(value) + openTag.Substring(valueEnd);
     }
 
     private static string NextScope() {

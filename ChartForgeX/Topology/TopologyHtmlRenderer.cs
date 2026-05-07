@@ -636,15 +636,7 @@ public sealed class TopologyHtmlRenderer {
     }
 
     private static string CssClassPrefix(TopologyRenderOptions options) {
-        var value = string.IsNullOrWhiteSpace(options.CssClassPrefix) ? DefaultCssClassPrefix : options.CssClassPrefix!.Trim();
-        var sb = new StringBuilder(value.Length);
-        foreach (var ch in value) {
-            sb.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' ? ch : '-');
-        }
-
-        if (sb.Length == 0) return DefaultCssClassPrefix;
-        if (char.IsDigit(sb[0])) sb.Insert(0, "cfx-");
-        return sb.ToString();
+        return NormalizeCssClassPrefix(options.CssClassPrefix, DefaultCssClassPrefix);
     }
 
 }

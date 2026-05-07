@@ -52,14 +52,14 @@ public sealed class SvgVisualGridRenderer {
             var cell = layout.Cells[i];
             var childScope = id + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
             var childSvg = cell.Item.Chart != null ? _chartRenderer.Render(cell.Item.Chart, childScope) : _blockRenderer.Render(cell.Item.Block!, childScope);
-            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height)).Line();
+            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualGridPanelFit.Stretch)).Line();
         }
 
         writer.EndElement().Line();
         return writer.Build();
     }
 
-    private static string PositionChildSvg(string svg, double x, double y, double width, double height) {
+    private static string PositionChildSvg(string svg, double x, double y, double width, double height, bool stretch) {
         var tagEnd = svg.IndexOf('>');
         if (tagEnd < 0) return svg;
         var open = svg.Substring(0, tagEnd);
@@ -68,6 +68,7 @@ public sealed class SvgVisualGridRenderer {
         open = SetSvgAttribute(open, "width", width.ToString(CultureInfo.InvariantCulture));
         open = SetSvgAttribute(open, "height", height.ToString(CultureInfo.InvariantCulture));
         open = SetSvgAttribute(open, "data-cfx-role", "visual-grid-panel");
+        if (stretch) open = SetSvgAttribute(open, "preserveAspectRatio", "none");
         return open + svg.Substring(tagEnd);
     }
 
