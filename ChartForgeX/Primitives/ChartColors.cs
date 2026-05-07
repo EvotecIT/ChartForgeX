@@ -51,6 +51,17 @@ public static class ChartColors {
         ["YellowGreen"] = YellowGreen
     };
 
+    private static readonly Dictionary<string, ChartColor> TokenColors = new(StringComparer.OrdinalIgnoreCase) {
+        ["Slate50"] = Slate50, ["Slate100"] = Slate100, ["Slate200"] = Slate200, ["Slate300"] = Slate300,
+        ["Slate400"] = Slate400, ["Slate500"] = Slate500, ["Slate600"] = Slate600, ["Slate700"] = Slate700,
+        ["Slate800"] = Slate800, ["Slate900"] = Slate900, ["Slate950"] = Slate950,
+        ["Sky400"] = Sky400, ["Sky500"] = Sky500, ["Blue400"] = Blue400, ["Blue600"] = Blue600,
+        ["Cyan400"] = Cyan400, ["Teal400"] = Teal400, ["Emerald400"] = Emerald400, ["Emerald500"] = Emerald500,
+        ["Green400"] = Green400, ["Lime400"] = Lime400, ["Amber400"] = Amber400, ["Yellow400"] = Yellow400,
+        ["Orange400"] = Orange400, ["Red400"] = Red400, ["Rose400"] = Rose400, ["Pink400"] = Pink400,
+        ["Violet400"] = Violet400, ["Purple400"] = Purple400, ["Indigo400"] = Indigo400
+    };
+
     /// <summary>
     /// Attempts to get a named color token.
     /// </summary>
@@ -59,7 +70,9 @@ public static class ChartColors {
     /// <returns>True when the name is known.</returns>
     public static bool TryGet(string? name, out ChartColor color) {
         color = default;
-        return !string.IsNullOrWhiteSpace(name) && NamedColors.TryGetValue(name!.Trim(), out color);
+        if (string.IsNullOrWhiteSpace(name)) return false;
+        var trimmed = name!.Trim();
+        return NamedColors.TryGetValue(trimmed, out color) || TokenColors.TryGetValue(trimmed, out color);
     }
 
     /// <summary>
@@ -67,6 +80,12 @@ public static class ChartColors {
     /// </summary>
     /// <returns>A copy of the named color map.</returns>
     public static IReadOnlyDictionary<string, ChartColor> GetNamedColors() => new Dictionary<string, ChartColor>(NamedColors, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets all ChartForgeX design tokens used by palettes and overlay themes.
+    /// </summary>
+    /// <returns>A copy of the named token color map.</returns>
+    public static IReadOnlyDictionary<string, ChartColor> GetTokenColors() => new Dictionary<string, ChartColor>(TokenColors, StringComparer.OrdinalIgnoreCase);
 
     public static ChartColor Transparent => ChartColor.Transparent;
     public static ChartColor AliceBlue => ChartColor.FromRgb(240, 248, 255);

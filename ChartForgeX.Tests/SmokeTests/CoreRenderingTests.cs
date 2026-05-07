@@ -370,6 +370,11 @@ internal static partial class SmokeTests {
         Assert(ChartColors.GetNamedColors().Count >= 142, "ChartForgeX should expose the stable System.Drawing/CSS named color set.");
         Assert(ChartColors.TryGet("RebeccaPurple", out var rebecca) && rebecca.ToHex() == "#663399", "Named color lookup should include modern CSS colors.");
         Assert(ChartColor.Parse("DarkSlateGrey").ToHex() == ChartColors.DarkSlateGray.ToHex(), "Named color parsing should support grey aliases.");
+        Assert(ChartColors.TryGet("Slate950", out var slate) && slate.ToHex() == ChartColors.Slate950.ToHex(), "Named color lookup should include ChartForgeX design tokens.");
+        Assert(ChartColor.Parse("emerald400").ToHex() == ChartColors.Emerald400.ToHex(), "Named color parsing should support ChartForgeX design tokens.");
+        Assert(ChartColors.GetTokenColors().Count >= 29, "ChartForgeX should expose its design token color set.");
+        var tokenPalette = ChartPalettes.FromHex("Slate950", "Blue400", "Emerald400");
+        Assert(tokenPalette[0].ToHex() == ChartColors.Slate950.ToHex() && tokenPalette[2].ToHex() == ChartColors.Emerald400.ToHex(), "Palette parsing should accept ChartForgeX design token names.");
         Assert(ChartColor.Parse("#34D399").ToHex() == ChartColors.Emerald400.ToHex(), "Color parsing should keep hex support.");
         var pastel = ChartPalettes.Pastel;
         pastel[0] = ChartColor.Black;

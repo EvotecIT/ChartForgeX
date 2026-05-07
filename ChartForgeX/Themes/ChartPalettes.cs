@@ -7,9 +7,9 @@ namespace ChartForgeX.Themes;
 /// </summary>
 public static class ChartPalettes {
     /// <summary>
-    /// Creates a palette from hexadecimal color strings.
+    /// Creates a palette from named color tokens or hexadecimal color strings.
     /// </summary>
-    /// <param name="colors">The color strings in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
+    /// <param name="colors">The color strings as ChartForgeX color names, #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
     /// <returns>A chart color palette.</returns>
     public static ChartColor[] FromHex(params string[] colors) {
         if (colors == null) throw new System.ArgumentNullException(nameof(colors));
