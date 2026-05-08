@@ -14,7 +14,7 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static List<(TopologyEdgeLabelLayout Layout, int RenderOrder)> OrderedEdgeLabelsForRendering(TopologyChart chart, TopologyRenderOptions options) {
-        var edgeOrders = OrderedEdgesForRendering(chart, options).ToDictionary(item => item.Edge.Id, item => item.RenderOrder, System.StringComparer.Ordinal);
+        var edgeOrders = EdgeRenderOrderMap(chart, options);
         return EdgeLabelLayouts(chart, options)
             .Select(layout => new { Layout = layout, RenderOrder = edgeOrders.TryGetValue(layout.Edge.Id, out var order) ? order : 0 })
             .OrderBy(item => item.RenderOrder)
@@ -29,6 +29,15 @@ internal static partial class TopologyRenderPrimitives {
             .ThenBy(item => item.Index)
             .Select(item => item.Edge)
             .ToList();
+    }
+
+    private static Dictionary<string, int> EdgeRenderOrderMap(TopologyChart chart, TopologyRenderOptions options) {
+        var orders = new Dictionary<string, int>(System.StringComparer.Ordinal);
+        foreach (var item in OrderedEdgesForRendering(chart, options)) {
+            if (!orders.ContainsKey(item.Edge.Id)) orders.Add(item.Edge.Id, item.RenderOrder);
+        }
+
+        return orders;
     }
 
     private static int EdgeRenderPriority(TopologyEdge edge, bool selected) {

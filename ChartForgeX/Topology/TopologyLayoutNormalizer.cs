@@ -204,8 +204,9 @@ internal static class TopologyLayoutNormalizer {
         if (!options.IncludeNodeLabels) return bounds;
         if (displayMode == TopologyNodeDisplayMode.Icon) {
             if (options.IncludeIconLabels) {
-                var label = TrimTo(node.Label, NodeTitleMaxLength(displayMode));
-                var labelWidth = Math.Min(EstimateTextWidth(label, 10.5, true), Math.Max(node.Width + 46, 72));
+                var maxLabelWidth = Math.Max(node.Width + 46, 72);
+                var label = TrimToEstimatedWidth(TrimTo(node.Label, NodeTitleMaxLength(displayMode)), maxLabelWidth, 10.5, true);
+                var labelWidth = Math.Max(34, EstimateTextWidth(label, 10.5, true) + 12);
                 var labelCenter = CenterX(node);
                 bounds = bounds.Include(labelCenter - labelWidth / 2, node.Y + node.Height + 1, labelCenter + labelWidth / 2, node.Y + node.Height + 20);
             }

@@ -245,6 +245,7 @@ public sealed partial class TopologySvgRenderer {
         var radius = options.GeographicRegionHullMinRadius;
         foreach (var node in chart.Nodes) {
             if (!string.Equals(node.GroupId, group.Id, StringComparison.Ordinal) || !node.Longitude.HasValue || !node.Latitude.HasValue) continue;
+            if (EffectiveNodeDisplayMode(node, options) == TopologyNodeDisplayMode.Hidden) continue;
             if (!TopologyMapProjection.IsVisible(chart.MapViewport, node.Longitude.Value, node.Latitude.Value)) continue;
             var projected = TopologyMapProjection.Project(map, chart.MapViewport, node.Longitude.Value, node.Latitude.Value);
             var dx = projected.X - anchor.X;

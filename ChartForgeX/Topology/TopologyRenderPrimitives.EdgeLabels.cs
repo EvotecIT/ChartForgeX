@@ -12,7 +12,7 @@ internal static partial class TopologyRenderPrimitives {
         var groupHeaderBoxes = chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 8)).ToList();
         var groupBoxes = chart.Groups.Select(group => LabelBox.FromGroup(group, 8)).ToList();
         var edgeSegments = EdgeSegments(chart, nodes);
-        var edgeRenderOrders = OrderedEdgesForRendering(chart, options).ToDictionary(item => item.Edge.Id, item => item.RenderOrder, StringComparer.Ordinal);
+        var edgeRenderOrders = EdgeRenderOrderMap(chart, options);
         var placed = new List<LabelBox>();
         var layouts = new List<TopologyEdgeLabelLayout>();
 
@@ -32,11 +32,11 @@ internal static partial class TopologyRenderPrimitives {
             var width = Math.Max(48, maxText * 7.2 + 18);
             var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 1;
             var height = EdgeLabelHeight(lineCount, options);
-            var obstacles = new List<LabelBox>(nodeBoxes.Count + groupHeaderBoxes.Count + groupBoxes.Count);
+            var obstacles = new List<LabelBox>(nodeBoxes.Count + (options.IncludeGroupLabels ? groupHeaderBoxes.Count : 0) + (options.IncludeGroups ? groupBoxes.Count : 0));
             obstacles.AddRange(nodeBoxes);
-            obstacles.AddRange(groupHeaderBoxes);
-            if (IsInterGroupEdge(edge, nodes)) obstacles.AddRange(groupBoxes);
-            var preferredGroup = SameGroupBox(edge, nodes, chart.Groups);
+            if (options.IncludeGroupLabels) obstacles.AddRange(groupHeaderBoxes);
+            if (options.IncludeGroups && IsInterGroupEdge(edge, nodes)) obstacles.AddRange(groupBoxes);
+            var preferredGroup = options.IncludeGroups ? SameGroupBox(edge, nodes, chart.Groups) : null;
             var currentOrder = edgeRenderOrders.TryGetValue(edge.Id, out var order) ? order : 0;
             var routeClearance = avoidOwnRoute ? AutomaticRouteClearanceOffset(points, labelPoint, width, height, chart.Viewport, chart.Legend) : new ChartPoint(0, 0);
             var baseX = labelPoint.X + edge.LabelOffsetX + (Math.Abs(edge.LabelOffsetX) < 0.000001 ? routeClearance.X : 0);

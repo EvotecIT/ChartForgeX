@@ -152,7 +152,7 @@ internal static class TopologyGeographicCallouts {
         foreach (var candidate in candidates) {
             var adjusted = AdjustCandidate(candidate, width, height, map, nodeBoxes);
             var box = CalloutBox.FromRect(adjusted.X, adjusted.Y, width, height);
-            var score = OverlapScore(box, placed) * 12 + OverlapScore(box, nodeBoxes) * 3 + Distance(anchorX, anchorY, candidate.X + width / 2, candidate.Y + height / 2) * 0.04;
+            var score = OverlapScore(box, placed) * 12 + OverlapScore(box, nodeBoxes) * 3 + Distance(anchorX, anchorY, adjusted.X + width / 2, adjusted.Y + height / 2) * 0.04;
             if (!string.IsNullOrWhiteSpace(preferredPlacement) && string.Equals(adjusted.Name, preferredPlacement, StringComparison.OrdinalIgnoreCase)) score -= 12000;
             if (adjusted.Y < chart.Viewport.Padding + 54) score += 900;
             if (score < bestScore) {
