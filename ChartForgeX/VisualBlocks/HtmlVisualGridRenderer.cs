@@ -20,11 +20,12 @@ public sealed class HtmlVisualGridRenderer {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
         var scope = NextScope();
+        var layout = VisualGridLayout.FromGrid(grid);
         var columns = Math.Min(grid.Columns, grid.Items.Count);
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
-            .Attribute("class", grid.PanelFit == VisualGridPanelFit.Stretch ? "chartforgex-visual-grid fit-stretch" : "chartforgex-visual-grid")
-            .Attribute("style", GridStyle(grid, columns))
+            .Attribute("class", GridClass(grid))
+            .Attribute("style", GridStyle(grid, layout, columns))
             .EndStartElement();
         if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
             writer.StartElement("header").Attribute("class", "chartforgex-visual-grid-header").EndStartElement();
@@ -43,7 +44,7 @@ public sealed class HtmlVisualGridRenderer {
                 .Attribute("aria-label", ItemTitle(item))
                 .Attribute("style", PanelSpanStyle(columnSpan, item.RowSpan))
                 .EndStartElement()
-                .RawTrusted(PrepareChildSvg(childSvg, grid.PanelFit == VisualGridPanelFit.Stretch))
+                .RawTrusted(PrepareChildSvg(childSvg, grid.PanelSize.HasValue && grid.PanelFit == VisualGridPanelFit.Stretch))
                 .EndElement();
         }
 
@@ -72,7 +73,7 @@ public sealed class HtmlVisualGridRenderer {
     }
 
     private static string BuildCss(string background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize) {
-        return "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),var(--cfx-visual-grid-panel-width,minmax(0,1fr)));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:100%;max-height:100%;display:block}.chartforgex-visual-grid.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}";
+        return "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),var(--cfx-visual-grid-panel-width,minmax(0,1fr)));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%}.chartforgex-visual-grid.has-fixed-panels.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}";
     }
 
     private static string ItemTitle(VisualGridItem item) {
@@ -80,15 +81,20 @@ public sealed class HtmlVisualGridRenderer {
         return item.Block?.AccessibleName ?? "Visual block";
     }
 
-    private static string GridStyle(VisualGrid grid, int columns) {
+    private static string GridClass(VisualGrid grid) {
+        var value = "chartforgex-visual-grid";
+        if (grid.PanelSize.HasValue) value += " has-fixed-panels";
+        if (grid.PanelSize.HasValue && grid.PanelFit == VisualGridPanelFit.Stretch) value += " fit-stretch";
+        return value;
+    }
+
+    private static string GridStyle(VisualGrid grid, VisualGridLayout layout, int columns) {
         var sb = new StringBuilder();
         sb.Append("--cfx-visual-grid-columns:").Append(columns.ToString(CultureInfo.InvariantCulture));
         sb.Append(";--cfx-visual-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
         sb.Append(";--cfx-visual-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
-        if (grid.PanelSize.HasValue) {
-            sb.Append(";--cfx-visual-grid-panel-width:").Append(grid.PanelSize.Value.Width.ToString(CultureInfo.InvariantCulture)).Append("px");
-            sb.Append(";--cfx-visual-grid-panel-height:").Append(grid.PanelSize.Value.Height.ToString(CultureInfo.InvariantCulture)).Append("px");
-        }
+        sb.Append(";--cfx-visual-grid-panel-width:").Append(layout.PanelWidth.ToString(CultureInfo.InvariantCulture)).Append("px");
+        sb.Append(";--cfx-visual-grid-panel-height:").Append(layout.PanelHeight.ToString(CultureInfo.InvariantCulture)).Append("px");
 
         return sb.ToString();
     }

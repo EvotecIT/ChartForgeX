@@ -106,9 +106,10 @@ internal static partial class SmokeTests {
             .Add(metric);
         var fixedHtml = fixedGrid.ToHtmlPage();
         Assert(fixedHtml.Contains("padding:var(--cfx-visual-grid-padding,24px)", StringComparison.Ordinal), "VisualGrid HTML should apply grid padding on the grid container where the custom property is scoped.");
+        Assert(fixedHtml.Contains("chartforgex-visual-grid has-fixed-panels", StringComparison.Ordinal), "VisualGrid HTML should mark grids with fixed panel sizing.");
         Assert(fixedHtml.Contains("grid-template-columns:repeat(var(--cfx-visual-grid-columns),var(--cfx-visual-grid-panel-width,minmax(0,1fr)))", StringComparison.Ordinal), "VisualGrid HTML should honor fixed panel widths when PanelSize is configured.");
         Assert(fixedHtml.Contains("grid-auto-flow:row dense", StringComparison.Ordinal), "VisualGrid HTML should use dense placement like SVG/PNG layout.");
-        Assert(fixedHtml.Contains(".chartforgex-visual-grid-panel svg{width:100%;height:100%", StringComparison.Ordinal), "VisualGrid HTML contain mode should scale embedded SVGs to fixed panel bounds.");
+        Assert(fixedHtml.Contains(".chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%", StringComparison.Ordinal), "VisualGrid HTML contain mode should scale embedded SVGs to fixed panel bounds.");
 
         var stretchGrid = VisualGrid.Create()
             .WithPanelSize(500, 320)
@@ -117,6 +118,16 @@ internal static partial class SmokeTests {
         var stretchSvg = stretchGrid.ToSvg("visual-grid-stretch");
         Assert(stretchSvg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal) && stretchSvg.Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "VisualGrid SVG stretch mode should remove child aspect-ratio locking.");
         Assert(stretchGrid.ToHtmlFragment().Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "VisualGrid HTML stretch mode should remove embedded SVG aspect-ratio locking.");
+
+        var autoGrid = VisualGrid.Create()
+            .WithColumns(2)
+            .Add(MetricCard.Create().WithMetric("Small", 1).WithSize(260, 140))
+            .Add(MetricCard.Create().WithMetric("Large", 2).WithSize(420, 260));
+        var autoHtml = autoGrid.ToHtmlPage();
+        Assert(autoHtml.Contains("--cfx-visual-grid-panel-width:420px", StringComparison.Ordinal), "Auto-sized VisualGrid HTML should emit the computed max panel width used by SVG/PNG layout.");
+        Assert(autoHtml.Contains("--cfx-visual-grid-panel-height:260px", StringComparison.Ordinal), "Auto-sized VisualGrid HTML should emit the computed max panel height used by SVG/PNG layout.");
+        Assert(autoHtml.Contains(".chartforgex-visual-grid-panel svg{width:auto;height:auto", StringComparison.Ordinal), "Auto-sized VisualGrid HTML should preserve child SVG intrinsic sizes.");
+        Assert(!autoHtml.Contains("chartforgex-visual-grid has-fixed-panels", StringComparison.Ordinal), "Auto-sized VisualGrid HTML should not force fixed-panel child scaling.");
     }
 
     private static void VisualBlocksRejectInvalidInputsCloseToCaller() {
