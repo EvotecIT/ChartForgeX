@@ -26,6 +26,43 @@ internal static partial class SmokeTests {
         Assert(!unsmoothed.Contains(" C ", StringComparison.Ordinal), "Series smoothing can be disabled fluently.");
     }
 
+    private static void SeriesFillPatternsRenderForFilledMarks() {
+        var chart = Chart.Create()
+            .WithSize(540, 320)
+            .AddBar("Patterned", Points(12, 44, 26), ChartColor.FromHex("#F97316"));
+        chart.Series[0]
+            .WithFillPattern(ChartFillPattern.DiagonalBackward)
+            .WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        var svg = chart.ToSvg();
+        Assert(svg.Contains("data-cfx-role=\"bar-pattern\"", StringComparison.Ordinal), "Bar fill patterns should render SVG pattern overlays.");
+        Assert(svg.Contains("data-cfx-fill-pattern=\"Crosshatch\"", StringComparison.Ordinal), "Point fill patterns should override the series pattern in SVG metadata.");
+        Assert(chart.ToPng().Length > 64, "Bar fill patterns should render PNG output.");
+
+        var horizontal = Chart.Create()
+            .WithSize(540, 320)
+            .WithXLabels("A", "B", "C")
+            .AddHorizontalBar("Patterned", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
+        horizontal.Series[0].WithFillPattern(ChartFillPattern.DiagonalForward);
+        Assert(horizontal.ToSvg().Contains("data-cfx-role=\"horizontal-bar-pattern\"", StringComparison.Ordinal), "Horizontal bars should render fill pattern overlays.");
+        Assert(horizontal.ToPng().Length > 64, "Horizontal bar fill patterns should render PNG output.");
+
+        var range = Chart.Create()
+            .WithSize(540, 320)
+            .AddRangeBar("Patterned", new[] {
+                new ChartInterval(1, 20, 42),
+                new ChartInterval(2, 30, 55)
+            }, ChartColor.FromHex("#8B5CF6"));
+        range.Series[0].WithFillPattern(ChartFillPattern.DiagonalBackward);
+        Assert(range.ToSvg().Contains("data-cfx-role=\"range-bar-pattern\"", StringComparison.Ordinal), "Range bars should render fill pattern overlays.");
+        Assert(range.ToPng().Length > 64, "Range-bar fill patterns should render PNG output.");
+
+        chart.Series[0].UseSeriesFillPattern(1).UseSolidFill();
+        Assert(!chart.ToSvg().Contains("data-cfx-role=\"bar-pattern\"", StringComparison.Ordinal), "Fill patterns can be cleared fluently.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithFillPattern((ChartFillPattern)999), "Series fill patterns should reject unknown values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointFillPattern(99, ChartFillPattern.DiagonalForward), "Point fill patterns should reject missing point indexes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointFillPattern(0, (ChartFillPattern)999), "Point fill patterns should reject unknown values.");
+    }
+
     private static void SeriesDataLabelStylesOverrideChartDefaults() {
         var chart = Chart.Create()
             .WithSize(520, 320)

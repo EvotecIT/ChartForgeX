@@ -489,6 +489,7 @@ public sealed class ChartListItem {
 /// A compact KPI or metric card visual block.
 /// </summary>
 public sealed class MetricCard : VisualBlock<MetricCard> {
+    private readonly List<MetricCardDetail> _details = new();
     private string _label = string.Empty;
     private string _value = string.Empty;
     private string _caption = string.Empty;
@@ -530,6 +531,9 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         }
     }
 
+    /// <summary>Gets compact supporting detail rows rendered inside the card.</summary>
+    public IReadOnlyList<MetricCardDetail> Details => _details;
+
     /// <summary>Gets a concise accessibility label.</summary>
     public override string AccessibleName => Label.Length == 0 ? base.AccessibleName : Label;
 
@@ -559,6 +563,43 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     public MetricCard WithStatus(VisualStatus status) {
         Status = status;
         return this;
+    }
+
+    /// <summary>Adds a compact detail row to the card.</summary>
+    public MetricCard AddDetail(string label, object? value, VisualStatus status = VisualStatus.Neutral, string? format = null) {
+        _details.Add(new MetricCardDetail(label, ChartTableCell.FromValue(value, format).Text, status));
+        return this;
+    }
+}
+
+/// <summary>
+/// A compact supporting metric rendered inside a <see cref="MetricCard"/>.
+/// </summary>
+public sealed class MetricCardDetail {
+    private string _label;
+    private string _value;
+    private VisualStatus _status;
+
+    /// <summary>Initializes a metric card detail.</summary>
+    public MetricCardDetail(string label, string value, VisualStatus status = VisualStatus.Neutral) {
+        _label = label ?? throw new ArgumentNullException(nameof(label));
+        _value = value ?? throw new ArgumentNullException(nameof(value));
+        Status = status;
+    }
+
+    /// <summary>Gets or sets the detail label.</summary>
+    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the detail value.</summary>
+    public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the semantic status color for the detail marker.</summary>
+    public VisualStatus Status {
+        get => _status;
+        set {
+            VisualBlockGuards.EnumDefined(value, nameof(value));
+            _status = value;
+        }
     }
 }
 
@@ -647,6 +688,7 @@ public sealed class VisualGrid {
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;
     private VisualGridPanelFit _panelFit = VisualGridPanelFit.Contain;
+    private bool _frameVisible;
 
     /// <summary>Gets or sets the grid title.</summary>
     public string Title { get => _title; set => _title = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -665,6 +707,9 @@ public sealed class VisualGrid {
 
     /// <summary>Gets or sets the PNG output pixel multiplier.</summary>
     public int PngOutputScale { get => _pngOutputScale; set { if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four."); _pngOutputScale = value; } }
+
+    /// <summary>Gets or sets a value indicating whether the grid should render a subtle outer frame.</summary>
+    public bool FrameVisible { get => _frameVisible; set => _frameVisible = value; }
 
     /// <summary>Gets or sets the optional fixed panel size.</summary>
     public ChartSize? PanelSize {
@@ -719,6 +764,9 @@ public sealed class VisualGrid {
 
     /// <summary>Sets the PNG output pixel multiplier.</summary>
     public VisualGrid WithPngOutputScale(int scale) { PngOutputScale = scale; return this; }
+
+    /// <summary>Sets whether the grid renders a subtle outer frame.</summary>
+    public VisualGrid WithFrame(bool visible = true) { FrameVisible = visible; return this; }
 
     /// <summary>Adds a chart panel.</summary>
     public VisualGrid Add(Chart chart, int columnSpan = 1, int rowSpan = 1) {

@@ -116,6 +116,10 @@ public sealed partial class PngChartRenderer {
                 DrawSpecialChart(DrawHeatmap);
                 return c;
             }
+            if (IsHexbinHeatmapChart(chart)) {
+                DrawSpecialChart(DrawHexbinHeatmap);
+                return c;
+            }
             if (IsCalendarHeatmapChart(chart)) {
                 DrawSpecialChart(DrawCalendarHeatmap);
                 return c;
@@ -233,8 +237,21 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawCardSurface(RgbaCanvas c, ChartOptions options, ChartTheme theme) {
+        DrawCardShadow(c, 14, 14, options.Size.Width - 28, options.Size.Height - 28, theme.CornerRadius, theme);
         c.FillRoundedRect(14, 14, options.Size.Width - 28, options.Size.Height - 28, theme.CornerRadius, theme.CardBackground);
         if (theme.CardBorder.A > 0) c.StrokeRoundedRect(14, 14, options.Size.Width - 28, options.Size.Height - 28, theme.CornerRadius, theme.CardBorder);
+    }
+
+    private static void DrawCardShadow(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartTheme theme) {
+        if (theme.ShadowOpacity <= 0) return;
+        DrawShadowLayer(c, x - 1.5, y + 5, width + 3, height, radius + 1.5, theme.ShadowOpacity * 0.24);
+        DrawShadowLayer(c, x - 0.75, y + 2.5, width + 1.5, height, radius + 0.75, theme.ShadowOpacity * 0.34);
+    }
+
+    private static void DrawShadowLayer(RgbaCanvas c, double x, double y, double width, double height, double radius, double opacity) {
+        var alpha = (byte)Math.Max(0, Math.Min(255, Math.Round(255 * opacity)));
+        if (alpha == 0) return;
+        c.FillRoundedRect(x, y, width, height, radius, ChartColor.FromRgba(15, 23, 42, alpha));
     }
 
     private static void DrawPlotSurface(RgbaCanvas c, ChartOptions options, ChartTheme theme, ChartRect plot) {
@@ -269,6 +286,11 @@ public sealed partial class PngChartRenderer {
         pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
             ? series.PointColors[pointIndex]!.Value
             : SeriesColor(chart, seriesIndex);
+
+    private static ChartFillPattern FillPattern(ChartSeries series, int pointIndex) =>
+        pointIndex >= 0 && pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
+            ? series.PointFillPatterns[pointIndex]!.Value
+            : series.FillPattern;
 
     private static bool ShowXAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowXAxis;
 
@@ -414,6 +436,11 @@ public sealed partial class PngChartRenderer {
         return formatter(value) ?? string.Empty;
     }
 
+    private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
+        if (pointIndex >= 0 && pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null) return series.PointLabels[pointIndex]!;
+        return FormatValue(chart, value);
+    }
+
     private static string FormatSecondaryValue(Chart chart, double value) {
         var formatter = chart.Options.SecondaryYAxisValueFormatter;
         if (formatter == null) return FormatValue(chart, value);
@@ -534,6 +561,11 @@ public sealed partial class PngChartRenderer {
 
     private static bool IsProgressBarChart(Chart chart) {
         foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.ProgressBar) return true;
+        return false;
+    }
+
+    private static bool IsHexbinHeatmapChart(Chart chart) {
+        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.HexbinHeatmap) return true;
         return false;
     }
 

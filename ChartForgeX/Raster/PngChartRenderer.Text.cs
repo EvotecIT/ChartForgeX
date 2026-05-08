@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -43,6 +44,55 @@ public sealed partial class PngChartRenderer {
         var width = EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize);
         var height = EstimatePngTextHeight(fittedFontSize);
         DrawReadablePngLabel(c, bounds.Left + (bounds.Width - width) / 2.0, bounds.Top + (bounds.Height - height) / 2.0, fittedLabel, text, halo, fittedFontSize, style);
+    }
+
+    private static bool IsPointCalloutSeries(ChartSeries series) => series.SemanticRole == "point-callout";
+
+    private static void DrawPngPointCalloutLabel(RgbaCanvas c, Chart chart, ChartRect plot, double x, double y, string label, ChartDataLabelPlacement placement, double preferredFontSize) {
+        var fontSize = Math.Max(preferredFontSize, 15);
+        label = TrimReadablePngLabelToWidth(label, fontSize, Math.Max(72, plot.Width * 0.42));
+        if (label.Length == 0) return;
+        var padX = 12.0;
+        var padY = 8.0;
+        var width = EstimatePngEmphasizedTextWidth(label, fontSize) + padX * 2;
+        var height = EstimatePngTextHeight(fontSize) + padY * 2;
+        var gap = 14.0;
+        var rectX = x - width / 2;
+        var rectY = y - gap - height;
+        if (placement == ChartDataLabelPlacement.Below) rectY = y + gap;
+        else if (placement == ChartDataLabelPlacement.Left) {
+            rectX = x - gap - width;
+            rectY = y - height / 2;
+        } else if (placement == ChartDataLabelPlacement.Right) {
+            rectX = x + gap;
+            rectY = y - height / 2;
+        }
+
+        rectX = Clamp(rectX, plot.Left + 4, plot.Right - width - 4);
+        rectY = Clamp(rectY, plot.Top + 4, plot.Bottom - height - 4);
+        var fill = ChartColor.FromRgba(20, 20, 22, 238);
+        c.FillRoundedRect(rectX, rectY, width, height, 9, fill);
+        DrawPngPointCalloutPointer(c, x, y, rectX, rectY, width, height, placement, fill);
+        c.DrawTextEmphasized(rectX + (width - EstimatePngEmphasizedTextWidth(label, fontSize)) / 2.0, rectY + padY, label, ChartColor.White, fontSize);
+    }
+
+    private static void DrawPngPointCalloutPointer(RgbaCanvas c, double x, double y, double rectX, double rectY, double width, double height, ChartDataLabelPlacement placement, ChartColor fill) {
+        List<ChartPoint> points;
+        if (placement == ChartDataLabelPlacement.Below) {
+            var baseX = Clamp(x, rectX + 10, rectX + width - 10);
+            points = new List<ChartPoint> { new(baseX - 6, rectY), new(baseX + 6, rectY), new(x, y + 5) };
+        } else if (placement == ChartDataLabelPlacement.Left) {
+            var baseY = Clamp(y, rectY + 10, rectY + height - 10);
+            points = new List<ChartPoint> { new(rectX + width, baseY - 6), new(rectX + width, baseY + 6), new(x - 5, y) };
+        } else if (placement == ChartDataLabelPlacement.Right) {
+            var baseY = Clamp(y, rectY + 10, rectY + height - 10);
+            points = new List<ChartPoint> { new(rectX, baseY - 6), new(rectX, baseY + 6), new(x + 5, y) };
+        } else {
+            var baseX = Clamp(x, rectX + 10, rectX + width - 10);
+            points = new List<ChartPoint> { new(baseX - 6, rectY + height), new(baseX + 6, rectY + height), new(x, y - 5) };
+        }
+
+        c.FillPolygon(points, fill);
     }
 
     private static void DrawPngTextEmphasizedCenteredX(RgbaCanvas c, double centerX, double y, string text, ChartColor color, double fontSize) {

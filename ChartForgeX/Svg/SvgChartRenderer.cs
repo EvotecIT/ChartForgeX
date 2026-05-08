@@ -177,6 +177,7 @@ public sealed partial class SvgChartRenderer {
             AppendLinearGradient(sb, $"{id}-area{i}", "0", "0", "0", "1", c.ToHex(), 0.32, c.ToHex(), 0.02);
             AppendLinearGradient(sb, $"{id}-seriesFill{i}", "0", "0", "0", "1", c.ToHex(), 1, c.ToHex(), 0.74);
         }
+        AppendFillPatternDefinitions(sb, chart, id);
         for (var i = 0; i < t.Palette.Length; i++) {
             var c = t.Palette[i];
             AppendLinearGradient(sb, $"{id}-sliceFill{i}", "0", "1", "0", "1", c.ToHex(), 1, c.ToHex(), 0.78);
@@ -283,6 +284,13 @@ public sealed partial class SvgChartRenderer {
         }
         if (IsHeatmapChart(chart)) {
             DrawHeatmap(sb, chart, plot);
+            DrawLegend(sb, chart, w, h);
+            AppendSvgEnd(sb, "g");
+            AppendSvgEnd(sb, "svg");
+            return sb.ToString();
+        }
+        if (IsHexbinHeatmapChart(chart)) {
+            DrawHexbinHeatmap(sb, chart, plot);
             DrawLegend(sb, chart, w, h);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
@@ -518,7 +526,7 @@ public sealed partial class SvgChartRenderer {
         if (s.Kind == ChartSeriesKind.HorizontalBar) { DrawHorizontalBars(sb, chart, index, plot, map, id); return; }
         if (s.Kind == ChartSeriesKind.Bar) { DrawBars(sb, chart, index, plot, range, map, id); return; }
         if (s.Kind == ChartSeriesKind.Lollipop) { DrawLollipops(sb, chart, index, plot, map); return; }
-        if (s.Kind == ChartSeriesKind.RangeBar) { DrawRangeBars(sb, chart, index, plot, map); return; }
+        if (s.Kind == ChartSeriesKind.RangeBar) { DrawRangeBars(sb, chart, index, plot, map, id); return; }
         if (s.Kind == ChartSeriesKind.BoxPlot) { DrawBoxPlots(sb, chart, index, plot, map); return; }
         if (s.Kind == ChartSeriesKind.Bubble) { DrawBubbles(sb, chart, index, plot, map); return; }
         if (s.Kind == ChartSeriesKind.ErrorBar) { DrawErrorBars(sb, chart, index, plot, map); return; }
@@ -544,7 +552,7 @@ public sealed partial class SvgChartRenderer {
                 var p = mapped[pointIndex];
                 var raw = s.Points[pointIndex];
                 var markerColor = PointColor(chart, s, index, pointIndex);
-                AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", "scatter-point").Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra)).Attribute("fill", markerColor.ToCss()).Attribute("opacity", "0.92").Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
+                AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", SeriesSemanticRole(s, "scatter-point")).Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra)).Attribute("fill", markerColor.ToCss()).Attribute("opacity", "0.92").Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
             }
         } else {
             var line = s.Kind == ChartSeriesKind.StepLine ? BuildStepLinePath(mapped) : BuildLinePath(mapped, s.Smooth);

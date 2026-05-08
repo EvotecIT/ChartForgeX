@@ -639,6 +639,7 @@ internal static partial class SmokeTests {
             File.WriteAllText(Path.Combine(output, "zeta.html"), "<!doctype html><title>Zeta</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "zeta.svg"), Chart.Create().WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3)).ToSvg());
             File.WriteAllBytes(Path.Combine(output, "zeta.png"), Chart.Create().WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3)).ToPng());
+            File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.html"), "<!doctype html><title>Dashboard Chart Portfolio</title><svg></svg>"); File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.svg"), alpha.ToSvg()); File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "travel-dotted-map-dark.html"), "<!doctype html><title>Travel Dotted Map</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "report.html"), "<!doctype html><title>Report</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}},{\"name\":\"zeta\",\"width\":640,\"height\":360,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
@@ -646,8 +647,8 @@ internal static partial class SmokeTests {
             GalleryWriter.Write(output);
             var gallery = File.ReadAllText(Path.Combine(output, "index.html"));
             Assert(gallery.Contains("<title>ChartForgeX Examples</title>", StringComparison.Ordinal), "Gallery should render a stable title.");
-            Assert(CountOccurrences(gallery, "<article class=\"card\">") == 4, "Gallery should render one card per generated chart page.");
-            Assert(CountOccurrences(gallery, "<img loading=\"lazy\"") == 2, "Gallery should preview generated SVG artifacts directly when they exist.");
+            Assert(CountOccurrences(gallery, "<article class=\"card\">") == 5, "Gallery should render one card per generated chart page.");
+            Assert(CountOccurrences(gallery, "<img loading=\"lazy\"") == 3, "Gallery should preview generated SVG artifacts directly when they exist.");
             Assert(CountOccurrences(gallery, "<iframe ") == 2, "Gallery should keep iframe previews only for HTML-only reports.");
             Assert(gallery.Contains("--preview-aspect:", StringComparison.Ordinal), "Gallery SVG previews should carry bounded per-chart aspect ratios.");
             Assert(gallery.Contains("align-items:start", StringComparison.Ordinal), "Gallery cards should avoid row stretching that creates empty card interiors.");
@@ -669,6 +670,7 @@ internal static partial class SmokeTests {
             Assert(catalog.Contains("Additional Examples", StringComparison.Ordinal), "Catalog should include uncategorized generated outputs.");
             Assert(catalog.Contains("Maps and Geography", StringComparison.Ordinal), "Catalog should expose maps as a named chart family.");
             Assert(catalog.Contains("travel-dotted-map-dark.html", StringComparison.Ordinal), "Catalog should route map examples into the map family.");
+            Assert(catalog.Contains("Dashboard Patterns", StringComparison.Ordinal) && catalog.Contains("dashboard-chart-portfolio-grid.html", StringComparison.Ordinal), "Catalog should route dashboard outputs into the dashboard family.");
             Assert(catalog.Contains("alpha.html", StringComparison.Ordinal), "Catalog should link chart HTML output.");
             Assert(catalog.Contains("alpha.svg", StringComparison.Ordinal), "Catalog should link chart SVG output.");
             Assert(catalog.Contains("alpha.png", StringComparison.Ordinal), "Catalog should link chart PNG output.");

@@ -100,6 +100,16 @@ internal static partial class SmokeTests {
                 .AddHeatmapRow("Primary", Points(94, 88, 76, 71, 64))
                 .AddHeatmapRow("Regional", Points(82, 75, 68, 61, 54))
                 .AddHeatmapRow("Acquired", Points(68, 52, 44, 37, 31)), 360, 240, 18),
+            ("dense hexbin heatmap", Chart.Create()
+                .WithTitle("Attendance Stress")
+                .WithSubtitle("Honeycomb labels and staggered cells")
+                .WithTheme(ChartTheme.ReportLight())
+                .WithSize(380, 250)
+                .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+                .WithValueFormatter(v => v.ToString("0") + "%")
+                .AddHexbinHeatmapRow("09:00", new[] { 68d, 82, 91, 94, 89 })
+                .AddHexbinHeatmapRow("11:00", new[] { 74d, 88, 96, 98, 93 })
+                .AddHexbinHeatmapRow("13:00", new[] { 70d, 84, 92, 95, 91 }), 380, 250, 18),
             ("dense treemap", Chart.Create()
                 .WithTitle("Finding Mix Stress")
                 .WithSubtitle("Tile labels and fractional borders")

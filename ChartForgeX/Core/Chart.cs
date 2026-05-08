@@ -586,20 +586,6 @@ public sealed partial class Chart {
     public Chart AddHorizontalBar(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) => Add(name, ChartSeriesKind.HorizontalBar, points, color);
 
     /// <summary>
-    /// Adds a heatmap row series.
-    /// </summary>
-    /// <param name="name">The row name.</param>
-    /// <param name="points">The cell values. The x values identify columns and the y values set cell intensity.</param>
-    /// <param name="color">An optional high-intensity cell color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
-        var materialized = ChartGuards.Points(points, nameof(points));
-        if (materialized.Count == 0) throw new ArgumentException("Heatmap rows must contain at least one cell value.", nameof(points));
-        Series.Add(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), ChartSeriesKind.Heatmap, materialized) { Color = color });
-        return this;
-    }
-
-    /// <summary>
     /// Adds a single-value gauge series.
     /// </summary>
     /// <param name="name">The gauge label.</param>

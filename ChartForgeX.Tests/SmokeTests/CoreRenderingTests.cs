@@ -78,6 +78,24 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">126</text>", StringComparison.Ordinal), "Data labels should render numeric values.");
     }
 
+    private static void PointCalloutsUseCustomPointLabels() {
+        var chart = Chart.Create()
+            .WithSize(480, 300)
+            .AddLine("MRR", Points(100, 112, 119), ChartColor.FromRgb(37, 99, 235))
+            .AddPointCallout("$119,000 MRR", 3, 119, ChartColor.FromRgb(37, 99, 235));
+
+        var svg = chart.ToSvg();
+        Assert(svg.Contains(">$119,000 MRR</text>", StringComparison.Ordinal), "Point callouts should render custom data-label text.");
+        Assert(svg.Contains("data-cfx-role=\"point-callout\"", StringComparison.Ordinal), "Point callouts should expose a stable semantic SVG role.");
+        Assert(!svg.Contains(">119</text>", StringComparison.Ordinal), "Point callouts should replace the formatted point value with the custom label.");
+        Assert(!svg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"1\"", StringComparison.Ordinal), "Point callouts should not add dashboard-only highlights to the legend.");
+        Assert(svg.Contains("with 1 data series: MRR.", StringComparison.Ordinal), "Point callouts should not inflate generic SVG data-series descriptions.");
+        Assert(chart.ToPng().Length > 64, "Point callouts should render PNG output.");
+
+        chart.Series[1].UseFormattedPointLabel(0);
+        Assert(chart.ToSvg().Contains(">119</text>", StringComparison.Ordinal), "Clearing a point label should restore formatted values.");
+    }
+
     private static void SeriesDataLabelOverridesAreHonored() {
         var chart = Chart.Create()
             .WithSize(420, 280)
@@ -285,6 +303,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("font-family=\"A&amp;B &quot;Display&quot;\"", StringComparison.Ordinal), "SVG font-family values should be attribute-escaped.");
         var editorial = Chart.Create().WithTheme(ChartTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(editorial.Contains(ChartFontStacks.Serif, StringComparison.Ordinal), "Editorial themes should use the built-in serif font stack.");
+        var dashboard = Chart.Create().WithTheme(ChartTheme.DashboardLight()).AddBar("KPI", Points(8, 9, 7)).ToSvg();
+        Assert(dashboard.Contains("#DDFB20", StringComparison.Ordinal) && dashboard.Contains("rx=\"24\"", StringComparison.Ordinal), "Dashboard themes should expose the reusable KPI-card visual language.");
+        var saas = Chart.Create().WithTheme(ChartTheme.SaasDashboardLight()).AddSmoothLine("MRR", Points(104, 112, 126)).ToSvg();
+        Assert(saas.Contains("#356AF4", StringComparison.Ordinal) && saas.Contains("r=\"4.2\"", StringComparison.Ordinal), "SaaS dashboard themes should expose recurring-revenue line-card tokens.");
         var customized = Chart.Create()
             .WithTitle("Custom typography")
             .WithTheme(theme => theme

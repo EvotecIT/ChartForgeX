@@ -103,10 +103,12 @@ internal static partial class SmokeTests {
         Assert(readme.Contains("## Customization cookbook", StringComparison.Ordinal), "README should include a customization cookbook.");
         Assert(readme.Contains("ChartTheme.Aurora()", StringComparison.Ordinal), "README should document expressive built-in themes.");
         Assert(readme.Contains("ChartTheme.Colorblind()", StringComparison.Ordinal), "README should document accessible color themes.");
+        Assert(readme.Contains("ChartTheme.DashboardLight()", StringComparison.Ordinal) && readme.Contains("ChartTheme.SaasDashboardLight()", StringComparison.Ordinal), "README should document dashboard theme presets.");
         Assert(readme.Contains("ChartFontStacks", StringComparison.Ordinal), "README should document built-in font stacks.");
         Assert(readme.Contains("ChartPalettes.Vivid", StringComparison.Ordinal), "README should document reusable palette presets.");
         Assert(readme.Contains("ChartPictorialShape.Person", StringComparison.Ordinal), "README should document expanded pictorial symbols.");
         Assert(readme.Contains("data-cfx-status=\"empty\"", StringComparison.Ordinal) && readme.Contains("explicit zero value", StringComparison.Ordinal), "README should document no-data versus low-value metadata for heatmap-style charts.");
+        Assert(readme.Contains("data-cfx-row-count", StringComparison.Ordinal) && readme.Contains("data-cfx-column-count", StringComparison.Ordinal) && readme.Contains("data-cfx-min", StringComparison.Ordinal) && readme.Contains("data-cfx-max", StringComparison.Ordinal), "README should document matrix heatmap container metadata.");
         Assert(readme.Contains("data-cfx-start-date", StringComparison.Ordinal) && readme.Contains("filled/empty day counts", StringComparison.Ordinal), "README should document calendar heatmap container metadata.");
         Assert(readme.Contains("data-cfx-label", StringComparison.Ordinal) && readme.Contains("data-cfx-projection", StringComparison.Ordinal) && readme.Contains("data-cfx-map-kind", StringComparison.Ordinal) && readme.Contains("data-cfx-point-count", StringComparison.Ordinal), "README should document map SVG container metadata.");
         Assert(readme.Contains("ChartSurfaceStyle.Glass", StringComparison.Ordinal), "README should document reusable surface presets.");
@@ -130,6 +132,10 @@ internal static partial class SmokeTests {
             "AddSmoothStackedArea",
             "AddScatter",
             "AddTrendLine",
+            "AddPointCallout",
+            "WithPointLabel",
+            "WithLegendEntry",
+            "WithSemanticRole",
             "AddMeanLine",
             "AddMedianLine",
             "AddStandardDeviationBand",
@@ -155,6 +161,10 @@ internal static partial class SmokeTests {
             "AddHorizontalBar",
             "WithStackedHorizontalBars",
             "AddHeatmapRow",
+            "AddHeatmapRows",
+            "ChartHeatmapRow",
+            "AddHexbinHeatmapRow",
+            "AddHexbinHeatmapRows",
             "AddCalendarHeatmap",
             "ChartCalendarHeatmapItem",
             "AddDottedMap",

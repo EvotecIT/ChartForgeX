@@ -90,6 +90,11 @@ public enum ChartSeriesKind {
     Heatmap,
 
     /// <summary>
+    /// Renders a matrix of colored hexagonal value cells.
+    /// </summary>
+    HexbinHeatmap,
+
+    /// <summary>
     /// Renders date-indexed values as a contribution-style calendar grid.
     /// </summary>
     CalendarHeatmap,

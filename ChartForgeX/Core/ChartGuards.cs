@@ -8,6 +8,7 @@ namespace ChartForgeX.Core;
 internal static class ChartGuards {
     private static readonly ChartSeriesKind[] ExclusiveSeriesKinds = {
         ChartSeriesKind.Heatmap,
+        ChartSeriesKind.HexbinHeatmap,
         ChartSeriesKind.CalendarHeatmap,
         ChartSeriesKind.DottedMap,
         ChartSeriesKind.TileMap,
@@ -52,6 +53,19 @@ internal static class ChartGuards {
         }
 
         return materialized;
+    }
+
+    public static List<ChartPoint> Values(IEnumerable<double> values, string parameterName) {
+        if (values == null) throw new ArgumentNullException(parameterName);
+        var points = new List<ChartPoint>();
+        var index = 1;
+        foreach (var value in values) {
+            Finite(value, parameterName + "[" + (index - 1).ToString(System.Globalization.CultureInfo.InvariantCulture) + "]");
+            points.Add(new ChartPoint(index, value));
+            index++;
+        }
+
+        return points;
     }
 
     public static void RenderCompatibility(Chart chart) {
@@ -203,7 +217,7 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind) {
-        if (kind == ChartSeriesKind.Heatmap) ValidateMinimumPointCount(chart.Series, kind, 1);
+        if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.CalendarHeatmap) {
             ValidateMinimumPointCount(chart.Series, kind, 1);
             ValidateNonNegativeValues(chart.Series[0], kind);

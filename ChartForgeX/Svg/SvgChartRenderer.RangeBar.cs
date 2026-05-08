@@ -8,7 +8,7 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
-    private static void DrawRangeBars(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartMapper map) {
+    private static void DrawRangeBars(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartMapper map, string id) {
         var series = chart.Series[index];
         var intervalCount = Math.Max(1, series.Points.Count / 2);
         var barWidth = Math.Max(8, Math.Min(28, plot.Width / Math.Max(1, intervalCount * 4.0)));
@@ -25,15 +25,17 @@ public sealed partial class SvgChartRenderer {
             var color = PointColor(chart, series, index, intervalIndex);
             var summary = FormatValue(chart, Math.Min(start.Y, end.Y)) + "-" + FormatValue(chart, Math.Max(start.Y, end.Y));
 
-            WriteRangeBarInterval(sb, index, intervalIndex, start.X, start.Y, end.Y, summary, color, x, y1, y2, top, height, barWidth);
+            WriteRangeBarInterval(sb, series, index, intervalIndex, id, start.X, start.Y, end.Y, summary, color, x, y1, y2, top, height, barWidth);
             if (ShouldDrawDataLabels(chart, series)) DrawRangeBarLabel(sb, chart, series, intervalIndex, plot, reservedLabels, summary, x, y1, y2, top, height, barWidth);
         }
     }
 
     private static void WriteRangeBarInterval(
         StringBuilder sb,
+        ChartSeries series,
         int seriesIndex,
         int pointIndex,
+        string id,
         double valueX,
         double startValue,
         double endValue,
@@ -66,6 +68,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("opacity", ChartVisualPrimitives.RangeBarFillOpacity)
             .EndEmptyElement()
             .Line();
+        WriteFillPatternOverlay(writer, series, seriesIndex, pointIndex, id, x - barWidth / 2, top, barWidth, height, Math.Min(7, barWidth / 2), "range-bar-pattern");
         WriteRangeBarCap(writer, seriesIndex, pointIndex, "start", startValue, x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, colorCss);
         WriteRangeBarCap(writer, seriesIndex, pointIndex, "end", endValue, x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, colorCss);
         sb.Append(writer.Build());

@@ -79,8 +79,12 @@ public sealed partial class SvgChartRenderer {
         TrimSvgLabelToWidth(chart.Series[index].Name, chart.Options.Theme.LegendFontSize, LegendLabelMaxWidth(width));
 
     private static List<LegendEntry> BuildLegendEntries(Chart chart, double width) {
-        if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !CanUsePointLegend(chart.Series[0])) {
-            return chart.Series.Select((series, index) => new LegendEntry(index, -1, SvgLegendLabel(chart, index, width), Color(chart, index))).ToList();
+        if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !chart.Series[0].ShowInLegend || !CanUsePointLegend(chart.Series[0])) {
+            return chart.Series
+                .Select((series, index) => new { series, index })
+                .Where(item => item.series.ShowInLegend)
+                .Select(item => new LegendEntry(item.index, -1, SvgLegendLabel(chart, item.index, width), Color(chart, item.index)))
+                .ToList();
         }
 
         var series0 = chart.Series[0];
@@ -137,7 +141,7 @@ public sealed partial class SvgChartRenderer {
 
     private static double LegendBottomReserve(Chart chart) => 18 + BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80)).Count * LegendRowHeight + ChartVisualPrimitives.LegendPlotGap;
 
-    private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && chart.Series.Count > 0 && !IsMapChart(chart);
+    private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && chart.Series.Any(series => series.ShowInLegend) && !IsMapChart(chart);
 
     private static double LegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;
@@ -391,6 +395,70 @@ public sealed partial class SvgChartRenderer {
             ? series.PointColors[pointIndex]!.Value.ToCss()
             : $"url(#{id}-seriesFill{seriesIndex})";
 
+    private static ChartFillPattern FillPattern(ChartSeries series, int pointIndex) =>
+        pointIndex >= 0 && pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
+            ? series.PointFillPatterns[pointIndex]!.Value
+            : series.FillPattern;
+
+    private static void AppendFillPatternDefinitions(StringBuilder sb, Chart chart, string id) {
+        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var series = chart.Series[seriesIndex];
+            if (series.FillPattern != ChartFillPattern.None) AppendSvgFillPatternDefinition(sb, FillPatternId(id, seriesIndex, -1), series.FillPattern);
+            for (var pointIndex = 0; pointIndex < series.PointFillPatterns.Count; pointIndex++) {
+                if (!series.PointFillPatterns[pointIndex].HasValue || series.PointFillPatterns[pointIndex] == ChartFillPattern.None) continue;
+                AppendSvgFillPatternDefinition(sb, FillPatternId(id, seriesIndex, pointIndex), series.PointFillPatterns[pointIndex]!.Value);
+            }
+        }
+    }
+
+    private static void AppendSvgFillPatternDefinition(StringBuilder sb, string patternId, ChartFillPattern pattern) {
+        var forward = pattern == ChartFillPattern.DiagonalForward || pattern == ChartFillPattern.Crosshatch;
+        var backward = pattern == ChartFillPattern.DiagonalBackward || pattern == ChartFillPattern.Crosshatch;
+        var opacity = pattern == ChartFillPattern.Crosshatch ? 0.2 : 0.28;
+        AppendSvg(sb, writer => {
+            writer.StartElement("pattern").Attribute("id", patternId).Attribute("width", "8").Attribute("height", "8").Attribute("patternUnits", "userSpaceOnUse").EndStartElement().Line();
+            if (forward) writer.StartElement("path").Attribute("d", "M -2 8 L 8 -2 M 0 10 L 10 0").Attribute("stroke", "#fff").Attribute("stroke-opacity", opacity).Attribute("stroke-width", "1.25").Attribute("stroke-linecap", "round").EndEmptyElement().Line();
+            if (backward) writer.StartElement("path").Attribute("d", "M -2 0 L 8 10 M 0 -2 L 10 8").Attribute("stroke", "#fff").Attribute("stroke-opacity", opacity).Attribute("stroke-width", "1.25").Attribute("stroke-linecap", "round").EndEmptyElement().Line();
+            writer.EndElement().Line();
+        });
+    }
+
+    private static string FillPatternId(string id, int seriesIndex, int pointIndex) =>
+        pointIndex >= 0 ? $"{id}-fillPattern{seriesIndex}Point{pointIndex}" : $"{id}-fillPattern{seriesIndex}";
+
+    private static string? FillPatternReference(ChartSeries series, int seriesIndex, int pointIndex, string id) {
+        var pattern = FillPattern(series, pointIndex);
+        if (pattern == ChartFillPattern.None) return null;
+        var hasPointPattern = pointIndex >= 0 && pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue && series.PointFillPatterns[pointIndex] != ChartFillPattern.None;
+        return $"url(#{FillPatternId(id, seriesIndex, hasPointPattern ? pointIndex : -1)})";
+    }
+
+    private static void DrawSvgFillPatternOverlay(StringBuilder sb, ChartSeries series, int seriesIndex, int pointIndex, string id, double x, double y, double width, double height, double radius, string role) {
+        var writer = new SvgMarkupWriter(512);
+        WriteFillPatternOverlay(writer, series, seriesIndex, pointIndex, id, x, y, width, height, radius, role);
+        sb.Append(writer.Build());
+    }
+
+    private static void WriteFillPatternOverlay(SvgMarkupWriter writer, ChartSeries series, int seriesIndex, int pointIndex, string id, double x, double y, double width, double height, double radius, string role) {
+        if (width <= 0.5 || height <= 0.5) return;
+        var fill = FillPatternReference(series, seriesIndex, pointIndex, id);
+        if (fill == null) return;
+        writer.StartElement("rect")
+            .Attribute("data-cfx-role", role)
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-fill-pattern", FillPattern(series, pointIndex).ToString())
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("width", width)
+            .Attribute("height", height)
+            .Attribute("rx", radius)
+            .Attribute("fill", fill)
+            .Attribute("pointer-events", "none")
+            .EndEmptyElement()
+            .Line();
+    }
+
     private static bool ShowXAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowXAxis;
 
     private static bool ShowYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowYAxis;
@@ -419,6 +487,14 @@ public sealed partial class SvgChartRenderer {
         if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
     }
+
+    private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
+        if (pointIndex >= 0 && pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null) return series.PointLabels[pointIndex]!;
+        return FormatValue(chart, value);
+    }
+
+    private static string SeriesSemanticRole(ChartSeries series, string fallback) =>
+        string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
     private static string FormatSecondaryValue(Chart chart, double value) {
         var formatter = chart.Options.SecondaryYAxisValueFormatter;
@@ -557,10 +633,15 @@ public sealed partial class SvgChartRenderer {
             foreach (var series in chart.Series) {
                 Add(ref hash, series.Name);
                 Add(ref hash, series.Kind.ToString());
+                Add(ref hash, series.ShowInLegend.ToString(CultureInfo.InvariantCulture));
+                Add(ref hash, series.SemanticRole ?? string.Empty);
+                Add(ref hash, series.FillPattern.ToString());
                 foreach (var point in series.Points) {
                     Add(ref hash, point.X.ToString("R", CultureInfo.InvariantCulture));
                     Add(ref hash, point.Y.ToString("R", CultureInfo.InvariantCulture));
                 }
+                foreach (var label in series.PointLabels) Add(ref hash, label ?? string.Empty);
+                foreach (var pattern in series.PointFillPatterns) Add(ref hash, pattern?.ToString() ?? string.Empty);
             }
 
             return "cfx" + hash.ToString("x8", CultureInfo.InvariantCulture);
@@ -614,8 +695,10 @@ public sealed partial class SvgChartRenderer {
             return title + " tile map for " + tileMap.Name + " on " + mapName + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
         }
 
-        var names = string.Join(", ", chart.Series.Select(series => series.Name).ToArray());
-        return title + " with " + chart.Series.Count.ToString(CultureInfo.InvariantCulture) + " data series: " + names + ".";
+        var describedSeries = chart.Series.Where(series => series.ShowInLegend).ToArray();
+        if (describedSeries.Length == 0) return title + " with no legend-visible data series.";
+        var names = string.Join(", ", describedSeries.Select(series => series.Name).ToArray());
+        return title + " with " + describedSeries.Length.ToString(CultureInfo.InvariantCulture) + " data series: " + names + ".";
     }
 
     private static bool IsPieLike(Chart chart) => chart.Series.Count > 0 && (chart.Series[0].Kind == ChartSeriesKind.Pie || chart.Series[0].Kind == ChartSeriesKind.Donut);
@@ -623,6 +706,7 @@ public sealed partial class SvgChartRenderer {
     private static bool IsHorizontalBarChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.HorizontalBar);
 
     private static bool IsHeatmapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Heatmap);
+    private static bool IsHexbinHeatmapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.HexbinHeatmap);
 
     private static bool IsGaugeChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Gauge);
 

@@ -25,6 +25,11 @@ public sealed class PngVisualGridRenderer {
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, null, grid.PngOutputScale);
         canvas.Clear(background);
+        if (grid.FrameVisible) {
+            var inset = Math.Max(8, grid.Padding * 0.5);
+            canvas.StrokeRoundedRect(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), Math.Max(theme.CornerRadius, 26), theme.CardBorder, 1.4);
+            canvas.StrokeRoundedRect(inset + 1.5, inset + 1.5, Math.Max(1, layout.Width - inset * 2 - 3), Math.Max(1, layout.Height - inset * 2 - 3), Math.Max(theme.CornerRadius - 1.5, 24), ChartColor.FromRgba(255, 255, 255, 108), 1);
+        }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             if (grid.Title.Length > 0) canvas.DrawTextEmphasized(grid.Padding, grid.Padding - theme.TitleFontSize * 0.28, FitText(grid.Title, theme.TitleFontSize, headerWidth), theme.Text, theme.TitleFontSize);

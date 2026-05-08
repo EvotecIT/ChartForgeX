@@ -6,7 +6,7 @@ namespace ChartForgeX.Themes;
 /// <summary>
 /// Defines colors, typography, and surface styling used by chart renderers.
 /// </summary>
-public sealed class ChartTheme {
+public sealed partial class ChartTheme {
     private ChartColor[] _palette = ChartPalettes.Report;
     private double _cornerRadius = 12;
     private double _plotCornerRadius = 8;

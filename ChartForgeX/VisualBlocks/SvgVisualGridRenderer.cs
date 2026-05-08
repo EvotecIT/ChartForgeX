@@ -42,6 +42,34 @@ public sealed class SvgVisualGridRenderer {
             .Line();
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", background.ToCss()).EndEmptyElement().Line();
+        if (grid.FrameVisible) {
+            var inset = Math.Max(8, grid.Padding * 0.5);
+            writer.StartElement("rect")
+                .Attribute("data-cfx-role", "visual-grid-frame")
+                .Attribute("x", inset)
+                .Attribute("y", inset)
+                .Attribute("width", Math.Max(1, layout.Width - inset * 2))
+                .Attribute("height", Math.Max(1, layout.Height - inset * 2))
+                .Attribute("rx", Math.Max(theme.CornerRadius, 26))
+                .Attribute("fill", "none")
+                .Attribute("stroke", theme.CardBorder.ToCss())
+                .Attribute("stroke-width", 1.4)
+                .EndEmptyElement()
+                .Line();
+            writer.StartElement("rect")
+                .Attribute("data-cfx-role", "visual-grid-frame-highlight")
+                .Attribute("x", inset + 1.5)
+                .Attribute("y", inset + 1.5)
+                .Attribute("width", Math.Max(1, layout.Width - inset * 2 - 3))
+                .Attribute("height", Math.Max(1, layout.Height - inset * 2 - 3))
+                .Attribute("rx", Math.Max(theme.CornerRadius - 1.5, 24))
+                .Attribute("fill", "none")
+                .Attribute("stroke", "#fff")
+                .Attribute("stroke-opacity", 0.42)
+                .Attribute("stroke-width", 1)
+                .EndEmptyElement()
+                .Line();
+        }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();

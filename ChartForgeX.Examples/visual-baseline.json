@@ -226,6 +226,246 @@
       }
     },
     {
+      "name": "dashboard-attendance-hexbin-heatmap",
+      "width": 760,
+      "height": 520,
+      "svg": {
+        "minVisualNodes": 44,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 721682,
+        "minDistinctColors": 1287,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-chart-portfolio-grid",
+      "width": 1224,
+      "height": 1775,
+      "svg": {
+        "minVisualNodes": 427,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 4345200,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-device-progress-bars",
+      "width": 520,
+      "height": 260,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 228682,
+        "minDistinctColors": 705,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-hr-overview-grid",
+      "width": 1292,
+      "height": 1009,
+      "svg": {
+        "minVisualNodes": 138,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 2607256,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-kpi-bar-sparkline",
+      "width": 520,
+      "height": 260,
+      "svg": {
+        "minVisualNodes": 29,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 228682,
+        "minDistinctColors": 666,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-mrr-driver-bars",
+      "width": 920,
+      "height": 480,
+      "svg": {
+        "minVisualNodes": 36,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 808002,
+        "minDistinctColors": 1014,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-mrr-trend-card",
+      "width": 920,
+      "height": 520,
+      "svg": {
+        "minVisualNodes": 36,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 879442,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-project-activity-sparkline",
+      "width": 520,
+      "height": 260,
+      "svg": {
+        "minVisualNodes": 31,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 228682,
+        "minDistinctColors": 783,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-restaurant-customers-hexbin",
+      "width": 420,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 76,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 213522,
+        "minDistinctColors": 748,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-restaurant-occupation-bars",
+      "width": 420,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 213522,
+        "minDistinctColors": 558,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-restaurant-order-status",
+      "width": 420,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 213522,
+        "minDistinctColors": 663,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-restaurant-overview-grid",
+      "width": 1352,
+      "height": 751,
+      "svg": {
+        "minVisualNodes": 238,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 2030704,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-restaurant-reports-range-strip",
+      "width": 860,
+      "height": 320,
+      "svg": {
+        "minVisualNodes": 93,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 487082,
+        "minDistinctColors": 778,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-restaurant-weekly-summary",
+      "width": 420,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 213522,
+        "minDistinctColors": 1229,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-saas-mrr-grid",
+      "width": 1364,
+      "height": 1171,
+      "svg": {
+        "minVisualNodes": 92,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 3194488,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "data-label-placement-showcase-grid",
       "width": 668,
       "height": 782,
@@ -582,14 +822,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 189,
+        "minVisualNodes": 94,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 1598,
+        "minDistinctColors": 1684,
         "maxEdgeInkPixels": 0
       }
     },
@@ -598,14 +838,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 181,
+        "minVisualNodes": 90,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 1437,
+        "minDistinctColors": 1523,
         "maxEdgeInkPixels": 0
       }
     },
@@ -614,14 +854,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 144,
+        "minVisualNodes": 72,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 1336,
+        "minDistinctColors": 1408,
         "maxEdgeInkPixels": 0
       }
     },
@@ -630,14 +870,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 123,
+        "minVisualNodes": 61,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 1509,
+        "minDistinctColors": 1505,
         "maxEdgeInkPixels": 0
       }
     },
@@ -646,14 +886,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 100,
+        "minVisualNodes": 50,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 1102,
+        "minDistinctColors": 1157,
         "maxEdgeInkPixels": 0
       }
     },
@@ -662,14 +902,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 186,
+        "minVisualNodes": 187,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 1190,
+        "minDistinctColors": 1246,
         "maxEdgeInkPixels": 0
       }
     },
@@ -678,14 +918,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 84,
+        "minVisualNodes": 42,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 1434,
+        "minDistinctColors": 1488,
         "maxEdgeInkPixels": 0
       }
     },
@@ -694,7 +934,7 @@
       "width": 1118,
       "height": 1550,
       "svg": {
-        "minVisualNodes": 2130,
+        "minVisualNodes": 1253,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -710,14 +950,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 653,
+        "minVisualNodes": 654,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 634496,
-        "minDistinctColors": 951,
+        "minDistinctColors": 969,
         "maxEdgeInkPixels": 0
       }
     },
@@ -934,7 +1174,7 @@
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 158,
+        "minVisualNodes": 79,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -950,14 +1190,14 @@
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 76,
+        "minVisualNodes": 38,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1015616,
-        "minDistinctColors": 1024,
+        "minDistinctColors": 1038,
         "maxEdgeInkPixels": 0
       }
     },
@@ -966,14 +1206,14 @@
       "width": 980,
       "height": 500,
       "svg": {
-        "minVisualNodes": 96,
+        "minVisualNodes": 63,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 901256,
-        "minDistinctColors": 1857,
+        "minDistinctColors": 1827,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1126,14 +1366,14 @@
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 657,
+        "minVisualNodes": 659,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1015616,
-        "minDistinctColors": 1375,
+        "minDistinctColors": 1523,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1158,14 +1398,14 @@
       "width": 1164,
       "height": 565,
       "svg": {
-        "minVisualNodes": 48,
+        "minVisualNodes": 25,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 2500000,
-        "minDistinctColors": 2500,
+        "minVisiblePixels": 1315320,
+        "minDistinctColors": 1670,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1174,14 +1414,14 @@
       "width": 560,
       "height": 560,
       "svg": {
-        "minVisualNodes": 16,
+        "minVisualNodes": 8,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1100000,
-        "minDistinctColors": 1200,
+        "minVisiblePixels": 566554,
+        "minDistinctColors": 653,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1190,14 +1430,14 @@
       "width": 560,
       "height": 420,
       "svg": {
-        "minVisualNodes": 16,
+        "minVisualNodes": 8,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 900000,
-        "minDistinctColors": 1200,
+        "minVisiblePixels": 470400,
+        "minDistinctColors": 682,
         "maxEdgeInkPixels": 0
       }
     },

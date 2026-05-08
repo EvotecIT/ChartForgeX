@@ -42,6 +42,8 @@ public sealed partial class SvgChartRenderer {
             }
             for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
                 var column = columns[columnIndex];
+                var pointIndex = HeatmapPointIndex(series, column);
+                if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, column);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
                 var ratio = HeatmapRatio(value, min, max);
@@ -52,7 +54,6 @@ public sealed partial class SvgChartRenderer {
                 WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color);
                 if (ShouldDrawDataLabels(chart, series) && cellWidth >= 34 && cellHeight >= 20) {
                     var label = FormatValue(chart, value);
-                    var pointIndex = HeatmapPointIndex(series, column);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
                         DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, HeatmapTextColor(color), t.DataLabelFontSize, cellWidth - 6, "750", style: DataLabelStyle(chart, series, pointIndex));
@@ -97,6 +98,10 @@ public sealed partial class SvgChartRenderer {
         writer
             .StartElement("g")
             .Attribute("data-cfx-role", "heatmap")
+            .Attribute("data-cfx-row-count", rows.Length)
+            .Attribute("data-cfx-column-count", columns.Length)
+            .Attribute("data-cfx-min", min)
+            .Attribute("data-cfx-max", max)
             .Raw(Environment.NewLine)
             .Raw(body.ToString())
             .EndElement()

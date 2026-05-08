@@ -66,6 +66,9 @@
 - Added slice-colored pie and donut callout connectors by default, with point-level slice colors honored by slices, legends, and callout connectors in SVG and PNG output.
 - Improved pie, donut, and polar-area slice legends so their percentage legends honor configurable legend positions in SVG and PNG.
 - Added optional heatmap scale and column labels for compact scorecard-style heatmaps.
+- Added hexbin heatmaps, matrix heatmap row helpers, reusable `ChartHeatmapRow` models with masked-cell support for ragged honeycomb silhouettes, point callouts with custom point labels and semantic SVG roles, reusable bar/range-bar fill patterns, metric-card detail rows, dashboard theme presets, and dashboard portfolio examples for KPI, attendance, restaurant operations, and MRR panels.
+- Improved dashboard card polish with softer PNG card shadows, inner highlights for visual-block cards, and screenshot-aligned MRR driver ordering.
+- Improved dashboard portfolio compositions with cleaner sparkline cards, denser HR summary panels, and calmer restaurant dashboard widget chrome.
 - Added deterministic word cloud charts for weighted terms with configurable font ranges, rotation patterns, maximum term counts, layout density, and per-term colors.
 - Added chart-grid panel spans for mosaic reports with wide or tall feature panels across SVG, PNG, and static HTML exports.
 - Added hex color parsing and pasted hex palette helpers for chart, theme, and brand-kit customization.

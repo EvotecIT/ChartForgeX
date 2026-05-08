@@ -22,9 +22,9 @@ public sealed partial class PngChartRenderer {
                 var width = Math.Abs(valueX - baseX);
                 var y = map.Y(p.X) + layout.Offset - layout.BarHeight / 2;
                 var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarHeight / 2) : Math.Min(7, layout.BarHeight / 2);
-                DrawGradientBar(c, left, y, width, layout.BarHeight, radius, PointColor(chart, s, index, pointIndex));
+                DrawGradientBar(c, left, y, width, layout.BarHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 if (ShouldDrawDataLabels(chart, s)) {
-                    var label = FormatValue(chart, p.Y);
+                    var label = FormatDataLabel(chart, s, pointIndex, p.Y);
                     var labelFontSize = PngDataLabelFontSize(chart, s, pointIndex);
                     var placement = DataLabelPlacement(chart, s);
                     var inside = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center || (chart.Options.BarMode == ChartBarMode.Stacked && placement == ChartDataLabelPlacement.Auto);
@@ -69,9 +69,9 @@ public sealed partial class PngChartRenderer {
                 var barY = Math.Min(y, baseY);
                 var barHeight = Math.Abs(baseY - y);
                 var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
-                DrawGradientBar(c, barX, barY, layout.BarWidth, barHeight, radius, PointColor(chart, s, index, pointIndex));
+                DrawGradientBar(c, barX, barY, layout.BarWidth, barHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 if (ShouldDrawDataLabels(chart, s)) {
-                    var label = FormatValue(chart, p.Y);
+                    var label = FormatDataLabel(chart, s, pointIndex, p.Y);
                     var segmentHeight = barHeight;
                     var fontSize = PngDataLabelFontSize(chart, s, pointIndex);
                     var placement = DataLabelPlacement(chart, s);
@@ -110,7 +110,7 @@ public sealed partial class PngChartRenderer {
                 c.DrawLine(x, zeroY, x, y, ApplyOpacity(pointColor, ChartVisualPrimitives.LollipopStemOpacity), Math.Max(ChartVisualPrimitives.LollipopStemMinStrokeWidth, s.StrokeWidth * 0.62));
                 DrawMarker(c, chart, x, y, markerRadius, pointColor);
                 if (ShouldDrawDataLabels(chart, s)) {
-                    var label = FormatValue(chart, p.Y);
+                    var label = FormatDataLabel(chart, s, pointIndex, p.Y);
                     var fontSize = PngDataLabelFontSize(chart, s, pointIndex);
                     var placement = DataLabelPlacement(chart, s);
                     var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
@@ -146,7 +146,7 @@ public sealed partial class PngChartRenderer {
                 var height = Math.Max(2, Math.Abs(y2 - y1));
                 var intervalIndex = pointIndex / 2;
                 var pointColor = PointColor(chart, s, index, intervalIndex);
-                DrawGradientBar(c, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor);
+                DrawGradientBar(c, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor, FillPattern(s, intervalIndex));
                 c.DrawLine(x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                 c.DrawLine(x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                 if (ShouldDrawDataLabels(chart, s)) {
@@ -243,8 +243,13 @@ public sealed partial class PngChartRenderer {
             var placement = DataLabelPlacement(chart, s);
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
-                var label = FormatValue(chart, p.Y);
+                var label = FormatDataLabel(chart, s, pointIndex, p.Y);
                 var fontSize = PngDataLabelFontSize(chart, s, pointIndex);
+                if (IsPointCalloutSeries(s)) {
+                    DrawPngPointCalloutLabel(c, chart, plot, map.X(p.X), map.Y(p.Y), label, DataLabelPlacement(chart, s), fontSize);
+                    continue;
+                }
+
                 var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
                 var labelX = placement == ChartDataLabelPlacement.Right
                     ? map.X(p.X) + 8
@@ -358,13 +363,78 @@ public sealed partial class PngChartRenderer {
         return true;
     }
 
-    private static void DrawGradientBar(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor color) {
+    private static void DrawGradientBar(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor color, ChartFillPattern pattern = ChartFillPattern.None) {
         if (width <= 0.5 || height <= 0.5) return;
         var top = Blend(ChartColor.White, color, 0.88);
         var bottom = Blend(ChartColor.Black, color, 0.94);
         c.FillRoundedRectVerticalGradient(x, y, width, height, radius, top, bottom);
+        DrawHatchOverlay(c, x, y, width, height, pattern);
         var highlightAlpha = (byte)Math.Round(255 * ChartVisualPrimitives.BarHighlightOpacity);
         c.DrawLine(x + ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, x + width - ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, ChartColor.FromRgba(255, 255, 255, highlightAlpha), ChartVisualPrimitives.BarHighlightStrokeWidth);
+    }
+
+    private static void DrawHatchOverlay(RgbaCanvas c, double x, double y, double width, double height, ChartFillPattern pattern) {
+        if (pattern == ChartFillPattern.None || width <= 1 || height <= 1) return;
+        var color = ApplyOpacity(ChartColor.White, pattern == ChartFillPattern.Crosshatch ? 0.22 : 0.30);
+        if (pattern == ChartFillPattern.DiagonalForward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, true, color);
+        if (pattern == ChartFillPattern.DiagonalBackward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, false, color);
+    }
+
+    private static void DrawHatchDirection(RgbaCanvas c, double x, double y, double width, double height, bool forward, ChartColor color) {
+        var spacing = 8.0;
+        for (var offset = -height; offset < width + height; offset += spacing) {
+            double x0;
+            double y0;
+            double x1;
+            double y1;
+            if (forward) {
+                x0 = x + offset;
+                y0 = y + height;
+                x1 = x + offset + height;
+                y1 = y;
+            } else {
+                x0 = x + offset;
+                y0 = y;
+                x1 = x + offset + height;
+                y1 = y + height;
+            }
+
+            if (!ClipLineToRect(ref x0, ref y0, ref x1, ref y1, x, y, x + width, y + height)) continue;
+            c.DrawLine(x0, y0, x1, y1, color, 1.15);
+        }
+    }
+
+    private static bool ClipLineToRect(ref double x0, ref double y0, ref double x1, ref double y1, double minX, double minY, double maxX, double maxY) {
+        var dx = x1 - x0;
+        var dy = y1 - y0;
+        var t0 = 0.0;
+        var t1 = 1.0;
+        if (!ClipTest(-dx, x0 - minX, ref t0, ref t1)) return false;
+        if (!ClipTest(dx, maxX - x0, ref t0, ref t1)) return false;
+        if (!ClipTest(-dy, y0 - minY, ref t0, ref t1)) return false;
+        if (!ClipTest(dy, maxY - y0, ref t0, ref t1)) return false;
+        if (t1 < 1) {
+            x1 = x0 + t1 * dx;
+            y1 = y0 + t1 * dy;
+        }
+        if (t0 > 0) {
+            x0 += t0 * dx;
+            y0 += t0 * dy;
+        }
+        return true;
+    }
+
+    private static bool ClipTest(double p, double q, ref double t0, ref double t1) {
+        if (Math.Abs(p) < 0.000001) return q >= 0;
+        var r = q / p;
+        if (p < 0) {
+            if (r > t1) return false;
+            if (r > t0) t0 = r;
+        } else {
+            if (r < t0) return false;
+            if (r < t1) t1 = r;
+        }
+        return true;
     }
 
     private static void DrawMarker(RgbaCanvas c, Chart chart, double x, double y, double radius, ChartColor color) {

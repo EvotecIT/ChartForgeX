@@ -11,6 +11,7 @@ public sealed class ChartSeries {
     private double _strokeWidth = 3;
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
+    private ChartFillPattern _fillPattern = ChartFillPattern.None;
 
     /// <summary>
     /// Gets the display name shown in legends.
@@ -38,9 +39,30 @@ public sealed class ChartSeries {
     public List<ChartColor?> PointColors { get; } = new();
 
     /// <summary>
+    /// Gets or sets the texture overlay applied to filled marks in this series.
+    /// </summary>
+    public ChartFillPattern FillPattern {
+        get => _fillPattern;
+        set {
+            if (!Enum.IsDefined(typeof(ChartFillPattern), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown fill pattern.");
+            _fillPattern = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets optional point-level fill patterns. Null entries fall back to the series fill pattern.
+    /// </summary>
+    public List<ChartFillPattern?> PointFillPatterns { get; } = new();
+
+    /// <summary>
     /// Gets optional point-level numeric values for specialized renderers that need per-point metadata.
     /// </summary>
     public List<double?> PointValues { get; } = new();
+
+    /// <summary>
+    /// Gets optional point-level data labels. Null entries use the formatted point value.
+    /// </summary>
+    public List<string?> PointLabels { get; } = new();
 
     /// <summary>
     /// Gets optional point-level data-label styles. Null entries fall back to the series or chart data-label style.
@@ -61,6 +83,16 @@ public sealed class ChartSeries {
     /// Gets or sets a value indicating whether capable renderers should smooth connected line segments.
     /// </summary>
     public bool Smooth { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the series should appear in the chart legend.
+    /// </summary>
+    public bool ShowInLegend { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets an optional semantic role emitted by capable renderers.
+    /// </summary>
+    public string? SemanticRole { get; set; }
 
     /// <summary>
     /// Gets or sets a series-specific data-label override. When null, the chart-level setting is used.
@@ -158,6 +190,75 @@ public sealed class ChartSeries {
     }
 
     /// <summary>
+    /// Sets the texture overlay applied to filled marks in this series.
+    /// </summary>
+    /// <param name="pattern">The fill pattern.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithFillPattern(ChartFillPattern pattern) {
+        FillPattern = pattern;
+        return this;
+    }
+
+    /// <summary>
+    /// Clears the series fill pattern.
+    /// </summary>
+    /// <returns>The current series.</returns>
+    public ChartSeries UseSolidFill() {
+        FillPattern = ChartFillPattern.None;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the texture overlay for one point. Pass null to use the series fill pattern.
+    /// </summary>
+    /// <param name="pointIndex">The zero-based point index.</param>
+    /// <param name="pattern">The point fill pattern, or null to use the series fill pattern.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithPointFillPattern(int pointIndex, ChartFillPattern? pattern) {
+        ValidatePointIndex(pointIndex);
+        if (pattern.HasValue && !Enum.IsDefined(typeof(ChartFillPattern), pattern.Value)) throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown fill pattern.");
+        while (PointFillPatterns.Count <= pointIndex) PointFillPatterns.Add(null);
+        PointFillPatterns[pointIndex] = pattern;
+        return this;
+    }
+
+    /// <summary>
+    /// Clears the texture overlay for one point so the series fill pattern is used.
+    /// </summary>
+    /// <param name="pointIndex">The zero-based point index.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries UseSeriesFillPattern(int pointIndex) {
+        ValidatePointIndex(pointIndex);
+        if (pointIndex < PointFillPatterns.Count) PointFillPatterns[pointIndex] = null;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the data label for one point.
+    /// </summary>
+    /// <param name="pointIndex">The zero-based point index.</param>
+    /// <param name="label">The data label text.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithPointLabel(int pointIndex, string label) {
+        ValidatePointIndex(pointIndex);
+        if (label == null) throw new ArgumentNullException(nameof(label));
+        while (PointLabels.Count <= pointIndex) PointLabels.Add(null);
+        PointLabels[pointIndex] = label;
+        return this;
+    }
+
+    /// <summary>
+    /// Clears the data label for one point so the formatted point value is used.
+    /// </summary>
+    /// <param name="pointIndex">The zero-based point index.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries UseFormattedPointLabel(int pointIndex) {
+        ValidatePointIndex(pointIndex);
+        if (pointIndex < PointLabels.Count) PointLabels[pointIndex] = null;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the stroke width for line and area series.
     /// </summary>
     /// <param name="width">The stroke width in pixels.</param>
@@ -174,6 +275,26 @@ public sealed class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries WithSmooth(bool smooth = true) {
         Smooth = smooth;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets whether the series should appear in the chart legend.
+    /// </summary>
+    /// <param name="visible">True to show the series in legends; otherwise false.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithLegendEntry(bool visible = true) {
+        ShowInLegend = visible;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets an optional semantic role emitted by capable renderers.
+    /// </summary>
+    /// <param name="role">The semantic role, or null to use the renderer default.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithSemanticRole(string? role) {
+        SemanticRole = role;
         return this;
     }
 

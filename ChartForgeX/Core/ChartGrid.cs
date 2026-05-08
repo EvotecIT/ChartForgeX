@@ -361,6 +361,7 @@ public sealed class ChartGrid {
         if (chart.Series.Count == 0) return false;
         foreach (var series in chart.Series) {
             if (series.Kind == ChartSeriesKind.Heatmap ||
+                series.Kind == ChartSeriesKind.HexbinHeatmap ||
                 series.Kind == ChartSeriesKind.CalendarHeatmap ||
                 series.Kind == ChartSeriesKind.DottedMap ||
                 series.Kind == ChartSeriesKind.TileMap ||
@@ -411,6 +412,7 @@ public sealed class ChartGrid {
     private static bool IsCartesianYAxisSeries(ChartSeries series) {
         return series.Kind != ChartSeriesKind.HorizontalBar &&
             series.Kind != ChartSeriesKind.Heatmap &&
+            series.Kind != ChartSeriesKind.HexbinHeatmap &&
             series.Kind != ChartSeriesKind.CalendarHeatmap &&
             series.Kind != ChartSeriesKind.DottedMap &&
             series.Kind != ChartSeriesKind.TileMap &&

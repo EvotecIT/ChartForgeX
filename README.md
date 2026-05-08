@@ -171,6 +171,8 @@ var drives = ChartTable.Create()
 var card = MetricCard.Create()
     .WithMetric("Patch compliance", 0.94, "P0")
     .WithTrend("+4 pp")
+    .AddDetail("Ready", "84%", VisualStatus.Positive)
+    .AddDetail("Risk", "6%", VisualStatus.Warning)
     .WithStatus(VisualStatus.Positive);
 
 var snapshot = VisualGrid.Create()
@@ -301,10 +303,12 @@ var observed = Chart.Create()
 | Step line | `AddStepLine` | State changes, threshold-like movement |
 | Area | `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea` | Filled trends, step-filled states, stacked contribution bands, and cumulative-looking report areas |
 | Scatter | `AddScatter`, `AddTrendLine` | Independent point distributions and fitted trend lines |
+| Point callout | `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole` | Highlighted markers with custom point labels for tooltips, selected states, and dashboard annotations |
 | Statistical overlays | `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand` | Computed mean, median, and sigma report annotations |
 | Slope | `AddSlope` | Before/after endpoint comparisons |
 | Combo | `AddBarLineCombo`, `AddColumnLineCombo`, `AddBarAreaCombo`, `AddColumnAreaCombo`, `AddScatterLineCombo`, `UseSecondaryYAxis` | Shared-axis or secondary-axis mixed charts for volume, targets, forecasts, and observed-vs-trend panels |
 | Bar | `AddBar` | Category comparison, grouped and stacked bars |
+| Fill patterns | `WithFillPattern`, `WithPointFillPattern`, `UseSolidFill` | Dashboard-grade hatch textures for bars, horizontal bars, and range bars in SVG/PNG |
 | Histogram | `AddHistogram` | Raw numeric distributions |
 | Lollipop | `AddLollipop` | Light-weight category comparison |
 | Bubble | `AddBubble` | X/Y points with a third size value |
@@ -317,7 +321,8 @@ var observed = Chart.Create()
 | Range bar | `AddRangeBar` | Min/max or observed interval values |
 | Box plot | `AddBoxPlot` | Quartiles, median, whiskers, raw sample summaries |
 | Horizontal bar | `AddHorizontalBar`, `WithStackedHorizontalBars` | Long category names and stacked composition across long categories |
-| Heatmap | `AddHeatmapRow` | Matrix values and coverage grids |
+| Heatmap | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `ChartHeatmapRow.CreateMasked` | Matrix values, masked cells, and coverage grids |
+| Hexbin heatmap | `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `ChartHeatmapRow`, `ChartHeatmapRow.CreateMasked` | Full or ragged honeycomb matrices for attendance, utilization, customer density, and dense dashboard overviews |
 | Calendar heatmap | `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` | Contribution-style day grids for activity, uptime, and habit tracking |
 | Dotted map | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints` | Travel-map and operations-map views with generated land-dot layers, focused regional viewports, highlighted points, and connector routes |
 | Topology | `TopologyChart`, `TopologyNode`, `TopologyEdge`, `TopologyGroup`, `TopologySvgRenderer` | Deterministic SVG-first topology diagrams for grouped regions, dependencies, site links, replication paths, subnets, and service maps |
@@ -430,6 +435,9 @@ Choose a visual system by audience first, then adjust palette or surface details
 | Report intent | Theme starting point | Brand kit starting point |
 | --- | --- | --- |
 | Executive summary, board deck, customer PDF | `ChartTheme.ReportLight()` or `ChartTheme.Minimal()` | `ChartBrandKit.Executive()` |
+| Operational KPI dashboard | `ChartTheme.DashboardLight()` | `ChartBrandKit.Product()` |
+| SaaS metrics dashboard | `ChartTheme.SaasDashboardLight()` | `ChartBrandKit.Product()` |
+| Restaurant operations dashboard | `ChartTheme.RestaurantDashboardLight()` | `ChartBrandKit.Product()` |
 | Product dashboard, launch review, adoption story | `ChartTheme.Aurora()` | `ChartBrandKit.Product()` |
 | Demographic infographic, survey poster, people dashboard | `ChartTheme.PeopleInfographic()` | `ChartBrandKit.PeopleInfographic()` |
 | Publication, narrative report, static document | `ChartTheme.Editorial()` | `ChartBrandKit.Editorial()` |
@@ -553,6 +561,19 @@ var sparkline = Chart.Create()
     .WithSparkline()
     .AddSmoothArea("Warnings", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36));
 ```
+
+Use point callouts when a dashboard needs a selected-state marker with text that differs from the numeric axis formatter:
+
+```csharp
+var mrr = Chart.Create()
+    .WithTitle("Monthly Recurring Revenue")
+    .WithValueFormatter(value => "$" + (value / 1000d).ToString("0") + "K")
+    .AddSmoothArea("Actual", Points(103400, 106500, 114000, 119000), ChartColor.FromRgb(53, 106, 244))
+    .AddPointCallout("$119,000 MRR", 4, 119000, ChartColor.FromRgb(53, 106, 244))
+    .AddVerticalLine(4, "Oct 22");
+```
+
+Point callouts render as a marker plus a custom data label, expose `data-cfx-role="point-callout"` in SVG, and opt out of the series legend by default. Use `WithPointLabel` on a normal series point when the custom label should stay tied to an existing series, or `WithLegendEntry(false)` and `WithSemanticRole(...)` when helper series should remain visual-only but still expose stable host metadata.
 
 Dense report axes can be kept readable with automatic x-axis label thinning:
 
@@ -823,7 +844,20 @@ var matrix = Chart.Create()
     .AddHeatmapRow("Parked domains", Points(74, 62, 51));
 ```
 
-Use `WithHeatmapScaleLegend(false)` and `WithHeatmapColumnLabels(false)` for compact scorecard-style heatmaps when row labels and data labels already explain the scale.
+Use `WithHeatmapScaleLegend(false)` and `WithHeatmapColumnLabels(false)` for compact scorecard-style heatmaps when row labels and data labels already explain the scale. Heatmap and hexbin heatmap SVG containers expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max` so downstream hover, selection, export, and visual QA tooling can inspect either matrix shape consistently.
+
+Hexbin heatmaps use the same row and column data contract but render each cell as a honeycomb tile. They work well for attendance, utilization, and schedule-density panels where the visual rhythm matters:
+
+```csharp
+var attendance = Chart.Create()
+    .WithTitle("Attendance Overview")
+    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .AddHexbinHeatmapRows(new[] {
+        ChartHeatmapRow.Create("09:00", 68, 82, 91, 94, 89),
+        ChartHeatmapRow.Create("11:00", 74, 88, 96, 98, 93)
+    });
+```
 
 Calendar heatmaps render date-indexed values as contribution-style day grids. Duplicate dates are summed so callers can pass event-level data without pre-aggregation:
 
@@ -1165,7 +1199,7 @@ var productPulse = Chart.Create()
     .AddBar("Adoption", Points(42, 58, 71, 86));
 ```
 
-Built-in themes include `ReportLight()`, `ReportDark()`, `Colorblind()`, `Aurora()`, `Editorial()`, `Candy()`, `Terminal()`, and `Minimal()`. Font helpers such as `ChartFontStacks.Serif`, `ChartFontStacks.Geometric`, `ChartFontStacks.Rounded`, and `ChartFontStacks.Mono` keep SVG/HTML typography readable without bundling external assets:
+Built-in themes include `ReportLight()`, `ReportDark()`, `Colorblind()`, `Aurora()`, `Editorial()`, `Candy()`, `Terminal()`, `Minimal()`, `DashboardLight()`, `SaasDashboardLight()`, and `RestaurantDashboardLight()`. Font helpers such as `ChartFontStacks.Serif`, `ChartFontStacks.Geometric`, `ChartFontStacks.Rounded`, and `ChartFontStacks.Mono` keep SVG/HTML typography readable without bundling external assets:
 
 ```csharp
 chart.WithTheme(theme => theme
@@ -1195,6 +1229,7 @@ chart
 
 SVG and HTML honor color, font family, weight, italic, underline, and role font size. PNG keeps its dependency-free text renderer but honors role color, role font size, and underline where the raster text path supports it.
 Use `chart.Series[index].WithPointColor(pointIndex, "#14B8A6")` when one bar, horizontal bar, scatter marker, line marker, lollipop mark, bubble, error-bar mark, range-bar interval, dumbbell comparison, box-plot summary, candlestick/OHLC window, slope endpoint, pie/donut slice, polar-area segment, funnel segment, treemap tile, pictorial item, progress row, or word-cloud term needs its own color while the rest of the series keeps the normal palette. Pie/donut legends and outside callout leaders follow the same point color. Zero-value pie, donut, and polar-area points do not draw visible slices or segments, but point indexes remain stable for labels, colors, offsets, legends, and exported SVG metadata; zero-value funnel stages render as explicit stages.
+Use `chart.Series[index].WithFillPattern(ChartFillPattern.DiagonalBackward)` when filled dashboard marks need subtle texture. `WithPointFillPattern(pointIndex, ...)` overrides one bar, horizontal bar, or range-bar interval, and `UseSolidFill()` clears the series texture. SVG emits `data-cfx-fill-pattern` metadata while PNG renders the same hatch overlay.
 Use `chart.Series[index].WithDataLabelStyle(...)` when one series should call attention to its labels without changing every label in the chart. These overrides apply to cartesian labels and specialized labels such as pie slices, heatmap cells, radar points, and waterfall deltas. Use `WithPointDataLabelStyle(pointIndex, ...)` when a single bar, point, slice, cell, or delta needs its own callout styling.
 Use `WithDataLabelPlacement(ChartDataLabelPlacement.Center)` at the chart level, or `chart.Series[index].WithDataLabelPlacement(...)` for one series, when labels should sit inside, outside, above, below, left, or right of capable cartesian and specialized marks. Bubbles, error bars, range bands, range areas, range bars, dumbbells, box plots, candlesticks, and OHLC charts honor the same placement model for their intrinsic labels in SVG and PNG. Outside pie/donut labels use side-aware lanes with connector lines, and side heatmap labels include connector ticks in SVG and PNG exports. Tune those connectors with `WithDataLabelConnectorColor(...)`, `WithDataLabelConnectorOpacity(...)`, `WithDataLabelConnectorStrokeWidth(...)`, and `WithDataLabelConnectorStyle(ChartDataLabelConnectorStyle.Curve)` for straight, elbow, or curved leaders. When no explicit connector color is set, pie and donut callout leaders use the matching slice color. Use `WithPieSliceLabelContent(...)` when pie/donut data labels should show percentage, value, category, category plus percentage, or category plus value. Use `WithPieSliceLabelFormatter(slice => slice.Label + ": " + slice.FormattedPercent)` for fully custom pie/donut callout text. Use `WithPieOutsideLabelDistance(...)` to move outside pie/donut labels closer to or farther from the ring, and `chart.Series[index].WithPointSliceOffset(pointIndex, ratio)` to pull out one pie or donut slice for emphasis.
 

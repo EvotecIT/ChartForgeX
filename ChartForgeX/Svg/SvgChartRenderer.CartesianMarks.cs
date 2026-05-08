@@ -260,6 +260,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("opacity", ChartVisualPrimitives.BarFillOpacity)
                 .EndEmptyElement()
                 .Line());
+            DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, x, top, layout.BarWidth, height, radius, "bar-pattern");
             DrawSvgBarHighlight(sb, x, top, layout.BarWidth, height);
             if (ShouldDrawDataLabels(chart, s)) {
                 var label = FormatValue(chart, p.Y);

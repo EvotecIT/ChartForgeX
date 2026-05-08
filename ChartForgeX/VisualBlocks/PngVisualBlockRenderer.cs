@@ -24,6 +24,7 @@ public sealed class PngVisualBlockRenderer {
         if (options.ShowCard && theme.UseCard) {
             canvas.FillRoundedRect(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, theme.CardBackground);
             canvas.StrokeRoundedRect(0.5, 0.5, Math.Max(1, options.Size.Width - 1), Math.Max(1, options.Size.Height - 1), theme.CornerRadius, theme.CardBorder, 1);
+            canvas.StrokeRoundedRect(1.5, 1.5, Math.Max(1, options.Size.Width - 3), Math.Max(1, options.Size.Height - 3), Math.Max(0, theme.CornerRadius - 1.5), ChartColor.FromRgba(255, 255, 255, 92), 1);
         }
 
         if (block is ChartTable table) DrawTable(canvas, table);
@@ -117,7 +118,10 @@ public sealed class PngVisualBlockRenderer {
         var theme = options.Theme;
         var content = VisualBlockRendering.ContentRect(options);
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
-        if (card.Status != VisualStatus.None) canvas.FillRect(0, 0, 7, options.Size.Height, statusColor);
+        if (card.Status != VisualStatus.None) {
+            var accentWidth = Math.Min(40, Math.Max(24, content.Width * 0.13));
+            canvas.FillRoundedRect(content.X, Math.Max(6, content.Y - 12), accentWidth, 5, 2.5, statusColor.WithAlpha(220));
+        }
         if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
             var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
@@ -133,8 +137,36 @@ public sealed class PngVisualBlockRenderer {
         var valueSize = Math.Min(54, Math.Max(26, options.Size.Height * 0.22));
         canvas.DrawTextEmphasized(content.X, content.Y, FitText(card.Label, labelSize, content.Width), theme.MutedText, labelSize);
         canvas.DrawTextEmphasized(content.X, content.Y + labelSize + 18, FitText(card.Value, valueSize, content.Width), theme.Text, valueSize);
+        DrawMetricDetails(canvas, card, content, content.Y + labelSize + valueSize + 24, options.Size.Height - options.Padding.Bottom - (card.Trend.Length > 0 ? 44 : 0) - (card.Caption.Length > 0 ? 24 : 0));
         if (card.Trend.Length > 0) canvas.DrawTextEmphasized(content.X, options.Size.Height - options.Padding.Bottom - 28, FitText(card.Trend, theme.SubtitleFontSize, content.Width), statusColor, theme.SubtitleFontSize);
         if (card.Caption.Length > 0) canvas.DrawText(content.X, options.Size.Height - options.Padding.Bottom - 10, FitText(card.Caption, Math.Max(10, theme.SubtitleFontSize - 1), content.Width), theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1));
+    }
+
+    private static void DrawMetricDetails(RgbaCanvas canvas, MetricCard card, ChartRect content, double top, double bottom) {
+        if (card.Details.Count == 0 || bottom <= top + 18) return;
+        var theme = card.Options.Theme;
+        var count = Math.Min(card.Details.Count, 4);
+        var columns = count <= 2 ? count : 2;
+        var rows = (int)Math.Ceiling(count / (double)columns);
+        var rowHeight = Math.Min(28, Math.Max(21, (bottom - top) / rows));
+        var gap = 8.0;
+        var cellWidth = (content.Width - gap * (columns - 1)) / columns;
+        var labelSize = Math.Max(9, theme.SubtitleFontSize - 3);
+        var valueSize = Math.Max(10, theme.SubtitleFontSize - 1);
+        for (var i = 0; i < count; i++) {
+            var detail = card.Details[i];
+            var column = i % columns;
+            var row = i / columns;
+            var x = content.X + column * (cellWidth + gap);
+            var y = top + row * rowHeight;
+            var height = rowHeight - 4;
+            var marker = VisualBlockRendering.StatusColor(theme, detail.Status);
+            canvas.FillRoundedRect(x, y, cellWidth, height, Math.Min(8, height / 2), theme.PlotBackground.WithAlpha(150));
+            canvas.StrokeRoundedRect(x, y, cellWidth, height, Math.Min(8, height / 2), theme.CardBorder.WithAlpha(120));
+            canvas.DrawCircle(x + 10, y + rowHeight / 2 - 2, 3.2, marker);
+            canvas.DrawTextEmphasized(x + 18, y + rowHeight / 2 - labelSize * 0.45, FitText(detail.Label, labelSize, cellWidth * 0.55), theme.MutedText, labelSize);
+            DrawAlignedText(canvas, detail.Value, x + cellWidth * 0.58, y + rowHeight / 2 - valueSize * 0.35, cellWidth * 0.36, VisualTextAlignment.Right, theme.Text, valueSize, true);
+        }
     }
 
     private static void DrawRadialMetric(RgbaCanvas canvas, RadialMetricCard card) {

@@ -24,6 +24,7 @@ public sealed partial class SvgChartRenderer {
             var y = map.Y(p.X) + layout.Offset - layout.BarHeight / 2;
             var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarHeight / 2) : Math.Min(7, layout.BarHeight / 2);
             WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, BarFill(chart, s, index, pointIndex, id));
+            DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, left, y, width, layout.BarHeight, radius, "horizontal-bar-pattern");
             DrawSvgBarHighlight(sb, left, y, width, layout.BarHeight);
             if (ShouldDrawDataLabels(chart, s)) {
                 var label = FormatValue(chart, p.Y);

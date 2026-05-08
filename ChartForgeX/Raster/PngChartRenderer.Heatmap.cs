@@ -59,12 +59,13 @@ public sealed partial class PngChartRenderer {
                 }
             }
             for (var columnIndex = 0; columnIndex < columnValues.Count; columnIndex++) {
+                var pointIndex = HeatmapPointIndex(series, columnValues[columnIndex]);
+                if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columnValues[columnIndex]);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
                 var color = HeatmapColor(chart, series.Color, value, min, max);
                 c.FillRoundedRect(x, y, cellWidth, cellHeight, radius, color);
                 c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
-                var pointIndex = HeatmapPointIndex(series, columnValues[columnIndex]);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 if (ShouldDrawDataLabels(chart, series) && cellWidth >= EstimatePngEmphasizedTextWidth("100%", dataFontSize) + 12 && cellHeight >= dataFontSize + 10) {

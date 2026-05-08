@@ -60,9 +60,12 @@ public sealed partial class PngChartRenderer {
         TrimReadablePngLabelToWidth(chart.Series[index].Name, PngLegendFontSize(chart), PngLegendLabelMaxWidth(chart));
 
     private static System.Collections.Generic.List<PngLegendEntry> BuildPngLegendEntries(Chart chart) {
-        if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !CanUsePointLegend(chart.Series[0])) {
+        if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !chart.Series[0].ShowInLegend || !CanUsePointLegend(chart.Series[0])) {
             var entries = new System.Collections.Generic.List<PngLegendEntry>();
-            for (var i = 0; i < chart.Series.Count; i++) entries.Add(new PngLegendEntry(i, -1, PngLegendLabel(chart, i), SeriesColor(chart, i)));
+            for (var i = 0; i < chart.Series.Count; i++) {
+                if (chart.Series[i].ShowInLegend) entries.Add(new PngLegendEntry(i, -1, PngLegendLabel(chart, i), SeriesColor(chart, i)));
+            }
+
             return entries;
         }
 
@@ -116,7 +119,12 @@ public sealed partial class PngChartRenderer {
         return plot;
     }
 
-    private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && chart.Series.Count > 0 && !IsMapChart(chart);
+    private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && PngHasLegendEntries(chart) && !IsMapChart(chart);
+
+    private static bool PngHasLegendEntries(Chart chart) {
+        for (var i = 0; i < chart.Series.Count; i++) if (chart.Series[i].ShowInLegend) return true;
+        return false;
+    }
 
     private static double PngLegendLabelMaxWidth(Chart chart) {
         var width = PngIsVerticalLegend(chart.Options.LegendPosition) ? 240 : chart.Options.Size.Width - 80;
