@@ -173,6 +173,36 @@ public sealed class ChartRadialLayer {
     }
 
     /// <summary>
+    /// Creates a new radial layer.
+    /// </summary>
+    public static ChartRadialLayer Create(string name, double value, double minimum = 0, double maximum = 100, ChartColor? color = null) =>
+        new(name, value, minimum, maximum, color);
+
+    /// <summary>
+    /// Sets the layer name.
+    /// </summary>
+    public ChartRadialLayer WithName(string name) {
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the current layer value.
+    /// </summary>
+    public ChartRadialLayer WithValue(double value) {
+        Value = value;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the layer color.
+    /// </summary>
+    public ChartRadialLayer WithColor(ChartColor? color) {
+        Color = color;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the layer scale.
     /// </summary>
     public ChartRadialLayer WithScale(double minimum, double maximum) {

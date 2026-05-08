@@ -613,10 +613,24 @@ public sealed class RadialMetricCard : VisualBlock<RadialMetricCard> {
         return this;
     }
 
+    /// <summary>Replaces all radial layers using a fluent layer collection builder.</summary>
+    public RadialMetricCard WithLayers(Func<ChartRadialLayers, ChartRadialLayers> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        var layers = configure(ChartRadialLayers.Create()) ?? throw new InvalidOperationException("Radial metric layer configuration cannot return null.");
+        return WithLayers(layers);
+    }
+
     /// <summary>Adds one radial layer.</summary>
     public RadialMetricCard AddLayer(ChartRadialLayer layer) {
         _layers.Add(layer ?? throw new ArgumentNullException(nameof(layer)));
         return this;
+    }
+
+    /// <summary>Adds one radial layer and optionally configures its geometry and styling.</summary>
+    public RadialMetricCard AddLayer(string name, double value, double minimum = 0, double maximum = 100, ChartColor? color = null, Func<ChartRadialLayer, ChartRadialLayer>? configure = null) {
+        var layer = ChartRadialLayer.Create(name, value, minimum, maximum, color);
+        if (configure != null) layer = configure(layer) ?? throw new InvalidOperationException("Radial metric layer configuration cannot return null.");
+        return AddLayer(layer);
     }
 }
 

@@ -31,7 +31,16 @@ internal static class WellnessDashboardExamples {
             .WithLegend(false)
             .WithPngOutputScale(pngOutputScale)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " kcal")
-            .AddLayeredRadial("Calories left", CaloriesRadialLayers());
+            .AddLayeredRadial("Calories left", layers => layers
+                .Add("Available area", 100, color: Track, configure: layer => layer
+                    .WithGeometry(1.00, 0.18)
+                    .WithLineCap(ChartRadialLayerCap.Butt))
+                .Add("Target ring", 100, color: Yellow, configure: layer => layer
+                    .WithGeometry(0.93, 0.035)
+                    .WithLineCap(ChartRadialLayerCap.Butt))
+                .Add("Current", 1240, maximum: 2700, color: Orange, configure: layer => layer
+                    .WithGeometry(0.93, 0.14)
+                    .WithAngles(-90, 360)));
 
         chart.SaveSvg(Path.Combine(output, "wellness-layered-radial-progress.svg"));
         chart.SaveHtml(Path.Combine(output, "wellness-layered-radial-progress.html"));
@@ -46,7 +55,13 @@ internal static class WellnessDashboardExamples {
             .WithTheme(WellnessTheme())
             .WithPngOutputScale(outputScale)
             .WithMetric("Current Weight", "78 kg")
-            .WithLayers(WeightRadialLayers());
+            .AddLayer("Current weight progress", 100, color: Orange, configure: layer => layer
+                .WithGeometry(1.00, 0.265)
+                .WithAngles(184, 74))
+            .AddLayer("Remaining weight range", 100, color: Yellow, configure: layer => layer
+                .WithGeometry(1.00, 0.265)
+                .WithAngles(279, 77)
+                .WithSeparators(8, Card, 3, 0));
 
         card.SaveSvg(Path.Combine(output, "wellness-weight-data-gauge.svg"));
         card.SaveHtml(Path.Combine(output, "wellness-weight-data-gauge.html"));
@@ -60,7 +75,15 @@ internal static class WellnessDashboardExamples {
             .WithTheme(WellnessTheme())
             .WithIcon(VisualIcon.Lightning)
             .WithMetric("Calories left", "1240 kcal")
-            .WithLayers(CaloriesRadialLayers());
+            .AddLayer("Available area", 100, color: Track, configure: layer => layer
+                .WithGeometry(1.00, 0.18)
+                .WithLineCap(ChartRadialLayerCap.Butt))
+            .AddLayer("Target ring", 100, color: Yellow, configure: layer => layer
+                .WithGeometry(0.93, 0.035)
+                .WithLineCap(ChartRadialLayerCap.Butt))
+            .AddLayer("Current", 1240, maximum: 2700, color: Orange, configure: layer => layer
+                .WithGeometry(0.93, 0.14)
+                .WithAngles(-90, 360));
 
         var eaten = MetricCard.Create()
             .WithSize(360, 210)
@@ -109,28 +132,6 @@ internal static class WellnessDashboardExamples {
         grid.SaveHtml(Path.Combine(output, "wellness-calories-intake-dashboard.html"));
         grid.SavePng(Path.Combine(output, "wellness-calories-intake-dashboard.png"));
     }
-
-    private static ChartRadialLayer[] CaloriesRadialLayers() => new[] {
-        new ChartRadialLayer("Available area", 100, 0, 100, Track)
-            .WithGeometry(1.00, 0.18)
-            .WithLineCap(ChartRadialLayerCap.Butt),
-        new ChartRadialLayer("Target ring", 100, 0, 100, Yellow)
-            .WithGeometry(0.93, 0.035)
-            .WithLineCap(ChartRadialLayerCap.Butt),
-        new ChartRadialLayer("Current", 1240, 0, 2700, Orange)
-            .WithGeometry(0.93, 0.14)
-            .WithAngles(-90, 360)
-    };
-
-    private static ChartRadialLayer[] WeightRadialLayers() => new[] {
-        new ChartRadialLayer("Current weight progress", 100, 0, 100, Orange)
-            .WithGeometry(1.00, 0.265)
-            .WithAngles(184, 74),
-        new ChartRadialLayer("Remaining weight range", 100, 0, 100, Yellow)
-            .WithGeometry(1.00, 0.265)
-            .WithAngles(279, 77)
-            .WithSeparators(8, Card, 3, 0)
-    };
 
     private static ChartTheme WellnessTheme() => ChartTheme.Minimal()
         .WithSurfaceColors(Background, Card, Card, Track, Track)

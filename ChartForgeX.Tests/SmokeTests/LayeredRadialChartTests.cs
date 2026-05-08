@@ -11,17 +11,16 @@ internal static partial class SmokeTests {
         var chart = Chart.Create()
             .WithSize(560, 560)
             .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " kcal")
-            .AddLayeredRadial("Calories left", new[] {
-                new ChartRadialLayer("Available area", 100, 0, 100, ChartColor.FromHex("#F1F2F6"))
+            .AddLayeredRadial("Calories left", layers => layers
+                .Add("Available area", 100, color: ChartColor.FromHex("#F1F2F6"), configure: layer => layer
                     .WithGeometry(1, 0.18)
-                    .WithLineCap(ChartRadialLayerCap.Butt),
-                new ChartRadialLayer("Target ring", 100, 0, 100, ChartColor.FromHex("#FFCD62"))
+                    .WithLineCap(ChartRadialLayerCap.Butt))
+                .Add("Target ring", 100, color: ChartColor.FromHex("#FFCD62"), configure: layer => layer
                     .WithGeometry(0.93, 0.035)
-                    .WithLineCap(ChartRadialLayerCap.Butt),
-                new ChartRadialLayer("Current", 1240, 0, 2700, ChartColor.FromHex("#FF9F4A"))
+                    .WithLineCap(ChartRadialLayerCap.Butt))
+                .Add("Current", 1240, maximum: 2700, color: ChartColor.FromHex("#FF9F4A"), configure: layer => layer
                     .WithGeometry(0.93, 0.14)
-                    .WithSeparators(3, ChartColor.White, 2)
-            });
+                    .WithSeparators(3, ChartColor.White, 2)));
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"layered-radial-chart\"", StringComparison.Ordinal), "Layered radial charts should expose a chart role marker.");

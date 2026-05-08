@@ -27,4 +27,16 @@ public sealed partial class Chart {
         Series.Add(series);
         return this;
     }
+
+    /// <summary>
+    /// Adds a layered radial chart using a fluent layer collection builder.
+    /// </summary>
+    /// <param name="name">The layered radial group name.</param>
+    /// <param name="configure">Configures the radial layers to render, ordered back to front.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddLayeredRadial(string name, Func<ChartRadialLayers, ChartRadialLayers> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        var layers = configure(ChartRadialLayers.Create()) ?? throw new InvalidOperationException("Layered radial configuration cannot return null.");
+        return AddLayeredRadial(name, layers);
+    }
 }
