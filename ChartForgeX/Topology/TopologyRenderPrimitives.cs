@@ -281,8 +281,20 @@ internal static partial class TopologyRenderPrimitives {
 
     private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
         if (points.Count < 2) return;
-        if (edge.SourcePort != TopologyEdgePort.Auto) points[0] = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, points[0]);
-        if (edge.TargetPort != TopologyEdgePort.Auto) points[points.Count - 1] = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, points[points.Count - 1]);
+        if (edge.SourcePort != TopologyEdgePort.Auto) {
+            var original = points[0];
+            var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
+            points[0] = spread;
+            PreserveOrthogonalEndpointLeg(edge, points, 1, edge.SourcePort, original, spread);
+        }
+
+        if (edge.TargetPort != TopologyEdgePort.Auto) {
+            var targetIndex = points.Count - 1;
+            var original = points[targetIndex];
+            var spread = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, original);
+            points[targetIndex] = spread;
+            PreserveOrthogonalEndpointLeg(edge, points, targetIndex - 1, edge.TargetPort, original, spread);
+        }
     }
 
     private static ChartPoint SpreadEndpoint(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode node, TopologyEdgePort port, ChartPoint point) {
@@ -301,6 +313,26 @@ internal static partial class TopologyRenderPrimitives {
             _ => point
         };
         return spread;
+    }
+
+    private static void PreserveOrthogonalEndpointLeg(TopologyEdge edge, List<ChartPoint> points, int adjacentIndex, TopologyEdgePort port, ChartPoint original, ChartPoint spread) {
+        if (!UsesOrthogonalRoute(edge) || adjacentIndex < 0 || adjacentIndex >= points.Count) return;
+        var adjacent = points[adjacentIndex];
+        if (port is TopologyEdgePort.Top or TopologyEdgePort.Bottom) {
+            var deltaX = spread.X - original.X;
+            if (Math.Abs(deltaX) > 0.0001 && Math.Abs(adjacent.X - original.X) < 0.0001) {
+                points[adjacentIndex] = new ChartPoint(adjacent.X + deltaX, adjacent.Y);
+            }
+
+            return;
+        }
+
+        if (port is TopologyEdgePort.Left or TopologyEdgePort.Right) {
+            var deltaY = spread.Y - original.Y;
+            if (Math.Abs(deltaY) > 0.0001 && Math.Abs(adjacent.Y - original.Y) < 0.0001) {
+                points[adjacentIndex] = new ChartPoint(adjacent.X, adjacent.Y + deltaY);
+            }
+        }
     }
 
     private static List<TopologyEdge> EndpointPortPeers(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, string nodeId, TopologyEdgePort port) {

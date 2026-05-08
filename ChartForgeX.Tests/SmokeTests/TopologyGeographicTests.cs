@@ -76,4 +76,39 @@ internal static partial class SmokeTests {
         var validation = new TopologyChartValidator().Validate(invalid);
         Assert(validation.Errors.Any(error => error.Code == "node-geo-coordinate-pair"), "Topology validator should reject partial geographic coordinates.");
     }
+
+    private static void TopologyGeographicCalloutsIgnoreHiddenNodesAndDisabledLabels() {
+        var chart = TopologyChart.Create()
+            .WithId("geo-callout-hidden")
+            .WithViewport(640, 340, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.Geographic)
+            .WithMapViewport(ChartMapViewport.World())
+            .AddGroup("amer", "AMER", 0, 0, 0, 0, TopologyHealthStatus.Healthy, "1 site", symbol: "region")
+            .AddNode("visible", "Visible Site", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, "amer", width: 58, height: 42, symbol: "S")
+            .AddNode("anchor", "Route Anchor", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Critical, "amer", width: 24, height: 24, symbol: "A")
+            .AddNode("remote", "Remote", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Warning, width: 58, height: 42, symbol: "R")
+            .AddEdge("visible-remote", "visible", "remote", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved)
+            .WithGroupCoordinates("amer", -98.5795, 39.8283)
+            .WithNodeCoordinates("visible", -96.797, 32.7767)
+            .WithNodeCoordinates("anchor", -92.0, 34.5)
+            .WithNodeCoordinates("remote", -0.1276, 51.5072)
+            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+
+        var options = new TopologyRenderOptions {
+            IncludeLegend = false,
+            IncludeEdgeLabels = false,
+            IncludeGeographicCallouts = true,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile
+        };
+        var svg = chart.ToSvg(options);
+
+        Assert(svg.Contains("data-cfx-visual-role=\"topology-geographic-callout\"", StringComparison.Ordinal), "Geographic callouts should still render when edge labels are disabled.");
+        Assert(!svg.Contains("data-cfx-role=\"topology-edge-label\"", StringComparison.Ordinal), "Disabled edge labels should not render visible label markup.");
+        Assert(svg.Contains("data-callout-node-count=\"1\"", StringComparison.Ordinal), "Hidden geographic anchor nodes should not inflate callout node totals.");
+        Assert(svg.Contains("data-callout-critical-count=\"0\"", StringComparison.Ordinal), "Hidden geographic anchor nodes should not skew callout health totals.");
+
+        var callouts = TopologyGeographicCallouts.Build(chart, options, TopologyTheme.Light());
+        Assert(callouts.Count == 1 && callouts[0].NodeCount == 1 && callouts[0].CriticalCount == 0, "Geographic callout models should count rendered group members only.");
+    }
 }

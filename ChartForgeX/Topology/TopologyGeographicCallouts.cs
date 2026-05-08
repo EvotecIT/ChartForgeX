@@ -69,15 +69,20 @@ internal static class TopologyGeographicCallouts {
 
         var map = TopologyMapProjection.MapRect(chart);
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        var nodeBoxes = chart.Nodes
+        var renderedNodes = chart.Nodes
             .Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
+            .ToList();
+        var nodeBoxes = renderedNodes
             .Select(node => CalloutBox.FromNodeVisual(node, options))
             .ToList();
         var obstacleBoxes = new List<CalloutBox>(nodeBoxes);
-        obstacleBoxes.AddRange(EdgeLabelLayouts(chart, options).Select(layout => CalloutBox.FromRect(layout.CenterX - layout.Width / 2 - 8, layout.CenterY - layout.Height / 2 - 8, layout.Width + 16, layout.Height + 16)));
+        if (options.IncludeEdgeLabels) {
+            obstacleBoxes.AddRange(EdgeLabelLayouts(chart, options).Select(layout => CalloutBox.FromRect(layout.CenterX - layout.Width / 2 - 8, layout.CenterY - layout.Height / 2 - 8, layout.Width + 16, layout.Height + 16)));
+        }
+
         obstacleBoxes.AddRange(RouteObstacleBoxes(chart, nodes));
         var placed = new List<CalloutBox>();
-        var nodesByGroup = chart.Nodes
+        var nodesByGroup = renderedNodes
             .Where(node => !string.IsNullOrWhiteSpace(node.GroupId))
             .GroupBy(node => node.GroupId!, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.ToList(), StringComparer.Ordinal);
