@@ -76,6 +76,15 @@ internal static class ChartVisualPrimitives {
     public const double BarHighlightOpacity = 0.15;
     public const double BarHighlightStrokeWidth = 1;
     public const double BarHighlightInset = 1;
+    public const double MiniBarGap = 5;
+    public const double MiniBarDenseGap = 3;
+    public const double MiniBarMinWidth = 3;
+    public const double MiniBarMinHeight = 4;
+    public const double MiniBarRadiusMax = 5;
+    public const double MiniBarMutedOpacity = 0.82;
+    public const double MiniSparklineStrokeWidth = 2.4;
+    public const double MiniSparklineCurrentRadius = 3.2;
+    public const double MiniSparklineFillOpacity = 44.0 / 255.0;
 
     public const double GridStrokeWidth = 1;
     public const double GridVerticalOpacity = 0.42;

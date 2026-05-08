@@ -1122,6 +1122,22 @@
       }
     },
     {
+      "name": "powerbginfo-endpoint-snapshot",
+      "width": 1376,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 33,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 825600,
+        "minDistinctColors": 2008,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "remediation-impact-waterfall-dark",
       "width": 920,
       "height": 540,
@@ -1150,6 +1166,22 @@
         "outputScale": 2,
         "minVisiblePixels": 634496,
         "minDistinctColors": 826,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "report-summary-metric-strip",
+      "width": 980,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 576240,
+        "minDistinctColors": 2027,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1398,14 +1430,14 @@
       "width": 1164,
       "height": 565,
       "svg": {
-        "minVisualNodes": 25,
+        "minVisualNodes": 30,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1315320,
-        "minDistinctColors": 1670,
+        "minDistinctColors": 1714,
         "maxEdgeInkPixels": 0
       }
     },

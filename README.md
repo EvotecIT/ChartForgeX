@@ -36,7 +36,7 @@ Already in place:
 Still open before calling the library future-complete:
 
 - Finish the remaining string/raw SVG cleanup outside topology. Topology body composition now stays in the SVG element tree, but grid embeds scoped child SVG as raw markup, and some map/chart renderers still use targeted `StringBuilder` paths.
-- Broaden visual blocks based on real consumers: richer table/list formatting, icons, status palettes, and infographic snippets without becoming a spreadsheet or arbitrary HTML renderer.
+- Broaden visual blocks based on real consumers: richer table/list formatting, icons, status palettes, metric-card micro bars/sparklines, and infographic snippets without becoming a spreadsheet or arbitrary HTML renderer.
 - Keep dashboard shells in host projects. ChartForgeX should emit reusable visual fragments and data hooks; HtmlForgeX/TestimoX should own panels, filters, inspectors, tables, and collected product data.
 - Promote topology/geographic examples into formal visual baselines only after dense routing and geographic layout polish are stable enough for numeric baseline thresholds.
 
@@ -173,19 +173,42 @@ var card = MetricCard.Create()
     .WithTrend("+4 pp")
     .AddDetail("Ready", "84%", VisualStatus.Positive)
     .AddDetail("Risk", "6%", VisualStatus.Warning)
-    .WithStatus(VisualStatus.Positive);
+    .WithSymbol("OK")
+    .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
+    .WithStatus(VisualStatus.Positive)
+    .WithAction("View details", url: "#patch-compliance")
+    .WithMiniBars(new[] { 82d, 86d, 88d, 91d, 94d }, maximum: 100);
+
+var latency = MetricCard.Create()
+    .WithMetric("Latency", "18 ms")
+    .WithTrend("-12 ms")
+    .WithStatus(VisualStatus.Info)
+    .WithAction("Open samples", url: "#latency")
+    .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
 
 var snapshot = VisualGrid.Create()
     .WithTitle("System Snapshot")
     .WithColumns(2)
     .Add(chart)
     .Add(drives)
-    .Add(card, columnSpan: 2);
+    .Add(card)
+    .Add(latency);
 
 snapshot.SaveSvg("snapshot.svg");
 snapshot.SaveHtml("snapshot.html");
 snapshot.SavePng("snapshot.png");
 ```
+
+For PowerBGInfo-style KPI rows, `VisualGrid.CreateMetricStrip(...)` applies the standard compact card-section sizing:
+
+```csharp
+var endpoint = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
+    MetricCard.Create().WithMetric("CPU Load", "38%").WithSymbol("CPU").WithBadgePlacement(MetricCardBadgePlacement.TopLeft).WithAction("View details", url: "#cpu-load").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
+    MetricCard.Create().WithMetric("Memory Used", "71%").WithAction("View details").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
+});
+```
+
+Metric-card mini bars and sparklines share internal geometry/styling primitives across SVG and PNG renderers. That keeps future line/bar polish reusable instead of making the card visuals a separate second implementation.
 
 ChartForgeX validates chart data before rendering so invalid report payloads fail close to the caller instead of producing partial markup or malformed PNGs. Public APIs reject non-finite numbers, invalid enum values, empty required data sets, malformed specialized series, negative proportional values, cyclic Sankey flows, and tree data with multiple roots or parents. HTML fragments and grids scope child SVG IDs per render, so repeated or identical charts can be safely embedded on the same page. When embedding raw SVG strings yourself, pass a stable scope such as `chart.ToSvg("panel-a")` or `grid.ToSvg("report-a")` to keep element IDs unique without giving up deterministic output.
 

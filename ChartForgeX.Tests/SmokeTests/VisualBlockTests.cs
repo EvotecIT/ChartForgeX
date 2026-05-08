@@ -50,19 +50,38 @@ internal static partial class SmokeTests {
         var metric = MetricCard.Create()
             .WithMetric("Coverage", 0.982, "P1")
             .WithIcon(VisualIcon.Lightning)
+            .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
             .WithTrend("+2.4 pp")
             .WithCaption("since previous run")
+            .WithAction("Open details", url: "#coverage")
             .WithStatus(VisualStatus.Positive)
             .AddDetail("Ready", "84%", VisualStatus.Positive)
             .AddDetail("Risk", "6%", VisualStatus.Warning)
+            .WithMiniBars(new[] { 72d, 78d, 83d, 80d, 98d }, maximum: 100)
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(360, 190);
         var metricSvg = metric.ToSvg("visual-block-metric");
-        Assert(metricSvg.Contains("data-cfx-role=\"metric-status-accent\"", StringComparison.Ordinal), "MetricCard should render status styling.");
+        Assert(metricSvg.Contains("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal), "MetricCard should render status styling.");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-detail\"", StringComparison.Ordinal), "MetricCard should render reusable supporting details.");
         Assert(metricSvg.Contains("data-cfx-role=\"visual-icon\"", StringComparison.Ordinal), "MetricCard should render reusable built-in icons.");
+        Assert(metricSvg.Contains("data-cfx-placement=\"top-left\"", StringComparison.Ordinal), "MetricCard should render configurable badge placement.");
+        Assert(metricSvg.Contains("data-cfx-role=\"metric-action-label\"", StringComparison.Ordinal), "MetricCard should render optional footer action text.");
+        Assert(metricSvg.Contains("data-cfx-role=\"metric-action-symbol\"", StringComparison.Ordinal), "MetricCard should render optional footer action symbols.");
+        Assert(metricSvg.Contains("data-cfx-role=\"metric-action-link\"", StringComparison.Ordinal) && metricSvg.Contains("href=\"#coverage\"", StringComparison.Ordinal), "MetricCard should render safe action links in SVG/HTML outputs.");
+        Assert(metricSvg.Contains("data-cfx-role=\"metric-mini-bars\"", StringComparison.Ordinal), "MetricCard should render compact mini bar groups.");
+        Assert(metricSvg.Contains("data-cfx-role=\"metric-mini-bar-highlight\"", StringComparison.Ordinal), "MetricCard should emphasize one mini bar.");
         Assert(metric.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "MetricCard should render an embeddable HTML fragment.");
         Assert(metric.ToPng().Length > 64, "MetricCard should render PNG output.");
+
+        var sparkMetric = MetricCard.Create()
+            .WithMetric("Network", "842 Mbps")
+            .WithStatus(VisualStatus.Info)
+            .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
+        var sparkSvg = sparkMetric.ToSvg("visual-block-metric-sparkline");
+        Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline\"", StringComparison.Ordinal), "MetricCard should render compact sparkline groups.");
+        Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-current\"", StringComparison.Ordinal), "MetricCard sparklines should mark the current value.");
+        Assert(sparkSvg.Contains("842 Mbps", StringComparison.Ordinal), "MetricCard should shrink long values enough to fit beside micro visuals.");
+        Assert(sparkMetric.ToPng().Length > 64, "MetricCard sparkline should render PNG output.");
 
         var radialMetric = RadialMetricCard.Create()
             .WithMetric("Capacity left", "42%")
@@ -136,6 +155,13 @@ internal static partial class SmokeTests {
         Assert(stretchSvg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal) && stretchSvg.Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "VisualGrid SVG stretch mode should remove child aspect-ratio locking.");
         Assert(stretchGrid.ToHtmlFragment().Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "VisualGrid HTML stretch mode should remove embedded SVG aspect-ratio locking.");
 
+        var strip = VisualGrid.CreateMetricStrip("Endpoint", new[] {
+            MetricCard.Create().WithMetric("CPU", "38%").WithMiniSparkline(new[] { 48d, 42d, 38d }),
+            MetricCard.Create().WithMetric("Memory", "71%").WithMiniBars(new[] { 55d, 63d, 71d }, maximum: 100)
+        }, columns: 2);
+        Assert(strip.ToSvg("visual-grid-metric-strip").Contains("Endpoint", StringComparison.Ordinal), "Metric strip preset should render the section title.");
+        Assert(strip.ToHtmlFragment().Contains("--cfx-visual-grid-columns:2", StringComparison.Ordinal), "Metric strip preset should honor the requested column count.");
+
         var autoGrid = VisualGrid.Create()
             .WithColumns(2)
             .Add(MetricCard.Create().WithMetric("Small", 1).WithSize(260, 140))
@@ -162,6 +188,17 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartListItem("bad").Status = (VisualStatus)999, "ChartList items should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Status = (VisualStatus)999, "MetricCard should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Icon = (VisualIcon)999, "MetricCard should reject unknown icon values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().BadgePlacement = (MetricCardBadgePlacement)999, "MetricCard should reject unknown badge placements.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithAction(new string('x', 49)).ToSvg(), "MetricCard action labels should stay compact.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithAction("Open", "longer").ToSvg(), "MetricCard action symbols should stay compact.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithAction("Open", url: "javascript:alert(1)").ToSvg(), "MetricCard action URLs should reject scriptable URLs.");
+        AssertThrows<ArgumentException>(() => MetricCard.Create().WithMiniBars(Array.Empty<double>()), "MetricCard mini bars should reject empty value sets.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().WithMiniBars(new[] { double.NaN }), "MetricCard mini bars should reject non-finite values.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithMiniBars(new[] { 1d }, minimum: 2, maximum: 1).ToSvg(), "MetricCard mini bars should require maximum greater than minimum.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithMiniBars(new[] { 1d }, highlightIndex: 2).ToSvg(), "MetricCard mini bar highlight index should reference an existing value.");
+        AssertThrows<ArgumentException>(() => MetricCard.Create().WithMiniSparkline(new[] { 1d }), "MetricCard mini sparklines should require at least two values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().WithMiniSparkline(new[] { 1d, double.PositiveInfinity }), "MetricCard mini sparklines should reject non-finite values.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithMiniSparkline(new[] { 1d, 2d }, minimum: 3, maximum: 2).ToSvg(), "MetricCard mini sparklines should require maximum greater than minimum.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Missing", null).ToSvg(), "MetricCard should require a visible value.");
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().WithMetric("Missing", "1").ToSvg(), "RadialMetricCard should require at least one layer.");
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().AddLayer("Bad", 1, configure: _ => null!).ToSvg(), "RadialMetricCard should reject null fluent layer configuration results.");
@@ -170,5 +207,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().WithColumns(0), "VisualGrid should reject non-positive column counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().PanelFit = (VisualGridPanelFit)999, "VisualGrid panel fit property should reject unknown values.");
         AssertThrows<InvalidOperationException>(() => VisualGrid.Create().ToSvg(), "VisualGrid should require at least one item.");
+        AssertThrows<ArgumentException>(() => VisualGrid.CreateMetricStrip("Empty", Array.Empty<MetricCard>()), "Metric strip preset should require at least one card.");
+        AssertThrows<ArgumentException>(() => VisualGrid.CreateMetricStrip("Bad", new MetricCard[] { null! }), "Metric strip preset should reject null cards.");
     }
 }

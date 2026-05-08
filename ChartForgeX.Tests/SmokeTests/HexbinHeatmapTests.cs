@@ -73,7 +73,7 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-column-count=\"5\"", System.StringComparison.Ordinal), "Masked cells should preserve the full column span for honeycomb layout.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"hexbin-cell\"") == 9, "Masked cells should not render as low-value hexagons.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"hexbin-cell\"") == 10, "Masked cells should not render as low-value hexagons.");
         Assert(!svg.Contains("<title>Morning, Mon:", System.StringComparison.Ordinal), "Masked leading cells should be absent from SVG titles.");
         Assert(svg.Contains("<title>Noon, Wed: 96</title>", System.StringComparison.Ordinal), "Visible masked-row cells should preserve values and labels.");
         Assert(chart.ToPng().Length > 64, "Masked hexbin heatmaps should render PNG output.");

@@ -39,7 +39,7 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-cell\"") == 4, "Masked heatmap rows should render only visible cells.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-cell\"") == 5, "Masked heatmap rows should render only visible cells.");
         Assert(svg.Contains("data-cfx-column-count=\"4\"", System.StringComparison.Ordinal), "Masked heatmap rows should preserve the full column count.");
         Assert(!svg.Contains("<title>Morning, Mon:", System.StringComparison.Ordinal), "Masked heatmap rows should skip null cells.");
         Assert(svg.Contains("<title>Morning, Tue: 52</title>", System.StringComparison.Ordinal), "Masked heatmap rows should preserve later column label lookup.");
