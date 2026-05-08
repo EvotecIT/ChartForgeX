@@ -33,7 +33,7 @@ public sealed partial class PngChartRenderer {
         DrawDashedPngPath(c, middlePath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap);
         DrawPremiumPngLinePath(c, upperPath, color, series.StrokeWidth, style);
         if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) DrawPngLinePath(c, lowerPath, PngStrokeAmbientHalo(color, style), series.StrokeWidth + style.AmbientHaloStrokeExtra);
-        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) DrawPngLinePath(c, lowerPath, PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra);
+        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) DrawPngLinePath(c, lowerPath, PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + style.HaloStrokeExtra);
         DrawPngLinePath(c, lowerPath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaLowerStrokeOpacity), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth));
         if (style.HighlightOpacity > 0) DrawPngLinePath(c, lowerPath, PngLineHighlight(style), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio));
 

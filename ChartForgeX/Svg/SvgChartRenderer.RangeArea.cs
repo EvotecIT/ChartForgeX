@@ -49,8 +49,8 @@ public sealed partial class SvgChartRenderer {
             WriteRangeAreaPath(writer, "range-area-lower-ambient-halo", index, lower.Count, lowerLine, "none", color.ToCss(), series.StrokeWidth + style.AmbientHaloStrokeExtra, style.AmbientHaloOpacity);
         }
         if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) {
-            WriteRangeAreaPath(writer, "range-area-upper-halo", index, upper.Count, upperLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, style.HaloOpacity);
-            WriteRangeAreaPath(writer, "range-area-lower-halo", index, lower.Count, lowerLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, style.HaloOpacity);
+            WriteRangeAreaPath(writer, "range-area-upper-halo", index, upper.Count, upperLine, "none", color.ToCss(), series.StrokeWidth + style.HaloStrokeExtra, style.HaloOpacity);
+            WriteRangeAreaPath(writer, "range-area-lower-halo", index, lower.Count, lowerLine, "none", color.ToCss(), series.StrokeWidth + style.HaloStrokeExtra, style.HaloOpacity);
         }
         WriteRangeAreaPath(writer, "range-area-upper", index, upper.Count, upperLine, "none", color.ToCss(), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth), null);
         WriteRangeAreaPath(writer, "range-area-lower", index, lower.Count, lowerLine, "none", color.ToCss(), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth), ChartVisualPrimitives.RangeAreaLowerStrokeOpacity);

@@ -226,6 +226,54 @@
       }
     },
     {
+      "name": "dashboard-premium-trend-style",
+      "width": 920,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 31,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 662400,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-segmented-column-style",
+      "width": 920,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 91,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 846400,
+        "minDistinctColors": 995,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-segmented-horizontal-style",
+      "width": 920,
+      "height": 220,
+      "svg": {
+        "minVisualNodes": 55,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 404800,
+        "minDistinctColors": 559,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "data-label-placement-showcase-grid",
       "width": 668,
       "height": 782,

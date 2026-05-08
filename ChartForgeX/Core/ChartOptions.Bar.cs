@@ -23,7 +23,10 @@ public sealed partial class ChartOptions {
     /// </summary>
     public ChartBarStyle BarStyle {
         get => _barVisualStyle.Kind;
-        set => BarVisualStyle = value == ChartBarStyle.SegmentedCapsule ? ChartBarVisualStyle.DashboardCapsule() : ChartBarVisualStyle.Solid();
+        set {
+            if (!Enum.IsDefined(typeof(ChartBarStyle), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown bar style.");
+            BarVisualStyle = value == ChartBarStyle.SegmentedCapsule ? ChartBarVisualStyle.DashboardCapsule() : ChartBarVisualStyle.Solid();
+        }
     }
 
     /// <summary>

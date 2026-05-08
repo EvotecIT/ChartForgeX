@@ -20,13 +20,14 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < xTicks.Count; i++) {
             var x = map.X(xTicks[i]);
             var label = TrimSvgLabelToWidth(xLabels[i], tickFontSize, xLabelMaxWidth);
-            if (o.ShowGrid && gridStyle.ShowVerticalLines) WriteHorizontalAxisLine(sb, null, x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.VerticalOpacity, gridStyle);
-            if (ShowXAxis(chart) && label.Length > 0) DrawXAxisLabel(sb, chart, plot, label, x, plot.Bottom + 21, 0, maxWidth: xLabelMaxWidth);
+            if (o.ShowGrid && gridStyle.ShowVerticalLines) WriteHorizontalAxisLine(sb, null, x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), gridStyle.StrokeWidth, HorizontalValueGridOpacity(gridStyle), gridStyle);
+            var labelColor = o.XAxisLabelHighlights.TryGetValue(xTicks[i], out var highlight) ? highlight : (ChartColor?)null;
+            if (ShowXAxis(chart) && label.Length > 0) DrawXAxisLabel(sb, chart, plot, label, x, plot.Bottom + 21, 0, maxWidth: xLabelMaxWidth, color: labelColor);
         }
 
         foreach (var category in categoryTicks) {
             var y = map.Y(category);
-            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteHorizontalAxisLine(sb, null, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
+            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteHorizontalAxisLine(sb, null, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, HorizontalCategoryGridOpacity(gridStyle), gridStyle);
             if (ShowYAxis(chart)) DrawHorizontalCategoryLabel(sb, chart, plot, FormatX(chart, category), y);
         }
 
@@ -61,6 +62,19 @@ public sealed partial class SvgChartRenderer {
         writer.EndEmptyElement().Line();
         sb.Append(writer.Build());
     }
+
+    private static double HorizontalValueGridOpacity(ChartGridLineStyle style) => IsDefaultHorizontalGridStyle(style) ? ChartVisualPrimitives.HorizontalBarValueGridOpacity : style.VerticalOpacity;
+
+    private static double HorizontalCategoryGridOpacity(ChartGridLineStyle style) => IsDefaultHorizontalGridStyle(style) ? ChartVisualPrimitives.HorizontalBarCategoryGridOpacity : style.HorizontalOpacity;
+
+    private static bool IsDefaultHorizontalGridStyle(ChartGridLineStyle style) =>
+        style.ShowHorizontalLines &&
+        style.ShowVerticalLines &&
+        Math.Abs(style.HorizontalOpacity - 1.0) < 0.000001 &&
+        Math.Abs(style.VerticalOpacity - 0.42) < 0.000001 &&
+        Math.Abs(style.StrokeWidth - 1.0) < 0.000001 &&
+        Math.Abs(style.Dash) < 0.000001 &&
+        Math.Abs(style.Gap) < 0.000001;
 
     private static ChartRect ApplyHorizontalBarReserve(Chart chart, ChartRect plot, IReadOnlyList<double> categoryTicks) {
         if (categoryTicks.Count == 0) return plot;

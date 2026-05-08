@@ -29,6 +29,7 @@ internal static partial class SmokeTests {
         Assert(chart.Options.BarVisualStyle.CapThickness == 7, "Reusable bar style presets should carry cap sizing tokens.");
         Assert(chart.Options.BarVisualStyle.CornerRadius == 0, "Dashboard capsule bodies should stay square so stacked segment joins do not create rounded connector bulges.");
         Assert(chart.Options.BarVisualStyle.CapShadowSpread == 3 && chart.Options.BarVisualStyle.CapHighlightOpacity > 0, "Dashboard capsule style should carry premium cap lighting tokens.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.BarStyle = (ChartBarStyle)999, "Bar style should reject invalid enum values instead of silently falling back to solid bars.");
         var segmentedGeometry = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Rendering", "ChartSegmentedBarGeometry.cs"));
         Assert(segmentedGeometry.Contains("Vertical(", StringComparison.Ordinal) && segmentedGeometry.Contains("Horizontal(", StringComparison.Ordinal) && segmentedGeometry.Contains("RangeCap(", StringComparison.Ordinal), "Segmented capsule geometry should stay shared across vertical, horizontal, and range bars.");
         var segmentedSvg = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Svg", "SvgChartRenderer.SegmentedBars.cs"));
@@ -64,12 +65,14 @@ internal static partial class SmokeTests {
             .WithSize(640, 360)
             .WithStackedHorizontalBars()
             .WithBarStyle(ChartBarStyle.SegmentedCapsule)
+            .WithHighlightedXAxisLabel(50, ChartColor.FromHex("#E11D48"))
             .WithXLabels("Alpha", "Beta")
             .AddHorizontalBar("Done", Points(32, 45), ChartColor.FromHex("#22C55E"))
             .AddHorizontalBar("Open", Points(18, 22), ChartColor.FromHex("#8B5CF6"))
             .ToSvg();
         Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap\"") == 4, "Segmented capsule style should also apply to horizontal bars.");
         Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap-highlight\"") == 4, "Segmented capsule style should apply premium cap highlights to horizontal bars.");
+        Assert(horizontalSvg.Contains("fill=\"#E11D48\"", StringComparison.Ordinal), "SVG horizontal-bar x-axis labels should honor highlighted x-axis label colors.");
         var horizontalPanelSvg = Chart.Create()
             .WithSize(640, 240)
             .WithPadding(160, 34, 26, 34)
@@ -94,6 +97,20 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(rangeSvg, "data-cfx-role=\"range-bar\"") == 2, "Reusable bar styles should preserve range-bar metadata roles.");
         Assert(CountOccurrences(rangeSvg, "data-cfx-role=\"range-bar-cap-shadow\"") == 4, "Range bars should reuse segmented capsule cap shadow tokens.");
         Assert(CountOccurrences(rangeSvg, "data-cfx-role=\"range-bar-cap-highlight\"") == 4, "Range bars should reuse segmented capsule cap highlight tokens.");
+
+        var rangeAreaSvg = Chart.Create()
+            .WithSize(420, 260)
+            .WithLineVisualStyle(ChartLineVisualStyle.Premium().WithHalo(0.22, 11))
+            .AddRangeArea("Band", new[] { new ChartRangeBand(1, 10, 24), new ChartRangeBand(2, 18, 38) }, ChartColor.FromHex("#3B82F6"))
+            .ToSvg();
+        Assert(rangeAreaSvg.Contains("data-cfx-role=\"range-area-upper-halo\"", StringComparison.Ordinal) && rangeAreaSvg.Contains("stroke-width=\"14\"", StringComparison.Ordinal), "SVG range-area halos should honor reusable line halo width tokens.");
+        var compactSegmentedSvg = Chart.Create()
+            .WithSize(220, 140)
+            .WithYAxisBounds(0, 100000)
+            .WithBarStyle(ChartBarStyle.SegmentedCapsule)
+            .AddBar("Tiny", Points(1))
+            .ToSvg();
+        Assert(CountOccurrences(compactSegmentedSvg, "data-cfx-role=\"bar\"") == 1 && compactSegmentedSvg.Contains("height=\"1\"", StringComparison.Ordinal), "Segmented capsule bars should keep tiny non-zero values visible instead of dropping them.");
 
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithFocusedXAxisCategory(1, paletteIndex: -1), "Palette-based x-axis focus should reject negative palette indexes.");
 

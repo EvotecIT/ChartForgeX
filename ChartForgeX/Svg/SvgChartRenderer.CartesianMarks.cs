@@ -230,7 +230,9 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawSvgSegmentedBar(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, int pointIndex, double xValue, double yValue, double baseValue, double x, double y, double width, double height) {
-        if (width <= 0.5 || height <= 0.5) return;
+        if (width <= 0 || height <= 0) return;
+        width = Math.Max(1.0, width);
+        height = Math.Max(1.0, height);
         var style = chart.Options.BarVisualStyle;
         var color = PointColor(chart, series, seriesIndex, pointIndex);
         var geometry = ChartSegmentedBarGeometry.Vertical(style, x, y, width, height, yValue);

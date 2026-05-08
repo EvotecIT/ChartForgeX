@@ -380,14 +380,18 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawSegmentedBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color) {
-        if (width <= 0.5 || height <= 0.5) return;
+        if (width <= 0 || height <= 0) return;
+        width = Math.Max(1.0, width);
+        height = Math.Max(1.0, height);
         var geometry = ChartSegmentedBarGeometry.Vertical(style, x, y, width, height, value);
         c.FillRoundedRect(x, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
         DrawSegmentedCap(c, style, geometry, color);
     }
 
     private static void DrawSegmentedHorizontalBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color) {
-        if (width <= 0.5 || height <= 0.5) return;
+        if (width <= 0 || height <= 0) return;
+        width = Math.Max(1.0, width);
+        height = Math.Max(1.0, height);
         var geometry = ChartSegmentedBarGeometry.Horizontal(style, x, y, width, height, value);
         c.FillRoundedRect(x, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
         DrawSegmentedCap(c, style, geometry, color);
