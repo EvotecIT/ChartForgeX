@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -37,6 +38,18 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"bar-pattern\"", StringComparison.Ordinal), "Bar fill patterns should render SVG pattern overlays.");
         Assert(svg.Contains("data-cfx-fill-pattern=\"Crosshatch\"", StringComparison.Ordinal), "Point fill patterns should override the series pattern in SVG metadata.");
         Assert(chart.ToPng().Length > 64, "Bar fill patterns should render PNG output.");
+        var segmented = Chart.Create()
+            .WithSize(540, 320)
+            .WithBarStyle(ChartBarStyle.SegmentedCapsule)
+            .AddBar("Patterned", Points(12, 44, 26), ChartColor.FromHex("#F97316"));
+        segmented.Series[0].WithFillPattern(ChartFillPattern.DiagonalBackward);
+        Assert(segmented.ToSvg().Contains("data-cfx-role=\"bar-pattern\"", StringComparison.Ordinal), "Segmented bar styles should preserve SVG fill pattern overlays.");
+        var segmentedPlainPng = Chart.Create()
+            .WithSize(540, 320)
+            .WithBarStyle(ChartBarStyle.SegmentedCapsule)
+            .AddBar("Patterned", Points(12, 44, 26), ChartColor.FromHex("#F97316"))
+            .ToPng();
+        Assert(!segmented.ToPng().SequenceEqual(segmentedPlainPng), "Segmented bar styles should preserve PNG fill pattern rendering.");
 
         var horizontal = Chart.Create()
             .WithSize(540, 320)
@@ -45,6 +58,9 @@ internal static partial class SmokeTests {
         horizontal.Series[0].WithFillPattern(ChartFillPattern.DiagonalForward);
         Assert(horizontal.ToSvg().Contains("data-cfx-role=\"horizontal-bar-pattern\"", StringComparison.Ordinal), "Horizontal bars should render fill pattern overlays.");
         Assert(horizontal.ToPng().Length > 64, "Horizontal bar fill patterns should render PNG output.");
+        horizontal.WithBarStyle(ChartBarStyle.SegmentedCapsule);
+        Assert(horizontal.ToSvg().Contains("data-cfx-role=\"horizontal-bar-pattern\"", StringComparison.Ordinal), "Segmented horizontal bars should preserve SVG fill pattern overlays.");
+        Assert(horizontal.ToPng().Length > 64, "Segmented horizontal bar fill patterns should render PNG output.");
 
         var range = Chart.Create()
             .WithSize(540, 320)
@@ -55,6 +71,17 @@ internal static partial class SmokeTests {
         range.Series[0].WithFillPattern(ChartFillPattern.DiagonalBackward);
         Assert(range.ToSvg().Contains("data-cfx-role=\"range-bar-pattern\"", StringComparison.Ordinal), "Range bars should render fill pattern overlays.");
         Assert(range.ToPng().Length > 64, "Range-bar fill patterns should render PNG output.");
+        range.WithBarStyle(ChartBarStyle.SegmentedCapsule);
+        Assert(range.ToSvg().Contains("data-cfx-role=\"range-bar-pattern\"", StringComparison.Ordinal), "Segmented range bars should preserve SVG fill pattern overlays.");
+        var segmentedRangePlainPng = Chart.Create()
+            .WithSize(540, 320)
+            .WithBarStyle(ChartBarStyle.SegmentedCapsule)
+            .AddRangeBar("Patterned", new[] {
+                new ChartInterval(1, 20, 42),
+                new ChartInterval(2, 30, 55)
+            }, ChartColor.FromHex("#8B5CF6"))
+            .ToPng();
+        Assert(!range.ToPng().SequenceEqual(segmentedRangePlainPng), "Segmented range bars should preserve PNG fill pattern rendering.");
 
         chart.Series[0].UseSeriesFillPattern(1).UseSolidFill();
         Assert(!chart.ToSvg().Contains("data-cfx-role=\"bar-pattern\"", StringComparison.Ordinal), "Fill patterns can be cleared fluently.");

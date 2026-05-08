@@ -23,7 +23,7 @@ public sealed partial class PngChartRenderer {
                 var y = map.Y(p.X) + layout.Offset - layout.BarHeight / 2;
                 var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarHeight / 2) : Math.Min(7, layout.BarHeight / 2);
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                    DrawSegmentedHorizontalBar(c, chart.Options.BarVisualStyle, left, y, width, layout.BarHeight, p.Y, PointColor(chart, s, index, pointIndex));
+                    DrawSegmentedHorizontalBar(c, chart.Options.BarVisualStyle, left, y, width, layout.BarHeight, p.Y, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 } else {
                     DrawGradientBar(c, left, y, width, layout.BarHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 }
@@ -74,7 +74,7 @@ public sealed partial class PngChartRenderer {
                 var barHeight = Math.Abs(baseY - y);
                 var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                    DrawSegmentedBar(c, chart.Options.BarVisualStyle, barX, barY, layout.BarWidth, barHeight, p.Y, PointColor(chart, s, index, pointIndex));
+                    DrawSegmentedBar(c, chart.Options.BarVisualStyle, barX, barY, layout.BarWidth, barHeight, p.Y, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 } else {
                     DrawGradientBar(c, barX, barY, layout.BarWidth, barHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 }
@@ -155,7 +155,7 @@ public sealed partial class PngChartRenderer {
                 var intervalIndex = pointIndex / 2;
                 var pointColor = PointColor(chart, s, index, intervalIndex);
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                    DrawSegmentedRangeBar(c, chart.Options.BarVisualStyle, x, top, barWidth, height, y1, y2, pointColor);
+                    DrawSegmentedRangeBar(c, chart.Options.BarVisualStyle, x, top, barWidth, height, y1, y2, pointColor, FillPattern(s, intervalIndex));
                 } else {
                     DrawGradientBar(c, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor, FillPattern(s, intervalIndex));
                     c.DrawLine(x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
@@ -385,28 +385,31 @@ public sealed partial class PngChartRenderer {
         c.DrawLine(x + ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, x + width - ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, ChartColor.FromRgba(255, 255, 255, highlightAlpha), ChartVisualPrimitives.BarHighlightStrokeWidth);
     }
 
-    private static void DrawSegmentedBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color) {
+    private static void DrawSegmentedBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color, ChartFillPattern pattern) {
         if (width <= 0 || height <= 0) return;
         width = Math.Max(1.0, width);
         height = Math.Max(1.0, height);
         var geometry = ChartSegmentedBarGeometry.Vertical(style, x, y, width, height, value);
         c.FillRoundedRect(x, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
+        DrawHatchOverlay(c, x, y, width, height, geometry.Radius, pattern);
         DrawSegmentedCap(c, style, geometry, color);
     }
 
-    private static void DrawSegmentedHorizontalBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color) {
+    private static void DrawSegmentedHorizontalBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color, ChartFillPattern pattern) {
         if (width <= 0 || height <= 0) return;
         width = Math.Max(1.0, width);
         height = Math.Max(1.0, height);
         var geometry = ChartSegmentedBarGeometry.Horizontal(style, x, y, width, height, value);
         c.FillRoundedRect(x, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
+        DrawHatchOverlay(c, x, y, width, height, geometry.Radius, pattern);
         DrawSegmentedCap(c, style, geometry, color);
     }
 
-    private static void DrawSegmentedRangeBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double y1, double y2, ChartColor color) {
+    private static void DrawSegmentedRangeBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double y1, double y2, ChartColor color, ChartFillPattern pattern) {
         if (width <= 0.5 || height <= 0.5) return;
         var geometry = ChartSegmentedBarGeometry.RangeCap(style, x, y1, width);
         c.FillRoundedRect(x - width / 2.0, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
+        DrawHatchOverlay(c, x - width / 2.0, y, width, height, geometry.Radius, pattern);
         DrawSegmentedCap(c, style, geometry, color);
         DrawSegmentedCap(c, style, ChartSegmentedBarGeometry.RangeCap(style, x, y2, width), color);
     }
@@ -559,13 +562,13 @@ public sealed partial class PngChartRenderer {
 
     private static ChartColor PngStrokeHalo(ChartColor color, double opacity) {
         if (color.A == 0) return color;
-        var alpha = Math.Min(color.A, Math.Max(24, (int)Math.Round(color.A * opacity)));
+        var alpha = Math.Min(color.A, Math.Max(0, (int)Math.Round(color.A * opacity)));
         return ChartColor.FromRgba(color.R, color.G, color.B, (byte)alpha);
     }
 
     private static ChartColor PngStrokeAmbientHalo(ChartColor color, ChartLineVisualStyle style) {
         if (color.A == 0) return color;
-        var alpha = Math.Min(color.A, Math.Max(10, (int)Math.Round(color.A * style.AmbientHaloOpacity)));
+        var alpha = Math.Min(color.A, Math.Max(0, (int)Math.Round(color.A * style.AmbientHaloOpacity)));
         return ChartColor.FromRgba(color.R, color.G, color.B, (byte)alpha);
     }
 

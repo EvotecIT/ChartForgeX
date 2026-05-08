@@ -24,7 +24,7 @@ public sealed partial class SvgChartRenderer {
             var y = map.Y(p.X) + layout.Offset - layout.BarHeight / 2;
             var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarHeight / 2) : Math.Min(7, layout.BarHeight / 2);
             if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                WriteSegmentedHorizontalBar(sb, chart, s, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight);
+                WriteSegmentedHorizontalBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, left, y, width, layout.BarHeight);
             } else {
                 WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, BarFill(chart, s, index, pointIndex, id));
                 DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, left, y, width, layout.BarHeight, radius, "horizontal-bar-pattern");
@@ -74,7 +74,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteSegmentedHorizontalBar(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, int pointIndex, double category, double value, double baseValue, double x, double y, double width, double height) {
+    private static void WriteSegmentedHorizontalBar(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, int pointIndex, string id, double category, double value, double baseValue, double x, double y, double width, double height) {
         if (width <= 0 || height <= 0) return;
         width = Math.Max(1.0, width);
         height = Math.Max(1.0, height);
@@ -99,6 +99,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("opacity", style.BodyOpacity)
             .EndEmptyElement()
             .Line();
+        WriteFillPatternOverlay(writer, series, seriesIndex, pointIndex, id, x, y, width, height, geometry.Radius, "horizontal-bar-pattern");
         WriteSvgSegmentedCapLayers(writer, "horizontal-bar", seriesIndex, pointIndex, geometry, style, color.ToCss()).Line();
         sb.Append(writer.Build());
     }

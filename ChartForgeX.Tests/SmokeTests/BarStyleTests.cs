@@ -105,6 +105,8 @@ internal static partial class SmokeTests {
             .AddRangeArea("Band", new[] { new ChartRangeBand(1, 10, 24), new ChartRangeBand(2, 18, 38) }, ChartColor.FromHex("#3B82F6"))
             .ToSvg();
         Assert(rangeAreaSvg.Contains("data-cfx-role=\"range-area-upper-halo\"", StringComparison.Ordinal) && rangeAreaSvg.Contains("stroke-width=\"14\"", StringComparison.Ordinal), "SVG range-area halos should honor reusable line halo width tokens.");
+        var pngCartesian = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
+        Assert(!pngCartesian.Contains("Math.Max(24", StringComparison.Ordinal) && !pngCartesian.Contains("Math.Max(10", StringComparison.Ordinal), "PNG premium line halos should honor low opacity style tokens without renderer-specific alpha floors.");
         var compactSegmentedSvg = Chart.Create()
             .WithSize(220, 140)
             .WithYAxisBounds(0, 100000)

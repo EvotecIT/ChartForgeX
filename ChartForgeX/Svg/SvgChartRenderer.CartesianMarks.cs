@@ -182,7 +182,7 @@ public sealed partial class SvgChartRenderer {
             var x = map.X(p.X) + layout.Offset - layout.BarWidth / 2;
             var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
             if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, p.X, p.Y, baseValue, x, top, layout.BarWidth, height);
+                DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, x, top, layout.BarWidth, height);
             } else {
                 AppendSvg(sb, writer => writer
                     .StartElement("rect")
@@ -230,7 +230,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void DrawSvgSegmentedBar(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, int pointIndex, double xValue, double yValue, double baseValue, double x, double y, double width, double height) {
+    private static void DrawSvgSegmentedBar(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, int pointIndex, string id, double xValue, double yValue, double baseValue, double x, double y, double width, double height) {
         if (width <= 0 || height <= 0) return;
         width = Math.Max(1.0, width);
         height = Math.Max(1.0, height);
@@ -253,6 +253,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", color.ToCss())
             .Attribute("opacity", style.BodyOpacity)
             .EndEmptyElement());
+        DrawSvgFillPatternOverlay(sb, series, seriesIndex, pointIndex, id, x, y, width, height, geometry.Radius, "bar-pattern");
         AppendSvg(sb, writer => WriteSvgSegmentedCapLayers(writer, "bar", seriesIndex, pointIndex, geometry, style, color.ToCss()).Line());
     }
 

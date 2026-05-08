@@ -77,11 +77,11 @@ public sealed partial class SvgChartRenderer {
             .Attribute("opacity", opacity)
             .EndEmptyElement()
             .Line();
+        WriteFillPatternOverlay(writer, series, seriesIndex, pointIndex, id, x - barWidth / 2, top, barWidth, height, radius, "range-bar-pattern");
         if (style.Kind == ChartBarStyle.SegmentedCapsule) {
             WriteRangeBarCap(writer, style, seriesIndex, pointIndex, "start", startValue, x, y1, barWidth, colorCss);
             WriteRangeBarCap(writer, style, seriesIndex, pointIndex, "end", endValue, x, y2, barWidth, colorCss);
         } else {
-            WriteFillPatternOverlay(writer, series, seriesIndex, pointIndex, id, x - barWidth / 2, top, barWidth, height, Math.Min(7, barWidth / 2), "range-bar-pattern");
             WriteRangeBarCap(writer, style, seriesIndex, pointIndex, "start", startValue, x, y1, barWidth, colorCss);
             WriteRangeBarCap(writer, style, seriesIndex, pointIndex, "end", endValue, x, y2, barWidth, colorCss);
         }
