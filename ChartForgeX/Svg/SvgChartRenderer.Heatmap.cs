@@ -53,7 +53,7 @@ public sealed partial class SvgChartRenderer {
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color);
                 if (ShouldDrawDataLabels(chart, series) && cellWidth >= 34 && cellHeight >= 20) {
-                    var label = FormatValue(chart, value);
+                    var label = FormatDataLabel(chart, series, pointIndex, value);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
                         DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, HeatmapTextColor(color), t.DataLabelFontSize, cellWidth - 6, "750", style: DataLabelStyle(chart, series, pointIndex));
@@ -215,7 +215,7 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var style = DataLabelStyle(chart, row, pointIndex);
                 var fontSize = StyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
-                max = Math.Max(max, EstimateTextWidth(FormatValue(chart, FindHeatmapValue(row, columns[i])), fontSize));
+                max = Math.Max(max, EstimateTextWidth(FormatDataLabel(chart, row, pointIndex, FindHeatmapValue(row, columns[i])), fontSize));
             }
         }
 

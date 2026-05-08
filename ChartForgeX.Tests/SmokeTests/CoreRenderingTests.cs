@@ -285,6 +285,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("aria-labelledby=\"", StringComparison.Ordinal), "SVG should reference title and description metadata.");
         Assert(svg.Contains("<title id=\"", StringComparison.Ordinal), "SVG should include a title element.");
         Assert(svg.Contains("<desc id=\"", StringComparison.Ordinal), "SVG should include a description element.");
+
+        var hiddenLegendSvg = Chart.Create()
+            .WithTitle("Hidden legend data")
+            .AddLine("Revenue", Points(10, 20, 30));
+        hiddenLegendSvg.Series[0].WithLegendEntry(false);
+        Assert(hiddenLegendSvg.ToSvg().Contains("Hidden legend data with 1 data series: Revenue.", StringComparison.Ordinal), "SVG descriptions should describe data series independently from legend visibility.");
     }
 
     private static void SvgUsesReportGradeStyling() {

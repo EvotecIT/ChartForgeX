@@ -40,8 +40,8 @@ public sealed partial class SvgChartRenderer {
             return title + " tile map for " + tileMap.Name + " on " + mapName + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
         }
 
-        var describedSeries = chart.Series.Where(series => series.ShowInLegend).ToArray();
-        if (describedSeries.Length == 0) return title + " with no legend-visible data series.";
+        var describedSeries = chart.Series.Where(series => series.Points.Count > 0 && !IsPointCalloutSeries(series)).ToArray();
+        if (describedSeries.Length == 0) return title + " with no data points.";
         var names = string.Join(", ", describedSeries.Select(series => series.Name).ToArray());
         return title + " with " + describedSeries.Length.ToString(CultureInfo.InvariantCulture) + " data series: " + names + ".";
     }

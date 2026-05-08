@@ -24,10 +24,16 @@ public sealed partial class SvgChartRenderer {
             var intervalIndex = pointIndex / 2;
             var color = PointColor(chart, series, index, intervalIndex);
             var summary = FormatValue(chart, Math.Min(start.Y, end.Y)) + "-" + FormatValue(chart, Math.Max(start.Y, end.Y));
+            var label = FormatRangeBarLabel(chart, series, intervalIndex, start.Y, end.Y);
 
             WriteRangeBarInterval(sb, series, index, intervalIndex, id, start.X, start.Y, end.Y, summary, color, x, y1, y2, top, height, barWidth);
-            if (ShouldDrawDataLabels(chart, series)) DrawRangeBarLabel(sb, chart, series, intervalIndex, plot, reservedLabels, summary, x, y1, y2, top, height, barWidth);
+            if (ShouldDrawDataLabels(chart, series)) DrawRangeBarLabel(sb, chart, series, intervalIndex, plot, reservedLabels, label, x, y1, y2, top, height, barWidth);
         }
+    }
+
+    private static string FormatRangeBarLabel(Chart chart, ChartSeries series, int intervalIndex, double startValue, double endValue) {
+        if (intervalIndex >= 0 && intervalIndex < series.PointLabels.Count && series.PointLabels[intervalIndex] != null) return series.PointLabels[intervalIndex]!;
+        return FormatValue(chart, Math.Min(startValue, endValue)) + "-" + FormatValue(chart, Math.Max(startValue, endValue));
     }
 
     private static void WriteRangeBarInterval(

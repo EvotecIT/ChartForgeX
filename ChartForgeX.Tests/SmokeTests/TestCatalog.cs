@@ -96,6 +96,7 @@ internal static partial class SmokeTests {
         ("Hierarchy labels can be suppressed", HierarchyLabelsCanBeSuppressed),
         ("Bullet labels can be suppressed", BulletLabelsCanBeSuppressed),
         ("Horizontal series data label overrides reserve layout", HorizontalSeriesDataLabelOverridesReserveLayout),
+        ("Point label overrides reach specialized data labels", PointLabelOverridesReachSpecializedDataLabels),
         ("Dense point labels avoid collisions", DensePointLabelsAvoidCollisions),
         ("Dense bar labels avoid collisions", DenseBarLabelsAvoidCollisions),
         ("Dense comparison labels avoid collisions", DenseComparisonLabelsAvoidCollisions),

@@ -144,4 +144,23 @@ internal static partial class SmokeTests {
         Assert(GetAttribute(labelsSvg, "<clipPath", "width") < GetAttribute(noLabelsSvg, "<clipPath", "width"), "Horizontal bar label overrides should reserve right-side label space.");
         Assert(labels.ToPng().Length > 64, "Horizontal bar label override layout should render valid PNG output.");
     }
+
+    private static void PointLabelOverridesReachSpecializedDataLabels() {
+        var vertical = Chart.Create().WithDataLabels().AddBar("Vertical", Points(12, 24));
+        vertical.Series[0].WithPointLabel(1, "Custom vertical");
+        Assert(vertical.ToSvg().Contains(">Custom vertical</text>", System.StringComparison.Ordinal), "SVG vertical bar labels should honor point-label overrides.");
+
+        var horizontal = Chart.Create().WithDataLabels().AddHorizontalBar("Horizontal", Points(12, 24));
+        horizontal.Series[0].WithPointLabel(1, "Custom horizontal");
+        Assert(horizontal.ToSvg().Contains(">Custom horizontal</text>", System.StringComparison.Ordinal), "SVG horizontal bar labels should honor point-label overrides.");
+
+        var heatmap = Chart.Create().WithDataLabels().AddHeatmapRow("Heat", Points(12, 24));
+        heatmap.Series[0].WithPointLabel(1, "Custom heat");
+        Assert(heatmap.ToSvg().Contains(">Custom heat</text>", System.StringComparison.Ordinal), "SVG heatmap labels should honor point-label overrides.");
+
+        var range = Chart.Create().WithDataLabels().AddRangeBar("Window", new[] { new ChartInterval(1, 10, 25) });
+        range.Series[0].WithPointLabel(0, "Custom range");
+        Assert(range.ToSvg().Contains(">Custom range</text>", System.StringComparison.Ordinal), "SVG range-bar labels should honor interval point-label overrides.");
+        Assert(vertical.ToPng().Length > 64 && horizontal.ToPng().Length > 64 && heatmap.ToPng().Length > 64 && range.ToPng().Length > 64, "Point-label override chart variants should render valid PNG output.");
+    }
 }

@@ -150,8 +150,8 @@ public sealed partial class PngChartRenderer {
                 c.DrawLine(x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                 c.DrawLine(x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                 if (ShouldDrawDataLabels(chart, s)) {
-                    var label = FormatValue(chart, Math.Min(start.Y, end.Y)) + "-" + FormatValue(chart, Math.Max(start.Y, end.Y));
-                    var fontSize = PngDataLabelFontSize(chart, s);
+                    var label = FormatRangeBarLabel(chart, s, intervalIndex, start.Y, end.Y);
+                    var fontSize = PngDataLabelFontSize(chart, s, intervalIndex);
                     var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
                     var placement = DataLabelPlacement(chart, s);
                     var bottom = Math.Max(y1, y2);
@@ -368,19 +368,19 @@ public sealed partial class PngChartRenderer {
         var top = Blend(ChartColor.White, color, 0.88);
         var bottom = Blend(ChartColor.Black, color, 0.94);
         c.FillRoundedRectVerticalGradient(x, y, width, height, radius, top, bottom);
-        DrawHatchOverlay(c, x, y, width, height, pattern);
+        DrawHatchOverlay(c, x, y, width, height, radius, pattern);
         var highlightAlpha = (byte)Math.Round(255 * ChartVisualPrimitives.BarHighlightOpacity);
         c.DrawLine(x + ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, x + width - ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, ChartColor.FromRgba(255, 255, 255, highlightAlpha), ChartVisualPrimitives.BarHighlightStrokeWidth);
     }
 
-    private static void DrawHatchOverlay(RgbaCanvas c, double x, double y, double width, double height, ChartFillPattern pattern) {
+    private static void DrawHatchOverlay(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartFillPattern pattern) {
         if (pattern == ChartFillPattern.None || width <= 1 || height <= 1) return;
         var color = ApplyOpacity(ChartColor.White, pattern == ChartFillPattern.Crosshatch ? 0.22 : 0.30);
-        if (pattern == ChartFillPattern.DiagonalForward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, true, color);
-        if (pattern == ChartFillPattern.DiagonalBackward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, false, color);
+        if (pattern == ChartFillPattern.DiagonalForward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, radius, true, color);
+        if (pattern == ChartFillPattern.DiagonalBackward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, radius, false, color);
     }
 
-    private static void DrawHatchDirection(RgbaCanvas c, double x, double y, double width, double height, bool forward, ChartColor color) {
+    private static void DrawHatchDirection(RgbaCanvas c, double x, double y, double width, double height, double radius, bool forward, ChartColor color) {
         var spacing = 8.0;
         for (var offset = -height; offset < width + height; offset += spacing) {
             double x0;
@@ -400,8 +400,58 @@ public sealed partial class PngChartRenderer {
             }
 
             if (!ClipLineToRect(ref x0, ref y0, ref x1, ref y1, x, y, x + width, y + height)) continue;
-            c.DrawLine(x0, y0, x1, y1, color, 1.15);
+            DrawRoundedClippedLine(c, x0, y0, x1, y1, x, y, width, height, radius, color);
         }
+    }
+
+    private static string FormatRangeBarLabel(Chart chart, ChartSeries series, int intervalIndex, double startValue, double endValue) {
+        if (intervalIndex >= 0 && intervalIndex < series.PointLabels.Count && series.PointLabels[intervalIndex] != null) return series.PointLabels[intervalIndex]!;
+        return FormatValue(chart, Math.Min(startValue, endValue)) + "-" + FormatValue(chart, Math.Max(startValue, endValue));
+    }
+
+    private static void DrawRoundedClippedLine(RgbaCanvas c, double x0, double y0, double x1, double y1, double rectX, double rectY, double width, double height, double radius, ChartColor color) {
+        radius = Math.Max(0, Math.Min(radius, Math.Min(width, height) / 2.0));
+        if (radius <= 0.000001) {
+            c.DrawLine(x0, y0, x1, y1, color, 1.15);
+            return;
+        }
+
+        var dx = x1 - x0;
+        var dy = y1 - y0;
+        var steps = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(dx * dx + dy * dy) / 1.5));
+        var active = false;
+        var segmentStartX = x0;
+        var segmentStartY = y0;
+        var previousX = x0;
+        var previousY = y0;
+        for (var i = 0; i <= steps; i++) {
+            var t = i / (double)steps;
+            var currentX = x0 + dx * t;
+            var currentY = y0 + dy * t;
+            var inside = IsInsideRoundedRect(currentX, currentY, rectX, rectY, width, height, radius);
+            if (inside && !active) {
+                segmentStartX = currentX;
+                segmentStartY = currentY;
+                active = true;
+            } else if (!inside && active) {
+                c.DrawLine(segmentStartX, segmentStartY, previousX, previousY, color, 1.15);
+                active = false;
+            }
+
+            previousX = currentX;
+            previousY = currentY;
+        }
+
+        if (active) c.DrawLine(segmentStartX, segmentStartY, x1, y1, color, 1.15);
+    }
+
+    private static bool IsInsideRoundedRect(double px, double py, double x, double y, double width, double height, double radius) {
+        if (px < x || px > x + width || py < y || py > y + height) return false;
+        var closestX = Clamp(px, x + radius, x + width - radius);
+        var closestY = Clamp(py, y + radius, y + height - radius);
+        var dx = px - closestX;
+        var dy = py - closestY;
+        return dx * dx + dy * dy <= radius * radius + 0.000001;
     }
 
     private static bool ClipLineToRect(ref double x0, ref double y0, ref double x1, ref double y1, double minX, double minY, double maxX, double maxY) {
