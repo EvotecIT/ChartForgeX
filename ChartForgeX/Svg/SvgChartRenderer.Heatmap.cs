@@ -13,7 +13,7 @@ public sealed partial class SvgChartRenderer {
         var rows = chart.Series.Where(series => series.Kind == ChartSeriesKind.Heatmap).ToArray();
         if (rows.Length == 0) return;
 
-        var columns = rows.SelectMany(series => series.Points.Select(point => point.X)).Distinct().OrderBy(value => value).ToArray();
+        var columns = HeatmapColumns(rows);
         if (columns.Length == 0) return;
 
         var t = chart.Options.Theme;
@@ -212,6 +212,7 @@ public sealed partial class SvgChartRenderer {
             if (placement != ChartDataLabelPlacement.Left && placement != ChartDataLabelPlacement.Right && placement != ChartDataLabelPlacement.Outside) continue;
             for (var i = 0; i < columns.Count; i++) {
                 var pointIndex = HeatmapPointIndex(row, columns[i]);
+                if (pointIndex < 0) continue;
                 var style = DataLabelStyle(chart, row, pointIndex);
                 var fontSize = StyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
                 max = Math.Max(max, EstimateTextWidth(FormatValue(chart, FindHeatmapValue(row, columns[i])), fontSize));
@@ -340,6 +341,18 @@ public sealed partial class SvgChartRenderer {
     private static ChartColor HeatmapTextColor(ChartColor background) {
         var luminance = (0.2126 * background.R + 0.7152 * background.G + 0.0722 * background.B) / 255;
         return luminance > 0.54 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
+    }
+
+    private static double[] HeatmapColumns(IReadOnlyList<ChartSeries> rows) {
+        var columns = new SortedSet<double>();
+        foreach (var series in rows) {
+            foreach (var point in series.Points) columns.Add(point.X);
+            if (series.HeatmapColumnCount.HasValue) {
+                for (var i = 1; i <= series.HeatmapColumnCount.Value; i++) columns.Add(i);
+            }
+        }
+
+        return columns.ToArray();
     }
 
     private static double FindHeatmapValue(ChartSeries series, double column) {

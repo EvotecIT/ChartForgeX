@@ -21,6 +21,8 @@ public sealed partial class PngChartRenderer {
                 if (point.Y < min) min = point.Y;
                 if (point.Y > max) max = point.Y;
             }
+
+            AddHeatmapColumns(columns, series);
         }
 
         if (columns.Count == 0) return;
@@ -127,6 +129,7 @@ public sealed partial class PngChartRenderer {
             if (placement != ChartDataLabelPlacement.Left && placement != ChartDataLabelPlacement.Right && placement != ChartDataLabelPlacement.Outside) continue;
             for (var i = 0; i < columns.Count; i++) {
                 var pointIndex = HeatmapPointIndex(row, columns[i]);
+                if (pointIndex < 0) continue;
                 var fontSize = PngDataLabelFontSize(chart, row, pointIndex);
                 max = Math.Max(max, EstimatePngEmphasizedTextWidth(FormatValue(chart, FindHeatmapValue(row, columns[i])), fontSize));
             }
@@ -151,6 +154,11 @@ public sealed partial class PngChartRenderer {
     private static ChartColor HeatmapTextColor(ChartColor color) {
         var luminance = (0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B) / 255.0;
         return luminance > 0.54 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
+    }
+
+    private static void AddHeatmapColumns(SortedSet<double> columns, ChartSeries series) {
+        if (!series.HeatmapColumnCount.HasValue) return;
+        for (var i = 1; i <= series.HeatmapColumnCount.Value; i++) columns.Add(i);
     }
 
     private static void DrawHeatmapScale(RgbaCanvas c, Chart chart, ChartRect plot, double min, double max, ChartColor? highColor, double fontSize) {

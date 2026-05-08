@@ -39,6 +39,13 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"hexbin-cell\"") == 6, "Value overloads should map each value to a one-based hexbin column.");
         Assert(svg.Contains("<title>09:00, Tue: 82</title>", System.StringComparison.Ordinal), "Value overloads should preserve x-axis label lookup.");
         Assert(chart.ToPng().Length > 64, "Value overloads should render PNG output.");
+        var labeled = Chart.Create()
+            .WithSize(560, 360)
+            .WithDataLabels()
+            .AddHexbinHeatmapRow("09:00", new[] { 68d, 82, 91 });
+        labeled.Series[0].WithPointLabel(1, "Peak");
+        Assert(labeled.ToSvg().Contains(">Peak</text>", System.StringComparison.Ordinal), "Hexbin SVG data labels should honor point-level overrides.");
+        Assert(labeled.ToPng().Length > 64, "Hexbin PNG data labels should honor point-level overrides without failing render.");
         AssertThrows<System.ArgumentException>(() => Chart.Create().AddHexbinHeatmapRow("Empty", System.Array.Empty<double>()), "Hexbin value overloads should reject empty rows.");
         AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().AddHexbinHeatmapRow("Bad", new[] { 1d, double.NaN }), "Hexbin value overloads should reject non-finite values.");
     }
@@ -67,13 +74,13 @@ internal static partial class SmokeTests {
             .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddHexbinHeatmapRows(new[] {
                 ChartHeatmapRow.CreateMasked("Morning", null, 62, 74, 68, null),
-                ChartHeatmapRow.CreateMasked("Noon", 58, 83, 96, 88, 52),
+                ChartHeatmapRow.CreateMasked("Noon", null, 83, 96, 88, null),
                 ChartHeatmapRow.CreateMasked("Evening", null, null, 71, 64, null)
             });
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-column-count=\"5\"", System.StringComparison.Ordinal), "Masked cells should preserve the full column span for honeycomb layout.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"hexbin-cell\"") == 10, "Masked cells should not render as low-value hexagons.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"hexbin-cell\"") == 8, "Masked cells should not render as low-value hexagons.");
         Assert(!svg.Contains("<title>Morning, Mon:", System.StringComparison.Ordinal), "Masked leading cells should be absent from SVG titles.");
         Assert(svg.Contains("<title>Noon, Wed: 96</title>", System.StringComparison.Ordinal), "Visible masked-row cells should preserve values and labels.");
         Assert(chart.ToPng().Length > 64, "Masked hexbin heatmaps should render PNG output.");

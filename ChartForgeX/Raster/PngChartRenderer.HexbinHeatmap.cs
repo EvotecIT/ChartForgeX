@@ -21,6 +21,8 @@ public sealed partial class PngChartRenderer {
                 min = Math.Min(min, point.Y);
                 max = Math.Max(max, point.Y);
             }
+
+            AddHeatmapColumns(columns, series);
         }
 
         if (columns.Count == 0) return;
@@ -50,7 +52,7 @@ public sealed partial class PngChartRenderer {
 
                 var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
-                    var label = FormatValue(chart, value);
+                    var label = FormatDataLabel(chart, series, pointIndex, value);
                     var width = EstimatePngEmphasizedTextWidth(label, fontSize);
                     DrawReadablePngLabel(c, new ChartRect(cx - layout.HexWidth / 2, cy - layout.Radius, layout.HexWidth, layout.Radius * 2), cx - width / 2, cy - fontSize / 2, label, HeatmapTextColor(color), color, fontSize, DataLabelStyle(chart, series, pointIndex));
                 }
@@ -76,7 +78,9 @@ public sealed partial class PngChartRenderer {
         var rowLabelReserve = 0.0;
         if (chart.Options.ShowAxes) foreach (var row in rows) rowLabelReserve = Math.Max(rowLabelReserve, EstimatePngEmphasizedTextWidth(row.Name, tickFontSize));
         var bottomReserve = chart.Options.ShowAxes ? (chart.Options.ShowHeatmapScale ? 58 : chart.Options.ShowHeatmapColumnLabels ? 38 : 10) : chart.Options.ShowHeatmapScale ? 46 : 0;
-        var left = Math.Min(plot.Right - 160, plot.Left + rowLabelReserve + (chart.Options.ShowAxes ? 18 : 0));
+        var desiredLeft = plot.Left + rowLabelReserve + (chart.Options.ShowAxes ? 18 : 0);
+        var maxLeft = Math.Max(plot.Left, plot.Right - 160);
+        var left = Math.Max(plot.Left, Math.Min(maxLeft, desiredLeft));
         return new ChartRect(left, plot.Top, Math.Max(1, plot.Right - left), Math.Max(1, plot.Height - bottomReserve));
     }
 

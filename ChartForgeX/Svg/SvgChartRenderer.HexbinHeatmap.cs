@@ -12,7 +12,7 @@ public sealed partial class SvgChartRenderer {
         var rows = chart.Series.Where(series => series.Kind == ChartSeriesKind.HexbinHeatmap).ToArray();
         if (rows.Length == 0) return;
 
-        var columns = rows.SelectMany(series => series.Points.Select(point => point.X)).Distinct().OrderBy(value => value).ToArray();
+        var columns = HeatmapColumns(rows);
         if (columns.Length == 0) return;
 
         var values = rows.SelectMany(series => series.Points.Select(point => point.Y)).ToArray();
@@ -40,7 +40,7 @@ public sealed partial class SvgChartRenderer {
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, summary);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
-                    DrawSvgTextCenteredX(body, chart, "data-label", FormatValue(chart, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, HeatmapTextColor(color), chart.Options.Theme.DataLabelFontSize, layout.HexWidth - 8, "750", style: DataLabelStyle(chart, series, pointIndex));
+                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, HeatmapTextColor(color), chart.Options.Theme.DataLabelFontSize, layout.HexWidth - 8, "750", style: DataLabelStyle(chart, series, pointIndex));
                 }
             }
         }
@@ -122,7 +122,9 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var rowLabelReserve = chart.Options.ShowAxes ? rows.Max(series => EstimateTextWidth(series.Name, t.TickLabelFontSize)) + 18 : 0;
         var bottomReserve = chart.Options.ShowAxes ? (chart.Options.ShowHeatmapScale ? 58 : chart.Options.ShowHeatmapColumnLabels ? 38 : 10) : chart.Options.ShowHeatmapScale ? 46 : 0;
-        var left = Math.Min(plot.Right - 160, plot.Left + rowLabelReserve);
+        var desiredLeft = plot.Left + rowLabelReserve;
+        var maxLeft = Math.Max(plot.Left, plot.Right - 160);
+        var left = Math.Max(plot.Left, Math.Min(maxLeft, desiredLeft));
         return new ChartRect(left, plot.Top, Math.Max(1, plot.Right - left), Math.Max(1, plot.Height - bottomReserve));
     }
 

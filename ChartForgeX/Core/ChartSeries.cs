@@ -60,6 +60,11 @@ public sealed class ChartSeries {
     public List<double?> PointValues { get; } = new();
 
     /// <summary>
+    /// Gets or sets the full heatmap column span for masked matrix rows.
+    /// </summary>
+    internal int? HeatmapColumnCount { get; set; }
+
+    /// <summary>
     /// Gets optional point-level data labels. Null entries use the formatted point value.
     /// </summary>
     public List<string?> PointLabels { get; } = new();

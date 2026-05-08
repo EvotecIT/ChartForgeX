@@ -37,7 +37,12 @@ public sealed partial class Chart {
     /// <param name="values">The cell intensities. Null cells reserve their column position but do not render.</param>
     /// <param name="color">An optional high-intensity cell color.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null) => AddHeatmapRow(name, OptionalValues(values, nameof(values)), color);
+    public Chart AddHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null) {
+        var points = OptionalValues(values, nameof(values), out var columnCount);
+        AddHeatmapRow(name, points, color);
+        Series[Series.Count - 1].HeatmapColumnCount = columnCount;
+        return this;
+    }
 
     /// <summary>
     /// Adds multiple heatmap rows from row names and one-based value rows.
@@ -86,7 +91,12 @@ public sealed partial class Chart {
     /// <param name="values">The hexagon intensities. Null cells reserve their column position but do not render.</param>
     /// <param name="color">An optional high-intensity hexagon color.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHexbinHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null) => AddHexbinHeatmapRow(name, OptionalValues(values, nameof(values)), color);
+    public Chart AddHexbinHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null) {
+        var points = OptionalValues(values, nameof(values), out var columnCount);
+        AddHexbinHeatmapRow(name, points, color);
+        Series[Series.Count - 1].HeatmapColumnCount = columnCount;
+        return this;
+    }
 
     /// <summary>
     /// Adds multiple hexbin heatmap rows from row names and one-based value rows.
@@ -133,20 +143,21 @@ public sealed partial class Chart {
         return this;
     }
 
-    private static IEnumerable<ChartPoint> OptionalValues(IEnumerable<double?> values, string parameterName) {
+    private static IReadOnlyList<ChartPoint> OptionalValues(IEnumerable<double?> values, string parameterName, out int columnCount) {
         if (values == null) throw new ArgumentNullException(parameterName);
+        var points = new List<ChartPoint>();
         var index = 1;
-        var count = 0;
         foreach (var value in values) {
             if (value.HasValue) {
                 ChartGuards.Finite(value.Value, parameterName + "[" + (index - 1).ToString(System.Globalization.CultureInfo.InvariantCulture) + "]");
-                yield return new ChartPoint(index, value.Value);
-                count++;
+                points.Add(new ChartPoint(index, value.Value));
             }
 
             index++;
         }
 
-        if (count == 0) throw new ArgumentException("At least one visible cell value is required.", parameterName);
+        columnCount = index - 1;
+        if (points.Count == 0) throw new ArgumentException("At least one visible cell value is required.", parameterName);
+        return points;
     }
 }
