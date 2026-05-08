@@ -233,7 +233,7 @@ public sealed partial class TopologyPngRenderer {
             var baseColor = Color(EdgeColor(edge, theme, options));
             var routeOpacity = isSelected ? 1 : EdgeOpacity(edge, options);
             if (!highlight.IsEdgeHighlighted(edge)) routeOpacity *= highlight.DimmedOpacity;
-            var color = WithAlpha(baseColor, (byte)Math.Round(255 * Math.Clamp(routeOpacity, 0, 1)));
+            var color = WithAlpha(baseColor, (byte)Math.Round(255 * Clamp(routeOpacity, 0, 1)));
             var dash = EdgePngDash(edge);
             var routePoints = IsGeographicCurve(chart, edge, nodes)
                 ? GeographicCurveSamplePoints(chart, edge, nodes, points)
@@ -587,8 +587,8 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void SampleBilinear(byte[] source, int sourceWidth, int sourceHeight, double sourceX, double sourceY, byte[] target, int dst) {
-        sourceX = Math.Clamp(sourceX, 0, sourceWidth - 1);
-        sourceY = Math.Clamp(sourceY, 0, sourceHeight - 1);
+        sourceX = Clamp(sourceX, 0, sourceWidth - 1);
+        sourceY = Clamp(sourceY, 0, sourceHeight - 1);
         var x0 = (int)Math.Floor(sourceX);
         var y0 = (int)Math.Floor(sourceY);
         var x1 = Math.Min(sourceWidth - 1, x0 + 1);
@@ -602,7 +602,19 @@ public sealed partial class TopologyPngRenderer {
         for (var channel = 0; channel < 4; channel++) {
             var top = source[topLeft + channel] * (1 - wx) + source[topRight + channel] * wx;
             var bottom = source[bottomLeft + channel] * (1 - wx) + source[bottomRight + channel] * wx;
-            target[dst + channel] = (byte)Math.Clamp((int)Math.Round(top * (1 - wy) + bottom * wy), 0, 255);
+            target[dst + channel] = (byte)Clamp((int)Math.Round(top * (1 - wy) + bottom * wy), 0, 255);
         }
+    }
+
+    private static double Clamp(double value, double min, double max) {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
+    }
+
+    private static int Clamp(int value, int min, int max) {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
     }
 }
