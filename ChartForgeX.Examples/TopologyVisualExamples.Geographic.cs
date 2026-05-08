@@ -34,15 +34,15 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("amer-emea", "amer-hub", "emea-hub", "68 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "WAN", "/geo/links/amer-emea")
             .AddEdge("emea-apac", "emea-hub", "apac-hub", "92 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "WAN", "/geo/links/emea-apac")
             .AddEdge("amer-apac", "amer-hub", "apac-hub", "142 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "backup", "/geo/links/amer-apac")
-            .AddEdge("amer-nyc", "amer-hub", "nyc", "local", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("amer-chi", "amer-hub", "chi", "loss", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("amer-sfo", "amer-hub", "sfo", "down", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("emea-lon", "emea-hub", "lon", "local", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("emea-fra", "emea-hub", "fra", "172 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("emea-ams", "emea-hub", "ams", "local", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("apac-sin", "apac-hub", "sin", "local", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("apac-syd", "apac-hub", "syd", "critical", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved)
-            .AddEdge("apac-bom", "apac-hub", "bom", "185 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("amer-nyc", "amer-hub", "nyc", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("amer-chi", "amer-hub", "chi", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("amer-sfo", "amer-hub", "sfo", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("emea-lon", "emea-hub", "lon", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("emea-fra", "emea-hub", "fra", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("emea-ams", "emea-hub", "ams", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("apac-sin", "apac-hub", "sin", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("apac-syd", "apac-hub", "syd", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved)
+            .AddEdge("apac-bom", "apac-hub", "bom", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, routing: TopologyEdgeRouting.Curved)
             .WithGroupCoordinates("AMER", -98.5795, 39.8283)
             .WithGroupCoordinates("EMEA", 12.4964, 41.9028)
             .WithGroupCoordinates("APAC", 103.8198, 1.3521)
@@ -60,7 +60,8 @@ internal static partial class TopologyVisualExamples {
             .WithNodeCoordinates("bom", 72.8777, 19.0760)
             .WithEdgeLineStyle("amer-apac", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("amer-chi", TopologyEdgeLineStyle.Dashed)
-            .WithEdgeLineStyle("apac-bom", TopologyEdgeLineStyle.Dashed);
+            .WithEdgeLineStyle("apac-bom", TopologyEdgeLineStyle.Dashed)
+            .WithEdgesOfKind(TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed, emphasis: TopologyEdgeEmphasis.Subtle);
 
         foreach (var node in chart.Nodes) {
             if (node.Kind == TopologyNodeKind.Hub) {

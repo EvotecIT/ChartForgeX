@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -142,6 +143,24 @@ public static class TopologyChartExtensions {
     }
 
     /// <summary>
+    /// Adds an auto-placed group to the topology chart. Deterministic layout modes assign the coordinates and size.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="id">The group id.</param>
+    /// <param name="label">The group label.</param>
+    /// <param name="status">The group status.</param>
+    /// <param name="subtitle">The optional subtitle.</param>
+    /// <param name="href">The optional href.</param>
+    /// <param name="tooltip">The optional tooltip.</param>
+    /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
+    /// <param name="symbol">The optional short visual symbol shown in the group header.</param>
+    /// <param name="color">The optional group accent color, independent from health status.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart AddAutoGroup(this TopologyChart chart, string id, string label, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null) {
+        return AddGroup(chart, id, label, 0, 0, 0, 0, status, subtitle, href, tooltip, cssClass, symbol, color);
+    }
+
+    /// <summary>
     /// Adds a group to the topology chart.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -170,6 +189,28 @@ public static class TopologyChartExtensions {
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
         chart.Groups.Add(new TopologyGroup { Id = groupId, Label = groupLabel, X = x, Y = y, Width = width, Height = height, Status = status, Subtitle = subtitle, Href = href, Tooltip = tooltip, CssClass = cssClass, Symbol = symbol, Color = color });
         return chart;
+    }
+
+    /// <summary>
+    /// Adds an auto-placed node to the topology chart. Deterministic layout modes assign the coordinates.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="id">The node id.</param>
+    /// <param name="label">The node label.</param>
+    /// <param name="kind">The node kind.</param>
+    /// <param name="status">The node status.</param>
+    /// <param name="groupId">The optional group id.</param>
+    /// <param name="subtitle">The optional subtitle.</param>
+    /// <param name="href">The optional href.</param>
+    /// <param name="tooltip">The optional tooltip.</param>
+    /// <param name="width">The node width.</param>
+    /// <param name="height">The node height.</param>
+    /// <param name="symbol">The optional short visual symbol shown inside the node icon.</param>
+    /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
+    /// <param name="color">The optional node accent color, independent from health status.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart AddAutoNode(this TopologyChart chart, string id, string label, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null) {
+        return AddNode(chart, id, label, 0, 0, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color);
     }
 
     /// <summary>
@@ -442,6 +483,29 @@ public static class TopologyChartExtensions {
     }
 
     /// <summary>
+    /// Adjusts the rendered label position for a specific edge without changing the route geometry.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="edgeId">The edge id.</param>
+    /// <param name="x">The horizontal label offset in pixels.</param>
+    /// <param name="y">The vertical label offset in pixels.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithEdgeLabelOffset(this TopologyChart chart, string edgeId, double x, double y) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
+        TopologyModelGuards.Finite(x, nameof(x));
+        TopologyModelGuards.Finite(y, nameof(y));
+        foreach (var edge in chart.Edges) {
+            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
+            edge.LabelOffsetX = x;
+            edge.LabelOffsetY = y;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
+    }
+
+    /// <summary>
     /// Sets preferred attachment sides for an edge.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -485,6 +549,55 @@ public static class TopologyChartExtensions {
     }
 
     /// <summary>
+    /// Assigns centered orthogonal route lanes to a related set of edges.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="centerLane">The center lane offset in pixels.</param>
+    /// <param name="spacing">The spacing between adjacent lanes in pixels.</param>
+    /// <param name="edgeIds">The related edge ids in visual lane order.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithEdgeRouteBundle(this TopologyChart chart, double centerLane, double spacing, params string[] edgeIds) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateFinite(centerLane, nameof(centerLane), "Topology edge route bundle center lanes");
+        ValidateFinite(spacing, nameof(spacing), "Topology edge route bundle spacing");
+        if (spacing <= 0) throw new ArgumentOutOfRangeException(nameof(spacing), "Topology edge route bundle spacing must be greater than zero.");
+        if (edgeIds == null || edgeIds.Length == 0) throw new ArgumentException("Topology edge route bundles require at least one edge id.", nameof(edgeIds));
+        for (var i = 0; i < edgeIds.Length; i++) {
+            var lane = centerLane + (i - (edgeIds.Length - 1) / 2.0) * spacing;
+            chart.WithEdgeRouteLane(edgeIds[i], lane);
+        }
+
+        return chart;
+    }
+
+    /// <summary>
+    /// Assigns centered orthogonal route lanes to reciprocal edge pairs that do not already have explicit lanes.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="spacing">The spacing between adjacent lanes in pixels.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithReciprocalEdgeRouteBundles(this TopologyChart chart, double spacing = 18) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateFinite(spacing, nameof(spacing), "Topology reciprocal edge route bundle spacing");
+        if (spacing <= 0) throw new ArgumentOutOfRangeException(nameof(spacing), "Topology reciprocal edge route bundle spacing must be greater than zero.");
+        var groups = chart.Edges
+            .GroupBy(edge => EdgePairKey(edge.SourceNodeId, edge.TargetNodeId), StringComparer.Ordinal)
+            .Where(group => group.Count() > 1);
+        foreach (var group in groups) {
+            var edges = group
+                .Where(edge => Math.Abs(edge.RouteLane) < 0.000001)
+                .OrderBy(edge => edge.SourceNodeId, StringComparer.Ordinal)
+                .ThenBy(edge => edge.TargetNodeId, StringComparer.Ordinal)
+                .ThenBy(edge => edge.Id, StringComparer.Ordinal)
+                .ToList();
+            if (edges.Count < 2) continue;
+            for (var i = 0; i < edges.Count; i++) edges[i].RouteLane = (i - (edges.Count - 1) / 2.0) * spacing;
+        }
+
+        return chart;
+    }
+
+    /// <summary>
     /// Sets an explicit line style for an edge independent from health status.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -502,6 +615,50 @@ public static class TopologyChartExtensions {
         }
 
         throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
+    }
+
+    /// <summary>
+    /// Sets edge visual emphasis independently from health status and line style.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="edgeId">The edge id.</param>
+    /// <param name="emphasis">The edge visual emphasis.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithEdgeEmphasis(this TopologyChart chart, string edgeId, TopologyEdgeEmphasis emphasis) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
+        ValidateEnum(typeof(TopologyEdgeEmphasis), emphasis, nameof(emphasis), "Topology edge emphasis values");
+        foreach (var edge in chart.Edges) {
+            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
+            edge.Emphasis = emphasis;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
+    }
+
+    /// <summary>
+    /// Applies reusable visual styling to all edges of a given kind.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="kind">The edge kind to update.</param>
+    /// <param name="lineStyle">Optional line style to apply.</param>
+    /// <param name="emphasis">Optional visual emphasis to apply.</param>
+    /// <param name="isMuted">Optional muted-state override to apply.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithEdgesOfKind(this TopologyChart chart, TopologyEdgeKind kind, TopologyEdgeLineStyle? lineStyle = null, TopologyEdgeEmphasis? emphasis = null, bool? isMuted = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyEdgeKind), kind, nameof(kind), "Topology edge kinds");
+        if (lineStyle.HasValue) ValidateEnum(typeof(TopologyEdgeLineStyle), lineStyle.Value, nameof(lineStyle), "Topology edge line styles");
+        if (emphasis.HasValue) ValidateEnum(typeof(TopologyEdgeEmphasis), emphasis.Value, nameof(emphasis), "Topology edge emphasis values");
+        foreach (var edge in chart.Edges) {
+            if (edge.Kind != kind) continue;
+            if (lineStyle.HasValue) edge.LineStyle = lineStyle.Value;
+            if (emphasis.HasValue) edge.Emphasis = emphasis.Value;
+            if (isMuted.HasValue) edge.IsMuted = isMuted.Value;
+        }
+
+        return chart;
     }
 
     /// <summary>
@@ -599,6 +756,11 @@ public static class TopologyChartExtensions {
         if (longitude < -180 || longitude > 180) throw new ArgumentOutOfRangeException(nameof(longitude), longitude, "Longitude must be between -180 and 180 degrees.");
         if (latitude < -90 || latitude > 90) throw new ArgumentOutOfRangeException(nameof(latitude), latitude, "Latitude must be between -90 and 90 degrees.");
     }
+
+    private static string EdgePairKey(string sourceNodeId, string targetNodeId) =>
+        string.Compare(sourceNodeId, targetNodeId, StringComparison.Ordinal) <= 0
+            ? sourceNodeId + "\u001F" + targetNodeId
+            : targetNodeId + "\u001F" + sourceNodeId;
 
     private static string RequiredText(string? value, string parameterName, string displayName) {
         if (value == null) throw new ArgumentNullException(parameterName);

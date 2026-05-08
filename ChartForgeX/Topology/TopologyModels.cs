@@ -378,9 +378,12 @@ public sealed class TopologyEdge {
     private TopologyDirection _direction = TopologyDirection.None;
     private TopologyEdgeRouting _routing = TopologyEdgeRouting.Orthogonal;
     private TopologyEdgeLineStyle _lineStyle = TopologyEdgeLineStyle.Auto;
+    private TopologyEdgeEmphasis _emphasis = TopologyEdgeEmphasis.Normal;
     private TopologyEdgePort _sourcePort = TopologyEdgePort.Auto;
     private TopologyEdgePort _targetPort = TopologyEdgePort.Auto;
     private double _routeLane;
+    private double _labelOffsetX;
+    private double _labelOffsetY;
     private TopologyEdgeLayoutInference _layoutInference = TopologyEdgeLayoutInference.None;
 
     /// <summary>Gets or sets the stable edge identifier.</summary>
@@ -437,6 +440,15 @@ public sealed class TopologyEdge {
         }
     }
 
+    /// <summary>Gets or sets edge rendering emphasis independent from health status and line style.</summary>
+    public TopologyEdgeEmphasis Emphasis {
+        get => _emphasis;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _emphasis = value;
+        }
+    }
+
     /// <summary>Gets or sets the preferred source attachment side.</summary>
     public TopologyEdgePort SourcePort {
         get => _sourcePort;
@@ -461,6 +473,24 @@ public sealed class TopologyEdge {
         set {
             TopologyModelGuards.Finite(value, nameof(value));
             _routeLane = value;
+        }
+    }
+
+    /// <summary>Gets or sets the horizontal edge-label placement adjustment in pixels.</summary>
+    public double LabelOffsetX {
+        get => _labelOffsetX;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _labelOffsetX = value;
+        }
+    }
+
+    /// <summary>Gets or sets the vertical edge-label placement adjustment in pixels.</summary>
+    public double LabelOffsetY {
+        get => _labelOffsetY;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _labelOffsetY = value;
         }
     }
 

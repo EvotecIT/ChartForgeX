@@ -66,6 +66,7 @@ internal static class TopologyMapProjection {
     }
 
     public static ChartPoint[][] BoundaryLines(ChartMapViewport viewport) =>
+        IsWorldViewport(viewport) ? WorldBoundaries :
         IsNorthAmericaViewport(viewport) ? WorldMapDots.NorthAmericaBoundaries :
         IsSouthAmericaViewport(viewport) ? WorldMapDots.SouthAmericaBoundaries :
         IsAfricaViewport(viewport) ? WorldMapDots.AfricaBoundaries :
@@ -129,6 +130,26 @@ internal static class TopologyMapProjection {
         Math.Abs(viewport.MaximumLongitude - maximumLongitude) < 0.000001 &&
         Math.Abs(viewport.MinimumLatitude - minimumLatitude) < 0.000001 &&
         Math.Abs(viewport.MaximumLatitude - maximumLatitude) < 0.000001;
+
+    private static readonly ChartPoint[][] WorldBoundaries = CombineBoundaries(
+        WorldMapDots.NorthAmericaBoundaries,
+        WorldMapDots.SouthAmericaBoundaries,
+        WorldMapDots.EuropeBoundaries,
+        WorldMapDots.AfricaBoundaries,
+        WorldMapDots.AsiaBoundaries,
+        WorldMapDots.OceaniaBoundaries);
+
+    private static ChartPoint[][] CombineBoundaries(params ChartPoint[][][] sources) {
+        var count = 0;
+        foreach (var source in sources) count += source.Length;
+        var result = new ChartPoint[count][];
+        var index = 0;
+        foreach (var source in sources) {
+            foreach (var boundary in source) result[index++] = boundary;
+        }
+
+        return result;
+    }
 
     private static readonly ChartPoint[] WorldLandOffsets = {
         new(0, 0)

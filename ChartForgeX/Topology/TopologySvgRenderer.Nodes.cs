@@ -15,6 +15,7 @@ public sealed partial class TopologySvgRenderer {
             var selected = IsSelected(options.SelectedNodeIds, node.Id);
             var parent = AddOptionalLink(layer, node.Href, prefix, options);
             var displayMode = EffectiveNodeDisplayMode(node, options);
+            if (displayMode == TopologyNodeDisplayMode.Hidden) continue;
             var group = parent.Element("g", element => {
                 element
                     .Attribute("id", SafeElementId(chart.Id, "node", node.Id))
@@ -75,6 +76,24 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("fill", color)
                 .Attribute("stroke", theme.Background)
                 .Attribute("stroke-width", 2));
+            AddDotNodeSymbol(body, node, cx, cy, options);
+            return body;
+        }
+
+        if (IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon && node.Kind == TopologyNodeKind.Cloud) {
+            var cx = CenterX(node);
+            var cy = CenterY(node);
+            var r = Math.Min(node.Width, node.Height) / 2;
+            body.Element("circle", circle => circle
+                .Class(prefix + "__node-card")
+                .Attribute("cx", cx)
+                .Attribute("cy", cy)
+                .Attribute("r", r)
+                .Attribute("fill", color)
+                .Attribute("stroke", theme.Background)
+                .Attribute("stroke-width", selected ? 4 : 3)
+                .Attribute("filter", "url(#" + SanitizeId(chartId ?? "topology") + "-shadow)"));
+            DrawNodeIcon(body, node, prefix, theme, color, displayMode, options);
             return body;
         }
 
@@ -90,8 +109,38 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("stroke", color)
             .Attribute("stroke-width", selected ? 2.8 : 1.5)
             .Attribute("filter", "url(#" + SanitizeId(chartId ?? "topology") + "-shadow)"));
-        DrawNodeIcon(body, node, prefix, theme, color, displayMode);
-        if (!options.IncludeNodeLabels || displayMode == TopologyNodeDisplayMode.Icon) return body;
+        DrawNodeIcon(body, node, prefix, theme, color, displayMode, options);
+        if (!options.IncludeNodeLabels) return body;
+        if (displayMode == TopologyNodeDisplayMode.Icon) {
+            if (options.IncludeIconLabels) {
+                var label = TrimToEstimatedWidth(TrimTo(node.Label, NodeTitleMaxLength(displayMode)), Math.Max(node.Width + 46, 72), 10.5, true);
+                var labelWidth = Math.Max(34, EstimateTextWidth(label, 10.5, true) + 12);
+                var labelX = CenterX(node) - labelWidth / 2;
+                var labelY = node.Y + node.Height + 5;
+                body.Element("rect", rect => rect
+                    .Class(prefix + "__node-icon-label-plate")
+                    .Attribute("data-cfx-role", "topology-node-icon-label")
+                    .Attribute("x", labelX)
+                    .Attribute("y", labelY)
+                    .Attribute("width", labelWidth)
+                    .Attribute("height", 15)
+                    .Attribute("rx", 7.5)
+                    .Attribute("fill", theme.Background)
+                    .Attribute("stroke", theme.Border)
+                    .Attribute("stroke-width", 0.7));
+                body.Element("text", text => text
+                    .Attribute("x", CenterX(node))
+                    .Attribute("y", node.Y + node.Height + 16)
+                    .Attribute("text-anchor", "middle")
+                    .Attribute("fill", theme.Foreground)
+                    .Attribute("font-size", 10.5)
+                    .Attribute("font-weight", "700")
+                    .Text(label));
+            }
+
+            return body;
+        }
+
         if (displayMode == TopologyNodeDisplayMode.Tile) {
             body.Element("text", text => text
                 .Attribute("x", CenterX(node))
@@ -100,7 +149,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("fill", theme.Foreground)
                 .Attribute("font-size", 11)
                 .Attribute("font-weight", "700")
-                .Text(TrimTo(node.Label, 14)));
+                .Text(TrimTo(node.Label, NodeTitleMaxLength(displayMode))));
             if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) body.AddElement(BuildTileSubtitle(node, prefix, theme, color));
             return body;
         }
@@ -109,26 +158,65 @@ public sealed partial class TopologySvgRenderer {
         var titleY = displayMode == TopologyNodeDisplayMode.Pill ? node.Y + node.Height / 2 + 4 : node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 23 : 28);
         var subtitleY = displayMode == TopologyNodeDisplayMode.CompactCard ? node.Y + 40 : node.Y + 47;
         var titleSize = displayMode == TopologyNodeDisplayMode.Pill ? 11.5 : displayMode == TopologyNodeDisplayMode.CompactCard ? 11.5 : 12.5;
+        var textRightPadding = 10;
+        var textWidth = Math.Max(24, node.Width - (textX - node.X) - textRightPadding);
+        var titleValue = TrimTo(node.Label, NodeTitleMaxLength(displayMode));
+        titleSize = FitFontSize(titleValue, textWidth, titleSize, 10, true);
+        var title = TrimToEstimatedWidth(titleValue, textWidth, titleSize, true);
         body.Element("text", text => text
             .Attribute("x", textX)
             .Attribute("y", titleY)
             .Attribute("fill", theme.Foreground)
             .Attribute("font-size", titleSize)
             .Attribute("font-weight", "700")
-            .Text(TrimTo(node.Label, NodeTitleMaxLength(displayMode))));
+            .Text(title));
         if (displayMode != TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle)) {
             if (options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) body.AddElement(BuildCardSubtitleChip(node, prefix, theme, color, displayMode));
             else {
+                var subtitle = TrimToEstimatedWidth(TrimTo(node.Subtitle!, NodeLabelMaxLength), textWidth, 10.5, false);
                 body.Element("text", text => text
                     .Attribute("x", textX)
                     .Attribute("y", subtitleY)
                     .Attribute("fill", theme.MutedForeground)
                     .Attribute("font-size", 10.5)
-                    .Text(TrimTo(node.Subtitle!, NodeLabelMaxLength)));
+                    .Text(subtitle));
             }
         }
 
         return body;
+    }
+
+    private static void AddDotNodeSymbol(SvgElement body, TopologyNode node, double cx, double cy, TopologyRenderOptions options) {
+        if (!IsMonitoringDashboardStyle(options)) return;
+        if (string.IsNullOrWhiteSpace(node.Symbol) && node.Kind != TopologyNodeKind.Server) return;
+        var symbol = string.IsNullOrWhiteSpace(node.Symbol) ? NodeGlyph(node) : node.Symbol!.Trim();
+        if (node.Kind == TopologyNodeKind.Server || symbol.Equals("DC", StringComparison.OrdinalIgnoreCase)) {
+            body.Element("path", path => path
+                .Attribute("data-cfx-role", "topology-node-dot-symbol")
+                .Attribute("data-node-id", node.Id)
+                .Attribute("d", "M " + F(cx - 4.2) + " " + F(cy - 3.6) + " H " + F(cx + 4.2) + " V " + F(cy - 0.8) + " H " + F(cx - 4.2) + " Z M " + F(cx - 4.2) + " " + F(cy + 1.5) + " H " + F(cx + 4.2) + " V " + F(cy + 4.2) + " H " + F(cx - 4.2) + " Z")
+                .Attribute("fill", "none")
+                .Attribute("stroke", "#FFFFFF")
+                .Attribute("stroke-width", 1.15)
+                .Attribute("stroke-linejoin", "round"));
+            body.Element("path", path => path
+                .Attribute("d", "M " + F(cx + 2.1) + " " + F(cy - 2.2) + " H " + F(cx + 3.1) + " M " + F(cx + 2.1) + " " + F(cy + 2.9) + " H " + F(cx + 3.1))
+                .Attribute("stroke", "#FFFFFF")
+                .Attribute("stroke-width", 1.2)
+                .Attribute("stroke-linecap", "round"));
+            return;
+        }
+
+        body.Element("text", text => text
+            .Attribute("data-cfx-role", "topology-node-dot-symbol")
+            .Attribute("data-node-id", node.Id)
+            .Attribute("x", cx)
+            .Attribute("y", cy + 2.4)
+            .Attribute("text-anchor", "middle")
+            .Attribute("fill", "#FFFFFF")
+            .Attribute("font-size", 5.8)
+            .Attribute("font-weight", "800")
+            .Text(TrimTo(symbol, 2)));
     }
 
     private static SvgElement BuildCardSubtitleChip(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode) {
@@ -220,7 +308,7 @@ public sealed partial class TopologySvgRenderer {
         return group;
     }
 
-    private static void DrawNodeIcon(SvgElement parent, TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode) {
+    private static void DrawNodeIcon(SvgElement parent, TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
         var cx = displayMode is TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Tile ? CenterX(node) : node.X + 22;
         var cy = displayMode == TopologyNodeDisplayMode.Tile ? node.Y + node.Height / 2 - 1 : node.Y + node.Height / 2;
         var size = displayMode == TopologyNodeDisplayMode.Pill ? 18 : displayMode == TopologyNodeDisplayMode.Icon ? 26 : displayMode == TopologyNodeDisplayMode.Tile ? 24 : 22;
@@ -228,18 +316,22 @@ public sealed partial class TopologySvgRenderer {
             .Class(prefix + "__node-icon")
             .Attribute("data-node-kind", node.Kind.ToString()));
         if (node.Kind == TopologyNodeKind.Cloud) {
+            var cloudStroke = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? "#FFFFFF" : color;
+            var cloudFill = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? "none" : StatusFill(color, theme.Background);
             icon.Element("circle", circle => circle
                 .Attribute("cx", cx - 5)
                 .Attribute("cy", cy)
                 .Attribute("r", 7)
-                .Attribute("fill", StatusFill(color, theme.Background))
-                .Attribute("stroke", color));
+                .Attribute("fill", cloudFill)
+                .Attribute("stroke", cloudStroke)
+                .Attribute("stroke-width", IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? 2.4 : 1));
             icon.Element("circle", circle => circle
                 .Attribute("cx", cx + 4)
                 .Attribute("cy", cy - 2)
                 .Attribute("r", 8)
-                .Attribute("fill", StatusFill(color, theme.Background))
-                .Attribute("stroke", color));
+                .Attribute("fill", cloudFill)
+                .Attribute("stroke", cloudStroke)
+                .Attribute("stroke-width", IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? 2.4 : 1));
         } else if (node.Kind is TopologyNodeKind.Database) {
             icon.Element("ellipse", ellipse => ellipse
                 .Attribute("cx", cx)
@@ -347,20 +439,12 @@ public sealed partial class TopologySvgRenderer {
         }
     }
 
-    private static int NodeTitleMaxLength(TopologyNodeDisplayMode displayMode) {
-        return displayMode switch {
-            TopologyNodeDisplayMode.CompactCard => 11,
-            TopologyNodeDisplayMode.Pill => 14,
-            _ => NodeLabelMaxLength
-        };
-    }
-
     private static void AddNodeStatuses(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         var layer = new SvgElement("g")
             .Class(prefix + "__status-badges")
             .Attribute("data-cfx-role", "topology-status-badges");
         foreach (var node in chart.Nodes) {
-            if (EffectiveNodeDisplayMode(node, options) == TopologyNodeDisplayMode.Dot) continue;
+            if (!ShouldRenderNodeStatusBadge(node, options)) continue;
             var color = theme.StatusColor(node.Status);
             var highlighted = highlight.IsNodeHighlighted(node);
             var cx = node.X + node.Width - 11;
@@ -386,7 +470,16 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("fill", "#FFFFFF")
                     .Attribute("font-size", 9)
                     .Attribute("font-weight", "800")
-                    .Text(StatusGlyph(node.Status)));
+                    .Text(IsMonitoringDashboardStyle(options) && node.Status == TopologyHealthStatus.Healthy ? string.Empty : StatusGlyph(node.Status)));
+                if (IsMonitoringDashboardStyle(options) && node.Status == TopologyHealthStatus.Healthy) {
+                    group.Element("path", path => path
+                        .Attribute("d", "M " + F(cx - 3.8) + " " + F(cy) + " L " + F(cx - 1) + " " + F(cy + 3) + " L " + F(cx + 4.4) + " " + F(cy - 3.6))
+                        .Attribute("fill", "none")
+                        .Attribute("stroke", "#FFFFFF")
+                        .Attribute("stroke-width", 1.8)
+                        .Attribute("stroke-linecap", "round")
+                        .Attribute("stroke-linejoin", "round"));
+                }
             });
         }
 

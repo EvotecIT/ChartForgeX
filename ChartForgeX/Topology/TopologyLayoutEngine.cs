@@ -15,7 +15,7 @@ internal static class TopologyLayoutEngine {
         }
 
         if (view != null) ApplyView(copy, view);
-        if (options != null) copy.Legend = TopologyLegend.Resolve(copy, options.LegendMode);
+        if (options != null) copy.Legend = options.IncludeLegend ? TopologyLegend.Resolve(copy, options.LegendMode) : null;
         switch (copy.LayoutMode) {
             case TopologyLayoutMode.GroupGrid:
                 ApplyGroupGrid(copy);
@@ -37,7 +37,7 @@ internal static class TopologyLayoutEngine {
                 break;
         }
 
-        TopologyLayoutNormalizer.Normalize(copy);
+        TopologyLayoutNormalizer.Normalize(copy, options);
         return copy;
     }
 
@@ -63,6 +63,10 @@ internal static class TopologyLayoutEngine {
                 case TopologyNodeDisplayMode.Dot:
                     node.Width = 22;
                     node.Height = 22;
+                    break;
+                case TopologyNodeDisplayMode.Hidden:
+                    node.Width = Math.Min(node.Width, 1);
+                    node.Height = Math.Min(node.Height, 1);
                     break;
             }
         }
@@ -677,9 +681,12 @@ internal static class TopologyLayoutEngine {
             Direction = edge.Direction,
             Routing = edge.Routing,
             LineStyle = edge.LineStyle,
+            Emphasis = edge.Emphasis,
             SourcePort = edge.SourcePort,
             TargetPort = edge.TargetPort,
             RouteLane = edge.RouteLane,
+            LabelOffsetX = edge.LabelOffsetX,
+            LabelOffsetY = edge.LabelOffsetY,
             LayoutInference = edge.LayoutInference,
             Label = edge.Label,
             SecondaryLabel = edge.SecondaryLabel,

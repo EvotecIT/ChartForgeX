@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
@@ -58,17 +60,27 @@ public sealed partial class TopologySvgRenderer {
     private static void AddGeographicCalloutBody(SvgElement element, TopologyGeographicCallout callout, string prefix, TopologyTheme theme, bool selected, string? chartId) {
         var x = callout.X;
         var y = callout.Y;
-        var connector = CalloutConnectorPoint(callout);
-        element.Element("line", line => line
+        var leader = CalloutLeaderPoints(callout);
+        element.Element("polyline", line => line
+            .Class(prefix + "__geo-callout-leader-halo")
+            .Attribute("data-cfx-role", "topology-geographic-callout-leader-halo")
+            .Attribute("points", string.Join(" ", leader.Select(point => F(point.X) + "," + F(point.Y))))
+            .Attribute("stroke", theme.Background)
+            .Attribute("stroke-width", 4.8)
+            .Attribute("stroke-linecap", "round")
+            .Attribute("stroke-linejoin", "round")
+            .Attribute("fill", "none")
+            .Attribute("opacity", 0.76));
+        element.Element("polyline", line => line
             .Class(prefix + "__geo-callout-leader")
-            .Attribute("x1", callout.AnchorX)
-            .Attribute("y1", callout.AnchorY)
-            .Attribute("x2", connector.X)
-            .Attribute("y2", connector.Y)
+            .Attribute("data-cfx-role", "topology-geographic-callout-leader")
+            .Attribute("points", string.Join(" ", leader.Select(point => F(point.X) + "," + F(point.Y))))
             .Attribute("stroke", callout.AccentColor)
             .Attribute("stroke-width", 1.4)
             .Attribute("stroke-dasharray", "4 5")
             .Attribute("stroke-linecap", "round")
+            .Attribute("stroke-linejoin", "round")
+            .Attribute("fill", "none")
             .Attribute("opacity", 0.72));
         element.Element("circle", circle => circle
             .Class(prefix + "__geo-callout-anchor")
@@ -111,7 +123,67 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("fill", theme.MutedForeground)
             .Attribute("font-size", 10.5)
             .Text(TrimTo(callout.Subtitle, 24)));
+        AddCalloutMiniTopology(element, callout, x + callout.Width - 60, y + 19, theme);
         AddCalloutStatusChips(element, callout, x + 18, y + 58, theme);
+    }
+
+    private static void AddCalloutMiniTopology(SvgElement element, TopologyGeographicCallout callout, double x, double y, TopologyTheme theme) {
+        var center = new ChartPoint(x + 24, y + 17);
+        var points = new[] {
+            new ChartPoint(x + 7, y + 9),
+            new ChartPoint(x + 29, y + 5),
+            new ChartPoint(x + 45, y + 12),
+            new ChartPoint(x + 31, y + 30)
+        };
+        var statuses = CalloutPreviewStatuses(callout);
+        element.Element("g", group => {
+            group
+                .Attribute("data-cfx-role", "topology-geographic-callout-mini-topology")
+                .Attribute("data-group-id", callout.Group.Id);
+            foreach (var point in points) {
+                group.Element("line", line => line
+                    .Attribute("x1", center.X)
+                    .Attribute("y1", center.Y)
+                    .Attribute("x2", point.X)
+                    .Attribute("y2", point.Y)
+                    .Attribute("stroke", callout.AccentColor)
+                    .Attribute("stroke-width", 1.1)
+                    .Attribute("stroke-dasharray", "2.5 3")
+                    .Attribute("opacity", 0.62));
+            }
+
+            group.Element("circle", circle => circle
+                .Attribute("cx", center.X)
+                .Attribute("cy", center.Y)
+                .Attribute("r", 4)
+                .Attribute("fill", callout.AccentColor)
+                .Attribute("stroke", theme.Background)
+                .Attribute("stroke-width", 1.6));
+            for (var i = 0; i < points.Length; i++) {
+                var color = theme.StatusColor(statuses[i]);
+                group.Element("circle", circle => circle
+                    .Attribute("cx", points[i].X)
+                    .Attribute("cy", points[i].Y)
+                    .Attribute("r", 3.8)
+                    .Attribute("fill", color)
+                    .Attribute("stroke", theme.Background)
+                    .Attribute("stroke-width", 1.4));
+            }
+        });
+    }
+
+    private static TopologyHealthStatus[] CalloutPreviewStatuses(TopologyGeographicCallout callout) {
+        var statuses = new List<TopologyHealthStatus>(4);
+        AddStatuses(statuses, TopologyHealthStatus.Healthy, callout.HealthyCount);
+        AddStatuses(statuses, TopologyHealthStatus.Warning, callout.WarningCount);
+        AddStatuses(statuses, TopologyHealthStatus.Critical, callout.CriticalCount);
+        AddStatuses(statuses, TopologyHealthStatus.Unknown, callout.UnknownCount + callout.DisabledCount);
+        while (statuses.Count < 4) statuses.Add(callout.Group.Status);
+        return statuses.Take(4).ToArray();
+    }
+
+    private static void AddStatuses(List<TopologyHealthStatus> statuses, TopologyHealthStatus status, int count) {
+        for (var i = 0; i < count && statuses.Count < 4; i++) statuses.Add(status);
     }
 
     private static void AddCalloutStatusChips(SvgElement element, TopologyGeographicCallout callout, double x, double y, TopologyTheme theme) {
@@ -153,6 +225,35 @@ public sealed partial class TopologySvgRenderer {
             });
             offset += width + 6;
         }
+    }
+
+    private static List<ChartPoint> CalloutLeaderPoints(TopologyGeographicCallout callout) {
+        var connector = CalloutConnectorPoint(callout);
+        if (callout.AnchorX < callout.X || callout.AnchorX > callout.X + callout.Width) {
+            var side = callout.AnchorX < callout.X ? -1 : 1;
+            var midX = (callout.AnchorX + connector.X) / 2;
+            var guardX = connector.X + side * 24;
+            if (side < 0) midX = Math.Min(midX, guardX);
+            else midX = Math.Max(midX, guardX);
+            return new List<ChartPoint> {
+                new(callout.AnchorX, callout.AnchorY),
+                new(midX, callout.AnchorY),
+                new(midX, connector.Y),
+                connector
+            };
+        }
+
+        var sideY = callout.AnchorY < callout.Y ? -1 : 1;
+        var midY = (callout.AnchorY + connector.Y) / 2;
+        var guardY = connector.Y + sideY * 22;
+        if (sideY < 0) midY = Math.Min(midY, guardY);
+        else midY = Math.Max(midY, guardY);
+        return new List<ChartPoint> {
+            new(callout.AnchorX, callout.AnchorY),
+            new(callout.AnchorX, midY),
+            new(connector.X, midY),
+            connector
+        };
     }
 
     private static ChartPoint CalloutConnectorPoint(TopologyGeographicCallout callout) {

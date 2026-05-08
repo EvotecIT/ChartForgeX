@@ -30,6 +30,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether node labels should be rendered.</summary>
     public bool IncludeNodeLabels { get; set; } = true;
 
+    /// <summary>Gets or sets whether icon-mode nodes should render compact labels below the icon.</summary>
+    public bool IncludeIconLabels { get; set; }
+
     /// <summary>Gets or sets whether tile nodes should render their subtitle as a compact chip below the tile label.</summary>
     public bool IncludeTileSubtitles { get; set; }
 
@@ -48,6 +51,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether node status badges should be rendered.</summary>
     public bool IncludeStatusBadges { get; set; } = true;
 
+    /// <summary>Gets or sets whether monitoring group headers should render compact status dots.</summary>
+    public bool IncludeGroupStatusDots { get; set; }
+
     /// <summary>Gets or sets whether SVG title tooltip elements should be rendered.</summary>
     public bool IncludeTooltips { get; set; } = true;
 
@@ -59,6 +65,9 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets whether the SVG should include responsive sizing style.</summary>
     public bool UseResponsiveSvg { get; set; } = true;
+
+    /// <summary>Gets or sets whether rendered topology content should scale down to remain inside the requested viewport instead of expanding it.</summary>
+    public bool FitContentToViewport { get; set; }
 
     /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions. Defaults to static, script-free HTML.</summary>
     public bool EnableHtmlInteractions { get; set; }
@@ -78,8 +87,23 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether geographic topology layouts should render map callout summaries for coordinated groups.</summary>
     public bool IncludeGeographicCallouts { get; set; }
 
+    /// <summary>Gets or sets whether geographic topology layouts should render soft status-colored region hulls around coordinated groups.</summary>
+    public bool IncludeGeographicRegionHulls { get; set; }
+
+    /// <summary>Gets or sets whether geographic callouts should prefer map-edge placements before near-anchor placement.</summary>
+    public bool PreferGeographicCalloutMapEdges { get; set; }
+
     /// <summary>Gets or sets the maximum number of geographic callout summaries to render.</summary>
     public int GeographicCalloutMaxItems { get; set; } = 4;
+
+    /// <summary>Gets or sets the padding added around nodes when calculating geographic region hull radius.</summary>
+    public double GeographicRegionHullPadding { get; set; } = 22;
+
+    /// <summary>Gets or sets the minimum geographic region hull radius.</summary>
+    public double GeographicRegionHullMinRadius { get; set; } = 52;
+
+    /// <summary>Gets or sets the maximum geographic region hull radius.</summary>
+    public double GeographicRegionHullMaxRadius { get; set; } = 96;
 
     /// <summary>Gets or sets whether links should open in a new tab.</summary>
     public bool OpenLinksInNewTab { get; set; }
@@ -92,6 +116,15 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets a reusable render preset.</summary>
     public TopologyViewPreset Preset { get; set; } = TopologyViewPreset.Default;
+
+    /// <summary>Gets or sets the reusable visual treatment used by renderers.</summary>
+    public TopologyVisualStyle VisualStyle { get; set; } = TopologyVisualStyle.Default;
+
+    /// <summary>Gets or sets the geographic map background treatment.</summary>
+    public TopologyMapBackgroundStyle MapBackgroundStyle { get; set; } = TopologyMapBackgroundStyle.Auto;
+
+    /// <summary>Gets or sets the group card fill treatment.</summary>
+    public TopologyGroupSurfaceStyle GroupSurfaceStyle { get; set; } = TopologyGroupSurfaceStyle.Auto;
 
     /// <summary>Gets or sets how topology nodes should be presented.</summary>
     public TopologyNodeDisplayMode NodeDisplayMode { get; set; } = TopologyNodeDisplayMode.Card;
