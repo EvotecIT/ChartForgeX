@@ -8,7 +8,10 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyRenderPrimitives {
     public static List<TopologyEdgeLabelLayout> EdgeLabelLayouts(TopologyChart chart, TopologyRenderOptions options) {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        var nodeBoxes = chart.Nodes.Select(node => LabelBox.FromNode(node, 8)).ToList();
+        var nodeBoxes = chart.Nodes
+            .Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
+            .Select(node => LabelBox.FromNode(node, 8))
+            .ToList();
         var groupHeaderBoxes = chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 8)).ToList();
         var groupBoxes = chart.Groups.Select(group => LabelBox.FromGroup(group, 8)).ToList();
         var edgeSegments = EdgeSegments(chart, nodes);

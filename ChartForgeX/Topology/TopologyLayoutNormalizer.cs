@@ -185,6 +185,7 @@ internal static class TopologyLayoutNormalizer {
 
     private static ContentBounds IncludeNodeVisualBounds(ContentBounds bounds, TopologyNode node, TopologyRenderOptions options) {
         var displayMode = EffectiveNodeDisplayMode(node, options);
+        if (displayMode == TopologyNodeDisplayMode.Hidden) return bounds;
         bounds = bounds.Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
         if (options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options)) {
             var cx = node.X + node.Width - 11;

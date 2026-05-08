@@ -254,13 +254,14 @@ internal static partial class TopologyRenderPrimitives {
     public static List<ChartPoint> EdgePoints(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
         var source = nodes[edge.SourceNodeId];
         var target = nodes[edge.TargetNodeId];
+        var offset = EdgeRouteOffset(chart, edge);
+        var routeLane = EdgeRouteLane(chart, edge, offset);
         var points = edge.Waypoints.Count == 0
             ? edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal
-                ? TopologyEdgeRouter.Route(chart, edge, source, target).Points
-                : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, edge.RouteLane)
+                ? TopologyEdgeRouter.Route(chart, edge, source, target, routeLane).Points
+                : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane)
             : EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
         ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
-        var offset = EdgeRouteOffset(chart, edge);
         if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return points;
 
         var vectorSource = string.Compare(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal) <= 0 ? source : target;
@@ -300,7 +301,7 @@ internal static partial class TopologyRenderPrimitives {
     private static ChartPoint SpreadEndpoint(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode node, TopologyEdgePort port, ChartPoint point) {
         var related = EndpointPortPeers(chart, nodes, node.Id, port);
         if (related.Count < 2) return point;
-        var index = related.FindIndex(candidate => string.Equals(candidate.Id, edge.Id, StringComparison.Ordinal));
+        var index = related.FindIndex(candidate => ReferenceEquals(candidate, edge));
         if (index < 0) return point;
         var offset = (index - (related.Count - 1) / 2.0) * EdgePortFanSpacing;
         var maximum = port is TopologyEdgePort.Top or TopologyEdgePort.Bottom
@@ -380,9 +381,20 @@ internal static partial class TopologyRenderPrimitives {
             .OrderBy(candidate => candidate.Id, StringComparer.Ordinal)
             .ToList();
         if (related.Count < 2) return 0;
-        var index = related.FindIndex(candidate => string.Equals(candidate.Id, edge.Id, StringComparison.Ordinal));
+        var index = related.FindIndex(candidate => ReferenceEquals(candidate, edge));
         if (index < 0) return 0;
         return (index - (related.Count - 1) / 2.0) * ParallelEdgeSpacing;
+    }
+
+    public static double EdgeRouteLane(TopologyChart chart, TopologyEdge edge) {
+        return EdgeRouteLane(chart, edge, EdgeRouteOffset(chart, edge));
+    }
+
+    private static double EdgeRouteLane(TopologyChart chart, TopologyEdge edge, double offset) {
+        if (edge.Waypoints.Count > 0) return edge.RouteLane;
+        if (edge.Routing is not (TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal)) return edge.RouteLane;
+        if (Math.Abs(edge.RouteLane) >= 0.0001) return edge.RouteLane;
+        return offset;
     }
 
     public static ChartPoint EdgeLabelPoint(TopologyNode source, TopologyNode target, TopologyEdgeRouting routing) {

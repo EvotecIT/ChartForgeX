@@ -7,14 +7,15 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static class TopologyEdgeRouter {
-    public static TopologyRoutePlan Route(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target) {
+    public static TopologyRoutePlan Route(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target, double? routeLaneOverride = null) {
+        var routeLane = routeLaneOverride ?? edge.RouteLane;
         if (edge.Waypoints.Count > 0) {
             var points = EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
             return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1);
         }
 
         if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal) {
-            var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, edge.RouteLane);
+            var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane);
             return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1);
         }
 
@@ -23,10 +24,10 @@ internal static class TopologyEdgeRouter {
         var obstacles = RouteObstacles(chart, source.Id, target.Id, edge.Id);
         var existingSegments = RouteSegments(chart, edge);
         var candidates = new List<RouteCandidate> {
-            new("orthogonal-default", EdgePoints(source, target, TopologyEdgeRouting.Orthogonal, edge.SourcePort, edge.TargetPort, edge.RouteLane))
+            new("orthogonal-default", EdgePoints(source, target, TopologyEdgeRouting.Orthogonal, edge.SourcePort, edge.TargetPort, routeLane))
         };
 
-        foreach (var corridor in RouteXCandidates(chart, source, target, obstacles, edge.RouteLane)) {
+        foreach (var corridor in RouteXCandidates(chart, source, target, obstacles, routeLane)) {
             candidates.Add(new RouteCandidate(corridor.Name, new List<ChartPoint> {
                 sourcePoint,
                 new(corridor.Value, sourcePoint.Y),
@@ -35,7 +36,7 @@ internal static class TopologyEdgeRouter {
             }));
         }
 
-        foreach (var corridor in RouteYCandidates(chart, source, target, obstacles, edge.RouteLane)) {
+        foreach (var corridor in RouteYCandidates(chart, source, target, obstacles, routeLane)) {
             candidates.Add(new RouteCandidate(corridor.Name, new List<ChartPoint> {
                 sourcePoint,
                 new(sourcePoint.X, corridor.Value),
@@ -58,7 +59,7 @@ internal static class TopologyEdgeRouter {
 
     public static TopologyRouteDiagnostics Diagnose(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
         if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) return new TopologyRouteDiagnostics(edge.Routing.ToString(), "missing-node", 0, 0, 0, 0, 0, "missing-node");
-        var plan = Route(chart, edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId]);
+        var plan = Route(chart, edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], EdgeRouteLane(chart, edge));
         return plan.Diagnostics;
     }
 
