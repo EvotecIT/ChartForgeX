@@ -191,6 +191,27 @@ For a single chart, `WithXAxisBounds(minimum, maximum)` and `WithYAxisBounds(min
 
 Use `WithXAxisVisible(false)` or `WithYAxisVisible(false)` when an infographic-style chart should keep one axis worth of labels while removing the other axis line, ticks, and title. Use `WithAxisLines(false)` when tick labels and titles should remain but the axis rules and zero-lines should disappear. For example, horizontal scorecards often keep category labels on the left and hide the numeric value axis plus the remaining axis rule.
 
+Dashboard-style visuals can be composed without inventing a new chart type. Use `WithDashboardCartesianStyle()` when line, area, or mixed cartesian charts should share dashed vertical guide lines and lighter dashboard chrome. Use `WithDashboardPanelStyle()` when the chart should stand alone as a premium card with SVG/PNG shadow depth from theme tokens. Use `WithDashboardBarStyle()` or `WithDashboardBarPanelStyle()` when bars should also use the segmented treatment: square translucent bar segments, rounded value caps, layered cap shadows, subtle cap highlights, and the same dashboard guide lines.
+
+```csharp
+var profiles = Chart.Create()
+    .WithHeader(false)
+    .WithTransparentBackground(false)
+    .WithTheme(ChartTheme.DashboardLight())
+    .WithDashboardBarPanelStyle()
+    .WithStackedBars()
+    .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    .WithFocusedXAxisCategory(4, paletteIndex: 3)
+    .AddBar("Applied", Points(20, 25, 31, 37, 20, 31, 20))
+    .AddBar("Screened", Points(30, 21, 12, 18, 18, 27, 21))
+    .AddBar("Saved", Points(39, 25, 20, 25, 11, 20, 35))
+    .AddBar("Outreach", Points(21, 24, 18, 41, 21, 15, 25));
+```
+
+The preset is still just shared styling, so it works with stacked columns, horizontal bars, and range bars. Use `WithBarStyle(ChartBarStyle.SegmentedCapsule)` when only the mark treatment is needed, or compose `ChartBarVisualStyle.DashboardCapsule()` and `ChartGridLineStyle.DashboardVerticalGuides()` directly when a report family needs tuned opacity, cap thickness, cap inset, radius, cap shadow, or guide-line values.
+
+The same treatment applies to horizontal bars by combining `WithDashboardBarPanelStyle()`, `WithStackedHorizontalBars()`, and the same `DashboardLight()` palette. Line and area series also share the premium stroke primitives across SVG and PNG: ambient halo, readable stroke halo, foreground line, and subtle highlight sheen. Tune those tokens with `WithLineVisualStyle(ChartLineVisualStyle.Premium().WithAmbientHalo(0.06, 12).WithHalo(0.18, 6).WithHighlight(0.18))`, or use `ChartLineVisualStyle.Classic()` when a plainer report line is preferred. Card depth stays themeable too: `WithShadowOpacity(...)` and `WithShadowColor(...)` are honored by both SVG and PNG renderers.
+
 Topology diagrams live in `ChartForgeX.Topology` because they are diagram models, not dashboard pages or data collectors. `TopologyChart` owns reusable groups, nodes, edges, deterministic layout hints, validation, SVG rendering, PNG rendering, and a tiny HTML wrapper that embeds the SVG in a neutral `<div>`. Complete topology HTML pages are static and script-free by default. Set `EnableHtmlInteractions = true` to add lightweight pointer/focus hover, click selection, keyboard selection, and host events. Interactive pages dispatch `cfx-topology-hover`, `cfx-topology-hover-clear`, `cfx-topology-select`, `cfx-topology-clear`, and `cfx-topology-navigate` with selected ids, kind/status, metadata, metrics, route diagnostics, geographic route-arc diagnostics, endpoint context, and related node/edge/group ids; hosts can also dispatch `cfx-topology-set-selection` or `cfx-topology-clear-selection` to control state. Arrow keys cycle focus through related topology elements. With interactions enabled, set `EnableHtmlViewportControls = true` to add opt-in zoom/pan/reset controls with `cfx-topology-viewport` host events and host-driven `cfx-topology-set-viewport` / `cfx-topology-reset-viewport` support. Set `EnableHtmlExportControls = true` to add opt-in SVG/PNG export buttons with `cfx-topology-export` host events. Set `EnableHtmlSynchronizedState = true` with `HtmlSyncGroupName` to mirror selection clears and viewport state across topology wrappers on the same page. HtmlForgeX can later host the rendered SVG in cards, filters, tabs, and inspector panels, while TestimoX or another product can map its own collected data into the model.
 
 ```csharp
@@ -1165,7 +1186,7 @@ var productPulse = Chart.Create()
     .AddBar("Adoption", Points(42, 58, 71, 86));
 ```
 
-Built-in themes include `ReportLight()`, `ReportDark()`, `Colorblind()`, `Aurora()`, `Editorial()`, `Candy()`, `Terminal()`, and `Minimal()`. Font helpers such as `ChartFontStacks.Serif`, `ChartFontStacks.Geometric`, `ChartFontStacks.Rounded`, and `ChartFontStacks.Mono` keep SVG/HTML typography readable without bundling external assets:
+Built-in themes include `ReportLight()`, `ReportDark()`, `DashboardLight()`, `Colorblind()`, `Aurora()`, `Editorial()`, `Candy()`, `Terminal()`, and `Minimal()`. Font helpers such as `ChartFontStacks.Serif`, `ChartFontStacks.Geometric`, `ChartFontStacks.Rounded`, and `ChartFontStacks.Mono` keep SVG/HTML typography readable without bundling external assets:
 
 ```csharp
 chart.WithTheme(theme => theme

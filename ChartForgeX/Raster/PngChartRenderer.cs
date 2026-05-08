@@ -191,9 +191,10 @@ public sealed partial class PngChartRenderer {
             }
 
             DrawAnnotationBands(c, chart, plot, map);
+            var gridStyle = o.GridLineStyle;
             foreach (var yv in yTicks) {
                 var y = map.Y(yv);
-                if (o.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, t.Grid, ChartVisualPrimitives.GridStrokeWidth);
+                if (o.ShowGrid && gridStyle.ShowHorizontalLines) DrawPngGridLine(c, plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, gridStyle.HorizontalOpacity), gridStyle);
                 if (ShowYAxis(chart)) {
                     var label = FormatValue(chart, yv);
                     var fontSize = PngTickFontSize(chart);
@@ -204,8 +205,8 @@ public sealed partial class PngChartRenderer {
             for (var i = 0; i < xTicks.Count; i++) {
                 var x = map.X(xTicks[i]);
                 var label = xLabels[i];
-                if (o.ShowGrid) c.DrawLine(x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Grid, ChartVisualPrimitives.GridVerticalOpacity), ChartVisualPrimitives.GridStrokeWidth);
-                if (ShowXAxis(chart)) DrawXAxisTickLabel(c, chart, plot, label, x, xLabels);
+                if (o.ShowGrid && gridStyle.ShowVerticalLines) DrawPngGridLine(c, x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Grid, gridStyle.VerticalOpacity), gridStyle);
+                if (ShowXAxis(chart)) DrawXAxisTickLabel(c, chart, plot, label, x, xTicks[i], xLabels);
             }
             if (ShowXAxis(chart) && ShowAxisLines(chart)) {
                 var zeroY = map.Y(0);
@@ -233,13 +234,53 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawCardSurface(RgbaCanvas c, ChartOptions options, ChartTheme theme) {
-        c.FillRoundedRect(14, 14, options.Size.Width - 28, options.Size.Height - 28, theme.CornerRadius, theme.CardBackground);
-        if (theme.CardBorder.A > 0) c.StrokeRoundedRect(14, 14, options.Size.Width - 28, options.Size.Height - 28, theme.CornerRadius, theme.CardBorder);
+        const double x = ChartVisualPrimitives.CardSurfaceInset;
+        const double y = ChartVisualPrimitives.CardSurfaceInset;
+        var width = options.Size.Width - ChartVisualPrimitives.CardSurfaceInset * 2;
+        var height = options.Size.Height - ChartVisualPrimitives.CardSurfaceInset * 2;
+        if (theme.ShadowOpacity > 0) {
+            DrawPngCardShadow(c, x, y, width, height, theme.CornerRadius, theme.ShadowColor, theme.ShadowOpacity);
+        }
+
+        c.FillRoundedRect(x, y, width, height, theme.CornerRadius, theme.CardBackground);
+        if (theme.CardBorder.A > 0) {
+            var borderInset = ChartVisualPrimitives.CardBorderInset;
+            c.StrokeRoundedRect(x + borderInset, y + borderInset, width - borderInset * 2, height - borderInset * 2, Math.Max(0, theme.CornerRadius - borderInset), theme.CardBorder);
+        }
+    }
+
+    private static void DrawPngCardShadow(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor shadow, double opacity) {
+        var layers = new[] {
+            (spread: ChartVisualPrimitives.PngCardShadowSpread * 1.35, yOffset: ChartVisualPrimitives.PngCardShadowYOffset * 1.25, alpha: 0.16),
+            (spread: ChartVisualPrimitives.PngCardShadowSpread * 0.85, yOffset: ChartVisualPrimitives.PngCardShadowYOffset * 0.85, alpha: 0.22),
+            (spread: ChartVisualPrimitives.PngCardShadowSpread * 0.35, yOffset: ChartVisualPrimitives.PngCardShadowYOffset * 0.38, alpha: 0.18)
+        };
+        foreach (var layer in layers) {
+            var left = x;
+            var top = y + layer.yOffset;
+            var right = x + width;
+            var bottom = Math.Min(y * 2.0 + height - 8, top + height + layer.spread);
+            c.FillRoundedRect(
+                left,
+                top,
+                Math.Max(1, right - left),
+                Math.Max(1, bottom - top),
+                radius + layer.spread,
+                ApplyOpacity(shadow, opacity * layer.alpha));
+        }
     }
 
     private static void DrawPlotSurface(RgbaCanvas c, ChartOptions options, ChartTheme theme, ChartRect plot) {
         if (options.ShowPlotBackground) c.FillRoundedRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, theme.PlotBackground);
         if (options.ShowPlotBackground && theme.PlotBorder.A > 0) c.StrokeRoundedRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, theme.PlotBorder);
+    }
+
+    private static void DrawPngGridLine(RgbaCanvas c, double x1, double y1, double x2, double y2, ChartColor color, ChartGridLineStyle style) {
+        if (style.Dash > 0 && style.Gap > 0) {
+            c.DrawDashedLine(x1, y1, x2, y2, color, style.StrokeWidth, style.Dash, style.Gap);
+        } else {
+            c.DrawLine(x1, y1, x2, y2, color, style.StrokeWidth);
+        }
     }
 
     private static void DrawHeader(RgbaCanvas c, Chart chart) {
@@ -381,17 +422,18 @@ public sealed partial class PngChartRenderer {
     private static void DrawHorizontalBarGrid(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, IReadOnlyList<double> xTicks, IReadOnlyList<double> categories) {
         var o = chart.Options;
         var t = o.Theme;
+        var gridStyle = o.GridLineStyle;
         var xLabels = XAxisTickLabels(chart, xTicks, true);
         for (var i = 0; i < xTicks.Count; i++) {
             var x = map.X(xTicks[i]);
             var label = xLabels[i];
-            if (o.ShowGrid) c.DrawLine(x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Grid, ChartVisualPrimitives.HorizontalBarValueGridOpacity), ChartVisualPrimitives.GridStrokeWidth);
-            if (ShowXAxis(chart)) DrawXAxisTickLabel(c, chart, plot, label, x, xLabels);
+            if (o.ShowGrid && gridStyle.ShowVerticalLines) DrawPngGridLine(c, x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Grid, gridStyle.VerticalOpacity), gridStyle);
+            if (ShowXAxis(chart)) DrawXAxisTickLabel(c, chart, plot, label, x, xTicks[i], xLabels);
         }
 
         foreach (var category in categories) {
             var y = map.Y(category);
-            if (o.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, ChartVisualPrimitives.HorizontalBarCategoryGridOpacity), ChartVisualPrimitives.GridStrokeWidth);
+            if (o.ShowGrid && gridStyle.ShowHorizontalLines) DrawPngGridLine(c, plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, gridStyle.HorizontalOpacity), gridStyle);
             if (ShowYAxis(chart)) DrawHorizontalCategoryLabel(c, chart, plot, FormatX(chart, category), y);
         }
 

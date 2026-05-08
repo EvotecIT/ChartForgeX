@@ -14,6 +14,9 @@ internal static class ExpressiveExamples {
         SaveGrid(CreateWordCloudControlShowcaseGrid(), output, "word-cloud-control-showcase-grid", pngOutputScale);
         SaveGrid(CreateDataLabelPlacementShowcaseGrid(), output, "data-label-placement-showcase-grid", pngOutputScale);
         SaveGrid(CreatePointColorCustomizationGrid(), output, "point-color-customization-showcase-grid", pngOutputScale);
+        SaveChart(CreateDashboardSegmentedColumnPreview(), output, "dashboard-segmented-column-style", pngOutputScale);
+        SaveChart(CreateDashboardSegmentedHorizontalPreview(), output, "dashboard-segmented-horizontal-style", pngOutputScale);
+        SaveChart(CreateDashboardPremiumTrendPreview(), output, "dashboard-premium-trend-style", pngOutputScale);
         SaveChart(CreateTextStyleShowcase(), output, "text-style-showcase-editorial", pngOutputScale);
         SaveChart(CreateControlPartition(), output, "control-partition-sunburst-aurora", pngOutputScale);
         SaveChart(CreateAudiencePictorial(), output, "audience-pictorial-candy", pngOutputScale);
@@ -174,6 +177,54 @@ internal static class ExpressiveExamples {
         .WithSize(420, 260)
         .WithXLabels("1", "2", "3", "4", "5", "6", "7", "8")
         .AddPolarArea("Palette", Points(1, 1, 1, 1, 1, 1, 1, 1));
+
+    private static Chart CreateDashboardSegmentedColumnPreview() => Chart.Create()
+        .WithHeader(false)
+        .WithTransparentBackground(false)
+        .WithDashboardBarPanelStyle()
+        .WithLegend(false)
+        .WithPadding(42, 26, 24, 54)
+        .WithTheme(ChartTheme.DashboardLight())
+        .WithSize(920, 460)
+        .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+        .WithStackedBars()
+        .WithYAxisBounds(0, 120)
+        .WithFocusedXAxisCategory(4, paletteIndex: 3)
+        .AddBar("Applied", Points(20, 25, 31, 37, 20, 31, 20))
+        .AddBar("Screened", Points(30, 21, 12, 18, 18, 27, 21))
+        .AddBar("Saved", Points(39, 25, 20, 25, 11, 20, 35))
+        .AddBar("Outreach", Points(21, 24, 18, 41, 21, 15, 25));
+
+    private static Chart CreateDashboardSegmentedHorizontalPreview() => Chart.Create()
+        .WithHeader(false)
+        .WithTransparentBackground(false)
+        .WithTheme(ChartTheme.DashboardLight())
+        .WithDashboardBarPanelStyle()
+        .WithLegend(false)
+        .WithPadding(160, 34, 26, 34)
+        .WithSize(920, 220)
+        .WithXLabels("Software engineer", "Product designer", "Project manager", "Finance")
+        .WithStackedHorizontalBars()
+        .WithXAxisBounds(0, 100)
+        .WithXAxisVisible(false)
+        .AddHorizontalBar("Applied", Points(24, 18, 20, 28))
+        .AddHorizontalBar("Screened", Points(28, 34, 24, 22))
+        .AddHorizontalBar("Saved", Points(30, 25, 36, 24))
+        .AddHorizontalBar("Outreach", Points(18, 23, 20, 26));
+
+    private static Chart CreateDashboardPremiumTrendPreview() => Chart.Create()
+        .WithHeader(false)
+        .WithTransparentBackground(false)
+        .WithTheme(ChartTheme.DashboardLight())
+        .WithDashboardPanelStyle()
+        .WithLegend(false)
+        .WithPadding(42, 26, 24, 54)
+        .WithSize(920, 360)
+        .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+        .WithYAxisBounds(0, 120)
+        .WithFocusedXAxisCategory(4, paletteIndex: 3)
+        .AddSmoothArea("Saved", Points(32, 50, 62, 78, 58, 88, 96))
+        .AddSmoothLine("Outreach", Points(20, 34, 42, 57, 44, 66, 74));
 
     private static ChartGrid CreatePictorialSymbolShowcaseGrid() {
         var shapes = new[] {

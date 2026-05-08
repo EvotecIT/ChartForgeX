@@ -22,7 +22,11 @@ public sealed partial class PngChartRenderer {
                 var width = Math.Abs(valueX - baseX);
                 var y = map.Y(p.X) + layout.Offset - layout.BarHeight / 2;
                 var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarHeight / 2) : Math.Min(7, layout.BarHeight / 2);
-                DrawGradientBar(c, left, y, width, layout.BarHeight, radius, PointColor(chart, s, index, pointIndex));
+                if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
+                    DrawSegmentedHorizontalBar(c, chart.Options.BarVisualStyle, left, y, width, layout.BarHeight, p.Y, PointColor(chart, s, index, pointIndex));
+                } else {
+                    DrawGradientBar(c, left, y, width, layout.BarHeight, radius, PointColor(chart, s, index, pointIndex));
+                }
                 if (ShouldDrawDataLabels(chart, s)) {
                     var label = FormatValue(chart, p.Y);
                     var labelFontSize = PngDataLabelFontSize(chart, s, pointIndex);
@@ -69,7 +73,11 @@ public sealed partial class PngChartRenderer {
                 var barY = Math.Min(y, baseY);
                 var barHeight = Math.Abs(baseY - y);
                 var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
-                DrawGradientBar(c, barX, barY, layout.BarWidth, barHeight, radius, PointColor(chart, s, index, pointIndex));
+                if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
+                    DrawSegmentedBar(c, chart.Options.BarVisualStyle, barX, barY, layout.BarWidth, barHeight, p.Y, PointColor(chart, s, index, pointIndex));
+                } else {
+                    DrawGradientBar(c, barX, barY, layout.BarWidth, barHeight, radius, PointColor(chart, s, index, pointIndex));
+                }
                 if (ShouldDrawDataLabels(chart, s)) {
                     var label = FormatValue(chart, p.Y);
                     var segmentHeight = barHeight;
@@ -146,9 +154,13 @@ public sealed partial class PngChartRenderer {
                 var height = Math.Max(2, Math.Abs(y2 - y1));
                 var intervalIndex = pointIndex / 2;
                 var pointColor = PointColor(chart, s, index, intervalIndex);
-                DrawGradientBar(c, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor);
-                c.DrawLine(x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
-                c.DrawLine(x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
+                if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
+                    DrawSegmentedRangeBar(c, chart.Options.BarVisualStyle, x, top, barWidth, height, y1, y2, pointColor);
+                } else {
+                    DrawGradientBar(c, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor);
+                    c.DrawLine(x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
+                    c.DrawLine(x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
+                }
                 if (ShouldDrawDataLabels(chart, s)) {
                     var label = FormatValue(chart, Math.Min(start.Y, end.Y)) + "-" + FormatValue(chart, Math.Max(start.Y, end.Y));
                     var fontSize = PngDataLabelFontSize(chart, s);
@@ -228,8 +240,7 @@ public sealed partial class PngChartRenderer {
         }
         var linePoints = MapSeriesPathPoints(s, map);
         if (s.Kind != ChartSeriesKind.Scatter) {
-            DrawPngLinePath(c, linePoints, PngStrokeHalo(color), s.StrokeWidth + 4);
-            DrawPngLinePath(c, linePoints, color, s.StrokeWidth);
+            DrawPremiumPngLinePath(c, linePoints, color, s.StrokeWidth, chart.Options.LineVisualStyle);
         }
         if (s.Kind == ChartSeriesKind.Scatter || (!chart.Options.IsSparkline && (s.Kind == ChartSeriesKind.Line || s.Kind == ChartSeriesKind.StepLine))) {
             var markerRadius = s.Kind == ChartSeriesKind.Scatter ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra) : chart.Options.Theme.MarkerRadius;
@@ -270,8 +281,11 @@ public sealed partial class PngChartRenderer {
         var color = series.Color ?? chart.Options.Theme.Palette[index % chart.Options.Theme.Palette.Length];
         var start = series.Points[0];
         var end = series.Points[series.Points.Count - 1];
-        c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), PngStrokeHalo(color), series.StrokeWidth + ChartVisualPrimitives.LineHaloStrokeExtra, 8, 6);
+        var style = chart.Options.LineVisualStyle;
+        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), PngStrokeAmbientHalo(color, style), series.StrokeWidth + style.AmbientHaloStrokeExtra, 8, 6);
+        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + style.HaloStrokeExtra, 8, 6);
         c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), color, Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, series.StrokeWidth), 8, 6);
+        if (style.HighlightOpacity > 0) c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), PngLineHighlight(style), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio), 8, 6);
     }
 
     private static void DrawSlope(RgbaCanvas c, Chart chart, int index, ChartRect plot, ChartMapper map) {
@@ -288,8 +302,11 @@ public sealed partial class PngChartRenderer {
         var yEnd = map.Y(end.Y);
         var radius = Math.Max(ChartVisualPrimitives.SlopeMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.SlopeMarkerRadiusExtra);
 
-        c.DrawLine(xStart, yStart, xEnd, yEnd, PngStrokeHalo(color), series.StrokeWidth + ChartVisualPrimitives.LineHaloStrokeExtra);
+        var style = chart.Options.LineVisualStyle;
+        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) c.DrawLine(xStart, yStart, xEnd, yEnd, PngStrokeAmbientHalo(color, style), series.StrokeWidth + style.AmbientHaloStrokeExtra);
+        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) c.DrawLine(xStart, yStart, xEnd, yEnd, PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + style.HaloStrokeExtra);
         c.DrawLine(xStart, yStart, xEnd, yEnd, color, series.StrokeWidth);
+        if (style.HighlightOpacity > 0) c.DrawLine(xStart, yStart, xEnd, yEnd, PngLineHighlight(style), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio));
         DrawMarker(c, chart, xStart, yStart, radius, startColor);
         DrawMarker(c, chart, xEnd, yEnd, radius, endColor);
         if (!ShouldDrawDataLabels(chart, series)) return;
@@ -323,12 +340,7 @@ public sealed partial class PngChartRenderer {
         foreach (var point in upperPath) polygon.Add(point);
         for (var i = lowerPath.Count - 1; i >= 0; i--) polygon.Add(lowerPath[i]);
         c.FillPolygonVerticalGradient(polygon, ChartColor.FromRgba(color.R, color.G, color.B, 120), ChartColor.FromRgba(color.R, color.G, color.B, 34));
-        DrawPngLinePath(c, upperPath, PngStrokeHalo(color), series.StrokeWidth + 4);
-        for (var i = 1; i < upperPath.Count; i++) {
-            var a = upperPath[i - 1];
-            var b = upperPath[i];
-            c.DrawLine(a.X, a.Y, b.X, b.Y, color, series.StrokeWidth);
-        }
+        DrawPremiumPngLinePath(c, upperPath, color, series.StrokeWidth, chart.Options.LineVisualStyle);
 
         if (!ShouldDrawDataLabels(chart, series)) return;
         var reserved = new List<ChartLabelBounds>();
@@ -367,6 +379,35 @@ public sealed partial class PngChartRenderer {
         c.DrawLine(x + ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, x + width - ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, ChartColor.FromRgba(255, 255, 255, highlightAlpha), ChartVisualPrimitives.BarHighlightStrokeWidth);
     }
 
+    private static void DrawSegmentedBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color) {
+        if (width <= 0.5 || height <= 0.5) return;
+        var geometry = ChartSegmentedBarGeometry.Vertical(style, x, y, width, height, value);
+        c.FillRoundedRect(x, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
+        DrawSegmentedCap(c, style, geometry, color);
+    }
+
+    private static void DrawSegmentedHorizontalBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color) {
+        if (width <= 0.5 || height <= 0.5) return;
+        var geometry = ChartSegmentedBarGeometry.Horizontal(style, x, y, width, height, value);
+        c.FillRoundedRect(x, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
+        DrawSegmentedCap(c, style, geometry, color);
+    }
+
+    private static void DrawSegmentedRangeBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double y1, double y2, ChartColor color) {
+        if (width <= 0.5 || height <= 0.5) return;
+        var geometry = ChartSegmentedBarGeometry.RangeCap(style, x, y1, width);
+        c.FillRoundedRect(x - width / 2.0, y, width, height, geometry.Radius, ApplyOpacity(color, style.BodyOpacity));
+        DrawSegmentedCap(c, style, geometry, color);
+        DrawSegmentedCap(c, style, ChartSegmentedBarGeometry.RangeCap(style, x, y2, width), color);
+    }
+
+    private static void DrawSegmentedCap(RgbaCanvas c, ChartBarVisualStyle style, ChartSegmentedBarGeometry geometry, ChartColor color) {
+        c.DrawLine(geometry.SoftShadow.X1, geometry.SoftShadow.Y1, geometry.SoftShadow.X2, geometry.SoftShadow.Y2, ApplyOpacity(color, style.CapShadowOpacity * 0.36), geometry.CapThickness + style.CapShadowSpread * 2.0);
+        c.DrawLine(geometry.Shadow.X1, geometry.Shadow.Y1, geometry.Shadow.X2, geometry.Shadow.Y2, ApplyOpacity(color, style.CapShadowOpacity), geometry.CapThickness);
+        c.DrawLine(geometry.Cap.X1, geometry.Cap.Y1, geometry.Cap.X2, geometry.Cap.Y2, ApplyOpacity(color, style.CapOpacity), geometry.CapThickness);
+        c.DrawLine(geometry.Highlight.X1, geometry.Highlight.Y1, geometry.Highlight.X2, geometry.Highlight.Y2, ApplyOpacity(ChartColor.White, style.CapHighlightOpacity), Math.Max(1.0, geometry.CapThickness * ChartVisualPrimitives.SegmentedCapHighlightStrokeRatio));
+    }
+
     private static void DrawMarker(RgbaCanvas c, Chart chart, double x, double y, double radius, ChartColor color) {
         c.DrawCircle(x, y, radius + ChartVisualPrimitives.PngMarkerOutlineRadiusExtra, chart.Options.Theme.CardBackground);
         c.DrawCircle(x, y, radius, color);
@@ -381,11 +422,30 @@ public sealed partial class PngChartRenderer {
         }
     }
 
+    private static void DrawPremiumPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth, ChartLineVisualStyle style) {
+        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) DrawPngLinePath(c, points, PngStrokeAmbientHalo(color, style), strokeWidth + style.AmbientHaloStrokeExtra);
+        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) DrawPngLinePath(c, points, PngStrokeHalo(color, style.HaloOpacity), strokeWidth + style.HaloStrokeExtra);
+        DrawPngLinePath(c, points, color, strokeWidth);
+        if (style.HighlightOpacity > 0) DrawPngLinePath(c, points, PngLineHighlight(style), Math.Max(1.0, strokeWidth * style.HighlightStrokeRatio));
+    }
+
     private static ChartColor PngStrokeHalo(ChartColor color) {
+        return PngStrokeHalo(color, ChartVisualPrimitives.StrokeHaloOpacity);
+    }
+
+    private static ChartColor PngStrokeHalo(ChartColor color, double opacity) {
         if (color.A == 0) return color;
-        var alpha = Math.Min(color.A, Math.Max(24, (int)Math.Round(color.A * ChartVisualPrimitives.StrokeHaloOpacity)));
+        var alpha = Math.Min(color.A, Math.Max(24, (int)Math.Round(color.A * opacity)));
         return ChartColor.FromRgba(color.R, color.G, color.B, (byte)alpha);
     }
+
+    private static ChartColor PngStrokeAmbientHalo(ChartColor color, ChartLineVisualStyle style) {
+        if (color.A == 0) return color;
+        var alpha = Math.Min(color.A, Math.Max(10, (int)Math.Round(color.A * style.AmbientHaloOpacity)));
+        return ChartColor.FromRgba(color.R, color.G, color.B, (byte)alpha);
+    }
+
+    private static ChartColor PngLineHighlight(ChartLineVisualStyle style) => ApplyOpacity(ChartColor.White, style.HighlightOpacity);
 
     private static BarLayoutInfo BarLayout(Chart chart, ChartRect plot, int seriesIndex) {
         var barSeries = new List<int>();

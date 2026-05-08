@@ -30,6 +30,7 @@ public sealed partial class SvgChartRenderer {
         var lowerLine = BuildLinePath(lowerPath, false);
         var middleLine = BuildLinePath(middlePath, false);
         var summary = series.Name + " interval area with " + lower.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " point(s)";
+        var style = chart.Options.LineVisualStyle;
 
         var writer = new SvgMarkupWriter(2048);
         writer
@@ -43,10 +44,20 @@ public sealed partial class SvgChartRenderer {
             .Line();
         WriteRangeAreaPath(writer, "range-area", index, lower.Count, BuildClosedPolygonPath(upperPath, lowerPath), $"url(#{id}-area{index})", null, null, null);
         WriteRangeAreaPath(writer, "range-area-midline", index, middle.Count, middleLine, "none", color.ToCss(), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaMidlineOpacity, true);
-        WriteRangeAreaPath(writer, "range-area-upper-halo", index, upper.Count, upperLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, ChartVisualPrimitives.StrokeHaloOpacity);
-        WriteRangeAreaPath(writer, "range-area-lower-halo", index, lower.Count, lowerLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, ChartVisualPrimitives.StrokeHaloOpacity);
+        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) {
+            WriteRangeAreaPath(writer, "range-area-upper-ambient-halo", index, upper.Count, upperLine, "none", color.ToCss(), series.StrokeWidth + style.AmbientHaloStrokeExtra, style.AmbientHaloOpacity);
+            WriteRangeAreaPath(writer, "range-area-lower-ambient-halo", index, lower.Count, lowerLine, "none", color.ToCss(), series.StrokeWidth + style.AmbientHaloStrokeExtra, style.AmbientHaloOpacity);
+        }
+        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) {
+            WriteRangeAreaPath(writer, "range-area-upper-halo", index, upper.Count, upperLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, style.HaloOpacity);
+            WriteRangeAreaPath(writer, "range-area-lower-halo", index, lower.Count, lowerLine, "none", color.ToCss(), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra, style.HaloOpacity);
+        }
         WriteRangeAreaPath(writer, "range-area-upper", index, upper.Count, upperLine, "none", color.ToCss(), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth), null);
         WriteRangeAreaPath(writer, "range-area-lower", index, lower.Count, lowerLine, "none", color.ToCss(), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth), ChartVisualPrimitives.RangeAreaLowerStrokeOpacity);
+        if (style.HighlightOpacity > 0) {
+            WriteRangeAreaPath(writer, "range-area-upper-highlight", index, upper.Count, upperLine, "none", ChartColor.White.ToCss(), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio), style.HighlightOpacity);
+            WriteRangeAreaPath(writer, "range-area-lower-highlight", index, lower.Count, lowerLine, "none", ChartColor.White.ToCss(), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio), style.HighlightOpacity);
+        }
         writer.EndElement().Line();
         sb.Append(writer.Build());
 

@@ -33,7 +33,38 @@ internal static partial class SmokeTests {
     }
 
     private static void SmoothSeriesRenderAsBezierPaths() {
-        Assert(SampleChart().ToSvg().Contains(" C ", StringComparison.Ordinal), "Smooth series should render cubic Bezier path segments.");
+        var svg = Chart.Create()
+            .WithSize(420, 260)
+            .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
+            .ToSvg();
+        Assert(svg.Contains(" C ", StringComparison.Ordinal), "Smooth series should render cubic Bezier path segments.");
+        Assert(svg.Contains("data-cfx-role=\"line-ambient-halo\"", StringComparison.Ordinal), "SVG line series should render the shared premium ambient halo.");
+        Assert(svg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal), "SVG line series should render the shared premium highlight sheen.");
+    }
+
+    private static void LineVisualStyleIsReusableAndConfigurable() {
+        var style = ChartLineVisualStyle.Premium()
+            .WithAmbientHalo(0.07, 12)
+            .WithHalo(0.22, 6)
+            .WithHighlight(0.31, 0.4);
+        var chart = Chart.Create()
+            .WithSize(420, 260)
+            .WithLineVisualStyle(style)
+            .AddLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235));
+        style.WithHighlight(0.02);
+
+        var svg = chart.ToSvg();
+        Assert(chart.Options.LineVisualStyle.HighlightOpacity == 0.31, "Charts should clone reusable line style instances so later caller changes do not mutate chart output.");
+        Assert(svg.Contains("data-cfx-role=\"line-ambient-halo\"", StringComparison.Ordinal) && svg.Contains("opacity=\"0.07\"", StringComparison.Ordinal), "Reusable line styles should control ambient halo opacity.");
+        Assert(svg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal) && svg.Contains("opacity=\"0.31\"", StringComparison.Ordinal), "Reusable line styles should control highlight opacity.");
+
+        var classicSvg = Chart.Create()
+            .WithSize(420, 260)
+            .WithLineVisualStyle(ChartLineVisualStyle.Classic())
+            .AddLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
+            .ToSvg();
+        Assert(!classicSvg.Contains("line-ambient-halo", StringComparison.Ordinal) && !classicSvg.Contains("line-highlight", StringComparison.Ordinal), "Classic line style should suppress premium-only line lighting layers.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartLineVisualStyle.Premium().WithHighlight(0.5, 0), "Line highlight stroke ratio should reject zero.");
     }
 
     private static void PngScatterDoesNotConnectPoints() {
@@ -67,6 +98,7 @@ internal static partial class SmokeTests {
         Assert(stepArea.Series[0].Kind == ChartSeriesKind.StepArea, "Step areas should use their own series kind.");
         Assert(stepAreaSvg.Contains("data-cfx-role=\"step-area\"", StringComparison.Ordinal), "SVG step areas should expose a filled step-area role.");
         Assert(stepAreaSvg.Contains("data-cfx-role=\"step-area-line\"", StringComparison.Ordinal), "SVG step areas should expose a readable boundary role.");
+        Assert(stepAreaSvg.Contains("data-cfx-role=\"step-area-line-highlight\"", StringComparison.Ordinal), "SVG step-area boundaries should use the shared premium line highlight.");
         Assert(CountOccurrences(stepAreaSvg, " L ") > CountOccurrences(areaSvg, " L "), "SVG step areas should add horizontal and vertical stair-step area segments.");
         Assert(stepAreaSvg.Contains(">42</text>", StringComparison.Ordinal), "Step-area data labels should render values when enabled.");
         Assert(!area.ToPng().SequenceEqual(stepArea.ToPng()), "PNG step areas should rasterize differently from straight area series.");

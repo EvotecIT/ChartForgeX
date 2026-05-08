@@ -15,7 +15,6 @@ public sealed partial class ChartOptions {
     private int _tickCount = 6;
     private ChartLabelDensity _xAxisLabelDensity = ChartLabelDensity.Auto;
     private double _xAxisLabelAngle;
-    private ChartBarMode _barMode = ChartBarMode.Grouped;
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.Bottom;
     private ChartPictorialShape _pictorialShape = ChartPictorialShape.Circle;
@@ -339,22 +338,6 @@ public sealed partial class ChartOptions {
             _ganttToday = value;
         }
     }
-
-    /// <summary>
-    /// Gets or sets how multiple bar series are arranged within each category.
-    /// </summary>
-    public ChartBarMode BarMode {
-        get => _barMode;
-        set {
-            if (!Enum.IsDefined(typeof(ChartBarMode), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown bar mode.");
-            _barMode = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether stacked bar totals are rendered above each category.
-    /// </summary>
-    public bool ShowStackTotals { get; set; }
 
     /// <summary>
     /// Gets or sets how heatmap values are converted into cell colors.

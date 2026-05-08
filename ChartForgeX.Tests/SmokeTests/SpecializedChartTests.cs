@@ -102,7 +102,7 @@ internal static partial class SmokeTests {
             .AddScatter("Observed", points, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", points, ChartColor.FromRgb(245, 158, 11));
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"trend-line\"") == 1, "Trend lines should render one computed line.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"trend-line\"") == 1 && CountOccurrences(svg, "data-cfx-role=\"trend-line-halo\"") == 1 && CountOccurrences(svg, "data-cfx-role=\"trend-line-highlight\"") == 1, "Trend lines should render one computed line with reusable premium lighting layers.");
         Assert(svg.Contains("stroke-dasharray=\"8 6\"", StringComparison.Ordinal), "Trend lines should render as dashed reference lines.");
         Assert(svg.Contains("data-cfx-slope=\"", StringComparison.Ordinal), "Trend lines should expose computed slope metadata.");
         Assert(svg.Contains(">Trend</text>", StringComparison.Ordinal), "Trend lines should participate in the legend.");
@@ -214,9 +214,9 @@ internal static partial class SmokeTests {
             .AddSmoothStackedArea("Warnings", Points(24, 18, 12), ChartColor.FromRgb(251, 191, 36));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"stacked-area\"") == 2, "Stacked area charts should render one filled band per stacked series.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"stacked-area-line\"") == 4, "Stacked area charts should render readable upper boundaries.");
-        Assert(GetAttribute(svg, "<clipPath", "x") > 0, "Stacked area charts should keep using the shared cartesian plot clip.");
-        Assert(svg.Contains(">Warnings</text>", StringComparison.Ordinal), "Stacked area charts should render legend labels.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"stacked-area-line\"") == 2, "Stacked area charts should render one foreground upper boundary per series.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"stacked-area-line-halo\"") == 2 && CountOccurrences(svg, "data-cfx-role=\"stacked-area-line-highlight\"") == 2, "Stacked area charts should render reusable boundary halos and highlights.");
+        Assert(GetAttribute(svg, "<clipPath", "x") > 0 && svg.Contains(">Warnings</text>", StringComparison.Ordinal), "Stacked area charts should keep using the shared cartesian plot clip and render legend labels.");
         Assert(chart.ToPng().Length > 64, "Stacked area charts should render PNG output.");
     }
 
@@ -228,7 +228,7 @@ internal static partial class SmokeTests {
             .AddSlope("DNSSEC", 42, 74, ChartColor.FromRgb(16, 185, 129));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"slope\"") == 2, "Slope charts should render one comparison group per slope series.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"slope-line\"") == 4, "Slope charts should render halo and foreground lines.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"slope-line\"") == 2 && CountOccurrences(svg, "data-cfx-role=\"slope-line-halo\"") == 2 && CountOccurrences(svg, "data-cfx-role=\"slope-line-highlight\"") == 2, "Slope charts should render foreground, halo, and highlight layers with distinct roles.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"slope-start\"") == 2, "Slope charts should render one start marker per comparison.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"slope-end\"") == 2, "Slope charts should render one end marker per comparison.");
         Assert(svg.Contains(">Before</text>", StringComparison.Ordinal), "Slope charts should apply endpoint labels to the x-axis.");

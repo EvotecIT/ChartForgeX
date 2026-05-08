@@ -21,23 +21,7 @@ public sealed partial class SvgChartRenderer {
         var y2 = map.Y(end.Y);
         var slope = (end.Y - start.Y) / (end.X - start.X);
         var intercept = start.Y - slope * start.X;
-        AppendSvg(sb, writer => writer
-            .StartElement("line")
-            .Attribute("data-cfx-role", "trend-line")
-            .Attribute("data-cfx-series", index)
-            .Attribute("data-cfx-slope", slope)
-            .Attribute("data-cfx-intercept", intercept)
-            .Attribute("x1", x1)
-            .Attribute("y1", y1)
-            .Attribute("x2", x2)
-            .Attribute("y2", y2)
-            .Attribute("stroke", color.ToCss())
-            .Attribute("stroke-width", Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, series.StrokeWidth))
-            .Attribute("stroke-linecap", "round")
-            .Attribute("stroke-dasharray", "8 6")
-            .Attribute("opacity", "0.92")
-            .EndEmptyElement()
-            .Line());
+        DrawPremiumSvgLineSegment(sb, "trend-line", index, x1, y1, x2, y2, color, Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, series.StrokeWidth), chart.Options.LineVisualStyle, "8 6", writer => writer.Attribute("data-cfx-slope", slope).Attribute("data-cfx-intercept", intercept).Attribute("opacity", "0.92"));
     }
 
     private static void DrawSlope(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartMapper map) {
@@ -55,7 +39,7 @@ public sealed partial class SvgChartRenderer {
         var radius = Math.Max(ChartVisualPrimitives.SlopeMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.SlopeMarkerRadiusExtra);
         var summary = series.Name + ": " + FormatValue(chart, start.Y) + " to " + FormatValue(chart, end.Y);
 
-        AppendSvg(sb, writer => writer
+        AppendSvgStart(sb, writer => writer
             .StartElement("g")
             .Attribute("data-cfx-role", "slope")
             .Attribute("data-cfx-series", index)
@@ -65,29 +49,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("role", "img")
             .Attribute("aria-label", summary)
             .EndStartElement()
-            .StartElement("line")
-            .Attribute("data-cfx-role", "slope-line")
-            .Attribute("data-cfx-series", index)
-            .Attribute("x1", xStart)
-            .Attribute("y1", yStart)
-            .Attribute("x2", xEnd)
-            .Attribute("y2", yEnd)
-            .Attribute("stroke", color.ToCss())
-            .Attribute("stroke-width", series.StrokeWidth + ChartVisualPrimitives.LineHaloStrokeExtra)
-            .Attribute("stroke-linecap", "round")
-            .Attribute("opacity", ChartVisualPrimitives.StrokeHaloOpacity)
-            .EndEmptyElement()
-            .StartElement("line")
-            .Attribute("data-cfx-role", "slope-line")
-            .Attribute("data-cfx-series", index)
-            .Attribute("x1", xStart)
-            .Attribute("y1", yStart)
-            .Attribute("x2", xEnd)
-            .Attribute("y2", yEnd)
-            .Attribute("stroke", color.ToCss())
-            .Attribute("stroke-width", series.StrokeWidth)
-            .Attribute("stroke-linecap", "round")
-            .EndEmptyElement()
+            .Line());
+        DrawPremiumSvgLineSegment(sb, "slope-line", index, xStart, yStart, xEnd, yEnd, color, series.StrokeWidth, chart.Options.LineVisualStyle);
+        AppendSvg(sb, writer => writer
             .StartElement("circle")
             .Attribute("data-cfx-role", "slope-start")
             .Attribute("data-cfx-series", index)
@@ -110,8 +74,8 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke", chart.Options.Theme.CardBackground.ToCss())
             .Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth)
             .EndEmptyElement()
-            .EndElement()
             .Line());
+        AppendSvgEnd(sb, "g");
         if (!ShouldDrawDataLabels(chart, series)) return;
         DrawHorizontalValueLabel(sb, chart, FormatValue(chart, start.Y), xStart - radius - 8, yStart, "end", plot, series, 0);
         DrawHorizontalValueLabel(sb, chart, FormatValue(chart, end.Y), xEnd + radius + 8, yEnd, "start", plot, series, 1);
@@ -141,33 +105,7 @@ public sealed partial class SvgChartRenderer {
             .EndEmptyElement()
             .Line());
         var line = BuildLinePath(upperPath, false);
-        AppendSvg(sb, writer => writer
-            .StartElement("path")
-            .Attribute("data-cfx-role", "stacked-area-line")
-            .Attribute("data-cfx-series", index)
-            .Attribute("data-cfx-point-count", series.Points.Count)
-            .Attribute("d", line)
-            .Attribute("fill", "none")
-            .Attribute("stroke", color.ToCss())
-            .Attribute("stroke-width", series.StrokeWidth + 4)
-            .Attribute("stroke-linecap", "round")
-            .Attribute("stroke-linejoin", "round")
-            .Attribute("opacity", "0.12")
-            .EndEmptyElement()
-            .Line());
-        AppendSvg(sb, writer => writer
-            .StartElement("path")
-            .Attribute("data-cfx-role", "stacked-area-line")
-            .Attribute("data-cfx-series", index)
-            .Attribute("data-cfx-point-count", series.Points.Count)
-            .Attribute("d", line)
-            .Attribute("fill", "none")
-            .Attribute("stroke", color.ToCss())
-            .Attribute("stroke-width", series.StrokeWidth)
-            .Attribute("stroke-linecap", "round")
-            .Attribute("stroke-linejoin", "round")
-            .EndEmptyElement()
-            .Line());
+        DrawPremiumSvgLinePath(sb, "stacked-area-line", index, series.Points.Count, line, color, series.StrokeWidth, chart.Options.LineVisualStyle);
         if (!ShouldDrawDataLabels(chart, series)) return;
         var labelPoints = series.Points.Select(point => new ChartPoint(map.X(point.X), map.Y(StackAreaBaseValue(chart, index, point) + point.Y))).ToArray();
         DrawPointLabels(sb, chart, series, labelPoints, plot);
@@ -243,24 +181,28 @@ public sealed partial class SvgChartRenderer {
             var height = Math.Abs(baseY - y);
             var x = map.X(p.X) + layout.Offset - layout.BarWidth / 2;
             var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
-            AppendSvg(sb, writer => writer
-                .StartElement("rect")
-                .Attribute("data-cfx-role", "bar")
-                .Attribute("data-cfx-series", index)
-                .Attribute("data-cfx-point", pointIndex)
-                .Attribute("data-cfx-x", p.X)
-                .Attribute("data-cfx-y", p.Y)
-                .Attribute("data-cfx-base", baseValue)
-                .Attribute("x", x)
-                .Attribute("y", top)
-                .Attribute("width", layout.BarWidth)
-                .Attribute("height", height)
-                .Attribute("rx", radius)
-                .Attribute("fill", BarFill(chart, s, index, pointIndex, id))
-                .Attribute("opacity", ChartVisualPrimitives.BarFillOpacity)
-                .EndEmptyElement()
-                .Line());
-            DrawSvgBarHighlight(sb, x, top, layout.BarWidth, height);
+            if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
+                DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, p.X, p.Y, baseValue, x, top, layout.BarWidth, height);
+            } else {
+                AppendSvg(sb, writer => writer
+                    .StartElement("rect")
+                    .Attribute("data-cfx-role", "bar")
+                    .Attribute("data-cfx-series", index)
+                    .Attribute("data-cfx-point", pointIndex)
+                    .Attribute("data-cfx-x", p.X)
+                    .Attribute("data-cfx-y", p.Y)
+                    .Attribute("data-cfx-base", baseValue)
+                    .Attribute("x", x)
+                    .Attribute("y", top)
+                    .Attribute("width", layout.BarWidth)
+                    .Attribute("height", height)
+                    .Attribute("rx", radius)
+                    .Attribute("fill", BarFill(chart, s, index, pointIndex, id))
+                    .Attribute("opacity", ChartVisualPrimitives.BarFillOpacity)
+                    .EndEmptyElement()
+                    .Line());
+                DrawSvgBarHighlight(sb, x, top, layout.BarWidth, height);
+            }
             if (ShouldDrawDataLabels(chart, s)) {
                 var label = FormatValue(chart, p.Y);
                 var placement = DataLabelPlacement(chart, s);
@@ -285,6 +227,30 @@ public sealed partial class SvgChartRenderer {
                 DrawDataLabel(sb, chart, label, x + layout.BarWidth / 2, labelY, plot, series: s, pointIndex: pointIndex);
             }
         }
+    }
+
+    private static void DrawSvgSegmentedBar(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, int pointIndex, double xValue, double yValue, double baseValue, double x, double y, double width, double height) {
+        if (width <= 0.5 || height <= 0.5) return;
+        var style = chart.Options.BarVisualStyle;
+        var color = PointColor(chart, series, seriesIndex, pointIndex);
+        var geometry = ChartSegmentedBarGeometry.Vertical(style, x, y, width, height, yValue);
+        AppendSvg(sb, writer => writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", "bar")
+            .Attribute("data-cfx-series", seriesIndex)
+            .Attribute("data-cfx-point", pointIndex)
+            .Attribute("data-cfx-x", xValue)
+            .Attribute("data-cfx-y", yValue)
+            .Attribute("data-cfx-base", baseValue)
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("width", width)
+            .Attribute("height", height)
+            .Attribute("rx", geometry.Radius)
+            .Attribute("fill", color.ToCss())
+            .Attribute("opacity", style.BodyOpacity)
+            .EndEmptyElement());
+        AppendSvg(sb, writer => WriteSvgSegmentedCapLayers(writer, "bar", seriesIndex, pointIndex, geometry, style, color.ToCss()).Line());
     }
 
     private static void DrawSvgBarHighlight(StringBuilder sb, double x, double y, double width, double height) {

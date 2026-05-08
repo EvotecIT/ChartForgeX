@@ -12,6 +12,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawHorizontalBarGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> xTicks, IReadOnlyList<double> categoryTicks, ChartMapper map) {
         var o = chart.Options;
         var t = o.Theme;
+        var gridStyle = o.GridLineStyle;
         var tickStyle = o.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
         var xLabels = XAxisTickLabels(chart, xTicks, true);
@@ -19,13 +20,13 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < xTicks.Count; i++) {
             var x = map.X(xTicks[i]);
             var label = TrimSvgLabelToWidth(xLabels[i], tickFontSize, xLabelMaxWidth);
-            if (o.ShowGrid) WriteHorizontalAxisLine(sb, null, x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), ChartVisualPrimitives.GridStrokeWidth, ChartVisualPrimitives.HorizontalBarValueGridOpacity);
+            if (o.ShowGrid && gridStyle.ShowVerticalLines) WriteHorizontalAxisLine(sb, null, x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.VerticalOpacity, gridStyle);
             if (ShowXAxis(chart) && label.Length > 0) DrawXAxisLabel(sb, chart, plot, label, x, plot.Bottom + 21, 0, maxWidth: xLabelMaxWidth);
         }
 
         foreach (var category in categoryTicks) {
             var y = map.Y(category);
-            if (o.ShowGrid) WriteHorizontalAxisLine(sb, null, plot.Left, y, plot.Right, y, t.Grid.ToCss(), ChartVisualPrimitives.GridStrokeWidth, ChartVisualPrimitives.HorizontalBarCategoryGridOpacity);
+            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteHorizontalAxisLine(sb, null, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
             if (ShowYAxis(chart)) DrawHorizontalCategoryLabel(sb, chart, plot, FormatX(chart, category), y);
         }
 
@@ -44,7 +45,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHorizontalAxisLine(StringBuilder sb, string? role, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double? opacity = null) {
+    private static void WriteHorizontalAxisLine(StringBuilder sb, string? role, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double? opacity = null, ChartGridLineStyle? style = null) {
         var writer = new SvgMarkupWriter(256);
         writer.StartElement("line");
         writer.Attribute("data-cfx-role", role);
@@ -56,6 +57,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke", stroke)
             .Attribute("stroke-width", strokeWidth);
         if (opacity.HasValue) writer.Attribute("opacity", opacity.Value);
+        if (style != null && style.Dash > 0 && style.Gap > 0) writer.Attribute("stroke-dasharray", $"{F(style.Dash)} {F(style.Gap)}");
         writer.EndEmptyElement().Line();
         sb.Append(writer.Build());
     }

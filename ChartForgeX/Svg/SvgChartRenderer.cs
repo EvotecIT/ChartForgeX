@@ -6,6 +6,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -143,22 +144,7 @@ public sealed partial class SvgChartRenderer {
             .Text($"#{id} text{{font-synthesis:none}} #{id} .cfx-crisp-stroke{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .cfx-interactive-region{{transition:opacity .12s ease,stroke-width .12s ease}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}")
             .EndElement()
             .Line());
-        AppendSvg(sb, writer => writer
-            .StartElement("filter")
-            .Attribute("id", $"{id}-softShadow")
-            .Attribute("x", "-20%")
-            .Attribute("y", "-20%")
-            .Attribute("width", "140%")
-            .Attribute("height", "140%")
-            .EndStartElement()
-            .StartElement("feDropShadow")
-            .Attribute("dx", 0)
-            .Attribute("dy", 14)
-            .Attribute("stdDeviation", 18)
-            .Attribute("flood-opacity", Clamp(t.ShadowOpacity, 0, 1))
-            .EndEmptyElement()
-            .EndElement()
-            .Line());
+        WriteSvgCardShadowFilter(sb, id, t);
         AppendSvg(sb, writer => writer
             .StartElement("clipPath")
             .Attribute("id", $"{id}-plotClip")
@@ -187,13 +173,13 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", t.Background.ToCss()).EndEmptyElement().Line());
         }
         if (o.ShowCard && t.UseCard) {
-            AppendSvg(sb, writer => writer.StartElement("rect").Attribute("x", 14).Attribute("y", 14).Attribute("width", w - 28).Attribute("height", h - 28).Attribute("rx", t.CornerRadius).Attribute("fill", t.CardBackground.ToCss()).Attribute("filter", $"url(#{id}-softShadow)").EndEmptyElement().Line());
-            AppendSvg(sb, writer => writer.StartElement("rect").Attribute("class", "cfx-crisp-stroke").Attribute("x", 14.5).Attribute("y", 14.5).Attribute("width", w - 29).Attribute("height", h - 29).Attribute("rx", Math.Max(0, t.CornerRadius - 0.5)).Attribute("fill", "none").Attribute("stroke", t.CardBorder.ToCss()).EndEmptyElement().Line());
+            DrawSvgCardSurface(sb, id, t, w, h);
         }
         if (o.ShowPlotBackground) {
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("x", plot.X).Attribute("y", plot.Y).Attribute("width", plot.Width).Attribute("height", plot.Height).Attribute("rx", t.PlotCornerRadius).Attribute("fill", t.PlotBackground.ToCss()).EndEmptyElement().Line());
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("class", "cfx-crisp-stroke").Attribute("x", plot.X + 0.5).Attribute("y", plot.Y + 0.5).Attribute("width", Math.Max(0, plot.Width - 1)).Attribute("height", Math.Max(0, plot.Height - 1)).Attribute("rx", Math.Max(0, t.PlotCornerRadius - 0.5)).Attribute("fill", "none").Attribute("stroke", t.PlotBorder.ToCss()).EndEmptyElement().Line());
-        }        if (o.ShowHeader) DrawHeader(sb, chart);
+        }
+        if (o.ShowHeader) DrawHeader(sb, chart);
         if (IsPieLike(chart)) {
             DrawPieLike(sb, chart, plot, id);
             AppendSvgEnd(sb, "g");
@@ -353,8 +339,66 @@ public sealed partial class SvgChartRenderer {
         return sb.ToString();
     }
 
+    private static void WriteSvgCardShadowFilter(StringBuilder sb, string id, ChartTheme theme) {
+        var expansion = ChartVisualPrimitives.SvgCardShadowFilterExpansion;
+        AppendSvg(sb, writer => writer
+            .StartElement("filter")
+            .Attribute("id", $"{id}-softShadow")
+            .Attribute("x", $"-{F(expansion)}%")
+            .Attribute("y", $"-{F(expansion)}%")
+            .Attribute("width", $"{F(100 + expansion * 2)}%")
+            .Attribute("height", $"{F(100 + expansion * 2)}%")
+            .EndStartElement()
+            .StartElement("feDropShadow")
+            .Attribute("dx", 0)
+            .Attribute("dy", ChartVisualPrimitives.SvgCardShadowKeyYOffset)
+            .Attribute("stdDeviation", ChartVisualPrimitives.SvgCardShadowKeyBlur)
+            .Attribute("flood-color", theme.ShadowColor.ToCss())
+            .Attribute("flood-opacity", Clamp(theme.ShadowOpacity * ChartVisualPrimitives.SvgCardShadowKeyOpacityRatio, 0, 1))
+            .EndEmptyElement()
+            .StartElement("feDropShadow")
+            .Attribute("dx", 0)
+            .Attribute("dy", ChartVisualPrimitives.SvgCardShadowYOffset)
+            .Attribute("stdDeviation", ChartVisualPrimitives.SvgCardShadowBlur)
+            .Attribute("flood-color", theme.ShadowColor.ToCss())
+            .Attribute("flood-opacity", Clamp(theme.ShadowOpacity, 0, 1))
+            .EndEmptyElement()
+            .EndElement()
+            .Line());
+    }
+
+    private static void DrawSvgCardSurface(StringBuilder sb, string id, ChartTheme theme, double width, double height) {
+        var cardInset = ChartVisualPrimitives.CardSurfaceInset;
+        var borderInset = ChartVisualPrimitives.CardBorderInset;
+        var borderPosition = cardInset + borderInset;
+        AppendSvg(sb, writer => writer.StartElement("rect")
+            .Attribute("data-cfx-role", "card-surface")
+            .Attribute("x", cardInset)
+            .Attribute("y", cardInset)
+            .Attribute("width", width - cardInset * 2)
+            .Attribute("height", height - cardInset * 2)
+            .Attribute("rx", theme.CornerRadius)
+            .Attribute("fill", theme.CardBackground.ToCss())
+            .Attribute("filter", $"url(#{id}-softShadow)")
+            .EndEmptyElement()
+            .Line());
+        AppendSvg(sb, writer => writer.StartElement("rect")
+            .Attribute("data-cfx-role", "card-border")
+            .Attribute("class", "cfx-crisp-stroke")
+            .Attribute("x", borderPosition)
+            .Attribute("y", borderPosition)
+            .Attribute("width", width - borderPosition * 2)
+            .Attribute("height", height - borderPosition * 2)
+            .Attribute("rx", Math.Max(0, theme.CornerRadius - borderInset))
+            .Attribute("fill", "none")
+            .Attribute("stroke", theme.CardBorder.ToCss())
+            .EndEmptyElement()
+            .Line());
+    }
+
     private static void DrawGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> xTicks, IReadOnlyList<double> yTicks, ChartMapper map) {
         var o = chart.Options; var t = o.Theme; var tickStyle = o.TickLabelStyle;
+        var gridStyle = o.GridLineStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
         var xLabelAngle = Clamp(o.XAxisLabelAngle, -80, 80);
         var xLabels = XAxisTickLabels(chart, xTicks, false);
@@ -362,7 +406,7 @@ public sealed partial class SvgChartRenderer {
         var xLabelMaxWidth = AxisTickLabelMaxWidth(plot, xTicks.Count, xLabelAngle);
         foreach (var yv in yTicks) {
             var y = map.Y(yv);
-            if (o.ShowGrid) AppendSvg(sb, writer => writer.StartElement("line").Attribute("x1", plot.Left).Attribute("y1", y).Attribute("x2", plot.Right).Attribute("y2", y).Attribute("stroke", t.Grid.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth).EndEmptyElement().Line());
+            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
             if (ShowYAxis(chart)) {
                 AppendSvg(sb, writer => {
                     writer.StartElement("text").Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize);
@@ -374,8 +418,9 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < xTicks.Count; i++) {
             var xv = xTicks[i];
             var x = map.X(xv);
-            if (o.ShowGrid) AppendSvg(sb, writer => writer.StartElement("line").Attribute("x1", x).Attribute("y1", plot.Top).Attribute("x2", x).Attribute("y2", plot.Bottom).Attribute("stroke", t.Grid.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth).Attribute("opacity", ChartVisualPrimitives.GridVerticalOpacity).EndEmptyElement().Line());
-            if (ShowXAxis(chart)) DrawXAxisLabel(sb, chart, plot, xLabels[i], x, xLabelY, xLabelAngle, maxWidth: xLabelMaxWidth);
+            if (o.ShowGrid && gridStyle.ShowVerticalLines) WriteSvgGridLine(sb, x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.VerticalOpacity, gridStyle);
+            var labelColor = o.XAxisLabelHighlights.TryGetValue(xv, out var highlight) ? highlight : (ChartColor?)null;
+            if (ShowXAxis(chart)) DrawXAxisLabel(sb, chart, plot, xLabels[i], x, xLabelY, xLabelAngle, maxWidth: xLabelMaxWidth, color: labelColor);
         }
         var zeroY = map.Y(0);
         if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroY > plot.Top && zeroY < plot.Bottom) {
@@ -391,9 +436,25 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle, string? role = null, double maxWidth = 0) {
+    private static void WriteSvgGridLine(StringBuilder sb, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double opacity, ChartGridLineStyle style) {
+        AppendSvg(sb, writer => {
+            writer.StartElement("line")
+                .Attribute("x1", x1)
+                .Attribute("y1", y1)
+                .Attribute("x2", x2)
+                .Attribute("y2", y2)
+                .Attribute("stroke", stroke)
+                .Attribute("stroke-width", strokeWidth)
+                .Attribute("opacity", opacity);
+            if (style.Dash > 0 && style.Gap > 0) writer.Attribute("stroke-dasharray", $"{F(style.Dash)} {F(style.Gap)}");
+            writer.EndEmptyElement().Line();
+        });
+    }
+
+    private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle, string? role = null, double maxWidth = 0, ChartColor? color = null) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
+        var labelColor = color ?? StyleColor(style, t.MutedText);
         var preferredFontSize = StyleFontSize(style, t.TickLabelFontSize);
         var widthLimit = maxWidth > 0 ? maxWidth : PlotLabelMaxWidth(plot);
         var fontSize = TextFontSizeForSvgWidth(label, widthLimit, preferredFontSize);
@@ -405,7 +466,7 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, writer => {
                 writer.StartElement("text");
                 if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
-                writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize);
+                writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize);
                 WriteSvgTextStyleAttributes(writer, style);
                 writer.Text(label).EndElement().Line();
             });
@@ -417,7 +478,7 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, writer => {
             writer.StartElement("text");
             if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
-            writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize);
+            writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize);
             WriteSvgTextStyleAttributes(writer, style);
             writer.Text(label).EndElement().Line();
         });
@@ -550,8 +611,7 @@ public sealed partial class SvgChartRenderer {
             var line = s.Kind == ChartSeriesKind.StepLine ? BuildStepLinePath(mapped) : BuildLinePath(mapped, s.Smooth);
             if (s.Kind == ChartSeriesKind.StepArea) line = BuildStepLinePath(mapped);
             var lineRole = s.Kind == ChartSeriesKind.StepLine ? "step-line" : s.Kind == ChartSeriesKind.StepArea ? "step-area-line" : s.Kind == ChartSeriesKind.Area ? "area-line" : "line";
-            AppendSvg(sb, writer => writer.StartElement("path").Attribute("data-cfx-role", $"{lineRole}-halo").Attribute("data-cfx-series", index).Attribute("data-cfx-point-count", mapped.Length).Attribute("d", line).Attribute("fill", "none").Attribute("stroke", c.ToCss()).Attribute("stroke-width", s.StrokeWidth + ChartVisualPrimitives.LineHaloStrokeExtra).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").Attribute("opacity", ChartVisualPrimitives.StrokeHaloOpacity).EndEmptyElement().Line());
-            AppendSvg(sb, writer => writer.StartElement("path").Attribute("data-cfx-role", lineRole).Attribute("data-cfx-series", index).Attribute("data-cfx-point-count", mapped.Length).Attribute("d", line).Attribute("fill", "none").Attribute("stroke", c.ToCss()).Attribute("stroke-width", s.StrokeWidth).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line());
+            DrawPremiumSvgLinePath(sb, lineRole, index, mapped.Length, line, c, s.StrokeWidth, chart.Options.LineVisualStyle);
             if (!chart.Options.IsSparkline) {
                 for (var pointIndex = 0; pointIndex < mapped.Length; pointIndex++) {
                     var p = mapped[pointIndex];

@@ -131,6 +131,11 @@ public sealed class ChartTheme {
     }
 
     /// <summary>
+    /// Gets or sets the color used for card shadows.
+    /// </summary>
+    public ChartColor ShadowColor { get; set; } = ChartColor.FromRgb(15,23,42);
+
+    /// <summary>
     /// Gets or sets the title font size used by SVG and HTML renderers.
     /// </summary>
     public double TitleFontSize {
@@ -353,6 +358,16 @@ public sealed class ChartTheme {
     }
 
     /// <summary>
+    /// Applies the card shadow color used by SVG and PNG renderers.
+    /// </summary>
+    /// <param name="shadowColor">The shadow color.</param>
+    /// <returns>The current theme.</returns>
+    public ChartTheme WithShadowColor(ChartColor shadowColor) {
+        ShadowColor = shadowColor;
+        return this;
+    }
+
+    /// <summary>
     /// Applies a reusable card and plot surface style.
     /// </summary>
     /// <param name="style">The surface style preset.</param>
@@ -420,6 +435,31 @@ public sealed class ChartTheme {
     /// </summary>
     /// <returns>A light report chart theme.</returns>
     public static ChartTheme ReportLight() => Light();
+
+    /// <summary>
+    /// Creates a clean light theme for compact dashboard panels and recruitment-style stacked bar cards.
+    /// </summary>
+    /// <returns>A light dashboard chart theme.</returns>
+    public static ChartTheme DashboardLight() => Light()
+        .WithSurfaceColors(
+            ChartColor.White,
+            ChartColor.White,
+            ChartColor.White,
+            ChartColor.FromRgba(148,163,184,34),
+            ChartColor.Transparent)
+        .WithTextColors(ChartColor.FromRgb(17,24,39), ChartColor.FromHex("#8A8F98"))
+        .WithGuideColors(ChartColor.FromRgba(148,163,184,96), ChartColor.FromRgba(148,163,184,110))
+        .WithPalette(
+            ChartColor.FromHex("#FBBF24"),
+            ChartColor.FromHex("#22C55E"),
+            ChartColor.FromHex("#3B82F6"),
+            ChartColor.FromHex("#8B5CF6"),
+            ChartColor.FromHex("#14B8A6"),
+            ChartColor.FromHex("#F97316"),
+            ChartColor.FromHex("#06B6D4"),
+            ChartColor.FromHex("#EF4444"))
+        .WithShadowOpacity(0.08)
+        .WithStrokeWidth(2.6);
 
     /// <summary>
     /// Creates the default dark report theme.

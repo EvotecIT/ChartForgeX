@@ -25,15 +25,17 @@ public sealed partial class PngChartRenderer {
         var upperPath = ChartPathBuilder.FromPoints(upper, ChartSeriesKind.Line, series.Smooth).Flatten(12);
         var lowerPath = ChartPathBuilder.FromPoints(lower, ChartSeriesKind.Line, series.Smooth).Flatten(12);
         var middlePath = ChartPathBuilder.FromPoints(middle, ChartSeriesKind.Line, series.Smooth).Flatten(12);
+        var style = chart.Options.LineVisualStyle;
         var polygon = new List<ChartPoint>(upperPath.Count + lowerPath.Count);
         foreach (var point in upperPath) polygon.Add(point);
         for (var i = lowerPath.Count - 1; i >= 0; i--) polygon.Add(lowerPath[i]);
         c.FillPolygonVerticalGradient(polygon, ChartColor.FromRgba(color.R, color.G, color.B, 118), ChartColor.FromRgba(color.R, color.G, color.B, 18));
         DrawDashedPngPath(c, middlePath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap);
-        DrawPngLinePath(c, upperPath, PngStrokeHalo(color), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra);
-        DrawPngLinePath(c, lowerPath, PngStrokeHalo(color), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra);
-        DrawPngLinePath(c, upperPath, color, series.StrokeWidth);
+        DrawPremiumPngLinePath(c, upperPath, color, series.StrokeWidth, style);
+        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) DrawPngLinePath(c, lowerPath, PngStrokeAmbientHalo(color, style), series.StrokeWidth + style.AmbientHaloStrokeExtra);
+        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) DrawPngLinePath(c, lowerPath, PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + ChartVisualPrimitives.RangeAreaHaloStrokeExtra);
         DrawPngLinePath(c, lowerPath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaLowerStrokeOpacity), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth));
+        if (style.HighlightOpacity > 0) DrawPngLinePath(c, lowerPath, PngLineHighlight(style), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio));
 
         if (!ShouldDrawDataLabels(chart, series)) return;
         var reserved = new List<ChartLabelBounds>();

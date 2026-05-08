@@ -9,6 +9,26 @@ public sealed partial class Chart {
     public Chart WithGrid(bool visible = true) { Options.ShowGrid = visible; return this; }
 
     /// <summary>
+    /// Sets reusable visual tokens used by cartesian grid and guide lines.
+    /// </summary>
+    /// <param name="style">The grid line style.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithGridStyle(ChartGridLineStyle style) { Options.GridLineStyle = style; return this; }
+
+    /// <summary>
+    /// Configures reusable visual tokens used by cartesian grid and guide lines.
+    /// </summary>
+    /// <param name="configure">The style configuration callback.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithGridStyle(System.Action<ChartGridLineStyle> configure) {
+        if (configure == null) throw new System.ArgumentNullException(nameof(configure));
+        var style = Options.GridLineStyle.Clone();
+        configure(style);
+        Options.GridLineStyle = style;
+        return this;
+    }
+
+    /// <summary>
     /// Sets whether axes, tick labels, and axis titles should be rendered.
     /// </summary>
     /// <param name="visible">True to render axes; otherwise false.</param>

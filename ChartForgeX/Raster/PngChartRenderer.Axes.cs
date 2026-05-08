@@ -12,9 +12,9 @@ public sealed partial class PngChartRenderer {
         return Clamp(x - width / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset);
     }
 
-    private static void DrawXAxisTickLabel(RgbaCanvas c, Chart chart, ChartRect plot, string label, double x, IReadOnlyList<string>? axisLabels = null) {
+    private static void DrawXAxisTickLabel(RgbaCanvas c, Chart chart, ChartRect plot, string label, double x, double value, IReadOnlyList<string>? axisLabels = null) {
         var preferredFontSize = PngTickFontSize(chart);
-        var color = PngTickColor(chart);
+        var color = chart.Options.XAxisLabelHighlights.TryGetValue(value, out var highlight) ? highlight : PngTickColor(chart);
         var angle = Clamp(chart.Options.XAxisLabelAngle, -80, 80);
         var maxWidth = PngAxisTickLabelMaxWidth(plot, axisLabels?.Count ?? 0, angle);
         var fontSize = TextFontSizeForWidth(label, maxWidth, preferredFontSize);

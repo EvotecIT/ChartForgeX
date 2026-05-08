@@ -25,13 +25,14 @@ public sealed partial class SvgChartRenderer {
             var color = PointColor(chart, series, index, intervalIndex);
             var summary = FormatValue(chart, Math.Min(start.Y, end.Y)) + "-" + FormatValue(chart, Math.Max(start.Y, end.Y));
 
-            WriteRangeBarInterval(sb, index, intervalIndex, start.X, start.Y, end.Y, summary, color, x, y1, y2, top, height, barWidth);
+            WriteRangeBarInterval(sb, chart, index, intervalIndex, start.X, start.Y, end.Y, summary, color, x, y1, y2, top, height, barWidth);
             if (ShouldDrawDataLabels(chart, series)) DrawRangeBarLabel(sb, chart, series, intervalIndex, plot, reservedLabels, summary, x, y1, y2, top, height, barWidth);
         }
     }
 
     private static void WriteRangeBarInterval(
         StringBuilder sb,
+        Chart chart,
         int seriesIndex,
         int pointIndex,
         double valueX,
@@ -46,9 +47,11 @@ public sealed partial class SvgChartRenderer {
         double height,
         double barWidth) {
         var colorCss = color.ToCss();
+        var style = chart.Options.BarVisualStyle;
         var writer = new SvgMarkupWriter(768);
-        writer
-            .StartElement("rect")
+        var radius = style.Kind == ChartBarStyle.SegmentedCapsule ? ChartSegmentedBarGeometry.RangeCap(style, x, y1, barWidth).Radius : Math.Min(7, barWidth / 2);
+        var opacity = style.Kind == ChartBarStyle.SegmentedCapsule ? style.BodyOpacity : ChartVisualPrimitives.RangeBarFillOpacity;
+        writer.StartElement("rect")
             .Attribute("data-cfx-role", "range-bar")
             .Attribute("data-cfx-series", seriesIndex)
             .Attribute("data-cfx-point", pointIndex)
@@ -61,17 +64,34 @@ public sealed partial class SvgChartRenderer {
             .Attribute("y", top)
             .Attribute("width", barWidth)
             .Attribute("height", height)
-            .Attribute("rx", Math.Min(7, barWidth / 2))
+            .Attribute("rx", radius)
             .Attribute("fill", colorCss)
-            .Attribute("opacity", ChartVisualPrimitives.RangeBarFillOpacity)
+            .Attribute("opacity", opacity)
             .EndEmptyElement()
             .Line();
-        WriteRangeBarCap(writer, seriesIndex, pointIndex, "start", startValue, x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, colorCss);
-        WriteRangeBarCap(writer, seriesIndex, pointIndex, "end", endValue, x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, colorCss);
+        WriteRangeBarCap(writer, style, seriesIndex, pointIndex, "start", startValue, x, y1, barWidth, colorCss);
+        WriteRangeBarCap(writer, style, seriesIndex, pointIndex, "end", endValue, x, y2, barWidth, colorCss);
         sb.Append(writer.Build());
     }
 
-    private static void WriteRangeBarCap(SvgMarkupWriter writer, int seriesIndex, int pointIndex, string bound, double value, double x1, double y1, double x2, double y2, string color) {
+    private static void WriteRangeBarCap(SvgMarkupWriter writer, ChartBarVisualStyle style, int seriesIndex, int pointIndex, string bound, double value, double x, double y, double barWidth, string color) {
+        if (style.Kind == ChartBarStyle.SegmentedCapsule) {
+            var geometry = ChartSegmentedBarGeometry.RangeCap(style, x, y, barWidth);
+            WriteSvgSegmentedCapLayers(
+                writer,
+                "range-bar",
+                seriesIndex,
+                pointIndex,
+                geometry,
+                style,
+                color,
+                commonAttributes: item => item.Attribute("data-cfx-bound", bound),
+                capAttributes: item => item.Attribute("data-cfx-bound", bound).Attribute("data-cfx-value", value))
+                .Line();
+            return;
+        }
+
+        var capWidth = barWidth * 1.5;
         writer
             .StartElement("line")
             .Attribute("data-cfx-role", "range-bar-cap")
@@ -79,15 +99,15 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-point", pointIndex)
             .Attribute("data-cfx-bound", bound)
             .Attribute("data-cfx-value", value)
-            .Attribute("x1", x1)
-            .Attribute("y1", y1)
-            .Attribute("x2", x2)
-            .Attribute("y2", y2)
+            .Attribute("x1", x - capWidth / 2)
+            .Attribute("y1", y)
+            .Attribute("x2", x + capWidth / 2)
+            .Attribute("y2", y)
             .Attribute("stroke", color)
             .Attribute("stroke-width", ChartVisualPrimitives.RangeBarCapStrokeWidth)
             .Attribute("stroke-linecap", "round")
-            .EndEmptyElement()
-            .Line();
+            .EndEmptyElement();
+        writer.Line();
     }
 
     private static void DrawRangeBarLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double y1, double y2, double top, double height, double barWidth) {
