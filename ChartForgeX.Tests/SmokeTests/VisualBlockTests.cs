@@ -49,6 +49,7 @@ internal static partial class SmokeTests {
 
         var metric = MetricCard.Create()
             .WithMetric("Coverage", 0.982, "P1")
+            .WithIcon(VisualIcon.Lightning)
             .WithTrend("+2.4 pp")
             .WithCaption("since previous run")
             .WithStatus(VisualStatus.Positive)
@@ -56,8 +57,19 @@ internal static partial class SmokeTests {
             .WithSize(360, 190);
         var metricSvg = metric.ToSvg("visual-block-metric");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal), "MetricCard should render status styling.");
+        Assert(metricSvg.Contains("data-cfx-role=\"visual-icon\"", StringComparison.Ordinal), "MetricCard should render reusable built-in icons.");
         Assert(metric.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "MetricCard should render an embeddable HTML fragment.");
         Assert(metric.ToPng().Length > 64, "MetricCard should render PNG output.");
+
+        var radialMetric = RadialMetricCard.Create()
+            .WithMetric("Capacity left", "42%")
+            .WithIcon(VisualIcon.Flame)
+            .AddLayer(new ChartRadialLayer("Track", 100, 0, 100, ChartColor.FromHex("#E2E8F0")).WithGeometry(1, 0.16).WithLineCap(ChartRadialLayerCap.Butt))
+            .AddLayer(new ChartRadialLayer("Current", 42, 0, 100, ChartColor.FromHex("#F97316")).WithGeometry(1, 0.12));
+        var radialSvg = radialMetric.ToSvg("visual-block-radial-metric");
+        Assert(radialSvg.Contains("data-cfx-role=\"radial-metric-layer\"", StringComparison.Ordinal), "RadialMetricCard should render public radial layers.");
+        Assert(radialSvg.Contains("data-cfx-icon=\"flame\"", StringComparison.Ordinal), "RadialMetricCard should render reusable built-in icons.");
+        Assert(radialMetric.ToPng().Length > 64, "RadialMetricCard should render PNG output.");
     }
 
     private static void VisualGridComposesChartsAndVisualBlocks() {
@@ -144,7 +156,10 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => new ChartListItem("ok").Text = null!, "ChartList items should reject null text through the public setter.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartListItem("bad").Status = (VisualStatus)999, "ChartList items should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Status = (VisualStatus)999, "MetricCard should reject unknown status values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Icon = (VisualIcon)999, "MetricCard should reject unknown icon values.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Missing", null).ToSvg(), "MetricCard should require a visible value.");
+        AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().WithMetric("Missing", "1").ToSvg(), "RadialMetricCard should require at least one layer.");
+        AssertThrows<ArgumentOutOfRangeException>(() => RadialMetricCard.Create().Icon = (VisualIcon)999, "RadialMetricCard should reject unknown icon values.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().WithColumns(0), "VisualGrid should reject non-positive column counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().PanelFit = (VisualGridPanelFit)999, "VisualGrid panel fit property should reject unknown values.");
         AssertThrows<InvalidOperationException>(() => VisualGrid.Create().ToSvg(), "VisualGrid should require at least one item.");

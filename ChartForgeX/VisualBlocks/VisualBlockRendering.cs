@@ -23,6 +23,15 @@ internal static class VisualBlockRendering {
         if (block is MetricCard card) {
             if (card.Label.Length == 0) throw new InvalidOperationException("Metric cards must define a label.");
             if (card.Value.Length == 0) throw new InvalidOperationException("Metric cards must define a value.");
+            if (card.Symbol.Length > 12) throw new InvalidOperationException("Metric card symbols must be twelve characters or fewer.");
+            return;
+        }
+
+        if (block is RadialMetricCard radialCard) {
+            if (radialCard.Label.Length == 0) throw new InvalidOperationException("Radial metric cards must define a label.");
+            if (radialCard.Value.Length == 0) throw new InvalidOperationException("Radial metric cards must define a value.");
+            if (radialCard.Layers.Count == 0) throw new InvalidOperationException("Radial metric cards must contain at least one radial layer.");
+            foreach (var layer in radialCard.Layers) if (layer.Maximum <= layer.Minimum) throw new InvalidOperationException("Radial metric card layer maximum must be greater than minimum.");
             return;
         }
 

@@ -1155,17 +1155,17 @@
     },
     {
       "name": "wellness-calories-intake-dashboard",
-      "width": 1280,
-      "height": 560,
+      "width": 1164,
+      "height": 565,
       "svg": {
-        "minVisualNodes": 46,
+        "minVisualNodes": 48,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 2800000,
-        "minDistinctColors": 1600,
+        "minVisiblePixels": 2500000,
+        "minDistinctColors": 2500,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1187,17 +1187,17 @@
     },
     {
       "name": "wellness-weight-data-gauge",
-      "width": 896,
-      "height": 768,
+      "width": 560,
+      "height": 420,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 2700000,
-        "minDistinctColors": 1300,
+        "minVisiblePixels": 900000,
+        "minDistinctColors": 1200,
         "maxEdgeInkPixels": 0
       }
     },

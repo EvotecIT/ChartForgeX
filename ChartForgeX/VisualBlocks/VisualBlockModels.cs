@@ -64,6 +64,20 @@ public enum VisualGridPanelFit {
 }
 
 /// <summary>
+/// Built-in compact icons for metric and radial metric visual blocks.
+/// </summary>
+public enum VisualIcon {
+    /// <summary>Do not render an icon.</summary>
+    None,
+    /// <summary>Food or intake icon.</summary>
+    ForkKnife,
+    /// <summary>Heat, burn, or activity icon.</summary>
+    Flame,
+    /// <summary>Energy, activity, or alert icon.</summary>
+    Lightning
+}
+
+/// <summary>
 /// Shared renderer-independent options for visual blocks.
 /// </summary>
 public sealed class VisualBlockOptions {
@@ -479,6 +493,8 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     private string _value = string.Empty;
     private string _caption = string.Empty;
     private string _trend = string.Empty;
+    private string _symbol = string.Empty;
+    private VisualIcon _icon;
     private VisualStatus _status;
 
     /// <summary>Gets or sets the metric label.</summary>
@@ -492,6 +508,18 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
 
     /// <summary>Gets or sets optional trend text.</summary>
     public string Trend { get => _trend; set => _trend = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets an optional compact symbol rendered as a badge.</summary>
+    public string Symbol { get => _symbol; set => _symbol = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets an optional built-in icon rendered as a badge.</summary>
+    public VisualIcon Icon {
+        get => _icon;
+        set {
+            VisualBlockGuards.EnumDefined(value, nameof(value));
+            _icon = value;
+        }
+    }
 
     /// <summary>Gets or sets the metric status.</summary>
     public VisualStatus Status {
@@ -521,9 +549,73 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     /// <summary>Sets optional trend text.</summary>
     public MetricCard WithTrend(string trend) { Trend = trend ?? throw new ArgumentNullException(nameof(trend)); return this; }
 
+    /// <summary>Sets an optional compact symbol rendered as a badge.</summary>
+    public MetricCard WithSymbol(string symbol) { Symbol = symbol ?? throw new ArgumentNullException(nameof(symbol)); return this; }
+
+    /// <summary>Sets an optional built-in icon rendered as a badge.</summary>
+    public MetricCard WithIcon(VisualIcon icon) { Icon = icon; return this; }
+
     /// <summary>Sets the metric status.</summary>
     public MetricCard WithStatus(VisualStatus status) {
         Status = status;
+        return this;
+    }
+}
+
+/// <summary>
+/// A KPI card with one or more radial progress layers around a central metric.
+/// </summary>
+public sealed class RadialMetricCard : VisualBlock<RadialMetricCard> {
+    private readonly List<ChartRadialLayer> _layers = new();
+    private string _label = string.Empty;
+    private string _value = string.Empty;
+    private VisualIcon _icon;
+
+    /// <summary>Gets radial progress layers.</summary>
+    public IReadOnlyList<ChartRadialLayer> Layers => _layers;
+
+    /// <summary>Gets or sets the center label.</summary>
+    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the center value.</summary>
+    public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets an optional built-in icon rendered above the center metric.</summary>
+    public VisualIcon Icon {
+        get => _icon;
+        set {
+            VisualBlockGuards.EnumDefined(value, nameof(value));
+            _icon = value;
+        }
+    }
+
+    /// <summary>Gets a concise accessibility label.</summary>
+    public override string AccessibleName => Label.Length == 0 ? base.AccessibleName : Label;
+
+    /// <summary>Creates a new radial metric card.</summary>
+    public static RadialMetricCard Create() => new();
+
+    /// <summary>Sets the primary center metric label and value.</summary>
+    public RadialMetricCard WithMetric(string label, object? value, string? format = null) {
+        Label = label ?? throw new ArgumentNullException(nameof(label));
+        Value = ChartTableCell.FromValue(value, format).Text;
+        return this;
+    }
+
+    /// <summary>Sets an optional built-in icon rendered above the center metric.</summary>
+    public RadialMetricCard WithIcon(VisualIcon icon) { Icon = icon; return this; }
+
+    /// <summary>Replaces all radial layers.</summary>
+    public RadialMetricCard WithLayers(IEnumerable<ChartRadialLayer> layers) {
+        if (layers == null) throw new ArgumentNullException(nameof(layers));
+        _layers.Clear();
+        foreach (var layer in layers) AddLayer(layer);
+        return this;
+    }
+
+    /// <summary>Adds one radial layer.</summary>
+    public RadialMetricCard AddLayer(ChartRadialLayer layer) {
+        _layers.Add(layer ?? throw new ArgumentNullException(nameof(layer)));
         return this;
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
 
@@ -46,6 +47,7 @@ public sealed class SvgVisualBlockRenderer {
         if (block is ChartTable table) RenderTable(writer, table);
         else if (block is ChartList list) RenderList(writer, list);
         else if (block is MetricCard card) RenderMetric(writer, card);
+        else if (block is RadialMetricCard radialCard) RenderRadialMetric(writer, radialCard);
 
         writer.EndElement().Line();
         return writer.Build();
@@ -137,12 +139,68 @@ public sealed class SvgVisualBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
         if (card.Status != VisualStatus.None) writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", 0).Attribute("y", 0).Attribute("width", 7).Attribute("height", options.Size.Height).Attribute("fill", statusColor.ToCss()).EndEmptyElement().Line();
+        if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
+            var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
+            var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
+            var cx = options.Size.Width - options.Padding.Right - badgeRadius;
+            var cy = options.Padding.Top + badgeRadius;
+            writer.StartElement("circle").Attribute("data-cfx-role", "metric-symbol-badge").Attribute("cx", cx).Attribute("cy", cy).Attribute("r", badgeRadius).Attribute("fill", badgeColor.WithAlpha(48).ToCss()).Attribute("stroke", badgeColor.ToCss()).EndEmptyElement().Line();
+            if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
+            else writer.StartElement("text").Attribute("data-cfx-role", "metric-symbol").Attribute("x", cx).Attribute("y", cy + Math.Max(10, badgeRadius * 0.46) / 3.0).Attribute("text-anchor", "middle").Attribute("fill", badgeColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", Math.Max(10, badgeRadius * 0.46)).Attribute("font-weight", "850").Text(VisualBlockRendering.FitText(card.Symbol, Math.Max(10, badgeRadius * 0.46), badgeRadius * 1.45)).EndElement().Line();
+        }
+
         var labelSize = Math.Max(11, theme.SubtitleFontSize);
         var valueSize = Math.Min(54, Math.Max(26, options.Size.Height * 0.22));
         writer.StartElement("text").Attribute("data-cfx-role", "metric-label").Attribute("x", content.X).Attribute("y", content.Y + labelSize).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", labelSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(card.Label, labelSize, content.Width)).EndElement().Line();
         writer.StartElement("text").Attribute("data-cfx-role", "metric-value").Attribute("x", content.X).Attribute("y", content.Y + labelSize + valueSize + 14).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", valueSize).Attribute("font-weight", "850").Text(VisualBlockRendering.FitText(card.Value, valueSize, content.Width)).EndElement().Line();
         if (card.Trend.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "metric-trend").Attribute("x", content.X).Attribute("y", options.Size.Height - options.Padding.Bottom - 18).Attribute("fill", statusColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(card.Trend, theme.SubtitleFontSize, content.Width)).EndElement().Line();
         if (card.Caption.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "metric-caption").Attribute("x", content.X).Attribute("y", options.Size.Height - options.Padding.Bottom).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", Math.Max(10, theme.SubtitleFontSize - 1)).Text(VisualBlockRendering.FitText(card.Caption, Math.Max(10, theme.SubtitleFontSize - 1), content.Width)).EndElement().Line();
+    }
+
+    private static void RenderRadialMetric(SvgMarkupWriter writer, RadialMetricCard card) {
+        var options = card.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        RenderBlockHeading(writer, card, ref y, content.X, content.Width);
+        var availableHeight = Math.Max(1, options.Size.Height - options.Padding.Bottom - y);
+        var cx = content.X + content.Width / 2;
+        var cy = y + availableHeight * 0.48;
+        var outerRadius = Math.Max(24, Math.Min(content.Width, availableHeight) * 0.42);
+        writer.StartElement("g").Attribute("data-cfx-role", "radial-metric-card").Attribute("data-cfx-label", card.Label).EndStartElement().Line();
+        for (var i = 0; i < card.Layers.Count; i++) {
+            var layer = card.Layers[i];
+            var ratio = RadialLayerRatio(layer);
+            if (ratio <= 0) continue;
+            var radius = Math.Max(1, outerRadius * layer.RadiusRatio);
+            var stroke = Math.Max(1, outerRadius * layer.StrokeRatio);
+            var start = DegreesToRadians(layer.StartAngleDegrees);
+            var end = start + DegreesToRadians(layer.SweepAngleDegrees) * ratio;
+            var color = layer.Color ?? VisualBlockRendering.PaletteAt(theme, i);
+            writer.StartElement("path")
+                .Attribute("data-cfx-role", "radial-metric-layer")
+                .Attribute("data-cfx-layer", i)
+                .Attribute("data-cfx-label", layer.Name)
+                .Attribute("data-cfx-value", layer.Value)
+                .Attribute("data-cfx-min", layer.Minimum)
+                .Attribute("data-cfx-max", layer.Maximum)
+                .Attribute("data-cfx-percent", ratio)
+                .Attribute("d", ArcPath(cx, cy, radius, start, end))
+                .Attribute("fill", "none")
+                .Attribute("stroke", color.ToCss())
+                .Attribute("stroke-width", stroke)
+                .Attribute("stroke-linecap", layer.LineCap == ChartRadialLayerCap.Butt ? "butt" : "round");
+            if (layer.Opacity < 1) writer.Attribute("opacity", layer.Opacity);
+            writer.EndEmptyElement().Line();
+            WriteRadialSeparators(writer, layer, theme, cx, cy, radius, stroke, start, end);
+        }
+
+        var valueSize = Math.Min(48, Math.Max(23, outerRadius * 0.28));
+        var labelSize = Math.Min(18, Math.Max(10, outerRadius * 0.115));
+        if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy - valueSize * 1.02, Math.Max(12, outerRadius * 0.10), theme.MutedText);
+        WriteText(writer, card.Value, cx - outerRadius * 0.72, cy - valueSize * 0.12, outerRadius * 1.44, VisualTextAlignment.Center, theme.Text, theme.FontFamily, valueSize, "850");
+        WriteText(writer, card.Label, cx - outerRadius * 0.72, cy + valueSize * 0.72, outerRadius * 1.44, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, labelSize, "700");
+        writer.EndElement().Line();
     }
 
     private static void WriteMarker(SvgMarkupWriter writer, ChartList list, ChartListItem item, int index, double x, double y) {
@@ -190,6 +248,91 @@ public sealed class SvgVisualBlockRenderer {
         if (cell.Status != VisualStatus.None) return cell.Status;
         return table.StatusColumnIndex == columnIndex ? VisualBlockRendering.ParseStatus(cell.Text) : VisualStatus.None;
     }
+
+    private static void WriteRadialSeparators(SvgMarkupWriter writer, ChartRadialLayer layer, ChartForgeX.Themes.ChartTheme theme, double cx, double cy, double radius, double stroke, double start, double end) {
+        if (layer.SeparatorCount <= 0) return;
+        var separator = layer.SeparatorColor ?? theme.CardBackground;
+        var inset = Math.Min(stroke / 2 - 0.5, Math.Max(0, stroke * layer.SeparatorInsetRatio));
+        var inner = Math.Max(0, radius - stroke / 2 + inset);
+        var outer = radius + stroke / 2 - inset;
+        for (var i = 1; i <= layer.SeparatorCount; i++) {
+            var angle = start + (end - start) * i / (layer.SeparatorCount + 1);
+            writer.StartElement("line")
+                .Attribute("data-cfx-role", "radial-metric-separator")
+                .Attribute("x1", cx + Math.Cos(angle) * inner)
+                .Attribute("y1", cy + Math.Sin(angle) * inner)
+                .Attribute("x2", cx + Math.Cos(angle) * outer)
+                .Attribute("y2", cy + Math.Sin(angle) * outer)
+                .Attribute("stroke", separator.ToCss())
+                .Attribute("stroke-width", layer.SeparatorStrokeWidth)
+                .Attribute("stroke-linecap", "round")
+                .EndEmptyElement().Line();
+        }
+    }
+
+    private static void WriteIcon(SvgMarkupWriter writer, VisualIcon icon, double x, double y, double size, ChartColor color) {
+        var stroke = Math.Max(1.6, size * 0.16);
+        if (icon == VisualIcon.ForkKnife) {
+            writer.StartElement("path")
+                .Attribute("data-cfx-role", "visual-icon")
+                .Attribute("data-cfx-icon", "fork-knife")
+                .Attribute("d", "M " + F(x - size * 0.42) + " " + F(y - size * 0.54) + " V " + F(y + size * 0.48) + " M " + F(x - size * 0.66) + " " + F(y - size * 0.56) + " V " + F(y - size * 0.12) + " M " + F(x - size * 0.42) + " " + F(y - size * 0.56) + " V " + F(y - size * 0.12) + " M " + F(x - size * 0.18) + " " + F(y - size * 0.56) + " V " + F(y - size * 0.12) + " M " + F(x - size * 0.66) + " " + F(y - size * 0.12) + " Q " + F(x - size * 0.42) + " " + F(y + size * 0.18) + " " + F(x - size * 0.18) + " " + F(y - size * 0.12) + " M " + F(x + size * 0.34) + " " + F(y + size * 0.48) + " V " + F(y - size * 0.52) + " Q " + F(x + size * 0.70) + " " + F(y - size * 0.24) + " " + F(x + size * 0.40) + " " + F(y + size * 0.04))
+                .Attribute("fill", "none")
+                .Attribute("stroke", color.ToCss())
+                .Attribute("stroke-width", stroke)
+                .Attribute("stroke-linecap", "round")
+                .Attribute("stroke-linejoin", "round")
+                .EndEmptyElement().Line();
+            return;
+        }
+
+        if (icon == VisualIcon.Flame) {
+            writer.StartElement("path")
+                .Attribute("data-cfx-role", "visual-icon")
+                .Attribute("data-cfx-icon", "flame")
+                .Attribute("d", "M " + F(x) + " " + F(y + size * 0.62) + " C " + F(x - size * 0.70) + " " + F(y + size * 0.24) + " " + F(x - size * 0.38) + " " + F(y - size * 0.46) + " " + F(x - size * 0.08) + " " + F(y - size * 0.82) + " C " + F(x + size * 0.04) + " " + F(y - size * 0.30) + " " + F(x + size * 0.52) + " " + F(y - size * 0.24) + " " + F(x + size * 0.38) + " " + F(y - size * 0.88) + " C " + F(x + size * 0.98) + " " + F(y - size * 0.30) + " " + F(x + size * 0.82) + " " + F(y + size * 0.48) + " " + F(x) + " " + F(y + size * 0.62) + " Z")
+                .Attribute("fill", "none")
+                .Attribute("stroke", color.ToCss())
+                .Attribute("stroke-width", stroke)
+                .Attribute("stroke-linecap", "round")
+                .Attribute("stroke-linejoin", "round")
+                .EndEmptyElement().Line();
+            return;
+        }
+
+        writer.StartElement("path")
+            .Attribute("data-cfx-role", "visual-icon")
+            .Attribute("data-cfx-icon", "lightning")
+            .Attribute("d", "M " + F(x - size * 0.52) + " " + F(y - size * 0.32) + " L " + F(x + size * 0.10) + " " + F(y - size * 0.92) + " L " + F(x) + " " + F(y - size * 0.26) + " L " + F(x + size * 0.58) + " " + F(y - size * 0.08) + " L " + F(x - size * 0.20) + " " + F(y + size * 0.82) + " L " + F(x - size * 0.04) + " " + F(y + size * 0.08) + " Z")
+            .Attribute("fill", "none")
+            .Attribute("stroke", color.ToCss())
+            .Attribute("stroke-width", stroke)
+            .Attribute("stroke-linecap", "round")
+            .Attribute("stroke-linejoin", "round")
+            .EndEmptyElement().Line();
+    }
+
+    private static string ArcPath(double cx, double cy, double radius, double start, double end) {
+        if (Math.Abs(end - start) >= Math.PI * 2 - 0.000001) {
+            var mid = start + Math.PI;
+            return new SvgPathDataBuilder()
+                .MoveTo(cx + Math.Cos(start) * radius, cy + Math.Sin(start) * radius)
+                .ArcTo(radius, radius, 0, false, true, cx + Math.Cos(mid) * radius, cy + Math.Sin(mid) * radius)
+                .ArcTo(radius, radius, 0, false, true, cx + Math.Cos(start + Math.PI * 2) * radius, cy + Math.Sin(start + Math.PI * 2) * radius)
+                .Build();
+        }
+
+        return new SvgPathDataBuilder()
+            .MoveTo(cx + Math.Cos(start) * radius, cy + Math.Sin(start) * radius)
+            .ArcTo(radius, radius, 0, end - start > Math.PI, true, cx + Math.Cos(end) * radius, cy + Math.Sin(end) * radius)
+            .Build();
+    }
+
+    private static double RadialLayerRatio(ChartRadialLayer layer) => Math.Max(0, Math.Min(1, (layer.Value - layer.Minimum) / (layer.Maximum - layer.Minimum)));
+
+    private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
+
+    private static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static string NextScope() {
         var value = Interlocked.Increment(ref ScopeCounter);

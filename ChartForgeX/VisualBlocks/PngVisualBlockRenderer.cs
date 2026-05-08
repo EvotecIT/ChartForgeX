@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 
@@ -28,6 +29,7 @@ public sealed class PngVisualBlockRenderer {
         if (block is ChartTable table) DrawTable(canvas, table);
         else if (block is ChartList list) DrawList(canvas, list);
         else if (block is MetricCard card) DrawMetric(canvas, card);
+        else if (block is RadialMetricCard radialCard) DrawRadialMetric(canvas, radialCard);
         return canvas;
     }
 
@@ -116,12 +118,54 @@ public sealed class PngVisualBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
         if (card.Status != VisualStatus.None) canvas.FillRect(0, 0, 7, options.Size.Height, statusColor);
+        if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
+            var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
+            var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
+            var cx = options.Size.Width - options.Padding.Right - badgeRadius;
+            var cy = options.Padding.Top + badgeRadius;
+            canvas.DrawCircle(cx, cy, badgeRadius, badgeColor.WithAlpha(48));
+            canvas.DrawCircleOutline(cx, cy, badgeRadius, badgeColor, 1);
+            if (card.Icon != VisualIcon.None) DrawIcon(canvas, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
+            else DrawCenteredText(canvas, card.Symbol, cx, cy, Math.Max(10, badgeRadius * 0.46), badgeColor, true);
+        }
+
         var labelSize = Math.Max(11, theme.SubtitleFontSize);
         var valueSize = Math.Min(54, Math.Max(26, options.Size.Height * 0.22));
         canvas.DrawTextEmphasized(content.X, content.Y, FitText(card.Label, labelSize, content.Width), theme.MutedText, labelSize);
         canvas.DrawTextEmphasized(content.X, content.Y + labelSize + 18, FitText(card.Value, valueSize, content.Width), theme.Text, valueSize);
         if (card.Trend.Length > 0) canvas.DrawTextEmphasized(content.X, options.Size.Height - options.Padding.Bottom - 28, FitText(card.Trend, theme.SubtitleFontSize, content.Width), statusColor, theme.SubtitleFontSize);
         if (card.Caption.Length > 0) canvas.DrawText(content.X, options.Size.Height - options.Padding.Bottom - 10, FitText(card.Caption, Math.Max(10, theme.SubtitleFontSize - 1), content.Width), theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1));
+    }
+
+    private static void DrawRadialMetric(RgbaCanvas canvas, RadialMetricCard card) {
+        var options = card.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        DrawHeading(canvas, card, ref y, content.X, content.Width);
+        var availableHeight = Math.Max(1, options.Size.Height - options.Padding.Bottom - y);
+        var cx = content.X + content.Width / 2;
+        var cy = y + availableHeight * 0.48;
+        var outerRadius = Math.Max(24, Math.Min(content.Width, availableHeight) * 0.42);
+        for (var i = 0; i < card.Layers.Count; i++) {
+            var layer = card.Layers[i];
+            var ratio = RadialLayerRatio(layer);
+            if (ratio <= 0) continue;
+            var radius = Math.Max(1, outerRadius * layer.RadiusRatio);
+            var stroke = Math.Max(1, outerRadius * layer.StrokeRatio);
+            var start = DegreesToRadians(layer.StartAngleDegrees);
+            var end = start + DegreesToRadians(layer.SweepAngleDegrees) * ratio;
+            var color = ApplyOpacity(layer.Color ?? VisualBlockRendering.PaletteAt(theme, i), layer.Opacity);
+            if (layer.LineCap == ChartRadialLayerCap.Butt) canvas.FillRingSlice(cx, cy, radius + stroke / 2, Math.Max(0, radius - stroke / 2), start, end, color);
+            else canvas.DrawArc(cx, cy, radius, start, end, color, stroke);
+            DrawRadialSeparators(canvas, layer, theme, cx, cy, radius, stroke, start, end);
+        }
+
+        var valueSize = Math.Min(48, Math.Max(23, outerRadius * 0.28));
+        var labelSize = Math.Min(18, Math.Max(10, outerRadius * 0.115));
+        if (card.Icon != VisualIcon.None) DrawIcon(canvas, card.Icon, cx, cy - valueSize * 1.02, Math.Max(12, outerRadius * 0.10), theme.MutedText);
+        DrawCenteredText(canvas, card.Value, cx, cy - valueSize * 0.68, valueSize, theme.Text, true);
+        DrawCenteredText(canvas, card.Label, cx, cy + valueSize * 0.48, labelSize, theme.MutedText, true);
     }
 
     private static void DrawMarker(RgbaCanvas canvas, ChartList list, ChartListItem item, int index, double x, double y) {
@@ -173,6 +217,63 @@ public sealed class PngVisualBlockRenderer {
         if (cell.Status != VisualStatus.None) return cell.Status;
         return table.StatusColumnIndex == columnIndex ? VisualBlockRendering.ParseStatus(cell.Text) : VisualStatus.None;
     }
+
+    private static void DrawRadialSeparators(RgbaCanvas canvas, ChartRadialLayer layer, ChartForgeX.Themes.ChartTheme theme, double cx, double cy, double radius, double stroke, double start, double end) {
+        if (layer.SeparatorCount <= 0) return;
+        var separator = layer.SeparatorColor ?? theme.CardBackground;
+        var inset = Math.Min(stroke / 2 - 0.5, Math.Max(0, stroke * layer.SeparatorInsetRatio));
+        var inner = Math.Max(0, radius - stroke / 2 + inset);
+        var outer = radius + stroke / 2 - inset;
+        for (var i = 1; i <= layer.SeparatorCount; i++) {
+            var angle = start + (end - start) * i / (layer.SeparatorCount + 1);
+            canvas.DrawLine(cx + Math.Cos(angle) * inner, cy + Math.Sin(angle) * inner, cx + Math.Cos(angle) * outer, cy + Math.Sin(angle) * outer, separator, layer.SeparatorStrokeWidth);
+        }
+    }
+
+    private static void DrawIcon(RgbaCanvas canvas, VisualIcon icon, double x, double y, double size, ChartColor color) {
+        var stroke = Math.Max(1.6, size * 0.16);
+        if (icon == VisualIcon.ForkKnife) {
+            canvas.DrawLine(x - size * 0.42, y - size * 0.54, x - size * 0.42, y + size * 0.48, color, stroke);
+            canvas.DrawLine(x - size * 0.66, y - size * 0.56, x - size * 0.66, y - size * 0.12, color, stroke);
+            canvas.DrawLine(x - size * 0.42, y - size * 0.56, x - size * 0.42, y - size * 0.12, color, stroke);
+            canvas.DrawLine(x - size * 0.18, y - size * 0.56, x - size * 0.18, y - size * 0.12, color, stroke);
+            canvas.DrawLine(x + size * 0.34, y + size * 0.48, x + size * 0.34, y - size * 0.52, color, stroke);
+            canvas.DrawArc(x + size * 0.48, y - size * 0.22, size * 0.25, -Math.PI / 2, Math.PI / 2, color, stroke);
+            return;
+        }
+
+        if (icon == VisualIcon.Flame) {
+            canvas.DrawLine(x, y + size * 0.62, x - size * 0.42, y + size * 0.10, color, stroke);
+            canvas.DrawLine(x - size * 0.42, y + size * 0.10, x - size * 0.08, y - size * 0.82, color, stroke);
+            canvas.DrawLine(x - size * 0.08, y - size * 0.82, x + size * 0.22, y - size * 0.22, color, stroke);
+            canvas.DrawLine(x + size * 0.22, y - size * 0.22, x + size * 0.54, y - size * 0.78, color, stroke);
+            canvas.DrawLine(x + size * 0.54, y - size * 0.78, x + size * 0.72, y + size * 0.18, color, stroke);
+            canvas.DrawLine(x + size * 0.72, y + size * 0.18, x, y + size * 0.62, color, stroke);
+            return;
+        }
+
+        canvas.DrawLine(x - size * 0.52, y - size * 0.32, x + size * 0.10, y - size * 0.92, color, stroke);
+        canvas.DrawLine(x + size * 0.10, y - size * 0.92, x, y - size * 0.26, color, stroke);
+        canvas.DrawLine(x, y - size * 0.26, x + size * 0.58, y - size * 0.08, color, stroke);
+        canvas.DrawLine(x + size * 0.58, y - size * 0.08, x - size * 0.20, y + size * 0.82, color, stroke);
+        canvas.DrawLine(x - size * 0.20, y + size * 0.82, x - size * 0.04, y + size * 0.08, color, stroke);
+    }
+
+    private static void DrawCenteredText(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized) {
+        var fitted = FitText(text, size, Math.Max(1, x * 2));
+        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, size, null) : RgbaCanvas.MeasureTextWidth(fitted, size, null);
+        if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y, fitted, color, size);
+        else canvas.DrawText(x - width / 2, y, fitted, color, size);
+    }
+
+    private static ChartColor ApplyOpacity(ChartColor color, double opacity) {
+        var alpha = (byte)Math.Max(0, Math.Min(255, Math.Round(color.A * Math.Max(0, Math.Min(1, opacity)))));
+        return ChartColor.FromRgba(color.R, color.G, color.B, alpha);
+    }
+
+    private static double RadialLayerRatio(ChartRadialLayer layer) => Math.Max(0, Math.Min(1, (layer.Value - layer.Minimum) / (layer.Maximum - layer.Minimum)));
+
+    private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
 
     private static string FitText(string value, double fontSize, double maxWidth) {
         if (string.IsNullOrEmpty(value) || RgbaCanvas.MeasureTextWidth(value, fontSize, null) <= maxWidth) return value;
