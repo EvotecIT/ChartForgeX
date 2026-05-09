@@ -65,6 +65,7 @@ internal static partial class SmokeTests {
         ("SVG surface and guide strokes stay premium at any scale", SvgSurfaceAndGuideStrokesStayPremiumAtAnyScale),
         ("Static HTML shells share premium preview polish", StaticHtmlShellsSharePremiumPreviewPolish),
         ("Specialized chart layouts keep content inside plot frame", SpecializedChartLayoutsKeepContentInsidePlotFrame),
+        ("Metric status bars respect rounded cards", MetricStatusBarsRespectRoundedCards),
         ("PNG font path falls back gracefully", PngFontPathFallsBackGracefully),
         ("PNG font path supports TrueType collections", PngFontPathSupportsTrueTypeCollections),
         ("PNG font diagnostics describe fallback decisions", PngFontDiagnosticsDescribeFallbackDecisions),

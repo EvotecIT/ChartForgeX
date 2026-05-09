@@ -102,6 +102,20 @@ internal static partial class SmokeTests {
         Assert(rightNodeX + rightNodeWidth <= 990, "Tree leaf nodes should keep right breathing room inside the plot frame.");
     }
 
+    private static void MetricStatusBarsRespectRoundedCards() {
+        var metric = MetricCard.Create()
+            .WithMetric("Monthly Recurring Revenue", "$120,400")
+            .WithStatus(VisualStatus.Positive)
+            .WithTheme(ChartTheme.ReportLight().WithCornerRadius(26, 12))
+            .WithSize(420, 190);
+        var svg = metric.ToSvg("rounded-status-bar");
+
+        Assert(svg.Contains("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal), "Metric status cards should still render the semantic accent bar.");
+        Assert(svg.Contains("-visualCardClip", StringComparison.Ordinal), "Metric visual blocks should define a rounded card clipping path.");
+        Assert(svg.Contains("clip-path=\"url(#", StringComparison.Ordinal), "Metric status bars should be clipped by the card radius instead of painting square corners.");
+        Assert(metric.ToPng().Length > 64, "Metric status cards should render PNG output with the same rounded accent treatment.");
+    }
+
     private static void AssertPremiumHtmlShell(string html, bool centered, string label) {
         Assert(html.Contains("body{margin:0;min-height:100vh;min-height:100svh", StringComparison.Ordinal), label + " should use the shared viewport-safe body shell.");
         Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal), label + " should use the shared polished surface gradient.");

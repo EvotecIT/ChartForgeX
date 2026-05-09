@@ -49,6 +49,10 @@ public sealed class SvgVisualBlockRenderer {
         SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualBackground", theme.Background);
         SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualCard", theme.CardBackground);
         SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualPlot", theme.PlotBackground);
+        writer.StartElement("clipPath").Attribute("id", id + "-visualCardClip").EndStartElement()
+            .StartElement("rect").Attribute("x", 0).Attribute("y", 0).Attribute("width", options.Size.Width).Attribute("height", options.Size.Height).Attribute("rx", Math.Max(0, theme.CornerRadius)).EndEmptyElement()
+            .EndElement()
+            .Line();
         writer.EndElement().Line();
 
         if (!options.TransparentBackground && theme.Background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", "url(#" + id + "-visualBackground)").EndEmptyElement().Line();
@@ -59,7 +63,7 @@ public sealed class SvgVisualBlockRenderer {
 
         if (block is ChartTable table) RenderTable(writer, table, id);
         else if (block is ChartList list) RenderList(writer, list);
-        else if (block is MetricCard card) RenderMetric(writer, card);
+        else if (block is MetricCard card) RenderMetric(writer, card, id);
         else if (block is RadialMetricCard radialCard) RenderRadialMetric(writer, radialCard);
 
         writer.EndElement().Line();
@@ -146,7 +150,7 @@ public sealed class SvgVisualBlockRenderer {
         }
     }
 
-    private static void RenderMetric(SvgMarkupWriter writer, MetricCard card) {
+    private static void RenderMetric(SvgMarkupWriter writer, MetricCard card, string id) {
         var options = card.Options;
         var theme = options.Theme;
         var content = VisualBlockRendering.ContentRect(options);
@@ -158,7 +162,7 @@ public sealed class SvgVisualBlockRenderer {
         var labelX = content.X;
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
-        if (card.Status != VisualStatus.None) writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", 0).Attribute("y", 0).Attribute("width", 7).Attribute("height", options.Size.Height).Attribute("fill", statusColor.ToCss()).EndEmptyElement().Line();
+        if (card.Status != VisualStatus.None) writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", 0).Attribute("y", 0).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", options.Size.Height).Attribute("fill", statusColor.ToCss()).Attribute("clip-path", "url(#" + id + "-visualCardClip)").EndEmptyElement().Line();
         if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
             var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
