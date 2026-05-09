@@ -1,0 +1,1703 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-databases-and-analytics",
+  "label": "Microsoft Azure Stencils - Databases and Analytics",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "73",
+    "import.svg.imported": "73",
+    "import.svg.skipped": "0",
+    "source.folder": "Databases and Analytics",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "analysis-services",
+      "label": "Analysis Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 1332.402 1029.975",
+        "svgPath": "svg/analysis-services.svg",
+        "previewPath": "previews/analysis-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "analysis", "services", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Analysis-Services.svg",
+        "source.path": "SVG/Analysis-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 1332.402 1029.975"
+      }
+    },
+    {
+      "id": "azure-cache-for-redis",
+      "label": "Azure Cache For Redis",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ACFR",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 115 115",
+        "svgPath": "svg/azure-cache-for-redis.svg",
+        "previewPath": "previews/azure-cache-for-redis.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "cache", "for", "redis", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Cache-for-Redis.svg",
+        "source.path": "SVG/Azure-Cache-for-Redis.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 115 115"
+      }
+    },
+    {
+      "id": "azure-cosmos-db",
+      "label": "Azure Cosmos Db",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ACD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-cosmos-db.svg",
+        "previewPath": "previews/azure-cosmos-db.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "cosmos", "db", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Cosmos-DB.svg",
+        "source.path": "SVG/Azure-Cosmos-DB.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-data-explorer-clusters",
+      "label": "Azure Data Explorer Clusters",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ADEC",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 60 60",
+        "svgPath": "svg/azure-data-explorer-clusters.svg",
+        "previewPath": "previews/azure-data-explorer-clusters.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "data", "explorer", "clusters", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Data-Explorer-Clusters.svg",
+        "source.path": "SVG/Azure-Data-Explorer-Clusters.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 60 60"
+      }
+    },
+    {
+      "id": "azure-database-for-mariadb-servers",
+      "label": "Azure Database For Mariadb Servers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ADFM",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-database-for-mariadb-servers.svg",
+        "previewPath": "previews/azure-database-for-mariadb-servers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "database", "for", "mariadb", "servers", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Database-for-MariaDB-servers.svg",
+        "source.path": "SVG/Azure-Database-for-MariaDB-servers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-database-for-mysql-servers",
+      "label": "Azure Database For Mysql Servers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ADFM",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-database-for-mysql-servers.svg",
+        "previewPath": "previews/azure-database-for-mysql-servers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "database", "for", "mysql", "servers", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Database-for-MySQL-servers.svg",
+        "source.path": "SVG/Azure-Database-for-MySQL-servers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-database-for-postgresql-servers",
+      "label": "Azure Database For Postgresql Servers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ADFP",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-database-for-postgresql-servers.svg",
+        "previewPath": "previews/azure-database-for-postgresql-servers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "database", "for", "postgresql", "servers", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Database-for-PostgreSQL-servers.svg",
+        "source.path": "SVG/Azure-Database-for-PostgreSQL-servers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-database-migration-services",
+      "label": "Azure Database Migration Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ADMS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 24 24",
+        "svgPath": "svg/azure-database-migration-services.svg",
+        "previewPath": "previews/azure-database-migration-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "database", "migration", "services", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Database-Migration-Services.svg",
+        "source.path": "SVG/Azure-Database-Migration-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 24 24"
+      }
+    },
+    {
+      "id": "azure-databricks",
+      "label": "Azure Databricks",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 23 24",
+        "svgPath": "svg/azure-databricks.svg",
+        "previewPath": "previews/azure-databricks.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "databricks", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Azure-Databricks.svg",
+        "source.path": "SVG/Azure-Databricks.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 23 24"
+      }
+    },
+    {
+      "id": "data-activator",
+      "label": "Data Activator",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DA",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/data-activator.svg",
+        "previewPath": "previews/data-activator.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "activator", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-Activator.svg",
+        "source.path": "SVG/Data-Activator.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "data-catalog",
+      "label": "Data Catalog",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DC",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/data-catalog.svg",
+        "previewPath": "previews/data-catalog.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "catalog", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-Catalog.svg",
+        "source.path": "SVG/Data-Catalog.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "data-factories",
+      "label": "Data Factories",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DF",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 42.664 50",
+        "svgPath": "svg/data-factories.svg",
+        "previewPath": "previews/data-factories.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "factories", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-factories.svg",
+        "source.path": "SVG/Data-factories.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 42.664 50"
+      }
+    },
+    {
+      "id": "data-factory",
+      "label": "Data Factory",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DF",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/data-factory.svg",
+        "previewPath": "previews/data-factory.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "factory", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-Factory.svg",
+        "source.path": "SVG/Data-Factory.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "data-lake-analytics",
+      "label": "Data Lake Analytics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DLA",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "-549 251 100 100",
+        "svgPath": "svg/data-lake-analytics.svg",
+        "previewPath": "previews/data-lake-analytics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "lake", "analytics", "databases", "and" ],
+      "metadata": {
+        "source.fileName": "Data-Lake-Analytics.svg",
+        "source.path": "SVG/Data-Lake-Analytics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "-549 251 100 100"
+      }
+    },
+    {
+      "id": "data-lake-storage-gen1",
+      "label": "Data Lake Storage Gen1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DLSG",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "-549 251 100 100",
+        "svgPath": "svg/data-lake-storage-gen1.svg",
+        "previewPath": "previews/data-lake-storage-gen1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "lake", "storage", "gen1", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-Lake-Storage-Gen1.svg",
+        "source.path": "SVG/Data-Lake-Storage-Gen1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "-549 251 100 100"
+      }
+    },
+    {
+      "id": "data-services-arc",
+      "label": "Data Services (Arc)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DS(",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/data-services-arc.svg",
+        "previewPath": "previews/data-services-arc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "services", "arc", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-Services-(Arc).svg",
+        "source.path": "SVG/Data-Services-(Arc).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "data-shares",
+      "label": "Data Shares",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/data-shares.svg",
+        "previewPath": "previews/data-shares.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "shares", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-Shares.svg",
+        "source.path": "SVG/Data-Shares.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "data-transfer",
+      "label": "Data Transfer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DT",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/data-transfer.svg",
+        "previewPath": "previews/data-transfer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "transfer", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-transfer.svg",
+        "source.path": "SVG/Data-transfer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "data-warehouse",
+      "label": "Data Warehouse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DW",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 39 38.55",
+        "svgPath": "svg/data-warehouse.svg",
+        "previewPath": "previews/data-warehouse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "warehouse", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Data-Warehouse.svg",
+        "source.path": "SVG/Data-Warehouse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 39 38.55"
+      }
+    },
+    {
+      "id": "edit-columns",
+      "label": "Edit Columns",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EC",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/edit-columns.svg",
+        "previewPath": "previews/edit-columns.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "edit", "columns", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Edit-columns.svg",
+        "source.path": "SVG/Edit-columns.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "elastic-job-agents",
+      "label": "Elastic Job Agents",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EJA",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 20.14 23.97",
+        "svgPath": "svg/elastic-job-agents.svg",
+        "previewPath": "previews/elastic-job-agents.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "elastic", "job", "agents", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Elastic-Job-agents.svg",
+        "source.path": "SVG/Elastic-Job-agents.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 20.14 23.97"
+      }
+    },
+    {
+      "id": "hdinsight-clusters",
+      "label": "Hdinsight Clusters",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "HC",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/hdinsight-clusters.svg",
+        "previewPath": "previews/hdinsight-clusters.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "hdinsight", "clusters", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "HDInsight-Clusters.svg",
+        "source.path": "SVG/HDInsight-Clusters.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "instance-pools",
+      "label": "Instance Pools",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IP",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/instance-pools.svg",
+        "previewPath": "previews/instance-pools.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "instance", "pools", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Instance-pools.svg",
+        "source.path": "SVG/Instance-pools.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "managed-databases",
+      "label": "Managed Databases",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/managed-databases.svg",
+        "previewPath": "previews/managed-databases.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "managed", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Managed-databases.svg",
+        "source.path": "SVG/Managed-databases.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "microsoft-fabric-apps",
+      "label": "Microsoft Fabric Apps",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFA",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-apps.svg",
+        "previewPath": "previews/microsoft-fabric-apps.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "apps", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Apps.svg",
+        "source.path": "SVG/Microsoft-Fabric-Apps.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-azure-sql",
+      "label": "Microsoft Fabric Azure Sql",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFAS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-azure-sql.svg",
+        "previewPath": "previews/microsoft-fabric-azure-sql.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "azure", "sql", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Azure-SQL.svg",
+        "source.path": "SVG/Microsoft-Fabric-Azure-SQL.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-azure-synapse-link",
+      "label": "Microsoft Fabric Azure Synapse Link",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFAS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-azure-synapse-link.svg",
+        "previewPath": "previews/microsoft-fabric-azure-synapse-link.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "azure", "synapse", "link", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Azure-Synapse-Link.svg",
+        "source.path": "SVG/Microsoft-Fabric-Azure-Synapse-Link.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-dashboard",
+      "label": "Microsoft Fabric Dashboard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-dashboard.svg",
+        "previewPath": "previews/microsoft-fabric-dashboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "dashboard", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Dashboard.svg",
+        "source.path": "SVG/Microsoft-Fabric-Dashboard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-data-warehouse",
+      "label": "Microsoft Fabric Data Warehouse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFDW",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-data-warehouse.svg",
+        "previewPath": "previews/microsoft-fabric-data-warehouse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "data", "warehouse", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Data-Warehouse.svg",
+        "source.path": "SVG/Microsoft-Fabric-Data-Warehouse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-dataflow",
+      "label": "Microsoft Fabric Dataflow",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-dataflow.svg",
+        "previewPath": "previews/microsoft-fabric-dataflow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "dataflow", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Dataflow.svg",
+        "source.path": "SVG/Microsoft-Fabric-Dataflow.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-datamart",
+      "label": "Microsoft Fabric Datamart",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-datamart.svg",
+        "previewPath": "previews/microsoft-fabric-datamart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "datamart", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Datamart.svg",
+        "source.path": "SVG/Microsoft-Fabric-Datamart.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-dataset",
+      "label": "Microsoft Fabric Dataset",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-dataset.svg",
+        "previewPath": "previews/microsoft-fabric-dataset.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "dataset", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Dataset.svg",
+        "source.path": "SVG/Microsoft-Fabric-Dataset.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-dataverse",
+      "label": "Microsoft Fabric Dataverse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-dataverse.svg",
+        "previewPath": "previews/microsoft-fabric-dataverse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "dataverse", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Dataverse.svg",
+        "source.path": "SVG/Microsoft-Fabric-Dataverse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-experiments",
+      "label": "Microsoft Fabric Experiments",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFE",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-experiments.svg",
+        "previewPath": "previews/microsoft-fabric-experiments.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "experiments", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Experiments.svg",
+        "source.path": "SVG/Microsoft-Fabric-Experiments.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-external-dataflow",
+      "label": "Microsoft Fabric External Dataflow",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFED",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-external-dataflow.svg",
+        "previewPath": "previews/microsoft-fabric-external-dataflow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "external", "dataflow", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-External-Dataflow.svg",
+        "source.path": "SVG/Microsoft-Fabric-External-Dataflow.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-external-datamart",
+      "label": "Microsoft Fabric External Datamart",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFED",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-external-datamart.svg",
+        "previewPath": "previews/microsoft-fabric-external-datamart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "external", "datamart", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-External-Datamart.svg",
+        "source.path": "SVG/Microsoft-Fabric-External-Datamart.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-external-dataset",
+      "label": "Microsoft Fabric External Dataset",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFED",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-external-dataset.svg",
+        "previewPath": "previews/microsoft-fabric-external-dataset.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "external", "dataset", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-External-Dataset.svg",
+        "source.path": "SVG/Microsoft-Fabric-External-Dataset.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-kql-database",
+      "label": "Microsoft Fabric Kql Database",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFKD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/microsoft-fabric-kql-database.svg",
+        "previewPath": "previews/microsoft-fabric-kql-database.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "kql", "database", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-KQL-Database.svg",
+        "source.path": "SVG/Microsoft-Fabric-KQL-Database.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "microsoft-fabric-kql-queryset",
+      "label": "Microsoft Fabric Kql Queryset",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFKQ",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 24 25",
+        "svgPath": "svg/microsoft-fabric-kql-queryset.svg",
+        "previewPath": "previews/microsoft-fabric-kql-queryset.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "kql", "queryset", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-KQL-Queryset.svg",
+        "source.path": "SVG/Microsoft-Fabric-KQL-Queryset.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 24 25"
+      }
+    },
+    {
+      "id": "microsoft-fabric-lakehouse",
+      "label": "Microsoft Fabric Lakehouse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFL",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-lakehouse.svg",
+        "previewPath": "previews/microsoft-fabric-lakehouse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "lakehouse", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Lakehouse.svg",
+        "source.path": "SVG/Microsoft-Fabric-Lakehouse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-links",
+      "label": "Microsoft Fabric Links",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFL",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-links.svg",
+        "previewPath": "previews/microsoft-fabric-links.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "links", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Links.svg",
+        "source.path": "SVG/Microsoft-Fabric-Links.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-models",
+      "label": "Microsoft Fabric Models",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFM",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-models.svg",
+        "previewPath": "previews/microsoft-fabric-models.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "models", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Models.svg",
+        "source.path": "SVG/Microsoft-Fabric-Models.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-notebook",
+      "label": "Microsoft Fabric Notebook",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFN",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-notebook.svg",
+        "previewPath": "previews/microsoft-fabric-notebook.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "notebook", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Notebook.svg",
+        "source.path": "SVG/Microsoft-Fabric-Notebook.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-paginated-reports",
+      "label": "Microsoft Fabric Paginated Reports",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFPR",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-paginated-reports.svg",
+        "previewPath": "previews/microsoft-fabric-paginated-reports.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "paginated", "reports", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Paginated-Reports.svg",
+        "source.path": "SVG/Microsoft-Fabric-Paginated-Reports.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-pipelines",
+      "label": "Microsoft Fabric Pipelines",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFP",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-pipelines.svg",
+        "previewPath": "previews/microsoft-fabric-pipelines.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "pipelines", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Pipelines.svg",
+        "source.path": "SVG/Microsoft-Fabric-Pipelines.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-purview",
+      "label": "Microsoft Fabric Purview",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFP",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-purview.svg",
+        "previewPath": "previews/microsoft-fabric-purview.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "purview", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Purview.svg",
+        "source.path": "SVG/Microsoft-Fabric-Purview.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-real-time-dashboard",
+      "label": "Microsoft Fabric Real Time Dashboard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFRT",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/microsoft-fabric-real-time-dashboard.svg",
+        "previewPath": "previews/microsoft-fabric-real-time-dashboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "real", "time", "dashboard", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Real-time-Dashboard.svg",
+        "source.path": "SVG/Microsoft-Fabric-Real-time-Dashboard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "microsoft-fabric-report",
+      "label": "Microsoft Fabric Report",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFR",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-report.svg",
+        "previewPath": "previews/microsoft-fabric-report.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "report", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Report.svg",
+        "source.path": "SVG/Microsoft-Fabric-Report.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-scorecard",
+      "label": "Microsoft Fabric Scorecard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-scorecard.svg",
+        "previewPath": "previews/microsoft-fabric-scorecard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "scorecard", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Scorecard.svg",
+        "source.path": "SVG/Microsoft-Fabric-Scorecard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-shared-dataset",
+      "label": "Microsoft Fabric Shared Dataset",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFSD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-shared-dataset.svg",
+        "previewPath": "previews/microsoft-fabric-shared-dataset.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "shared", "dataset", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Shared-Dataset.svg",
+        "source.path": "SVG/Microsoft-Fabric-Shared-Dataset.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-spark-job",
+      "label": "Microsoft Fabric Spark Job",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFSJ",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-spark-job.svg",
+        "previewPath": "previews/microsoft-fabric-spark-job.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "spark", "job", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Spark-Job.svg",
+        "source.path": "SVG/Microsoft-Fabric-Spark-Job.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-streaming-dataflow",
+      "label": "Microsoft Fabric Streaming Dataflow",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFSD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-streaming-dataflow.svg",
+        "previewPath": "previews/microsoft-fabric-streaming-dataflow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "streaming", "dataflow", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Streaming-Dataflow.svg",
+        "source.path": "SVG/Microsoft-Fabric-Streaming-Dataflow.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-streaming-dataset",
+      "label": "Microsoft Fabric Streaming Dataset",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFSD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-streaming-dataset.svg",
+        "previewPath": "previews/microsoft-fabric-streaming-dataset.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "streaming", "dataset", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Streaming-Dataset.svg",
+        "source.path": "SVG/Microsoft-Fabric-Streaming-Dataset.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-workbook",
+      "label": "Microsoft Fabric Workbook",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFW",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 33",
+        "svgPath": "svg/microsoft-fabric-workbook.svg",
+        "previewPath": "previews/microsoft-fabric-workbook.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "workbook", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Workbook.svg",
+        "source.path": "SVG/Microsoft-Fabric-Workbook.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 33"
+      }
+    },
+    {
+      "id": "microsoft-fabric-workspace",
+      "label": "Microsoft Fabric Workspace",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFW",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/microsoft-fabric-workspace.svg",
+        "previewPath": "previews/microsoft-fabric-workspace.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "workspace", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric-Workspace.svg",
+        "source.path": "SVG/Microsoft-Fabric-Workspace.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "microsoft-fabric",
+      "label": "Microsoft Fabric",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MF",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 247.30154 247.33315",
+        "svgPath": "svg/microsoft-fabric.svg",
+        "previewPath": "previews/microsoft-fabric.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "fabric", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Fabric.svg",
+        "source.path": "SVG/Microsoft-Fabric.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 247.30154 247.33315"
+      }
+    },
+    {
+      "id": "mysql-in-app",
+      "label": "Mysql In App",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MIA",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 49.99",
+        "svgPath": "svg/mysql-in-app.svg",
+        "previewPath": "previews/mysql-in-app.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "mysql", "in", "app", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "MySQL-In-App.svg",
+        "source.path": "SVG/MySQL-In-App.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 49.99"
+      }
+    },
+    {
+      "id": "onelake",
+      "label": "Onelake",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 49",
+        "svgPath": "svg/onelake.svg",
+        "previewPath": "previews/onelake.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "onelake", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "OneLake.svg",
+        "source.path": "SVG/OneLake.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 49"
+      }
+    },
+    {
+      "id": "power-bi",
+      "label": "Power Bi",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PB",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/power-bi.svg",
+        "previewPath": "previews/power-bi.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "bi", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Power-BI.svg",
+        "source.path": "SVG/Power-BI.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "sql-data-warehouses",
+      "label": "Sql Data Warehouses",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SDW",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 167 167",
+        "svgPath": "svg/sql-data-warehouses.svg",
+        "previewPath": "previews/sql-data-warehouses.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "data", "warehouses", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-data-warehouses.svg",
+        "source.path": "SVG/SQL-data-warehouses.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 167 167"
+      }
+    },
+    {
+      "id": "sql-databases",
+      "label": "Sql Databases",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SD",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/sql-databases.svg",
+        "previewPath": "previews/sql-databases.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-databases.svg",
+        "source.path": "SVG/SQL-databases.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "sql-elastic-pools",
+      "label": "Sql Elastic Pools",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SEP",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/sql-elastic-pools.svg",
+        "previewPath": "previews/sql-elastic-pools.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "elastic", "pools", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-elastic-pools.svg",
+        "source.path": "SVG/SQL-elastic-pools.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "sql-managed-instances",
+      "label": "Sql Managed Instances",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SMI",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/sql-managed-instances.svg",
+        "previewPath": "previews/sql-managed-instances.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "managed", "instances", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-managed-instances.svg",
+        "source.path": "SVG/SQL-managed-instances.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "sql-server-registries",
+      "label": "Sql Server Registries",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SSR",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/sql-server-registries.svg",
+        "previewPath": "previews/sql-server-registries.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "server", "registries", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-Server-registries.svg",
+        "source.path": "SVG/SQL-Server-registries.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "sql-servers",
+      "label": "Sql Servers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/sql-servers.svg",
+        "previewPath": "previews/sql-servers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "servers", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-servers.svg",
+        "source.path": "SVG/SQL-servers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "sql-virtual-machines-1",
+      "label": "Sql Virtual Machines #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SVM#",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/sql-virtual-machines-1.svg",
+        "previewPath": "previews/sql-virtual-machines-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "virtual", "machines", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-virtual-machines-#1.svg",
+        "source.path": "SVG/SQL-virtual-machines-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "sql-virtual-machines",
+      "label": "Sql Virtual Machines",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SVM",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/sql-virtual-machines.svg",
+        "previewPath": "previews/sql-virtual-machines.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sql", "virtual", "machines", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "SQL-virtual-machines.svg",
+        "source.path": "SVG/SQL-virtual-machines.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "stream-analytics-jobs",
+      "label": "Stream Analytics Jobs",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SAJ",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/stream-analytics-jobs.svg",
+        "previewPath": "previews/stream-analytics-jobs.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "stream", "analytics", "jobs", "databases", "and" ],
+      "metadata": {
+        "source.fileName": "Stream-Analytics-jobs.svg",
+        "source.path": "SVG/Stream-Analytics-jobs.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "synapse-data-engineering",
+      "label": "Synapse Data Engineering",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SDE",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/synapse-data-engineering.svg",
+        "previewPath": "previews/synapse-data-engineering.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "synapse", "data", "engineering", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Synapse-Data-Engineering.svg",
+        "source.path": "SVG/Synapse-Data-Engineering.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "synapse-data-science",
+      "label": "Synapse Data Science",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SDS",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/synapse-data-science.svg",
+        "previewPath": "previews/synapse-data-science.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "synapse", "data", "science", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Synapse-Data-Science.svg",
+        "source.path": "SVG/Synapse-Data-Science.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "synapse-data-warehouse",
+      "label": "Synapse Data Warehouse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SDW",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/synapse-data-warehouse.svg",
+        "previewPath": "previews/synapse-data-warehouse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "synapse", "data", "warehouse", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Synapse-Data-Warehouse.svg",
+        "source.path": "SVG/Synapse-Data-Warehouse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "synapse-real-time-analytics",
+      "label": "Synapse Real Time Analytics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SRTA",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/synapse-real-time-analytics.svg",
+        "previewPath": "previews/synapse-real-time-analytics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "synapse", "real", "time", "analytics", "databases", "and" ],
+      "metadata": {
+        "source.fileName": "Synapse-Real-Time-Analytics.svg",
+        "source.path": "SVG/Synapse-Real-Time-Analytics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "synapse",
+      "label": "Synapse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0F766E",
+      "category": "Databases and Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 35.8 40",
+        "svgPath": "svg/synapse.svg",
+        "previewPath": "previews/synapse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "synapse", "databases", "and", "analytics" ],
+      "metadata": {
+        "source.fileName": "Synapse.svg",
+        "source.path": "SVG/Synapse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 35.8 40"
+      }
+    }
+  ]
+}

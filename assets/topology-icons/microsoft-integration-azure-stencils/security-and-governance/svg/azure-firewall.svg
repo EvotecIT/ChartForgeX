@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38.925 38.925" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#59b4d9;stroke:none;stroke-width:0.75}
+		.st2 {fill:#dd5900;stroke:none;stroke-width:0.75}
+		.st3 {fill:#a0a1a2;stroke:none;stroke-width:0.75}
+		.st4 {fill:#ba141a;stroke:none;stroke-width:0.75}
+		.st5 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+
+
+		<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group14-1" transform="translate(0.75,-0.75)" v:mID="14" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape15-2" v:mID="15" v:groupContext="shape" transform="translate(7.575,-14.2493)">
+
+				<path d="M7.09 23.28 C7.78 19.01 11.46 15.75 15.91 15.75 C20.85 15.75 24.86 19.77 24.86 24.74 C24.86 25.31 24.8 25.87         24.69 26.42 C27.59 26.74 29.85 29.4 29.85 32.64 C29.85 36.09 27.26 38.93 24.09 38.93 C23.38 38.93 7.63         38.93 7.63 38.93 C3.43 38.92 0 35.31 0 30.98 C0 26.91 3.12 23.6 7.09 23.28 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group16-4" v:mID="16" v:groupContext="group">
+
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group17-5" transform="translate(9.75,-15.75)" v:mID="17" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape18-6" v:mID="18" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape19-8" v:mID="19" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group20-10" transform="translate(19.5,-15.75)" v:mID="20" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape21-11" v:mID="21" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape22-13" v:mID="22" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group23-15" transform="translate(-5.79536E-14,-15.75)" v:mID="23" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape24-16" v:mID="24" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape25-18" v:mID="25" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group26-20" transform="translate(9.75,-10.5)" v:mID="26" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape27-21" v:mID="27" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape28-23" v:mID="28" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group29-25" transform="translate(-5.79536E-14,-5.25)" v:mID="29" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape30-26" v:mID="30" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape31-28" v:mID="31" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group32-30" transform="translate(-5.79536E-14,-10.5)" v:mID="32" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape33-31" v:mID="33" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape34-33" v:mID="34" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group35-35" transform="translate(9.75,-7.10543E-15)" v:mID="35" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape36-36" v:mID="36" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape37-38" v:mID="37" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group38-40" transform="translate(19.5,-5.25)" v:mID="38" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape39-41" v:mID="39" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape40-43" v:mID="40" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group41-45" transform="translate(19.5,-10.5)" v:mID="41" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape42-46" v:mID="42" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape43-48" v:mID="43" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group44-50" transform="translate(9.75,-5.25)" v:mID="44" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape45-51" v:mID="45" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape46-53" v:mID="46" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group47-55" transform="translate(19.5,-7.10543E-15)" v:mID="47" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape48-56" v:mID="48" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape49-58" v:mID="49" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-group50-60" v:mID="50" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape51-61" v:mID="51" v:groupContext="shape" transform="translate(0.75,-0.75)">
+
+						<path d="M0.75 38.93 C0.34 38.93 0 38.59 0 38.18 L0 34.43 C0 34.01 0.34 33.68 0.75 33.68 L9 33.68 C9.41 33.68           9.75 34.01 9.75 34.43 L9.75 38.18 C9.75 38.59 9.41 38.93 9 38.93 L0.75 38.93 Z" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-security-and-governance-azure-firewall-shape52-63" v:mID="52" v:groupContext="shape">
+
+						<path d="M9.75 33.68 L9.75 37.43 L1.5 37.43 L1.5 33.68 L9.75 33.68 ZM9.75 32.18 L1.5 32.18 C0.67 32.18 0           32.85 0 33.68 L0 37.43 C0 38.25 0.67 38.93 1.5 38.93 L9.75 38.93 C10.58 38.93 11.25 38.25 11.25           37.43 L11.25 33.68 C11.25 32.85 10.58 32.18 9.75 32.18 Z" class="st3" />
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+</svg>

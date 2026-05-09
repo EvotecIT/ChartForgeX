@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792 612" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#ffae00;stroke:none;stroke-width:0.9375}
+		.st2 {fill:#ffffff;stroke:none;stroke-width:0.9375}
+		.st3 {fill:#f06358;stroke:none;stroke-width:0.9375}
+		.st4 {fill:#5896cc;stroke:none;stroke-width:0.9375}
+		.st5 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26" />
+		</v:userDefs>
+
+
+		<g id="cfxi-microsoft-azure-stencils-power-platform-chart-2-group974-1" transform="translate(18,-551.086)" v:mID="974" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-power-platform-chart-2-shape975-2" v:mID="975" v:groupContext="shape" transform="translate(-7.99361E-15,1222.04) scale(1,-1)">
+
+				<path d="M0 612 L41.96 612 L41.96 610.04 L0 610.04 L0 612 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-power-platform-chart-2-shape976-4" v:mID="976" v:groupContext="shape" transform="translate(0.0001875,1181.09) scale(1,-1)">
+
+				<path d="M0 612 L9.39 612 L9.39 571.04 L0 571.04 L0 612 Z" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-power-platform-chart-2-shape977-6" v:mID="977" v:groupContext="shape" transform="translate(10.8564,1196.53) scale(1,-1)">
+
+				<path d="M0 612 L9.39 612 L9.39 586.49 L0 586.49 L0 612 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-power-platform-chart-2-shape978-8" v:mID="978" v:groupContext="shape" transform="translate(21.7146,1205.17) scale(1,-1)">
+
+				<path d="M0 612 L9.39 612 L9.39 595.13 L0 595.13 L0 612 Z" class="st3" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-power-platform-chart-2-shape979-10" v:mID="979" v:groupContext="shape" transform="translate(32.5708,1197.26) scale(1,-1)">
+
+				<path d="M0 612 L9.39 612 L9.39 587.21 L0 587.21 L0 612 Z" class="st4" />
+			</g>
+		</g>
+	</g>
+</svg>

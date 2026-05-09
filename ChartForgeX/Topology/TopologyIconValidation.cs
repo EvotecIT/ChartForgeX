@@ -113,7 +113,7 @@ public static class TopologyIconValidationExtensions {
             if (!string.Equals(icon.PackId, pack.Id, StringComparison.OrdinalIgnoreCase)) Add(issues, TopologyIconValidationSeverity.Error, path + ".packId", "Icon pack id does not match the containing pack.");
             if (!string.IsNullOrWhiteSpace(icon.Color) && !LooksLikeHexColor(icon.Color!)) Add(issues, TopologyIconValidationSeverity.Warning, path + ".color", "Icon color should use #RGB or #RRGGBB for portable rendering.");
             if (!string.IsNullOrWhiteSpace(icon.Symbol) && icon.Symbol!.Trim().Length > 8) Add(issues, TopologyIconValidationSeverity.Warning, path + ".symbol", "Icon symbol is long and may not fit compact palette nodes.");
-            if (icon.Artwork != null && !icon.Artwork.HasSvgBody && !icon.Artwork.HasImageHref) Add(issues, TopologyIconValidationSeverity.Warning, path + ".artwork", "Icon artwork is empty.");
+            if (icon.Artwork != null && !icon.Artwork.HasSvgBody && !icon.Artwork.HasSvgPath && !icon.Artwork.HasImageHref) Add(issues, TopologyIconValidationSeverity.Warning, path + ".artwork", "Icon artwork is empty.");
             if (icon.Artwork != null && !icon.Artwork.IsSafe) Add(issues, TopologyIconValidationSeverity.Error, path + ".artwork", "Icon artwork contains unsafe SVG or image href content.");
             AddDuplicateWarnings(issues, path + ".tags", icon.Tags);
         }

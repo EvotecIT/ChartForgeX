@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -58,8 +59,17 @@ public sealed class TopologyIconSvgPackImportOptions {
     /// <summary>Gets or sets whether folders named SVG should be omitted from generated categories.</summary>
     public bool OmitSvgFolderFromCategory { get; set; } = true;
 
+    /// <summary>Gets or sets an optional category prefix for imports split by source folder.</summary>
+    public string? CategoryPrefix { get; set; }
+
     /// <summary>Gets or sets whether unsafe SVG files should be skipped instead of imported as validation errors.</summary>
     public bool SkipUnsafeSvg { get; set; } = true;
+
+    /// <summary>Gets or sets whether public DOCTYPE declarations should be stripped before XML parsing.</summary>
+    public bool StripDoctypeDeclarations { get; set; }
+
+    /// <summary>Gets or sets whether a single nested SVG element should be imported from wrapper markup.</summary>
+    public bool AllowNestedSvgRoot { get; set; } = true;
 }
 
 /// <summary>
@@ -124,6 +134,24 @@ public sealed class TopologyIconSvgPackImportResult {
 /// </summary>
 public static class TopologyIconSvgPackImporter {
     /// <summary>
+    /// Loads one SVG file as sanitized inline artwork for rendering.
+    /// </summary>
+    /// <param name="path">The SVG file path.</param>
+    /// <param name="packId">The containing pack id used to isolate SVG ids.</param>
+    /// <param name="iconId">The containing icon id used to isolate SVG ids.</param>
+    /// <param name="stripDoctypeDeclarations">Whether public DOCTYPE declarations should be stripped before XML parsing.</param>
+    /// <returns>Renderable inline SVG artwork.</returns>
+    internal static TopologyIconArtwork LoadSvgArtworkFromFile(string path, string packId, string iconId, bool stripDoctypeDeclarations = true) {
+        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Value cannot be empty.", nameof(path));
+        var imported = ImportSvg(path, new TopologyIconSvgPackImportOptions {
+            StripDoctypeDeclarations = stripDoctypeDeclarations,
+            AllowNestedSvgRoot = true
+        });
+        if (!imported.IsSafe) throw new ArgumentException("SVG artwork contains unsafe content.");
+        return TopologyIconArtwork.InlineSvg(PrefixSvgIds(imported.SvgBody, packId, iconId), imported.ViewBox);
+    }
+
+    /// <summary>
     /// Imports SVG files from a folder into a topology icon pack.
     /// </summary>
     /// <param name="directoryPath">The source directory containing SVG files.</param>
@@ -145,7 +173,7 @@ public static class TopologyIconSvgPackImporter {
             var relativePath = NormalizePath(MakeRelativePath(root, Path.GetFullPath(path)));
             var category = InferCategory(relativePath, options);
             try {
-                var imported = ImportSvg(path);
+                var imported = ImportSvg(path, options);
                 if (options.SkipUnsafeSvg && !imported.IsSafe) {
                     files.Add(new TopologyIconSvgPackImportFile(path, relativePath, null, category, imported: false, "SVG artwork contains unsafe content."));
                     continue;
@@ -158,7 +186,7 @@ public static class TopologyIconSvgPackImporter {
                     Color = options.DefaultColor,
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Symbol = SymbolFromLabel(Path.GetFileNameWithoutExtension(path)),
-                    Artwork = TopologyIconArtwork.InlineSvg(imported.SvgBody, imported.ViewBox)
+                    Artwork = TopologyIconArtwork.InlineSvg(PrefixSvgIds(imported.SvgBody, pack.Id, id), imported.ViewBox)
                 }.WithTags(TagsFor(relativePath, category).ToArray())
                     .WithMetadata("source.path", relativePath)
                     .WithMetadata("source.fileName", Path.GetFileName(path))
@@ -193,22 +221,67 @@ public static class TopologyIconSvgPackImporter {
         return pack;
     }
 
-    private static ImportedSvg ImportSvg(string path) {
+    private static ImportedSvg ImportSvg(string path, TopologyIconSvgPackImportOptions options) {
         var settings = new XmlReaderSettings {
-            DtdProcessing = DtdProcessing.Prohibit,
+            DtdProcessing = options.StripDoctypeDeclarations ? DtdProcessing.Ignore : DtdProcessing.Prohibit,
             XmlResolver = null
         };
+        if (options.StripDoctypeDeclarations) RejectDtdEntityDeclarations(path);
         using var stream = File.OpenRead(path);
         using var reader = XmlReader.Create(stream, settings);
         var document = XDocument.Load(reader, LoadOptions.PreserveWhitespace);
         var root = document.Root ?? throw new ArgumentException("SVG file does not contain a root element.");
-        if (!string.Equals(root.Name.LocalName, "svg", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("SVG file root element is not <svg>.");
+        if (!string.Equals(root.Name.LocalName, "svg", StringComparison.OrdinalIgnoreCase)) {
+            if (!options.AllowNestedSvgRoot) throw new ArgumentException("SVG file root element is not <svg>.");
+            var nested = root.Descendants().Where(element => string.Equals(element.Name.LocalName, "svg", StringComparison.OrdinalIgnoreCase)).ToList();
+            if (nested.Count != 1) throw new ArgumentException("SVG file root element is not <svg>.");
+            root = nested[0];
+        }
         var isSafe = TopologyIconArtwork.IsSafeSvgFragment(string.Concat(root.Nodes().Select(node => node.ToString(SaveOptions.DisableFormatting))));
         var viewBox = ReadViewBox(root);
         RemoveNonArtworkElements(root);
+        RemoveDanglingFragmentReferences(root);
         var body = string.Concat(root.Nodes().Select(node => node.ToString(SaveOptions.DisableFormatting))).Trim();
         if (string.IsNullOrWhiteSpace(body)) throw new ArgumentException("SVG file does not contain drawable artwork.");
         return new ImportedSvg(viewBox, body, isSafe);
+    }
+
+    private static string PrefixSvgIds(string svgBody, string packId, string iconId) {
+        var prefix = "cfxi-" + StableToken(packId) + "-" + StableToken(iconId) + "-";
+        var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+        var firstReplacementById = new Dictionary<string, string>(StringComparer.Ordinal);
+        var result = Regex.Replace(svgBody, "\\bid\\s*=\\s*(['\"])([^'\"]+)\\1", match => {
+            var quote = match.Groups[1].Value;
+            var id = match.Groups[2].Value;
+            if (string.IsNullOrWhiteSpace(id)) return match.Value;
+            seen.TryGetValue(id, out var count);
+            count++;
+            seen[id] = count;
+            var replacement = prefix + id + (count == 1 ? string.Empty : "-" + count.ToString(CultureInfo.InvariantCulture));
+            if (!firstReplacementById.ContainsKey(id)) firstReplacementById[id] = replacement;
+            return "id=" + quote + replacement + quote;
+        }, RegexOptions.CultureInvariant);
+        if (firstReplacementById.Count == 0) return svgBody;
+
+        foreach (var pair in firstReplacementById.OrderByDescending(pair => pair.Key.Length)) {
+            var id = pair.Key;
+            var replacement = pair.Value;
+            var escaped = Regex.Escape(id);
+            result = Regex.Replace(result, "url\\(#" + escaped + "\\)", "url(#" + replacement + ")", RegexOptions.CultureInvariant);
+            result = Regex.Replace(result, "(\\b(?:xlink:)?href\\s*=\\s*(['\"])#)" + escaped + "(\\2)", "$1" + replacement + "$3", RegexOptions.CultureInvariant);
+        }
+
+        return result;
+    }
+
+    private static void RejectDtdEntityDeclarations(string path) {
+        var bytes = File.ReadAllBytes(path);
+        var builder = new StringBuilder(bytes.Length);
+        foreach (var value in bytes) {
+            if (value != 0) builder.Append((char)value);
+        }
+
+        if (builder.ToString().IndexOf("<!ENTITY", StringComparison.OrdinalIgnoreCase) >= 0) throw new ArgumentException("SVG DTD entity declarations are not supported.");
     }
 
     private static void RemoveNonArtworkElements(XElement root) {
@@ -216,9 +289,22 @@ public static class TopologyIconSvgPackImporter {
             .Where(element => string.Equals(element.Name.LocalName, "metadata", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(element.Name.LocalName, "title", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(element.Name.LocalName, "desc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(element.Name.LocalName, "documentProperties", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(element.Name.LocalName, "pageProperties", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(element.Name.LocalName, "script", StringComparison.OrdinalIgnoreCase))
             .ToList();
         foreach (var element in removable) element.Remove();
+    }
+
+    private static void RemoveDanglingFragmentReferences(XElement root) {
+        var ids = new HashSet<string>(root.Descendants().Attributes().Where(attribute => string.Equals(attribute.Name.LocalName, "id", StringComparison.OrdinalIgnoreCase)).Select(attribute => attribute.Value), StringComparer.Ordinal);
+        var attributes = root.Descendants().Attributes().Where(attribute => Regex.IsMatch(attribute.Value, "url\\(#[^)]+\\)", RegexOptions.CultureInvariant)).ToList();
+        foreach (var attribute in attributes) {
+            var hasDanglingReference = Regex.Matches(attribute.Value, "url\\(#([^)]+)\\)", RegexOptions.CultureInvariant)
+                .Cast<Match>()
+                .Any(match => !ids.Contains(match.Groups[1].Value));
+            if (hasDanglingReference) attribute.Remove();
+        }
     }
 
     private static string ReadViewBox(XElement root) {
@@ -242,7 +328,10 @@ public static class TopologyIconSvgPackImporter {
         if (parts.Count <= 1) return null;
         parts.RemoveAt(parts.Count - 1);
         if (options.OmitSvgFolderFromCategory) parts.RemoveAll(part => string.Equals(part, "svg", StringComparison.OrdinalIgnoreCase));
-        return parts.Count == 0 ? null : string.Join(" / ", parts.Select(Humanize));
+        var suffix = parts.Count == 0 ? null : string.Join(" / ", parts.Select(Humanize));
+        if (string.IsNullOrWhiteSpace(options.CategoryPrefix)) return suffix;
+        var prefix = options.CategoryPrefix!.Trim();
+        return string.IsNullOrWhiteSpace(suffix) ? prefix : prefix + " / " + suffix;
     }
 
     private static IEnumerable<string> TagsFor(string relativePath, string? category) {

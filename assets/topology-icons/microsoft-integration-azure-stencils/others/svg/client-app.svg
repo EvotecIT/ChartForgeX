@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792 612" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#a0a1a2;stroke:none;stroke-width:0.75}
+		.st2 {fill:#ffffff;fill-opacity:0.2;stroke:none;stroke-width:0.75}
+		.st3 {fill:#59b4d9;stroke:none;stroke-width:0.75}
+		.st4 {fill:#b8d432;stroke:none;stroke-width:0.75}
+		.st5 {fill:#7a7a7a;stroke:none;stroke-width:0.75}
+		.st6 {fill:#0072c6;stroke:none;stroke-width:0.75}
+		.st7 {fill:#ffffff;fill-opacity:0.098;stroke:none;stroke-width:0.75}
+		.st8 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26" />
+		</v:userDefs>
+
+
+		<g id="cfxi-microsoft-azure-stencils-others-client-app-group10536-1" transform="translate(18,-564.094)" v:mID="10536" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10537-2" v:mID="10537" v:groupContext="shape" transform="translate(3.75,-2.505)">
+
+				<path d="M35.23 584.6 L2.04 584.6 A2.121 2.121 -180 0 0 0 586.73 L0 609.88 A2.109 2.109 -180 0 0 2.04 612 L35.23         612 A2.3175 2.3175 -180 0 0 37.5 609.88 L37.5 586.73 A2.325 2.325 -180 0 0 35.23 584.6 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10538-4" v:mID="10538" v:groupContext="shape" transform="translate(3.74925,-2.50275)">
+
+				<path d="M35.26 584.6 L35.23 584.6 L2.04 584.6 A2.12025 2.12025 -180 0 0 0 586.73 L0 609.88 A2.109 2.109 -180 0 0         2.04 612 L2.83 612 L35.26 584.6 Z" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10539-6" v:mID="10539" v:groupContext="shape" transform="translate(6.59175,-5.39025)">
+
+				<path d="M31.73 590.37 L31.73 612 L0 612 L0 590.37 L31.73 590.37 Z" class="st3" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10540-8" v:mID="10540" v:groupContext="shape" transform="translate(6.59175,-5.39025)">
+
+				<path d="M0 612 L0.04 612 L0.04 590.37 L29.05 590.33 L29.05 590.33 L0 590.37 L0 612 Z" class="st3" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10541-10" v:mID="10541" v:groupContext="shape" transform="translate(21.98,-27.9597)">
+
+				<path d="M0.91 611.62 a0.53175 0.53175 0 1 1 -0.5325 -0.5325 a0.5325 0.5325 0 0 1 0.5325 0.5325 Z" class="st4" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10542-12" v:mID="10542" v:groupContext="shape">
+
+				<path d="M0 608.48 L0 609.88 A2.109 2.109 -180 0 0 2.04 612 L42.73 612 A2.3175 2.3175 -180 0 0 45 609.88 L45 608.48         L0 608.48 Z" class="st5" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-client-app-group10543-14" transform="translate(15.672,-9.555)" v:mID="10543" v:groupContext="group">
+
+				<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10544-15" v:mID="10544" v:groupContext="shape" transform="translate(0.003,1.13687E-13)">
+
+					<path d="M0 611.42 a0.55575 0.55575 -180 0 0 0.57675 0.57675 L13.85 612 a0.55575 0.55575 -180 0 0 0.57675 -0.57675          L14.43 601.81 L0 601.81 L0 611.42 Z" class="st6" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10545-17" v:mID="10545" v:groupContext="shape" transform="translate(0,-10.002)">
+
+					<path d="M13.85 609.31 L0.58 609.31 a0.55575 0.55575 -180 0 0 -0.57675 0.57675 L0 612 L14.43 612 L14.43 609.88          a0.55575 0.55575 -180 0 0 -0.57525 -0.57675 Z" class="st5" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-others-client-app-shape10546-19" v:mID="10546" v:groupContext="shape" transform="translate(0.003,1.13687E-13)">
+
+					<path d="M0.58 599.31 a0.55575 0.55575 -180 0 0 -0.57675 0.57675 L0 611.42 a0.55575 0.55575 -180 0 0 0.57675          0.57675 L6.11 612 L12.6 599.3 L0.58 599.31 Z" class="st7" />
+				</g>
+			</g>
+		</g>
+	</g>
+</svg>

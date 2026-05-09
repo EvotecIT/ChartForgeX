@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" preserveAspectRatio="xMidYMid meet">
+<rect y="3" fill="#3999C6" width="12" height="8" xmlns="http://www.w3.org/2000/svg" />
+<rect y="16" fill="#3999C6" width="12" height="8" xmlns="http://www.w3.org/2000/svg" />
+<rect x="17" y="29" fill="#3999C6" width="12" height="8" xmlns="http://www.w3.org/2000/svg" />
+<rect x="17" y="42" fill="#3999C6" width="12" height="8" xmlns="http://www.w3.org/2000/svg" />
+<rect y="42" fill="#3999C6" width="12" height="8" xmlns="http://www.w3.org/2000/svg" />
+<rect x="17" y="3" fill="#3999C6" width="12" height="8" xmlns="http://www.w3.org/2000/svg" />
+<polygon fill="#7FBA00" points="36,8 36,16 17,16 17,24 36,24 36,33 50,20.333 " xmlns="http://www.w3.org/2000/svg" />
+</svg>
