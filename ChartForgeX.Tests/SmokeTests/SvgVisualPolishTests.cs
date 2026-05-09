@@ -113,7 +113,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal), "Metric status cards should still render the semantic accent bar.");
         Assert(svg.Contains("-visualCardClip", StringComparison.Ordinal), "Metric visual blocks should define a rounded card clipping path.");
         Assert(svg.Contains("clip-path=\"url(#", StringComparison.Ordinal), "Metric status bars should be clipped by the card radius instead of painting square corners.");
-        Assert(metric.ToPng().Length > 64, "Metric status cards should render PNG output with the same rounded accent treatment.");
+        Assert(!svg.Contains("-visualBackground)", StringComparison.Ordinal), "Carded visual blocks should not paint a square SVG background behind rounded card corners.");
+        var metricPng = ReadPngRgba(metric.ToPng(), out var metricPngWidth, out var metricPngHeight);
+        Assert(AlphaAt(metricPng, metricPngWidth, 1, metricPngHeight - 2) == 0, "Carded visual block PNG output should leave the outside of rounded card corners transparent.");
 
         var noCard = MetricCard.Create()
             .WithMetric("Monthly Recurring Revenue", "$120,400")

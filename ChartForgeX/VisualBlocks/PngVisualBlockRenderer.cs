@@ -21,7 +21,7 @@ public sealed class PngVisualBlockRenderer {
         var options = block.Options;
         var theme = options.Theme;
         var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, null, options.PngOutputScale);
-        canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
+        canvas.Clear(options.ShowCard && theme.UseCard ? ChartColor.Transparent : VisualBlockRendering.SurfaceBackground(options));
         if (options.ShowCard && theme.UseCard) {
             canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
             canvas.StrokeRoundedRect(0.5, 0.5, Math.Max(1, options.Size.Width - 1), Math.Max(1, options.Size.Height - 1), theme.CornerRadius, theme.CardBorder, 1);
