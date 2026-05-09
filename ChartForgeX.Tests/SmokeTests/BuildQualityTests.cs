@@ -16,7 +16,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("ChartForgeX.Interactivity.Html", StringComparison.Ordinal), "Build script should package the HTML interactivity adapter.");
         Assert(script.Contains("DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity')", StringComparison.Ordinal), "Build script should verify adapter package dependencies.");
         Assert(script.Contains("README.md", StringComparison.Ordinal), "Build script should verify README package inclusion.");
-        Assert(script.Contains("CHANGELOG.md", StringComparison.Ordinal), "Build script should verify changelog package inclusion.");
+        Assert(script.Contains("@('README.md')", StringComparison.Ordinal), "Build script should verify README package inclusion without requiring separate changelog packaging.");
         Assert(script.Contains("lib/$framework/$($packageProject.Assembly).$extension", StringComparison.Ordinal), "Build script should verify package framework assets.");
         Assert(script.Contains("ChartForgeX-package-consumer", StringComparison.Ordinal), "Build script should verify package consumption from a clean project.");
         Assert(script.Contains("globalPackagesFolder", StringComparison.Ordinal), "Build script should isolate the package consumer cache so same-version local packages are retested.");
@@ -114,12 +114,12 @@ internal static partial class SmokeTests {
             Assert(maxEdgeInkPixels == 0, "Visual baseline should reject PNG edge pressure: " + name + ".");
         }
 
-        var releaseGuide = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "RELEASING.md"));
-        Assert(releaseGuide.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal) && releaseGuide.Contains("PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Release guidance should document build timeout controls.");
-        Assert(releaseGuide.Contains("fails with a named timeout", StringComparison.Ordinal), "Release guidance should explain timeout failures as actionable build signals.");
-        Assert(releaseGuide.Contains("-UpdateVisualBaseline", StringComparison.Ordinal), "Release guidance should explain intentional visual-baseline refreshes.");
-        Assert(releaseGuide.Contains("clipped SVG text", StringComparison.Ordinal) && releaseGuide.Contains("PNG edge pressure", StringComparison.Ordinal), "Release guidance should explain the visual-baseline quality gates.");
-        Assert(releaseGuide.Contains("Topology Visual Coverage", StringComparison.Ordinal), "Release guidance should document the topology visual coverage gate.");
-        Assert(releaseGuide.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Release guidance should document the topology visual coverage manifest.");
+        var contributionGuide = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md"));
+        Assert(contributionGuide.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal) && contributionGuide.Contains("PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Contribution guidance should document build timeout controls.");
+        Assert(contributionGuide.Contains("fails with a named timeout", StringComparison.Ordinal), "Contribution guidance should explain timeout failures as actionable build signals.");
+        Assert(contributionGuide.Contains("-UpdateVisualBaseline", StringComparison.Ordinal), "Contribution guidance should explain intentional visual-baseline refreshes.");
+        Assert(contributionGuide.Contains("clipped SVG text", StringComparison.Ordinal) && contributionGuide.Contains("PNG edge pressure", StringComparison.Ordinal), "Contribution guidance should explain the visual-baseline quality gates.");
+        Assert(contributionGuide.Contains("Topology Visual Coverage", StringComparison.Ordinal), "Contribution guidance should document the topology visual coverage gate.");
+        Assert(contributionGuide.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Contribution guidance should document the topology visual coverage manifest.");
     }
 }

@@ -1,6 +1,6 @@
 # Rendering Engine Benchmarking
 
-This branch keeps the rendering-engine work separate from active feature PRs such as topology. The first goal is to measure the current string-heavy baseline, the internal writer primitives, and a small SVG AST before migrating chart renderers.
+This benchmark note tracks the zero-dependency rendering-engine harness. Use it when comparing the current string-heavy paths, the internal writer primitives, and the SVG element model before migrating chart renderers.
 
 Run the zero-dependency benchmark harness from the repository root:
 
@@ -29,4 +29,4 @@ Migration checks should compare two dimensions:
 
 `SvgDocument.Parse` is a semantic SVG load path, not a byte-preserving formatter. It keeps elements, attributes, comments inside the root, and text/CDATA content, then saves through the normalized writer. DTDs are rejected when loading arbitrary content. The AST supports structural edits such as clone, insert, remove, class changes, text replacement, `d` attribute path-data parsing, `transform` parsing, inline `style` parsing, typed `viewBox` edits, and polygon/polyline `points` edits so callers can migrate from string surgery in small steps.
 
-Do not use topology as the first migration target while that PR is changing. Prefer stable existing renderers with SVG and PNG coverage already in the smoke suite.
+Prefer stable existing renderers with SVG and PNG coverage already in the smoke suite when measuring migration impact. Keep active migration tasks in `TODO.md` so this document stays focused on how to run and interpret the harness.

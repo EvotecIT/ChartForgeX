@@ -379,7 +379,7 @@ try {
                 if (-not $nuspecEntry) {
                     throw "Package is missing $($packageProject.Nuspec)."
                 }
-                foreach ($requiredEntry in @('README.md', 'CHANGELOG.md')) {
+                foreach ($requiredEntry in @('README.md')) {
                     if (-not ($archive.Entries | Where-Object { $_.FullName -eq $requiredEntry } | Select-Object -First 1)) {
                         throw "$($packageProject.Id) package is missing $requiredEntry."
                     }

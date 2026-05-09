@@ -1,0 +1,43 @@
+# ChartForgeX TODO
+
+This is the central place for active follow-up work. Keep feature ideas here until they are implemented, removed, or promoted into focused reference documentation. Avoid adding separate roadmap or "next plan" documents unless the topic needs a durable technical specification.
+
+## Rendering Pipeline
+
+- Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
+- Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
+- Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
+- Use the benchmark harness before broad renderer migrations:
+
+```powershell
+dotnet run --project ChartForgeX.Benchmarks -c Release -- 500
+```
+
+## Topology
+
+- Add denser replication and site-link fixtures that prove routes do not cross node cards in common screenshot-like layouts.
+- Tune label-clearance and route-overlap weights with real dense examples.
+- Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
+- Promote topology artifacts into `visual-baseline.json` only after dense routing and geographic layout polish are stable enough for numeric baselines.
+- Keep dashboard shells outside ChartForgeX; host projects such as HtmlForgeX and TestimoX should own sidebars, filters, inspectors, cards, and collected product data.
+- Unify topology HTML interaction code with `ChartForgeX.Interactivity.Html` only where it reduces duplicated event/control code without changing the static default.
+
+## Visual Blocks
+
+- Broaden table, list, and metric-card style presets from real PowerBGInfo, ImagePlayground, email, Word, and wallpaper examples.
+- Add small icon/status symbol options only when they stay renderer-owned and dependency-free.
+- Add reusable status palettes and compact infographic snippets that reuse shared primitive layout/styling instead of arbitrary markup.
+- Add more examples and visual-baseline candidates once layouts stabilize.
+
+## Formats
+
+- Keep SVG as the highest-fidelity static output.
+- Keep improving PNG through the dependency-free rasterizer: alpha-correct compositing, downsampling, antialiasing, gradient parity, and text measurement.
+- Evaluate future PDF or Office-friendly emitters only when they can share the same chart model, layout rules, and quality standards.
+
+## Release Readiness
+
+- Choose and add package license metadata before a public NuGet release.
+- Update package versions and release metadata in all package projects when preparing a release.
+- Run the full quality loop and inspect generated examples before publishing packages.
+- Publish `.nupkg` and `.snupkg` files from `artifacts/packages/Release`.

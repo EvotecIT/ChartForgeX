@@ -82,7 +82,7 @@ var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 
 The mini bar and mini sparkline geometry is shared by the SVG and PNG visual-block renderers, so improvements to compact line/bar polish can be applied once instead of redoing each output format separately.
 
-Next extension points should be driven by real PowerBGInfo, ImagePlayground, email, Word, and wallpaper scenarios:
+Extension points should be driven by real PowerBGInfo, ImagePlayground, email, Word, and wallpaper scenarios:
 
 - richer table/list style presets
 - optional small icon symbols for status cells and list markers
