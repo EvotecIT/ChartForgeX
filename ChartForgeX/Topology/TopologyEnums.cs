@@ -142,6 +142,60 @@ public enum TopologyNodeDisplayMode {
 }
 
 /// <summary>
+/// Defines renderer-owned topology icon shape hints.
+/// </summary>
+public enum TopologyIconShape {
+    /// <summary>Choose a shape from the icon or node kind.</summary>
+    Auto,
+    /// <summary>Render a generic labeled badge.</summary>
+    Badge,
+    /// <summary>Render a server or compute stack.</summary>
+    Server,
+    /// <summary>Render a database cylinder.</summary>
+    Database,
+    /// <summary>Render storage media.</summary>
+    Storage,
+    /// <summary>Render a cloud mark.</summary>
+    Cloud,
+    /// <summary>Render a network fabric mark.</summary>
+    Network,
+    /// <summary>Render a network segment mark.</summary>
+    NetworkSegment,
+    /// <summary>Render a switch mark.</summary>
+    NetworkSwitch,
+    /// <summary>Render a router mark.</summary>
+    Router,
+    /// <summary>Render a firewall mark.</summary>
+    Firewall,
+    /// <summary>Render a load balancer mark.</summary>
+    LoadBalancer,
+    /// <summary>Render an Active Directory forest mark.</summary>
+    Forest,
+    /// <summary>Render a domain or tenant boundary mark.</summary>
+    Domain,
+    /// <summary>Render a domain controller mark.</summary>
+    DomainController,
+    /// <summary>Render a read-only domain controller mark.</summary>
+    ReadOnlyDomainController,
+    /// <summary>Render a site or location mark.</summary>
+    Site,
+    /// <summary>Render an application mark.</summary>
+    Application,
+    /// <summary>Render a service mark.</summary>
+    Service,
+    /// <summary>Render a certificate mark.</summary>
+    Certificate,
+    /// <summary>Render a desktop endpoint mark.</summary>
+    Desktop,
+    /// <summary>Render a laptop endpoint mark.</summary>
+    Laptop,
+    /// <summary>Render a person mark.</summary>
+    Person,
+    /// <summary>Render a team mark.</summary>
+    Team
+}
+
+/// <summary>
 /// Defines how card-like topology node subtitles should be rendered.
 /// </summary>
 public enum TopologyCardSubtitleMode {

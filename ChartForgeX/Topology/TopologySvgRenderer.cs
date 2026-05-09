@@ -220,7 +220,7 @@ public sealed partial class TopologySvgRenderer {
             if (!group.Longitude.HasValue || !group.Latitude.HasValue) continue;
             if (!TopologyMapProjection.IsVisible(chart.MapViewport, group.Longitude.Value, group.Latitude.Value)) continue;
             var anchor = TopologyMapProjection.Project(map, chart.MapViewport, group.Longitude.Value, group.Latitude.Value);
-            var accent = GroupAccentColor(group, theme);
+            var accent = GroupAccentColor(group, theme, options);
             var radius = GeographicRegionHullRadius(chart, group, new ChartPoint(anchor.X, anchor.Y), map, options);
             layer.Element("circle", circle => circle
                 .Class(prefix + "__geo-region-hull")
@@ -348,7 +348,8 @@ public sealed partial class TopologySvgRenderer {
         foreach (var group in chart.Groups) {
             var highlighted = highlight.IsGroupHighlighted(group);
             var selected = IsSelected(options.SelectedGroupIds, group.Id);
-            var accent = GroupAccentColor(group, theme);
+            var accent = GroupAccentColor(group, theme, options);
+            var iconDefinition = ResolveGroupIcon(group, options);
             var parent = AddOptionalLink(layer, group.Href, prefix, options);
             var groupElement = parent.Element("g", element => {
                 element
@@ -365,6 +366,14 @@ public sealed partial class TopologySvgRenderer {
                 if (group.Metadata.TryGetValue("geoVisible", out var groupGeoVisible)) element.Attribute("data-group-geo-visible", groupGeoVisible);
                 if (!string.IsNullOrWhiteSpace(group.Symbol)) element.Attribute("data-group-symbol", TrimTo(group.Symbol!.Trim(), 12));
                 if (!string.IsNullOrWhiteSpace(group.Color)) element.Attribute("data-group-color", accent);
+                if (!string.IsNullOrWhiteSpace(group.IconId)) element.Attribute("data-group-icon-id", group.IconId);
+                if (iconDefinition != null) {
+                    element
+                        .Attribute("data-group-icon-pack", iconDefinition.PackId)
+                        .Attribute("data-group-icon-label", iconDefinition.Label)
+                        .Attribute("data-group-icon-shape", iconDefinition.Shape.ToString());
+                    if (iconDefinition.Artwork != null) element.Attribute("data-group-icon-artwork", ArtworkKind(iconDefinition.Artwork));
+                }
                 AddTopologyDataAttributes(element, "data-cfx-meta-", group.Metadata, options.IncludeDataAttributes);
                 if (highlight.IsActive && !highlighted) element.Attribute("opacity", highlight.DimmedOpacity);
             });
@@ -383,7 +392,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("stroke-opacity", selected ? (IsMonitoringDashboardStyle(options) ? 0.82 : 0.9) : UseNeutralGroupSurface(options) ? 0.38 : (IsMonitoringDashboardStyle(options) ? 0.42 : 0.48)));
             if (options.IncludeGroupLabels) {
                 var cx = group.X + group.Width / 2;
-                var renderSymbol = !IsMonitoringDashboardStyle(options) || !string.IsNullOrWhiteSpace(group.Symbol);
+                var renderSymbol = !IsMonitoringDashboardStyle(options) || !string.IsNullOrWhiteSpace(group.Symbol) || iconDefinition != null;
                 var neutralSurface = IsMonitoringDashboardStyle(options) && UseNeutralGroupSurface(options);
                 var groupLabelWidth = GroupHeaderLabelWidth(group, options, renderSymbol);
                 var groupLabelSize = FitFontSize(group.Label, groupLabelWidth, 16, 12, true);
@@ -397,7 +406,7 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("r", 10)
                         .Attribute("fill", StatusFill(accent, theme.Background))
                         .Attribute("stroke", accent));
-                    AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent);
+                    AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent, prefix, options);
                 }
 
                 if (neutralSurface) {
@@ -411,7 +420,7 @@ public sealed partial class TopologySvgRenderer {
                             .Attribute("r", 9.5)
                             .Attribute("fill", StatusFill(accent, theme.Background))
                             .Attribute("stroke", accent));
-                        AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent);
+                        AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent, prefix, options);
                         labelX = group.X + 42;
                         labelWidth = GroupHeaderLabelWidth(group, options, true);
                     }
@@ -484,45 +493,10 @@ public sealed partial class TopologySvgRenderer {
         return Math.Max(36, group.Width - 44 - statusReserve - symbolReserve);
     }
 
-    private static string GroupAccentColor(TopologyGroup group, TopologyTheme theme) => string.IsNullOrWhiteSpace(group.Color) ? theme.StatusColor(group.Status) : group.Color!.Trim();
-
-    private static void AddGroupSymbol(SvgElement parent, TopologyGroup group, double cx, double cy, string color) {
-        var symbol = string.IsNullOrWhiteSpace(group.Symbol) ? string.Empty : group.Symbol!.Trim();
-        if (symbol.Equals("region", StringComparison.OrdinalIgnoreCase) || symbol.Equals("globe", StringComparison.OrdinalIgnoreCase)) {
-            parent.Element("circle", circle => circle
-                .Attribute("cx", cx)
-                .Attribute("cy", cy)
-                .Attribute("r", 5.8)
-                .Attribute("fill", "none")
-                .Attribute("stroke", color)
-                .Attribute("stroke-width", 1.3));
-            parent.Element("path", path => path
-                .Attribute("d", "M " + F(cx - 5.2) + " " + F(cy) + " H " + F(cx + 5.2) + " M " + F(cx) + " " + F(cy - 5.8) + " C " + F(cx - 3.2) + " " + F(cy - 2.6) + " " + F(cx - 3.2) + " " + F(cy + 2.6) + " " + F(cx) + " " + F(cy + 5.8) + " M " + F(cx) + " " + F(cy - 5.8) + " C " + F(cx + 3.2) + " " + F(cy - 2.6) + " " + F(cx + 3.2) + " " + F(cy + 2.6) + " " + F(cx) + " " + F(cy + 5.8))
-                .Attribute("fill", "none")
-                .Attribute("stroke", color)
-                .Attribute("stroke-width", 1.1)
-                .Attribute("stroke-linecap", "round"));
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(symbol)) {
-            parent.Element("circle", circle => circle
-                .Attribute("cx", cx)
-                .Attribute("cy", cy)
-                .Attribute("r", 4)
-                .Attribute("fill", "none")
-                .Attribute("stroke", color));
-            return;
-        }
-
-        parent.Element("text", text => text
-            .Attribute("x", cx)
-            .Attribute("y", cy + 3.2)
-            .Attribute("text-anchor", "middle")
-            .Attribute("fill", color)
-            .Attribute("font-size", 8)
-            .Attribute("font-weight", "800")
-            .Text(TrimTo(symbol, 3)));
+    private static string GroupAccentColor(TopologyGroup group, TopologyTheme theme, TopologyRenderOptions options) {
+        if (!string.IsNullOrWhiteSpace(group.Color)) return group.Color!.Trim();
+        var icon = ResolveGroupIcon(group, options);
+        return !string.IsNullOrWhiteSpace(icon?.Color) ? icon!.Color!.Trim() : theme.StatusColor(group.Status);
     }
 
     private static void AddEdges(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string svgId, TopologyHighlightState highlight) {

@@ -207,6 +207,9 @@ public sealed class TopologyGroup {
     /// <summary>Gets or sets an optional short group symbol used by renderers.</summary>
     public string? Symbol { get; set; }
 
+    /// <summary>Gets or sets an optional reusable icon id such as <c>microsoft-ad:site</c>.</summary>
+    public string? IconId { get; set; }
+
     /// <summary>Gets or sets an optional group accent color. When set, this colors the group shell independently from health status.</summary>
     public string? Color { get; set; }
 
@@ -268,6 +271,9 @@ public sealed class TopologyNode {
 
     /// <summary>Gets or sets an optional short visual symbol used inside the node icon.</summary>
     public string? Symbol { get; set; }
+
+    /// <summary>Gets or sets an optional reusable icon id such as <c>network:switch</c> or <c>microsoft-ad:domain-controller</c>.</summary>
+    public string? IconId { get; set; }
 
     /// <summary>Gets or sets an optional node-specific display mode. When null, render options decide.</summary>
     public TopologyNodeDisplayMode? DisplayMode {

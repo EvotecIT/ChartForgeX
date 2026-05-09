@@ -1,0 +1,44 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "fortinet",
+  "label": "Fortinet",
+  "vendor": "Fortinet",
+  "packVersion": "2026.1",
+  "builtIn": false,
+  "tags": [ "network", "security", "vendor" ],
+  "metadata": {
+    "website": "https://www.fortinet.com",
+    "source": "sample-manifest"
+  },
+  "icons": [
+    {
+      "id": "firewall",
+      "label": "FortiGate Firewall",
+      "nodeKind": "Gateway",
+      "shape": "Firewall",
+      "symbol": "FG",
+      "color": "#DA291C",
+      "category": "Security",
+      "displayMode": "Tile",
+      "tags": [ "fortigate", "firewall", "security" ],
+      "metadata": {
+        "product": "FortiGate"
+      }
+    },
+    {
+      "id": "switch",
+      "label": "FortiSwitch",
+      "nodeKind": "Network",
+      "shape": "NetworkSwitch",
+      "symbol": "FSW",
+      "color": "#DA291C",
+      "category": "Network",
+      "displayMode": "Tile",
+      "tags": [ "fortiswitch", "switch", "lan" ],
+      "metadata": {
+        "product": "FortiSwitch"
+      }
+    }
+  ]
+}

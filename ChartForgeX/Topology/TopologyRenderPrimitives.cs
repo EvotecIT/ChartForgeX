@@ -154,8 +154,6 @@ internal static partial class TopologyRenderPrimitives {
 
     public static string NodeGlyph(TopologyNode node) => string.IsNullOrWhiteSpace(node.Symbol) ? KindGlyph(node.Kind) : TrimTo(node.Symbol!.Trim(), 4);
 
-    public static TopologyNodeDisplayMode EffectiveNodeDisplayMode(TopologyNode node, TopologyRenderOptions options) => node.DisplayMode ?? options.NodeDisplayMode;
-
     public static bool ShouldRenderNodeStatusBadge(TopologyNode node, TopologyRenderOptions options) {
         var displayMode = EffectiveNodeDisplayMode(node, options);
         if (displayMode == TopologyNodeDisplayMode.Hidden) return false;
