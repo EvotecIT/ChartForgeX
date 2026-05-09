@@ -46,9 +46,9 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, column);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
-                var ratio = HeatmapRatio(value, min, max);
-                var status = HeatmapStatus(ratio);
-                var color = HeatmapColor(chart, series.Color, value, min, max);
+                var ratio = ChartHeatmapSurface.Ratio(value, min, max);
+                var status = ChartHeatmapSurface.Status(ratio);
+                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color);
@@ -56,7 +56,7 @@ public sealed partial class SvgChartRenderer {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, HeatmapTextColor(color), t.DataLabelFontSize, cellWidth - 6, "750", style: DataLabelStyle(chart, series, pointIndex));
+                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), t.DataLabelFontSize, cellWidth - 6, "750", style: DataLabelStyle(chart, series, pointIndex));
                     } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                         var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + cellWidth + 8;
                         var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
@@ -232,8 +232,8 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
             var value = min + (max - min) * ratio;
-            var color = HeatmapColor(chart, highColor, value, min, max);
-            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, HeatmapStatus(HeatmapRatio(value, min, max)), color);
+            var color = ChartHeatmapSurface.Color(chart, highColor, value, min, max);
+            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(value, min, max)), color);
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);
@@ -304,43 +304,6 @@ public sealed partial class SvgChartRenderer {
             .EndEmptyElement()
             .Line();
         sb.Append(writer.Build());
-    }
-
-    private static ChartColor HeatmapColor(Chart chart, ChartColor? highColor, double value, double min, double max) {
-        var ratio = HeatmapRatio(value, min, max);
-        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticHeatmapColor(chart, ratio);
-        return Blend(chart.Options.Theme.PlotBackground, highColor ?? chart.Options.Theme.Palette[0], 0.18 + ratio * 0.82);
-    }
-
-    private static ChartColor SemanticHeatmapColor(Chart chart, double ratio) {
-        var t = chart.Options.Theme;
-        if (ratio < 0.60) return Blend(t.Negative, t.Warning, ratio / 0.60 * 0.42);
-        if (ratio < 0.80) return Blend(t.Warning, t.Positive, (ratio - 0.60) / 0.20 * 0.5);
-        return Blend(t.Warning, t.Positive, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
-    }
-
-    private static double HeatmapRatio(double value, double min, double max) {
-        if (min >= -0.000001 && max <= 100.000001) return Clamp(value / 100, 0, 1);
-        return Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
-    }
-
-    private static string HeatmapStatus(double ratio) {
-        if (ratio < 0.60) return "negative";
-        if (ratio < 0.80) return "warning";
-        return "positive";
-    }
-
-    private static ChartColor Blend(ChartColor a, ChartColor b, double amount) {
-        amount = Clamp(amount, 0, 1);
-        return ChartColor.FromRgb(
-            (byte)Math.Round(a.R + (b.R - a.R) * amount),
-            (byte)Math.Round(a.G + (b.G - a.G) * amount),
-            (byte)Math.Round(a.B + (b.B - a.B) * amount));
-    }
-
-    private static ChartColor HeatmapTextColor(ChartColor background) {
-        var luminance = (0.2126 * background.R + 0.7152 * background.G + 0.0722 * background.B) / 255;
-        return luminance > 0.54 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
     }
 
     private static double[] HeatmapColumns(IReadOnlyList<ChartSeries> rows) {

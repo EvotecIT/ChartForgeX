@@ -35,7 +35,7 @@ public sealed partial class PngChartRenderer {
         foreach (var region in definition.Regions) {
             var hasValue = data.TryGetValue(region.Code, out var entry);
             var value = hasValue ? entry.Value : 0;
-            var color = hasValue ? HeatmapColor(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : MapNoDataColor(chart);
+            var color = hasValue ? ChartHeatmapSurface.Color(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : ChartHeatmapSurface.MapNoDataColor(chart);
             var rings = ProjectMapRings(region.Path, definition.Bounds, map, out var regionBounds);
             c.FillCompoundPolygon(rings, color);
             foreach (var points in rings) {
@@ -47,7 +47,7 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowMapLabels) {
                 var label = region.HasLabel ? ProjectMapPoint(region.Label, definition.Bounds, map) : new ChartPoint(regionBounds.Left + regionBounds.Width / 2, regionBounds.Top + regionBounds.Height / 2);
                 var fontSize = Math.Min(PngTickFontSize(chart), Math.Max(7, map.Height * 0.032));
-                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) c.DrawTextEmphasized(label.X - EstimatePngEmphasizedTextWidth(region.Code, fontSize) / 2, label.Y - fontSize / 2, region.Code, HeatmapTextColor(color), fontSize);
+                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) c.DrawTextEmphasized(label.X - EstimatePngEmphasizedTextWidth(region.Code, fontSize) / 2, label.Y - fontSize / 2, region.Code, ChartColorMath.TextOnBackground(color), fontSize);
             }
         }
 
@@ -58,7 +58,7 @@ public sealed partial class PngChartRenderer {
         var t = chart.Options.Theme;
         var pad = Math.Max(7, map.Height * 0.018);
         var radius = Math.Min(20, Math.Max(8, map.Height * 0.045));
-        c.FillRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(Blend(t.PlotBackground, t.Grid, 0.20), 0.30));
+        c.FillRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(ChartColorMath.Blend(t.PlotBackground, t.Grid, 0.20), 0.30));
         c.StrokeRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(t.PlotBorder, 0.24), 1);
     }
 
@@ -71,7 +71,7 @@ public sealed partial class PngChartRenderer {
         c.DrawText(x - EstimatePngTextWidth("Less", fontSize) - 8, y + size / 2 - fontSize / 2, "Less", t.MutedText, fontSize);
         for (var i = 0; i < 5; i++) {
             var value = min + (max - min) * (i / 4.0);
-            var color = HeatmapColor(chart, series.Color ?? t.Palette[0], value, min, max);
+            var color = ChartHeatmapSurface.Color(chart, series.Color ?? t.Palette[0], value, min, max);
             c.FillRoundedRect(x + i * (size + gap), y, size, size, 2, color);
         }
         c.DrawText(x + 5 * size + 4 * gap + 8, y + size / 2 - fontSize / 2, "More", t.MutedText, fontSize);
@@ -127,8 +127,5 @@ public sealed partial class PngChartRenderer {
         return new ChartRect(plot.Left + Math.Max(0, (plot.Width - width) / 2), plot.Top + Math.Max(0, (plot.Height - height) / 2), width, height);
     }
 
-    private static bool IsRegionMapChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.RegionMap) return true;
-        return false;
-    }
+    private static bool IsRegionMapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.RegionMap);
 }

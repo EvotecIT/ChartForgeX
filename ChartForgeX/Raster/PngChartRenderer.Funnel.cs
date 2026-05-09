@@ -55,14 +55,14 @@ public sealed partial class PngChartRenderer {
                 new ChartPoint(bottomRight, segmentY + segmentDrawHeight),
                 new ChartPoint(bottomLeft, segmentY + segmentDrawHeight)
             };
-            c.FillPolygonVerticalGradient(segment, Blend(ChartColor.White, color, 0.86), Blend(ChartColor.Black, color, 0.92));
+            c.FillPolygonVerticalGradient(segment, ChartMarkSurface.FunnelSegmentGradientTop(color), ChartMarkSurface.FunnelSegmentGradientBottom(color));
             DrawFunnelSegmentStroke(c, chart, segment);
 
             var label = FormatX(chart, values[i].X);
             var value = FormatValue(chart, values[i].Y);
             var centerX = plot.Left + plot.Width / 2;
             var centerY = segmentY + segmentDrawHeight / 2;
-            var labelColor = FunnelTextColor(color);
+            var labelColor = ChartColorMath.TextOnBackground(color, 0.58);
             var labelFontSize = TextFontSizeForEmphasizedWidth(label, Math.Max(36, Math.Min(topWidth, bottomWidth) - 18), chart.Options.Theme.LegendFontSize);
             var valueFontSize = TextFontSizeForEmphasizedWidth(value, Math.Max(36, Math.Min(topWidth, bottomWidth) - 18), chart.Options.Theme.DataLabelFontSize);
             var labelY = centerY - labelFontSize - 2;
@@ -103,10 +103,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsFunnelChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Funnel) return true;
-        return false;
-    }
+    private static bool IsFunnelChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Funnel);
 
     private static double[] FunnelSegmentHeights(IReadOnlyList<ChartPoint> values, double plotHeight, double gap) {
         var heights = new double[values.Count];
@@ -167,11 +164,6 @@ public sealed partial class PngChartRenderer {
         }
 
         c.DrawLine(segment[0].X + 2, segment[0].Y + 1, segment[1].X - 2, segment[1].Y + 1, highlight, ChartVisualPrimitives.GridStrokeWidth);
-    }
-
-    private static ChartColor FunnelTextColor(ChartColor background) {
-        var luminance = (0.2126 * background.R + 0.7152 * background.G + 0.0722 * background.B) / 255.0;
-        return luminance > 0.58 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
     }
 
     private static ChartColor FunnelTextHalo(ChartColor text, ChartColor cardBackground) =>

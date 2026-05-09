@@ -111,10 +111,7 @@ public sealed partial class PngChartRenderer {
         return color.A == 0 ? ChartColor.White : color;
     }
 
-    private static ChartColor ApplyOpacity(ChartColor color, double opacity) {
-        var alpha = (byte)Math.Max(0, Math.Min(255, Math.Round(color.A * Math.Max(0, Math.Min(1, opacity)))));
-        return ChartColor.FromRgba(color.R, color.G, color.B, alpha);
-    }
+    private static ChartColor ApplyOpacity(ChartColor color, double opacity) => ChartColorMath.WithOpacity(color, opacity);
 
     private static double EstimatePngTextWidth(string value, double fontSize) => Math.Ceiling(RgbaCanvas.MeasureTextWidth(value, fontSize, CurrentOutlineFont));
     private static double EstimatePngEmphasizedTextWidth(string value, double fontSize) => Math.Ceiling(RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, CurrentOutlineFont));

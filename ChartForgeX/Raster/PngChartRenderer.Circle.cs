@@ -62,8 +62,5 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsCircleChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Circle) return true;
-        return false;
-    }
+    private static bool IsCircleChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Circle);
 }

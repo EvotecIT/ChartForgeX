@@ -155,5 +155,5 @@ public sealed partial class SvgChartRenderer {
             .Line();
     }
 
-    private static bool IsCircleChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Circle);
+    private static bool IsCircleChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Circle);
 }

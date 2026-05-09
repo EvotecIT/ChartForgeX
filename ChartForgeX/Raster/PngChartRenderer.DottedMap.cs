@@ -16,8 +16,8 @@ public sealed partial class PngChartRenderer {
         var plot = new ChartRect(basePlot.Left + 8, basePlot.Top + 8, Math.Max(1, basePlot.Width - 16), Math.Max(1, basePlot.Height - 16));
         var map = FitDottedMap(plot, viewport);
         var dot = DottedMapDotSize(map, viewport);
-        var landColor = DottedMapLandDotColor(t.PlotBackground, t.MutedText);
-        var landOpacity = DottedMapLandDotOpacity(t.PlotBackground);
+        var landColor = ChartDottedMapSurface.LandDotColor(t.PlotBackground, t.MutedText);
+        var landOpacity = ChartDottedMapSurface.LandDotOpacity(t.PlotBackground);
         var reservedLabels = new List<ChartLabelBounds>();
         var valueRange = GetDottedMapValueRange(series);
 
@@ -67,7 +67,7 @@ public sealed partial class PngChartRenderer {
         var t = chart.Options.Theme;
         var pad = Math.Max(10, dot * 3.8);
         var radius = Math.Min(18, Math.Max(7, dot * 3.2));
-        c.FillRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(Blend(t.PlotBackground, t.Grid, 0.12), 0.16));
+        c.FillRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(ChartColorMath.Blend(t.PlotBackground, t.Grid, 0.12), 0.16));
         c.StrokeRoundedRect(map.Left - pad, map.Top - pad, map.Width + pad * 2, map.Height + pad * 2, radius, ApplyOpacity(t.PlotBorder, 0.16), 1);
     }
 
@@ -92,7 +92,7 @@ public sealed partial class PngChartRenderer {
         var outlines = DottedMapViewportOutlines(viewport);
         if (outlines.Length == 0) return;
         var t = chart.Options.Theme;
-        var color = DottedMapLandDotColor(t.PlotBackground, t.MutedText);
+        var color = ChartDottedMapSurface.LandDotColor(t.PlotBackground, t.MutedText);
         foreach (var outline in outlines) {
             var points = new List<ChartPoint>(outline.Length);
             foreach (var point in outline) points.Add(new ChartPoint(ProjectMapX(map, viewport, point.X), ProjectMapY(map, viewport, point.Y)));
@@ -249,7 +249,7 @@ public sealed partial class PngChartRenderer {
         var boundaries = DottedMapBoundaryLines(viewport);
         if (boundaries.Length == 0) return;
         var t = chart.Options.Theme;
-        var color = ApplyOpacity(DottedMapBoundaryColor(t.PlotBackground, t.MutedText), DottedMapBoundaryOpacity(t.PlotBackground));
+        var color = ApplyOpacity(ChartDottedMapSurface.BoundaryColor(t.PlotBackground, t.MutedText), ChartDottedMapSurface.BoundaryOpacity(t.PlotBackground));
         var strokeWidth = Math.Max(0.65, dot * 0.26);
         foreach (var line in boundaries) {
             if (line.Length < 2) continue;
@@ -271,7 +271,7 @@ public sealed partial class PngChartRenderer {
         var boundaries = DottedMapBoundaryLines(viewport);
         if (boundaries.Length == 0) return;
         var t = chart.Options.Theme;
-        var color = ApplyOpacity(DottedMapLandAreaColor(t.PlotBackground, t.MutedText), DottedMapLandAreaOpacity(t.PlotBackground));
+        var color = ApplyOpacity(ChartDottedMapSurface.LandAreaColor(t.PlotBackground, t.MutedText), ChartDottedMapSurface.LandAreaOpacity(t.PlotBackground));
         foreach (var line in boundaries) {
             if (!CanFillDottedMapBoundary(line)) continue;
             var points = new List<ChartPoint>(line.Length);
@@ -307,35 +307,8 @@ public sealed partial class PngChartRenderer {
         return min.HasValue && max.HasValue ? new DottedMapValueRange(min.Value, max.Value) : null;
     }
 
-    private static ChartColor DottedMapLandDotColor(ChartColor plotBackground, ChartColor mutedText) {
-        var weight = IsLightDottedMapSurface(plotBackground) ? 0.62 : 0.58;
-        return Blend(plotBackground, mutedText, weight);
-    }
-
-    private static double DottedMapLandDotOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.14 : 0.44;
-
     private static double DottedMapLandDotRadius(double dot, ChartMapViewport viewport) =>
         DottedMapBoundaryLines(viewport).Length == 0 ? dot / 2 : Math.Max(0.8, dot * 0.34);
-
-    private static ChartColor DottedMapLandAreaColor(ChartColor plotBackground, ChartColor mutedText) {
-        var weight = IsLightDottedMapSurface(plotBackground) ? 0.24 : 0.28;
-        return Blend(plotBackground, mutedText, weight);
-    }
-
-    private static double DottedMapLandAreaOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.92 : 0.30;
-
-    private static ChartColor DottedMapBoundaryColor(ChartColor plotBackground, ChartColor mutedText) {
-        var weight = IsLightDottedMapSurface(plotBackground) ? 0.68 : 0.70;
-        return Blend(plotBackground, mutedText, weight);
-    }
-
-    private static double DottedMapBoundaryOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.16 : 0.22;
-
-    private static bool IsLightDottedMapSurface(ChartColor color) =>
-        (0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B) / 255.0 > 0.70;
 
     private static double DottedMapPointRadius(double dot, double? value, DottedMapValueRange? range) {
         const double minimumReadablePointRadius = 3;
@@ -425,7 +398,7 @@ public sealed partial class PngChartRenderer {
         var startGap = Math.Min(length * 0.42, Math.Max(dot * 1.32, 4));
         var startX = pointX + dx / length * startGap;
         var startY = pointY + dy / length * startGap;
-        var color = ApplyOpacity(DottedMapBoundaryColor(chart.Options.Theme.PlotBackground, chart.Options.Theme.MutedText), 0.52);
+        var color = ApplyOpacity(ChartDottedMapSurface.BoundaryColor(chart.Options.Theme.PlotBackground, chart.Options.Theme.MutedText), 0.52);
         c.DrawLine(startX, startY, end.X, end.Y, color, Math.Max(0.85, dot * 0.22));
     }
 
@@ -607,10 +580,7 @@ public sealed partial class PngChartRenderer {
             Math.Abs(viewport.MaximumLatitude - 55.2) < 0.000001;
     }
 
-    private static bool IsDottedMapChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.DottedMap) return true;
-        return false;
-    }
+    private static bool IsDottedMapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.DottedMap);
 
     private readonly struct DottedMapPngLabelCandidate {
         public readonly double X;

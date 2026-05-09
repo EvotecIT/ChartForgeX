@@ -25,7 +25,7 @@ internal sealed class ChartRange {
         var negativeAreaStacks = new Dictionary<double, double>();
         var hasHorizontalBars = false;
         foreach (var series in chart.Series) {
-            if (series.Kind == ChartSeriesKind.Heatmap || series.Kind == ChartSeriesKind.CalendarHeatmap || series.Kind == ChartSeriesKind.DottedMap || series.Kind == ChartSeriesKind.TileMap || series.Kind == ChartSeriesKind.RegionMap || series.Kind == ChartSeriesKind.Gauge || series.Kind == ChartSeriesKind.Circle || series.Kind == ChartSeriesKind.RadialBar || series.Kind == ChartSeriesKind.LayeredRadial || series.Kind == ChartSeriesKind.Bullet || series.Kind == ChartSeriesKind.Waterfall || series.Kind == ChartSeriesKind.Radar || series.Kind == ChartSeriesKind.Funnel || series.Kind == ChartSeriesKind.Treemap || series.Kind == ChartSeriesKind.Timeline || series.Kind == ChartSeriesKind.Gantt || series.Kind == ChartSeriesKind.Sankey || series.Kind == ChartSeriesKind.Tree || series.Kind == ChartSeriesKind.PolarArea) continue;
+            if (ChartSeriesKindTraits.IsExclusive(series.Kind)) continue;
             if (series.YAxis == ChartAxisSide.Secondary && series.Kind != ChartSeriesKind.HorizontalBar) {
                 IncludeSeriesX(range, series);
                 continue;

@@ -45,7 +45,7 @@ public sealed partial class PngChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columnValues[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
-                var color = HeatmapColor(chart, series.Color, value, min, max);
+                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
                 var points = ChartHexbinLayout.Points(cx, cy, layout.Radius);
                 c.FillPolygon(points, color);
                 DrawPolygonOutline(c, points, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), Math.Max(1, ChartVisualPrimitives.HeatmapCellBorderStrokeWidth + 0.8));
@@ -54,7 +54,7 @@ public sealed partial class PngChartRenderer {
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
                     var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-                    DrawReadablePngLabel(c, new ChartRect(cx - layout.HexWidth / 2, cy - layout.Radius, layout.HexWidth, layout.Radius * 2), cx - width / 2, cy - fontSize / 2, label, HeatmapTextColor(color), color, fontSize, DataLabelStyle(chart, series, pointIndex));
+                    DrawReadablePngLabel(c, new ChartRect(cx - layout.HexWidth / 2, cy - layout.Radius, layout.HexWidth, layout.Radius * 2), cx - width / 2, cy - fontSize / 2, label, ChartColorMath.TextOnBackground(color), color, fontSize, DataLabelStyle(chart, series, pointIndex));
                 }
             }
         }

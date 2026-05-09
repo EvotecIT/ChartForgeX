@@ -6,35 +6,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 internal static class ChartGuards {
-    private static readonly ChartSeriesKind[] ExclusiveSeriesKinds = {
-        ChartSeriesKind.Heatmap,
-        ChartSeriesKind.HexbinHeatmap,
-        ChartSeriesKind.CalendarHeatmap,
-        ChartSeriesKind.DottedMap,
-        ChartSeriesKind.TileMap,
-        ChartSeriesKind.RegionMap,
-        ChartSeriesKind.Gauge,
-        ChartSeriesKind.Circle,
-        ChartSeriesKind.RadialBar,
-        ChartSeriesKind.LayeredRadial,
-        ChartSeriesKind.Bullet,
-        ChartSeriesKind.Waterfall,
-        ChartSeriesKind.Radar,
-        ChartSeriesKind.Funnel,
-        ChartSeriesKind.Treemap,
-        ChartSeriesKind.Timeline,
-        ChartSeriesKind.Gantt,
-        ChartSeriesKind.Sankey,
-        ChartSeriesKind.Tree,
-        ChartSeriesKind.Sunburst,
-        ChartSeriesKind.Pictorial,
-        ChartSeriesKind.ProgressBar,
-        ChartSeriesKind.WordCloud,
-        ChartSeriesKind.Pie,
-        ChartSeriesKind.Donut,
-        ChartSeriesKind.PolarArea
-    };
-
     public static void Finite(double value, string parameterName) {
         if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite.");
     }
@@ -71,17 +42,17 @@ internal static class ChartGuards {
     public static void RenderCompatibility(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         ValidateRenderableChart(chart);
-        var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(kind => Array.IndexOf(ExclusiveSeriesKinds, kind) >= 0).Distinct().ToArray();
+        var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
             throw new InvalidOperationException("Specialized chart types cannot be mixed with other series kinds in the same chart.");
         }
 
-        if (RequiresSingleSeries(exclusiveKinds[0]) && chart.Series.Count != 1) {
+        if (ChartSeriesKindTraits.RequiresSingleSeries(exclusiveKinds[0]) && chart.Series.Count != 1) {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts support exactly one series.");
         }
 
-        if (RequiresPositiveValues(exclusiveKinds[0]) && !chart.Series[0].Points.Any(point => point.Y > 0)) {
+        if (ChartSeriesKindTraits.RequiresPositiveValues(exclusiveKinds[0]) && !chart.Series[0].Points.Any(point => point.Y > 0)) {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts require at least one positive value.");
         }
 
@@ -180,40 +151,6 @@ internal static class ChartGuards {
 
     private static void RequireSameX(ChartPoint first, ChartPoint second, string message) {
         if (Math.Abs(first.X - second.X) > 0.000001) throw new InvalidOperationException(message);
-    }
-
-    private static bool RequiresSingleSeries(ChartSeriesKind kind) {
-        return kind == ChartSeriesKind.Gauge ||
-            kind == ChartSeriesKind.CalendarHeatmap ||
-            kind == ChartSeriesKind.DottedMap ||
-            kind == ChartSeriesKind.TileMap ||
-            kind == ChartSeriesKind.RegionMap ||
-            kind == ChartSeriesKind.Circle ||
-            kind == ChartSeriesKind.RadialBar ||
-            kind == ChartSeriesKind.LayeredRadial ||
-            kind == ChartSeriesKind.Waterfall ||
-            kind == ChartSeriesKind.Funnel ||
-            kind == ChartSeriesKind.Treemap ||
-            kind == ChartSeriesKind.Sankey ||
-            kind == ChartSeriesKind.Tree ||
-            kind == ChartSeriesKind.Sunburst ||
-            kind == ChartSeriesKind.Pictorial ||
-            kind == ChartSeriesKind.ProgressBar ||
-            kind == ChartSeriesKind.WordCloud ||
-            kind == ChartSeriesKind.Pie ||
-            kind == ChartSeriesKind.Donut ||
-            kind == ChartSeriesKind.PolarArea;
-    }
-
-    private static bool RequiresPositiveValues(ChartSeriesKind kind) {
-        return kind == ChartSeriesKind.Funnel ||
-            kind == ChartSeriesKind.Treemap ||
-            kind == ChartSeriesKind.Pie ||
-            kind == ChartSeriesKind.Donut ||
-            kind == ChartSeriesKind.Pictorial ||
-            kind == ChartSeriesKind.ProgressBar ||
-            kind == ChartSeriesKind.WordCloud ||
-            kind == ChartSeriesKind.PolarArea;
     }
 
     private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind) {

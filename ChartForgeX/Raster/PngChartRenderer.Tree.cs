@@ -17,18 +17,15 @@ public sealed partial class PngChartRenderer {
         foreach (var node in model.Nodes) DrawTreeNode(c, chart, model, node, showLabels);
     }
 
-    private static bool IsTreeChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Tree) return true;
-        return false;
-    }
+    private static bool IsTreeChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Tree);
 
     private static void DrawTreeNode(RgbaCanvas c, Chart chart, TreeModel model, TreeNode node, bool showLabels) {
         var theme = chart.Options.Theme;
         var color = theme.Palette[node.Depth % theme.Palette.Length];
-        var labelColor = HeatmapTextColor(color);
+        var labelColor = ChartColorMath.TextOnBackground(color);
         var radius = Math.Min(ChartVisualPrimitives.TreeNodeCornerRadiusMax, model.NodeHeight / 2);
         c.FillRoundedRectVerticalGradient(node.X, node.Y, model.NodeWidth, model.NodeHeight, radius, TreeNodeGradientTop(color), TreeNodeGradientBottom(color));
-        c.StrokeRoundedRect(node.X, node.Y, model.NodeWidth, model.NodeHeight, radius, ApplyOpacity(TreeLabelHalo(labelColor), ChartVisualPrimitives.TreeNodeBorderOpacity), ChartVisualPrimitives.TreeNodeBorderStrokeWidth);
+        c.StrokeRoundedRect(node.X, node.Y, model.NodeWidth, model.NodeHeight, radius, ApplyOpacity(ChartColorMath.TextOnBackground(labelColor, 0.70), ChartVisualPrimitives.TreeNodeBorderOpacity), ChartVisualPrimitives.TreeNodeBorderStrokeWidth);
         if (showLabels) DrawTreeNodeLabel(c, chart, model, node, labelColor);
     }
 
@@ -139,7 +136,7 @@ public sealed partial class PngChartRenderer {
         for (var i = 0; i < lines.Length; i++) {
             var y = top + i * lineHeight;
             var x = node.X + (model.NodeWidth - EstimatePngEmphasizedTextWidth(lines[i], fontSize)) / 2.0;
-            DrawReadablePngLabel(c, x, y, lines[i], labelColor, TreeLabelHalo(labelColor), fontSize);
+            DrawReadablePngLabel(c, x, y, lines[i], labelColor, ChartColorMath.TextOnBackground(labelColor, 0.70), fontSize);
         }
     }
 
@@ -161,14 +158,9 @@ public sealed partial class PngChartRenderer {
         return new[] { string.Join(" ", words, 0, bestSplit), string.Join(" ", words, bestSplit, words.Length - bestSplit) };
     }
 
-    private static ChartColor TreeLabelHalo(ChartColor labelColor) {
-        var luminance = (0.2126 * labelColor.R + 0.7152 * labelColor.G + 0.0722 * labelColor.B) / 255.0;
-        return luminance > 0.70 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
-    }
+    private static ChartColor TreeNodeGradientTop(ChartColor color) => ChartMarkSurface.TreeNodeGradientTop(color);
 
-    private static ChartColor TreeNodeGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.TreeNodeGradientTopBlend);
-
-    private static ChartColor TreeNodeGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.TreeNodeGradientBottomBlend);
+    private static ChartColor TreeNodeGradientBottom(ChartColor color) => ChartMarkSurface.TreeNodeGradientBottom(color);
 
     private sealed class TreeNode {
         public TreeNode(int index, string label) { Index = index; Label = label; }

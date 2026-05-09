@@ -303,8 +303,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsLineLikeLegend(ChartSeriesKind kind) =>
-        kind == ChartSeriesKind.Line || kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.Area || kind == ChartSeriesKind.StepArea || kind == ChartSeriesKind.StackedArea || kind == ChartSeriesKind.Slope || kind == ChartSeriesKind.RangeBand || kind == ChartSeriesKind.RangeArea || kind == ChartSeriesKind.Lollipop || kind == ChartSeriesKind.Dumbbell || kind == ChartSeriesKind.ErrorBar || kind == ChartSeriesKind.Radar || kind == ChartSeriesKind.TrendLine;
+    private static bool IsLineLikeLegend(ChartSeriesKind kind) => ChartSeriesKindTraits.IsLineLikeLegendKind(kind);
 
     private static bool ShouldDrawDataLabels(Chart chart, ChartSeries series) => series.ShowDataLabels ?? chart.Options.ShowDataLabels;
 
@@ -326,9 +325,15 @@ public sealed partial class PngChartRenderer {
 
     private static bool ShowAxisLines(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowAxisLines;
 
-    private static bool IsMapChart(Chart chart) => IsCalendarHeatmapChart(chart) || IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
+    private static bool IsMapChart(Chart chart) {
+        foreach (var series in chart.Series) if (ChartSeriesKindTraits.IsMapKind(series.Kind)) return true;
+        return false;
+    }
 
-    private static bool IsSpatialMapChart(Chart chart) => IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
+    private static bool IsSpatialMapChart(Chart chart) {
+        foreach (var series in chart.Series) if (ChartSeriesKindTraits.IsSpatialMapKind(series.Kind)) return true;
+        return false;
+    }
 
     private static ChartRect SpatialMapPlotArea(Chart chart) {
         var o = chart.Options;
@@ -596,24 +601,13 @@ public sealed partial class PngChartRenderer {
         return formatter(value) ?? string.Empty;
     }
 
-    private static bool IsPieLike(Chart chart) => chart.Series.Count > 0 && (chart.Series[0].Kind == ChartSeriesKind.Pie || chart.Series[0].Kind == ChartSeriesKind.Donut);
-    private static bool IsPolarAreaChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.PolarArea) return true;
-        return false;
-    }
+    private static bool IsPieLike(Chart chart) => chart.Series.Count > 0 && ChartSeriesKindTraits.IsPieLikeKind(chart.Series[0].Kind);
 
-    private static bool IsProgressBarChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.ProgressBar) return true;
-        return false;
-    }
+    private static bool IsPolarAreaChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.PolarArea);
 
-    private static bool IsHexbinHeatmapChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.HexbinHeatmap) return true;
-        return false;
-    }
+    private static bool IsProgressBarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.ProgressBar);
 
-    private static bool IsHorizontalBarChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.HorizontalBar) return true;
-        return false;
-    }
+    private static bool IsHexbinHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.HexbinHeatmap);
+
+    private static bool IsHorizontalBarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.HorizontalBar);
 }

@@ -70,10 +70,10 @@ public sealed partial class SvgChartRenderer {
             var row = (int)day.DayOfWeek;
             var hasValue = byDate.TryGetValue(day, out var entry);
             var value = hasValue ? entry.Value : 0;
-            var ratio = hasValue ? CalendarHeatmapRatio(value, min, max) : 0;
+            var ratio = hasValue ? ChartHeatmapSurface.CalendarRatio(value, min, max) : 0;
             var level = hasValue ? (int)Math.Ceiling(ratio * 4) : 0;
-            var status = hasValue ? HeatmapStatus(ratio) : "empty";
-            var color = hasValue ? CalendarHeatmapColor(chart, series, entry.Color, value, min, max) : CalendarHeatmapEmptyColor(chart);
+            var status = hasValue ? ChartHeatmapSurface.Status(ratio) : "empty";
+            var color = hasValue ? ChartHeatmapSurface.CalendarColor(chart, series, entry.Color, value, min, max) : ChartHeatmapSurface.CalendarEmptyColor(chart);
             var x = x0 + column * (cell + gap);
             var y = y0 + row * (cell + gap);
             var dateText = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -172,7 +172,7 @@ public sealed partial class SvgChartRenderer {
         var x = right - noDataWidth - width - EstimateTextWidth("More", t.TickLabelFontSize) - 10;
         var lessLabelX = x - 8;
         if (showNoData) {
-            var noData = CalendarHeatmapEmptyColor(chart);
+            var noData = ChartHeatmapSurface.CalendarEmptyColor(chart);
             writer
                 .StartElement("rect")
                 .Attribute("data-cfx-role", "calendar-heatmap-scale-no-data")
@@ -207,14 +207,14 @@ public sealed partial class SvgChartRenderer {
             .Line();
         for (var i = 0; i < 5; i++) {
             var value = min + (max - min) * (i / 4.0);
-            var ratio = CalendarHeatmapRatio(value, min, max);
-            var color = CalendarHeatmapColor(chart, series, null, value, min, max);
+            var ratio = ChartHeatmapSurface.CalendarRatio(value, min, max);
+            var color = ChartHeatmapSurface.CalendarColor(chart, series, null, value, min, max);
             writer
                 .StartElement("rect")
                 .Attribute("data-cfx-role", "calendar-heatmap-scale-step")
                 .Attribute("data-cfx-level", i)
                 .Attribute("data-cfx-value", value)
-                .Attribute("data-cfx-status", HeatmapStatus(ratio))
+                .Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio))
                 .Attribute("x", x + i * (size + gap))
                 .Attribute("y", y)
                 .Attribute("width", size)
@@ -239,22 +239,6 @@ public sealed partial class SvgChartRenderer {
             .Line();
     }
 
-    private static ChartColor CalendarHeatmapColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
-        var ratio = CalendarHeatmapRatio(value, min, max);
-        var high = pointColor ?? series.Color ?? chart.Options.Theme.Positive;
-        return Blend(chart.Options.Theme.PlotBackground, high, 0.30 + ratio * 0.70);
-    }
-
-    private static ChartColor CalendarHeatmapEmptyColor(Chart chart) {
-        var t = chart.Options.Theme;
-        var light = (0.2126 * t.PlotBackground.R + 0.7152 * t.PlotBackground.G + 0.0722 * t.PlotBackground.B) / 255.0 > 0.70;
-        return light ? Blend(t.PlotBackground, t.MutedText, 0.30) : Blend(t.PlotBackground, t.Grid, 0.72);
-    }
-
-    private static double CalendarHeatmapRatio(double value, double min, double max) {
-        return Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
-    }
-
     private static List<CalendarHeatmapCell> CalendarHeatmapCells(ChartSeries series) {
         var cells = new List<CalendarHeatmapCell>();
         for (var i = 0; i < series.Points.Count; i++) {
@@ -269,7 +253,7 @@ public sealed partial class SvgChartRenderer {
 
     private static DateTime CalendarWeekEnd(DateTime date) => date.Date.AddDays(6 - (int)date.DayOfWeek);
 
-    private static bool IsCalendarHeatmapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.CalendarHeatmap);
+    private static bool IsCalendarHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.CalendarHeatmap);
 
     private readonly struct CalendarHeatmapCell {
         public readonly DateTime Date;

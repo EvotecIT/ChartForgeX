@@ -82,7 +82,7 @@ public sealed partial class SvgChartRenderer {
 
             var centerX = plot.Left + plot.Width / 2;
             var centerY = segmentY + segmentDrawHeight / 2;
-            var labelColor = FunnelTextColor(color);
+            var labelColor = ChartColorMath.TextOnBackground(color, 0.58);
             var labelStroke = FunnelTextHalo(labelColor, t.CardBackground);
             var labelWidth = Math.Max(36, Math.Min(topWidth, bottomWidth) - 18);
             if (showLabels) {
@@ -191,13 +191,18 @@ public sealed partial class SvgChartRenderer {
                 .EndStartElement()
                 .StartElement("stop")
                 .Attribute("offset", "0%")
-                .Attribute("stop-color", color.ToHex())
+                .Attribute("stop-color", ChartMarkSurface.FunnelSegmentGradientTop(color).ToHex())
                 .Attribute("stop-opacity", "1")
                 .EndEmptyElement()
                 .StartElement("stop")
-                .Attribute("offset", "100%")
+                .Attribute("offset", "50%")
                 .Attribute("stop-color", color.ToHex())
-                .Attribute("stop-opacity", "0.78")
+                .Attribute("stop-opacity", "0.92")
+                .EndEmptyElement()
+                .StartElement("stop")
+                .Attribute("offset", "100%")
+                .Attribute("stop-color", ChartMarkSurface.FunnelSegmentGradientBottom(color).ToHex())
+                .Attribute("stop-opacity", "0.88")
                 .EndEmptyElement()
                 .EndElement()
                 .Line();
@@ -215,11 +220,6 @@ public sealed partial class SvgChartRenderer {
         if (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue) return $"url(#{id}-funnelPointFill{pointIndex})";
         if (series.Color.HasValue) return series.Color.Value.ToCss();
         return $"url(#{id}-sliceFill{pointIndex % chart.Options.Theme.Palette.Length})";
-    }
-
-    private static ChartColor FunnelTextColor(ChartColor background) {
-        var luminance = (0.2126 * background.R + 0.7152 * background.G + 0.0722 * background.B) / 255;
-        return luminance > 0.58 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
     }
 
     private static ChartColor FunnelTextHalo(ChartColor text, ChartColor cardBackground) =>

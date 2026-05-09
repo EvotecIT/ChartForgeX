@@ -69,7 +69,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("y", F(plot.Bottom + 22))
                     .Attribute("text-anchor", anchor)
                     .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", GanttFontFamily(t.FontFamily))
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
                     .Attribute("font-size", F(labelFontSize))
                     .Raw(Escape(label))
                     .EndElement()
@@ -108,7 +108,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("text-anchor", "end")
                     .Attribute("dominant-baseline", "middle")
                     .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", GanttFontFamily(t.FontFamily))
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
                     .Attribute("font-size", F(rowLabelFontSize))
                     .Attribute("font-weight", "650")
                     .Raw(Escape(rowLabel))
@@ -266,7 +266,7 @@ public sealed partial class SvgChartRenderer {
                 .Line();
         }
 
-        if (item.ShowDataLabels && width >= 74) DrawGanttSvgTextCenteredX(writer, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, HeatmapTextColor(item.Color), t.DataLabelFontSize, width - 8, "750", t.CardBackground, 2.2);
+        if (item.ShowDataLabels && width >= 74) DrawSvgTextCenteredX(writer, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 8, "750", t.CardBackground, 2.2);
     }
 
     private static void DrawGanttMilestone(SvgMarkupWriter writer, Chart chart, GanttItem item, string id, double x, double centerY, double rowHeight) {
@@ -336,12 +336,12 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke-dasharray", "6 5")
             .EndEmptyElement()
             .Line();
-        DrawGanttSvgTextCenteredX(writer, chart, "gantt-today-label", "Today", x, plot.Top - 8, t.Warning, t.TickLabelFontSize, 62, "750", t.CardBackground, 2.2, middleBaseline: false);
+        DrawSvgTextCenteredX(writer, chart, "gantt-today-label", "Today", x, plot.Top - 8, t.Warning, t.TickLabelFontSize, 62, "750", t.CardBackground, 2.2, middleBaseline: false);
     }
 
     private static void DrawGanttSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
         if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawGanttSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawGanttSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
@@ -359,57 +359,15 @@ public sealed partial class SvgChartRenderer {
             .Attribute("transform", "translate(" + F(axisX) + " " + F(plot.Top + plot.Height / 2) + ") rotate(-90)")
             .Attribute("text-anchor", "middle")
             .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
-            .Attribute("font-family", GanttFontFamily(StyleFontFamily(chart, style)))
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", F(fontSize))
             .Attribute("font-weight", StyleWeight(style, "600"));
-        WriteGanttSvgTextStyleAttributes(writer, style);
+        WriteSvgTextStyleAttributes(writer, style);
         writer
             .Raw(Escape(text))
             .EndElement()
             .Line();
     }
-
-    private static void DrawGanttSvgTextCenteredX(SvgMarkupWriter writer, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, ChartTextStyle? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
-        if (fittedText.Length == 0) return;
-
-        writer
-            .StartElement("text")
-            .Attribute("data-cfx-role", role)
-            .Attribute("x", F(centerX))
-            .Attribute("y", F(y))
-            .Attribute("text-anchor", "middle");
-        if (middleBaseline) writer.Attribute("dominant-baseline", "middle");
-        writer.Attribute("fill", StyleColor(style, fill).ToCss());
-        if (stroke.HasValue && strokeWidth > 0) {
-            writer
-                .Attribute("stroke", stroke.Value.ToCss())
-                .Attribute("stroke-width", F(strokeWidth))
-                .Attribute("paint-order", "stroke fill")
-                .Attribute("stroke-linejoin", "round");
-        }
-
-        writer
-            .Attribute("font-family", GanttFontFamily(StyleFontFamily(chart, style)))
-            .Attribute("font-size", F(fittedFontSize))
-            .Attribute("font-weight", StyleWeight(style, fontWeight));
-        WriteGanttSvgTextStyleAttributes(writer, style);
-        writer
-            .Raw(Escape(fittedText))
-            .EndElement()
-            .Line();
-    }
-
-    private static void WriteGanttSvgTextStyleAttributes(SvgMarkupWriter writer, ChartTextStyle? style) {
-        if (style == null) return;
-        if (style.Italic) writer.Attribute("font-style", "italic");
-        if (style.Underline) writer.Attribute("text-decoration", "underline");
-    }
-
-    private static string GanttFontFamily(string value) =>
-        string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value;
 
     private static ChartRect ApplyGanttReserve(Chart chart, ChartRect plot, IReadOnlyList<GanttItem> items) {
         var t = chart.Options.Theme;

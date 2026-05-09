@@ -100,10 +100,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsWaterfallChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Waterfall) return true;
-        return false;
-    }
+    private static bool IsWaterfallChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Waterfall);
 
     private static List<WaterfallStep> BuildWaterfallSteps(ChartSeries series) {
         var steps = new List<WaterfallStep>(series.Points.Count + 1);

@@ -20,10 +20,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsWordCloudChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.WordCloud) return true;
-        return false;
-    }
+    private static bool IsWordCloudChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.WordCloud);
 
     private static ChartColor PngWordCloudTermColor(ChartSeries series, ChartTheme theme, int pointIndex, int renderIndex) {
         if (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue) return series.PointColors[pointIndex]!.Value;

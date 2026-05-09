@@ -162,10 +162,7 @@ public sealed partial class PngChartRenderer {
         return series.Color ?? theme.Palette[pointIndex % theme.Palette.Length];
     }
 
-    private static bool IsRadialBarChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.RadialBar) return true;
-        return false;
-    }
+    private static bool IsRadialBarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.RadialBar);
 
     private sealed class PngRadialBarLegendRow {
         public List<PngRadialBarLegendItem> Items { get; } = new();

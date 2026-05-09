@@ -57,7 +57,7 @@ public sealed partial class PngChartRenderer {
             DrawTimelineRangeBar(c, chart, item.Color, left, y, width, rowHeight);
             if (item.ShowDataLabels && width >= Math.Max(72, EstimatePngEmphasizedTextWidth("100d", dataFontSize) + 14)) {
                 var label = FormatTimelineDuration(chart, item.Start, item.End);
-                DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, rowHeight), label, HeatmapTextColor(item.Color), item.Color, dataFontSize);
+                DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, rowHeight), label, ChartColorMath.TextOnBackground(item.Color), item.Color, dataFontSize);
             }
         }
 
@@ -89,10 +89,7 @@ public sealed partial class PngChartRenderer {
         if (x2 > x1) c.DrawLine(x1, y + ChartVisualPrimitives.TimelineItemHighlightOffsetY, x2, y + ChartVisualPrimitives.TimelineItemHighlightOffsetY, ApplyOpacity(ChartColor.White, ChartVisualPrimitives.TimelineItemHighlightOpacity), ChartVisualPrimitives.GridStrokeWidth);
     }
 
-    private static bool IsTimelineChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Timeline) return true;
-        return false;
-    }
+    private static bool IsTimelineChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Timeline);
 
     private static List<TimelineItem> BuildTimelineItems(Chart chart) {
         var items = new List<TimelineItem>();
@@ -143,13 +140,13 @@ public sealed partial class PngChartRenderer {
         return ((int)Math.Round(duration)).ToString(CultureInfo.InvariantCulture) + "d";
     }
 
-    private static ChartColor TimelineItemGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.TimelineItemGradientTopBlend);
+    private static ChartColor TimelineItemGradientTop(ChartColor color) => ChartMarkSurface.TimelineItemGradientTop(color);
 
-    private static ChartColor TimelineItemGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.TimelineItemGradientBottomBlend);
+    private static ChartColor TimelineItemGradientBottom(ChartColor color) => ChartMarkSurface.TimelineItemGradientBottom(color);
 
-    private static ChartColor GanttTaskGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.GanttTaskGradientTopBlend);
+    private static ChartColor GanttTaskGradientTop(ChartColor color) => ChartMarkSurface.GanttTaskGradientTop(color);
 
-    private static ChartColor GanttTaskGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.GanttTaskGradientBottomBlend);
+    private static ChartColor GanttTaskGradientBottom(ChartColor color) => ChartMarkSurface.GanttTaskGradientBottom(color);
 
     private static void DrawTimelineAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot) {
         if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
