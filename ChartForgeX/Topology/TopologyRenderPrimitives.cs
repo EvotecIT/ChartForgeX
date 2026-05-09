@@ -49,7 +49,7 @@ internal static partial class TopologyRenderPrimitives {
     public static bool ShouldRenderGeographicRouteHalo(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyRenderOptions options) {
         if (!IsMonitoringDashboardStyle(options)) return false;
         if (!IsGeographicCurve(chart, edge, nodes)) return false;
-        return edge.Kind is TopologyEdgeKind.Connectivity or TopologyEdgeKind.Link || !string.IsNullOrWhiteSpace(edge.Label);
+        return ShouldReserveGeographicCalloutRouteObstacle(edge);
     }
 
     public static bool ShouldRenderMonitoringRouteHalo(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyRenderOptions options) {
@@ -57,6 +57,14 @@ internal static partial class TopologyRenderPrimitives {
         if (ShouldRenderGeographicRouteHalo(chart, edge, nodes, options)) return true;
         if (edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle) return false;
         return edge.Kind is TopologyEdgeKind.Link or TopologyEdgeKind.Connectivity or TopologyEdgeKind.Replication or TopologyEdgeKind.Mapping;
+    }
+
+    public static bool ShouldReserveGeographicCalloutRouteObstacle(TopologyEdge edge) =>
+        edge.Kind is TopologyEdgeKind.Connectivity or TopologyEdgeKind.Link || !string.IsNullOrWhiteSpace(edge.Label);
+
+    public static byte HighlightAlpha(byte alpha, bool isHighlighted, TopologyHighlightState highlight) {
+        if (!highlight.IsActive || isHighlighted) return alpha;
+        return (byte)Math.Round(alpha * Clamp(highlight.DimmedOpacity, 0, 1));
     }
 
     public static string StatusFill(string color, string background, double amount) => Blend(color, background, amount);

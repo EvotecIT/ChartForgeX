@@ -240,7 +240,7 @@ public sealed partial class TopologyPngRenderer {
                 ? GeographicCurveSamplePoints(chart, edge, nodes, points)
                 : points;
             var width = EdgeStrokeWidth(edge, isSelected, options);
-            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) DrawEdgeRoute(canvas, routePoints, WithAlpha(Color(theme.Background), 224), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4), false, 0, 0);
+            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) DrawEdgeRoute(canvas, routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4), false, 0, 0);
             DrawEdgeRoute(canvas, routePoints, color, width, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap);
 
             if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color);

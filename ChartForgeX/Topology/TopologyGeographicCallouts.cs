@@ -146,7 +146,7 @@ internal static class TopologyGeographicCallouts {
     }
 
     private static (double X, double Y, string Name) Place(double anchorX, double anchorY, double width, double height, ChartRect map, TopologyChart chart, IReadOnlyList<CalloutBox> placed, IReadOnlyList<CalloutBox> nodeBoxes, bool preferMapEdges, string? preferredPlacement) {
-        var candidates = CandidatePositions(anchorX, anchorY, width, height, map, preferMapEdges);
+        var candidates = CandidatePositions(anchorX, anchorY, width, height, map, preferMapEdges, preferredPlacement);
         var best = candidates[0];
         var bestScore = double.MaxValue;
         foreach (var candidate in candidates) {
@@ -166,7 +166,7 @@ internal static class TopologyGeographicCallouts {
 
     private static IEnumerable<CalloutBox> RouteObstacleBoxes(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
         foreach (var edge in chart.Edges) {
-            if (edge.Kind != TopologyEdgeKind.Connectivity && string.IsNullOrWhiteSpace(edge.Label)) continue;
+            if (!ShouldReserveGeographicCalloutRouteObstacle(edge)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var points = EdgePoints(chart, edge, nodes);
             if (points.Count < 2) continue;
@@ -201,7 +201,7 @@ internal static class TopologyGeographicCallouts {
         return best;
     }
 
-    private static List<(double X, double Y, string Name)> CandidatePositions(double anchorX, double anchorY, double width, double height, ChartRect map, bool preferMapEdges) {
+    private static List<(double X, double Y, string Name)> CandidatePositions(double anchorX, double anchorY, double width, double height, ChartRect map, bool preferMapEdges, string? preferredPlacement) {
         var left = map.Left + 14;
         var right = map.Right - width - 14;
         var top = map.Top + 18;
@@ -211,10 +211,11 @@ internal static class TopologyGeographicCallouts {
         var primaryX = preferredSide == "left" ? left : right;
         var secondaryX = preferredSide == "left" ? right : left;
         var positions = new List<(double X, double Y, string Name)>();
-        if (preferMapEdges) {
+        if (preferMapEdges || IsExplicitMapEdgePlacement(preferredPlacement)) {
             positions.Add((primaryX, bottom, preferredSide + "-corner"));
             positions.Add((secondaryX, bottom, preferredSide == "left" ? "right-corner" : "left-corner"));
             positions.Add((primaryX, top, preferredSide + "-top-corner"));
+            positions.Add((secondaryX, top, preferredSide == "left" ? "right-top-corner" : "left-top-corner"));
         }
 
         positions.AddRange(new[] {
@@ -226,6 +227,12 @@ internal static class TopologyGeographicCallouts {
             (secondaryX, Clamp(anchorY - height - 34, top, bottom), preferredSide == "left" ? "right-above" : "left-above")
         });
         return positions;
+    }
+
+    private static bool IsExplicitMapEdgePlacement(string? placement) {
+        var normalized = placement == null ? string.Empty : placement.Trim();
+        if (normalized.Length == 0) return false;
+        return normalized.EndsWith("-corner", StringComparison.OrdinalIgnoreCase);
     }
 
     private static double OverlapScore(CalloutBox box, IReadOnlyList<CalloutBox> others) {

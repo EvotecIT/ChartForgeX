@@ -14,9 +14,9 @@ public sealed partial class TopologyPngRenderer {
             var isSelected = IsSelected(options.SelectedGroupIds, callout.Group.Id);
             var isHighlighted = highlight.IsGroupHighlighted(callout.Group);
             var accent = Color(callout.AccentColor);
-            var lineAlpha = isHighlighted ? (byte)184 : (byte)System.Math.Round(184 * highlight.DimmedOpacity);
+            var lineAlpha = HighlightAlpha(184, isHighlighted, highlight);
             var leader = CalloutLeaderPoints(callout);
-            DrawCalloutLeaderHalo(canvas, leader, WithAlpha(Color(theme.Background), 194));
+            DrawCalloutLeaderHalo(canvas, leader, WithAlpha(Color(theme.Background), HighlightAlpha(194, isHighlighted, highlight)));
             DrawCalloutLeader(canvas, leader, WithAlpha(accent, lineAlpha));
             canvas.DrawCircle(callout.AnchorX, callout.AnchorY, 6.2, Color(theme.Background));
             canvas.DrawCircle(callout.AnchorX, callout.AnchorY, 4.2, accent);

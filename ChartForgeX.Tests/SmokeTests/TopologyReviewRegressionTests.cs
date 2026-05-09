@@ -137,6 +137,55 @@ internal static partial class SmokeTests {
         Assert(string.Equals(fill, theme.Background, StringComparison.Ordinal), "Monitoring edge-label clearance should use the actual background when group cards are hidden.");
     }
 
+    private static void TopologyGeographicCalloutsAvoidUnlabeledLinkRoutes() {
+        var link = new TopologyEdge { Kind = TopologyEdgeKind.Link };
+        var dependency = new TopologyEdge { Kind = TopologyEdgeKind.Dependency };
+
+        Assert(TopologyRenderPrimitives.ShouldReserveGeographicCalloutRouteObstacle(link), "Visible unlabeled geographic site links should reserve callout route obstacles.");
+        Assert(!TopologyRenderPrimitives.ShouldReserveGeographicCalloutRouteObstacle(dependency), "Unlabeled non-route edges should not add geographic callout obstacles.");
+    }
+
+    private static void TopologyExplicitCalloutPlacementAddsMapEdgeCandidates() {
+        var chart = TopologyChart.Create()
+            .WithId("explicit-callout-placement")
+            .WithViewport(640, 340, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.Geographic)
+            .WithMapViewport(ChartMapViewport.World())
+            .AddGroup("apac", "APAC", 0, 0, 0, 0, TopologyHealthStatus.Warning, "1 site", symbol: "region")
+            .AddNode("sin", "Singapore", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Warning, "apac", width: 48, height: 36)
+            .WithGroupCoordinates("apac", 103.8198, 1.3521)
+            .WithNodeCoordinates("sin", 103.8198, 1.3521);
+        chart.Groups[0].Metadata["calloutPlacement"] = "left-corner";
+
+        var callout = TopologyGeographicCallouts.Build(chart, new TopologyRenderOptions {
+            IncludeLegend = false,
+            IncludeGroups = false,
+            IncludeGeographicCallouts = true,
+            PreferGeographicCalloutMapEdges = false
+        }.WithMonitoringDashboardStyle(), TopologyTheme.Light()).Single();
+
+        Assert(string.Equals(callout.Placement, "left-corner", StringComparison.Ordinal), "Explicit calloutPlacement metadata should be honored even when global map-edge preference is disabled.");
+    }
+
+    private static void TopologyPngHalosUseHighlightAlpha() {
+        var chart = TopologyChart.Create()
+            .WithId("highlight-alpha")
+            .WithViewport(300, 180, 20)
+            .WithLegend(null)
+            .AddGroup("g", "Group", 40, 40, 160, 100, TopologyHealthStatus.Healthy)
+            .AddNode("a", "A", 60, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "g", width: 42, height: 36)
+            .AddNode("b", "B", 200, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "g", width: 42, height: 36)
+            .AddEdge("a-b", "a", "b", null, TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+        var activeHighlight = TopologyHighlightState.From(chart, new TopologyRenderOptions { HighlightStatuses = { TopologyHealthStatus.Critical }, DimmedOpacity = 0.25 });
+        var inactiveHighlight = TopologyHighlightState.From(chart, new TopologyRenderOptions { DimmedOpacity = 0.25 });
+
+        Assert(TopologyRenderPrimitives.HighlightAlpha(224, false, activeHighlight) == 56, "PNG route halos should use the same dimmed alpha factor as highlighted edge strokes.");
+        Assert(TopologyRenderPrimitives.HighlightAlpha(194, false, activeHighlight) == 48, "PNG callout leader halos should dim with the same highlight state as callout leaders.");
+        Assert(TopologyRenderPrimitives.HighlightAlpha(224, true, activeHighlight) == 224, "Highlighted halos should keep their full base alpha.");
+        Assert(TopologyRenderPrimitives.HighlightAlpha(224, false, inactiveHighlight) == 224, "Inactive highlight state should not dim halos.");
+    }
+
     private static void TopologyGeographicRegionHullsIgnoreHiddenNodes() {
         var chart = TopologyChart.Create()
             .WithId("hidden-hull")
