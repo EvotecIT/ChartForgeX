@@ -170,14 +170,32 @@ internal static class TopologyGeographicCallouts {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var points = EdgePoints(chart, edge, nodes);
             if (points.Count < 2) continue;
-            var samples = IsGeographicCurve(chart, edge, nodes)
-                ? GeographicCurveSamplePoints(chart, edge, nodes, points, 16)
-                : points;
-            for (var i = 0; i < samples.Count; i += 3) {
-                var point = samples[i];
+            var geographicCurve = IsGeographicCurve(chart, edge, nodes);
+            var samples = geographicCurve
+                ? GeographicCurveSamplePoints(chart, edge, nodes, points, 16).Where((_, index) => index % 3 == 0)
+                : SampleRouteObstaclePoints(points);
+            foreach (var point in samples) {
                 yield return CalloutBox.FromRect(point.X - 17, point.Y - 13, 34, 26);
             }
         }
+    }
+
+    public static List<ChartPoint> SampleRouteObstaclePoints(IReadOnlyList<ChartPoint> points, double spacing = 42) {
+        var samples = new List<ChartPoint>();
+        if (points.Count == 0) return samples;
+        samples.Add(points[0]);
+        for (var i = 0; i < points.Count - 1; i++) {
+            var start = points[i];
+            var end = points[i + 1];
+            var distance = Distance(start.X, start.Y, end.X, end.Y);
+            var steps = Math.Max(1, (int)Math.Ceiling(distance / Math.Max(1, spacing)));
+            for (var step = 1; step <= steps; step++) {
+                var t = step / (double)steps;
+                samples.Add(new ChartPoint(start.X + (end.X - start.X) * t, start.Y + (end.Y - start.Y) * t));
+            }
+        }
+
+        return samples;
     }
 
     private static (double X, double Y, string Name) AdjustCandidate((double X, double Y, string Name) candidate, double width, double height, ChartRect map, IReadOnlyList<CalloutBox> nodeBoxes) {
@@ -249,7 +267,7 @@ internal static class TopologyGeographicCallouts {
 
     private static double Clamp(double value, double min, double max) => value < min ? min : value > max ? max : value;
 
-    private readonly struct CalloutBox {
+    public readonly struct CalloutBox {
         private CalloutBox(double left, double top, double right, double bottom) {
             Left = left;
             Top = top;
@@ -265,6 +283,8 @@ internal static class TopologyGeographicCallouts {
 
         private double Bottom { get; }
 
+        public double Width => Right - Left;
+
         public static CalloutBox FromRect(double x, double y, double width, double height) => new(x, y, x + width, y + height);
 
         public static CalloutBox FromNodeVisual(TopologyNode node, TopologyRenderOptions options) {
@@ -277,9 +297,11 @@ internal static class TopologyGeographicCallouts {
             }
 
             if (mode == TopologyNodeDisplayMode.Icon) {
-                var labelWidth = options.IncludeIconLabels ? Math.Max(node.Width + 46, 72) : node.Width;
+                var labelWidth = options.IncludeIconLabels ? IconLabelPlateWidth(node) : node.Width;
                 var centerX = node.X + node.Width / 2;
-                return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, node.Height + (options.IncludeIconLabels ? 34 : 16));
+                if (!options.IncludeIconLabels) return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, node.Height + 16);
+                var labelBottom = IconLabelPlateY(node) + 15;
+                return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, labelBottom - node.Y + 8);
             }
 
             return FromRect(node.X - 10, node.Y - 10, node.Width + 20, node.Height + 20);

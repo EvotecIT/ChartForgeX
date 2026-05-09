@@ -35,9 +35,9 @@ internal static partial class TopologyRenderPrimitives {
             var width = Math.Max(48, maxText * 7.2 + 18);
             var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 1;
             var height = EdgeLabelHeight(lineCount, options);
-            var obstacles = new List<LabelBox>(nodeBoxes.Count + (options.IncludeGroupLabels ? groupHeaderBoxes.Count : 0) + (options.IncludeGroups ? groupBoxes.Count : 0));
+            var obstacles = new List<LabelBox>(nodeBoxes.Count + (options.IncludeGroups && options.IncludeGroupLabels ? groupHeaderBoxes.Count : 0) + (options.IncludeGroups ? groupBoxes.Count : 0));
             obstacles.AddRange(nodeBoxes);
-            if (options.IncludeGroupLabels) obstacles.AddRange(groupHeaderBoxes);
+            if (options.IncludeGroups && options.IncludeGroupLabels) obstacles.AddRange(groupHeaderBoxes);
             if (options.IncludeGroups && IsInterGroupEdge(edge, nodes)) obstacles.AddRange(groupBoxes);
             var preferredGroup = options.IncludeGroups ? SameGroupBox(edge, nodes, chart.Groups) : null;
             var currentOrder = edgeRenderOrders.TryGetValue(edge.Id, out var order) ? order : 0;

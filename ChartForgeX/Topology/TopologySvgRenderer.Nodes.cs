@@ -113,10 +113,10 @@ public sealed partial class TopologySvgRenderer {
         if (!options.IncludeNodeLabels) return body;
         if (displayMode == TopologyNodeDisplayMode.Icon) {
             if (options.IncludeIconLabels) {
-                var label = TrimToEstimatedWidth(TrimTo(node.Label, NodeTitleMaxLength(displayMode)), Math.Max(node.Width + 46, 72), 10.5, true);
-                var labelWidth = Math.Max(34, EstimateTextWidth(label, 10.5, true) + 12);
+                var label = IconLabelText(node);
+                var labelWidth = IconLabelPlateWidth(node);
                 var labelX = CenterX(node) - labelWidth / 2;
-                var labelY = node.Y + node.Height + 5;
+                var labelY = IconLabelPlateY(node);
                 body.Element("rect", rect => rect
                     .Class(prefix + "__node-icon-label-plate")
                     .Attribute("data-cfx-role", "topology-node-icon-label")
@@ -130,7 +130,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("stroke-width", 0.7));
                 body.Element("text", text => text
                     .Attribute("x", CenterX(node))
-                    .Attribute("y", node.Y + node.Height + 16)
+                    .Attribute("y", labelY + 11)
                     .Attribute("text-anchor", "middle")
                     .Attribute("fill", theme.Foreground)
                     .Attribute("font-size", 10.5)

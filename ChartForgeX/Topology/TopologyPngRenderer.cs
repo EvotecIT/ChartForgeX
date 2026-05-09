@@ -322,14 +322,13 @@ public sealed partial class TopologyPngRenderer {
             if (!isHighlighted && highlight.IsActive) canvas.FillRoundedRect(node.X, node.Y, node.Width, node.Height, radiusRect, WithAlpha(Color(theme.Background), 185));
             DrawNodeIcon(canvas, node, theme, accent, displayMode, options);
             if (options.IncludeNodeLabels && displayMode == TopologyNodeDisplayMode.Icon && options.IncludeIconLabels) {
-                var labelWidth = Math.Max(node.Width + 46, 72);
-                var label = TrimToEstimatedWidth(TrimTo(node.Label, NodeTitleMaxLength(displayMode)), labelWidth, 10.5, true);
-                var plateWidth = Math.Max(34, EstimateTextWidth(label, 10.5, true) + 12);
+                var label = IconLabelText(node);
+                var plateWidth = IconLabelPlateWidth(node);
                 var plateX = CenterX(node) - plateWidth / 2;
-                var plateY = node.Y + node.Height + 1;
+                var plateY = IconLabelPlateY(node);
                 canvas.FillRoundedRect(plateX, plateY, plateWidth, 15, 7.5, Color(theme.Background));
                 canvas.StrokeRoundedRect(plateX, plateY, plateWidth, 15, 7.5, Color(theme.Border), 0.7);
-                DrawCentered(canvas, CenterX(node), node.Y + node.Height + 4, label, Color(theme.Foreground), 10.5, true);
+                DrawCentered(canvas, CenterX(node), plateY + 3, label, Color(theme.Foreground), 10.5, true);
             } else if (options.IncludeNodeLabels && displayMode != TopologyNodeDisplayMode.Icon) {
                 if (displayMode == TopologyNodeDisplayMode.Tile) {
                     DrawCentered(canvas, CenterX(node), node.Y + node.Height + 4, TrimTo(node.Label, NodeTitleMaxLength(displayMode)), Color(theme.Foreground), 10.5, true);

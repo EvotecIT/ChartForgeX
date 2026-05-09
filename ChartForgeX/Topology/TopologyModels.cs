@@ -476,6 +476,8 @@ public sealed class TopologyEdge {
         }
     }
 
+    internal bool HasRouteLaneOverride { get; set; }
+
     /// <summary>Gets or sets the horizontal edge-label placement adjustment in pixels.</summary>
     public double LabelOffsetX {
         get => _labelOffsetX;

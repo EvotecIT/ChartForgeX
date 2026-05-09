@@ -401,7 +401,7 @@ internal static partial class TopologyRenderPrimitives {
     private static double EdgeRouteLane(TopologyChart chart, TopologyEdge edge, double offset) {
         if (edge.Waypoints.Count > 0) return edge.RouteLane;
         if (edge.Routing is not (TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal)) return edge.RouteLane;
-        if (Math.Abs(edge.RouteLane) >= 0.0001) return edge.RouteLane;
+        if (edge.HasRouteLaneOverride || Math.Abs(edge.RouteLane) >= 0.0001) return edge.RouteLane;
         return offset;
     }
 

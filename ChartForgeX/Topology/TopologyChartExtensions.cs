@@ -542,6 +542,7 @@ public static class TopologyChartExtensions {
         foreach (var edge in chart.Edges) {
             if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
             edge.RouteLane = routeLane;
+            edge.HasRouteLaneOverride = true;
             return chart;
         }
 
@@ -585,7 +586,7 @@ public static class TopologyChartExtensions {
             .Where(group => group.Count() > 1);
         foreach (var group in groups) {
             var edges = group
-                .Where(edge => Math.Abs(edge.RouteLane) < 0.000001)
+                .Where(edge => !edge.HasRouteLaneOverride && Math.Abs(edge.RouteLane) < 0.000001)
                 .OrderBy(edge => edge.SourceNodeId, StringComparer.Ordinal)
                 .ThenBy(edge => edge.TargetNodeId, StringComparer.Ordinal)
                 .ThenBy(edge => edge.Id, StringComparer.Ordinal)

@@ -685,6 +685,7 @@ internal static class TopologyLayoutEngine {
             SourcePort = edge.SourcePort,
             TargetPort = edge.TargetPort,
             RouteLane = edge.RouteLane,
+            HasRouteLaneOverride = edge.HasRouteLaneOverride,
             LabelOffsetX = edge.LabelOffsetX,
             LabelOffsetY = edge.LabelOffsetY,
             LayoutInference = edge.LayoutInference,

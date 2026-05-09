@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -18,6 +19,24 @@ internal static partial class SmokeTests {
         var plateX = GetAttribute(svg, "data-cfx-role=\"topology-node-icon-label\"", "x");
 
         Assert(plateX >= 0, "Viewport fitting should reserve the rendered minimum icon-label plate width.");
+    }
+
+    private static void TopologyIconLabelsStackBelowIconBadges() {
+        var chart = TopologyChart.Create()
+            .WithId("icon-label-badge")
+            .WithViewport(220, 150, 12)
+            .WithLegend(null)
+            .AddNode("edge", "Payments Team", 72, 36, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 48, height: 42, symbol: "TM")
+            .WithNodeDisplay("edge", TopologyNodeDisplayMode.Icon)
+            .WithNodeBadge("edge", "OK");
+
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeIconLabels = true };
+        var svg = chart.ToSvg(options);
+        var badgeY = GetAttribute(svg, "data-cfx-role=\"topology-node-badge\"", "y");
+        var plateY = GetAttribute(svg, "data-cfx-role=\"topology-node-icon-label\"", "y");
+
+        Assert(plateY >= badgeY + 19, "Icon label plates should stack below icon badges instead of sharing the badge slot.");
+        Assert(chart.ToPng(options).Length > 64, "Stacked icon labels and badges should render as PNG.");
     }
 
     private static void TopologyEdgeLabelsTolerateDuplicateEdgeIds() {
@@ -76,6 +95,21 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(primary[1].X - backup[1].X) > 0.01, "Default duplicate orthogonal edges should infer distinct route lanes instead of collapsing.");
     }
 
+    private static void TopologyExplicitZeroRouteLaneStaysCentered() {
+        var chart = TopologyChart.Create()
+            .WithId("explicit-zero-route-lane")
+            .WithViewport(420, 260, 20)
+            .WithLegend(null)
+            .AddNode("left", "Left", 70, 64, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 52, height: 42)
+            .AddNode("right", "Right", 286, 160, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 52, height: 42)
+            .AddEdge("center", "left", "right", "center", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .WithEdgeRouteLane("center", 0);
+
+        Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[0])) < 0.0001, "Explicit zero route lanes should stay centered instead of being replaced by inferred parallel offsets.");
+        Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[1])) > 0.0001, "Unset duplicate route lanes should still infer a parallel offset.");
+    }
+
     private static void TopologyEdgeLabelObstaclesFollowRenderedGroupOptions() {
         var headerChart = TopologyChart.Create()
             .WithId("headerless-label")
@@ -88,6 +122,8 @@ internal static partial class SmokeTests {
 
         var headerless = TopologyRenderPrimitives.EdgeLabelLayouts(headerChart, new TopologyRenderOptions { IncludeLegend = false, IncludeGroupLabels = false }).Single();
         Assert(Math.Abs(headerless.CenterY - 150) < 0.01, "Hidden group headers should not reserve phantom edge-label obstacles.");
+        var hiddenGroups = TopologyRenderPrimitives.EdgeLabelLayouts(headerChart, new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGroupLabels = true }).Single();
+        Assert(Math.Abs(hiddenGroups.CenterY - 150) < 0.01, "Hidden group cards should not reserve phantom group-header obstacles.");
 
         var groupChart = TopologyChart.Create()
             .WithId("groupless-label")
@@ -143,6 +179,9 @@ internal static partial class SmokeTests {
 
         Assert(TopologyRenderPrimitives.ShouldReserveGeographicCalloutRouteObstacle(link), "Visible unlabeled geographic site links should reserve callout route obstacles.");
         Assert(!TopologyRenderPrimitives.ShouldReserveGeographicCalloutRouteObstacle(dependency), "Unlabeled non-route edges should not add geographic callout obstacles.");
+
+        var routeSamples = TopologyGeographicCallouts.SampleRouteObstaclePoints(new[] { new ChartPoint(0, 0), new ChartPoint(126, 0) });
+        Assert(routeSamples.Count >= 4 && routeSamples.Any(point => point.X > 40 && point.X < 90), "Straight route obstacles should sample interior route geometry instead of only endpoints.");
     }
 
     private static void TopologyExplicitCalloutPlacementAddsMapEdgeCandidates() {
@@ -184,6 +223,24 @@ internal static partial class SmokeTests {
         Assert(TopologyRenderPrimitives.HighlightAlpha(194, false, activeHighlight) == 48, "PNG callout leader halos should dim with the same highlight state as callout leaders.");
         Assert(TopologyRenderPrimitives.HighlightAlpha(224, true, activeHighlight) == 224, "Highlighted halos should keep their full base alpha.");
         Assert(TopologyRenderPrimitives.HighlightAlpha(224, false, inactiveHighlight) == 224, "Inactive highlight state should not dim halos.");
+    }
+
+    private static void TopologyGeographicCalloutIconObstaclesUseRenderedLabelWidth() {
+        var node = new TopologyNode {
+            Id = "owner",
+            Label = "Payments Platform Ownership Team",
+            X = 80,
+            Y = 60,
+            Width = 42,
+            Height = 36,
+            Kind = TopologyNodeKind.Service,
+            DisplayMode = TopologyNodeDisplayMode.Icon
+        };
+        var options = new TopologyRenderOptions { IncludeIconLabels = true };
+        var obstacle = TopologyGeographicCallouts.CalloutBox.FromNodeVisual(node, options);
+        var expectedWidth = TopologyRenderPrimitives.IconLabelPlateWidth(node) + 16;
+
+        Assert(obstacle.Width >= expectedWidth, "Geographic callout icon obstacles should reserve the rendered icon-label plate width.");
     }
 
     private static void TopologyGeographicRegionHullsIgnoreHiddenNodes() {
