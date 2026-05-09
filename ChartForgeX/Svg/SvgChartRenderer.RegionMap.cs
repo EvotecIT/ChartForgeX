@@ -35,9 +35,9 @@ public sealed partial class SvgChartRenderer {
         foreach (var region in definition.Regions) {
             var hasValue = data.TryGetValue(region.Code, out var entry);
             var value = hasValue ? entry.Value : 0;
-            var ratio = hasValue ? HeatmapRatio(value, min, max) : 0;
-            var status = hasValue ? HeatmapStatus(ratio) : "empty";
-            var color = hasValue ? HeatmapColor(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : MapNoDataColor(chart);
+            var ratio = hasValue ? ChartHeatmapSurface.Ratio(value, min, max) : 0;
+            var status = hasValue ? ChartHeatmapSurface.Status(ratio) : "empty";
+            var color = hasValue ? ChartHeatmapSurface.Color(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : ChartHeatmapSurface.MapNoDataColor(chart);
             var path = ScaleMapPath(region.Path, definition.Bounds, map, out var regionBounds);
             var summary = region.Name + " (" + region.Code + "): " + (hasValue ? FormatValue(chart, value) : "No data");
             AppendSvg(sb, 1024, writer => {
@@ -65,7 +65,7 @@ public sealed partial class SvgChartRenderer {
             if (chart.Options.ShowMapLabels) {
                 var label = region.HasLabel ? ProjectMapPoint(region.Label, definition.Bounds, map) : new ChartPoint(regionBounds.Left + regionBounds.Width / 2, regionBounds.Top + regionBounds.Height / 2);
                 var fontSize = Math.Min(t.TickLabelFontSize, Math.Max(7, map.Height * 0.032));
-                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) DrawSvgTextCenteredX(sb, chart, rolePrefix + "-label", region.Code, label.X, label.Y + 3, HeatmapTextColor(color), fontSize, 34, "800");
+                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) DrawSvgTextCenteredX(sb, chart, rolePrefix + "-label", region.Code, label.X, label.Y + 3, ChartColorMath.TextOnBackground(color), fontSize, 34, "800");
             }
         }
 
@@ -83,7 +83,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", map.Width + pad * 2)
             .Attribute("height", map.Height + pad * 2)
             .Attribute("rx", Math.Min(20, Math.Max(8, map.Height * 0.045)))
-            .Attribute("fill", Blend(t.PlotBackground, t.Grid, 0.20).ToCss())
+            .Attribute("fill", ChartColorMath.Blend(t.PlotBackground, t.Grid, 0.20).ToCss())
             .Attribute("fill-opacity", "0.30")
             .Attribute("stroke", t.PlotBorder.ToCss())
             .Attribute("stroke-opacity", "0.24")
@@ -99,9 +99,9 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-label").Attribute("x", x - 8).Attribute("y", y + size / 2).Attribute("text-anchor", "end").Attribute("dominant-baseline", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text("Less").EndElement().Line());
         for (var i = 0; i < 5; i++) {
             var value = min + (max - min) * (i / 4.0);
-            var ratio = HeatmapRatio(value, min, max);
-            var color = HeatmapColor(chart, series.Color ?? t.Palette[0], value, min, max);
-            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", HeatmapStatus(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", "2").Attribute("fill", color.ToCss()).EndEmptyElement().Line());
+            var ratio = ChartHeatmapSurface.Ratio(value, min, max);
+            var color = ChartHeatmapSurface.Color(chart, series.Color ?? t.Palette[0], value, min, max);
+            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", "2").Attribute("fill", color.ToCss()).EndEmptyElement().Line());
         }
         AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-label").Attribute("x", x + 5 * size + 4 * gap + 8).Attribute("y", y + size / 2).Attribute("text-anchor", "start").Attribute("dominant-baseline", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text("More").EndElement().Line());
     }
@@ -157,5 +157,5 @@ public sealed partial class SvgChartRenderer {
         return new ChartRect(plot.Left + Math.Max(0, (plot.Width - width) / 2), plot.Top + Math.Max(0, (plot.Height - height) / 2), width, height);
     }
 
-    private static bool IsRegionMapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.RegionMap);
+    private static bool IsRegionMapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.RegionMap);
 }

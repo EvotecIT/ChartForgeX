@@ -80,10 +80,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsPictorialChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Pictorial) return true;
-        return false;
-    }
+    private static bool IsPictorialChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Pictorial);
 
     private static ChartColor PngPictorialItemColor(ChartSeries series, ChartTheme theme, int index) {
         if (index < series.PointColors.Count && series.PointColors[index].HasValue) return series.PointColors[index]!.Value;

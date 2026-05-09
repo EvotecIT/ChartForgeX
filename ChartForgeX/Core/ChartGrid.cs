@@ -334,7 +334,7 @@ public sealed class ChartGrid {
         var compatible = new List<Chart>();
         foreach (var chart in _charts) {
             ChartGuards.RenderCompatibility(chart);
-            if (!UsesCartesianXAxis(chart)) continue;
+            if (!ChartSeriesKindTraits.UsesCartesianXAxis(chart)) continue;
             var range = ChartRange.FromChart(chart, false);
             if (range.MinX < minimum) minimum = range.MinX;
             if (range.MaxX > maximum) maximum = range.MaxX;
@@ -357,45 +357,9 @@ public sealed class ChartGrid {
         return this;
     }
 
-    private static bool UsesCartesianXAxis(Chart chart) {
-        if (chart.Series.Count == 0) return false;
-        foreach (var series in chart.Series) {
-            if (series.Kind == ChartSeriesKind.Heatmap ||
-                series.Kind == ChartSeriesKind.HexbinHeatmap ||
-                series.Kind == ChartSeriesKind.CalendarHeatmap ||
-                series.Kind == ChartSeriesKind.DottedMap ||
-                series.Kind == ChartSeriesKind.TileMap ||
-                series.Kind == ChartSeriesKind.RegionMap ||
-                series.Kind == ChartSeriesKind.Gauge ||
-                series.Kind == ChartSeriesKind.Circle ||
-                series.Kind == ChartSeriesKind.RadialBar ||
-                series.Kind == ChartSeriesKind.LayeredRadial ||
-                series.Kind == ChartSeriesKind.Bullet ||
-                series.Kind == ChartSeriesKind.Waterfall ||
-                series.Kind == ChartSeriesKind.Radar ||
-                series.Kind == ChartSeriesKind.Funnel ||
-                series.Kind == ChartSeriesKind.Treemap ||
-                series.Kind == ChartSeriesKind.Timeline ||
-                series.Kind == ChartSeriesKind.Gantt ||
-                series.Kind == ChartSeriesKind.Sankey ||
-                series.Kind == ChartSeriesKind.Tree ||
-                series.Kind == ChartSeriesKind.Sunburst ||
-                series.Kind == ChartSeriesKind.Pictorial ||
-                series.Kind == ChartSeriesKind.ProgressBar ||
-                series.Kind == ChartSeriesKind.WordCloud ||
-                series.Kind == ChartSeriesKind.Pie ||
-                series.Kind == ChartSeriesKind.Donut ||
-                series.Kind == ChartSeriesKind.PolarArea) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private static bool UsesPrimaryCartesianYAxis(Chart chart) {
         foreach (var series in chart.Series) {
-            if (series.YAxis == ChartAxisSide.Primary && IsCartesianYAxisSeries(series)) return true;
+            if (series.YAxis == ChartAxisSide.Primary && ChartSeriesKindTraits.UsesCartesianYAxis(series)) return true;
         }
 
         return false;
@@ -403,39 +367,10 @@ public sealed class ChartGrid {
 
     private static bool UsesSecondaryCartesianYAxis(Chart chart) {
         foreach (var series in chart.Series) {
-            if (series.YAxis == ChartAxisSide.Secondary && IsCartesianYAxisSeries(series)) return true;
+            if (series.YAxis == ChartAxisSide.Secondary && ChartSeriesKindTraits.UsesCartesianYAxis(series)) return true;
         }
 
         return false;
     }
 
-    private static bool IsCartesianYAxisSeries(ChartSeries series) {
-        return series.Kind != ChartSeriesKind.HorizontalBar &&
-            series.Kind != ChartSeriesKind.Heatmap &&
-            series.Kind != ChartSeriesKind.HexbinHeatmap &&
-            series.Kind != ChartSeriesKind.CalendarHeatmap &&
-            series.Kind != ChartSeriesKind.DottedMap &&
-            series.Kind != ChartSeriesKind.TileMap &&
-            series.Kind != ChartSeriesKind.RegionMap &&
-            series.Kind != ChartSeriesKind.Gauge &&
-            series.Kind != ChartSeriesKind.Circle &&
-            series.Kind != ChartSeriesKind.RadialBar &&
-            series.Kind != ChartSeriesKind.LayeredRadial &&
-            series.Kind != ChartSeriesKind.Bullet &&
-            series.Kind != ChartSeriesKind.Waterfall &&
-            series.Kind != ChartSeriesKind.Radar &&
-            series.Kind != ChartSeriesKind.Funnel &&
-            series.Kind != ChartSeriesKind.Treemap &&
-            series.Kind != ChartSeriesKind.Timeline &&
-            series.Kind != ChartSeriesKind.Gantt &&
-            series.Kind != ChartSeriesKind.Sankey &&
-            series.Kind != ChartSeriesKind.Tree &&
-            series.Kind != ChartSeriesKind.Sunburst &&
-            series.Kind != ChartSeriesKind.Pictorial &&
-            series.Kind != ChartSeriesKind.ProgressBar &&
-            series.Kind != ChartSeriesKind.WordCloud &&
-            series.Kind != ChartSeriesKind.Pie &&
-            series.Kind != ChartSeriesKind.Donut &&
-            series.Kind != ChartSeriesKind.PolarArea;
-    }
 }

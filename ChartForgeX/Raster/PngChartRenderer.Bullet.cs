@@ -108,10 +108,7 @@ public sealed partial class PngChartRenderer {
         DrawReadablePngLabel(c, safeX, safeY, text, chart.Options.Theme.MutedText, halo, fontSize);
     }
 
-    private static bool IsBulletChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Bullet) return true;
-        return false;
-    }
+    private static bool IsBulletChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Bullet);
 
     private static double BulletMin(ChartSeries series) => series.Points[0].X;
 

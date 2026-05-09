@@ -32,10 +32,12 @@ public sealed partial class PngChartRenderer {
         c.FillPolygonVerticalGradient(polygon, ChartColor.FromRgba(color.R, color.G, color.B, 118), ChartColor.FromRgba(color.R, color.G, color.B, 18));
         DrawDashedPngPath(c, middlePath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap);
         DrawPremiumPngLinePath(c, upperPath, color, series.StrokeWidth, style);
-        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) DrawPngLinePath(c, lowerPath, PngStrokeAmbientHalo(color, style), series.StrokeWidth + style.AmbientHaloStrokeExtra);
-        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) DrawPngLinePath(c, lowerPath, PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + style.HaloStrokeExtra);
-        DrawPngLinePath(c, lowerPath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaLowerStrokeOpacity), Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, series.StrokeWidth));
-        if (LineHighlightOpacity(color, style) > 0) DrawPngLinePath(c, lowerPath, PngLineHighlight(color, style), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio));
+        foreach (var layer in ChartLineVisualLayers.Build(color, series.StrokeWidth, style)) {
+            if (!layer.IsVisible) continue;
+            var layerColor = layer.IsForeground ? ApplyOpacity(color, ChartVisualPrimitives.RangeAreaLowerStrokeOpacity) : layer.ColorWithOpacity();
+            var layerWidth = layer.IsForeground ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, layer.StrokeWidth) : layer.StrokeWidth;
+            DrawPngLinePath(c, lowerPath, layerColor, layerWidth);
+        }
 
         if (!ShouldDrawDataLabels(chart, series)) return;
         var reserved = new List<ChartLabelBounds>();

@@ -184,8 +184,7 @@ public sealed partial class SvgChartRenderer {
         writer.StartElement("circle").Attribute("cx", x + 9).Attribute("cy", y).Attribute("r", ChartVisualPrimitives.LegendMarkerRadius).Attribute("fill", color.ToCss()).Attribute("stroke", background.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.LegendMarkerStrokeWidth).EndEmptyElement().Line();
     }
 
-    private static bool IsLineLikeLegend(ChartSeriesKind kind) =>
-        kind == ChartSeriesKind.Line || kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.Area || kind == ChartSeriesKind.StepArea || kind == ChartSeriesKind.StackedArea || kind == ChartSeriesKind.Slope || kind == ChartSeriesKind.RangeBand || kind == ChartSeriesKind.RangeArea || kind == ChartSeriesKind.Lollipop || kind == ChartSeriesKind.Dumbbell || kind == ChartSeriesKind.ErrorBar || kind == ChartSeriesKind.Radar || kind == ChartSeriesKind.TrendLine;
+    private static bool IsLineLikeLegend(ChartSeriesKind kind) => ChartSeriesKindTraits.IsLineLikeLegendKind(kind);
 
     private static void DrawLabelPill(StringBuilder sb, Chart chart, string label, double x, double y, ChartColor textColor, string anchor, ChartRect plot) {
         var t = chart.Options.Theme;
@@ -392,7 +391,7 @@ public sealed partial class SvgChartRenderer {
 
     private static string BarFill(Chart chart, ChartSeries series, int seriesIndex, int pointIndex, string id) =>
         pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
-            ? series.PointColors[pointIndex]!.Value.ToCss()
+            ? $"url(#{id}-seriesFill{seriesIndex}-point{pointIndex})"
             : $"url(#{id}-seriesFill{seriesIndex})";
 
     private static ChartFillPattern FillPattern(ChartSeries series, int pointIndex) =>
@@ -465,9 +464,15 @@ public sealed partial class SvgChartRenderer {
 
     private static bool ShowAxisLines(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowAxisLines;
 
-    private static bool IsMapChart(Chart chart) => IsCalendarHeatmapChart(chart) || IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
+    private static bool IsMapChart(Chart chart) {
+        foreach (var series in chart.Series) if (ChartSeriesKindTraits.IsMapKind(series.Kind)) return true;
+        return false;
+    }
 
-    private static bool IsSpatialMapChart(Chart chart) => IsDottedMapChart(chart) || IsRegionMapChart(chart) || IsTileMapChart(chart);
+    private static bool IsSpatialMapChart(Chart chart) {
+        foreach (var series in chart.Series) if (ChartSeriesKindTraits.IsSpatialMapKind(series.Kind)) return true;
+        return false;
+    }
 
     private static ChartRect SpatialMapPlotArea(Chart chart) {
         var o = chart.Options;

@@ -17,8 +17,8 @@ public sealed partial class SvgChartRenderer {
         var plot = new ChartRect(basePlot.Left + 8, basePlot.Top + 8, Math.Max(1, basePlot.Width - 16), Math.Max(1, basePlot.Height - 16));
         var map = FitDottedMap(plot, viewport);
         var dot = DottedMapDotSize(map, viewport);
-        var landColor = DottedMapLandDotColor(t.PlotBackground, t.MutedText);
-        var landOpacity = DottedMapLandDotOpacity(t.PlotBackground);
+        var landColor = ChartDottedMapSurface.LandDotColor(t.PlotBackground, t.MutedText);
+        var landOpacity = ChartDottedMapSurface.LandDotOpacity(t.PlotBackground);
         var reservedLabels = new List<ChartLabelBounds>();
         var visiblePoints = series.Points.Count(point => IsVisibleMapCoordinate(viewport, point.X, point.Y));
         var visibleConnectors = chart.Options.MapConnectors.Count(item => IsVisibleMapCoordinate(viewport, item.FromLongitude, item.FromLatitude) && IsVisibleMapCoordinate(viewport, item.ToLongitude, item.ToLatitude));
@@ -119,7 +119,7 @@ public sealed partial class SvgChartRenderer {
         var outlines = DottedMapViewportOutlines(viewport);
         if (outlines.Length == 0) return;
         var t = chart.Options.Theme;
-        var color = DottedMapLandDotColor(t.PlotBackground, t.MutedText);
+        var color = ChartDottedMapSurface.LandDotColor(t.PlotBackground, t.MutedText);
         for (var outlineIndex = 0; outlineIndex < outlines.Length; outlineIndex++) {
             var outline = outlines[outlineIndex];
             var path = new StringBuilder();
@@ -317,8 +317,8 @@ public sealed partial class SvgChartRenderer {
         var boundaries = DottedMapBoundaryLines(viewport);
         if (boundaries.Length == 0) return;
         var t = chart.Options.Theme;
-        var color = DottedMapBoundaryColor(t.PlotBackground, t.MutedText);
-        var opacity = DottedMapBoundaryOpacity(t.PlotBackground);
+        var color = ChartDottedMapSurface.BoundaryColor(t.PlotBackground, t.MutedText);
+        var opacity = ChartDottedMapSurface.BoundaryOpacity(t.PlotBackground);
         var strokeWidth = Math.Max(0.65, dot * 0.26);
         for (var lineIndex = 0; lineIndex < boundaries.Length; lineIndex++) {
             var line = boundaries[lineIndex];
@@ -338,8 +338,8 @@ public sealed partial class SvgChartRenderer {
         var boundaries = DottedMapBoundaryLines(viewport);
         if (boundaries.Length == 0) return;
         var t = chart.Options.Theme;
-        var color = DottedMapLandAreaColor(t.PlotBackground, t.MutedText);
-        var opacity = DottedMapLandAreaOpacity(t.PlotBackground);
+        var color = ChartDottedMapSurface.LandAreaColor(t.PlotBackground, t.MutedText);
+        var opacity = ChartDottedMapSurface.LandAreaOpacity(t.PlotBackground);
         for (var lineIndex = 0; lineIndex < boundaries.Length; lineIndex++) {
             var line = boundaries[lineIndex];
             if (!CanFillDottedMapBoundary(line)) continue;
@@ -388,35 +388,8 @@ public sealed partial class SvgChartRenderer {
         return min.HasValue && max.HasValue ? new DottedMapValueRange(min.Value, max.Value) : null;
     }
 
-    private static ChartColor DottedMapLandDotColor(ChartColor plotBackground, ChartColor mutedText) {
-        var weight = IsLightDottedMapSurface(plotBackground) ? 0.62 : 0.58;
-        return Blend(plotBackground, mutedText, weight);
-    }
-
-    private static double DottedMapLandDotOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.14 : 0.44;
-
     private static double DottedMapLandDotRadius(double dot, ChartMapViewport viewport) =>
         DottedMapBoundaryLines(viewport).Length == 0 ? dot / 2 : Math.Max(0.8, dot * 0.34);
-
-    private static ChartColor DottedMapLandAreaColor(ChartColor plotBackground, ChartColor mutedText) {
-        var weight = IsLightDottedMapSurface(plotBackground) ? 0.24 : 0.28;
-        return Blend(plotBackground, mutedText, weight);
-    }
-
-    private static double DottedMapLandAreaOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.92 : 0.30;
-
-    private static ChartColor DottedMapBoundaryColor(ChartColor plotBackground, ChartColor mutedText) {
-        var weight = IsLightDottedMapSurface(plotBackground) ? 0.68 : 0.70;
-        return Blend(plotBackground, mutedText, weight);
-    }
-
-    private static double DottedMapBoundaryOpacity(ChartColor plotBackground) =>
-        IsLightDottedMapSurface(plotBackground) ? 0.16 : 0.22;
-
-    private static bool IsLightDottedMapSurface(ChartColor color) =>
-        (0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B) / 255.0 > 0.70;
 
     private static double DottedMapPointRadius(double dot, double? value, DottedMapValueRange? range) {
         const double minimumReadablePointRadius = 3;
@@ -519,7 +492,22 @@ public sealed partial class SvgChartRenderer {
         var radius = Math.Min(6, placement.Bounds.Height / 2);
         DrawDottedMapLabelLeader(sb, chart, label, placement, pointX, pointY, dot);
         AppendSvg(sb, 512, writer => writer.StartElement("rect").Attribute("data-cfx-role", "dotted-map-label-backdrop").Attribute("data-cfx-label", label).Attribute("data-cfx-placement", placement.Placement).Attribute("x", placement.Bounds.X).Attribute("y", placement.Bounds.Y).Attribute("width", placement.Bounds.Width).Attribute("height", placement.Bounds.Height).Attribute("rx", radius).Attribute("fill", t.CardBackground.ToCss()).Attribute("fill-opacity", "0.86").Attribute("stroke", t.PlotBorder.ToCss()).Attribute("stroke-opacity", "0.46").EndEmptyElement().Line());
-        sb.AppendLine($"<text data-cfx-role=\"dotted-map-label\" data-cfx-label=\"{Escape(label)}\" data-cfx-placement=\"{placement.Placement}\" x=\"{F(placement.X)}\" y=\"{F(placement.Y)}\" text-anchor=\"{placement.Anchor}\" dominant-baseline=\"middle\" fill=\"{StyleColor(style, t.Text).ToCss()}\" stroke=\"{t.CardBackground.ToCss()}\" stroke-width=\"1.2\" paint-order=\"stroke fill\" stroke-linejoin=\"round\" font-family=\"{SvgFontFamily(StyleFontFamily(chart, style))}\" font-size=\"{F(StyleFontSize(style, t.DataLabelFontSize))}\" font-weight=\"{StyleWeight(style, "700")}\"{SvgTextStyleAttributes(style)}>{Escape(label)}</text>");
+        AppendSvg(sb, 512, writer => {
+            writer.StartElement("text")
+                .Attribute("data-cfx-role", "dotted-map-label")
+                .Attribute("data-cfx-label", label)
+                .Attribute("data-cfx-placement", placement.Placement)
+                .Attribute("x", placement.X).Attribute("y", placement.Y)
+                .Attribute("text-anchor", placement.Anchor).Attribute("dominant-baseline", "middle")
+                .Attribute("fill", StyleColor(style, t.Text).ToCss())
+                .Attribute("stroke", t.CardBackground.ToCss())
+                .Attribute("stroke-width", 1.2).Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round")
+                .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
+                .Attribute("font-size", StyleFontSize(style, t.DataLabelFontSize))
+                .Attribute("font-weight", StyleWeight(style, "700"));
+            WriteSvgTextStyleAttributes(writer, style);
+            writer.Text(label).EndElement().Line();
+        });
     }
 
     private static void DrawDottedMapLabelLeader(StringBuilder sb, Chart chart, string label, DottedMapLabelPlacement placement, double pointX, double pointY, double dot) {
@@ -533,7 +521,7 @@ public sealed partial class SvgChartRenderer {
         var startX = pointX + dx / length * startGap;
         var startY = pointY + dy / length * startGap;
         var t = chart.Options.Theme;
-        AppendSvg(sb, 512, writer => writer.StartElement("line").Attribute("data-cfx-role", "dotted-map-label-leader").Attribute("data-cfx-label", label).Attribute("data-cfx-placement", placement.Placement).Attribute("x1", startX).Attribute("y1", startY).Attribute("x2", end.X).Attribute("y2", end.Y).Attribute("stroke", DottedMapBoundaryColor(t.PlotBackground, t.MutedText).ToCss()).Attribute("stroke-opacity", "0.52").Attribute("stroke-width", Math.Max(0.85, dot * 0.22)).Attribute("stroke-linecap", "round").EndEmptyElement().Line());
+        AppendSvg(sb, 512, writer => writer.StartElement("line").Attribute("data-cfx-role", "dotted-map-label-leader").Attribute("data-cfx-label", label).Attribute("data-cfx-placement", placement.Placement).Attribute("x1", startX).Attribute("y1", startY).Attribute("x2", end.X).Attribute("y2", end.Y).Attribute("stroke", ChartDottedMapSurface.BoundaryColor(t.PlotBackground, t.MutedText).ToCss()).Attribute("stroke-opacity", "0.52").Attribute("stroke-width", Math.Max(0.85, dot * 0.22)).Attribute("stroke-linecap", "round").EndEmptyElement().Line());
     }
 
     private static ChartPoint DottedMapLabelLeaderEndpoint(ChartLabelBounds bounds, double pointX, double pointY) {
@@ -714,7 +702,7 @@ public sealed partial class SvgChartRenderer {
             Math.Abs(viewport.MaximumLatitude - 55.2) < 0.000001;
     }
 
-    private static bool IsDottedMapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.DottedMap);
+    private static bool IsDottedMapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.DottedMap);
 
     private readonly struct DottedMapLabelCandidate {
         public readonly string Placement;

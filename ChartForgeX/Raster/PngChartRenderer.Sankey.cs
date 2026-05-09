@@ -17,10 +17,7 @@ public sealed partial class PngChartRenderer {
         foreach (var node in model.Nodes) DrawSankeyNode(c, chart, plot, model, node, showDataLabels);
     }
 
-    private static bool IsSankeyChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Sankey) return true;
-        return false;
-    }
+    private static bool IsSankeyChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Sankey);
 
     private static void DrawSankeyNode(RgbaCanvas c, Chart chart, ChartRect plot, SankeyModel model, SankeyNode node, bool showDataLabels) {
         var theme = chart.Options.Theme;
@@ -160,9 +157,9 @@ public sealed partial class PngChartRenderer {
     private static string SankeyNodeLabel(Chart chart, int index) =>
         index >= 0 && index < chart.Options.SankeyNodeLabels.Count ? chart.Options.SankeyNodeLabels[index] : "Node " + (index + 1).ToString(CultureInfo.InvariantCulture);
 
-    private static ChartColor SankeyNodeGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.SankeyNodeGradientTopBlend);
+    private static ChartColor SankeyNodeGradientTop(ChartColor color) => ChartMarkSurface.SankeyNodeGradientTop(color);
 
-    private static ChartColor SankeyNodeGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.SankeyNodeGradientBottomBlend);
+    private static ChartColor SankeyNodeGradientBottom(ChartColor color) => ChartMarkSurface.SankeyNodeGradientBottom(color);
 
     private sealed class SankeyNode {
         public SankeyNode(int index, string label) { Index = index; Label = label; }

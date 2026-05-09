@@ -85,10 +85,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsGanttChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Gantt) return true;
-        return false;
-    }
+    private static bool IsGanttChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Gantt);
 
     private static List<GanttItem> BuildGanttItems(Chart chart) {
         var items = new List<GanttItem>();
@@ -113,7 +110,7 @@ public sealed partial class PngChartRenderer {
         var inset = Math.Min(radius, width / 3);
         if (width > inset * 2 + 3) c.DrawLine(left + inset, y + ChartVisualPrimitives.GanttTaskHighlightOffsetY, left + width - inset, y + ChartVisualPrimitives.GanttTaskHighlightOffsetY, ApplyOpacity(ChartColor.White, ChartVisualPrimitives.GanttTaskHighlightOpacity), ChartVisualPrimitives.GridStrokeWidth);
         if (item.ShowDataLabels && width >= Math.Max(74, EstimatePngEmphasizedTextWidth("100%", chart.Options.Theme.DataLabelFontSize) + 14)) {
-            DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, height), FormatPercent(item.Progress), HeatmapTextColor(item.Color), item.Color, chart.Options.Theme.DataLabelFontSize);
+            DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, height), FormatPercent(item.Progress), ChartColorMath.TextOnBackground(item.Color), item.Color, chart.Options.Theme.DataLabelFontSize);
         }
     }
 

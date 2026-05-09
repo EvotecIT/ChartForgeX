@@ -192,6 +192,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-x", p.X)
                     .Attribute("data-cfx-y", p.Y)
                     .Attribute("data-cfx-base", baseValue)
+                    .Attribute("data-cfx-color", PointColor(chart, s, index, pointIndex).ToHex())
                     .Attribute("x", x)
                     .Attribute("y", top)
                     .Attribute("width", layout.BarWidth)

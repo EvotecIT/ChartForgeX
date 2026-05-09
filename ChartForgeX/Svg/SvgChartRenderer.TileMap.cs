@@ -40,9 +40,9 @@ public sealed partial class SvgChartRenderer {
         foreach (var tile in definition.Regions) {
             var hasValue = data.TryGetValue(tile.Code, out var entry);
             var value = hasValue ? entry.Value : 0;
-            var ratio = hasValue ? HeatmapRatio(value, min, max) : 0;
-            var status = hasValue ? HeatmapStatus(ratio) : "empty";
-            var color = hasValue ? HeatmapColor(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : MapNoDataColor(chart);
+            var ratio = hasValue ? ChartHeatmapSurface.Ratio(value, min, max) : 0;
+            var status = hasValue ? ChartHeatmapSurface.Status(ratio) : "empty";
+            var color = hasValue ? ChartHeatmapSurface.Color(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : ChartHeatmapSurface.MapNoDataColor(chart);
             var x = x0 + tile.Column * (tileSize + gap);
             var y = y0 + tile.Row * (tileSize + gap);
             var points = HexTilePoints(x, y, tileSize);
@@ -69,7 +69,7 @@ public sealed partial class SvgChartRenderer {
                 writer.StartElement("title").Text(summary).EndElement();
                 writer.EndElement().Line();
             });
-            if (chart.Options.ShowMapLabels) DrawSvgTextCenteredX(sb, chart, "tile-map-label", tile.Code, x + tileSize / 2, y + tileSize / 2, HeatmapTextColor(color), Math.Min(t.TickLabelFontSize, tileSize * 0.32), tileSize - 6, "800");
+            if (chart.Options.ShowMapLabels) DrawSvgTextCenteredX(sb, chart, "tile-map-label", tile.Code, x + tileSize / 2, y + tileSize / 2, ChartColorMath.TextOnBackground(color), Math.Min(t.TickLabelFontSize, tileSize * 0.32), tileSize - 6, "800");
         }
 
         if (chart.Options.ShowMapScaleLegend) {
@@ -90,7 +90,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", width + pad * 2)
             .Attribute("height", height + pad * 2)
             .Attribute("rx", Math.Min(18, Math.Max(6, tileSize * 0.42)))
-            .Attribute("fill", Blend(t.PlotBackground, t.Grid, 0.22).ToCss())
+            .Attribute("fill", ChartColorMath.Blend(t.PlotBackground, t.Grid, 0.22).ToCss())
             .Attribute("fill-opacity", "0.32")
             .Attribute("stroke", t.PlotBorder.ToCss())
             .Attribute("stroke-opacity", "0.28")
@@ -108,16 +108,16 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", "tile-map-scale-label").Attribute("x", x - 8).Attribute("y", y + size / 2).Attribute("text-anchor", "end").Attribute("dominant-baseline", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text("Less").EndElement().Line());
         for (var i = 0; i < 5; i++) {
             var value = min + (max - min) * (i / 4.0);
-            var ratio = HeatmapRatio(value, min, max);
-            var color = HeatmapColor(chart, series.Color ?? t.Palette[0], value, min, max);
-            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", "tile-map-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", HeatmapStatus(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", Math.Min(3, size * 0.22)).Attribute("fill", color.ToCss()).EndEmptyElement().Line());
+            var ratio = ChartHeatmapSurface.Ratio(value, min, max);
+            var color = ChartHeatmapSurface.Color(chart, series.Color ?? t.Palette[0], value, min, max);
+            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", "tile-map-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", Math.Min(3, size * 0.22)).Attribute("fill", color.ToCss()).EndEmptyElement().Line());
         }
         AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", "tile-map-scale-label").Attribute("x", x + width + 8).Attribute("y", y + size / 2).Attribute("text-anchor", "start").Attribute("dominant-baseline", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text("More").EndElement().Line());
     }
 
     private static void DrawMapSvgNoDataScale(StringBuilder sb, Chart chart, string rolePrefix, double valueScaleX, double y, double size, ChartRect plot) {
         var t = chart.Options.Theme;
-        var noData = MapNoDataColor(chart);
+        var noData = ChartHeatmapSurface.MapNoDataColor(chart);
         const string label = "No data";
         var labelWidth = EstimateTextWidth(label, t.TickLabelFontSize);
         var width = size + 5 + labelWidth;
@@ -130,8 +130,6 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-no-data").Attribute("data-cfx-status", "empty").Attribute("x", x).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", Math.Min(3, size * 0.22)).Attribute("fill", noData.ToCss()).EndEmptyElement().Line());
         AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-no-data-label").Attribute("x", x + size + 5).Attribute("y", y + size / 2).Attribute("dominant-baseline", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text(label).EndElement().Line());
     }
-
-    private static ChartColor MapNoDataColor(Chart chart) => Blend(chart.Options.Theme.PlotBackground, chart.Options.Theme.Grid, 0.46);
 
     private static string HexTilePoints(double x, double y, double size) {
         var inset = size * 0.22;
@@ -150,7 +148,7 @@ public sealed partial class SvgChartRenderer {
         return values;
     }
 
-    private static bool IsTileMapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.TileMap);
+    private static bool IsTileMapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.TileMap);
 
     private readonly struct RegionMapValue {
         public readonly double Value;

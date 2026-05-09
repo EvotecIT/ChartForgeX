@@ -187,7 +187,7 @@ internal static partial class SmokeTests {
         chart.Series[0].WithPointColor(1, "#F97316");
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Bar points should still render when point colors are configured.");
-        Assert(svg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Bar points should honor point-specific fill colors in SVG.");
+        Assert(svg.Contains("seriesFill0-point1", StringComparison.Ordinal) && svg.Contains("data-cfx-color=\"#F97316\"", StringComparison.Ordinal), "Bar points should honor point-specific fill colors in SVG.");
         Assert(chart.ToPng().Length > 64, "Bar point colors should render PNG output.");
 
         var horizontal = Chart.Create()
@@ -195,7 +195,8 @@ internal static partial class SmokeTests {
             .WithXLabels("A", "B", "C")
             .AddHorizontalBar("Scores", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         horizontal.Series[0].WithPointColor(2, ChartColor.FromHex("#8B5CF6"));
-        Assert(horizontal.ToSvg().Contains("fill=\"#8B5CF6\"", StringComparison.Ordinal), "Horizontal bar points should honor point-specific fill colors in SVG.");
+        var horizontalSvg = horizontal.ToSvg();
+        Assert(horizontalSvg.Contains("seriesFill0-point2", StringComparison.Ordinal) && horizontalSvg.Contains("data-cfx-color=\"#8B5CF6\"", StringComparison.Ordinal), "Horizontal bar points should honor point-specific fill colors in SVG.");
         Assert(horizontal.ToPng().Length > 64, "Horizontal bar point colors should render PNG output.");
 
         var funnel = Chart.Create()

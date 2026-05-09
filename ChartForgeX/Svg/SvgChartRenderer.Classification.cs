@@ -10,19 +10,19 @@ public sealed partial class SvgChartRenderer {
     private static string BuildDescription(Chart chart) {
         var title = string.IsNullOrWhiteSpace(chart.Title) ? "Chart" : chart.Title;
         if (chart.Series.Count == 0) return title + " with no data series.";
-        var calendar = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.CalendarHeatmap);
+        var calendar = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.CalendarHeatmap);
         if (calendar != null && calendar.Points.Count > 0) {
             var minDate = calendar.Points.Min(point => DateTime.FromOADate(point.X).Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             var maxDate = calendar.Points.Max(point => DateTime.FromOADate(point.X).Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             return title + " calendar heatmap for " + calendar.Name + " from " + minDate + " to " + maxDate + " with " + calendar.Points.Count.ToString(CultureInfo.InvariantCulture) + " dated " + (calendar.Points.Count == 1 ? "value" : "values") + ".";
         }
 
-        var dottedMap = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.DottedMap);
+        var dottedMap = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.DottedMap);
         if (dottedMap != null && dottedMap.Points.Count > 0) {
             return title + " dotted world map for " + dottedMap.Name + " with " + dottedMap.Points.Count.ToString(CultureInfo.InvariantCulture) + " highlighted " + (dottedMap.Points.Count == 1 ? "point" : "points") + ".";
         }
 
-        var regionMap = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.RegionMap);
+        var regionMap = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.RegionMap);
         if (regionMap != null && regionMap.Points.Count > 0) {
             var definition = chart.Options.RegionMapDefinition;
             var data = MapValues(chart, regionMap);
@@ -31,7 +31,7 @@ public sealed partial class SvgChartRenderer {
             return title + " region map for " + regionMap.Name + " on " + mapName + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
         }
 
-        var tileMap = chart.Series.FirstOrDefault(series => series.Kind == ChartSeriesKind.TileMap);
+        var tileMap = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.TileMap);
         if (tileMap != null && tileMap.Points.Count > 0) {
             var definition = chart.Options.TileMapDefinition;
             var data = MapValues(chart, tileMap);
@@ -46,43 +46,43 @@ public sealed partial class SvgChartRenderer {
         return title + " with " + describedSeries.Length.ToString(CultureInfo.InvariantCulture) + " data series: " + names + ".";
     }
 
-    private static bool IsPieLike(Chart chart) => chart.Series.Count > 0 && (chart.Series[0].Kind == ChartSeriesKind.Pie || chart.Series[0].Kind == ChartSeriesKind.Donut);
+    private static bool IsPieLike(Chart chart) => chart.Series.Count > 0 && ChartSeriesKindTraits.IsPieLikeKind(chart.Series[0].Kind);
 
-    private static bool IsHorizontalBarChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.HorizontalBar);
+    private static bool IsHorizontalBarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.HorizontalBar);
 
-    private static bool IsHeatmapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Heatmap);
+    private static bool IsHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Heatmap);
 
-    private static bool IsHexbinHeatmapChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.HexbinHeatmap);
+    private static bool IsHexbinHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.HexbinHeatmap);
 
-    private static bool IsGaugeChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Gauge);
+    private static bool IsGaugeChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Gauge);
 
-    private static bool IsRadialBarChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.RadialBar);
+    private static bool IsRadialBarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.RadialBar);
 
-    private static bool IsBulletChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Bullet);
+    private static bool IsBulletChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Bullet);
 
-    private static bool IsWaterfallChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
+    private static bool IsWaterfallChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Waterfall);
 
-    private static bool IsRadarChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar);
+    private static bool IsRadarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Radar);
 
-    private static bool IsPolarAreaChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.PolarArea);
+    private static bool IsPolarAreaChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.PolarArea);
 
-    private static bool IsFunnelChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Funnel);
+    private static bool IsFunnelChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Funnel);
 
-    private static bool IsTimelineChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Timeline);
+    private static bool IsTimelineChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Timeline);
 
-    private static bool IsGanttChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Gantt);
+    private static bool IsGanttChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Gantt);
 
-    private static bool IsSankeyChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Sankey);
+    private static bool IsSankeyChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Sankey);
 
-    private static bool IsTreeChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Tree);
+    private static bool IsTreeChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Tree);
 
-    private static bool IsSunburstChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Sunburst);
+    private static bool IsSunburstChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Sunburst);
 
-    private static bool IsPictorialChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.Pictorial);
+    private static bool IsPictorialChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Pictorial);
 
-    private static bool IsProgressBarChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.ProgressBar);
+    private static bool IsProgressBarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.ProgressBar);
 
-    private static bool IsWordCloudChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.WordCloud);
+    private static bool IsWordCloudChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.WordCloud);
 
     private static string SliceLabel(Chart chart, ChartPoint point, int index) {
         foreach (var label in chart.Options.XAxisLabels) {

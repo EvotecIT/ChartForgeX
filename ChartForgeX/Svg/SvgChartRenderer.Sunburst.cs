@@ -64,8 +64,8 @@ public sealed partial class SvgChartRenderer {
         var radius = node.Depth == 0 ? 0 : node.InnerRadius + ringWidth * 0.64;
         var x = model.CenterX + Math.Cos(angle) * radius;
         var y = model.CenterY + Math.Sin(angle) * radius + fontSize / 3.0;
-        var labelColor = HeatmapTextColor(color);
-        var halo = TreeLabelHalo(labelColor);
+        var labelColor = ChartColorMath.TextOnBackground(color);
+        var halo = ChartColorMath.TextOnBackground(labelColor, 0.70);
         DrawSvgTextCenteredX(writer, chart, "sunburst-label", label, x, y, labelColor, fontSize, labelSpace, "800", halo, 3);
     }
 
@@ -80,7 +80,7 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartColor SunburstNodeColor(Chart chart, ChartSunburstNode node) {
         var t = chart.Options.Theme;
-        if (node.Depth == 0) return Blend(t.PlotBackground, t.Palette[0], 0.28);
+        if (node.Depth == 0) return ChartColorMath.Blend(t.PlotBackground, t.Palette[0], 0.28);
         return t.Palette[(node.Index + node.Depth - 1) % t.Palette.Length];
     }
 }

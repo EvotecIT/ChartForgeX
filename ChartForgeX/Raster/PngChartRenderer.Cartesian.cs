@@ -287,10 +287,7 @@ public sealed partial class PngChartRenderer {
         var start = series.Points[0];
         var end = series.Points[series.Points.Count - 1];
         var style = chart.Options.LineVisualStyle;
-        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), PngStrokeAmbientHalo(color, style), series.StrokeWidth + style.AmbientHaloStrokeExtra, 8, 6);
-        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + style.HaloStrokeExtra, 8, 6);
-        c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), color, Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, series.StrokeWidth), 8, 6);
-        if (LineHighlightOpacity(color, style) > 0) c.DrawDashedLine(map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), PngLineHighlight(color, style), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio), 8, 6);
+        DrawPremiumPngLineSegment(c, map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), color, series.StrokeWidth, style, dashed: true, foregroundMinStrokeWidth: ChartVisualPrimitives.TrendLineMinStrokeWidth);
     }
 
     private static void DrawSlope(RgbaCanvas c, Chart chart, int index, ChartRect plot, ChartMapper map) {
@@ -308,10 +305,7 @@ public sealed partial class PngChartRenderer {
         var radius = Math.Max(ChartVisualPrimitives.SlopeMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.SlopeMarkerRadiusExtra);
 
         var style = chart.Options.LineVisualStyle;
-        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) c.DrawLine(xStart, yStart, xEnd, yEnd, PngStrokeAmbientHalo(color, style), series.StrokeWidth + style.AmbientHaloStrokeExtra);
-        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) c.DrawLine(xStart, yStart, xEnd, yEnd, PngStrokeHalo(color, style.HaloOpacity), series.StrokeWidth + style.HaloStrokeExtra);
-        c.DrawLine(xStart, yStart, xEnd, yEnd, color, series.StrokeWidth);
-        if (LineHighlightOpacity(color, style) > 0) c.DrawLine(xStart, yStart, xEnd, yEnd, PngLineHighlight(color, style), Math.Max(1.0, series.StrokeWidth * style.HighlightStrokeRatio));
+        DrawPremiumPngLineSegment(c, xStart, yStart, xEnd, yEnd, color, series.StrokeWidth, style);
         DrawMarker(c, chart, xStart, yStart, radius, startColor);
         DrawMarker(c, chart, xEnd, yEnd, radius, endColor);
         if (!ShouldDrawDataLabels(chart, series)) return;
@@ -377,8 +371,8 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawGradientBar(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor color, ChartFillPattern pattern = ChartFillPattern.None) {
         if (width <= 0.5 || height <= 0.5) return;
-        var top = Blend(ChartColor.White, color, 0.88);
-        var bottom = Blend(ChartColor.Black, color, 0.94);
+        var top = ChartMarkSurface.BarGradientTop(color);
+        var bottom = ChartMarkSurface.BarGradientBottom(color);
         c.FillRoundedRectVerticalGradient(x, y, width, height, radius, top, bottom);
         DrawHatchOverlay(c, x, y, width, height, radius, pattern);
         var highlightAlpha = (byte)Math.Round(255 * ChartVisualPrimitives.BarHighlightOpacity);
@@ -550,10 +544,18 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawPremiumPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth, ChartLineVisualStyle style) {
-        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) DrawPngLinePath(c, points, PngStrokeAmbientHalo(color, style), strokeWidth + style.AmbientHaloStrokeExtra);
-        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) DrawPngLinePath(c, points, PngStrokeHalo(color, style.HaloOpacity), strokeWidth + style.HaloStrokeExtra);
-        DrawPngLinePath(c, points, color, strokeWidth);
-        if (LineHighlightOpacity(color, style) > 0) DrawPngLinePath(c, points, PngLineHighlight(color, style), Math.Max(1.0, strokeWidth * style.HighlightStrokeRatio));
+        foreach (var layer in ChartLineVisualLayers.Build(color, strokeWidth, style)) {
+            if (layer.IsVisible) DrawPngLinePath(c, points, layer.ColorWithOpacity(), layer.StrokeWidth);
+        }
+    }
+
+    private static void DrawPremiumPngLineSegment(RgbaCanvas c, double x1, double y1, double x2, double y2, ChartColor color, double strokeWidth, ChartLineVisualStyle style, bool dashed = false, double foregroundMinStrokeWidth = 0) {
+        foreach (var layer in ChartLineVisualLayers.Build(color, strokeWidth, style)) {
+            if (!layer.IsVisible) continue;
+            var width = layer.IsForeground && foregroundMinStrokeWidth > 0 ? Math.Max(foregroundMinStrokeWidth, layer.StrokeWidth) : layer.StrokeWidth;
+            if (dashed) c.DrawDashedLine(x1, y1, x2, y2, layer.ColorWithOpacity(), width, 8, 6);
+            else c.DrawLine(x1, y1, x2, y2, layer.ColorWithOpacity(), width);
+        }
     }
 
     private static ChartColor PngStrokeHalo(ChartColor color) {
@@ -564,18 +566,6 @@ public sealed partial class PngChartRenderer {
         if (color.A == 0) return color;
         var alpha = Math.Min(color.A, Math.Max(0, (int)Math.Round(color.A * opacity)));
         return ChartColor.FromRgba(color.R, color.G, color.B, (byte)alpha);
-    }
-
-    private static ChartColor PngStrokeAmbientHalo(ChartColor color, ChartLineVisualStyle style) {
-        if (color.A == 0) return color;
-        var alpha = Math.Min(color.A, Math.Max(0, (int)Math.Round(color.A * style.AmbientHaloOpacity)));
-        return ChartColor.FromRgba(color.R, color.G, color.B, (byte)alpha);
-    }
-
-    private static ChartColor PngLineHighlight(ChartColor color, ChartLineVisualStyle style) => ApplyOpacity(ChartColor.White, LineHighlightOpacity(color, style));
-
-    private static double LineHighlightOpacity(ChartColor color, ChartLineVisualStyle style) {
-        return color.A == 0 ? 0 : style.HighlightOpacity * (color.A / 255.0);
     }
 
     private static BarLayoutInfo BarLayout(Chart chart, ChartRect plot, int seriesIndex) {

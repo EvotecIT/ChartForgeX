@@ -72,8 +72,5 @@ public sealed partial class PngChartRenderer {
 
     private static double PngDegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
 
-    private static bool IsLayeredRadialChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.LayeredRadial) return true;
-        return false;
-    }
+    private static bool IsLayeredRadialChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.LayeredRadial);
 }

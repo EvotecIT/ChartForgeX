@@ -61,10 +61,7 @@ public sealed partial class PngChartRenderer {
         c.DrawText(centerX - EstimatePngTextWidth(text, fontSize) / 2.0, baselineY - fontSize + 1, text, color, fontSize);
     }
 
-    private static bool IsGaugeChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Gauge) return true;
-        return false;
-    }
+    private static bool IsGaugeChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Gauge);
 
     private static string GaugeStatus(double ratio) {
         if (ratio < 0.60) return "negative";

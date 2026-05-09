@@ -15,10 +15,7 @@ public sealed partial class PngChartRenderer {
         foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) DrawSunburstSegment(c, chart, model, node, showLabels);
     }
 
-    private static bool IsSunburstChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Sunburst) return true;
-        return false;
-    }
+    private static bool IsSunburstChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Sunburst);
 
     private static void DrawSunburstSegment(RgbaCanvas c, Chart chart, ChartSunburstModel model, ChartSunburstNode node, bool showLabels) {
         var color = PngSunburstNodeColor(chart, node);
@@ -40,8 +37,8 @@ public sealed partial class PngChartRenderer {
         var radius = node.Depth == 0 ? 0 : node.InnerRadius + ringWidth * 0.64;
         var x = model.CenterX + Math.Cos(angle) * radius - EstimatePngEmphasizedTextWidth(label, labelFontSize) / 2.0;
         var y = model.CenterY + Math.Sin(angle) * radius - labelFontSize / 2.0;
-        var labelColor = HeatmapTextColor(color);
-        DrawReadablePngLabel(c, x, y, label, labelColor, TreeLabelHalo(labelColor), labelFontSize);
+        var labelColor = ChartColorMath.TextOnBackground(color);
+        DrawReadablePngLabel(c, x, y, label, labelColor, ChartColorMath.TextOnBackground(labelColor, 0.70), labelFontSize);
     }
 
     private static double SunburstPngLabelSpace(ChartSunburstNode node, double sweep, double ringWidth) {
@@ -65,7 +62,7 @@ public sealed partial class PngChartRenderer {
 
     private static ChartColor PngSunburstNodeColor(Chart chart, ChartSunburstNode node) {
         var t = chart.Options.Theme;
-        if (node.Depth == 0) return Blend(t.PlotBackground, t.Palette[0], 0.28);
+        if (node.Depth == 0) return ChartColorMath.Blend(t.PlotBackground, t.Palette[0], 0.28);
         return t.Palette[(node.Index + node.Depth - 1) % t.Palette.Length];
     }
 }

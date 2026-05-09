@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Svg;
 
@@ -16,7 +17,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", map.Width + pad * 2)
             .Attribute("height", map.Height + pad * 2)
             .Attribute("rx", Math.Min(18, Math.Max(7, dot * 3.2)))
-            .Attribute("fill", Blend(t.PlotBackground, t.Grid, 0.12).ToCss())
+            .Attribute("fill", ChartColorMath.Blend(t.PlotBackground, t.Grid, 0.12).ToCss())
             .Attribute("fill-opacity", "0.16")
             .Attribute("stroke", t.PlotBorder.ToCss())
             .Attribute("stroke-opacity", "0.16")

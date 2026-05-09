@@ -95,10 +95,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsRadarChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Radar) return true;
-        return false;
-    }
+    private static bool IsRadarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Radar);
 
     private static List<double> RadarCategories(IEnumerable<RadarSeriesItem> series) {
         var set = new SortedSet<double>();

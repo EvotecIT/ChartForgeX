@@ -43,7 +43,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawTreemapTileLabels(RgbaCanvas c, Chart chart, ChartRect rect, string label, string value, ChartColor color) {
         if (rect.Width < 48 || rect.Height < 30) return;
-        var textColor = HeatmapTextColor(color);
+        var textColor = ChartColorMath.TextOnBackground(color);
         var insetX = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetX, Math.Max(6, rect.Width * 0.12));
         var insetY = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetY, Math.Max(7, rect.Height * 0.14));
         var maxWidth = Math.Max(8, rect.Width - insetX * 2);
@@ -64,17 +64,14 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static bool IsTreemapChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Treemap) return true;
-        return false;
-    }
+    private static bool IsTreemapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Treemap);
 
     private static ChartColor PngTreemapTileColor(Chart chart, ChartSeries series, int pointIndex) =>
         pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
             ? series.PointColors[pointIndex]!.Value
             : series.Color ?? chart.Options.Theme.Palette[pointIndex % chart.Options.Theme.Palette.Length];
 
-    private static ChartColor TreemapTileGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.TreemapTileGradientTopBlend);
+    private static ChartColor TreemapTileGradientTop(ChartColor color) => ChartMarkSurface.TreemapTileGradientTop(color);
 
-    private static ChartColor TreemapTileGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.TreemapTileGradientBottomBlend);
+    private static ChartColor TreemapTileGradientBottom(ChartColor color) => ChartMarkSurface.TreemapTileGradientBottom(color);
 }

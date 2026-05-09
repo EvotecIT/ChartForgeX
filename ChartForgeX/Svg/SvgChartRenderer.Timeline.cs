@@ -61,7 +61,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("y", plot.Bottom + 22)
                     .Attribute("text-anchor", anchor)
                     .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", TimelineFontFamily(t.FontFamily))
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
                     .Attribute("font-size", labelFontSize)
                     .Text(label)
                     .EndElement()
@@ -103,7 +103,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("text-anchor", "end")
                     .Attribute("dominant-baseline", "middle")
                     .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", TimelineFontFamily(t.FontFamily))
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
                     .Attribute("font-size", rowLabelFontSize)
                     .Attribute("font-weight", "650")
                     .Text(rowLabel)
@@ -112,7 +112,7 @@ public sealed partial class SvgChartRenderer {
             }
             DrawTimelineRangeBar(writer, chart, item, id, i, left, y, width, rowHeight, duration, summary);
             if (item.ShowDataLabels && width >= 72) {
-                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, HeatmapTextColor(item.Color), t.DataLabelFontSize, width - 6, "750");
+                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 6, "750");
             }
         }
 
@@ -234,7 +234,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawTimelineSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
         if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawTimelineSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawTimelineSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
@@ -252,49 +252,15 @@ public sealed partial class SvgChartRenderer {
             .Attribute("transform", "translate(" + F(axisX) + " " + F(plot.Top + plot.Height / 2) + ") rotate(-90)")
             .Attribute("text-anchor", "middle")
             .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
-            .Attribute("font-family", TimelineFontFamily(StyleFontFamily(chart, style)))
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
             .Attribute("font-weight", StyleWeight(style, "600"));
-        WriteTimelineSvgTextStyleAttributes(writer, style);
+        WriteSvgTextStyleAttributes(writer, style);
         writer
             .Text(text)
             .EndElement()
             .Line();
     }
-
-    private static void DrawTimelineSvgTextCenteredX(SvgMarkupWriter writer, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, bool middleBaseline, ChartTextStyle? style) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
-        if (fittedText.Length == 0) return;
-
-        writer
-            .StartElement("text")
-            .Attribute("data-cfx-role", role)
-            .Attribute("x", centerX)
-            .Attribute("y", y)
-            .Attribute("text-anchor", "middle");
-        if (middleBaseline) writer.Attribute("dominant-baseline", "middle");
-        writer
-            .Attribute("fill", StyleColor(style, fill).ToCss())
-            .Attribute("font-family", TimelineFontFamily(StyleFontFamily(chart, style)))
-            .Attribute("font-size", fittedFontSize)
-            .Attribute("font-weight", StyleWeight(style, fontWeight));
-        WriteTimelineSvgTextStyleAttributes(writer, style);
-        writer
-            .Text(fittedText)
-            .EndElement()
-            .Line();
-    }
-
-    private static void WriteTimelineSvgTextStyleAttributes(SvgMarkupWriter writer, ChartTextStyle? style) {
-        if (style == null) return;
-        if (style.Italic) writer.Attribute("font-style", "italic");
-        if (style.Underline) writer.Attribute("text-decoration", "underline");
-    }
-
-    private static string TimelineFontFamily(string value) =>
-        string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value;
 
     private static ChartRect ApplyTimelineReserve(Chart chart, ChartRect plot, IReadOnlyList<TimelineItem> items) {
         var t = chart.Options.Theme;
@@ -345,13 +311,13 @@ public sealed partial class SvgChartRenderer {
     private static string BuildTimelineSummary(Chart chart, TimelineItem item, string duration) =>
         item.Name + ": " + FormatTimelineTick(chart, item.Start) + " to " + FormatTimelineTick(chart, item.End) + ", duration " + duration;
 
-    private static ChartColor TimelineItemGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.TimelineItemGradientTopBlend);
+    private static ChartColor TimelineItemGradientTop(ChartColor color) => ChartMarkSurface.TimelineItemGradientTop(color);
 
-    private static ChartColor TimelineItemGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.TimelineItemGradientBottomBlend);
+    private static ChartColor TimelineItemGradientBottom(ChartColor color) => ChartMarkSurface.TimelineItemGradientBottom(color);
 
-    private static ChartColor GanttTaskGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.GanttTaskGradientTopBlend);
+    private static ChartColor GanttTaskGradientTop(ChartColor color) => ChartMarkSurface.GanttTaskGradientTop(color);
 
-    private static ChartColor GanttTaskGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.GanttTaskGradientBottomBlend);
+    private static ChartColor GanttTaskGradientBottom(ChartColor color) => ChartMarkSurface.GanttTaskGradientBottom(color);
 
     private readonly struct TimelineItem {
         public TimelineItem(int seriesIndex, string name, double start, double end, ChartColor color, bool showDataLabels) {

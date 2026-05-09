@@ -34,13 +34,13 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columns[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
-                var color = HeatmapColor(chart, series.Color, value, min, max);
-                var status = HeatmapStatus(HeatmapRatio(value, min, max));
+                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                var status = ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(value, min, max));
                 var summary = series.Name + ", " + FormatX(chart, columns[columnIndex]) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, summary);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
-                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, HeatmapTextColor(color), chart.Options.Theme.DataLabelFontSize, layout.HexWidth - 8, "750", style: DataLabelStyle(chart, series, pointIndex));
+                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartColorMath.TextOnBackground(color), chart.Options.Theme.DataLabelFontSize, layout.HexWidth - 8, "750", style: DataLabelStyle(chart, series, pointIndex));
                 }
             }
         }

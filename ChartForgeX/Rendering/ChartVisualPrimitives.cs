@@ -91,6 +91,8 @@ internal static class ChartVisualPrimitives {
     public const double WaterfallConnectorDash = 4;
     public const double WaterfallConnectorGap = 4;
     public const double BarFillOpacity = 0.94;
+    public const double BarGradientTopBlend = 0.88;
+    public const double BarGradientBottomBlend = 0.94;
     public const double BarHighlightOpacity = 0.15;
     public const double BarHighlightStrokeWidth = 1;
     public const double BarHighlightInset = 1;
@@ -218,6 +220,8 @@ internal static class ChartVisualPrimitives {
 
     public const double FunnelSegmentStrokeWidth = 2;
     public const double FunnelSegmentStrokeOpacity = 0.80;
+    public const double FunnelSegmentGradientTopBlend = 0.86;
+    public const double FunnelSegmentGradientBottomBlend = 0.92;
     public const double FunnelDropoffLineStrokeWidth = 1.1;
     public const double FunnelDropoffLineOpacity = 0.62;
     public const double FunnelHighlightOpacityLight = 0.22;

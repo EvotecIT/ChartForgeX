@@ -53,6 +53,124 @@ internal static partial class SmokeTests {
         }
     }
 
+    private static void ChartKindTraitsCentralizeRendererClassification() {
+        var root = FindRepositoryRoot();
+        var traits = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Core", "ChartSeriesKindTraits.cs"));
+        Assert(traits.Contains("IsExclusive", StringComparison.Ordinal), "Chart-kind exclusivity should live in the shared trait table.");
+        Assert(traits.Contains("UsesCartesianXAxis", StringComparison.Ordinal), "Shared-axis compatibility should live in the shared trait table.");
+        Assert(traits.Contains("IsMapKind", StringComparison.Ordinal), "Map renderer axis suppression should live in the shared trait table.");
+        Assert(traits.Contains("IsLineLikeLegendKind", StringComparison.Ordinal), "Legend symbol classification should live in the shared trait table.");
+
+        var guards = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Core", "ChartGuards.cs"));
+        var grid = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Core", "ChartGrid.cs"));
+        var range = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartRange.cs"));
+        var svgHelpers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Helpers.cs"));
+        var pngRenderer = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.cs"));
+
+        Assert(!guards.Contains("ExclusiveSeriesKinds", StringComparison.Ordinal), "Chart guards should not keep a second specialized-kind table.");
+        Assert(grid.Contains("ChartSeriesKindTraits.UsesCartesianXAxis", StringComparison.Ordinal) && grid.Contains("ChartSeriesKindTraits.UsesCartesianYAxis", StringComparison.Ordinal), "Chart grids should use shared cartesian compatibility traits.");
+        Assert(range.Contains("ChartSeriesKindTraits.IsExclusive", StringComparison.Ordinal), "Range calculation should skip specialized renderers through the shared trait table.");
+        Assert(svgHelpers.Contains("ChartSeriesKindTraits.IsMapKind", StringComparison.Ordinal) && pngRenderer.Contains("ChartSeriesKindTraits.IsMapKind", StringComparison.Ordinal), "SVG and PNG renderers should share map-kind classification.");
+    }
+
+    private static void LinePolishLayersStaySharedAcrossSvgAndPng() {
+        var root = FindRepositoryRoot();
+        var layers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartLineVisualLayers.cs"));
+        var svgLines = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.LineStyling.cs"));
+        var svgRange = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RangeArea.cs"));
+        var pngCartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
+        var pngRange = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.RangeArea.cs"));
+
+        Assert(layers.Contains("RoleSuffix", StringComparison.Ordinal) && layers.Contains("ColorWithOpacity", StringComparison.Ordinal), "Shared line layers should expose role suffixes for SVG and alpha-adjusted colors for PNG.");
+        Assert(svgLines.Contains("ChartLineVisualLayers.Build", StringComparison.Ordinal) && svgRange.Contains("ChartLineVisualLayers.Build", StringComparison.Ordinal), "SVG line emitters should use the shared premium line layer model.");
+        Assert(pngCartesian.Contains("ChartLineVisualLayers.Build", StringComparison.Ordinal) && pngRange.Contains("ChartLineVisualLayers.Build", StringComparison.Ordinal), "PNG line emitters should use the shared premium line layer model.");
+        Assert(!svgLines.Contains("LineHighlightOpacity(", StringComparison.Ordinal), "SVG line styling should not duplicate highlight-opacity math.");
+        Assert(!pngCartesian.Contains("PngLineHighlight", StringComparison.Ordinal) && !pngCartesian.Contains("PngStrokeAmbientHalo", StringComparison.Ordinal), "PNG cartesian line styling should not duplicate premium layer color math.");
+    }
+
+    private static void MarkSurfacePolishStaysSharedAcrossSvgAndPng() {
+        var root = FindRepositoryRoot();
+        var surface = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartMarkSurface.cs"));
+        var primitives = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartVisualPrimitives.cs"));
+        var svgRenderer = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.cs"));
+        var svgHelpers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Helpers.cs"));
+        var pngCartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
+        var svgFunnel = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Funnel.cs"));
+        var pngFunnel = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Funnel.cs"));
+        var svgTreemap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Treemap.cs"));
+        var pngTreemap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Treemap.cs"));
+        var svgSankey = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Sankey.cs"));
+        var pngSankey = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Sankey.cs"));
+        var svgTree = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Tree.cs"));
+        var pngTree = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Tree.cs"));
+        var svgTimeline = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Timeline.cs"));
+        var pngTimeline = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Timeline.cs"));
+
+        Assert(surface.Contains("BarGradientTop", StringComparison.Ordinal) && surface.Contains("FunnelSegmentGradientTop", StringComparison.Ordinal) && surface.Contains("TreemapTileGradientBottom", StringComparison.Ordinal), "Reusable mark-surface gradient roles should live in one rendering helper.");
+        Assert(primitives.Contains("BarGradientTopBlend", StringComparison.Ordinal) && primitives.Contains("FunnelSegmentGradientTopBlend", StringComparison.Ordinal) && primitives.Contains("TreemapTileGradientBottomBlend", StringComparison.Ordinal), "Mark-surface blend strengths should live in shared visual primitive tokens.");
+        Assert(svgRenderer.Contains("AppendBarSurfaceGradient", StringComparison.Ordinal) && svgRenderer.Contains("seriesFill{i}-point{pointIndex}", StringComparison.Ordinal), "SVG bar fills, including point colors, should use reusable mark-surface gradient definitions.");
+        Assert(svgHelpers.Contains("seriesFill{seriesIndex}-point{pointIndex}", StringComparison.Ordinal), "SVG point-colored bars should not fall back to flat one-off fill strings.");
+        Assert(pngCartesian.Contains("ChartMarkSurface.BarGradientTop", StringComparison.Ordinal) && pngCartesian.Contains("ChartMarkSurface.BarGradientBottom", StringComparison.Ordinal), "PNG bars should use shared mark-surface gradient roles.");
+        foreach (var renderer in new[] { svgFunnel, pngFunnel, svgTreemap, pngTreemap, svgSankey, pngSankey, svgTree, pngTree, svgTimeline, pngTimeline }) {
+            Assert(renderer.Contains("ChartMarkSurface.", StringComparison.Ordinal), "Specialized SVG and PNG mark renderers should delegate surface gradients to ChartMarkSurface.");
+        }
+    }
+
+    private static void SvgFittedTextPolishStaysSharedAcrossSpecializedCharts() {
+        var root = FindRepositoryRoot();
+        var writerHelpers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.MarkupWriterHelpers.cs"));
+        var timeline = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Timeline.cs"));
+        var gantt = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Gantt.cs"));
+        var dottedMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.DottedMap.cs"));
+
+        Assert(writerHelpers.Contains("ChartTextStyle? style", StringComparison.Ordinal) && writerHelpers.Contains("WriteSvgTextStyleAttributes", StringComparison.Ordinal), "SVG markup-writer text helpers should support shared fitting and text-style attributes.");
+        Assert(timeline.Contains("DrawSvgTextCenteredX(writer", StringComparison.Ordinal) && gantt.Contains("DrawSvgTextCenteredX(writer", StringComparison.Ordinal), "Timeline and Gantt centered labels should use the shared SVG fitted-text helper.");
+        Assert(!timeline.Contains("DrawTimelineSvgTextCenteredX", StringComparison.Ordinal) && !gantt.Contains("DrawGanttSvgTextCenteredX", StringComparison.Ordinal), "Specialized SVG renderers should not keep duplicate fitted centered-text helpers.");
+        Assert(!timeline.Contains("WriteTimelineSvgTextStyleAttributes", StringComparison.Ordinal) && !gantt.Contains("WriteGanttSvgTextStyleAttributes", StringComparison.Ordinal), "Specialized SVG renderers should not duplicate text-style attribute writers.");
+        Assert(!dottedMap.Contains("AppendLine($\"<text", StringComparison.Ordinal) && dottedMap.Contains("WriteSvgTextStyleAttributes(writer, style)", StringComparison.Ordinal), "Dotted-map SVG labels should be emitted through SvgMarkupWriter instead of interpolated text markup.");
+    }
+
+    private static void ColorReadabilityMathStaysSharedAcrossSvgAndPng() {
+        var root = FindRepositoryRoot();
+        var colorMath = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartColorMath.cs"));
+        var markSurface = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartMarkSurface.cs"));
+        var dottedMapSurface = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartDottedMapSurface.cs"));
+        var heatmapSurface = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartHeatmapSurface.cs"));
+        var svgHeatmap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Heatmap.cs"));
+        var pngHeatmap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Heatmap.cs"));
+        var svgCalendar = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.CalendarHeatmap.cs"));
+        var pngCalendar = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.CalendarHeatmap.cs"));
+        var svgDottedMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.DottedMap.cs"));
+        var pngDottedMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.DottedMap.cs"));
+        var svgFunnel = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Funnel.cs"));
+        var pngFunnel = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Funnel.cs"));
+        var svgTree = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Tree.cs"));
+        var pngTree = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Tree.cs"));
+        var svgRegionMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RegionMap.cs"));
+        var pngRegionMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.RegionMap.cs"));
+        var svgTileMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.TileMap.cs"));
+        var pngTileMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.TileMap.cs"));
+        var pngText = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Text.cs"));
+
+        Assert(colorMath.Contains("Blend", StringComparison.Ordinal) && colorMath.Contains("TextOnBackground", StringComparison.Ordinal) && colorMath.Contains("RelativeLuminance", StringComparison.Ordinal), "Shared color math should own blend and readable foreground decisions.");
+        Assert(markSurface.Contains("ChartColorMath.Blend", StringComparison.Ordinal), "Mark-surface gradients should use the shared color blend helper.");
+        Assert(dottedMapSurface.Contains("ChartColorMath.RelativeLuminance", StringComparison.Ordinal) && dottedMapSurface.Contains("LandDotColor", StringComparison.Ordinal) && dottedMapSurface.Contains("BoundaryOpacity", StringComparison.Ordinal), "Dotted-map land and boundary surface contrast should stay centralized.");
+        Assert(heatmapSurface.Contains("ChartColorMath.Blend", StringComparison.Ordinal) && heatmapSurface.Contains("CalendarEmptyColor", StringComparison.Ordinal) && heatmapSurface.Contains("MapNoDataColor", StringComparison.Ordinal), "Heatmap and map-adjacent color scales should stay centralized.");
+        Assert(svgHeatmap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal) && pngHeatmap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal), "SVG and PNG heatmap color scales should share heatmap surface math.");
+        Assert(svgHeatmap.Contains("ChartColorMath.TextOnBackground", StringComparison.Ordinal) && pngHeatmap.Contains("ChartColorMath.TextOnBackground", StringComparison.Ordinal), "SVG and PNG heatmap labels should share foreground contrast decisions.");
+        Assert(svgFunnel.Contains("ChartColorMath.TextOnBackground(color, 0.58)", StringComparison.Ordinal) && pngFunnel.Contains("ChartColorMath.TextOnBackground(color, 0.58)", StringComparison.Ordinal), "SVG and PNG funnel labels should share foreground contrast thresholds.");
+        Assert(svgTree.Contains("ChartColorMath.TextOnBackground(labelColor, 0.70)", StringComparison.Ordinal) && pngTree.Contains("ChartColorMath.TextOnBackground(labelColor, 0.70)", StringComparison.Ordinal), "SVG and PNG tree label halos should share luminance thresholds.");
+        Assert(svgCalendar.Contains("ChartHeatmapSurface.CalendarColor", StringComparison.Ordinal) && pngCalendar.Contains("ChartHeatmapSurface.CalendarColor", StringComparison.Ordinal), "SVG and PNG calendar heatmaps should share color and empty-cell math.");
+        Assert(svgRegionMap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal) && pngRegionMap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal), "SVG and PNG region maps should share heatmap surface color decisions.");
+        Assert(svgTileMap.Contains("ChartHeatmapSurface.MapNoDataColor", StringComparison.Ordinal) && pngTileMap.Contains("ChartHeatmapSurface.MapNoDataColor", StringComparison.Ordinal), "SVG and PNG tile maps should share no-data color decisions.");
+        Assert(svgDottedMap.Contains("ChartDottedMapSurface.LandDotColor", StringComparison.Ordinal) && pngDottedMap.Contains("ChartDottedMapSurface.LandDotColor", StringComparison.Ordinal), "SVG and PNG dotted maps should use shared land-dot surface color decisions.");
+        Assert(svgDottedMap.Contains("ChartDottedMapSurface.BoundaryColor", StringComparison.Ordinal) && pngDottedMap.Contains("ChartDottedMapSurface.BoundaryColor", StringComparison.Ordinal), "SVG and PNG dotted maps should use shared boundary surface color decisions.");
+        Assert(pngText.Contains("ChartColorMath.WithOpacity", StringComparison.Ordinal), "PNG label halo opacity should use shared color alpha math.");
+        Assert(!svgHeatmap.Contains("private static ChartColor Blend", StringComparison.Ordinal) && !pngHeatmap.Contains("private static ChartColor Blend", StringComparison.Ordinal), "Heatmap renderers should not carry duplicate private blend helpers.");
+        Assert(!svgHeatmap.Contains("private static ChartColor ChartColorMath.TextOnBackground", StringComparison.Ordinal) && !pngHeatmap.Contains("private static ChartColor ChartColorMath.TextOnBackground", StringComparison.Ordinal), "Heatmap renderers should not carry duplicate readable-foreground helpers.");
+        Assert(!svgDottedMap.Contains("IsLightDottedMapSurface", StringComparison.Ordinal) && !pngDottedMap.Contains("IsLightDottedMapSurface", StringComparison.Ordinal), "Dotted-map renderers should not carry duplicate surface luminance helpers.");
+    }
+
     private static void ExampleAppClearsGeneratedOutputBeforeWriting() {
         var program = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "Program.cs"));
         Assert(program.Contains("Directory.Delete(output, recursive: true)", StringComparison.Ordinal), "Example generation should wipe stale output before writing comparison artifacts.");

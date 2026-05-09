@@ -100,5 +100,5 @@ public sealed partial class SvgChartRenderer {
 
     private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
 
-    private static bool IsLayeredRadialChart(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.LayeredRadial);
+    private static bool IsLayeredRadialChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.LayeredRadial);
 }

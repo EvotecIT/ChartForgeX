@@ -65,7 +65,7 @@ public sealed partial class PngChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columnValues[columnIndex]);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
-                var color = HeatmapColor(chart, series.Color, value, min, max);
+                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
                 c.FillRoundedRect(x, y, cellWidth, cellHeight, radius, color);
                 c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
@@ -74,7 +74,7 @@ public sealed partial class PngChartRenderer {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, HeatmapTextColor(color), color, dataFontSize, dataStyle);
+                        DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, ChartColorMath.TextOnBackground(color), color, dataFontSize, dataStyle);
                     } else {
                         var heatmapLabelWidth = EstimatePngEmphasizedTextWidth(label, dataFontSize);
                         var labelX = placement == ChartDataLabelPlacement.Left
@@ -111,10 +111,7 @@ public sealed partial class PngChartRenderer {
         if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
     }
 
-    private static bool IsHeatmapChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.Heatmap) return true;
-        return false;
-    }
+    private static bool IsHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Heatmap);
 
     private static bool HasHeatmapSideLabels(Chart chart, IReadOnlyList<ChartSeries> rows, ChartDataLabelPlacement placement) {
         foreach (var row in rows) if (ShouldDrawDataLabels(chart, row) && DataLabelPlacement(chart, row) == placement) return true;
@@ -138,24 +135,6 @@ public sealed partial class PngChartRenderer {
         return Math.Min(88, max);
     }
 
-    private static ChartColor HeatmapColor(Chart chart, ChartColor? highColor, double value, double min, double max) {
-        var ratio = HeatmapRatio(value, min, max);
-        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticHeatmapColor(chart, ratio);
-        return Blend(chart.Options.Theme.PlotBackground, highColor ?? chart.Options.Theme.Palette[0], 0.18 + ratio * 0.82);
-    }
-
-    private static ChartColor SemanticHeatmapColor(Chart chart, double ratio) {
-        var t = chart.Options.Theme;
-        if (ratio < 0.60) return Blend(t.Negative, t.Warning, ratio / 0.60 * 0.42);
-        if (ratio < 0.80) return Blend(t.Warning, t.Positive, (ratio - 0.60) / 0.20 * 0.5);
-        return Blend(t.Warning, t.Positive, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
-    }
-
-    private static ChartColor HeatmapTextColor(ChartColor color) {
-        var luminance = (0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B) / 255.0;
-        return luminance > 0.54 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
-    }
-
     private static void AddHeatmapColumns(SortedSet<double> columns, ChartSeries series) {
         if (!series.HeatmapColumnCount.HasValue) return;
         for (var i = 1; i <= series.HeatmapColumnCount.Value; i++) columns.Add(i);
@@ -172,7 +151,7 @@ public sealed partial class PngChartRenderer {
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
             var value = min + (max - min) * ratio;
-            c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, HeatmapColor(chart, highColor, value, min, max));
+            c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, ChartHeatmapSurface.Color(chart, highColor, value, min, max));
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);
@@ -184,19 +163,6 @@ public sealed partial class PngChartRenderer {
         maxLabel = TrimPngLabelToWidth(maxLabel, maxFontSize, labelMaxWidth);
         if (minLabel.Length > 0) c.DrawText(x, y + ChartVisualPrimitives.HeatmapScaleLabelOffsetY - minFontSize + 1, minLabel, chart.Options.Theme.MutedText, minFontSize);
         if (maxLabel.Length > 0) c.DrawText(x + width - EstimatePngTextWidth(maxLabel, maxFontSize), y + ChartVisualPrimitives.HeatmapScaleLabelOffsetY - maxFontSize + 1, maxLabel, chart.Options.Theme.MutedText, maxFontSize);
-    }
-
-    private static double HeatmapRatio(double value, double min, double max) {
-        if (min >= -0.000001 && max <= 100.000001) return Clamp(value / 100, 0, 1);
-        return Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
-    }
-
-    private static ChartColor Blend(ChartColor a, ChartColor b, double amount) {
-        amount = Clamp(amount, 0, 1);
-        return ChartColor.FromRgb(
-            (byte)Math.Round(a.R + (b.R - a.R) * amount),
-            (byte)Math.Round(a.G + (b.G - a.G) * amount),
-            (byte)Math.Round(a.B + (b.B - a.B) * amount));
     }
 
     private static double FindHeatmapValue(ChartSeries series, double column) {

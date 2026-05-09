@@ -26,7 +26,7 @@ public sealed partial class SvgChartRenderer {
             if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
                 WriteSegmentedHorizontalBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, left, y, width, layout.BarHeight);
             } else {
-                WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, BarFill(chart, s, index, pointIndex, id));
+                WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, BarFill(chart, s, index, pointIndex, id), PointColor(chart, s, index, pointIndex));
                 DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, left, y, width, layout.BarHeight, radius, "horizontal-bar-pattern");
                 DrawSvgBarHighlight(sb, left, y, width, layout.BarHeight);
             }
@@ -52,7 +52,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHorizontalBar(StringBuilder sb, int seriesIndex, int pointIndex, double category, double value, double baseValue, double x, double y, double width, double height, double radius, string fill) {
+    private static void WriteHorizontalBar(StringBuilder sb, int seriesIndex, int pointIndex, double category, double value, double baseValue, double x, double y, double width, double height, double radius, string fill, ChartColor sourceColor) {
         var writer = new SvgMarkupWriter(512);
         writer
             .StartElement("rect")
@@ -62,6 +62,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-category", category)
             .Attribute("data-cfx-value", value)
             .Attribute("data-cfx-base", baseValue)
+            .Attribute("data-cfx-color", sourceColor.ToHex())
             .Attribute("x", x)
             .Attribute("y", y)
             .Attribute("width", width)

@@ -27,7 +27,7 @@ public sealed partial class SvgChartRenderer {
             var fillIndex = node.Depth % Math.Max(1, t.Palette.Length);
             var summary = node.Label + ": level " + node.Depth.ToString(CultureInfo.InvariantCulture);
             var radius = Math.Min(ChartVisualPrimitives.TreeNodeCornerRadiusMax, model.NodeHeight / 2);
-            var labelColor = HeatmapTextColor(t.Palette[fillIndex]);
+            var labelColor = ChartColorMath.TextOnBackground(t.Palette[fillIndex]);
             var borderStroke = ChartVisualPrimitives.TreeNodeBorderStrokeWidth;
             var borderInset = borderStroke / 2.0;
             writer
@@ -55,7 +55,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("height", Math.Max(0, model.NodeHeight - borderStroke))
                 .Attribute("rx", Math.Max(0, radius - borderInset))
                 .Attribute("fill", "none")
-                .Attribute("stroke", TreeLabelHalo(labelColor).ToCss())
+                .Attribute("stroke", ChartColorMath.TextOnBackground(labelColor, 0.70).ToCss())
                 .Attribute("stroke-opacity", ChartVisualPrimitives.TreeNodeBorderOpacity)
                 .Attribute("stroke-width", borderStroke)
                 .Attribute("vector-effect", "non-scaling-stroke")
@@ -220,7 +220,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("text-anchor", "middle")
             .Attribute("dominant-baseline", "middle")
             .Attribute("fill", labelColor.ToCss())
-            .Attribute("stroke", TreeLabelHalo(labelColor).ToCss())
+            .Attribute("stroke", ChartColorMath.TextOnBackground(labelColor, 0.70).ToCss())
             .Attribute("stroke-width", ChartVisualPrimitives.TreeLabelStrokeWidth)
             .Attribute("paint-order", "stroke fill")
             .Attribute("stroke-linejoin", "round")
@@ -250,14 +250,9 @@ public sealed partial class SvgChartRenderer {
         return new[] { string.Join(" ", words, 0, bestSplit), string.Join(" ", words, bestSplit, words.Length - bestSplit) };
     }
 
-    private static ChartColor TreeLabelHalo(ChartColor labelColor) {
-        var luminance = (0.2126 * labelColor.R + 0.7152 * labelColor.G + 0.0722 * labelColor.B) / 255.0;
-        return luminance > 0.70 ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
-    }
+    private static ChartColor TreeNodeGradientTop(ChartColor color) => ChartMarkSurface.TreeNodeGradientTop(color);
 
-    private static ChartColor TreeNodeGradientTop(ChartColor color) => Blend(ChartColor.White, color, ChartVisualPrimitives.TreeNodeGradientTopBlend);
-
-    private static ChartColor TreeNodeGradientBottom(ChartColor color) => Blend(ChartColor.Black, color, ChartVisualPrimitives.TreeNodeGradientBottomBlend);
+    private static ChartColor TreeNodeGradientBottom(ChartColor color) => ChartMarkSurface.TreeNodeGradientBottom(color);
 
     private sealed class TreeNode {
         public TreeNode(int index, string label) { Index = index; Label = label; }

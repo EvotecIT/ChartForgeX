@@ -62,6 +62,10 @@ public sealed partial class SvgChartRenderer {
             .EndElement()
             .Line());
     }
+
+    private static void AppendBarSurfaceGradient(StringBuilder sb, string id, ChartColor color) =>
+        AppendLinearGradient(sb, id, "0", "0", "0", "1", ChartMarkSurface.BarGradientTop(color).ToHex(), 1, ChartMarkSurface.BarGradientBottom(color).ToHex(), 0.94);
+
     /// <summary>
     /// Renders the specified chart to SVG.
     /// </summary>
@@ -161,7 +165,10 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < chart.Series.Count; i++) {
             var c = Color(chart, i);
             AppendLinearGradient(sb, $"{id}-area{i}", "0", "0", "0", "1", c.ToHex(), 0.32, c.ToHex(), 0.02);
-            AppendLinearGradient(sb, $"{id}-seriesFill{i}", "0", "0", "0", "1", c.ToHex(), 1, c.ToHex(), 0.74);
+            AppendBarSurfaceGradient(sb, $"{id}-seriesFill{i}", c);
+            for (var pointIndex = 0; pointIndex < chart.Series[i].PointColors.Count; pointIndex++) {
+                if (chart.Series[i].PointColors[pointIndex].HasValue) AppendBarSurfaceGradient(sb, $"{id}-seriesFill{i}-point{pointIndex}", chart.Series[i].PointColors[pointIndex]!.Value);
+            }
         }
         AppendFillPatternDefinitions(sb, chart, id);
         for (var i = 0; i < t.Palette.Length; i++) {

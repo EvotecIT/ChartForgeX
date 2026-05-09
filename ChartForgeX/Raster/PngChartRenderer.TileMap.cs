@@ -40,7 +40,7 @@ public sealed partial class PngChartRenderer {
         foreach (var tile in definition.Regions) {
             var hasValue = data.TryGetValue(tile.Code, out var entry);
             var value = hasValue ? entry.Value : 0;
-            var color = hasValue ? HeatmapColor(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : MapNoDataColor(chart);
+            var color = hasValue ? ChartHeatmapSurface.Color(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : ChartHeatmapSurface.MapNoDataColor(chart);
             var x = x0 + tile.Column * (tileSize + gap);
             var y = y0 + tile.Row * (tileSize + gap);
             var points = HexTilePoints(x, y, tileSize);
@@ -51,7 +51,7 @@ public sealed partial class PngChartRenderer {
             }
             if (chart.Options.ShowMapLabels) {
                 var fontSize = Math.Min(PngTickFontSize(chart), tileSize * 0.32);
-                c.DrawTextEmphasized(x + tileSize / 2 - EstimatePngEmphasizedTextWidth(tile.Code, fontSize) / 2, y + tileSize / 2 - fontSize / 2, tile.Code, HeatmapTextColor(color), fontSize);
+                c.DrawTextEmphasized(x + tileSize / 2 - EstimatePngEmphasizedTextWidth(tile.Code, fontSize) / 2, y + tileSize / 2 - fontSize / 2, tile.Code, ChartColorMath.TextOnBackground(color), fontSize);
             }
         }
 
@@ -66,7 +66,7 @@ public sealed partial class PngChartRenderer {
         var t = chart.Options.Theme;
         var pad = Math.Max(6, tileSize * 0.16);
         var radius = Math.Min(18, Math.Max(6, tileSize * 0.42));
-        c.FillRoundedRect(x - pad, y - pad, width + pad * 2, height + pad * 2, radius, ApplyOpacity(Blend(t.PlotBackground, t.Grid, 0.22), 0.32));
+        c.FillRoundedRect(x - pad, y - pad, width + pad * 2, height + pad * 2, radius, ApplyOpacity(ChartColorMath.Blend(t.PlotBackground, t.Grid, 0.22), 0.32));
         c.StrokeRoundedRect(x - pad, y - pad, width + pad * 2, height + pad * 2, radius, ApplyOpacity(t.PlotBorder, 0.28), 1);
     }
 
@@ -81,7 +81,7 @@ public sealed partial class PngChartRenderer {
         c.DrawText(x - EstimatePngTextWidth("Less", fontSize) - 8, y + size / 2 - fontSize / 2, "Less", t.MutedText, fontSize);
         for (var i = 0; i < 5; i++) {
             var value = min + (max - min) * (i / 4.0);
-            var color = HeatmapColor(chart, series.Color ?? t.Palette[0], value, min, max);
+            var color = ChartHeatmapSurface.Color(chart, series.Color ?? t.Palette[0], value, min, max);
             c.FillRoundedRect(x + i * (size + gap), y, size, size, Math.Min(3, size * 0.22), color);
         }
         c.DrawText(x + width + 8, y + size / 2 - fontSize / 2, "More", t.MutedText, fontSize);
@@ -96,11 +96,9 @@ public sealed partial class PngChartRenderer {
             y = Math.Max(plot.Top, y - size - 9);
         }
 
-        c.FillRoundedRect(x, y, size, size, Math.Min(3, size * 0.22), MapNoDataColor(chart));
+        c.FillRoundedRect(x, y, size, size, Math.Min(3, size * 0.22), ChartHeatmapSurface.MapNoDataColor(chart));
         c.DrawText(x + size + 5, y + size / 2 - fontSize / 2, label, chart.Options.Theme.MutedText, fontSize);
     }
-
-    private static ChartColor MapNoDataColor(Chart chart) => Blend(chart.Options.Theme.PlotBackground, chart.Options.Theme.Grid, 0.46);
 
     private static List<ChartPoint> HexTilePoints(double x, double y, double size) {
         var inset = size * 0.22;
@@ -126,10 +124,7 @@ public sealed partial class PngChartRenderer {
         return values;
     }
 
-    private static bool IsTileMapChart(Chart chart) {
-        foreach (var series in chart.Series) if (series.Kind == ChartSeriesKind.TileMap) return true;
-        return false;
-    }
+    private static bool IsTileMapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.TileMap);
 
     private readonly struct RegionMapValue {
         public readonly double Value;
