@@ -520,68 +520,6 @@ public sealed partial class SvgVisualBlockRenderer {
         if (hasAction) RenderFooterAction(writer, block.ActionLabel, block.ActionSymbol, block.ActionUrl, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
     }
 
-    private static void RenderActivityTimeline(SvgMarkupWriter writer, ActivityTimelineBlock block) {
-        var options = block.Options;
-        var theme = options.Theme;
-        var content = VisualBlockRendering.ContentRect(options);
-        var y = content.Y;
-        RenderBlockHeading(writer, block, ref y, content.X, content.Width);
-        RenderActivityChrome(writer, block, ref y, content.X, content.Width);
-        var hasAction = block.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.12)) : 0;
-        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
-        var spineX = content.X + 18;
-        writer.StartElement("g").Attribute("data-cfx-role", "activity-timeline-block").EndStartElement().Line();
-        writer.StartElement("line").Attribute("data-cfx-role", "activity-spine").Attribute("x1", spineX).Attribute("y1", y + 6).Attribute("x2", spineX).Attribute("y2", bottom).Attribute("stroke", theme.PlotBorder.ToCss()).Attribute("stroke-width", 2).EndEmptyElement().Line();
-        for (var i = 0; i < block.Items.Count && y < bottom - 12; i++) {
-            var item = block.Items[i];
-            var rowHeight = ActivityRowHeight(item, theme);
-            if (y + rowHeight > bottom + 1) break;
-            var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status);
-            if (item.Kind == ActivityTimelineItemKind.Section) {
-                WriteText(writer, item.Title.ToUpperInvariant(), content.X + 40, y + 14, content.Width - 40, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
-                writer.StartElement("circle").Attribute("data-cfx-role", "activity-section-node").Attribute("cx", spineX).Attribute("cy", y + 10).Attribute("r", 4).Attribute("fill", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
-            } else if (item.Kind == ActivityTimelineItemKind.ChecklistItem) {
-                writer.StartElement("circle").Attribute("data-cfx-role", "activity-check-node").Attribute("cx", spineX + 24).Attribute("cy", y + 11).Attribute("r", 4).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
-                if (item.Completed) writer.StartElement("polyline").Attribute("data-cfx-role", "activity-checkmark").Attribute("points", FormatPoint(spineX + 20, y + 11) + " " + FormatPoint(spineX + 23, y + 15) + " " + FormatPoint(spineX + 29, y + 7)).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", 1.5).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
-                var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
-                WriteText(writer, item.Title, content.X + 58, y + 15, content.Width - 58, VisualTextAlignment.Left, textColor, theme.FontFamily, theme.SubtitleFontSize, item.Completed ? "500" : "650");
-                if (item.Completed) writer.StartElement("line").Attribute("data-cfx-role", "activity-check-strike").Attribute("x1", content.X + 58).Attribute("y1", y + 10).Attribute("x2", content.X + Math.Min(content.Width, 58 + VisualBlockRendering.EstimateTextWidth(item.Title, theme.SubtitleFontSize))).Attribute("y2", y + 10).Attribute("stroke", textColor.ToCss()).Attribute("stroke-opacity", 0.55).EndEmptyElement().Line();
-            } else if (item.Kind == ActivityTimelineItemKind.HiddenSummary) {
-                writer.StartElement("circle").Attribute("data-cfx-role", "activity-hidden-node").Attribute("cx", spineX).Attribute("cy", y + 13).Attribute("r", 8).Attribute("fill", color.WithAlpha(42).ToCss()).Attribute("stroke", color.ToCss()).EndEmptyElement().Line();
-                WriteText(writer, item.HiddenCount.ToString(CultureInfo.InvariantCulture) + " " + item.Title, content.X + 40, y + 17, content.Width - 40, VisualTextAlignment.Left, color, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize), "750");
-            } else {
-                writer.StartElement("rect")
-                    .Attribute("data-cfx-role", "activity-event-surface")
-                    .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
-                    .Attribute("x", content.X + 32)
-                    .Attribute("y", y - 6)
-                    .Attribute("width", Math.Max(1, content.Width - 32))
-                    .Attribute("height", Math.Max(26, rowHeight - 8))
-                    .Attribute("rx", 10)
-                    .Attribute("fill", theme.PlotBackground.WithAlpha(130).ToCss())
-                    .Attribute("stroke", theme.PlotBorder.WithAlpha(150).ToCss())
-                    .EndEmptyElement().Line();
-                writer.StartElement("circle").Attribute("data-cfx-role", "activity-event-node").Attribute("cx", spineX).Attribute("cy", y + 15).Attribute("r", 10).Attribute("fill", color.WithAlpha(52).ToCss()).Attribute("stroke", color.ToCss()).Attribute("stroke-width", 2).EndEmptyElement().Line();
-                WriteText(writer, item.Title, content.X + 40, y + 15, content.Width - 150, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "800");
-                if (item.Badge.Length > 0) {
-                    var badgeWidth = Math.Min(94, VisualBlockRendering.EstimateTextWidth(item.Badge, theme.SubtitleFontSize) + 18);
-                    writer.StartElement("rect").Attribute("data-cfx-role", "activity-badge").Attribute("x", content.X + content.Width - badgeWidth).Attribute("y", y).Attribute("width", badgeWidth).Attribute("height", 22).Attribute("rx", 8).Attribute("fill", color.WithAlpha(38).ToCss()).EndEmptyElement().Line();
-                    WriteText(writer, item.Badge, content.X + content.Width - badgeWidth + 7, y + 15, badgeWidth - 14, VisualTextAlignment.Center, color, theme.FontFamily, theme.SubtitleFontSize, "750");
-                } else if (item.Timestamp.Length > 0) {
-                    WriteText(writer, item.Timestamp, content.X + content.Width - 110, y + 15, 110, VisualTextAlignment.Right, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
-                }
-
-                if (item.Detail.Length > 0) WriteText(writer, item.Detail, content.X + 40, y + 34, content.Width - 40, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
-            }
-
-            y += rowHeight;
-        }
-
-        writer.EndElement().Line();
-        if (hasAction) RenderFooterAction(writer, block.ActionLabel, block.ActionSymbol, block.ActionUrl, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
-    }
-
     private static void RenderRadialMetric(SvgMarkupWriter writer, RadialMetricCard card) {
         var options = card.Options;
         var theme = options.Theme;
@@ -652,13 +590,6 @@ public sealed partial class SvgVisualBlockRenderer {
         if (parts.Length == 0) return string.Empty;
         if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
         return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpperInvariant();
-    }
-
-    private static double ActivityRowHeight(ActivityTimelineItem item, ChartForgeX.Themes.ChartTheme theme) {
-        if (item.Kind == ActivityTimelineItemKind.Section) return 30;
-        if (item.Kind == ActivityTimelineItemKind.ChecklistItem) return 28;
-        if (item.Kind == ActivityTimelineItemKind.HiddenSummary) return 36;
-        return item.Detail.Length > 0 ? 54 : 38;
     }
 
     private static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, VisualTextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight) {

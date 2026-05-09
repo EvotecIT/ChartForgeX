@@ -12,7 +12,7 @@ Current visual-block primitives:
 - `DistributionStripCard` for analytics cards with a stacked share strip, legend chips, row symbols, percentage rings, and trailing detail values.
 - `HeatmapInsightCard` for dashboard matrix cards with controls, value cells, a right-side insight rail, and a color key.
 - `WorkloadListBlock` for staff, ranked people, or merchant rows with avatar/initial slots, progress rails, status notes, optional checkbox controls, and right-aligned values.
-- `ActivityTimelineBlock` for shipment/order feeds with optional toolbar actions, tab chips, note input chrome, section labels, status nodes, connector spines, nested checklist rows, hidden-item summaries, timestamps, and badges.
+- `ActivityTimelineBlock` for shipment/order feeds with optional toolbar actions, tab chips, note input chrome, section labels, status nodes, connector spines, nested checklist rows, hidden-item summaries, timestamps, badges, compact event rows, and node symbols.
 - `ScheduleTimelineBlock` for dense time-of-day swimlanes with optional header action chips, rounded event pills, status stripes, current-time markers, clipped-event metadata, badges, and avatar stacks.
 - `VisualGrid` for composing charts and visual blocks side by side without forcing non-chart content into `ChartGrid`.
 
@@ -227,17 +227,18 @@ Activity timelines provide the vertical shipment/order feed pattern without flat
 var timeline = ActivityTimelineBlock.Create()
     .WithTitle("Shipment Timeline")
     .WithToolbarActions("Hold", "Edit", "...")
+    .WithEventSurfaces(false)
     .AddTab("All", "2 shipments")
     .AddTab("Shipment 1", "Est. dispatch: Today")
     .WithNotePlaceholder("Add note...")
     .AddSection("In-progress")
-    .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by Royal Mail Standard")
-    .AddEvent("Shipment 1", status: VisualStatus.Neutral)
+    .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by Royal Mail Standard", "S")
+    .AddEvent("Shipment 1", status: VisualStatus.Neutral, symbol: "1")
     .AddChecklistItem("Carrier confirmed", completed: true, muted: true)
     .AddChecklistItem("Packing in progress", completed: false)
     .AddHiddenSummary(6, "items hidden")
     .AddSection("Completed")
-    .AddEvent("Order created", "Mar 10, 2026 10:20 am", VisualStatus.Positive);
+    .AddEvent("Order created", "Mar 10, 2026 10:20 am", VisualStatus.Positive, symbol: "OK");
 ```
 
 Schedule timelines cover planner-style time-of-day swimlanes:

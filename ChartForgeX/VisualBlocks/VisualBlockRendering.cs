@@ -157,6 +157,7 @@ internal static class VisualBlockRendering {
             foreach (var item in activityBlock.Items) {
                 if (item.Title.Length == 0) throw new InvalidOperationException("Activity timeline items must define text.");
                 if (item.Badge.Length > 24) throw new InvalidOperationException("Activity timeline item badges must be twenty-four characters or fewer.");
+                if (item.Symbol.Length > 4) throw new InvalidOperationException("Activity timeline item symbols must be four characters or fewer.");
                 if (item.HiddenCount < 0) throw new InvalidOperationException("Activity timeline hidden item counts must be zero or greater.");
             }
 

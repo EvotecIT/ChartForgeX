@@ -15,7 +15,7 @@ The screenshots contain these reusable chart and dashboard patterns:
 | Stacked task distribution card | overall tasks card | `CompositionStatusCard` | Added composition-card visual block with large totals, striped segments, legend rows, values, units, and footer actions. |
 | Grouped capsule bars | project track card, HR dashboard | grouped `Bar`, dashboard bar styling | Need rounded capsule grouped-bar preset, group separators, and card metric header/action footer. |
 | Dense schedule swimlane | project timeline screenshot | `ScheduleTimelineBlock` | Added schedule/swimlane visual block with header action chips, time-of-day axis, lanes, current-time marker, rounded event pills, badges, avatar stacks, and clipped-event metadata. |
-| Vertical activity timeline | shipment side panel | `ActivityTimelineBlock` | Added visual-block activity feed with toolbar actions, tab chips, note input chrome, sections, status dots, connector spine, nested checklist rows, hidden-item summary, timestamps, and badges. |
+| Vertical activity timeline | shipment side panel | `ActivityTimelineBlock` | Added visual-block activity feed with toolbar actions, tab chips, note input chrome, sections, status dots, connector spine, nested checklist rows, hidden-item summary, timestamps, badges, compact event rows, and node symbols. |
 | HR metric grid | HR dashboard | `MetricCard`, `VisualGrid` | Need richer dashboard-card presets, icon badges, delta pills, and gradient/stat panel example. |
 | Department stacked bars | HR dashboard | `WithDashboardStackedRowStyle` | Added compact stacked-row preset with dashboard chrome, optional inline legend, segmented horizontal rows, and optional trailing totals. |
 | Attendance multi-line trend | HR dashboard | `WithDashboardTrendPanelStyle`, `WithDashboardTrendFocus` | Added small-dashboard line preset with premium strokes, compact axes, inline legend support, vertical focus marker, highlighted x label, and point callout. |
@@ -150,18 +150,20 @@ Purpose: shipment/order timeline and status feeds.
 Proposed model:
 
 - `AddSection(label)`
-- `AddEvent(title, timestamp = null, status = VisualStatus.Neutral, badge = null)`
+- `AddEvent(title, timestamp = null, status = VisualStatus.Neutral, badge = null, detail = null, symbol = null)`
 - `AddChecklistItem(text, completed, muted = false)`
 - `AddHiddenSummary(count, label)`
 - `AddTab(label, detail = null)`
 - `WithToolbarActions(...)`
 - `WithNotePlaceholder(...)`
+- `WithEventSurfaces(enabled = true)` for switching between card-like event containers and compact inline event rows.
 
 Renderer work:
 
 - Vertical connector spine.
 - Section labels.
 - Status nodes: active, completed, pending, warning.
+- Compact node symbols for shipment/order markers.
 - Nested checklist indentation and muted/struck text.
 - Optional panel chrome for shipment sidebars: toolbar actions, tabs, and a note box.
 
@@ -277,7 +279,7 @@ Completed in `codex/chart-gallery-expansion-plan`:
   - `CompositionStatusCard` for stacked part-to-whole cards with legend rows, values, units, pattern hints, and footer actions.
 - Promoted two more Phase 2 primitives into public visual blocks:
   - `WorkloadListBlock` for staff, people, or ranked rows with avatar slots, progress rails, overload/status notes, optional checkbox controls, and right-aligned values.
-  - `ActivityTimelineBlock` for shipment/order feeds with toolbar actions, tab chips, note input chrome, section labels, status nodes, connector spines, nested checklist rows, hidden summaries, timestamps, and badges.
+  - `ActivityTimelineBlock` for shipment/order feeds with toolbar actions, tab chips, note input chrome, section labels, status nodes, connector spines, nested checklist rows, hidden summaries, timestamps, badges, compact event rows, and node symbols.
 - Promoted `ScheduleTimelineBlock` for dense planner-style time-of-day swimlanes with header actions, lanes, rounded event pills, status stripes, badges, avatar stacks, current-time markers, and clipped-event metadata.
 - Promoted `HeatmapInsightCard` for appointment-style matrix cards with segment controls, side insight rail, and renderer-owned color key.
 - Added `ChartTableCell` microvisuals for mini bars and sparklines with renderer-owned SVG/PNG output and validation.

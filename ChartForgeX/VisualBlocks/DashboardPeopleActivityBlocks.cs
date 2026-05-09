@@ -162,6 +162,9 @@ public sealed class ActivityTimelineBlock : VisualBlock<ActivityTimelineBlock> {
     /// <summary>Gets optional note placeholder rendered above the timeline feed.</summary>
     public string NotePlaceholder { get => _notePlaceholder; set => _notePlaceholder = value ?? throw new ArgumentNullException(nameof(value)); }
 
+    /// <summary>Gets or sets whether event rows render a contained surface behind their content.</summary>
+    public bool ShowEventSurfaces { get; set; } = true;
+
     /// <summary>Gets optional footer action text.</summary>
     public string ActionLabel { get => _actionLabel; set => _actionLabel = value ?? throw new ArgumentNullException(nameof(value)); }
 
@@ -193,6 +196,12 @@ public sealed class ActivityTimelineBlock : VisualBlock<ActivityTimelineBlock> {
         return this;
     }
 
+    /// <summary>Sets whether primary events render as card-like surfaces or compact inline rows.</summary>
+    public ActivityTimelineBlock WithEventSurfaces(bool enabled = true) {
+        ShowEventSurfaces = enabled;
+        return this;
+    }
+
     /// <summary>Adds a section label.</summary>
     public ActivityTimelineBlock AddSection(string label) {
         _items.Add(ActivityTimelineItem.Section(label));
@@ -200,8 +209,8 @@ public sealed class ActivityTimelineBlock : VisualBlock<ActivityTimelineBlock> {
     }
 
     /// <summary>Adds a primary timeline event.</summary>
-    public ActivityTimelineBlock AddEvent(string title, string? timestamp = null, VisualStatus status = VisualStatus.Neutral, string? badge = null, string? detail = null) {
-        _items.Add(ActivityTimelineItem.Event(title, timestamp, status, badge, detail));
+    public ActivityTimelineBlock AddEvent(string title, string? timestamp = null, VisualStatus status = VisualStatus.Neutral, string? badge = null, string? detail = null, string? symbol = null) {
+        _items.Add(ActivityTimelineItem.Event(title, timestamp, status, badge, detail, symbol));
         return this;
     }
 
@@ -254,6 +263,7 @@ public sealed class ActivityTimelineItem {
     private string _timestamp = string.Empty;
     private string _badge = string.Empty;
     private string _detail = string.Empty;
+    private string _symbol = string.Empty;
     private VisualStatus _status;
     private ActivityTimelineItemKind _kind;
 
@@ -283,6 +293,9 @@ public sealed class ActivityTimelineItem {
     /// <summary>Gets or sets optional detail text.</summary>
     public string Detail { get => _detail; set => _detail = value ?? throw new ArgumentNullException(nameof(value)); }
 
+    /// <summary>Gets or sets optional compact symbol text rendered inside the event node.</summary>
+    public string Symbol { get => _symbol; set => _symbol = value ?? throw new ArgumentNullException(nameof(value)); }
+
     /// <summary>Gets or sets semantic item status.</summary>
     public VisualStatus Status {
         get => _status;
@@ -305,12 +318,13 @@ public sealed class ActivityTimelineItem {
     public static ActivityTimelineItem Section(string label) => new(ActivityTimelineItemKind.Section, label);
 
     /// <summary>Creates an event item.</summary>
-    public static ActivityTimelineItem Event(string title, string? timestamp, VisualStatus status, string? badge, string? detail) {
+    public static ActivityTimelineItem Event(string title, string? timestamp, VisualStatus status, string? badge, string? detail, string? symbol = null) {
         return new ActivityTimelineItem(ActivityTimelineItemKind.Event, title) {
             Timestamp = timestamp ?? string.Empty,
             Status = status,
             Badge = badge ?? string.Empty,
-            Detail = detail ?? string.Empty
+            Detail = detail ?? string.Empty,
+            Symbol = symbol ?? string.Empty
         };
     }
 

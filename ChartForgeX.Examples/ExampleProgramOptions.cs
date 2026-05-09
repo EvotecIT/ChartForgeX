@@ -25,6 +25,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--dashboard-shipment-only")) {
+            DashboardPatternExamples.WriteShipmentActivityPanel(output, pngOutputScale);
+            Console.WriteLine("Generated dashboard shipment panel in: " + output);
+            return true;
+        }
+
         return false;
     }
 }

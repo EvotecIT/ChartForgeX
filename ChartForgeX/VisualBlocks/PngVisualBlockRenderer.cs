@@ -435,107 +435,6 @@ public sealed partial class PngVisualBlockRenderer {
         if (hasAction) DrawFooterAction(canvas, block.ActionLabel, block.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
     }
 
-    private static void DrawActivityChrome(RgbaCanvas canvas, ActivityTimelineBlock block, ref double y, double x, double width) {
-        var theme = block.Options.Theme;
-        if (block.ToolbarActions.Count > 0) {
-            var cursor = x + width;
-            for (var i = block.ToolbarActions.Count - 1; i >= 0; i--) {
-                var action = block.ToolbarActions[i];
-                var actionWidth = Math.Min(92, RgbaCanvas.MeasureTextEmphasizedWidth(action, theme.SubtitleFontSize, null) + 24);
-                cursor -= actionWidth;
-                canvas.FillRoundedRect(cursor, y, actionWidth, 28, 8, ChartColor.White);
-                canvas.StrokeRoundedRect(cursor, y, actionWidth, 28, 8, theme.CardBorder, 1);
-                DrawAlignedText(canvas, action, cursor, y + 7, actionWidth, VisualTextAlignment.Center, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
-                cursor -= 8;
-            }
-
-            y += 38;
-        }
-
-        if (block.Tabs.Count > 0) {
-            var cursor = x;
-            foreach (var tab in block.Tabs) {
-                var labelWidth = RgbaCanvas.MeasureTextEmphasizedWidth(tab.Label, Math.Max(12, theme.SubtitleFontSize + 1), null);
-                var detailWidth = tab.Detail.Length == 0 ? 0 : RgbaCanvas.MeasureTextWidth(tab.Detail, Math.Max(10, theme.SubtitleFontSize - 1), null);
-                var tabWidth = Math.Min(210, Math.Max(96, Math.Max(labelWidth, detailWidth) + 32));
-                canvas.FillRoundedRect(cursor, y, tabWidth, 52, 8, ChartColor.White);
-                canvas.StrokeRoundedRect(cursor, y, tabWidth, 52, 8, theme.CardBorder, 1);
-                DrawAlignedText(canvas, tab.Label, cursor + 14, y + 10, tabWidth - 26, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
-                if (tab.Detail.Length > 0) DrawAlignedText(canvas, tab.Detail, cursor + 14, y + 30, tabWidth - 26, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), false);
-                cursor += tabWidth + 10;
-            }
-
-            y += 66;
-        }
-
-        if (block.NotePlaceholder.Length > 0) {
-            canvas.FillRoundedRect(x, y, width, 54, 8, ChartColor.White);
-            canvas.StrokeRoundedRect(x, y, width, 54, 8, theme.CardBorder, 1);
-            DrawAlignedText(canvas, block.NotePlaceholder, x + 14, y + 18, width - 58, VisualTextAlignment.Left, theme.MutedText, Math.Max(12, theme.SubtitleFontSize + 1), false);
-            var sendColor = VisualBlockRendering.PaletteAt(theme, 0);
-            canvas.FillRoundedRect(x + width - 38, y + 17, 22, 22, 7, sendColor.WithAlpha(72));
-            DrawAlignedText(canvas, ">", x + width - 37, y + 22, 20, VisualTextAlignment.Center, sendColor, 12, true);
-            y += 76;
-        }
-    }
-
-    private static void DrawActivityTimeline(RgbaCanvas canvas, ActivityTimelineBlock block) {
-        var options = block.Options;
-        var theme = options.Theme;
-        var content = VisualBlockRendering.ContentRect(options);
-        var y = content.Y;
-        DrawHeading(canvas, block, ref y, content.X, content.Width);
-        DrawActivityChrome(canvas, block, ref y, content.X, content.Width);
-        var hasAction = block.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.12)) : 0;
-        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
-        var spineX = content.X + 18;
-        canvas.DrawLine(spineX, y + 6, spineX, bottom, theme.PlotBorder, 2);
-        for (var i = 0; i < block.Items.Count && y < bottom - 12; i++) {
-            var item = block.Items[i];
-            var rowHeight = ActivityRowHeight(item, theme);
-            if (y + rowHeight > bottom + 1) break;
-            var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status);
-            if (item.Kind == ActivityTimelineItemKind.Section) {
-                canvas.DrawCircle(spineX, y + 10, 4, theme.PlotBorder);
-                DrawAlignedText(canvas, item.Title.ToUpperInvariant(), content.X + 40, y + 4, content.Width - 40, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
-            } else if (item.Kind == ActivityTimelineItemKind.ChecklistItem) {
-                canvas.DrawCircle(spineX + 24, y + 11, 4, color);
-                if (item.Completed) {
-                    canvas.DrawLine(spineX + 20, y + 11, spineX + 23, y + 15, color, 1.4);
-                    canvas.DrawLine(spineX + 23, y + 15, spineX + 29, y + 7, color, 1.4);
-                }
-
-                var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
-                DrawAlignedText(canvas, item.Title, content.X + 58, y + 5, content.Width - 58, VisualTextAlignment.Left, textColor, theme.SubtitleFontSize, item.Completed ? false : true);
-                if (item.Completed) canvas.DrawLine(content.X + 58, y + 10, content.X + Math.Min(content.Width, 58 + RgbaCanvas.MeasureTextWidth(FitText(item.Title, theme.SubtitleFontSize, content.Width - 58), theme.SubtitleFontSize, null)), y + 10, textColor.WithAlpha(140), 1);
-            } else if (item.Kind == ActivityTimelineItemKind.HiddenSummary) {
-                canvas.DrawCircle(spineX, y + 13, 8, color.WithAlpha(42));
-                canvas.DrawCircleOutline(spineX, y + 13, 8, color, 1);
-                DrawAlignedText(canvas, item.HiddenCount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + item.Title, content.X + 40, y + 6, content.Width - 40, VisualTextAlignment.Left, color, Math.Max(12, theme.SubtitleFontSize), true);
-            } else {
-                canvas.FillRoundedRect(content.X + 32, y - 6, Math.Max(1, content.Width - 32), Math.Max(26, rowHeight - 8), 10, theme.PlotBackground.WithAlpha(130));
-                canvas.StrokeRoundedRect(content.X + 32, y - 6, Math.Max(1, content.Width - 32), Math.Max(26, rowHeight - 8), 10, theme.PlotBorder.WithAlpha(150), 1);
-                canvas.DrawCircle(spineX, y + 15, 10, color.WithAlpha(52));
-                canvas.DrawCircleOutline(spineX, y + 15, 10, color, 2);
-                DrawAlignedText(canvas, item.Title, content.X + 40, y + 5, content.Width - 150, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
-                if (item.Badge.Length > 0) {
-                    var badgeWidth = Math.Min(94, RgbaCanvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize, null) + 18);
-                    canvas.FillRoundedRect(content.X + content.Width - badgeWidth, y, badgeWidth, 22, 8, color.WithAlpha(38));
-                    DrawAlignedText(canvas, item.Badge, content.X + content.Width - badgeWidth + 7, y + 5, badgeWidth - 14, VisualTextAlignment.Center, color, theme.SubtitleFontSize, true);
-                } else if (item.Timestamp.Length > 0) {
-                    DrawAlignedText(canvas, item.Timestamp, content.X + content.Width - 110, y + 5, 110, VisualTextAlignment.Right, theme.MutedText, theme.SubtitleFontSize, false);
-                }
-
-                if (item.Detail.Length > 0) DrawAlignedText(canvas, item.Detail, content.X + 40, y + 24, content.Width - 40, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
-            }
-
-            y += rowHeight;
-        }
-
-        if (hasAction) DrawFooterAction(canvas, block.ActionLabel, block.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
-    }
-
     private static void DrawScheduleTimeline(RgbaCanvas canvas, ScheduleTimelineBlock block) {
         var options = block.Options;
         var theme = options.Theme;
@@ -687,13 +586,6 @@ public sealed partial class PngVisualBlockRenderer {
         if (parts.Length == 0) return string.Empty;
         if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
         return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpperInvariant();
-    }
-
-    private static double ActivityRowHeight(ActivityTimelineItem item, ChartForgeX.Themes.ChartTheme theme) {
-        if (item.Kind == ActivityTimelineItemKind.Section) return 30;
-        if (item.Kind == ActivityTimelineItemKind.ChecklistItem) return 28;
-        if (item.Kind == ActivityTimelineItemKind.HiddenSummary) return 36;
-        return item.Detail.Length > 0 ? 54 : 38;
     }
 
     private static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, VisualTextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {

@@ -29,6 +29,10 @@ internal static class DashboardPatternExamples {
         Save(PaymentAnalyticsGrid(scale), output, "dashboard-payment-analytics-grid");
     }
 
+    public static void WriteShipmentActivityPanel(string output, ChartPngOutputScale pngOutputScale) {
+        Save(ShipmentActivityPanel((int)pngOutputScale), output, "dashboard-shipment-activity-panel");
+    }
+
     private static VisualGrid AppointmentOperationsGrid(int outputScale) => VisualGrid.Create()
         .WithTitle("Appointment Operations Dashboard")
         .WithSubtitle("Heatmap, peak-hour bars, workload rows, and availability list from the supplied operations design.")
@@ -205,27 +209,28 @@ internal static class DashboardPatternExamples {
 
     private static ActivityTimelineBlock ShipmentActivityPanel(int outputScale) => ActivityTimelineBlock.Create()
         .WithTitle("Timeline")
-        .WithTheme(ProjectTheme())
+        .WithTheme(ShipmentTheme())
         .WithSize(620, 820)
         .WithPadding(34, 34, 34, 30)
         .WithPngOutputScale(outputScale)
         .WithToolbarActions("Hold", "Edit", "...")
+        .WithEventSurfaces(false)
         .AddTab("All", "2 shipments")
         .AddTab("Shipment 1", "Est. dispatch: Today")
         .AddTab("Shipment 2", "Est. dispatch: Tomorrow")
         .WithNotePlaceholder("Add note...")
         .AddSection("In-progress")
-        .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by: Royal Mail (Standard)")
+        .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by: Royal Mail (Standard)", "S")
         .AddChecklistItem("Estimated dispatch: Today", completed: false)
         .AddChecklistItem("Estimated delivery: 2-3 business days", completed: false)
-        .AddEvent("Shipment 1", status: VisualStatus.Neutral)
+        .AddEvent("Shipment 1", status: VisualStatus.Neutral, symbol: "1")
         .AddChecklistItem("Carrier: Royal Mail (Standard)", completed: true, muted: true)
         .AddChecklistItem("Shipping label generated", completed: true, muted: true)
         .AddChecklistItem("Packing in progress", completed: false)
-        .AddEvent("Shipment 2", status: VisualStatus.Neutral)
+        .AddEvent("Shipment 2", status: VisualStatus.Neutral, symbol: "2")
         .AddSection("Completed")
         .AddHiddenSummary(6, "items hidden")
-        .AddEvent("Order created", "Mar 10, 2026 10:20 am", VisualStatus.Positive, detail: "UK#2337 created via Shopify")
+        .AddEvent("Order created", "Mar 10, 2026 10:20 am", VisualStatus.Positive, detail: "UK#2337 created via Shopify", symbol: "OK")
         .WithAction("View customer details");
 
     private static VisualGrid HrOperationsGrid(int outputScale) => VisualGrid.Create()
@@ -439,6 +444,10 @@ internal static class DashboardPatternExamples {
         .WithPalette(Blue.ToHex(), Orange.ToHex(), Green.ToHex(), Purple.ToHex())
         .WithCornerRadius(18, 8)
         .WithShadowOpacity(0.05);
+
+    private static ChartTheme ShipmentTheme() => ProjectTheme()
+        .WithTypography(20, 12, 10, 11, 12, 11)
+        .WithPalette(Blue.ToHex(), Green.ToHex(), SoftGray.ToHex(), Purple.ToHex());
 
     private static ChartTheme HrTheme() => ChartTheme.DashboardLight()
         .WithSurfaceColors(ChartColor.FromHex("#F4F7FB"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#EDF1F7"), ChartColor.FromHex("#DCE3EF"))
