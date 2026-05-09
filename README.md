@@ -1,14 +1,33 @@
 # ChartForgeX - Dependency-Free Chart Rendering for .NET
 
-ChartForgeX renders polished SVG, static HTML, and PNG charts for .NET reports, dashboards, documentation, email, generated websites, and other static-output hosts.
+ChartForgeX is available as a NuGet package from the NuGet Gallery.
+
+NuGet Package
+
+[![nuget downloads](https://img.shields.io/nuget/dt/ChartForgeX?label=nuget%20downloads)](https://www.nuget.org/packages/ChartForgeX)
+[![nuget version](https://img.shields.io/nuget/v/ChartForgeX)](https://www.nuget.org/packages/ChartForgeX)
+
+Project Information
+
+[![top language](https://img.shields.io/github/languages/top/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
+[![license](https://img.shields.io/github/license/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
+[![quality](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml/badge.svg)](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml)
+
+Author & Social
+
+[![Twitter follow](https://img.shields.io/twitter/follow/PrzemyslawKlys.svg?label=Twitter%20%40PrzemyslawKlys&style=social)](https://twitter.com/PrzemyslawKlys)
+[![Blog](https://img.shields.io/badge/Blog-evotec.xyz-2A6496.svg)](https://evotec.xyz/hub)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-pklys-0077B5.svg?logo=LinkedIn)](https://www.linkedin.com/in/pklys)
+[![Threads](https://img.shields.io/badge/Threads-@PrzemyslawKlys-000000.svg?logo=Threads&logoColor=White)](https://www.threads.net/@przemyslaw.klys)
+[![Discord](https://img.shields.io/discord/508328927853281280?style=flat-square&label=discord%20chat)](https://evo.yt/discord)
+
+## What it's all about
+
+**ChartForgeX** renders polished SVG, static HTML, and PNG charts for .NET reports, dashboards, documentation, email, generated websites, and other static-output hosts.
 
 The goal is not to clone browser-first charting libraries. The goal is a reusable, no-JavaScript-by-default rendering layer that HtmlForgeX, DomainDetective, TestimoX, GPOZaurr, ADEssentials, OfficeIMO-style generators, and similar tools can embed without bringing a graphics stack with them.
 
-## Package
-
-[![nuget version](https://img.shields.io/nuget/v/ChartForgeX)](https://www.nuget.org/packages/ChartForgeX)
-[![top language](https://img.shields.io/github/languages/top/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
-[![license](https://img.shields.io/github/license/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
+## Install
 
 ```powershell
 dotnet add package ChartForgeX
@@ -24,7 +43,18 @@ Optional interaction support is split into separate packages:
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
 
-## What It Does
+## Documentation Links
+
+- Repository: [https://github.com/EvotecIT/ChartForgeX](https://github.com/EvotecIT/ChartForgeX)
+- NuGet package: [https://www.nuget.org/packages/ChartForgeX](https://www.nuget.org/packages/ChartForgeX)
+- Architecture notes: [docs/architecture.md](docs/architecture.md)
+- Topology reference: [docs/topology.md](docs/topology.md)
+- Visual blocks reference: [docs/visual-blocks.md](docs/visual-blocks.md)
+- Rendering engine benchmarking: [docs/rendering-engine-benchmarking.md](docs/rendering-engine-benchmarking.md)
+- Contributor guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Centralized TODO: [TODO.md](TODO.md)
+
+## Features
 
 - Renders static charts as SVG, HTML fragments/pages, and PNG files.
 - Keeps the default HTML output script-free and self-contained.
