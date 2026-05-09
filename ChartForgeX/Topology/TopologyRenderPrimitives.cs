@@ -7,7 +7,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Topology;
 
-internal static class TopologyRenderPrimitives {
+internal static partial class TopologyRenderPrimitives {
     public const int LegendColumns = 4;
     public const double LegendMaxWidth = 560;
     public const double LegendItemColumnWidth = 132;
@@ -15,6 +15,59 @@ internal static class TopologyRenderPrimitives {
     public const double LegendFirstItemOffsetY = 46;
     public const double LegendBottomPadding = 16;
     public const int NodeLabelMaxLength = 18;
+
+    public static bool IsMonitoringDashboardStyle(TopologyRenderOptions options) => options.VisualStyle == TopologyVisualStyle.MonitoringDashboard;
+
+    public static bool UseSoftMapBackground(TopologyRenderOptions options) =>
+        options.MapBackgroundStyle == TopologyMapBackgroundStyle.SoftSilhouette ||
+        options.MapBackgroundStyle == TopologyMapBackgroundStyle.Auto && IsMonitoringDashboardStyle(options);
+
+    public static bool UseNeutralGroupSurface(TopologyRenderOptions options) => options.GroupSurfaceStyle == TopologyGroupSurfaceStyle.Neutral;
+
+    public static string GroupFill(string accent, TopologyTheme theme, TopologyRenderOptions options) =>
+        UseNeutralGroupSurface(options) ? theme.Card : StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.055 : 0.10);
+
+    public static double EdgeStrokeWidth(TopologyEdge edge, bool selected, TopologyRenderOptions options) {
+        if (!IsMonitoringDashboardStyle(options)) return selected ? 3.4 : edge.IsMuted ? 1.45 : 2.2;
+        if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !selected) return 1.05;
+        if (edge.Emphasis == TopologyEdgeEmphasis.Strong && !selected) return 2.15;
+        return selected ? 2.35 : edge.IsMuted ? 1.05 : 1.65;
+    }
+
+    public static double EdgeOpacity(TopologyEdge edge, TopologyRenderOptions options) {
+        if (!IsMonitoringDashboardStyle(options)) return edge.IsMuted ? 0.72 : 0.94;
+        if (edge.Emphasis == TopologyEdgeEmphasis.Subtle) return edge.IsMuted ? 0.42 : 0.48;
+        if (edge.Emphasis == TopologyEdgeEmphasis.Strong) return 0.98;
+        return edge.IsMuted ? 0.78 : 0.96;
+    }
+
+    public static string EdgeColor(TopologyEdge edge, TopologyTheme theme, TopologyRenderOptions options) {
+        if (!edge.IsMuted) return theme.StatusColor(edge.Status);
+        return IsMonitoringDashboardStyle(options) ? "#CBD5E1" : theme.Border;
+    }
+
+    public static bool ShouldRenderGeographicRouteHalo(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyRenderOptions options) {
+        if (!IsMonitoringDashboardStyle(options)) return false;
+        if (!IsGeographicCurve(chart, edge, nodes)) return false;
+        return ShouldReserveGeographicCalloutRouteObstacle(edge);
+    }
+
+    public static bool ShouldRenderMonitoringRouteHalo(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyRenderOptions options) {
+        if (!IsMonitoringDashboardStyle(options)) return false;
+        if (ShouldRenderGeographicRouteHalo(chart, edge, nodes, options)) return true;
+        if (edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle) return false;
+        return edge.Kind is TopologyEdgeKind.Link or TopologyEdgeKind.Connectivity or TopologyEdgeKind.Replication or TopologyEdgeKind.Mapping;
+    }
+
+    public static bool ShouldReserveGeographicCalloutRouteObstacle(TopologyEdge edge) =>
+        edge.Kind is TopologyEdgeKind.Connectivity or TopologyEdgeKind.Link || !string.IsNullOrWhiteSpace(edge.Label);
+
+    public static byte HighlightAlpha(byte alpha, bool isHighlighted, TopologyHighlightState highlight) {
+        if (!highlight.IsActive || isHighlighted) return alpha;
+        return (byte)Math.Round(alpha * Clamp(highlight.DimmedOpacity, 0, 1));
+    }
+
+    public static string StatusFill(string color, string background, double amount) => Blend(color, background, amount);
 
     public static string NormalizeCssClassPrefix(string? value, string fallback) {
         value = string.IsNullOrWhiteSpace(value) ? fallback : value!.Trim();
@@ -103,7 +156,56 @@ internal static class TopologyRenderPrimitives {
 
     public static TopologyNodeDisplayMode EffectiveNodeDisplayMode(TopologyNode node, TopologyRenderOptions options) => node.DisplayMode ?? options.NodeDisplayMode;
 
+    public static bool ShouldRenderNodeStatusBadge(TopologyNode node, TopologyRenderOptions options) {
+        var displayMode = EffectiveNodeDisplayMode(node, options);
+        if (displayMode == TopologyNodeDisplayMode.Hidden) return false;
+        if (displayMode == TopologyNodeDisplayMode.Dot) return false;
+        if (IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon && node.Kind == TopologyNodeKind.Cloud) return false;
+        return true;
+    }
+
     public static string NodeBadge(TopologyNode node) => string.IsNullOrWhiteSpace(node.Badge) ? string.Empty : TrimTo(node.Badge!.Trim(), 8);
+
+    public static int NodeTitleMaxLength(TopologyNodeDisplayMode displayMode) {
+        return displayMode switch {
+            TopologyNodeDisplayMode.CompactCard => 11,
+            TopologyNodeDisplayMode.Pill => 14,
+            _ => NodeLabelMaxLength
+        };
+    }
+
+    public static double EstimateTextWidth(string value, double fontSize, bool bold) {
+        var weightFactor = bold ? 0.62 : 0.56;
+        return value.Length * fontSize * weightFactor;
+    }
+
+    public static string TrimToEstimatedWidth(string value, double maxWidth, double fontSize, bool bold) {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        maxWidth = Math.Max(fontSize * 2.4, maxWidth);
+        if (EstimateTextWidth(value, fontSize, bold) <= maxWidth) return value;
+        if (maxWidth <= EstimateTextWidth("...", fontSize, bold)) return "...";
+
+        var low = 0;
+        var high = value.Length;
+        while (low < high) {
+            var mid = (low + high + 1) / 2;
+            var candidate = value.Substring(0, Math.Max(0, mid)) + "...";
+            if (EstimateTextWidth(candidate, fontSize, bold) <= maxWidth) low = mid;
+            else high = mid - 1;
+        }
+
+        return value.Substring(0, Math.Max(0, low)) + "...";
+    }
+
+    public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize, bool bold) {
+        if (string.IsNullOrWhiteSpace(value)) return preferredFontSize;
+        var fontSize = preferredFontSize;
+        while (fontSize > minimumFontSize && EstimateTextWidth(value, fontSize, bold) > maxWidth) {
+            fontSize -= 0.5;
+        }
+
+        return Math.Max(minimumFontSize, fontSize);
+    }
 
     public static string StatusGlyph(TopologyHealthStatus status) {
         return status switch {
@@ -117,7 +219,7 @@ internal static class TopologyRenderPrimitives {
 
     public static string StatusMarkerToken(TopologyHealthStatus status) => status.ToString().ToLowerInvariant();
 
-    public static string StatusFill(string color, string background) => Blend(color, background, 0.10);
+    public static string StatusFill(string color, string background) => StatusFill(color, background, 0.10);
 
     public static List<ChartPoint> EdgePoints(TopologyNode source, TopologyNode target, TopologyEdgeRouting routing) {
         return EdgePoints(source, target, routing, TopologyEdgePort.Auto, TopologyEdgePort.Auto, 0);
@@ -160,13 +262,15 @@ internal static class TopologyRenderPrimitives {
     public static List<ChartPoint> EdgePoints(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
         var source = nodes[edge.SourceNodeId];
         var target = nodes[edge.TargetNodeId];
+        var offset = EdgeRouteOffset(chart, edge);
+        var routeLane = EdgeRouteLane(chart, edge, offset);
         var points = edge.Waypoints.Count == 0
             ? edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal
-                ? TopologyEdgeRouter.Route(chart, edge, source, target).Points
-                : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, edge.RouteLane)
+                ? TopologyEdgeRouter.Route(chart, edge, source, target, routeLane).Points
+                : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane)
             : EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
-        var offset = EdgeRouteOffset(chart, edge);
-        if (Math.Abs(offset) < 0.0001) return points;
+        ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
+        if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return points;
 
         var vectorSource = string.Compare(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal) <= 0 ? source : target;
         var vectorTarget = ReferenceEquals(vectorSource, source) ? target : source;
@@ -178,6 +282,87 @@ internal static class TopologyRenderPrimitives {
         var ox = -dy / length * offset;
         var oy = dx / length * offset;
         return points.Select(point => new ChartPoint(point.X + ox, point.Y + oy)).ToList();
+    }
+
+    private static bool UsesOrthogonalRoute(TopologyEdge edge) =>
+        edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal ||
+        edge.Waypoints.Count > 0;
+
+    private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
+        if (points.Count < 2) return;
+        if (edge.SourcePort != TopologyEdgePort.Auto) {
+            var original = points[0];
+            var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
+            points[0] = spread;
+            PreserveOrthogonalEndpointLeg(edge, points, 1, edge.SourcePort, original, spread);
+        }
+
+        if (edge.TargetPort != TopologyEdgePort.Auto) {
+            var targetIndex = points.Count - 1;
+            var original = points[targetIndex];
+            var spread = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, original);
+            points[targetIndex] = spread;
+            PreserveOrthogonalEndpointLeg(edge, points, targetIndex - 1, edge.TargetPort, original, spread);
+        }
+    }
+
+    private static ChartPoint SpreadEndpoint(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode node, TopologyEdgePort port, ChartPoint point) {
+        var related = EndpointPortPeers(chart, nodes, node.Id, port);
+        if (related.Count < 2) return point;
+        var index = related.FindIndex(candidate => ReferenceEquals(candidate, edge));
+        if (index < 0) return point;
+        var offset = (index - (related.Count - 1) / 2.0) * EdgePortFanSpacing;
+        var maximum = port is TopologyEdgePort.Top or TopologyEdgePort.Bottom
+            ? Math.Max(0, node.Width / 2 - EdgeEndpointSidePadding)
+            : Math.Max(0, node.Height / 2 - EdgeEndpointSidePadding);
+        offset = Clamp(offset, -maximum, maximum);
+        var spread = port switch {
+            TopologyEdgePort.Top or TopologyEdgePort.Bottom => new ChartPoint(point.X + offset, point.Y),
+            TopologyEdgePort.Left or TopologyEdgePort.Right => new ChartPoint(point.X, point.Y + offset),
+            _ => point
+        };
+        return spread;
+    }
+
+    private static void PreserveOrthogonalEndpointLeg(TopologyEdge edge, List<ChartPoint> points, int adjacentIndex, TopologyEdgePort port, ChartPoint original, ChartPoint spread) {
+        if (!UsesOrthogonalRoute(edge) || adjacentIndex < 0 || adjacentIndex >= points.Count) return;
+        var adjacent = points[adjacentIndex];
+        if (port is TopologyEdgePort.Top or TopologyEdgePort.Bottom) {
+            var deltaX = spread.X - original.X;
+            if (Math.Abs(deltaX) > 0.0001 && Math.Abs(adjacent.X - original.X) < 0.0001) {
+                points[adjacentIndex] = new ChartPoint(adjacent.X + deltaX, adjacent.Y);
+            }
+
+            return;
+        }
+
+        if (port is TopologyEdgePort.Left or TopologyEdgePort.Right) {
+            var deltaY = spread.Y - original.Y;
+            if (Math.Abs(deltaY) > 0.0001 && Math.Abs(adjacent.Y - original.Y) < 0.0001) {
+                points[adjacentIndex] = new ChartPoint(adjacent.X, adjacent.Y + deltaY);
+            }
+        }
+    }
+
+    private static List<TopologyEdge> EndpointPortPeers(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, string nodeId, TopologyEdgePort port) {
+        return chart.Edges
+            .Where(candidate => EndpointUsesPort(candidate, nodeId, port))
+            .OrderBy(candidate => EndpointPeerSortKey(candidate, nodeId, nodes))
+            .ThenBy(candidate => candidate.Id, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private static bool EndpointUsesPort(TopologyEdge edge, string nodeId, TopologyEdgePort port) {
+        return (string.Equals(edge.SourceNodeId, nodeId, StringComparison.Ordinal) && edge.SourcePort == port)
+            || (string.Equals(edge.TargetNodeId, nodeId, StringComparison.Ordinal) && edge.TargetPort == port);
+    }
+
+    private static double EndpointPeerSortKey(TopologyEdge edge, string nodeId, IReadOnlyDictionary<string, TopologyNode> nodes) {
+        var otherId = string.Equals(edge.SourceNodeId, nodeId, StringComparison.Ordinal) ? edge.TargetNodeId : edge.SourceNodeId;
+        if (!nodes.TryGetValue(nodeId, out var node) || !nodes.TryGetValue(otherId, out var other)) return 0;
+        var dx = CenterX(other) - CenterX(node);
+        var dy = CenterY(other) - CenterY(node);
+        return Math.Atan2(dy, dx);
     }
 
     public static TopologyRouteDiagnostics EdgeRouteDiagnostics(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
@@ -204,9 +389,20 @@ internal static class TopologyRenderPrimitives {
             .OrderBy(candidate => candidate.Id, StringComparer.Ordinal)
             .ToList();
         if (related.Count < 2) return 0;
-        var index = related.FindIndex(candidate => string.Equals(candidate.Id, edge.Id, StringComparison.Ordinal));
+        var index = related.FindIndex(candidate => ReferenceEquals(candidate, edge));
         if (index < 0) return 0;
         return (index - (related.Count - 1) / 2.0) * ParallelEdgeSpacing;
+    }
+
+    public static double EdgeRouteLane(TopologyChart chart, TopologyEdge edge) {
+        return EdgeRouteLane(chart, edge, EdgeRouteOffset(chart, edge));
+    }
+
+    private static double EdgeRouteLane(TopologyChart chart, TopologyEdge edge, double offset) {
+        if (edge.Waypoints.Count > 0) return edge.RouteLane;
+        if (edge.Routing is not (TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal)) return edge.RouteLane;
+        if (edge.HasRouteLaneOverride || Math.Abs(edge.RouteLane) >= 0.0001) return edge.RouteLane;
+        return offset;
     }
 
     public static ChartPoint EdgeLabelPoint(TopologyNode source, TopologyNode target, TopologyEdgeRouting routing) {
@@ -305,111 +501,6 @@ internal static class TopologyRenderPrimitives {
         return fallback ?? string.Empty;
     }
 
-    public static List<TopologyEdgeLabelLayout> EdgeLabelLayouts(TopologyChart chart, TopologyRenderOptions options) {
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        var nodeBoxes = chart.Nodes.Select(node => LabelBox.FromNode(node, 8)).ToList();
-        var edgeSegments = EdgeSegments(chart, nodes);
-        var placed = new List<LabelBox>();
-        var layouts = new List<TopologyEdgeLabelLayout>();
-
-        foreach (var edge in chart.Edges) {
-            var label = EdgeLabel(edge, options.EdgeLabelMetricKey, edge.Label);
-            var secondary = EdgeLabel(edge, options.EdgeSecondaryLabelMetricKey, edge.SecondaryLabel);
-            var tertiary = EdgeLabel(edge, options.EdgeTertiaryLabelMetricKey, edge.TertiaryLabel);
-            if (string.IsNullOrWhiteSpace(label) && string.IsNullOrWhiteSpace(secondary) && string.IsNullOrWhiteSpace(tertiary)) continue;
-            if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
-
-            var points = EdgePoints(chart, edge, nodes);
-            var labelPoint = IsGeographicCurve(chart, edge, nodes)
-                ? QuadraticPoint(points[0], GeographicCurveControlPoint(chart, edge, nodes, points), points[points.Count - 1], 0.5)
-                : EdgeLabelPoint(points);
-            var maxText = Math.Max(label.Length, Math.Max(secondary.Length, tertiary.Length));
-            var lineCount = (string.IsNullOrWhiteSpace(label) ? 0 : 1) + (string.IsNullOrWhiteSpace(secondary) ? 0 : 1) + (string.IsNullOrWhiteSpace(tertiary) ? 0 : 1);
-            var width = Math.Max(48, maxText * 7.2 + 18);
-            var height = lineCount <= 1 ? 22 : lineCount == 2 ? 38 : 52;
-            var center = PlaceLabel(edge, labelPoint.X, labelPoint.Y, width, height, chart.Viewport, chart.Legend, nodeBoxes, placed, edgeSegments);
-            var box = LabelBox.FromCenter(center.X, center.Y, width, height);
-            placed.Add(box);
-            layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, center.X, center.Y, width, height));
-        }
-
-        return layouts;
-    }
-
-    private static ChartPoint PlaceLabel(TopologyEdge edge, double baseX, double baseY, double width, double height, TopologyViewport viewport, TopologyLegend? legend, IReadOnlyList<LabelBox> nodeBoxes, IReadOnlyList<LabelBox> placedLabels, IReadOnlyList<EdgeSegment> edgeSegments) {
-        var candidates = LabelCandidates(baseX, baseY);
-        ChartPoint? best = null;
-        var bestScore = double.MaxValue;
-        foreach (var candidate in candidates) {
-            var clamped = ClampLabel(candidate, width, height, viewport, legend);
-            var box = LabelBox.FromCenter(clamped.X, clamped.Y, width, height);
-            var score = OverlapScore(box, nodeBoxes) * 4 + OverlapScore(box, placedLabels) * 2 + EdgeOverlapScore(edge, box, edgeSegments) * 8 + Distance(new ChartPoint(baseX, baseY), clamped) * 0.05;
-            if (score <= 0.0001) return clamped;
-            if (score < bestScore) {
-                best = clamped;
-                bestScore = score;
-            }
-        }
-
-        return best ?? ClampLabel(new ChartPoint(baseX, baseY), width, height, viewport, legend);
-    }
-
-    private static List<EdgeSegment> EdgeSegments(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
-        var segments = new List<EdgeSegment>();
-        foreach (var edge in chart.Edges) {
-            if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
-            var points = EdgePoints(chart, edge, nodes);
-            if (IsGeographicCurve(chart, edge, nodes)) points = GeographicCurveSamplePoints(chart, edge, nodes, points, 12);
-            for (var i = 0; i < points.Count - 1; i++) segments.Add(new EdgeSegment(edge, points[i], points[i + 1]));
-        }
-
-        return segments;
-    }
-
-    private static IEnumerable<ChartPoint> LabelCandidates(double x, double y) {
-        yield return new ChartPoint(x, y);
-        var offsets = new[] {
-            new ChartPoint(0, -30),
-            new ChartPoint(0, 30),
-            new ChartPoint(44, 0),
-            new ChartPoint(-44, 0),
-            new ChartPoint(54, -30),
-            new ChartPoint(-54, -30),
-            new ChartPoint(54, 30),
-            new ChartPoint(-54, 30),
-            new ChartPoint(0, -60),
-            new ChartPoint(0, 60),
-            new ChartPoint(82, 0),
-            new ChartPoint(-82, 0)
-        };
-        foreach (var offset in offsets) yield return new ChartPoint(x + offset.X, y + offset.Y);
-    }
-
-    private static ChartPoint ClampLabel(ChartPoint point, double width, double height, TopologyViewport viewport, TopologyLegend? legend) {
-        var minX = viewport.Padding + width / 2;
-        var maxX = Math.Max(minX, viewport.Width - viewport.Padding - width / 2);
-        var minY = viewport.Padding + height / 2;
-        var maxY = Math.Max(minY, viewport.Height - viewport.Padding - LegendReservedHeight(legend) - height / 2);
-        return new ChartPoint(Math.Min(maxX, Math.Max(minX, point.X)), Math.Min(maxY, Math.Max(minY, point.Y)));
-    }
-
-    private static double OverlapScore(LabelBox box, IReadOnlyList<LabelBox> others) {
-        var score = 0.0;
-        foreach (var other in others) score += box.OverlapArea(other);
-        return score;
-    }
-
-    private static double EdgeOverlapScore(TopologyEdge edge, LabelBox box, IReadOnlyList<EdgeSegment> segments) {
-        var score = 0.0;
-        var expanded = box.Expand(5);
-        foreach (var segment in segments) {
-            if (ReferenceEquals(edge, segment.Edge)) continue;
-            if (expanded.Intersects(segment.Start, segment.End)) score += 120;
-        }
-
-        return score;
-    }
-
     public static double CenterX(TopologyNode node) => node.X + node.Width / 2;
 
     public static double CenterY(TopologyNode node) => node.Y + node.Height / 2;
@@ -470,6 +561,8 @@ internal static class TopologyRenderPrimitives {
 
     private const double EdgeEndpointGap = 7;
     private const double ParallelEdgeSpacing = 26;
+    private const double EdgePortFanSpacing = 10;
+    private const double EdgeEndpointSidePadding = 8;
 
     private static void AppendDataAttributes(StringBuilder sb, string prefix, IReadOnlyDictionary<string, string> values) {
         foreach (var item in values.OrderBy(item => item.Key, StringComparer.Ordinal)) {
@@ -565,6 +658,17 @@ internal static class TopologyRenderPrimitives {
             return new LabelBox(node.X - padding, node.Y - padding, node.X + node.Width + padding, node.Y + node.Height + padding);
         }
 
+        public static LabelBox FromBounds(double left, double top, double right, double bottom) => new(left, top, right, bottom);
+
+        public static LabelBox FromGroup(TopologyGroup group, double padding) {
+            return new LabelBox(group.X - padding, group.Y - padding, group.X + group.Width + padding, group.Y + group.Height + padding);
+        }
+
+        public static LabelBox FromGroupHeader(TopologyGroup group, double padding) {
+            var headerHeight = Math.Min(68, Math.Max(44, group.Height * 0.32));
+            return new LabelBox(group.X - padding, group.Y - padding, group.X + group.Width + padding, group.Y + headerHeight + padding);
+        }
+
         public LabelBox Expand(double padding) {
             return new LabelBox(_left - padding, _top - padding, _right + padding, _bottom + padding);
         }
@@ -577,6 +681,11 @@ internal static class TopologyRenderPrimitives {
 
         public bool Intersects(ChartPoint start, ChartPoint end) {
             if (Contains(start) || Contains(end)) return true;
+            if (SegmentBoundsOverlap(start, end)) {
+                if (Math.Abs(start.Y - end.Y) < 0.000001 && start.Y >= _top && start.Y <= _bottom) return true;
+                if (Math.Abs(start.X - end.X) < 0.000001 && start.X >= _left && start.X <= _right) return true;
+            }
+
             var topLeft = new ChartPoint(_left, _top);
             var topRight = new ChartPoint(_right, _top);
             var bottomRight = new ChartPoint(_right, _bottom);
@@ -587,7 +696,13 @@ internal static class TopologyRenderPrimitives {
                 || SegmentsIntersect(start, end, bottomLeft, topLeft);
         }
 
-        private bool Contains(ChartPoint point) => point.X >= _left && point.X <= _right && point.Y >= _top && point.Y <= _bottom;
+        public bool Contains(ChartPoint point) => point.X >= _left && point.X <= _right && point.Y >= _top && point.Y <= _bottom;
+
+        private bool SegmentBoundsOverlap(ChartPoint start, ChartPoint end) =>
+            Math.Max(start.X, end.X) >= _left
+            && Math.Min(start.X, end.X) <= _right
+            && Math.Max(start.Y, end.Y) >= _top
+            && Math.Min(start.Y, end.Y) <= _bottom;
 
         private static bool SegmentsIntersect(ChartPoint a, ChartPoint b, ChartPoint c, ChartPoint d) {
             var d1 = Direction(c, d, a);

@@ -81,6 +81,47 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Applies the reusable monitoring-dashboard visual treatment used for dense topology and geographic monitoring views.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithMonitoringDashboardStyle(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.VisualStyle = TopologyVisualStyle.MonitoringDashboard;
+        options.MapBackgroundStyle = TopologyMapBackgroundStyle.SoftSilhouette;
+        options.IncludeGeographicRegionHulls = true;
+        options.GeographicRegionHullPadding = 16;
+        options.GeographicRegionHullMaxRadius = 82;
+        options.PreferGeographicCalloutMapEdges = true;
+        options.IncludeGroupStatusDots = true;
+        options.IncludeEdgeLabelBackplates = false;
+        if (options.LegendMode != TopologyLegendMode.Explicit) options.LegendMode = TopologyLegendMode.Merge;
+        return options;
+    }
+
+    /// <summary>
+    /// Renders group containers as neutral cards while preserving status/identity borders and labels.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithNeutralGroupSurfaces(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.GroupSurfaceStyle = TopologyGroupSurfaceStyle.Neutral;
+        return options;
+    }
+
+    /// <summary>
+    /// Keeps topology output at the requested viewport size by scaling dense rendered content down when needed.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithFitContentToViewport(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.FitContentToViewport = true;
+        return options;
+    }
+
+    /// <summary>
     /// Marks a topology group as selected without filtering or dimming the chart.
     /// </summary>
     /// <param name="options">The render options.</param>

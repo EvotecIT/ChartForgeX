@@ -24,6 +24,8 @@ public sealed partial class TopologySvgRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= new TopologyRenderOptions();
         if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
+        var requestedWidth = chart.Viewport.Width;
+        var requestedHeight = chart.Viewport.Height;
         var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
         var validation = new TopologyChartValidator().Validate(prepared);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
@@ -31,13 +33,16 @@ public sealed partial class TopologySvgRenderer {
         var theme = prepared.Theme ?? TopologyTheme.Light();
         var prefix = NormalizeCssClassPrefix(options.CssClassPrefix, "cfx-topology");
         var id = SanitizeId(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!);
-        var w = prepared.Viewport.Width;
-        var h = prepared.Viewport.Height;
+        var sourceW = prepared.Viewport.Width;
+        var sourceH = prepared.Viewport.Height;
+        var w = options.FitContentToViewport ? requestedWidth : sourceW;
+        var h = options.FitContentToViewport ? requestedHeight : sourceH;
         var highlight = TopologyHighlightState.From(prepared, options);
-        var document = SvgDocument.Create(w, h, "0 0 " + F(w) + " " + F(h));
+        var document = SvgDocument.Create(w, h, "0 0 " + F(sourceW) + " " + F(sourceH));
         document.Root
             .Attribute("role", "img")
             .Attribute("aria-labelledby", id + "-title " + id + "-desc")
+            .Attribute("preserveAspectRatio", options.FitContentToViewport ? "xMinYMin meet" : null)
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision");
         if (options.UseResponsiveSvg) document.Root.Attribute("style", "max-width:100%;height:auto;display:block");
@@ -57,6 +62,9 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-chart-id", prepared.Id ?? id)
                 .Attribute("data-layout-mode", prepared.LayoutMode.ToString())
                 .Attribute("data-layout-direction", prepared.LayoutDirection.ToString())
+                .Attribute("data-visual-style", options.VisualStyle.ToString())
+                .Attribute("data-fit-content-to-viewport", options.FitContentToViewport)
+                .Attribute("data-map-background-style", options.MapBackgroundStyle.ToString())
                 .Attribute("data-node-display-mode", options.NodeDisplayMode.ToString())
                 .Attribute("data-cfx-projection", prepared.LayoutMode == TopologyLayoutMode.Geographic ? TopologyMapProjection.ProjectionName : null)
                 .Attribute("data-cfx-viewport", prepared.LayoutMode == TopologyLayoutMode.Geographic ? prepared.MapViewport.Name : null)
@@ -77,7 +85,8 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("height", "100%")
             .Attribute("fill", theme.Background));
         if (options.IncludeTitle) AddHeader(root, chart, prefix, theme);
-        if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicFrame(root, chart, prefix, theme);
+        if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicFrame(root, chart, prefix, theme, options);
+        if (chart.LayoutMode == TopologyLayoutMode.Geographic && options.IncludeGeographicRegionHulls) AddGeographicRegionHulls(root, chart, prefix, theme, options);
         if (options.IncludeGroups) AddGroups(root, chart, prefix, theme, options, highlight);
         AddEdges(root, chart, prefix, theme, options, id, highlight);
         AddEdgeLabels(root, chart, prefix, theme, options, highlight);
@@ -87,12 +96,14 @@ public sealed partial class TopologySvgRenderer {
         if (options.IncludeLegend && chart.Legend != null) AddLegend(root, chart, prefix, theme);
     }
 
-    private static void AddGeographicFrame(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme) {
+    private static void AddGeographicFrame(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
         var map = TopologyMapProjection.MapRect(chart);
+        var softMap = UseSoftMapBackground(options);
         var layer = new SvgElement("g")
             .Class(prefix + "__geo-frame")
             .Attribute("data-cfx-role", "topology-geographic-frame")
             .Attribute("data-cfx-projection", TopologyMapProjection.ProjectionName)
+            .Attribute("data-cfx-map-background-style", softMap ? TopologyMapBackgroundStyle.SoftSilhouette.ToString() : TopologyMapBackgroundStyle.DottedLand.ToString())
             .Attribute("data-cfx-viewport", chart.MapViewport.Name)
             .Attribute("data-cfx-viewport-min-longitude", F(chart.MapViewport.MinimumLongitude))
             .Attribute("data-cfx-viewport-max-longitude", F(chart.MapViewport.MaximumLongitude))
@@ -103,11 +114,11 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("y", map.Top)
             .Attribute("width", map.Width)
             .Attribute("height", map.Height)
-            .Attribute("rx", 16)
-            .Attribute("fill", StatusFill(theme.Accent, theme.Background))
+            .Attribute("rx", softMap ? 12 : 16)
+            .Attribute("fill", softMap ? StatusFill(theme.Accent, theme.Background, 0.035) : StatusFill(theme.Accent, theme.Background))
             .Attribute("stroke", theme.Border)
             .Attribute("stroke-width", 1));
-        DrawGeographicLandLayer(layer, chart, map, theme);
+        DrawGeographicLandLayer(layer, chart, map, theme, options);
         for (var i = 1; i < 4; i++) {
             var longitude = chart.MapViewport.MinimumLongitude + (chart.MapViewport.MaximumLongitude - chart.MapViewport.MinimumLongitude) * i / 4.0;
             var x = TopologyMapProjection.Project(map, chart.MapViewport, longitude, chart.MapViewport.MinimumLatitude).X;
@@ -120,8 +131,8 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("x2", x)
                 .Attribute("y2", map.Bottom)
                 .Attribute("stroke", theme.Border)
-                .Attribute("stroke-opacity", 0.42)
-                .Attribute("stroke-width", 0.8));
+                .Attribute("stroke-opacity", softMap ? 0.22 : 0.42)
+                .Attribute("stroke-width", softMap ? 0.55 : 0.8));
         }
 
         for (var i = 1; i < 3; i++) {
@@ -136,23 +147,25 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("x2", map.Right)
                 .Attribute("y2", y)
                 .Attribute("stroke", theme.Border)
-                .Attribute("stroke-opacity", 0.34)
-                .Attribute("stroke-width", 0.8));
+                .Attribute("stroke-opacity", softMap ? 0.18 : 0.34)
+                .Attribute("stroke-width", softMap ? 0.55 : 0.8));
         }
 
         root.AddElement(layer);
     }
 
-    private static void DrawGeographicLandLayer(SvgElement layer, TopologyChart chart, ChartRect map, TopologyTheme theme) {
+    private static void DrawGeographicLandLayer(SvgElement layer, TopologyChart chart, ChartRect map, TopologyTheme theme, TopologyRenderOptions options) {
+        var softMap = UseSoftMapBackground(options);
         var landFill = theme.MutedForeground;
-        foreach (var boundary in TopologyMapProjection.BoundaryLines(chart.MapViewport)) {
+        var boundaries = TopologyMapProjection.BoundaryLines(chart.MapViewport);
+        foreach (var boundary in boundaries) {
             var path = GeographicBoundaryPath(boundary, map, chart.MapViewport);
             if (TopologyMapProjection.CanFillBoundary(boundary)) {
                 layer.Element("path", element => element
                     .Attribute("data-cfx-role", "topology-geographic-land-area")
                     .Attribute("d", path)
                     .Attribute("fill", landFill)
-                    .Attribute("fill-opacity", 0.075)
+                    .Attribute("fill-opacity", softMap ? 0.11 : 0.075)
                     .Attribute("stroke", "none"));
             }
 
@@ -161,11 +174,13 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("d", path)
                 .Attribute("fill", "none")
                 .Attribute("stroke", landFill)
-                .Attribute("stroke-opacity", 0.22)
-                .Attribute("stroke-width", 0.75)
+                .Attribute("stroke-opacity", softMap ? 0.16 : 0.22)
+                .Attribute("stroke-width", softMap ? 0.62 : 0.75)
                 .Attribute("stroke-linejoin", "round")
                 .Attribute("stroke-linecap", "round"));
         }
+
+        if (softMap && boundaries.Length > 0) return;
 
         var radius = TopologyMapProjection.LandDotRadius(map, chart.MapViewport);
         foreach (var land in TopologyMapProjection.LandDots(chart.MapViewport)) {
@@ -180,7 +195,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("cy", point.Y)
                     .Attribute("r", radius)
                     .Attribute("fill", landFill)
-                    .Attribute("opacity", 0.105));
+                    .Attribute("opacity", softMap ? 0.07 : 0.105));
             }
         }
     }
@@ -196,14 +211,59 @@ public sealed partial class TopologySvgRenderer {
         return path.ToString();
     }
 
+    private static void AddGeographicRegionHulls(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
+        var map = TopologyMapProjection.MapRect(chart);
+        var layer = new SvgElement("g")
+            .Class(prefix + "__geo-region-hulls")
+            .Attribute("data-cfx-role", "topology-geographic-region-hulls");
+        foreach (var group in chart.Groups) {
+            if (!group.Longitude.HasValue || !group.Latitude.HasValue) continue;
+            if (!TopologyMapProjection.IsVisible(chart.MapViewport, group.Longitude.Value, group.Latitude.Value)) continue;
+            var anchor = TopologyMapProjection.Project(map, chart.MapViewport, group.Longitude.Value, group.Latitude.Value);
+            var accent = GroupAccentColor(group, theme);
+            var radius = GeographicRegionHullRadius(chart, group, new ChartPoint(anchor.X, anchor.Y), map, options);
+            layer.Element("circle", circle => circle
+                .Class(prefix + "__geo-region-hull")
+                .Attribute("data-group-id", group.Id)
+                .Attribute("data-cfx-status", group.Status.ToString())
+                .Attribute("cx", anchor.X)
+                .Attribute("cy", anchor.Y)
+                .Attribute("r", radius)
+                .Attribute("data-hull-padding", options.GeographicRegionHullPadding)
+                .Attribute("data-hull-min-radius", options.GeographicRegionHullMinRadius)
+                .Attribute("data-hull-max-radius", options.GeographicRegionHullMaxRadius)
+                .Attribute("fill", StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.22 : 0.16))
+                .Attribute("stroke", accent)
+                .Attribute("stroke-opacity", IsMonitoringDashboardStyle(options) ? 0.28 : 0.38)
+                .Attribute("stroke-width", IsMonitoringDashboardStyle(options) ? 1.1 : 1.4));
+        }
+
+        root.AddElement(layer);
+    }
+
+    private static double GeographicRegionHullRadius(TopologyChart chart, TopologyGroup group, ChartPoint anchor, ChartRect map, TopologyRenderOptions options) {
+        var radius = options.GeographicRegionHullMinRadius;
+        foreach (var node in chart.Nodes) {
+            if (!string.Equals(node.GroupId, group.Id, StringComparison.Ordinal) || !node.Longitude.HasValue || !node.Latitude.HasValue) continue;
+            if (EffectiveNodeDisplayMode(node, options) == TopologyNodeDisplayMode.Hidden) continue;
+            if (!TopologyMapProjection.IsVisible(chart.MapViewport, node.Longitude.Value, node.Latitude.Value)) continue;
+            var projected = TopologyMapProjection.Project(map, chart.MapViewport, node.Longitude.Value, node.Latitude.Value);
+            var dx = projected.X - anchor.X;
+            var dy = projected.Y - anchor.Y;
+            radius = Math.Max(radius, Math.Sqrt(dx * dx + dy * dy) + options.GeographicRegionHullPadding);
+        }
+
+        return Math.Min(options.GeographicRegionHullMaxRadius, Math.Max(options.GeographicRegionHullMinRadius, radius));
+    }
+
     private static SvgElement BuildDefs(string id, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
         var defs = new SvgElement("defs");
         if (options.IncludeCss) {
             defs.Element("style", style => style.Text(BuildCss(id, prefix, theme)));
         }
 
-        AddDropShadowFilter(defs, id + "-shadow", "#0F172A", 0.10);
-        AddDropShadowFilter(defs, id + "-selected-shadow", "#2563EB", 0.18);
+        AddDropShadowFilter(defs, id + "-shadow", "#0F172A", IsMonitoringDashboardStyle(options) ? 0.065 : 0.10);
+        AddDropShadowFilter(defs, id + "-selected-shadow", "#2563EB", IsMonitoringDashboardStyle(options) ? 0.13 : 0.18);
         foreach (var status in Enum.GetValues(typeof(TopologyHealthStatus)).Cast<TopologyHealthStatus>()) {
             var color = theme.StatusColor(status);
             defs.Element("marker", marker => {
@@ -212,8 +272,8 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("viewBox", "0 0 10 10")
                     .Attribute("refX", 8)
                     .Attribute("refY", 5)
-                    .Attribute("markerWidth", 7)
-                    .Attribute("markerHeight", 7)
+                    .Attribute("markerWidth", IsMonitoringDashboardStyle(options) ? 5.5 : 7)
+                    .Attribute("markerHeight", IsMonitoringDashboardStyle(options) ? 5.5 : 7)
                     .Attribute("orient", "auto-start-reverse");
                 marker.Element("path", path => path
                     .Attribute("d", "M 0 0 L 10 5 L 0 10 z")
@@ -315,42 +375,113 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("x", group.X)
                 .Attribute("y", group.Y)
                 .Attribute("width", group.Width)
-                .Attribute("height", group.Height)
-                .Attribute("rx", 12)
-                .Attribute("fill", StatusFill(accent, theme.Background))
-                .Attribute("stroke", accent)
-                .Attribute("stroke-width", selected ? 2.4 : 1)
-                .Attribute("stroke-opacity", selected ? 0.9 : 0.48));
+                    .Attribute("height", group.Height)
+                    .Attribute("rx", IsMonitoringDashboardStyle(options) ? 10 : 12)
+                    .Attribute("fill", GroupFill(accent, theme, options))
+                    .Attribute("stroke", accent)
+                    .Attribute("stroke-width", selected ? (IsMonitoringDashboardStyle(options) ? 2.2 : 2.4) : 1)
+                    .Attribute("stroke-opacity", selected ? (IsMonitoringDashboardStyle(options) ? 0.82 : 0.9) : UseNeutralGroupSurface(options) ? 0.38 : (IsMonitoringDashboardStyle(options) ? 0.42 : 0.48)));
             if (options.IncludeGroupLabels) {
                 var cx = group.X + group.Width / 2;
-                groupElement.Element("circle", circle => circle
-                    .Attribute("cx", cx - 52)
-                    .Attribute("cy", group.Y + 26)
-                    .Attribute("r", 10)
-                    .Attribute("fill", StatusFill(accent, theme.Background))
-                    .Attribute("stroke", accent));
-                AddGroupSymbol(groupElement, group, cx - 52, group.Y + 26, accent);
+                var renderSymbol = !IsMonitoringDashboardStyle(options) || !string.IsNullOrWhiteSpace(group.Symbol);
+                var neutralSurface = IsMonitoringDashboardStyle(options) && UseNeutralGroupSurface(options);
+                var groupLabelWidth = GroupHeaderLabelWidth(group, options, renderSymbol);
+                var groupLabelSize = FitFontSize(group.Label, groupLabelWidth, 16, 12, true);
+                var groupLabel = TrimToEstimatedWidth(group.Label, groupLabelWidth, groupLabelSize, true);
+                if (renderSymbol && !neutralSurface) {
+                    var textWidth = EstimateTextWidth(groupLabel, groupLabelSize, true);
+                    var symbolCx = cx - (textWidth + 30) / 2 + 10;
+                    groupElement.Element("circle", circle => circle
+                        .Attribute("cx", symbolCx)
+                        .Attribute("cy", group.Y + 26)
+                        .Attribute("r", 10)
+                        .Attribute("fill", StatusFill(accent, theme.Background))
+                        .Attribute("stroke", accent));
+                    AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent);
+                }
+
+                if (neutralSurface) {
+                    var labelX = group.X + 22;
+                    var labelWidth = GroupHeaderLabelWidth(group, options, false);
+                    if (renderSymbol) {
+                        var symbolCx = group.X + 22;
+                        groupElement.Element("circle", circle => circle
+                            .Attribute("cx", symbolCx)
+                            .Attribute("cy", group.Y + 26)
+                            .Attribute("r", 9.5)
+                            .Attribute("fill", StatusFill(accent, theme.Background))
+                            .Attribute("stroke", accent));
+                        AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent);
+                        labelX = group.X + 42;
+                        labelWidth = GroupHeaderLabelWidth(group, options, true);
+                    }
+
+                    var neutralLabelSize = FitFontSize(group.Label, labelWidth, 15, 12, true);
+                    var neutralLabel = TrimToEstimatedWidth(group.Label, labelWidth, neutralLabelSize, true);
+                    groupElement.Element("text", text => text
+                        .Attribute("x", labelX)
+                        .Attribute("y", group.Y + 30)
+                        .Attribute("fill", accent)
+                        .Attribute("font-size", neutralLabelSize)
+                        .Attribute("font-weight", "700")
+                        .Text(neutralLabel));
+                    AddGroupStatusDot(groupElement, group, group.X + group.Width - 22, group.Y + 26, theme, options);
+                    if (!string.IsNullOrWhiteSpace(group.Subtitle)) {
+                        var neutralSubtitle = TrimToEstimatedWidth(group.Subtitle!, labelWidth, 11, false);
+                        groupElement.Element("text", text => text
+                            .Attribute("x", labelX)
+                            .Attribute("y", group.Y + 48)
+                            .Attribute("fill", theme.MutedForeground)
+                            .Attribute("font-size", 11)
+                            .Text(neutralSubtitle));
+                    }
+
+                    continue;
+                }
+
                 groupElement.Element("text", text => text
-                    .Attribute("x", cx)
+                    .Attribute("x", renderSymbol ? cx - (EstimateTextWidth(groupLabel, groupLabelSize, true) + 30) / 2 + 30 : cx)
                     .Attribute("y", group.Y + 30)
-                    .Attribute("text-anchor", "middle")
+                    .Attribute("text-anchor", renderSymbol ? "start" : "middle")
                     .Attribute("fill", accent)
-                    .Attribute("font-size", 16)
+                    .Attribute("font-size", groupLabelSize)
                     .Attribute("font-weight", "700")
-                    .Text(group.Label));
+                    .Text(groupLabel));
+                AddGroupStatusDot(groupElement, group, group.X + group.Width - 22, group.Y + 26, theme, options);
                 if (!string.IsNullOrWhiteSpace(group.Subtitle)) {
+                    var subtitle = TrimToEstimatedWidth(group.Subtitle!, group.Width - 44, 12, false);
                     groupElement.Element("text", text => text
                         .Attribute("x", cx)
                         .Attribute("y", group.Y + 50)
                         .Attribute("text-anchor", "middle")
                         .Attribute("fill", theme.MutedForeground)
                         .Attribute("font-size", 12)
-                        .Text(group.Subtitle!));
+                        .Text(subtitle));
                 }
             }
         }
 
         root.AddElement(layer);
+    }
+
+    private static void AddGroupStatusDot(SvgElement parent, TopologyGroup group, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options) {
+        if (!options.IncludeGroupStatusDots || !IsMonitoringDashboardStyle(options) || group.Status == TopologyHealthStatus.Unknown) return;
+        var statusColor = theme.StatusColor(group.Status);
+        parent.Element("circle", circle => circle
+            .Attribute("data-cfx-role", "topology-group-status")
+            .Attribute("data-cfx-status", group.Status.ToString())
+            .Attribute("cx", cx)
+            .Attribute("cy", cy)
+            .Attribute("r", 5.3)
+            .Attribute("fill", statusColor)
+            .Attribute("stroke", theme.Background)
+            .Attribute("stroke-width", 2));
+    }
+
+    private static double GroupHeaderLabelWidth(TopologyGroup group, TopologyRenderOptions options, bool includesLeadingSymbol) {
+        var statusReserve = options.IncludeGroupStatusDots && IsMonitoringDashboardStyle(options) && group.Status != TopologyHealthStatus.Unknown ? 38 : 0;
+        var symbolReserve = includesLeadingSymbol ? 42 : 0;
+        return Math.Max(36, group.Width - 44 - statusReserve - symbolReserve);
     }
 
     private static string GroupAccentColor(TopologyGroup group, TopologyTheme theme) => string.IsNullOrWhiteSpace(group.Color) ? theme.StatusColor(group.Status) : group.Color!.Trim();
@@ -399,10 +530,10 @@ public sealed partial class TopologySvgRenderer {
         var layer = new SvgElement("g")
             .Class(prefix + "__edges")
             .Attribute("data-cfx-role", "topology-edges");
-        foreach (var edge in chart.Edges) {
+        foreach (var (edge, renderOrder) in OrderedEdgesForRendering(chart, options)) {
             var points = EdgePoints(chart, edge, nodes);
             var routeOffset = EdgeRouteOffset(chart, edge);
-            var color = edge.IsMuted ? theme.Border : theme.StatusColor(edge.Status);
+            var color = EdgeColor(edge, theme, options);
             var dash = edge.IsMuted ? "none" : EdgeDash(edge);
             var highlighted = highlight.IsEdgeHighlighted(edge);
             var selected = IsSelected(options.SelectedEdgeIds, edge.Id);
@@ -425,6 +556,8 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-cfx-selected", selected)
                     .Attribute("data-edge-muted", edge.IsMuted)
                     .Attribute("data-edge-line-style", edge.LineStyle.ToString())
+                    .Attribute("data-edge-emphasis", edge.Emphasis.ToString())
+                    .Attribute("data-edge-render-order", renderOrder)
                     .Attribute("data-edge-layout-inference", EdgeLayoutInferenceToken(edge.LayoutInference))
                     .Attribute("data-route-strategy", diagnostics.Strategy)
                     .Attribute("data-route-corridor", diagnostics.Corridor)
@@ -435,10 +568,16 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-route-label-obstacle-hits", diagnostics.LabelObstacleHits)
                     .Attribute("data-route-overlap-score", diagnostics.RouteOverlapScore)
                     .Attribute("data-route-offset", routeOffset)
+                    .Attribute("data-route-start-x", points[0].X)
+                    .Attribute("data-route-start-y", points[0].Y)
+                    .Attribute("data-route-end-x", points[points.Count - 1].X)
+                    .Attribute("data-route-end-y", points[points.Count - 1].Y)
                     .Attribute("data-route-curve", isGeographicCurve ? "geographic" : edge.Routing.ToString())
                     .Attribute("data-source-port", edge.SourcePort.ToString())
                     .Attribute("data-target-port", edge.TargetPort.ToString())
                     .Attribute("data-route-lane", edge.RouteLane)
+                    .Attribute("data-label-offset-x", edge.LabelOffsetX)
+                    .Attribute("data-label-offset-y", edge.LabelOffsetY)
                     .Attribute("data-waypoint-count", edge.Waypoints.Count);
                 if (isGeographicCurve) {
                     group
@@ -452,14 +591,27 @@ public sealed partial class TopologySvgRenderer {
             });
 
             if (options.IncludeTooltips && !string.IsNullOrWhiteSpace(edge.Tooltip)) edgeGroup.Element("title", title => title.Text(edge.Tooltip!));
+            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) {
+                var geographicHalo = ShouldRenderGeographicRouteHalo(chart, edge, nodes, options);
+                edgeGroup.Element("path", path => path
+                    .Class(prefix + "__edge-halo")
+                    .Attribute("data-cfx-role", geographicHalo ? "topology-geographic-route-halo" : "topology-edge-route-halo")
+                    .Attribute("d", EdgePath(chart, edge, nodes, points))
+                    .Attribute("stroke", theme.Background)
+                    .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options) + (geographicHalo ? 4.2 : 3.4))
+                    .Attribute("stroke-linecap", "round")
+                    .Attribute("stroke-linejoin", "round")
+                    .Attribute("opacity", geographicHalo ? 0.86 : 0.88));
+            }
+
             edgeGroup.Element("path", path => {
                 path
                     .Class(prefix + "__edge")
                     .Attribute("d", EdgePath(chart, edge, nodes, points))
                     .Attribute("stroke", color)
-                    .Attribute("stroke-width", selected ? 3.4 : edge.IsMuted ? 1.45 : 2.2)
+                    .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options))
                     .Attribute("stroke-dasharray", dash)
-                    .Attribute("opacity", edge.IsMuted ? 0.72 : 0.94);
+                    .Attribute("opacity", EdgeOpacity(edge, options));
                 if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) path.Attribute("marker-start", "url(#" + svgId + "-arrow-" + StatusMarkerToken(edge.Status) + ")");
                 if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) path.Attribute("marker-end", "url(#" + svgId + "-arrow-" + StatusMarkerToken(edge.Status) + ")");
             });
@@ -473,7 +625,7 @@ public sealed partial class TopologySvgRenderer {
         var layer = new SvgElement("g")
             .Class(prefix + "__edge-labels")
             .Attribute("data-cfx-role", "topology-edge-labels");
-        foreach (var layout in EdgeLabelLayouts(chart, options)) {
+        foreach (var (layout, renderOrder) in OrderedEdgeLabelsForRendering(chart, options)) {
             var edge = layout.Edge;
             var cx = layout.CenterX;
             var cy = layout.CenterY;
@@ -486,45 +638,62 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-edge-id", edge.Id)
                     .Attribute("data-label-x", cx)
                     .Attribute("data-label-y", cy)
+                    .Attribute("data-edge-label-render-order", renderOrder)
                     .Attribute("data-cfx-selected", selected);
                 if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
                 if (options.IncludeEdgeLabelBackplates) {
                     group.Element("rect", rect => rect
+                        .Attribute("data-cfx-role", "topology-edge-label-backplate")
                         .Attribute("x", cx - layout.Width / 2)
                         .Attribute("y", cy - layout.Height / 2)
                         .Attribute("width", layout.Width)
                         .Attribute("height", layout.Height)
-                        .Attribute("rx", 9)
-                        .Attribute("fill", theme.Background)
-                        .Attribute("stroke", theme.Border));
+                        .Attribute("rx", IsMonitoringDashboardStyle(options) ? 7 : 9)
+                        .Attribute("fill", IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background)
+                        .Attribute("fill-opacity", IsMonitoringDashboardStyle(options) ? 0.98 : 1)
+                        .Attribute("stroke", IsMonitoringDashboardStyle(options) ? theme.Border : theme.Border)
+                        .Attribute("stroke-opacity", IsMonitoringDashboardStyle(options) ? 0.72 : 1));
                 }
 
-                AddEdgeLabelLines(group, layout, cx, cy, edge.IsMuted ? theme.MutedForeground : theme.StatusColor(edge.Status), theme.MutedForeground);
+                AddEdgeLabelClearance(group, chart, layout, cx, cy, theme, options);
+                AddEdgeLabelLines(group, layout, cx, cy, edge.IsMuted ? theme.MutedForeground : theme.StatusColor(edge.Status), theme.MutedForeground, theme, options);
             });
         }
 
         root.AddElement(layer);
     }
 
-    private static void AddEdgeLabelLines(SvgElement group, TopologyEdgeLabelLayout layout, double cx, double cy, string primaryColor, string secondaryColor) {
+    private static void AddEdgeLabelLines(SvgElement group, TopologyEdgeLabelLayout layout, double cx, double cy, string primaryColor, string secondaryColor, TopologyTheme theme, TopologyRenderOptions options) {
         var lines = new List<(string Text, bool Primary)>();
         if (!string.IsNullOrWhiteSpace(layout.Label)) lines.Add((layout.Label, true));
         if (!string.IsNullOrWhiteSpace(layout.SecondaryLabel)) lines.Add((layout.SecondaryLabel, false));
         if (!string.IsNullOrWhiteSpace(layout.TertiaryLabel)) lines.Add((layout.TertiaryLabel, false));
         var start = cy - (lines.Count - 1) * 8;
+        var useHalo = IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates;
         for (var i = 0; i < lines.Count; i++) {
             var line = lines[i];
             var size = line.Primary ? 12 : 10;
             var weight = line.Primary ? "700" : "500";
             var color = line.Primary ? primaryColor : secondaryColor;
-            group.Element("text", text => text
-                .Attribute("x", cx)
-                .Attribute("y", start + i * 16 + (line.Primary ? 4 : 3))
-                .Attribute("text-anchor", "middle")
-                .Attribute("fill", color)
-                .Attribute("font-size", size)
-                .Attribute("font-weight", weight)
-                .Text(line.Text));
+            group.Element("text", text => {
+                text
+                    .Attribute("x", cx)
+                    .Attribute("y", start + i * 16 + (line.Primary ? 4 : 3))
+                    .Attribute("text-anchor", "middle")
+                    .Attribute("fill", color)
+                    .Attribute("font-size", size)
+                    .Attribute("font-weight", weight)
+                    .Attribute("data-cfx-role", "topology-edge-label-text");
+                if (useHalo) {
+                    text
+                        .Attribute("stroke", theme.Background)
+                        .Attribute("stroke-width", line.Primary ? 4 : 3)
+                        .Attribute("stroke-linejoin", "round")
+                        .Attribute("paint-order", "stroke")
+                        .Attribute("data-cfx-halo", "true");
+                }
+                text.Text(line.Text);
+            });
         }
     }
 

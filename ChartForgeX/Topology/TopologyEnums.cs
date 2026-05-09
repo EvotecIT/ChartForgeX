@@ -88,6 +88,40 @@ public enum TopologyViewPreset {
 }
 
 /// <summary>
+/// Defines reusable topology visual treatments.
+/// </summary>
+public enum TopologyVisualStyle {
+    /// <summary>Use normal ChartForgeX topology styling.</summary>
+    Default,
+    /// <summary>Use a lighter monitoring-dashboard treatment with thinner hierarchy links, softer panels, and compact status marks.</summary>
+    MonitoringDashboard
+}
+
+/// <summary>
+/// Defines how geographic topology land should be rendered.
+/// </summary>
+public enum TopologyMapBackgroundStyle {
+    /// <summary>Choose the map treatment from the visual style and viewport.</summary>
+    Auto,
+    /// <summary>Render the point-sampled dotted land layer.</summary>
+    DottedLand,
+    /// <summary>Render filled land silhouettes and boundaries without the dotted land layer.</summary>
+    SoftSilhouette
+}
+
+/// <summary>
+/// Defines how group containers should be filled.
+/// </summary>
+public enum TopologyGroupSurfaceStyle {
+    /// <summary>Choose the group surface from the active visual style.</summary>
+    Auto,
+    /// <summary>Render groups with a subtle status or identity tint.</summary>
+    Tinted,
+    /// <summary>Render groups as neutral cards with status or identity only on the border and title.</summary>
+    Neutral
+}
+
+/// <summary>
 /// Defines how topology nodes should be presented.
 /// </summary>
 public enum TopologyNodeDisplayMode {
@@ -102,7 +136,9 @@ public enum TopologyNodeDisplayMode {
     /// <summary>Render icon-only nodes.</summary>
     Icon,
     /// <summary>Render small status dots.</summary>
-    Dot
+    Dot,
+    /// <summary>Do not render the node; keep it available as an edge anchor or route point.</summary>
+    Hidden
 }
 
 /// <summary>
@@ -263,6 +299,18 @@ public enum TopologyEdgeLineStyle {
     Dashed,
     /// <summary>Render a dotted line regardless of health status.</summary>
     Dotted
+}
+
+/// <summary>
+/// Describes how prominently an edge should render.
+/// </summary>
+public enum TopologyEdgeEmphasis {
+    /// <summary>Render the edge with standard prominence.</summary>
+    Normal,
+    /// <summary>Render the edge as a low-emphasis status-preserving relationship.</summary>
+    Subtle,
+    /// <summary>Render the edge with stronger prominence.</summary>
+    Strong
 }
 
 /// <summary>

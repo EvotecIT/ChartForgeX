@@ -14,24 +14,30 @@ internal static partial class TopologyVisualExamples {
     public static void Write(string target) {
         var artifacts = new List<VisualArtifact>();
 
-        var tileOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge };
-        var tileSubtitleOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge };
-        var routeOptions = new TopologyRenderOptions { IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge };
+        var tileOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
+        var tileSubtitleOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
+        var routeOptions = new TopologyRenderOptions { IncludeIconLabels = true, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
+        var meshOptions = new TopologyRenderOptions { IncludeIconLabels = true, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
+        var replicationHealthOptions = new TopologyRenderOptions { IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Explicit }
+            .WithMonitoringDashboardStyle()
+            .WithNeutralGroupSurfaces();
         var topologyExplorerOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
+            .WithMonitoringDashboardStyle()
             .WithSelectedGroup("APAC")
             .WithSelectedNode("anz")
             .WithSelectedEdge("apac-anz")
             .WithSelectedEdge("bh-apac");
 
         SaveTopology(target, artifacts, "visual-topology-explorer", BuildTopologyExplorer(), "Topology Explorer", "Regional grouped topology with hubs, branches, bridgeheads, route ports, labels, links, tooltips, metadata hooks, SVG, HTML, and PNG.", topologyExplorerOptions);
-        SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, and offender highlighting support.", routeOptions);
+        SaveTopology(target, artifacts, "visual-reusable-regional-topology", BuildReusableRegionalTopology(), "Reusable Regional Topology", "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy.", tileSubtitleOptions);
+        SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, and offender highlighting support.", meshOptions);
         SaveTopology(target, artifacts, "visual-subnets-site-links-map", BuildSubnetsSiteLinksMap(), "Subnets and Site Links Map", "Subnet-to-site mapping topology with overlapping/orphan subnet states, bridgehead mapping, site links, and route labels.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-dc-connectivity-map", BuildDcConnectivityMap(), "Domain Controller Connectivity", "Selected-object connectivity topology for domain controllers, connection objects, service checks, and partner health.");
         SaveTopology(target, artifacts, "visual-ad-sites-hierarchy", BuildAdSitesHierarchy(), "AD Sites Hierarchy", "Hierarchy-style site map with hubs, branches, bridgeheads, primary and backup links.", tileSubtitleOptions);
-        SaveTopology(target, artifacts, "visual-replication-health-hub", BuildReplicationHealthHub(), "Replication Health Hub", "Compact replication health view with central hub, grouped sites, dense dot nodes, and critical path emphasis.", routeOptions);
+        SaveTopology(target, artifacts, "visual-replication-health-hub", BuildReplicationHealthHub(), "Replication Health Hub", "Compact replication health view with central hub, grouped sites, dense dot nodes, and critical path emphasis.", replicationHealthOptions);
         SaveTopology(target, artifacts, "visual-directory-health-replication", BuildDirectoryHealthReplication(), "Directory Health Replication", "Small directory-health topology with site cards, domain controller nodes, and cross-site replication status.", routeOptions);
         SaveTopology(target, artifacts, "visual-service-dependency-map", BuildServiceDependencyMap(), "Service Dependency Map", "Generic service dependency topology showing upstream/downstream service health without TestimoX-specific types.");
-        SaveTopology(target, artifacts, "visual-geographic-topology-map", BuildGeographicTopologyMap(), "Geographic Topology Map", "Topology-native geographic layout with typed coordinates, projected site markers, curved WAN route arcs, labels, regional callouts, and SVG/PNG metadata hooks.", new TopologyRenderOptions { IncludeGroups = false, IncludeGeographicCallouts = true, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithSelectedGroup("APAC").WithSelectedNode("apac-hub").WithSelectedEdge("emea-apac"));
+        SaveTopology(target, artifacts, "visual-geographic-topology-map", BuildGeographicTopologyMap(), "Geographic Topology Map", "Topology-native geographic layout with typed coordinates, projected site markers, curved WAN route arcs, labels, regional callouts, and SVG/PNG metadata hooks.", new TopologyRenderOptions { IncludeGroups = false, IncludeGeographicCallouts = true, GeographicCalloutMaxItems = 3, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle().WithSelectedGroup("APAC").WithSelectedNode("apac-hub").WithSelectedEdge("emea-apac"));
 
         SaveMap(target, artifacts, "visual-geographic-region-map", BuildGeographicRegionMap(), "Geographic Region Map", "Dotted-map chart with AMER, EMEA, and APAC hubs, weighted markers, and cross-region route overlays.");
         SaveMap(target, artifacts, "visual-site-distribution-map", BuildSiteDistributionMap(), "Site Distribution Map", "Dotted-map chart for site distribution, site health, and regional route overlays.");
@@ -57,31 +63,47 @@ internal static partial class TopologyVisualExamples {
             .AddGroup("AMER", "AMER", 70, 116, 330, 360, TopologyHealthStatus.Healthy, "47 sites", "/regions/amer", cssClass: "region-amer")
             .AddGroup("EMEA", "EMEA", 470, 116, 340, 360, TopologyHealthStatus.Healthy, "56 sites", "/regions/emea", cssClass: "region-emea")
             .AddGroup("APAC", "APAC", 880, 116, 330, 360, TopologyHealthStatus.Critical, "39 sites", "/regions/apac", cssClass: "region-apac")
-            .AddNode("amer-hub", "AMER Hub", 170, 176, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "AMER", "47 sites", "/sites/amer-hub", "AMER Hub", symbol: "H")
-            .AddNode("nam-west", "NAM West", 112, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "12 sites", "/sites/nam-west", symbol: "S")
-            .AddNode("nam-east", "NAM East", 240, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "18 sites", "/sites/nam-east", symbol: "S")
-            .AddNode("la-branch", "LA Branch", 112, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "2 DCs", "/sites/la", symbol: "B")
-            .AddNode("ny-branch", "NY Branch", 240, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "3 DCs", "/sites/ny", symbol: "B")
-            .AddNode("emea-hub", "EMEA Hub", 574, 176, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "EMEA", "56 sites", "/sites/emea-hub", symbol: "H")
-            .AddNode("eu-west", "EU West", 512, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "EMEA", "16 sites", "/sites/eu-west", symbol: "S")
-            .AddNode("eu-central", "EU Central", 642, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "EMEA", "22 sites", "/sites/eu-central", symbol: "S")
-            .AddNode("tr-branch", "TR Branch", 704, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, "EMEA", "185 ms", "/sites/tr", symbol: "B")
-            .AddNode("apac-hub", "APAC Hub", 980, 176, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "APAC", "39 sites", "/sites/apac-hub", symbol: "H")
-            .AddNode("anz", "ANZ", 934, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "APAC", "Critical", "/sites/anz", symbol: "S")
-            .AddNode("in-india", "IN India", 1062, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Unknown, "APAC", "Unknown", "/sites/in", symbol: "S")
-            .AddNode("syd-branch", "SYD Branch", 934, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "APAC", "Down", "/sites/syd", symbol: "B")
+            .AddNode("amer-hub", "AMER Hub", 198, 176, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "AMER", "47 sites", "/sites/amer-hub", "AMER Hub", width: 74, height: 52, symbol: "H")
+            .AddNode("nam-west", "NAM West", 98, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "12 sites", "/sites/nam-west", width: 74, height: 52, symbol: "S")
+            .AddNode("nam-east", "NAM East", 198, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "18 sites", "/sites/nam-east", width: 74, height: 52, symbol: "S")
+            .AddNode("sa-south", "SA South", 298, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "9 sites", "/sites/sa-south", width: 74, height: 52, symbol: "S")
+            .AddNode("la-branch", "LA Branch", 98, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "2 DCs", "/sites/la", width: 74, height: 52, symbol: "B")
+            .AddNode("ny-branch", "NY Branch", 198, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "3 DCs", "/sites/ny", width: 74, height: 52, symbol: "B")
+            .AddNode("sp-branch", "SP Branch", 298, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "AMER", "2 DCs", "/sites/sp", width: 74, height: 52, symbol: "B")
+            .AddNode("emea-hub", "EMEA Hub", 604, 176, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "EMEA", "56 sites", "/sites/emea-hub", width: 74, height: 52, symbol: "H")
+            .AddNode("eu-west", "EU West", 512, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "EMEA", "16 sites", "/sites/eu-west", width: 74, height: 52, symbol: "S")
+            .AddNode("eu-central", "EU Central", 642, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "EMEA", "22 sites", "/sites/eu-central", width: 74, height: 52, symbol: "S")
+            .AddNode("eu-east", "EU East", 724, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, "EMEA", "185 ms", "/sites/eu-east", width: 74, height: 52, symbol: "S")
+            .AddNode("uk-branch", "UK Branch", 512, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "EMEA", "2 DCs", "/sites/uk", width: 74, height: 52, symbol: "B")
+            .AddNode("de-branch", "DE Branch", 642, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "EMEA", "3 DCs", "/sites/de", width: 74, height: 52, symbol: "B")
+            .AddNode("tr-branch", "TR Branch", 724, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, "EMEA", "185 ms", "/sites/tr", width: 74, height: 52, symbol: "B")
+            .AddNode("apac-hub", "APAC Hub", 1008, 176, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "APAC", "39 sites", "/sites/apac-hub", width: 74, height: 52, symbol: "H")
+            .AddNode("se-asia", "SE Asia", 908, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "APAC", "12 sites", "/sites/se-asia", width: 74, height: 52, symbol: "S")
+            .AddNode("anz", "ANZ", 1008, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "APAC", "Critical", "/sites/anz", width: 74, height: 52, symbol: "S")
+            .AddNode("in-india", "IN India", 1108, 292, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "APAC", "8 sites", "/sites/in", width: 74, height: 52, symbol: "S")
+            .AddNode("sg-branch", "SG Branch", 908, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "APAC", "2 DCs", "/sites/sg", width: 74, height: 52, symbol: "B")
+            .AddNode("syd-branch", "SYD Branch", 1008, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "APAC", "Down", "/sites/syd", width: 74, height: 52, symbol: "B")
+            .AddNode("bom-branch", "BOM Branch", 1108, 402, TopologyNodeKind.Branch, TopologyHealthStatus.Unknown, "APAC", "No data", "/sites/bom", width: 74, height: 52, symbol: "B")
             .AddNode("bh-1", "Bridgehead DC 1", 412, 558, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, null, "Healthy", "/bridgeheads/1", width: 168, height: 58, symbol: "BH")
             .AddNode("bh-2", "Bridgehead DC 2", 686, 558, TopologyNodeKind.Server, TopologyHealthStatus.Critical, null, "Degraded", "/bridgeheads/2", width: 168, height: 58, symbol: "BH")
             .AddEdge("amer-hub-west", "amer-hub", "nam-west", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
             .AddEdge("amer-hub-east", "amer-hub", "nam-east", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
+            .AddEdge("amer-hub-sa", "amer-hub", "sa-south", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
             .AddEdge("nam-west-la", "nam-west", "la-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
             .AddEdge("nam-east-ny", "nam-east", "ny-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("sa-sp", "sa-south", "sp-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
             .AddEdge("emea-hub-west", "emea-hub", "eu-west", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
             .AddEdge("emea-hub-central", "emea-hub", "eu-central", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
-            .AddEdge("emea-hub-tr", "emea-hub", "tr-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("emea-hub-east", "emea-hub", "eu-east", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
+            .AddEdge("eu-west-uk", "eu-west", "uk-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("eu-central-de", "eu-central", "de-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("eu-east-tr", "eu-east", "tr-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("apac-hub-se", "apac-hub", "se-asia", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
             .AddEdge("apac-hub-anz", "apac-hub", "anz", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
             .AddEdge("apac-hub-in", "apac-hub", "in-india", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight)
+            .AddEdge("se-sg", "se-asia", "sg-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
             .AddEdge("anz-syd", "anz", "syd-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("in-bom", "in-india", "bom-branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Orthogonal)
             .AddEdge("amer-emea", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, "MPLS", "/links/amer-emea")
             .AddEdge("emea-apac", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, "MPLS", "/links/emea-apac")
             .AddEdge("apac-anz", "apac-hub", "anz", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "critical", "/links/apac-anz")
@@ -96,6 +118,10 @@ internal static partial class TopologyVisualExamples {
             .WithEdgeRouteLane("amer-bh", 20)
             .WithEdgePorts("bh-apac", TopologyEdgePort.Right, TopologyEdgePort.Bottom)
             .WithEdgeRouteLane("bh-apac", -22)
+            .WithEdgeWaypoints("amer-bh", new ChartPoint(235, 500), new ChartPoint(338, 500), new ChartPoint(338, 587))
+            .WithEdgeWaypoints("bh-apac", new ChartPoint(928, 587), new ChartPoint(928, 500), new ChartPoint(1045, 500))
+            .WithEdgeLabelOffset("amer-bh", 28, 8)
+            .WithEdgeLabelOffset("bh-apac", -20, 12)
             .WithEdgeLineStyle("amer-bh", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("amer-emea", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("emea-apac", TopologyEdgeLineStyle.Dashed)
@@ -115,14 +141,62 @@ internal static partial class TopologyVisualExamples {
             .WithNodesDisplay(TopologyNodeKind.Server, TopologyNodeDisplayMode.Card)
             .WithEdgeMuted("amer-hub-west")
             .WithEdgeMuted("amer-hub-east")
+            .WithEdgeMuted("amer-hub-sa")
             .WithEdgeMuted("nam-west-la")
             .WithEdgeMuted("nam-east-ny")
+            .WithEdgeMuted("sa-sp")
             .WithEdgeMuted("emea-hub-west")
             .WithEdgeMuted("emea-hub-central")
-            .WithEdgeMuted("emea-hub-tr")
+            .WithEdgeMuted("emea-hub-east")
+            .WithEdgeMuted("eu-west-uk")
+            .WithEdgeMuted("eu-central-de")
+            .WithEdgeMuted("eu-east-tr")
+            .WithEdgeMuted("apac-hub-se")
             .WithEdgeMuted("apac-hub-anz")
             .WithEdgeMuted("apac-hub-in")
-            .WithEdgeMuted("anz-syd");
+            .WithEdgeMuted("se-sg")
+            .WithEdgeMuted("anz-syd")
+            .WithEdgeMuted("in-bom");
+    }
+
+    private static TopologyChart BuildReusableRegionalTopology() {
+        return TopologyChart.Create()
+            .WithId("visual-reusable-regional-topology")
+            .WithTitle("Reusable Regional Topology")
+            .WithSubtitle("Data-first grouped topology using automatic placement, typed nodes, health states, route metrics, and reusable render options.")
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
+            .WithViewport(1280, 620, 28)
+            .WithTheme(TopologyTheme.Light())
+            .WithLegend(TopologyLegend.Default()
+                .AddNodeKind("Hub Site", TopologyNodeKind.Hub, symbol: "H")
+                .AddNodeKind("Site", TopologyNodeKind.Branch, symbol: "S")
+                .AddNodeKind("Bridgehead DC", TopologyNodeKind.Server, symbol: "BH")
+                .AddEdgeKind("Site Link", TopologyEdgeKind.Link)
+                .AddEdgeKind("Replication", TopologyEdgeKind.Replication))
+            .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", "/regions/amer", symbol: "region", color: AmerColor)
+            .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Healthy, "56 sites", "/regions/emea", symbol: "region", color: EmeaColor)
+            .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", "/regions/apac", symbol: "region", color: ApacColor)
+            .AddAutoNode("amer-hub", "AMER Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "amer", "10.0.0.0/16", "/sites/amer-hub", symbol: "H", color: AmerColor)
+            .AddAutoNode("nam-west", "NAM West", TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "amer", "10.1.0.0/24", "/sites/nam-west", symbol: "S")
+            .AddAutoNode("nam-east", "NAM East", TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "amer", "10.2.0.0/24", "/sites/nam-east", symbol: "S")
+            .AddAutoNode("bh-1", "Bridgehead DC 1", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "amer", "Healthy", "/bridgeheads/1", width: 148, height: 58, symbol: "BH")
+            .AddAutoNode("emea-hub", "EMEA Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "emea", "10.10.0.0/16", "/sites/emea-hub", symbol: "H", color: EmeaColor)
+            .AddAutoNode("eu-west", "EU West", TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "emea", "10.10.1.0/24", "/sites/eu-west", symbol: "S")
+            .AddAutoNode("eu-east", "EU East", TopologyNodeKind.Branch, TopologyHealthStatus.Warning, "emea", "10.10.3.0/24", "/sites/eu-east", symbol: "S")
+            .AddAutoNode("bh-2", "Bridgehead DC 2", TopologyNodeKind.Server, TopologyHealthStatus.Warning, "emea", "Queue 44", "/bridgeheads/2", width: 148, height: 58, symbol: "BH")
+            .AddAutoNode("apac-hub", "APAC Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "apac", "10.20.0.0/16", "/sites/apac-hub", symbol: "H", color: ApacColor)
+            .AddAutoNode("anz", "ANZ", TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "apac", "10.20.2.0/24", "/sites/anz", symbol: "S", color: ApacColor)
+            .AddAutoNode("india", "IN India", TopologyNodeKind.Branch, TopologyHealthStatus.Unknown, "apac", "10.20.3.0/24", "/sites/in", symbol: "S")
+            .AddAutoNode("bh-3", "Bridgehead DC 3", TopologyNodeKind.Server, TopologyHealthStatus.Critical, "apac", "Degraded", "/bridgeheads/3", width: 148, height: 58, symbol: "BH")
+            .AddEdge("amer-emea", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS", "/links/amer-emea")
+            .AddEdge("emea-apac", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS", "/links/emea-apac")
+            .AddEdge("amer-bh", "nam-east", "bh-1", "32 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "bridgehead")
+            .AddEdge("bh-replication", "bh-1", "bh-2", "68 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "queue 44")
+            .AddEdge("bh-apac", "bh-2", "bh-3", "142 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "failed")
+            .WithNodesDisplay(TopologyNodeKind.Server, TopologyNodeDisplayMode.Card)
+            .WithEdgeLineStyle("amer-bh", TopologyEdgeLineStyle.Dashed)
+            .WithEdgeLineStyle("bh-replication", TopologyEdgeLineStyle.Dashed)
+            .WithEdgeLineStyle("bh-apac", TopologyEdgeLineStyle.Dashed);
     }
 
     private static TopologyChart BuildReplicationMeshExplorer() {
@@ -152,21 +226,44 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("fra-local", "fra-dc1", "fra-dc2", "56 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.None, TopologyEdgeRouting.Straight)
             .AddEdge("sfo-local", "sfo-dc1", "sfo-dc2", "18 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.None, TopologyEdgeRouting.Straight)
             .AddEdge("sin-local", "sin-dc1", "sin-dc2", "124 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.None, TopologyEdgeRouting.Straight)
-            .AddEdge("nyc-lon", "nyc-dc1", "lon-dc1", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:312")
-            .AddEdge("lon-fra", "lon-dc2", "fra-dc1", "156 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:842")
-            .AddEdge("fra-sin", "fra-dc2", "sin-dc1", "238 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:1124")
-            .AddEdge("sfo-sin", "sfo-dc2", "sin-dc1", "214 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:1552")
-            .AddEdge("nyc-sfo", "nyc-dc1", "sfo-dc1", "107 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal, "Q:233")
-            .AddEdge("lon-sfo", "lon-dc1", "sfo-dc1", "118 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal, "Q:301")
+            .AddEdge("nyc-lon", "nyc-dc1", "lon-dc1", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:312", tertiaryLabel: "15m / 2m")
+            .AddEdge("lon-nyc", "lon-dc1", "nyc-dc1", "107 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:233", tertiaryLabel: "7m ago")
+            .AddEdge("lon-fra", "lon-dc2", "fra-dc1", "156 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:842", tertiaryLabel: "3m ago")
+            .AddEdge("fra-lon", "fra-dc1", "lon-dc2", "142 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:615", tertiaryLabel: "5m ago")
+            .AddEdge("fra-sin", "fra-dc2", "sin-dc1", "238 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:1124", tertiaryLabel: "2m ago")
+            .AddEdge("sin-fra", "sin-dc1", "fra-dc2", "198 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:876", tertiaryLabel: "4m ago")
+            .AddEdge("sfo-sin", "sfo-dc2", "sin-dc1", "214 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:1552", tertiaryLabel: "1m ago")
+            .AddEdge("sin-sfo", "sin-dc1", "sfo-dc2", "124 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:910", tertiaryLabel: "3m ago")
+            .AddEdge("nyc-sfo", "nyc-dc1", "sfo-dc1", "107 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:233", tertiaryLabel: "7m ago")
+            .AddEdge("sfo-nyc", "sfo-dc1", "nyc-dc1", "112 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:276", tertiaryLabel: "9m ago")
+            .AddEdge("lon-sfo", "lon-dc1", "sfo-dc1", "118 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:301", tertiaryLabel: "10m ago")
+            .AddEdge("sfo-lon", "sfo-dc1", "lon-dc1", "121 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:289", tertiaryLabel: "9m ago")
             .WithEdgePorts("nyc-lon", TopologyEdgePort.Right, TopologyEdgePort.Left)
+            .WithEdgePorts("lon-nyc", TopologyEdgePort.Left, TopologyEdgePort.Right)
             .WithEdgePorts("lon-fra", TopologyEdgePort.Right, TopologyEdgePort.Left)
+            .WithEdgePorts("fra-lon", TopologyEdgePort.Left, TopologyEdgePort.Right)
             .WithEdgePorts("fra-sin", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
-            .WithEdgeRouteLane("fra-sin", 26)
+            .WithEdgePorts("sin-fra", TopologyEdgePort.Top, TopologyEdgePort.Bottom)
             .WithEdgePorts("nyc-sfo", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
-            .WithEdgeRouteLane("nyc-sfo", -24)
+            .WithEdgePorts("sfo-nyc", TopologyEdgePort.Top, TopologyEdgePort.Bottom)
             .WithEdgePorts("lon-sfo", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
-            .WithEdgeRouteLane("lon-sfo", 22)
+            .WithEdgePorts("sfo-lon", TopologyEdgePort.Top, TopologyEdgePort.Bottom)
+            .WithEdgeRouteBundle(35, 18, "fra-sin", "sin-fra")
+            .WithEdgeRouteBundle(-7, 34, "nyc-sfo", "sfo-nyc")
+            .WithEdgeRouteBundle(6, 32, "sfo-lon", "lon-sfo")
             .WithEdgePorts("sfo-sin", TopologyEdgePort.Right, TopologyEdgePort.Left)
+            .WithEdgePorts("sin-sfo", TopologyEdgePort.Left, TopologyEdgePort.Right)
+            .WithEdgeLabelOffset("lon-nyc", 0, 30)
+            .WithEdgeLabelOffset("fra-lon", 0, 30)
+            .WithEdgeLabelOffset("sin-fra", 26, -8)
+            .WithEdgeLabelOffset("sin-sfo", 0, 30)
+            .WithEdgeLabelOffset("sfo-nyc", -30, 20)
+            .WithEdgeLabelOffset("sfo-lon", 34, -18)
+            .WithEdgeLabelOffset("nyc-local", 0, 34)
+            .WithEdgeLabelOffset("lon-local", 0, 34)
+            .WithEdgeLabelOffset("fra-local", 0, 34)
+            .WithEdgeLabelOffset("sfo-local", 0, 34)
+            .WithEdgeLabelOffset("sin-local", 0, 34)
             .WithEdgeLineStyle("nyc-local", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("lon-local", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("fra-local", TopologyEdgeLineStyle.Dashed)
@@ -176,9 +273,14 @@ internal static partial class TopologyVisualExamples {
             .WithGroupColor("LON-LON", ApacColor)
             .WithGroupColor("FRA-FRA", "#F97316")
             .WithGroupColor("SFO-SFO", "#0891B2")
-            .WithGroupColor("SIN-SIN", ApacColor);
+            .WithGroupColor("SIN-SIN", ApacColor)
+            .WithGroupSymbol("HQ-NYC", "globe")
+            .WithGroupSymbol("LON-LON", "globe")
+            .WithGroupSymbol("FRA-FRA", "globe")
+            .WithGroupSymbol("SFO-SFO", "globe")
+            .WithGroupSymbol("SIN-SIN", "globe");
 
-        foreach (var node in chart.Nodes) chart.WithNodeDisplay(node.Id, TopologyNodeDisplayMode.Icon, node.Id.EndsWith("dc1", StringComparison.Ordinal) ? "1" : "2");
+        foreach (var node in chart.Nodes) chart.WithNodeDisplay(node.Id, TopologyNodeDisplayMode.Icon);
         foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "HQ-NYC", StringComparison.Ordinal))) chart.WithNodeColor(node.Id, EmeaColor);
         foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "LON-LON", StringComparison.Ordinal))) chart.WithNodeColor(node.Id, ApacColor);
         foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "FRA-FRA", StringComparison.Ordinal))) chart.WithNodeColor(node.Id, "#F97316");
@@ -305,26 +407,49 @@ internal static partial class TopologyVisualExamples {
             .WithId("visual-replication-health-hub")
             .WithTitle("Replication Health")
             .WithSubtitle("Compact hub view with dense site markers and critical replication paths.")
-            .WithViewport(1120, 560, 28)
-            .WithLegend(TopologyLegend.Default().AddNodeKind("Site", TopologyNodeKind.Location, symbol: "S").AddNodeKind("Domain Controller", TopologyNodeKind.Server, symbol: "DC").AddEdgeKind("Replication", TopologyEdgeKind.Replication))
-            .AddNode("cloud", "Inter-Forest", 520, 250, TopologyNodeKind.Cloud, TopologyHealthStatus.Healthy, null, "Hub", symbol: "CL")
-            .AddGroup("HQ", "HQ-NYC (32 DCs)", 430, 80, 250, 110, TopologyHealthStatus.Healthy)
-            .AddGroup("LON", "LON-London (12 DCs)", 90, 250, 250, 110, TopologyHealthStatus.Healthy)
-            .AddGroup("SFO", "SFO-SanFrancisco (11 DCs)", 780, 250, 250, 110, TopologyHealthStatus.Healthy)
-            .AddGroup("AMS", "AMS-Amsterdam (9 DCs)", 170, 410, 250, 110, TopologyHealthStatus.Warning)
-            .AddGroup("SIN", "SIN-Singapore (8 DCs)", 700, 410, 250, 110, TopologyHealthStatus.Critical);
+            .WithViewport(1240, 610, 28)
+            .WithLegend(TopologyLegend.Create("Connection Health")
+                .AddEdgeKind("Healthy", TopologyEdgeKind.Replication, "#16A34A")
+                .AddEdgeKind("Warning", TopologyEdgeKind.Replication, "#F97316")
+                .AddEdgeKind("Critical", TopologyEdgeKind.Replication, "#EF4444")
+                .AddEdgeKind("Unknown", TopologyEdgeKind.Replication, "#64748B"))
+            .AddNode("cloud", "Inter-Forest", 594, 286, TopologyNodeKind.Cloud, TopologyHealthStatus.Healthy, null, symbol: "CL", width: 56, height: 56)
+            .WithNodeDisplay("cloud", TopologyNodeDisplayMode.Icon)
+            .WithNodeColor("cloud", "#60A5FA")
+            .AddGroup("HQ", "HQ-NYC (32 DCs)", 430, 92, 356, 128, TopologyHealthStatus.Healthy, symbol: "globe")
+            .AddGroup("LON", "LON-London (12 DCs)", 72, 260, 314, 128, TopologyHealthStatus.Healthy, symbol: "globe")
+            .AddGroup("SFO", "SFO-SanFrancisco (11 DCs)", 838, 260, 330, 128, TopologyHealthStatus.Healthy, symbol: "globe")
+            .AddGroup("AMS", "AMS-Amsterdam (9 DCs)", 128, 436, 314, 128, TopologyHealthStatus.Warning, symbol: "globe")
+            .AddGroup("FRA", "FRA-Frankfurt (10 DCs)", 462, 456, 314, 128, TopologyHealthStatus.Healthy, symbol: "globe")
+            .AddGroup("SIN", "SIN-Singapore (8 DCs)", 798, 436, 314, 128, TopologyHealthStatus.Critical, symbol: "globe");
 
-        AddSiteDots(chart, "HQ", 470, 132, 8, TopologyHealthStatus.Healthy);
-        AddSiteDots(chart, "LON", 130, 302, 6, TopologyHealthStatus.Healthy);
-        AddSiteDots(chart, "SFO", 820, 302, 6, TopologyHealthStatus.Healthy);
-        AddSiteDots(chart, "AMS", 210, 462, 5, TopologyHealthStatus.Warning);
-        AddSiteDots(chart, "SIN", 740, 462, 5, TopologyHealthStatus.Critical);
+        AddSiteDots(chart, "HQ", 470, 156, 10, TopologyHealthStatus.Healthy);
+        AddSiteDots(chart, "LON", 112, 326, 8, TopologyHealthStatus.Healthy);
+        AddSiteDots(chart, "SFO", 878, 326, 8, TopologyHealthStatus.Healthy);
+        AddSiteDots(chart, "AMS", 168, 502, 7, TopologyHealthStatus.Warning);
+        AddSiteDots(chart, "FRA", 502, 522, 8, TopologyHealthStatus.Healthy);
+        AddSiteDots(chart, "SIN", 838, 502, 7, TopologyHealthStatus.Critical);
+        AddSiteAnchors(chart, "HQ-bottom", 536, 220, 42, 0, 4);
+        AddSiteAnchors(chart, "LON-right", 386, 310, 0, 24, 3);
+        AddSiteAnchors(chart, "SFO-left", 838, 310, 0, 24, 3);
+        AddSiteAnchor(chart, "AMS-top", 304, 436);
+        AddSiteAnchor(chart, "FRA-top", 620, 456);
+        AddSiteAnchor(chart, "SIN-left", 798, 490);
+        AddReplicationFan(chart, "cloud", "HQ-bottom", 1, 4, TopologyHealthStatus.Healthy, TopologyEdgePort.Top, TopologyEdgePort.Bottom);
+        AddReplicationFan(chart, "cloud", "LON-right", 1, 3, TopologyHealthStatus.Healthy, TopologyEdgePort.Left, TopologyEdgePort.Right);
+        AddReplicationFan(chart, "cloud", "SFO-left", 1, 3, TopologyHealthStatus.Healthy, TopologyEdgePort.Right, TopologyEdgePort.Left);
         chart
-            .AddEdge("cloud-hq", "cloud", "HQ-1", "healthy", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("cloud-lon", "cloud", "LON-1", "healthy", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
-            .AddEdge("cloud-sfo", "cloud", "SFO-1", "healthy", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
-            .AddEdge("cloud-ams", "cloud", "AMS-1", "warning", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
-            .AddEdge("cloud-sin", "cloud", "SIN-1", "critical", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("cloud-ams", "cloud", "AMS-top", "warning", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Curved)
+            .AddEdge("cloud-fra", "cloud", "FRA-top", "healthy", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved)
+            .AddEdge("cloud-sin", "cloud", "SIN-left", "critical", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
+            .WithEdgeLineStyle("cloud-fra", TopologyEdgeLineStyle.Dashed)
+            .WithEdgeLineStyle("cloud-sin", TopologyEdgeLineStyle.Dashed)
+            .WithEdgePorts("cloud-ams", TopologyEdgePort.Left, TopologyEdgePort.Top)
+            .WithEdgePorts("cloud-fra", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
+            .WithEdgePorts("cloud-sin", TopologyEdgePort.Right, TopologyEdgePort.Left)
+            .WithEdgeWaypoints("cloud-ams", new ChartPoint(430, 390), new ChartPoint(340, 418), new ChartPoint(304, 436))
+            .WithEdgeWaypoints("cloud-fra", new ChartPoint(702, 418), new ChartPoint(702, 456), new ChartPoint(620, 456))
+            .WithEdgeWaypoints("cloud-sin", new ChartPoint(744, 408), new ChartPoint(798, 490));
         return chart;
     }
 
@@ -441,8 +566,32 @@ internal static partial class TopologyVisualExamples {
         for (var i = 0; i < count; i++) {
             var col = i % 4;
             var row = i / 4;
-            chart.AddNode(prefix + "-" + (i + 1).ToString(CultureInfo.InvariantCulture), "DC " + (i + 1).ToString(CultureInfo.InvariantCulture), x + col * 42, y + row * 34, TopologyNodeKind.Server, status, prefix, symbol: "DC")
-                .WithNodeDisplay(prefix + "-" + (i + 1).ToString(CultureInfo.InvariantCulture), TopologyNodeDisplayMode.Dot, (i + 1).ToString(CultureInfo.InvariantCulture));
+            chart.AddNode(prefix + "-" + (i + 1).ToString(CultureInfo.InvariantCulture), "DC " + (i + 1).ToString(CultureInfo.InvariantCulture), x + col * 42, y + row * 34, TopologyNodeKind.Server, status, prefix, width: 11, height: 11, symbol: "DC")
+                .WithNodeDisplay(prefix + "-" + (i + 1).ToString(CultureInfo.InvariantCulture), TopologyNodeDisplayMode.Dot);
+            if (i > 0 && col != 0) {
+                chart.AddEdge(prefix + "-mesh-" + i.ToString(CultureInfo.InvariantCulture), prefix + "-" + i.ToString(CultureInfo.InvariantCulture), prefix + "-" + (i + 1).ToString(CultureInfo.InvariantCulture), null, TopologyEdgeKind.Replication, status, TopologyDirection.None, TopologyEdgeRouting.Straight)
+                    .WithEdgeLineStyle(prefix + "-mesh-" + i.ToString(CultureInfo.InvariantCulture), TopologyEdgeLineStyle.Dashed)
+                    .WithEdgeMuted(prefix + "-mesh-" + i.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+    }
+
+    private static void AddSiteAnchors(TopologyChart chart, string prefix, double x, double y, double dx, double dy, int count) {
+        for (var i = 0; i < count; i++) AddSiteAnchor(chart, prefix + "-" + (i + 1).ToString(CultureInfo.InvariantCulture), x + dx * i, y + dy * i);
+    }
+
+    private static void AddSiteAnchor(TopologyChart chart, string id, double x, double y) {
+        chart.AddNode(id, id, x, y, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, width: 1, height: 1)
+            .WithNodeDisplay(id, TopologyNodeDisplayMode.Hidden);
+    }
+
+    private static void AddReplicationFan(TopologyChart chart, string hubId, string sitePrefix, int start, int count, TopologyHealthStatus status, TopologyEdgePort sourcePort, TopologyEdgePort targetPort) {
+        for (var i = start; i < start + count; i++) {
+            var edgeId = sitePrefix + "-fan-" + i.ToString(CultureInfo.InvariantCulture);
+            chart.AddEdge(edgeId, hubId, sitePrefix + "-" + i.ToString(CultureInfo.InvariantCulture), null, TopologyEdgeKind.Replication, status, TopologyDirection.None, TopologyEdgeRouting.Straight)
+                .WithEdgePorts(edgeId, sourcePort, targetPort)
+                .WithEdgeLineStyle(edgeId, TopologyEdgeLineStyle.Dashed)
+                .WithEdgeEmphasis(edgeId, TopologyEdgeEmphasis.Subtle);
         }
     }
 
