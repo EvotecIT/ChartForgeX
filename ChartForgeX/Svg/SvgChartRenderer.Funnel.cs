@@ -84,17 +84,19 @@ public sealed partial class SvgChartRenderer {
             var centerY = segmentY + segmentDrawHeight / 2;
             var labelColor = ChartColorMath.TextOnBackground(color, 0.58);
             var labelStroke = FunnelTextHalo(labelColor, t.CardBackground);
-            var labelWidth = Math.Max(36, Math.Min(topWidth, bottomWidth) - 18);
+            var labelFontSize = FunnelLabelFontSize(t.LegendFontSize);
+            var valueFontSize = FunnelValueFontSize(t.DataLabelFontSize);
+            var labelWidth = FunnelLabelWidth(topWidth, bottomWidth);
             if (showLabels) {
                 var labelWriter = new StringBuilder();
                 if (values[i].Y <= 0) {
                     var zeroLabelX = topRight + 12;
                     var zeroLabelWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
-                    DrawSvgTextLeft(labelWriter, chart, "funnel-label", label, zeroLabelX, centerY - 6, t.Text, t.LegendFontSize, zeroLabelWidth, "800");
-                    DrawSvgTextLeft(labelWriter, chart, "funnel-value", value, zeroLabelX, centerY + 13, t.MutedText, t.DataLabelFontSize, zeroLabelWidth, "750");
+                    DrawSvgTextLeft(labelWriter, chart, "funnel-label", label, zeroLabelX, centerY - 6, t.Text, labelFontSize, zeroLabelWidth, "800");
+                    DrawSvgTextLeft(labelWriter, chart, "funnel-value", value, zeroLabelX, centerY + 13, t.MutedText, valueFontSize, zeroLabelWidth, "750");
                 } else {
-                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, centerY - 4, labelColor, t.LegendFontSize, labelWidth, "800", labelStroke, 1.8);
-                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, centerY + 15, labelColor, t.DataLabelFontSize, labelWidth, "750", labelStroke, 1.8);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, centerY - 4, labelColor, labelFontSize, labelWidth, "800", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, centerY + 15, labelColor, valueFontSize, labelWidth, "750", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth);
                 }
                 writer.Raw(labelWriter.ToString());
             }
@@ -161,6 +163,15 @@ public sealed partial class SvgChartRenderer {
         return Math.Max(70, plotWidth * (0.22 + ratio * 0.74));
     }
 
+    private static double FunnelLabelWidth(double topWidth, double bottomWidth) =>
+        Math.Max(64, (topWidth + bottomWidth) / 2.0 - 28);
+
+    private static double FunnelLabelFontSize(double preferred) =>
+        Math.Max(ChartVisualPrimitives.FunnelLabelFontSizeMinimum, preferred);
+
+    private static double FunnelValueFontSize(double preferred) =>
+        Math.Max(ChartVisualPrimitives.FunnelValueFontSizeMinimum, preferred);
+
     private static double FunnelRatio(double value, double baseline) =>
         baseline <= 0 ? 0 : value / baseline;
 
@@ -223,5 +234,5 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartColor FunnelTextHalo(ChartColor text, ChartColor cardBackground) =>
-        text.R > 240 && text.G > 240 && text.B > 240 ? cardBackground : ChartColor.Transparent;
+        text.R > 240 && text.G > 240 && text.B > 240 ? ChartColor.FromRgba(15, 23, 42, 150) : ChartColor.Transparent;
 }

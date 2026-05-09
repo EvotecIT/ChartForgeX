@@ -22,6 +22,7 @@ public static partial class GalleryWriter {
     /// </summary>
     /// <param name="output">The directory containing generated chart files.</param>
     public static void Write(string output) {
+        ExampleCodeSamples.Write(output);
         var htmlFiles = Directory.EnumerateFiles(output, "*.html", SearchOption.TopDirectoryOnly)
             .Where(file => !IsGalleryShellFile(Path.GetFileName(file)))
             .Where(file => !IsConflictCopyFile(file))
@@ -109,6 +110,7 @@ public static partial class GalleryWriter {
         var matchingPairs = pairs.Count(pair => pair.HasMatchingDimensions);
         var healthySvgs = pairs.Count(pair => pair.SvgHealth.IsHealthy);
         var healthyPngs = pairs.Count(pair => pair.PngHealth.IsHealthy);
+        var healthyHtmls = pairs.Count(pair => pair.HtmlHealth.IsHealthy);
         var warningCount = pairs.Sum(pair => pair.Warnings.Length);
         var baseline = ReadBaselineSummary(output, pairs);
         var groups = BuildComparisonGroups(pairs);
@@ -127,13 +129,13 @@ public static partial class GalleryWriter {
         sb.AppendLine("<header>");
         sb.AppendLine("<h1>ChartForgeX SVG/PNG visual comparison</h1>");
         sb.AppendLine("<p>Generated from current example exports. SVG is left, PNG is right; high-density PNGs are shown at their logical SVG size.</p>");
-        sb.AppendLine("<div class=\"summary\"><span class=\"pill\">" + pairs.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + " chart pairs</span><span class=\"pill " + (matchingPairs == pairs.Length ? "ok" : "warn") + "\">" + matchingPairs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " dimension matches</span><span class=\"pill " + (healthySvgs == pairs.Length ? "ok" : "warn") + "\">" + healthySvgs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " healthy SVGs</span><span class=\"pill " + (healthyPngs == pairs.Length ? "ok" : "warn") + "\">" + healthyPngs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " healthy PNGs</span><span class=\"pill " + (warningCount == 0 ? "ok" : "warn") + "\">" + warningCount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " warnings</span>" + FormatBaselinePill(baseline) + "<a class=\"pill\" href=\"" + CatalogFileName + "\">grouped catalog</a><a class=\"pill\" href=\"" + QualityDashboardFileName + "\">quality dashboard</a><a class=\"pill\" href=\"" + ComparisonManifestFileName + "\">manifest JSON</a></div>");
+        sb.AppendLine("<div class=\"summary\"><span class=\"pill\">" + pairs.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + " chart pairs</span><span class=\"pill " + (matchingPairs == pairs.Length ? "ok" : "warn") + "\">" + matchingPairs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " dimension matches</span><span class=\"pill " + (healthySvgs == pairs.Length ? "ok" : "warn") + "\">" + healthySvgs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " healthy SVGs</span><span class=\"pill " + (healthyPngs == pairs.Length ? "ok" : "warn") + "\">" + healthyPngs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " healthy PNGs</span><span class=\"pill " + (healthyHtmls == pairs.Length ? "ok" : "warn") + "\">" + healthyHtmls.ToString(System.Globalization.CultureInfo.InvariantCulture) + " healthy HTMLs</span><span class=\"pill " + (warningCount == 0 ? "ok" : "warn") + "\">" + warningCount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " warnings</span>" + FormatBaselinePill(baseline) + "<a class=\"pill\" href=\"" + CatalogFileName + "\">grouped catalog</a><a class=\"pill\" href=\"" + QualityDashboardFileName + "\">quality dashboard</a><a class=\"pill\" href=\"" + ComparisonManifestFileName + "\">manifest JSON</a></div>");
         AppendComparisonFamilyNav(sb, groups);
         sb.AppendLine("</header>");
         sb.AppendLine("<main>");
 
         foreach (var group in groups) {
-            AppendComparisonGroup(sb, group);
+            AppendComparisonGroup(sb, group, output);
         }
 
         sb.AppendLine("</main>");
@@ -175,11 +177,11 @@ public static partial class GalleryWriter {
         sb.AppendLine("</div>");
     }
 
-    private static void AppendComparisonGroup(System.Text.StringBuilder sb, ComparisonGroup group) {
+    private static void AppendComparisonGroup(System.Text.StringBuilder sb, ComparisonGroup group, string output) {
         sb.AppendLine("<div class=\"family\" id=\"comparison-family-" + EscapeHtml(Slugify(group.Name)) + "\">");
         sb.AppendLine("<div class=\"family-head\"><div><h2 class=\"family-title\">" + EscapeHtml(group.Name) + "</h2><p class=\"family-desc\">" + EscapeHtml(group.Description) + "</p></div><span class=\"family-count " + (group.IsClean ? "ok" : "warn") + "\">" + group.Pairs.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + " pairs / " + group.CleanPairs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " clean / " + group.WarningCount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " warnings</span></div>");
         foreach (var pair in group.Pairs) {
-            AppendComparisonCard(sb, pair);
+            AppendComparisonCard(sb, pair, output);
         }
 
         sb.AppendLine("</div>");
@@ -195,7 +197,8 @@ public static partial class GalleryWriter {
             ReadFileLength(svgFileName),
             ReadFileLength(pngFileName),
             ReadSvgHealth(svgFileName),
-            ReadPngHealth(pngFileName));
+            ReadPngHealth(pngFileName),
+            ReadHtmlHealth(Path.Combine(output, name + ".html")));
     }
 
     private static void WriteComparisonManifest(string output, ComparisonAsset[] pairs, int matchingPairs, BaselineSummary baseline) {
@@ -204,6 +207,7 @@ public static partial class GalleryWriter {
             dimensionMatches = matchingPairs,
             healthySvgs = pairs.Count(pair => pair.SvgHealth.IsHealthy),
             healthyPngs = pairs.Count(pair => pair.PngHealth.IsHealthy),
+            healthyHtmls = pairs.Count(pair => pair.HtmlHealth.IsHealthy),
             warnings = pairs.Sum(pair => pair.Warnings.Length),
             baseline = new {
                 present = baseline.IsPresent,
@@ -218,7 +222,14 @@ public static partial class GalleryWriter {
                 svgMinimumMarkerRadius = MinimumReadableSvgMarkerRadius,
                 pngVisiblePixels = MinimumHealthyPngVisiblePixels,
                 pngDistinctColors = MinimumHealthyPngDistinctColors,
-                pngEdgeInkPixels = MaximumHealthyPngEdgeInkPixels
+                pngEdgeInkPixels = MaximumHealthyPngEdgeInkPixels,
+                htmlRequiresDocumentShell = true,
+                htmlRequiresViewport = true,
+                htmlRequiresInlineSvg = true,
+                htmlRequiresSurfaceGradient = true,
+                htmlRequiresTextPolish = true,
+                htmlRequiresVisibleOverflow = true,
+                htmlRequiresPrintCss = true
             },
             comparisonModes = new[] { "side-by-side", "center-wipe", "preset-wipe" },
             charts = pairs.Select(pair => new {
@@ -262,6 +273,17 @@ public static partial class GalleryWriter {
                     edgeInkPixels = pair.PngHealth.EdgeInkPixels,
                     edgeBandPixels = pair.PngHealth.EdgeBandPixels,
                     healthy = pair.PngHealth.IsHealthy
+                },
+                html = new {
+                    bytes = pair.HtmlHealth.Bytes,
+                    hasDocumentShell = pair.HtmlHealth.HasDocumentShell,
+                    hasViewport = pair.HtmlHealth.HasViewport,
+                    hasInlineSvg = pair.HtmlHealth.HasInlineSvg,
+                    hasSurfaceGradient = pair.HtmlHealth.HasSurfaceGradient,
+                    hasTextPolish = pair.HtmlHealth.HasTextPolish,
+                    hasVisibleOverflow = pair.HtmlHealth.HasVisibleOverflow,
+                    hasPrintCss = pair.HtmlHealth.HasPrintCss,
+                    healthy = pair.HtmlHealth.IsHealthy
                 }
             }).ToArray()
         };
@@ -366,14 +388,14 @@ public static partial class GalleryWriter {
 :root{color-scheme:dark;--bg:#0f172a;--panel:#111827;--frame:#020617;--line:#334155;--text:#e5e7eb;--muted:#94a3b8;--ok:#86efac;--warn:#fbbf24;--accent:#38bdf8}
 *{box-sizing:border-box}body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif}
 header{max-width:1500px;margin:0 auto 24px}h1{margin:0 0 6px;font-size:24px;line-height:1.15}p{margin:0;color:var(--muted)}.summary,.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.pill,.family-nav a{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:#cbd5e1;font-size:12px;font-weight:700;text-decoration:none}.pill.ok,.family-nav a.ok{border-color:rgba(134,239,172,.45);color:var(--ok)}.pill.warn,.family-nav a.warn{border-color:rgba(251,191,36,.55);color:var(--warn)}a.pill:hover,.family-nav a:hover{border-color:rgba(56,189,248,.55);color:var(--accent)}main{display:grid;gap:34px;max-width:1500px;margin:0 auto}
-.family{display:grid;gap:16px}.family-head{display:flex;align-items:end;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}.family-title{margin:0 0 5px;font-size:19px;line-height:1.15;color:#f8fafc}.family-desc{font-size:13px}.family-count{flex:0 0 auto;border:1px solid rgba(56,189,248,.42);border-radius:999px;color:var(--accent);font-size:12px;font-weight:800;padding:6px 10px}.family-count.ok{border-color:rgba(134,239,172,.45);color:var(--ok)}.family-count.warn{border-color:rgba(251,191,36,.55);color:var(--warn)}section{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;scroll-margin-top:18px}section.mismatch{border-color:rgba(251,191,36,.6)}h2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;font-size:14px;color:#cbd5e1}.status{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}.status.ok{color:var(--ok);border-color:rgba(134,239,172,.45)}.status.warn{color:var(--warn);border-color:rgba(251,191,36,.55)}.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}section.large .pair{grid-template-columns:1fr}.wipe-figure{grid-column:1/-1;order:-1}.wipe-figure .media{min-height:360px}section.large .wipe-figure .media{min-height:min(68vh,820px)}section.large figure:not(.wipe-figure) .media{min-height:min(62vh,720px)}
-figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8px;padding:10px;min-width:0}.caption{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin-bottom:8px}.dims{font-variant-numeric:tabular-nums;color:#cbd5e1}.format{color:var(--accent);font-weight:800;text-decoration:none}.format:hover{text-decoration:underline}.wipe-controls{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.wipe-controls input{position:absolute;opacity:0;pointer-events:none}.wipe-controls label{border:1px solid var(--line);border-radius:999px;color:#cbd5e1;cursor:pointer;font-size:11px;font-weight:800;padding:5px 9px}.wipe-controls input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}.wipe-controls input:checked+label{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.7);color:#f8fafc}
-.media{width:100%;min-height:140px;background-color:#020617;background-image:linear-gradient(45deg,#0b1120 25%,transparent 25%),linear-gradient(-45deg,#0b1120 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#0b1120 75%),linear-gradient(-45deg,transparent 75%,#0b1120 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;overflow:hidden}.media.wipe{position:relative;--wipe:50%}.wipe-controls .wipe-25:checked~.media{--wipe:25%}.wipe-controls .wipe-50:checked~.media{--wipe:50%}.wipe-controls .wipe-75:checked~.media{--wipe:75%}.media.wipe img,.media.wipe object{position:absolute;inset:0}.media.wipe object{clip-path:inset(0 calc(100% - var(--wipe)) 0 0)}.media.wipe:before{content:"";position:absolute;z-index:3;top:0;bottom:0;left:var(--wipe);border-left:2px solid rgba(56,189,248,.9);box-shadow:0 0 0 1px rgba(2,6,23,.85)}.media.wipe:after{content:"SVG | PNG";position:absolute;z-index:4;left:var(--wipe);top:8px;transform:translateX(-50%);border:1px solid rgba(56,189,248,.4);border-radius:999px;background:rgba(2,6,23,.82);color:#e5e7eb;font-size:10px;font-weight:800;letter-spacing:.08em;padding:4px 8px}object,img{display:block;width:100%;height:100%;object-fit:contain;background:transparent}
+.family{display:grid;gap:16px}.family-head{display:flex;align-items:end;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}.family-title{margin:0 0 5px;font-size:19px;line-height:1.15;color:#f8fafc}.family-desc{font-size:13px}.family-count{flex:0 0 auto;border:1px solid rgba(56,189,248,.42);border-radius:999px;color:var(--accent);font-size:12px;font-weight:800;padding:6px 10px}.family-count.ok{border-color:rgba(134,239,172,.45);color:var(--ok)}.family-count.warn{border-color:rgba(251,191,36,.55);color:var(--warn)}section{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;scroll-margin-top:18px;overflow:hidden}section.mismatch{border-color:rgba(251,191,36,.6)}h2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;font-size:14px;color:#cbd5e1}.status{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}.status.ok{color:var(--ok);border-color:rgba(134,239,172,.45)}.status.warn{color:var(--warn);border-color:rgba(251,191,36,.55)}.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}section.large .pair{grid-template-columns:1fr}.wipe-figure{grid-column:1/-1;order:-1}.wipe-figure .media{min-height:360px}section.large .wipe-figure .media{min-height:min(68vh,820px)}section.large figure:not(.wipe-figure) .media{min-height:min(62vh,720px)}
+figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8px;padding:10px;min-width:0}.caption{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin-bottom:8px}.dims{font-variant-numeric:tabular-nums;color:#cbd5e1}.format{color:var(--accent);font-weight:800;text-decoration:none}.format:hover{text-decoration:underline}.wipe-frame{display:grid;gap:10px;justify-items:start}.wipe-frame>input{position:absolute;opacity:0;pointer-events:none}.wipe-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0}.wipe-controls label{display:inline-flex;align-items:center;justify-content:center;min-height:30px;border:1px solid var(--line);border-radius:999px;color:#cbd5e1;cursor:pointer;font-size:11px;font-weight:800;line-height:1;max-width:100%;padding:5px 9px;white-space:nowrap}.wipe-frame>input:focus-visible~.wipe-controls{outline:2px solid var(--accent);outline-offset:3px}.wipe-frame>.wipe-25:checked~.wipe-controls label[for$="-25"],.wipe-frame>.wipe-50:checked~.wipe-controls label[for$="-50"],.wipe-frame>.wipe-75:checked~.wipe-controls label[for$="-75"]{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.7);color:#f8fafc}
+.media{width:100%;min-height:140px;background-color:#020617;background-image:linear-gradient(45deg,#0b1120 25%,transparent 25%),linear-gradient(-45deg,#0b1120 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#0b1120 75%),linear-gradient(-45deg,transparent 75%,#0b1120 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;overflow:hidden}.media.wipe{position:relative;--wipe:50%}.wipe-frame>.wipe-25:checked~.media{--wipe:25%}.wipe-frame>.wipe-50:checked~.media{--wipe:50%}.wipe-frame>.wipe-75:checked~.media{--wipe:75%}.media.wipe img,.media.wipe object{position:absolute;inset:0}.media.wipe object{clip-path:inset(0 calc(100% - var(--wipe)) 0 0)}.media.wipe:before{content:"";position:absolute;z-index:3;top:0;bottom:0;left:var(--wipe);border-left:2px solid rgba(56,189,248,.9);box-shadow:0 0 0 1px rgba(2,6,23,.85)}.media.wipe:after{content:"SVG | PNG";position:absolute;z-index:4;left:var(--wipe);top:8px;transform:translateX(-50%);border:1px solid rgba(56,189,248,.4);border-radius:999px;background:rgba(2,6,23,.82);color:#e5e7eb;font-size:10px;font-weight:800;letter-spacing:.08em;padding:4px 8px}object,img{display:block;width:100%;height:100%;object-fit:contain;background:transparent}.code-samples{grid-column:1/-1;display:grid;gap:10px}.code-sample{border:1px solid #1f2937;border-radius:8px;background:#020617}.code-sample summary{cursor:pointer;color:var(--accent);font-size:12px;font-weight:850;padding:10px 12px}.code-sample pre{margin:0;max-height:520px;overflow:auto;border-top:1px solid #1f2937;padding:12px}.code-sample code{font-family:ui-monospace,SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px;line-height:1.55;color:#dbeafe;white-space:pre}
 @media(max-width:1200px){.pair{grid-template-columns:1fr}}@media(max-width:900px){body{padding:16px}}
 """);
     }
 
-    private static void AppendComparisonCard(System.Text.StringBuilder sb, ComparisonAsset pair) {
+    private static void AppendComparisonCard(System.Text.StringBuilder sb, ComparisonAsset pair, string output) {
         var name = pair.Name;
         var svg = pair.SvgDimensions;
         var png = pair.PngDimensions;
@@ -398,6 +420,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
         AppendComparisonWipeFigure(sb, name, svg, ratioStyle);
         AppendComparisonAssetFigure(sb, name, "SVG", "svg", "object", svgInfo, ratioStyle);
         AppendComparisonAssetFigure(sb, name, "PNG", "png", "img", pngInfo, ratioStyle);
+        AppendCodeSamples(sb, output, name);
         sb.AppendLine("</div>");
         sb.AppendLine("</section>");
     }
@@ -405,7 +428,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
     private static void AppendComparisonWipeFigure(System.Text.StringBuilder sb, string name, AssetDimensions svg, string ratioStyle) {
         var escapedName = EscapeHtml(name);
         var escapedWipeId = EscapeHtml(Slugify(name));
-        sb.AppendLine("<figure class=\"wipe-figure\"><figcaption class=\"caption\"><span class=\"format\">WIPE</span><span class=\"dims\">" + EscapeHtml(FormatDimensions(svg)) + "</span></figcaption><div class=\"wipe-controls\" aria-label=\"" + escapedName + " wipe position\"><input class=\"wipe-25\" type=\"radio\" name=\"wipe-" + escapedWipeId + "\" id=\"wipe-" + escapedWipeId + "-25\"><label for=\"wipe-" + escapedWipeId + "-25\">SVG 25%</label><input class=\"wipe-50\" type=\"radio\" name=\"wipe-" + escapedWipeId + "\" id=\"wipe-" + escapedWipeId + "-50\" checked><label for=\"wipe-" + escapedWipeId + "-50\">Split</label><input class=\"wipe-75\" type=\"radio\" name=\"wipe-" + escapedWipeId + "\" id=\"wipe-" + escapedWipeId + "-75\"><label for=\"wipe-" + escapedWipeId + "-75\">SVG 75%</label><div class=\"media wipe\"" + ratioStyle + "><img src=\"" + escapedName + ".png\" alt=\"" + escapedName + " PNG wipe right\"><object data=\"" + escapedName + ".svg\" type=\"image/svg+xml\" aria-label=\"" + escapedName + " SVG wipe left\"></object></div></div></figure>");
+        sb.AppendLine("<figure class=\"wipe-figure\"><figcaption class=\"caption\"><span class=\"format\">WIPE</span><span class=\"dims\">" + EscapeHtml(FormatDimensions(svg)) + "</span></figcaption><div class=\"wipe-frame\" aria-label=\"" + escapedName + " wipe position\"><input class=\"wipe-25\" type=\"radio\" name=\"wipe-" + escapedWipeId + "\" id=\"wipe-" + escapedWipeId + "-25\"><input class=\"wipe-50\" type=\"radio\" name=\"wipe-" + escapedWipeId + "\" id=\"wipe-" + escapedWipeId + "-50\" checked><input class=\"wipe-75\" type=\"radio\" name=\"wipe-" + escapedWipeId + "\" id=\"wipe-" + escapedWipeId + "-75\"><div class=\"wipe-controls\"><label for=\"wipe-" + escapedWipeId + "-25\">SVG 25%</label><label for=\"wipe-" + escapedWipeId + "-50\">Split</label><label for=\"wipe-" + escapedWipeId + "-75\">SVG 75%</label></div><div class=\"media wipe\"" + ratioStyle + "><img src=\"" + escapedName + ".png\" alt=\"" + escapedName + " PNG wipe right\"><object data=\"" + escapedName + ".svg\" type=\"image/svg+xml\" aria-label=\"" + escapedName + " SVG wipe left\"></object></div></div></figure>");
     }
 
     private static void AppendComparisonAssetFigure(System.Text.StringBuilder sb, string name, string label, string extension, string mediaKind, string dimensions, string ratioStyle) {

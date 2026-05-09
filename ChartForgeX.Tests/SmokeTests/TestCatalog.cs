@@ -62,6 +62,8 @@ internal static partial class SmokeTests {
         ("PNG renderer uses emphasized report text", PngRendererUsesEmphasizedReportText),
         ("PNG chart renderer uses theme-sized text", PngChartRendererUsesThemeSizedText),
         ("PNG and SVG stroke primitives stay aligned", PngAndSvgStrokePrimitivesStayAligned),
+        ("SVG surface and guide strokes stay premium at any scale", SvgSurfaceAndGuideStrokesStayPremiumAtAnyScale),
+        ("Static HTML shells share premium preview polish", StaticHtmlShellsSharePremiumPreviewPolish),
         ("PNG font path falls back gracefully", PngFontPathFallsBackGracefully),
         ("PNG font path supports TrueType collections", PngFontPathSupportsTrueTypeCollections),
         ("PNG font diagnostics describe fallback decisions", PngFontDiagnosticsDescribeFallbackDecisions),

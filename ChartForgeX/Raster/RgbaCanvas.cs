@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Raster;
 
-internal sealed class RgbaCanvas {
+internal sealed partial class RgbaCanvas {
     private const int DefaultScale = 2;
     private static readonly TrueTypeFont? DefaultOutlineFont = TrueTypeFont.TryLoadDefault();
     private readonly TrueTypeFont? _outlineFont;

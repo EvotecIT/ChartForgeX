@@ -23,7 +23,7 @@ public sealed class HtmlChartRenderer {
         return new HtmlMarkupWriter()
             .StartElement("div")
             .Attribute("class", "chartforgex-chart")
-            .Attribute("style", "width:100%;max-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box")
+            .Attribute("style", "width:100%;max-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible")
             .EndStartElement()
             .RawTrusted(_svg.Render(chart, NextScope()))
             .EndElement()
@@ -37,13 +37,13 @@ public sealed class HtmlChartRenderer {
     /// <returns>A complete HTML document.</returns>
     public string RenderPage(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        var bg = chart.Options.TransparentBackground ? chart.Options.Theme.CardBackground.ToCss() : chart.Options.Theme.Background.ToCss();
+        var bg = chart.Options.TransparentBackground ? chart.Options.Theme.CardBackground : chart.Options.Theme.Background;
         var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX chart" : chart.Title;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        WriteDocumentHead(writer, title, "body{margin:0;min-height:100vh;display:grid;place-items:start center;background:" + bg + ";font-family:" + CssFontFamily(chart.Options.Theme.FontFamily) + ";padding:clamp(20px,5vh,48px) 24px 24px;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-chart svg{max-width:100%;height:auto;display:block}@media(max-width:680px){body{padding:16px}}");
+        WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, CssFontFamily(chart.Options.Theme.FontFamily)) + ".chartforgex-chart{width:min(100%," + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-chart svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-chart{width:100%;max-width:none}"));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(chart)).Line()
@@ -68,4 +68,5 @@ public sealed class HtmlChartRenderer {
         if (string.IsNullOrWhiteSpace(value)) return "system-ui, sans-serif";
         return value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
     }
+
 }

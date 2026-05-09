@@ -88,7 +88,7 @@ public sealed partial class PngChartRenderer {
         var theme = chart.Options.Theme;
         var preferredFontSize = PngTickFontSize(chart);
         var labelMaxWidth = Math.Max(24, chart.Options.Size.Width - plot.Right - 12);
-        if (ShowAxisLines(chart)) c.DrawLine(plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+        if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         foreach (var tick in yTicks) {
             var rawLabel = FormatSecondaryValue(chart, tick);
             var fontSize = TextFontSizeForWidth(rawLabel, labelMaxWidth, preferredFontSize);

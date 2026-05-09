@@ -30,8 +30,8 @@ function Assert-VisualComparisonHealth {
         throw "SVG/PNG comparison has $($Comparison.dimensionMatches) dimension-matched chart pair(s) out of $($Comparison.chartPairs). See $ComparisonManifest."
     }
 
-    if ($Comparison.healthySvgs -ne $Comparison.chartPairs -or $Comparison.healthyPngs -ne $Comparison.chartPairs) {
-        throw "SVG/PNG comparison health is incomplete: $($Comparison.healthySvgs) SVG(s), $($Comparison.healthyPngs) PNG(s), $($Comparison.chartPairs) chart pair(s). See $ComparisonManifest."
+    if ($Comparison.healthySvgs -ne $Comparison.chartPairs -or $Comparison.healthyPngs -ne $Comparison.chartPairs -or $Comparison.healthyHtmls -ne $Comparison.chartPairs) {
+        throw "SVG/PNG/HTML comparison health is incomplete: $($Comparison.healthySvgs) SVG(s), $($Comparison.healthyPngs) PNG(s), $($Comparison.healthyHtmls) HTML(s), $($Comparison.chartPairs) chart pair(s). See $ComparisonManifest."
     }
 
     if ($Comparison.warnings -ne 0) {

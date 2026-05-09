@@ -30,6 +30,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("--cfx-grid-padding:30px", StringComparison.Ordinal), "Chart grids should expose the requested padding.");
         Assert(html.Contains("--cfx-grid-panel-width:300px", StringComparison.Ordinal), "Chart grids should expose fixed panel widths.");
         Assert(html.Contains("--cfx-grid-panel-height:200px", StringComparison.Ordinal), "Chart grids should expose fixed panel heights.");
+        Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal) && html.Contains(".chartforgex-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}", StringComparison.Ordinal), "Chart grid HTML pages should use polished surfaces without clipping chart shadows.");
         Assert(CountOccurrences(html, "<svg ") == 2, "Chart grids should render each chart as inline SVG.");
         Assert(html.Contains(">Control scorecards</h1>", StringComparison.Ordinal), "Chart grids should render report titles.");
         Assert(!html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Chart grids should remain JavaScript-free.");
@@ -56,6 +57,7 @@ internal static partial class SmokeTests {
         Assert(svg.StartsWith("<svg", StringComparison.Ordinal), "Chart grids should export standalone SVG.");
         Assert(!svg.Contains("data:image/svg+xml;base64,", StringComparison.Ordinal), "Chart grid SVG should keep child charts inline instead of base64-encoding them.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"grid-panel\"") == 2, "Chart grid SVG should expose inline child chart panels for downstream inspection.");
+        Assert(svg.Contains("-gridSurface", StringComparison.Ordinal) && svg.Contains("vector-effect:non-scaling-stroke", StringComparison.Ordinal), "Chart grid SVG should use premium scalable surface and stroke primitives.");
         Assert(CountOccurrences(svg, "<svg ") == 3, "Chart grid SVG should contain the root SVG plus one inline SVG per child chart.");
         var combinedGridSvgs = grid.ToSvg() + grid.ToSvg();
         var gridSvgTitleIds = ExtractAttributeValues(combinedGridSvgs, "<title id=\"");
@@ -70,6 +72,9 @@ internal static partial class SmokeTests {
         var png = grid.ToPng();
         Assert(ReadBigEndianInt32(png, 16) == 680, "Chart grid PNG should use fixed panel width and custom padding.");
         Assert(ReadBigEndianInt32(png, 20) == 336, "Chart grid PNG should use fixed panel height and custom padding.");
+        var tintedTheme = ChartTheme.ReportLight();
+        tintedTheme.Background = ChartColor.FromHex("#F4F7FB");
+        Assert(!png.SequenceEqual(ChartGrid.Create().WithTitle("Control scorecards").WithSubtitle("Small multiples for a static report").WithTheme(tintedTheme).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200).Add(coverage).Add(readiness).ToPng()), "Chart grid PNG should honor polished export surface colors.");
 
         var stretched = ChartGrid.Create().WithPanelSize(300, 200).WithPanelFit(ChartGridPanelFit.Stretch).Add(coverage);
         Assert(stretched.ToSvg().Contains("width=\"300\" height=\"200\"", StringComparison.Ordinal), "Stretch panel grids should use the full fixed panel size.");

@@ -2,13 +2,14 @@ using System;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// Renders visual blocks to dependency-free PNG images.
 /// </summary>
-public sealed class PngVisualBlockRenderer {
+public sealed partial class PngVisualBlockRenderer {
     /// <summary>Renders a visual block to PNG bytes.</summary>
     public byte[] Render(IVisualBlock block) {
         var canvas = RenderCanvas(block);
@@ -22,15 +23,22 @@ public sealed class PngVisualBlockRenderer {
         var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, null, options.PngOutputScale);
         canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
         if (options.ShowCard && theme.UseCard) {
-            canvas.FillRoundedRect(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, theme.CardBackground);
+            canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
             canvas.StrokeRoundedRect(0.5, 0.5, Math.Max(1, options.Size.Width - 1), Math.Max(1, options.Size.Height - 1), theme.CornerRadius, theme.CardBorder, 1);
-            canvas.StrokeRoundedRect(1.5, 1.5, Math.Max(1, options.Size.Width - 3), Math.Max(1, options.Size.Height - 3), Math.Max(0, theme.CornerRadius - 1.5), ChartColor.FromRgba(255, 255, 255, 92), 1);
+            canvas.StrokeRoundedRect(ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightInset, Math.Max(1, options.Size.Width - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(1, options.Size.Height - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(0, theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset), ApplyOpacity(ChartColor.White, ChartVisualPrimitives.CardInnerHighlightOpacity), 1);
         }
 
         if (block is ChartTable table) DrawTable(canvas, table);
         else if (block is ChartList list) DrawList(canvas, list);
         else if (block is MetricCard card) DrawMetric(canvas, card);
         else if (block is RadialMetricCard radialCard) DrawRadialMetric(canvas, radialCard);
+        else if (block is SegmentedProgressCard segmentedCard) DrawSegmentedProgress(canvas, segmentedCard);
+        else if (block is CompositionStatusCard compositionCard) DrawCompositionStatus(canvas, compositionCard);
+        else if (block is DistributionStripCard distributionCard) DrawDistributionStripCard(canvas, distributionCard);
+        else if (block is HeatmapInsightCard heatmapCard) DrawHeatmapInsightCard(canvas, heatmapCard);
+        else if (block is WorkloadListBlock workloadBlock) DrawWorkloadList(canvas, workloadBlock);
+        else if (block is ActivityTimelineBlock activityBlock) DrawActivityTimeline(canvas, activityBlock);
+        else if (block is ScheduleTimelineBlock scheduleBlock) DrawScheduleTimeline(canvas, scheduleBlock);
         return canvas;
     }
 
@@ -59,7 +67,7 @@ public sealed class PngVisualBlockRenderer {
         var rowHeight = table.Dense ? 24.0 : 31.0;
         var widths = ColumnWidths(table, content.Width);
         if (table.ShowHeader) {
-            canvas.FillRoundedRect(content.X, y, content.Width, headerHeight, Math.Min(6, theme.PlotCornerRadius), theme.PlotBackground);
+            canvas.FillRoundedRectVerticalGradient(content.X, y, content.Width, headerHeight, Math.Min(6, theme.PlotCornerRadius), ChartSurfacePolish.GradientTop(theme.PlotBackground), ChartSurfacePolish.GradientBottom(theme.PlotBackground));
             canvas.StrokeRoundedRect(content.X, y, content.Width, headerHeight, Math.Min(6, theme.PlotCornerRadius), theme.PlotBorder, 1);
             var x = content.X;
             for (var i = 0; i < table.Columns.Count; i++) {
@@ -86,7 +94,10 @@ public sealed class PngVisualBlockRenderer {
                     textX += 12;
                 }
 
-                DrawAlignedText(canvas, cell.Text, textX, y + 8, widths[i] - (textX - x) - 7, cell.Alignment ?? table.Columns[i].Alignment, cell.Foreground ?? row.Foreground ?? theme.Text, table.Dense ? 10.5 : 11.5, false);
+                var cellWidth = widths[i] - (textX - x) - 7;
+                if (cell.MicroVisualKind != ChartTableCellMicroVisualKind.None) DrawTableCellMicroVisual(canvas, table, cell, textX, y + 4, cellWidth, rowHeight - 8, i);
+                else if (cell.BadgeText.Length > 0) DrawVisualBadge(canvas, table, cell, textX, y + 4, cellWidth, rowHeight - 8);
+                else DrawAlignedText(canvas, cell.Text, textX, y + 8, cellWidth, cell.Alignment ?? table.Columns[i].Alignment, cell.Foreground ?? row.Foreground ?? theme.Text, table.Dense ? 10.5 : 11.5, false);
                 x += widths[i];
             }
 
@@ -224,11 +235,395 @@ public sealed class PngVisualBlockRenderer {
             var y = top + row * rowHeight;
             var height = rowHeight - 4;
             var marker = VisualBlockRendering.StatusColor(theme, detail.Status);
-            canvas.FillRoundedRect(x, y, cellWidth, height, Math.Min(8, height / 2), theme.PlotBackground.WithAlpha(150));
+            canvas.FillRoundedRectVerticalGradient(x, y, cellWidth, height, Math.Min(8, height / 2), ChartSurfacePolish.GradientTop(theme.PlotBackground.WithAlpha(150)), ChartSurfacePolish.GradientBottom(theme.PlotBackground.WithAlpha(150)));
             canvas.StrokeRoundedRect(x, y, cellWidth, height, Math.Min(8, height / 2), theme.CardBorder.WithAlpha(120));
             canvas.DrawCircle(x + 10, y + rowHeight / 2 - 2, 3.2, marker);
             canvas.DrawTextEmphasized(x + 18, y + rowHeight / 2 - labelSize * 0.45, FitText(detail.Label, labelSize, cellWidth * 0.55), theme.MutedText, labelSize);
             DrawAlignedText(canvas, detail.Value, x + cellWidth * 0.58, y + rowHeight / 2 - valueSize * 0.35, cellWidth * 0.36, VisualTextAlignment.Right, theme.Text, valueSize, true);
+        }
+    }
+
+    private static void DrawSegmentedProgress(RgbaCanvas canvas, SegmentedProgressCard card) {
+        var options = card.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        if (card.HeaderSymbol.Length > 0 || card.ShowMenu) DrawSegmentedProgressHeader(canvas, card, ref y, content.X, content.Width);
+        else DrawHeading(canvas, card, ref y, content.X, content.Width);
+        var hasAction = card.ActionLabel.Length > 0;
+        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.16)) : 0;
+        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
+        var rowHeight = Math.Max(48, Math.Min(72, (bottom - y) / Math.Max(1, card.Rows.Count)));
+        for (var rowIndex = 0; rowIndex < card.Rows.Count && y + 38 <= bottom; rowIndex++) {
+            var row = card.Rows[rowIndex];
+            var accent = row.Color ?? (row.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, rowIndex) : VisualBlockRendering.StatusColor(theme, row.Status));
+            var valueText = Math.Round(VisualBlockRendering.SegmentRatio(row.Value, row.Maximum) * 100).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+            var deltaWidth = row.Delta.Length == 0 ? 0 : Math.Min(92, RgbaCanvas.MeasureTextEmphasizedWidth(row.Delta, theme.SubtitleFontSize, null) + 18);
+            DrawAlignedText(canvas, row.Label, content.X, y, content.Width - deltaWidth - 58, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
+            if (row.Delta.Length > 0) {
+                canvas.FillRoundedRect(content.X + content.Width - deltaWidth - 54, y - 2, deltaWidth, 22, 11, accent.WithAlpha(34));
+                DrawAlignedText(canvas, row.Delta, content.X + content.Width - deltaWidth - 48, y + 3, deltaWidth - 12, VisualTextAlignment.Center, accent, theme.SubtitleFontSize, true);
+            }
+
+            DrawAlignedText(canvas, valueText, content.X + content.Width - 46, y, 46, VisualTextAlignment.Right, theme.Text, Math.Max(13, theme.SubtitleFontSize + 1), true);
+            var stripY = y + 30;
+            var stripHeight = Math.Max(12, Math.Min(22, rowHeight * 0.28));
+            DrawSegmentedStrip(canvas, row, content.X, stripY, content.Width, stripHeight, accent, theme);
+            y += rowHeight;
+        }
+
+        if (hasAction) {
+            if (card.ActionBackground.HasValue) DrawSegmentedFooterAction(canvas, card, options.Size.Height - footerHeight, footerHeight, content.X, content.Width);
+            else DrawFooterAction(canvas, card.ActionLabel, card.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
+        }
+    }
+
+    private static void DrawSegmentedFooterAction(RgbaCanvas canvas, SegmentedProgressCard card, double footerY, double footerHeight, double x, double width) {
+        var theme = card.Options.Theme;
+        var fill = card.ActionBackground ?? theme.PlotBackground;
+        var foreground = card.ActionForeground ?? theme.Text;
+        canvas.FillRect(0, footerY, card.Options.Size.Width, footerHeight, fill);
+        var fontSize = Math.Max(10, theme.SubtitleFontSize);
+        var y = footerY + (footerHeight - fontSize) * 0.52;
+        DrawAlignedText(canvas, card.ActionLabel, x, y, Math.Max(1, width - 38), VisualTextAlignment.Left, foreground, fontSize, false);
+        DrawAlignedText(canvas, card.ActionSymbol, x + width - 28, y, 28, VisualTextAlignment.Right, foreground, fontSize, true);
+    }
+
+    private static void DrawSegmentedProgressHeader(RgbaCanvas canvas, SegmentedProgressCard card, ref double y, double x, double width) {
+        var theme = card.Options.Theme;
+        var badgeSize = card.HeaderSymbol.Length > 0 ? 48.0 : 0.0;
+        var textX = x + (badgeSize > 0 ? badgeSize + 18 : 0);
+        var menuReserve = card.ShowMenu ? 42.0 : 0.0;
+        if (badgeSize > 0) {
+            canvas.FillRoundedRectVerticalGradient(x, y, badgeSize, badgeSize, 14, ChartSurfacePolish.GradientTop(ChartColor.White), ChartSurfacePolish.GradientBottom(ChartColor.White));
+            canvas.StrokeRoundedRect(x, y, badgeSize, badgeSize, 14, theme.CardBorder, 1);
+            DrawAlignedText(canvas, card.HeaderSymbol, x, y + 12, badgeSize, VisualTextAlignment.Center, theme.Text, 18, true);
+        }
+
+        if (card.ShowMenu) {
+            var dotY = y + 22;
+            for (var i = 0; i < 3; i++) canvas.DrawCircle(x + width - 22 + i * 7, dotY, 2.1, theme.MutedText);
+        }
+
+        if (card.Title.Length > 0) DrawAlignedText(canvas, card.Title, textX, y, width - (textX - x) - menuReserve, VisualTextAlignment.Left, theme.Text, theme.TitleFontSize, true);
+        if (card.Subtitle.Length > 0) DrawAlignedText(canvas, card.Subtitle, textX, y + theme.TitleFontSize + 8, width - (textX - x) - menuReserve, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
+        y += Math.Max(badgeSize, card.Title.Length > 0 ? theme.TitleFontSize + (card.Subtitle.Length > 0 ? theme.SubtitleFontSize + 13 : 8) : 0) + 18;
+        canvas.DrawLine(x, y, x + width, y, theme.PlotBorder, 1);
+        y += 24;
+    }
+
+    private static void DrawSegmentedStrip(RgbaCanvas canvas, SegmentedProgressRow row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ChartTheme theme) {
+        var gap = row.Segments > 50 ? 2.0 : 3.0;
+        var segmentWidth = Math.Max(2, (width - gap * (row.Segments - 1)) / row.Segments);
+        var filled = VisualBlockRendering.FilledSegments(row);
+        var empty = theme.PlotBackground.A > 0 ? theme.PlotBackground : theme.MutedText.WithAlpha(36);
+        for (var i = 0; i < row.Segments; i++) {
+            var color = i < filled ? accent : empty;
+            canvas.FillRoundedRect(x + i * (segmentWidth + gap), y, segmentWidth, height, Math.Min(4, segmentWidth * 0.35), color);
+        }
+    }
+
+    private static void DrawCompositionStatus(RgbaCanvas canvas, CompositionStatusCard card) {
+        var options = card.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        DrawHeading(canvas, card, ref y, content.X, content.Width);
+        var hasAction = card.ActionLabel.Length > 0;
+        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.16)) : 0;
+        var metricSize = Math.Min(46, Math.Max(28, options.Size.Height * 0.16));
+        DrawAlignedText(canvas, card.Label, content.X, y, content.Width * 0.58, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
+        DrawAlignedText(canvas, card.Value, content.X + content.Width * 0.58, y + metricSize * 0.08, content.Width * 0.42, VisualTextAlignment.Right, theme.Text, metricSize, true);
+        y += metricSize + 20;
+        var stripHeight = Math.Max(20, Math.Min(34, options.Size.Height * 0.09));
+        DrawCompositionStrip(canvas, card, content.X, y, content.Width, stripHeight);
+        y += stripHeight + 24;
+        var legendBottom = options.Size.Height - options.Padding.Bottom - footerHeight;
+        var rowHeight = Math.Max(28, Math.Min(38, (legendBottom - y) / Math.Max(1, card.Segments.Count)));
+        var total = VisualBlockRendering.CompositionTotal(card);
+        for (var i = 0; i < card.Segments.Count && y + rowHeight <= legendBottom + 1; i++) {
+            var segment = card.Segments[i];
+            var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
+            canvas.FillRoundedRect(content.X, y + rowHeight * 0.22, 14, 14, 4, color);
+            DrawAlignedText(canvas, segment.Label, content.X + 24, y + rowHeight * 0.24, content.Width * 0.58, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize), true);
+            var valueText = segment.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + (card.Unit.Length > 0 ? " " + card.Unit : string.Empty);
+            var share = total <= 0 ? string.Empty : "  " + (segment.Value / total * 100).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+            DrawAlignedText(canvas, valueText + share, content.X + content.Width * 0.66, y + rowHeight * 0.24, content.Width * 0.34, VisualTextAlignment.Right, theme.Text, Math.Max(12, theme.SubtitleFontSize), true);
+            y += rowHeight;
+        }
+
+        if (hasAction) DrawFooterAction(canvas, card.ActionLabel, card.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
+    }
+
+    private static void DrawCompositionStrip(RgbaCanvas canvas, CompositionStatusCard card, double x, double y, double width, double height) {
+        var theme = card.Options.Theme;
+        var total = VisualBlockRendering.CompositionTotal(card);
+        var gap = 4.0;
+        var cursor = x;
+        for (var i = 0; i < card.Segments.Count; i++) {
+            var segment = card.Segments[i];
+            var remainingGap = gap * Math.Max(0, card.Segments.Count - 1);
+            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, (width - remainingGap) * segment.Value / total);
+            if (segmentWidth <= 0) continue;
+            var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
+            canvas.FillRoundedRect(cursor, y, segmentWidth, height, Math.Min(7, height / 2), color);
+            if (segment.Pattern != ChartFillPattern.None) {
+                for (var lineX = cursor - height; lineX < cursor + segmentWidth; lineX += 10) {
+                    canvas.DrawLine(lineX, y + height, lineX + height, y, ChartColor.White.WithAlpha(46), 2);
+                }
+            }
+
+            cursor += segmentWidth + gap;
+        }
+    }
+
+    private static void DrawFooterAction(RgbaCanvas canvas, string label, string symbol, double footerY, double footerHeight, double x, double width, ChartForgeX.Themes.ChartTheme theme) {
+        canvas.DrawLine(x, footerY, x + width, footerY, theme.PlotBorder, 1);
+        var fontSize = Math.Max(10, theme.SubtitleFontSize);
+        var y = footerY + (footerHeight - fontSize) * 0.52;
+        DrawAlignedText(canvas, label, x, y, Math.Max(1, width - 38), VisualTextAlignment.Left, theme.MutedText, fontSize, false);
+        DrawAlignedText(canvas, symbol, x + width - 28, y, 28, VisualTextAlignment.Right, theme.Text, fontSize, true);
+    }
+
+    private static void DrawWorkloadList(RgbaCanvas canvas, WorkloadListBlock block) {
+        var options = block.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        DrawHeading(canvas, block, ref y, content.X, content.Width);
+        var hasAction = block.ActionLabel.Length > 0;
+        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.14)) : 0;
+        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
+        var rowHeight = Math.Max(44, Math.Min(64, (bottom - y) / Math.Max(1, block.Rows.Count)));
+        for (var i = 0; i < block.Rows.Count && y + rowHeight <= bottom + 1; i++) {
+            var row = block.Rows[i];
+            var color = row.Color ?? (row.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, row.Status));
+            var avatarSize = Math.Min(34, rowHeight - 14);
+            var centerY = y + rowHeight * 0.42;
+            canvas.DrawCircle(content.X + avatarSize / 2, centerY, avatarSize / 2, color.WithAlpha(42));
+            canvas.DrawCircleOutline(content.X + avatarSize / 2, centerY, avatarSize / 2, color.WithAlpha(105), 1);
+            DrawAlignedText(canvas, WorkloadAvatar(row), content.X + 1, centerY - Math.Max(9, theme.SubtitleFontSize - 1) * 0.46, avatarSize - 2, VisualTextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 1), true);
+            var checkWidth = block.ShowSelectionControls ? 28 : 0;
+            var valueText = row.Note.Length > 0 ? row.Note + "  " + VisualBlockRendering.WorkloadDisplayValue(row) : VisualBlockRendering.WorkloadDisplayValue(row);
+            var valueWidth = Math.Min(98, Math.Max(52, RgbaCanvas.MeasureTextEmphasizedWidth(valueText, theme.SubtitleFontSize, null) + 10));
+            var textX = content.X + avatarSize + 14;
+            var textWidth = Math.Max(24, content.X + content.Width - textX - valueWidth - checkWidth - 10);
+            DrawAlignedText(canvas, row.Label, textX, y + 8, textWidth, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
+            if (row.Subtitle.Length > 0) DrawAlignedText(canvas, row.Subtitle, textX, y + 24, textWidth, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), false);
+            DrawAlignedText(canvas, valueText, content.X + content.Width - valueWidth - checkWidth, y + 11, valueWidth, VisualTextAlignment.Right, row.Status == VisualStatus.Negative || row.Status == VisualStatus.Warning ? color : theme.Text, theme.SubtitleFontSize, true);
+            if (block.ShowProgressRails) {
+                var railY = y + rowHeight - 13;
+                var railWidth = Math.Max(18, content.X + content.Width - textX - checkWidth);
+                canvas.FillRoundedRect(textX, railY, railWidth, 6, 3, theme.MutedText.WithAlpha(28));
+                canvas.FillRoundedRect(textX, railY, Math.Max(0, railWidth * VisualBlockRendering.WorkloadRatio(row)), 6, 3, color);
+            }
+
+            if (block.ShowSelectionControls) {
+                var controlX = content.X + content.Width - checkWidth + 4;
+                if (row.Selected) canvas.FillRoundedRect(controlX, centerY - 8, 16, 16, 4, color.WithAlpha(46));
+                canvas.StrokeRoundedRect(controlX, centerY - 8, 16, 16, 4, row.Selected ? color : theme.PlotBorder, 1);
+                if (row.Selected) {
+                    canvas.DrawLine(controlX + 4, centerY, controlX + 7, centerY + 4, color, 1.6);
+                    canvas.DrawLine(controlX + 7, centerY + 4, controlX + 13, centerY - 5, color, 1.6);
+                }
+            }
+
+            if (block.ShowDividers && i < block.Rows.Count - 1) canvas.DrawLine(textX, y + rowHeight - 1, content.X + content.Width, y + rowHeight - 1, theme.PlotBorder.WithAlpha(120), 1);
+            y += rowHeight;
+        }
+
+        if (hasAction) DrawFooterAction(canvas, block.ActionLabel, block.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
+    }
+
+    private static void DrawActivityChrome(RgbaCanvas canvas, ActivityTimelineBlock block, ref double y, double x, double width) {
+        var theme = block.Options.Theme;
+        if (block.ToolbarActions.Count > 0) {
+            var cursor = x + width;
+            for (var i = block.ToolbarActions.Count - 1; i >= 0; i--) {
+                var action = block.ToolbarActions[i];
+                var actionWidth = Math.Min(92, RgbaCanvas.MeasureTextEmphasizedWidth(action, theme.SubtitleFontSize, null) + 24);
+                cursor -= actionWidth;
+                canvas.FillRoundedRect(cursor, y, actionWidth, 28, 8, ChartColor.White);
+                canvas.StrokeRoundedRect(cursor, y, actionWidth, 28, 8, theme.CardBorder, 1);
+                DrawAlignedText(canvas, action, cursor, y + 7, actionWidth, VisualTextAlignment.Center, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
+                cursor -= 8;
+            }
+
+            y += 38;
+        }
+
+        if (block.Tabs.Count > 0) {
+            var cursor = x;
+            foreach (var tab in block.Tabs) {
+                var labelWidth = RgbaCanvas.MeasureTextEmphasizedWidth(tab.Label, Math.Max(12, theme.SubtitleFontSize + 1), null);
+                var detailWidth = tab.Detail.Length == 0 ? 0 : RgbaCanvas.MeasureTextWidth(tab.Detail, Math.Max(10, theme.SubtitleFontSize - 1), null);
+                var tabWidth = Math.Min(210, Math.Max(96, Math.Max(labelWidth, detailWidth) + 32));
+                canvas.FillRoundedRect(cursor, y, tabWidth, 52, 8, ChartColor.White);
+                canvas.StrokeRoundedRect(cursor, y, tabWidth, 52, 8, theme.CardBorder, 1);
+                DrawAlignedText(canvas, tab.Label, cursor + 14, y + 10, tabWidth - 26, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
+                if (tab.Detail.Length > 0) DrawAlignedText(canvas, tab.Detail, cursor + 14, y + 30, tabWidth - 26, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), false);
+                cursor += tabWidth + 10;
+            }
+
+            y += 66;
+        }
+
+        if (block.NotePlaceholder.Length > 0) {
+            canvas.FillRoundedRect(x, y, width, 54, 8, ChartColor.White);
+            canvas.StrokeRoundedRect(x, y, width, 54, 8, theme.CardBorder, 1);
+            DrawAlignedText(canvas, block.NotePlaceholder, x + 14, y + 18, width - 58, VisualTextAlignment.Left, theme.MutedText, Math.Max(12, theme.SubtitleFontSize + 1), false);
+            var sendColor = VisualBlockRendering.PaletteAt(theme, 0);
+            canvas.FillRoundedRect(x + width - 38, y + 17, 22, 22, 7, sendColor.WithAlpha(72));
+            DrawAlignedText(canvas, ">", x + width - 37, y + 22, 20, VisualTextAlignment.Center, sendColor, 12, true);
+            y += 76;
+        }
+    }
+
+    private static void DrawActivityTimeline(RgbaCanvas canvas, ActivityTimelineBlock block) {
+        var options = block.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        DrawHeading(canvas, block, ref y, content.X, content.Width);
+        DrawActivityChrome(canvas, block, ref y, content.X, content.Width);
+        var hasAction = block.ActionLabel.Length > 0;
+        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.12)) : 0;
+        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
+        var spineX = content.X + 18;
+        canvas.DrawLine(spineX, y + 6, spineX, bottom, theme.PlotBorder, 2);
+        for (var i = 0; i < block.Items.Count && y < bottom - 12; i++) {
+            var item = block.Items[i];
+            var rowHeight = ActivityRowHeight(item, theme);
+            if (y + rowHeight > bottom + 1) break;
+            var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status);
+            if (item.Kind == ActivityTimelineItemKind.Section) {
+                canvas.DrawCircle(spineX, y + 10, 4, theme.PlotBorder);
+                DrawAlignedText(canvas, item.Title.ToUpperInvariant(), content.X + 40, y + 4, content.Width - 40, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
+            } else if (item.Kind == ActivityTimelineItemKind.ChecklistItem) {
+                canvas.DrawCircle(spineX + 24, y + 11, 4, color);
+                if (item.Completed) {
+                    canvas.DrawLine(spineX + 20, y + 11, spineX + 23, y + 15, color, 1.4);
+                    canvas.DrawLine(spineX + 23, y + 15, spineX + 29, y + 7, color, 1.4);
+                }
+
+                var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
+                DrawAlignedText(canvas, item.Title, content.X + 58, y + 5, content.Width - 58, VisualTextAlignment.Left, textColor, theme.SubtitleFontSize, item.Completed ? false : true);
+                if (item.Completed) canvas.DrawLine(content.X + 58, y + 10, content.X + Math.Min(content.Width, 58 + RgbaCanvas.MeasureTextWidth(FitText(item.Title, theme.SubtitleFontSize, content.Width - 58), theme.SubtitleFontSize, null)), y + 10, textColor.WithAlpha(140), 1);
+            } else if (item.Kind == ActivityTimelineItemKind.HiddenSummary) {
+                canvas.DrawCircle(spineX, y + 13, 8, color.WithAlpha(42));
+                canvas.DrawCircleOutline(spineX, y + 13, 8, color, 1);
+                DrawAlignedText(canvas, item.HiddenCount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + item.Title, content.X + 40, y + 6, content.Width - 40, VisualTextAlignment.Left, color, Math.Max(12, theme.SubtitleFontSize), true);
+            } else {
+                canvas.FillRoundedRect(content.X + 32, y - 6, Math.Max(1, content.Width - 32), Math.Max(26, rowHeight - 8), 10, theme.PlotBackground.WithAlpha(130));
+                canvas.StrokeRoundedRect(content.X + 32, y - 6, Math.Max(1, content.Width - 32), Math.Max(26, rowHeight - 8), 10, theme.PlotBorder.WithAlpha(150), 1);
+                canvas.DrawCircle(spineX, y + 15, 10, color.WithAlpha(52));
+                canvas.DrawCircleOutline(spineX, y + 15, 10, color, 2);
+                DrawAlignedText(canvas, item.Title, content.X + 40, y + 5, content.Width - 150, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
+                if (item.Badge.Length > 0) {
+                    var badgeWidth = Math.Min(94, RgbaCanvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize, null) + 18);
+                    canvas.FillRoundedRect(content.X + content.Width - badgeWidth, y, badgeWidth, 22, 8, color.WithAlpha(38));
+                    DrawAlignedText(canvas, item.Badge, content.X + content.Width - badgeWidth + 7, y + 5, badgeWidth - 14, VisualTextAlignment.Center, color, theme.SubtitleFontSize, true);
+                } else if (item.Timestamp.Length > 0) {
+                    DrawAlignedText(canvas, item.Timestamp, content.X + content.Width - 110, y + 5, 110, VisualTextAlignment.Right, theme.MutedText, theme.SubtitleFontSize, false);
+                }
+
+                if (item.Detail.Length > 0) DrawAlignedText(canvas, item.Detail, content.X + 40, y + 24, content.Width - 40, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
+            }
+
+            y += rowHeight;
+        }
+
+        if (hasAction) DrawFooterAction(canvas, block.ActionLabel, block.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
+    }
+
+    private static void DrawScheduleTimeline(RgbaCanvas canvas, ScheduleTimelineBlock block) {
+        var options = block.Options;
+        var theme = options.Theme;
+        var content = VisualBlockRendering.ContentRect(options);
+        var y = content.Y;
+        DrawHeading(canvas, block, ref y, content.X, content.Width);
+        DrawScheduleHeaderActions(canvas, block, ref y, content.X, content.Width);
+        var axisHeight = 36.0;
+        var plotTop = y + axisHeight;
+        var plotHeight = Math.Max(1, options.Size.Height - options.Padding.Bottom - plotTop);
+        var laneCount = VisualBlockRendering.ScheduleLaneCount(block);
+        var laneGap = 10.0;
+        var laneHeight = Math.Max(26, (plotHeight - laneGap * Math.Max(0, laneCount - 1)) / laneCount);
+        for (var tick = block.Start; tick <= block.End + block.TickInterval * 0.25; tick += block.TickInterval) {
+            var x = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, tick);
+            if (block.ShowGrid) canvas.DrawDashedLine(x, plotTop, x, plotTop + plotHeight, theme.Grid.WithAlpha(140), 1, 4, 5);
+            DrawAlignedText(canvas, VisualBlockRendering.FormatScheduleHour(tick), Math.Max(content.X, Math.Min(content.X + content.Width - 88, x - 44)), y + 7, 88, VisualTextAlignment.Center, theme.MutedText, Math.Max(10, theme.SubtitleFontSize), true);
+        }
+
+        for (var lane = 0; lane < laneCount; lane++) {
+            var laneY = plotTop + lane * (laneHeight + laneGap);
+            canvas.DrawLine(content.X, laneY + laneHeight / 2, content.X + content.Width, laneY + laneHeight / 2, theme.PlotBorder.WithAlpha(70), 1);
+        }
+
+        if (block.CurrentTime.HasValue) {
+            var currentX = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, block.CurrentTime.Value);
+            canvas.DrawDashedLine(currentX, y + 24, currentX, plotTop + plotHeight, theme.Warning, 2, 6, 5);
+        }
+
+        for (var i = 0; i < block.Events.Count; i++) {
+            var item = block.Events[i];
+            var color = item.Color ?? (item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
+            var x1 = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, item.Start);
+            var x2 = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, item.End);
+            var left = Math.Max(content.X, Math.Min(x1, x2));
+            var right = Math.Min(content.X + content.Width, Math.Max(x1, x2));
+            var width = Math.Max(10, right - left);
+            var laneY = plotTop + item.Lane * (laneHeight + laneGap);
+            var eventHeight = Math.Min(34, laneHeight);
+            var eventY = laneY + Math.Max(2, (laneHeight - eventHeight) / 2);
+            var radius = Math.Min(8, eventHeight / 2);
+            canvas.FillRoundedRect(left, eventY, width, eventHeight, radius, color.WithAlpha(34));
+            canvas.StrokeRoundedRect(left, eventY, width, eventHeight, radius, color.WithAlpha(130), 1);
+            canvas.FillRoundedRect(left, eventY, Math.Min(5, width), eventHeight, Math.Min(3, radius), color);
+            var avatarReserve = Math.Min(width * 0.34, item.Avatars.Count == 0 ? 0 : 18 + Math.Min(3, item.Avatars.Count) * 14);
+            var badgeReserve = item.Badge.Length == 0 ? 0 : Math.Min(78, RgbaCanvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize, null) + 18);
+            DrawAlignedText(canvas, item.Title, left + 14, eventY + eventHeight * 0.34, Math.Max(1, width - 20 - avatarReserve - badgeReserve), VisualTextAlignment.Left, color, Math.Max(10, theme.SubtitleFontSize), true);
+            if (item.Badge.Length > 0) {
+                var badgeWidth = Math.Min(78, badgeReserve);
+                canvas.FillRoundedRect(left + width - avatarReserve - badgeWidth - 6, eventY + 7, badgeWidth, eventHeight - 14, 7, color.WithAlpha(50));
+                DrawAlignedText(canvas, item.Badge, left + width - avatarReserve - badgeWidth, eventY + eventHeight * 0.36, badgeWidth - 10, VisualTextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 1), true);
+            }
+
+            DrawScheduleAvatars(canvas, item, color, theme, left + width - avatarReserve + 3, eventY + eventHeight / 2);
+        }
+    }
+
+    private static void DrawScheduleHeaderActions(RgbaCanvas canvas, ScheduleTimelineBlock block, ref double y, double x, double width) {
+        if (block.HeaderActions.Count == 0) return;
+        var theme = block.Options.Theme;
+        var cursor = x + width;
+        for (var i = block.HeaderActions.Count - 1; i >= 0; i--) {
+            var action = block.HeaderActions[i];
+            var actionWidth = Math.Min(140, Math.Max(62, RgbaCanvas.MeasureTextEmphasizedWidth(action, theme.SubtitleFontSize, null) + 28));
+            cursor -= actionWidth;
+            canvas.FillRoundedRect(cursor, y, actionWidth, 30, 8, ChartColor.White);
+            canvas.StrokeRoundedRect(cursor, y, actionWidth, 30, 8, theme.CardBorder, 1);
+            DrawAlignedText(canvas, action, cursor + 12, y + 8, actionWidth - 24, VisualTextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize), true);
+            cursor -= 8;
+        }
+
+        y += 42;
+    }
+
+    private static void DrawScheduleAvatars(RgbaCanvas canvas, ScheduleTimelineEvent item, ChartColor color, ChartForgeX.Themes.ChartTheme theme, double x, double y) {
+        var count = Math.Min(3, item.Avatars.Count);
+        for (var i = 0; i < count; i++) {
+            var cx = x + i * 14;
+            canvas.DrawCircle(cx, y, 8, theme.CardBackground);
+            canvas.DrawCircleOutline(cx, y, 8, color, 1);
+            DrawAlignedText(canvas, item.Avatars[i], cx - 7, y - 4, 14, VisualTextAlignment.Center, color, 8, true);
+        }
+
+        if (item.Avatars.Count > count) {
+            var cx = x + count * 14;
+            canvas.DrawCircle(cx, y, 8, color.WithAlpha(45));
+            canvas.DrawCircleOutline(cx, y, 8, color, 1);
+            DrawAlignedText(canvas, "+" + (item.Avatars.Count - count).ToString(System.Globalization.CultureInfo.InvariantCulture), cx - 7, y - 4, 14, VisualTextAlignment.Center, color, 8, true);
         }
     }
 
@@ -284,6 +679,21 @@ public sealed class PngVisualBlockRenderer {
         }
 
         canvas.DrawCircle(x, y, list.Marker == VisualListMarker.Status ? 6 : 4, color);
+    }
+
+    private static string WorkloadAvatar(WorkloadListRow row) {
+        if (row.AvatarText.Length > 0) return row.AvatarText;
+        var parts = row.Label.Split(new[] { ' ', '\t', '-' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return string.Empty;
+        if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
+        return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpperInvariant();
+    }
+
+    private static double ActivityRowHeight(ActivityTimelineItem item, ChartForgeX.Themes.ChartTheme theme) {
+        if (item.Kind == ActivityTimelineItemKind.Section) return 30;
+        if (item.Kind == ActivityTimelineItemKind.ChecklistItem) return 28;
+        if (item.Kind == ActivityTimelineItemKind.HiddenSummary) return 36;
+        return item.Detail.Length > 0 ? 54 : 38;
     }
 
     private static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, VisualTextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {

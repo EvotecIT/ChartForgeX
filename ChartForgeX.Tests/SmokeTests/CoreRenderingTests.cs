@@ -454,18 +454,19 @@ internal static partial class SmokeTests {
 
     private static void StandaloneHtmlUsesVisibleBackground() {
         var html = SampleChart().ToHtmlPage();
-        Assert(!html.Contains("background:transparent", StringComparison.Ordinal), "Standalone pages should use a visible page background.");
+        Assert(!html.Contains("place-items:center;background:transparent", StringComparison.Ordinal), "Standalone pages should use a visible screen background.");
+        Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal), "Standalone pages should render a polished page surface gradient.");
         Assert(html.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal), "Standalone pages should request browser font smoothing.");
-        Assert(html.Contains("place-items:start center", StringComparison.Ordinal), "Standalone pages should keep chart previews immediately visible.");
-        Assert(html.Contains("padding:clamp(20px,5vh,48px) 24px 24px", StringComparison.Ordinal), "Standalone pages should provide responsive preview padding.");
-        Assert(html.Contains("@media(max-width:680px){body{padding:16px}}", StringComparison.Ordinal), "Standalone pages should reduce padding on narrow viewports.");
+        Assert(html.Contains("place-items:center", StringComparison.Ordinal) && html.Contains("padding:clamp(16px,4vmin,52px)", StringComparison.Ordinal), "Standalone pages should center previews with responsive padding.");
+        Assert(html.Contains("@media(max-width:680px){body{padding:16px;place-items:start center}}", StringComparison.Ordinal), "Standalone pages should reduce padding and keep charts immediately visible on narrow viewports.");
+        Assert(html.Contains("@media print", StringComparison.Ordinal), "Standalone pages should include print-friendly framing.");
         var untitled = Chart.Create().AddLine("Values", Points(1, 2, 3)).ToHtmlPage();
         Assert(untitled.Contains("<title>ChartForgeX chart</title>", StringComparison.Ordinal), "Untitled standalone pages should provide a useful browser title.");
     }
 
     private static void HtmlFragmentIsResponsive() {
         var html = SampleChart().ToHtmlFragment();
-        Assert(html.Contains("style=\"width:100%;max-width:640px;box-sizing:border-box\"", StringComparison.Ordinal), "HTML fragment should carry responsive wrapper styles.");
+        Assert(html.Contains("style=\"width:100%;max-width:640px;box-sizing:border-box;overflow:visible\"", StringComparison.Ordinal), "HTML fragment should carry responsive wrapper styles.");
         Assert(html.Contains("style=\"max-width:100%;height:auto;display:block\"", StringComparison.Ordinal), "SVG should carry responsive sizing styles.");
         var repeated = Chart.Create().WithTitle("Repeated fragment").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
         var combined = repeated.ToHtmlFragment() + repeated.ToHtmlFragment();

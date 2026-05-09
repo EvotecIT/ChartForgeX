@@ -23,12 +23,21 @@ internal static partial class SmokeTests {
             .WithStatusColumn("Status")
             .WithDenseMode();
         table.WithRow(1, row => row.Cells[3].Status = VisualStatus.Warning);
+        table.WithRow(0, row => row.Cells[1].WithBadge("72%", VisualStatus.Positive, ChartColor.FromHex("#22C55E")));
+        table.WithRow(0, row => row.Cells[2].WithSparkline(new[] { 96d, 118d, 128d }, color: ChartColor.FromHex("#38BDF8")));
+        table.WithRow(1, row => row.Cells[2].WithMiniBars(new[] { 46d, 39d, 34d }, color: ChartColor.FromHex("#F97316")));
 
         var tableSvg = table.ToSvg("visual-block-table");
         Assert(tableSvg.Contains("<svg", StringComparison.Ordinal), "ChartTable should render SVG.");
+        Assert(tableSvg.Contains("-visualCard", StringComparison.Ordinal) && tableSvg.Contains("class=\"cfx-guide-stroke\"", StringComparison.Ordinal), "Visual block SVG cards should use premium gradient surfaces and crisp strokes.");
         Assert(tableSvg.Contains("data-cfx-role=\"table-status\"", StringComparison.Ordinal), "ChartTable should render status markers.");
+        Assert(tableSvg.Contains("data-cfx-role=\"table-cell-microvisual\"", StringComparison.Ordinal), "ChartTable should render cell microvisual groups.");
+        Assert(tableSvg.Contains("data-cfx-role=\"table-cell-sparkline\"", StringComparison.Ordinal), "ChartTable should render cell sparklines.");
+        Assert(tableSvg.Contains("data-cfx-role=\"table-cell-mini-bar\"", StringComparison.Ordinal), "ChartTable should render cell mini bars.");
+        Assert(tableSvg.Contains("data-cfx-role=\"visual-badge\"", StringComparison.Ordinal), "ChartTable should render shared visual badges.");
+        Assert(tableSvg.Contains("data-cfx-style=\"Soft\"", StringComparison.Ordinal), "ChartTable badges should expose style metadata.");
         Assert(!tableSvg.Contains("<script", StringComparison.OrdinalIgnoreCase), "Visual block SVG should stay script-free.");
-        Assert(table.ToHtmlPage().Contains("chartforgex-visual-block", StringComparison.Ordinal), "ChartTable should render a static HTML page.");
+        Assert(table.ToHtmlPage().Contains("chartforgex-visual-block", StringComparison.Ordinal) && table.ToHtmlPage().Contains("linear-gradient(180deg", StringComparison.Ordinal), "ChartTable should render a polished static HTML page.");
         Assert(table.ToPng().Length > 64, "ChartTable should render PNG output.");
 
         var list = ChartList.Create()
@@ -92,6 +101,153 @@ internal static partial class SmokeTests {
         Assert(radialSvg.Contains("data-cfx-role=\"radial-metric-layer\"", StringComparison.Ordinal), "RadialMetricCard should render public radial layers.");
         Assert(radialSvg.Contains("data-cfx-icon=\"flame\"", StringComparison.Ordinal), "RadialMetricCard should render reusable built-in icons.");
         Assert(radialMetric.ToPng().Length > 64, "RadialMetricCard should render PNG output.");
+
+        var segmented = SegmentedProgressCard.Create()
+            .WithTitle("Project Progress")
+            .WithSubtitle("Reusable fixed-count progress rows")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 250)
+            .WithHeaderSymbol("%")
+            .WithMenu()
+            .AddRow("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", status: VisualStatus.Positive)
+            .AddRow("Target Sales", 67, segments: 44, color: ChartColor.FromHex("#5EA2F6"), delta: "+2.2%", status: VisualStatus.Info)
+            .WithAction("Up by 6% compared to last week")
+            .WithActionStyle(ChartColor.FromHex("#DCFCE7"), ChartColor.FromHex("#16A34A"));
+        var segmentedSvg = segmented.ToSvg("visual-block-segmented-progress");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-card\"", StringComparison.Ordinal), "SegmentedProgressCard should render a public card role.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-header-badge\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional header badges.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-menu-dot\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional menu dots.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-strip\"", StringComparison.Ordinal), "SegmentedProgressCard should render segmented strips.");
+        Assert(segmentedSvg.Contains("data-cfx-segments=\"44\"", StringComparison.Ordinal), "SegmentedProgressCard should preserve fixed segment counts in SVG metadata.");
+        Assert(segmentedSvg.Contains("data-cfx-filled=\"39\"", StringComparison.Ordinal), "SegmentedProgressCard should derive filled segment counts from value and maximum.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-delta-pill\"", StringComparison.Ordinal), "SegmentedProgressCard should render delta pills.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-action-band\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional action bands.");
+        Assert(segmented.ToPng().Length > 64, "SegmentedProgressCard should render PNG output.");
+
+        var composition = CompositionStatusCard.Create()
+            .WithTitle("Overall Tasks")
+            .WithSubtitle("Spread across 6 projects.")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 360)
+            .WithMetric("Tasks", 23, "Task")
+            .AddSegment("On Going", 12, ChartColor.FromHex("#5EA2F6"), VisualStatus.Info, ChartFillPattern.DiagonalForward)
+            .AddSegment("Under Review", 6, ChartColor.FromHex("#FFB05C"), VisualStatus.Warning)
+            .AddSegment("Finish", 4, ChartColor.FromHex("#34C77B"), VisualStatus.Positive)
+            .WithAction("View details task");
+        var compositionSvg = composition.ToSvg("visual-block-composition-status");
+        Assert(compositionSvg.Contains("data-cfx-role=\"composition-status-card\"", StringComparison.Ordinal), "CompositionStatusCard should render a public card role.");
+        Assert(compositionSvg.Contains("data-cfx-role=\"composition-strip\"", StringComparison.Ordinal), "CompositionStatusCard should render a stacked composition strip.");
+        Assert(compositionSvg.Contains("data-cfx-pattern=\"DiagonalForward\"", StringComparison.Ordinal), "CompositionStatusCard should preserve segment pattern hints in SVG metadata.");
+        Assert(compositionSvg.Contains("data-cfx-role=\"composition-legend-swatch\"", StringComparison.Ordinal), "CompositionStatusCard should render legend swatches.");
+        Assert(composition.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "CompositionStatusCard should render an embeddable HTML fragment.");
+        Assert(composition.ToPng().Length > 64, "CompositionStatusCard should render PNG output.");
+
+        var distribution = DistributionStripCard.Create()
+            .WithTitle("Net Earning")
+            .WithSubtitle("Currency split")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 360)
+            .WithMetric("Net earning", "EUR 56,980.00", "Last month")
+            .AddSegment("Russian Ruble (RUB)", 9.74, ChartColor.FromHex("#FF3B13"), "RUB", "EUR 12.23")
+            .AddSegment("Euro (EUR)", 38.48, ChartColor.FromHex("#1389F2"), "EUR", "EUR 20.23")
+            .AddSegment("United States Dollar (USD)", 14.11, ChartColor.FromHex("#24D47B"), "USD", "EUR 12.00");
+        var distributionSvg = distribution.ToSvg("visual-block-distribution-strip");
+        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-strip-card\"", StringComparison.Ordinal), "DistributionStripCard should render a public card role.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-segment\"", StringComparison.Ordinal), "DistributionStripCard should render stacked strip segments.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-legend-chip\"", StringComparison.Ordinal), "DistributionStripCard should render legend chips.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-row\"", StringComparison.Ordinal), "DistributionStripCard should render detail rows.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-ring\"", StringComparison.Ordinal), "DistributionStripCard should render row share rings.");
+        Assert(distribution.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "DistributionStripCard should render an embeddable HTML fragment.");
+        Assert(distribution.ToPng().Length > 64, "DistributionStripCard should render PNG output.");
+
+        var heatmap = HeatmapInsightCard.Create()
+            .WithTitle("Appointment Volume")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 320)
+            .WithControls("Day", "Week", "Week 1")
+            .WithColumns("S", "M", "T")
+            .WithColorKey(0, 12, ChartColor.FromHex("#D7F5F7"), ChartColor.FromHex("#08798C"))
+            .AddRow("9 AM", 9, 3, 12)
+            .AddRow("10 AM", 11, 2, 9)
+            .AddInsight("Fri, 5 PM - 6 PM", "16 appointments");
+        var heatmapSvg = heatmap.ToSvg("visual-block-heatmap-insight");
+        Assert(heatmapSvg.Contains("data-cfx-role=\"heatmap-insight-card\"", StringComparison.Ordinal), "HeatmapInsightCard should render a public card role.");
+        Assert(heatmapSvg.Contains("data-cfx-role=\"heatmap-insight-cell\"", StringComparison.Ordinal), "HeatmapInsightCard should render heatmap cells.");
+        Assert(heatmapSvg.Contains("data-cfx-role=\"heatmap-insight-rail\"", StringComparison.Ordinal), "HeatmapInsightCard should render the insight rail.");
+        Assert(heatmapSvg.Contains("data-cfx-role=\"heatmap-color-key\"", StringComparison.Ordinal), "HeatmapInsightCard should render the color key.");
+        Assert(heatmapSvg.Contains("16 appointments", StringComparison.Ordinal), "HeatmapInsightCard should render insight details.");
+        Assert(heatmap.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "HeatmapInsightCard should render an embeddable HTML fragment.");
+        Assert(heatmap.ToPng().Length > 64, "HeatmapInsightCard should render PNG output.");
+
+        var workload = WorkloadListBlock.Create()
+            .WithTitle("Today Staff Workload")
+            .WithSubtitle("Capacity share by staff member")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 320)
+            .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, VisualStatus.Neutral, "PD", "4/8", ChartColor.FromHex("#0E7490"))
+            .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, VisualStatus.Negative, "RF", "10/8", ChartColor.FromHex("#DC2626"), "Overload")
+            .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, VisualStatus.Positive, selected: true)
+            .WithSelectionControls();
+        var workloadSvg = workload.ToSvg("visual-block-workload-list");
+        Assert(workloadSvg.Contains("data-cfx-role=\"workload-list-block\"", StringComparison.Ordinal), "WorkloadListBlock should render a public block role.");
+        Assert(workloadSvg.Contains("data-cfx-role=\"workload-avatar\"", StringComparison.Ordinal), "WorkloadListBlock should render avatar slots.");
+        Assert(workloadSvg.Contains("data-cfx-role=\"workload-progress-rail\"", StringComparison.Ordinal), "WorkloadListBlock should render progress rails.");
+        Assert(workloadSvg.Contains("data-cfx-role=\"workload-progress-fill\"", StringComparison.Ordinal), "WorkloadListBlock should render progress fills.");
+        Assert(workloadSvg.Contains("data-cfx-ratio=\"1\"", StringComparison.Ordinal), "WorkloadListBlock should clamp overloaded progress ratios for renderers.");
+        Assert(workloadSvg.Contains("data-cfx-role=\"workload-selection-control\"", StringComparison.Ordinal), "WorkloadListBlock should render optional selection controls.");
+        Assert(workload.ToPng().Length > 64, "WorkloadListBlock should render PNG output.");
+
+        var activity = ActivityTimelineBlock.Create()
+            .WithTitle("Shipment Timeline")
+            .WithSubtitle("Shipment status feed")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 620)
+            .WithToolbarActions("Hold", "Edit")
+            .AddTab("All", "2 shipments")
+            .AddTab("Shipment 1", "Today")
+            .WithNotePlaceholder("Add note...")
+            .AddSection("In-progress")
+            .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by Royal Mail Standard")
+            .AddEvent("Shipment 1", status: VisualStatus.Neutral)
+            .AddChecklistItem("Carrier confirmed", completed: true, muted: true)
+            .AddChecklistItem("Packing in progress", completed: false)
+            .AddHiddenSummary(6, "items hidden")
+            .AddSection("Completed")
+            .AddEvent("Order created", "Mar 10, 2026 10:20 am", VisualStatus.Positive);
+        var activitySvg = activity.ToSvg("visual-block-activity-timeline");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-timeline-block\"", StringComparison.Ordinal), "ActivityTimelineBlock should render a public block role.");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-toolbar-action\"", StringComparison.Ordinal), "ActivityTimelineBlock should render optional toolbar actions.");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-tab\"", StringComparison.Ordinal), "ActivityTimelineBlock should render optional tab chips.");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-note-box\"", StringComparison.Ordinal), "ActivityTimelineBlock should render optional note boxes.");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-spine\"", StringComparison.Ordinal), "ActivityTimelineBlock should render the connector spine.");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-event-node\"", StringComparison.Ordinal), "ActivityTimelineBlock should render event nodes.");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-check-node\"", StringComparison.Ordinal), "ActivityTimelineBlock should render nested checklist nodes.");
+        Assert(activitySvg.Contains("data-cfx-role=\"activity-hidden-node\"", StringComparison.Ordinal), "ActivityTimelineBlock should render hidden summary nodes.");
+        Assert(activity.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "ActivityTimelineBlock should render an embeddable HTML fragment.");
+        Assert(activity.ToPng().Length > 64, "ActivityTimelineBlock should render PNG output.");
+
+        var schedule = ScheduleTimelineBlock.Create()
+            .WithTitle("Project Timeline")
+            .WithSubtitle("Dense schedule lanes")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(760, 360)
+            .WithTimeRange(8, 17, 1)
+            .WithCurrentTime(14.2)
+            .WithHeaderActions("12/Feb/2025", "Filter", "+ Add Schedule")
+            .AddEvent("Meeting Brief Project", 8, 10, 0, ChartColor.FromHex("#5EA2F6"), VisualStatus.Info, avatars: new[] { "AM", "RF", "PD", "MR" })
+            .AddEvent("Research Analyze Content", 9, 11, 1, ChartColor.FromHex("#8B5CF6"), VisualStatus.Info, avatars: new[] { "SC", "MR" })
+            .AddEvent("Report Review", 16, 17.2, 0, ChartColor.FromHex("#5EA2F6"), VisualStatus.Info, badge: "Report", avatars: new[] { "MR", "SC" });
+        var scheduleSvg = schedule.ToSvg("visual-block-schedule-timeline");
+        Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-timeline-block\"", StringComparison.Ordinal), "ScheduleTimelineBlock should render a public block role.");
+        Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-header-action\"", StringComparison.Ordinal), "ScheduleTimelineBlock should render optional header actions.");
+        Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-grid-line\"", StringComparison.Ordinal), "ScheduleTimelineBlock should render vertical time grid lines.");
+        Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-event-pill\"", StringComparison.Ordinal), "ScheduleTimelineBlock should render rounded event pills.");
+        Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-event-stripe\"", StringComparison.Ordinal), "ScheduleTimelineBlock should render event status stripes.");
+        Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-current-time\"", StringComparison.Ordinal), "ScheduleTimelineBlock should render current-time markers.");
+        Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-avatar-more\"", StringComparison.Ordinal), "ScheduleTimelineBlock should collapse overflowing avatar stacks.");
+        Assert(scheduleSvg.Contains("data-cfx-clipped-end=\"true\"", StringComparison.Ordinal), "ScheduleTimelineBlock should expose clipped event metadata.");
+        Assert(schedule.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "ScheduleTimelineBlock should render an embeddable HTML fragment.");
+        Assert(schedule.ToPng().Length > 64, "ScheduleTimelineBlock should render PNG output.");
     }
 
     private static void VisualGridComposesChartsAndVisualBlocks() {
@@ -122,10 +278,13 @@ internal static partial class SmokeTests {
 
         var svg = grid.ToSvg("visual-grid-smoke");
         Assert(svg.Contains("data-cfx-role=\"visual-grid-frame\"", StringComparison.Ordinal), "VisualGrid should render optional premium frames in SVG.");
+        Assert(svg.Contains("-visualGridSurface", StringComparison.Ordinal) && svg.Contains("class=\"cfx-guide-stroke\"", StringComparison.Ordinal), "VisualGrid SVG should use polished scalable report surfaces and frame strokes.");
         Assert(svg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal), "VisualGrid should mark child panels.");
         Assert(svg.Contains("data-cfx-role=\"metric-value\"", StringComparison.Ordinal), "VisualGrid should embed visual block SVG.");
         Assert(svg.Contains("Trend", StringComparison.Ordinal), "VisualGrid should embed chart SVG.");
-        Assert(grid.ToHtmlPage().Contains("chartforgex-visual-grid has-fixed-panels has-frame", StringComparison.Ordinal), "VisualGrid should render optional premium frames in static HTML pages.");
+        var gridHtml = grid.ToHtmlPage();
+        Assert(gridHtml.Contains("chartforgex-visual-grid has-fixed-panels has-frame", StringComparison.Ordinal), "VisualGrid should render optional premium frames in static HTML pages.");
+        Assert(gridHtml.Contains("linear-gradient(180deg", StringComparison.Ordinal) && gridHtml.Contains("overflow:visible", StringComparison.Ordinal), "VisualGrid HTML pages should use polished surfaces without clipping child shadows.");
         Assert(grid.ToPng().Length > 64, "VisualGrid should render PNG output.");
 
         var sparseGrid = VisualGrid.Create()
@@ -138,14 +297,15 @@ internal static partial class SmokeTests {
             .WithColumns(2)
             .WithPadding(32)
             .WithPanelSize(500, 320)
-            .Add(chart)
+            .Add(chart, 1, 2)
             .Add(metric);
         var fixedHtml = fixedGrid.ToHtmlPage();
         Assert(fixedHtml.Contains("padding:var(--cfx-visual-grid-padding,24px)", StringComparison.Ordinal), "VisualGrid HTML should apply grid padding on the grid container where the custom property is scoped.");
         Assert(fixedHtml.Contains("chartforgex-visual-grid has-fixed-panels", StringComparison.Ordinal), "VisualGrid HTML should mark grids with fixed panel sizing.");
-        Assert(fixedHtml.Contains("grid-template-columns:repeat(var(--cfx-visual-grid-columns),var(--cfx-visual-grid-panel-width,minmax(0,1fr)))", StringComparison.Ordinal), "VisualGrid HTML should honor fixed panel widths when PanelSize is configured.");
+        Assert(fixedHtml.Contains("grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,1fr))", StringComparison.Ordinal), "VisualGrid HTML should keep fixed-panel grids responsive inside narrow viewports.");
         Assert(fixedHtml.Contains("grid-auto-flow:row dense", StringComparison.Ordinal), "VisualGrid HTML should use dense placement like SVG/PNG layout.");
         Assert(fixedHtml.Contains(".chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%", StringComparison.Ordinal), "VisualGrid HTML contain mode should scale embedded SVGs to fixed panel bounds.");
+        Assert(fixedHtml.Contains("min-height:calc((var(--cfx-visual-grid-panel-height) * 2) + (var(--cfx-visual-grid-gap) * 1))", StringComparison.Ordinal), "VisualGrid HTML should reserve physical height for row-spanning fixed panels.");
 
         var stretchGrid = VisualGrid.Create()
             .WithPanelSize(500, 320)
@@ -183,6 +343,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => new ChartTableCell("ok").Text = null!, "ChartTable cells should reject null text through the public setter.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Alignment = (VisualTextAlignment)999, "ChartTable cells should reject unknown alignment overrides.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Status = (VisualStatus)999, "ChartTable cells should reject unknown status values.");
+        AssertThrows<ArgumentException>(() => new ChartTableCell("bad").WithMiniBars(Array.Empty<double>()), "ChartTable cell mini bars should reject empty value sets.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").WithMiniBars(new[] { double.NaN }), "ChartTable cell mini bars should reject non-finite values.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithSparkline(new[] { 1d })).ToSvg(), "ChartTable cell sparklines should require at least two values.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithMiniBars(new[] { 1d }, minimum: 2, maximum: 1)).ToSvg(), "ChartTable cell microvisual bounds should require maximum greater than minimum.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").MicroVisualKind = (ChartTableCellMicroVisualKind)999, "ChartTable cells should reject unknown microvisual kinds.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithBadge(new string('x', 25))).ToSvg(), "ChartTable cell badges should stay compact.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").BadgeStyle = (VisualBadgeStyle)999, "ChartTable cells should reject unknown badge styles.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartList.Create().Marker = (VisualListMarker)999, "ChartList marker property should reject unknown marker values.");
         AssertThrows<ArgumentNullException>(() => new ChartListItem("ok").Text = null!, "ChartList items should reject null text through the public setter.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartListItem("bad").Status = (VisualStatus)999, "ChartList items should reject unknown status values.");
@@ -204,6 +371,43 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().AddLayer("Bad", 1, configure: _ => null!).ToSvg(), "RadialMetricCard should reject null fluent layer configuration results.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddLayeredRadial("Bad", _ => null!), "Layered radial builder should reject null fluent layer configuration results.");
         AssertThrows<ArgumentOutOfRangeException>(() => RadialMetricCard.Create().Icon = (VisualIcon)999, "RadialMetricCard should reject unknown icon values.");
+        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().ToSvg(), "SegmentedProgressCard should require at least one row.");
+        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", -1).ToSvg(), "SegmentedProgressCard should reject negative values.");
+        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1, maximum: 0).ToSvg(), "SegmentedProgressCard should require a positive maximum.");
+        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1, segments: 0).ToSvg(), "SegmentedProgressCard should reject invalid segment counts.");
+        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1).WithHeaderSymbol("longer").ToSvg(), "SegmentedProgressCard header symbols should stay compact.");
+        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1).WithAction(new string('x', 49)).ToSvg(), "SegmentedProgressCard action labels should stay compact.");
+        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1).WithAction("Open", url: "javascript:alert(1)").ToSvg(), "SegmentedProgressCard action URLs should reject scriptable URLs.");
+        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().ToSvg(), "CompositionStatusCard should require metric text and segments.");
+        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().WithMetric("Tasks", 0).ToSvg(), "CompositionStatusCard should require at least one segment.");
+        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().WithMetric("Tasks", 0).AddSegment("Bad", -1).ToSvg(), "CompositionStatusCard should reject negative segment values.");
+        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().WithMetric("Tasks", 0).AddSegment("Zero", 0).ToSvg(), "CompositionStatusCard should require at least one positive segment value.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new CompositionStatusSegment("Bad", 1).Pattern = (ChartFillPattern)999, "CompositionStatusSegment should reject unknown fill patterns.");
+        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().ToSvg(), "DistributionStripCard should require metric text and segments.");
+        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).ToSvg(), "DistributionStripCard should require at least one segment.");
+        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).AddSegment("Bad", -1).ToSvg(), "DistributionStripCard should reject negative segment values.");
+        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).AddSegment("Zero", 0).ToSvg(), "DistributionStripCard should require at least one positive segment value.");
+        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).AddSegment("Symbol", 1, symbol: new string('x', 9)).ToSvg(), "DistributionStripCard should keep row symbols compact.");
+        AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().ToSvg(), "HeatmapInsightCard should require columns and rows.");
+        AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().WithColumns("A", "B").AddRow("Bad", 1).ToSvg(), "HeatmapInsightCard rows should match the column count.");
+        AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().WithColumns("A").WithColorKey(2, 1).AddRow("Bad", 1).ToSvg(), "HeatmapInsightCard should require a valid color key range.");
+        AssertThrows<InvalidOperationException>(() => WorkloadListBlock.Create().ToSvg(), "WorkloadListBlock should require rows.");
+        AssertThrows<InvalidOperationException>(() => WorkloadListBlock.Create().AddPerson("", "Role", 1).ToSvg(), "WorkloadListBlock should require row labels.");
+        AssertThrows<InvalidOperationException>(() => WorkloadListBlock.Create().AddPerson("Bad", "Role", -1).ToSvg(), "WorkloadListBlock should reject negative values.");
+        AssertThrows<InvalidOperationException>(() => WorkloadListBlock.Create().AddPerson("Bad", "Role", 1, 0).ToSvg(), "WorkloadListBlock should reject non-positive maximum values.");
+        AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().ToSvg(), "ActivityTimelineBlock should require items.");
+        AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddEvent("").ToSvg(), "ActivityTimelineBlock should require item text.");
+        AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddHiddenSummary(-1, "items").ToSvg(), "ActivityTimelineBlock should reject negative hidden counts.");
+        AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddTab("All", new string('x', 37)).AddEvent("Ok").ToSvg(), "ActivityTimelineBlock tab details should stay compact.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ActivityTimelineItem.Event("Bad", null, VisualStatus.Neutral, null, null).Kind = (ActivityTimelineItemKind)999, "ActivityTimelineItem kind property should reject unknown kinds.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().ToSvg(), "ScheduleTimelineBlock should require events.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithTimeRange(9, 8).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock should reject inverted ranges.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithTimeRange(8, 17, 0).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock should reject non-positive tick intervals.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("", 8, 9).ToSvg(), "ScheduleTimelineBlock should require event titles.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("Bad", 9, 8).ToSvg(), "ScheduleTimelineBlock should reject inverted events.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("Bad", 8, 9, lane: -1).ToSvg(), "ScheduleTimelineBlock should reject negative lanes.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithHeaderActions(new string('x', 25)).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock header actions should stay compact.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ScheduleTimelineEvent("Bad", 8, 9) { Status = (VisualStatus)999 }, "ScheduleTimelineEvent should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().WithColumns(0), "VisualGrid should reject non-positive column counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().PanelFit = (VisualGridPanelFit)999, "VisualGrid panel fit property should reject unknown values.");
         AssertThrows<InvalidOperationException>(() => VisualGrid.Create().ToSvg(), "VisualGrid should require at least one item.");

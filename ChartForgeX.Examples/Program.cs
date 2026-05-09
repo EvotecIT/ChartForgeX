@@ -9,7 +9,7 @@ var output = Path.Combine(AppContext.BaseDirectory, "output");
 if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
 Directory.CreateDirectory(output);
 const ChartPngOutputScale DemoPngOutputScale = ChartPngOutputScale.Retina;
-if (args.Any(arg => string.Equals(arg, "--topology-only", StringComparison.OrdinalIgnoreCase))) { TopologyExamples.Write(output); Console.WriteLine("Generated topology files in: " + Path.Combine(output, "topology-demo")); return; }
+if (ExampleProgramOptions.TryHandle(args, output, DemoPngOutputScale)) return;
 void SaveChart(Chart chart, string name) {
     chart.WithPngOutputScale(DemoPngOutputScale);
     chart.SaveSvg(Path.Combine(output, name + ".svg"));
@@ -129,7 +129,7 @@ var heatmap = Chart.Create()
 
 SaveChart(heatmap, "control-coverage-heatmap-dark");
 MapExamples.Write(output, DemoPngOutputScale);
-TopologyExamples.Write(output);
+if (!ExampleProgramOptions.HasArg(args, "--skip-topology")) TopologyExamples.Write(output);
 
 var gauge = Chart.Create()
     .WithTitle("Security Posture Score")
@@ -254,7 +254,7 @@ var sharedAxisGrid = ChartGrid.Create()
 
 SaveGrid(sharedAxisGrid, "shared-axis-coverage-grid");
 
-ExpressiveExamples.Write(output, DemoPngOutputScale); WellnessDashboardExamples.Write(output, DemoPngOutputScale); DashboardPortfolioExamples.Write(output, DemoPngOutputScale);
+ExpressiveExamples.Write(output, DemoPngOutputScale); WellnessDashboardExamples.Write(output, DemoPngOutputScale); DashboardPortfolioExamples.Write(output, DemoPngOutputScale); DashboardPatternExamples.Write(output, DemoPngOutputScale);
 
 var funnel = Chart.Create()
     .WithTitle("Domain Remediation Funnel")

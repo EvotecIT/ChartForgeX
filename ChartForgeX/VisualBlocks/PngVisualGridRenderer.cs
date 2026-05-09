@@ -2,6 +2,7 @@ using System;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -25,10 +26,14 @@ public sealed class PngVisualGridRenderer {
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, null, grid.PngOutputScale);
         canvas.Clear(background);
+        if (background.A > 0) {
+            var surfaceInset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
+            canvas.FillRoundedRectVerticalGradient(surfaceInset, surfaceInset, Math.Max(1, layout.Width - surfaceInset * 2), Math.Max(1, layout.Height - surfaceInset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
+        }
         if (grid.FrameVisible) {
             var inset = Math.Max(8, grid.Padding * 0.5);
             canvas.StrokeRoundedRect(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), Math.Max(theme.CornerRadius, 26), theme.CardBorder, 1.4);
-            canvas.StrokeRoundedRect(inset + 1.5, inset + 1.5, Math.Max(1, layout.Width - inset * 2 - 3), Math.Max(1, layout.Height - inset * 2 - 3), Math.Max(theme.CornerRadius - 1.5, 24), ChartColor.FromRgba(255, 255, 255, 108), 1);
+            canvas.StrokeRoundedRect(inset + ChartVisualPrimitives.CardInnerHighlightInset, inset + ChartVisualPrimitives.CardInnerHighlightInset, Math.Max(1, layout.Width - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(1, layout.Height - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset, 24), ChartColorMath.WithOpacity(ChartColor.White, ChartVisualPrimitives.CardInnerHighlightOpacity), 1);
         }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
@@ -58,4 +63,5 @@ public sealed class PngVisualGridRenderer {
 
         return value.Substring(0, low) + suffix;
     }
+
 }

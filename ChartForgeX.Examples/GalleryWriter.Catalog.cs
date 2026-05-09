@@ -88,6 +88,17 @@ public static partial class GalleryWriter {
             "dashboard-restaurant-overview-grid",
             "dashboard-chart-portfolio-grid"),
         new(
+            "Dashboard Inspiration",
+            "Screenshot-inspired operations, project, HR, and payment analytics compositions used to drive the next visual-block capabilities.",
+            "dashboard-appointment-operations-grid",
+            "dashboard-project-progress-card",
+            "dashboard-project-task-composition-card",
+            "dashboard-project-track-card",
+            "dashboard-project-schedule-timeline",
+            "dashboard-shipment-activity-panel",
+            "dashboard-hr-operations-grid",
+            "dashboard-payment-analytics-grid"),
+        new(
             "Maps and Geography",
             "Dotted world maps, focused regional viewports, route overlays, and value-colored region maps.",
             "travel-dotted-map-dark",

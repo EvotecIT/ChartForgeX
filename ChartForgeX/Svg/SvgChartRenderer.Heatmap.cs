@@ -23,10 +23,12 @@ public sealed partial class SvgChartRenderer {
         if (Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var plot = ApplyHeatmapLabelReserve(chart, basePlot, rows, columns);
-        var gap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, plot.Height / rows.Length) * 0.05));
+        var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, plot.Height / rows.Length) * 0.05));
+        var gap = chart.Options.HeatmapCellGap ?? autoGap;
         var cellWidth = Math.Max(1, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
         var cellHeight = Math.Max(1, (plot.Height - gap * (rows.Length - 1)) / rows.Length);
-        var radius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
+        var autoRadius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
+        var radius = Math.Min(chart.Options.HeatmapCellRadius ?? autoRadius, Math.Min(cellWidth, cellHeight) / 2);
 
         var body = new StringBuilder();
         for (var rowIndex = 0; rowIndex < rows.Length; rowIndex++) {
@@ -52,7 +54,10 @@ public sealed partial class SvgChartRenderer {
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color);
-                if (ShouldDrawDataLabels(chart, series) && cellWidth >= 34 && cellHeight >= 20) {
+                var labelFits = cellWidth >= 34 && cellHeight >= 20;
+                var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
+                    chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
+                if (drawValueText) {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
@@ -102,6 +107,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-column-count", columns.Length)
             .Attribute("data-cfx-min", min)
             .Attribute("data-cfx-max", max)
+            .Attribute("data-cfx-cell-gap", gap)
+            .Attribute("data-cfx-cell-radius", radius)
+            .Attribute("data-cfx-value-text-mode", chart.Options.HeatmapValueTextMode.ToString())
             .Raw(Environment.NewLine)
             .Raw(body.ToString())
             .EndElement()

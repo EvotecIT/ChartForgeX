@@ -26,6 +26,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("y1", y1)
                 .Attribute("x2", x2)
                 .Attribute("y2", y2)
+                .Attribute("class", ChartVisualPrimitives.SvgPremiumStrokeClass)
                 .Attribute("stroke", layer.Color.ToCss())
                 .Attribute("stroke-width", layer.StrokeWidth)
                 .Attribute("stroke-linecap", "round");
@@ -45,6 +46,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-series", seriesIndex)
                     .Attribute("data-cfx-point-count", pointCount)
                     .Attribute("d", path)
+                    .Attribute("class", ChartVisualPrimitives.SvgPremiumStrokeClass)
                     .Attribute("fill", "none")
                     .Attribute("stroke", layer.Color.ToCss())
                     .Attribute("stroke-width", layer.StrokeWidth)

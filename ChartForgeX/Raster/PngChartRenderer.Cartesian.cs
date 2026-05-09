@@ -536,11 +536,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth) {
         var thickness = Math.Max(1, strokeWidth);
-        for (var i = 1; i < points.Count; i++) {
-            var a = points[i - 1];
-            var b = points[i];
-            c.DrawLine(a.X, a.Y, b.X, b.Y, color, thickness);
-        }
+        c.DrawPolyline(points, color, thickness);
     }
 
     private static void DrawPremiumPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth, ChartLineVisualStyle style) {

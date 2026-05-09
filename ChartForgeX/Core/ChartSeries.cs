@@ -184,6 +184,30 @@ public sealed class ChartSeries {
     public ChartSeries WithPointColor(int pointIndex, string hex) => WithPointColor(pointIndex, ChartColor.FromHex(hex));
 
     /// <summary>
+    /// Sets the same color for a contiguous point range.
+    /// </summary>
+    /// <param name="startPointIndex">The zero-based first point index.</param>
+    /// <param name="count">The number of points to color.</param>
+    /// <param name="color">The point color, or null to use the series color.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithPointColorRange(int startPointIndex, int count, ChartColor? color) {
+        ValidatePointIndex(startPointIndex);
+        if (count <= 0) throw new ArgumentOutOfRangeException(nameof(count), count, "Point color range count must be greater than zero.");
+        ValidatePointIndex(startPointIndex + count - 1);
+        for (var i = 0; i < count; i++) WithPointColor(startPointIndex + i, color);
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the same color for a contiguous point range from hex notation.
+    /// </summary>
+    /// <param name="startPointIndex">The zero-based first point index.</param>
+    /// <param name="count">The number of points to color.</param>
+    /// <param name="hex">The point color in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithPointColorRange(int startPointIndex, int count, string hex) => WithPointColorRange(startPointIndex, count, ChartColor.FromHex(hex));
+
+    /// <summary>
     /// Clears the color for one point so the series color or theme palette is used.
     /// </summary>
     /// <param name="pointIndex">The zero-based point index.</param>

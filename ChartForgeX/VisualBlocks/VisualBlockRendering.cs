@@ -13,7 +13,11 @@ internal static class VisualBlockRendering {
         if (block == null) throw new ArgumentNullException(nameof(block));
         if (block is ChartTable table) {
             if (table.Columns.Count == 0) throw new InvalidOperationException("Chart tables must contain at least one column.");
-            foreach (var row in table.Rows) if (row.Cells.Count != table.Columns.Count) throw new InvalidOperationException("Chart table rows must match the column count.");
+            foreach (var row in table.Rows) {
+                if (row.Cells.Count != table.Columns.Count) throw new InvalidOperationException("Chart table rows must match the column count.");
+                foreach (var cell in row.Cells) ValidateTableCellMicroVisual(cell);
+            }
+
             return;
         }
 
@@ -45,6 +49,134 @@ internal static class VisualBlockRendering {
             if (radialCard.Value.Length == 0) throw new InvalidOperationException("Radial metric cards must define a value.");
             if (radialCard.Layers.Count == 0) throw new InvalidOperationException("Radial metric cards must contain at least one radial layer.");
             foreach (var layer in radialCard.Layers) if (layer.Maximum <= layer.Minimum) throw new InvalidOperationException("Radial metric card layer maximum must be greater than minimum.");
+            return;
+        }
+
+        if (block is SegmentedProgressCard segmentedCard) {
+            if (segmentedCard.Rows.Count == 0) throw new InvalidOperationException("Segmented progress cards must contain at least one row.");
+            if (segmentedCard.HeaderSymbol.Length > 4) throw new InvalidOperationException("Segmented progress card header symbols must be four characters or fewer.");
+            if (segmentedCard.ActionLabel.Length > 48) throw new InvalidOperationException("Segmented progress card action labels must be forty-eight characters or fewer.");
+            if (segmentedCard.ActionSymbol.Length > 4) throw new InvalidOperationException("Segmented progress card action symbols must be four characters or fewer.");
+            if (segmentedCard.ActionUrl.Length > 0 && !IsSafeActionUrl(segmentedCard.ActionUrl)) throw new InvalidOperationException("Segmented progress card action URLs must be relative URLs, http(s), or mailto links.");
+            foreach (var row in segmentedCard.Rows) {
+                if (row.Label.Length == 0) throw new InvalidOperationException("Segmented progress rows must define a label.");
+                if (!IsFinite(row.Value)) throw new InvalidOperationException("Segmented progress row values must be finite.");
+                if (!IsFinite(row.Maximum) || row.Maximum <= 0) throw new InvalidOperationException("Segmented progress row maximum values must be greater than zero.");
+                if (row.Value < 0) throw new InvalidOperationException("Segmented progress row values must be zero or greater.");
+                if (row.Segments < 1 || row.Segments > 120) throw new InvalidOperationException("Segmented progress row segment counts must be between one and one hundred twenty.");
+            }
+
+            return;
+        }
+
+        if (block is CompositionStatusCard compositionCard) {
+            if (compositionCard.Label.Length == 0) throw new InvalidOperationException("Composition status cards must define a label.");
+            if (compositionCard.Value.Length == 0) throw new InvalidOperationException("Composition status cards must define a value.");
+            if (compositionCard.Segments.Count == 0) throw new InvalidOperationException("Composition status cards must contain at least one segment.");
+            if (compositionCard.ActionLabel.Length > 48) throw new InvalidOperationException("Composition status card action labels must be forty-eight characters or fewer.");
+            if (compositionCard.ActionSymbol.Length > 4) throw new InvalidOperationException("Composition status card action symbols must be four characters or fewer.");
+            if (compositionCard.ActionUrl.Length > 0 && !IsSafeActionUrl(compositionCard.ActionUrl)) throw new InvalidOperationException("Composition status card action URLs must be relative URLs, http(s), or mailto links.");
+            foreach (var segment in compositionCard.Segments) {
+                if (segment.Label.Length == 0) throw new InvalidOperationException("Composition status card segments must define a label.");
+                if (!IsFinite(segment.Value)) throw new InvalidOperationException("Composition status card segment values must be finite.");
+                if (segment.Value < 0) throw new InvalidOperationException("Composition status card segment values must be zero or greater.");
+            }
+
+            if (CompositionTotal(compositionCard) <= 0) throw new InvalidOperationException("Composition status card segments must include at least one positive value.");
+            return;
+        }
+
+        if (block is DistributionStripCard distributionCard) {
+            if (distributionCard.Label.Length == 0) throw new InvalidOperationException("Distribution strip cards must define a label.");
+            if (distributionCard.Value.Length == 0) throw new InvalidOperationException("Distribution strip cards must define a value.");
+            if (distributionCard.Caption.Length > 64) throw new InvalidOperationException("Distribution strip card captions must be sixty-four characters or fewer.");
+            if (distributionCard.Segments.Count == 0) throw new InvalidOperationException("Distribution strip cards must contain at least one segment.");
+            if (distributionCard.ActionLabel.Length > 48) throw new InvalidOperationException("Distribution strip card action labels must be forty-eight characters or fewer.");
+            if (distributionCard.ActionSymbol.Length > 4) throw new InvalidOperationException("Distribution strip card action symbols must be four characters or fewer.");
+            if (distributionCard.ActionUrl.Length > 0 && !IsSafeActionUrl(distributionCard.ActionUrl)) throw new InvalidOperationException("Distribution strip card action URLs must be relative URLs, http(s), or mailto links.");
+            foreach (var segment in distributionCard.Segments) {
+                if (segment.Label.Length == 0) throw new InvalidOperationException("Distribution strip segments must define a label.");
+                if (!IsFinite(segment.Value)) throw new InvalidOperationException("Distribution strip segment values must be finite.");
+                if (segment.Value < 0) throw new InvalidOperationException("Distribution strip segment values must be zero or greater.");
+                if (segment.Symbol.Length > 8) throw new InvalidOperationException("Distribution strip segment symbols must be eight characters or fewer.");
+                if (segment.Detail.Length > 36) throw new InvalidOperationException("Distribution strip segment details must be thirty-six characters or fewer.");
+            }
+
+            if (DistributionTotal(distributionCard) <= 0) throw new InvalidOperationException("Distribution strip segments must include at least one positive value.");
+            return;
+        }
+
+        if (block is HeatmapInsightCard heatmapCard) {
+            if (heatmapCard.Columns.Count == 0) throw new InvalidOperationException("Heatmap insight cards must contain at least one column.");
+            if (heatmapCard.Rows.Count == 0) throw new InvalidOperationException("Heatmap insight cards must contain at least one row.");
+            if (!IsFinite(heatmapCard.Minimum) || !IsFinite(heatmapCard.Maximum) || heatmapCard.Maximum <= heatmapCard.Minimum) throw new InvalidOperationException("Heatmap insight color key maximum must be greater than minimum.");
+            foreach (var row in heatmapCard.Rows) {
+                if (row.Label.Length == 0) throw new InvalidOperationException("Heatmap insight rows must define a label.");
+                if (row.Values.Count != heatmapCard.Columns.Count) throw new InvalidOperationException("Heatmap insight rows must match the column count.");
+                foreach (var value in row.Values) if (!IsFinite(value)) throw new InvalidOperationException("Heatmap insight values must be finite.");
+            }
+
+            foreach (var item in heatmapCard.Insights) {
+                if (item.Label.Length == 0) throw new InvalidOperationException("Heatmap insight items must define a label.");
+                if (item.Detail.Length == 0) throw new InvalidOperationException("Heatmap insight items must define detail text.");
+            }
+
+            return;
+        }
+
+        if (block is WorkloadListBlock workloadBlock) {
+            if (workloadBlock.Rows.Count == 0) throw new InvalidOperationException("Workload list blocks must contain at least one row.");
+            if (workloadBlock.ActionLabel.Length > 48) throw new InvalidOperationException("Workload list block action labels must be forty-eight characters or fewer.");
+            if (workloadBlock.ActionSymbol.Length > 4) throw new InvalidOperationException("Workload list block action symbols must be four characters or fewer.");
+            if (workloadBlock.ActionUrl.Length > 0 && !IsSafeActionUrl(workloadBlock.ActionUrl)) throw new InvalidOperationException("Workload list block action URLs must be relative URLs, http(s), or mailto links.");
+            foreach (var row in workloadBlock.Rows) {
+                if (row.Label.Length == 0) throw new InvalidOperationException("Workload list rows must define a label.");
+                if (!IsFinite(row.Value)) throw new InvalidOperationException("Workload list row values must be finite.");
+                if (!IsFinite(row.Maximum) || row.Maximum <= 0) throw new InvalidOperationException("Workload list row maximum values must be greater than zero.");
+                if (row.Value < 0) throw new InvalidOperationException("Workload list row values must be zero or greater.");
+                if (row.AvatarText.Length > 4) throw new InvalidOperationException("Workload list row avatar text must be four characters or fewer.");
+                if (row.Note.Length > 32) throw new InvalidOperationException("Workload list row notes must be thirty-two characters or fewer.");
+            }
+
+            return;
+        }
+
+        if (block is ActivityTimelineBlock activityBlock) {
+            if (activityBlock.Items.Count == 0) throw new InvalidOperationException("Activity timeline blocks must contain at least one item.");
+            if (activityBlock.NotePlaceholder.Length > 64) throw new InvalidOperationException("Activity timeline note placeholders must be sixty-four characters or fewer.");
+            if (activityBlock.ActionLabel.Length > 48) throw new InvalidOperationException("Activity timeline block action labels must be forty-eight characters or fewer.");
+            if (activityBlock.ActionSymbol.Length > 4) throw new InvalidOperationException("Activity timeline block action symbols must be four characters or fewer.");
+            if (activityBlock.ActionUrl.Length > 0 && !IsSafeActionUrl(activityBlock.ActionUrl)) throw new InvalidOperationException("Activity timeline block action URLs must be relative URLs, http(s), or mailto links.");
+            foreach (var tab in activityBlock.Tabs) {
+                if (tab.Label.Length == 0) throw new InvalidOperationException("Activity timeline tabs must define a label.");
+                if (tab.Label.Length > 24) throw new InvalidOperationException("Activity timeline tab labels must be twenty-four characters or fewer.");
+                if (tab.Detail.Length > 36) throw new InvalidOperationException("Activity timeline tab details must be thirty-six characters or fewer.");
+            }
+
+            foreach (var action in activityBlock.ToolbarActions) if (action.Length > 16) throw new InvalidOperationException("Activity timeline toolbar actions must be sixteen characters or fewer.");
+            foreach (var item in activityBlock.Items) {
+                if (item.Title.Length == 0) throw new InvalidOperationException("Activity timeline items must define text.");
+                if (item.Badge.Length > 24) throw new InvalidOperationException("Activity timeline item badges must be twenty-four characters or fewer.");
+                if (item.HiddenCount < 0) throw new InvalidOperationException("Activity timeline hidden item counts must be zero or greater.");
+            }
+
+            return;
+        }
+
+        if (block is ScheduleTimelineBlock scheduleBlock) {
+            if (!IsFinite(scheduleBlock.Start) || !IsFinite(scheduleBlock.End) || scheduleBlock.End <= scheduleBlock.Start) throw new InvalidOperationException("Schedule timeline time range must be finite and increasing.");
+            if (!IsFinite(scheduleBlock.TickInterval) || scheduleBlock.TickInterval <= 0) throw new InvalidOperationException("Schedule timeline tick interval must be finite and greater than zero.");
+            if (scheduleBlock.CurrentTime.HasValue && !IsFinite(scheduleBlock.CurrentTime.Value)) throw new InvalidOperationException("Schedule timeline current time must be finite.");
+            if (scheduleBlock.Events.Count == 0) throw new InvalidOperationException("Schedule timeline blocks must contain at least one event.");
+            foreach (var action in scheduleBlock.HeaderActions) if (action.Length > 24) throw new InvalidOperationException("Schedule timeline header actions must be twenty-four characters or fewer.");
+            foreach (var item in scheduleBlock.Events) {
+                if (item.Title.Length == 0) throw new InvalidOperationException("Schedule timeline events must define a title.");
+                if (!IsFinite(item.Start) || !IsFinite(item.End) || item.End < item.Start) throw new InvalidOperationException("Schedule timeline event times must be finite and increasing.");
+                if (item.Lane < 0) throw new InvalidOperationException("Schedule timeline event lanes must be zero or greater.");
+                if (item.Badge.Length > 24) throw new InvalidOperationException("Schedule timeline event badges must be twenty-four characters or fewer.");
+                foreach (var avatar in item.Avatars) if (avatar.Length > 4) throw new InvalidOperationException("Schedule timeline avatar labels must be four characters or fewer.");
+            }
+
             return;
         }
 
@@ -184,7 +316,66 @@ internal static class VisualBlockRendering {
         return new VisualMiniSparkline(points, area, color, fillColor, ChartVisualPrimitives.MiniSparklineStrokeWidth, ChartVisualPrimitives.MiniSparklineCurrentRadius);
     }
 
-    private static bool IsSafeActionUrl(string value) {
+    public static double CompositionTotal(CompositionStatusCard card) {
+        var total = 0.0;
+        foreach (var segment in card.Segments) total += segment.Value;
+        return total;
+    }
+
+    public static double DistributionTotal(DistributionStripCard card) {
+        var total = 0.0;
+        foreach (var segment in card.Segments) total += segment.Value;
+        return total;
+    }
+
+    public static double SegmentRatio(double value, double maximum) => maximum <= 0 ? 0 : Math.Max(0, Math.Min(1, value / maximum));
+
+    public static int FilledSegments(SegmentedProgressRow row) => Math.Max(0, Math.Min(row.Segments, (int)Math.Round(row.Segments * SegmentRatio(row.Value, row.Maximum))));
+
+    public static double WorkloadRatio(WorkloadListRow row) => SegmentRatio(row.Value, row.Maximum);
+
+    public static string WorkloadDisplayValue(WorkloadListRow row) =>
+        row.DisplayValue.Length > 0 ? row.DisplayValue : row.Value.ToString("0.##", CultureInfo.InvariantCulture) + "/" + row.Maximum.ToString("0.##", CultureInfo.InvariantCulture);
+
+    public static int ScheduleLaneCount(ScheduleTimelineBlock block) {
+        var lanes = 0;
+        foreach (var item in block.Events) lanes = Math.Max(lanes, item.Lane + 1);
+        return Math.Max(1, lanes);
+    }
+
+    public static double ScheduleRatio(ScheduleTimelineBlock block, double value) => SegmentRatio(value - block.Start, block.End - block.Start);
+
+    public static string FormatScheduleHour(double value) {
+        var whole = (int)Math.Floor(value);
+        var minutes = (int)Math.Round((value - whole) * 60);
+        if (minutes >= 60) { whole++; minutes -= 60; }
+        var suffix = whole >= 12 ? "PM" : "AM";
+        var hour = whole % 12;
+        if (hour == 0) hour = 12;
+        return hour.ToString(CultureInfo.InvariantCulture) + (minutes == 0 ? ".00 " : "." + minutes.ToString("00", CultureInfo.InvariantCulture) + " ") + suffix;
+    }
+
+    public static (double Minimum, double Maximum) TableCellMicroVisualBounds(ChartTableCell cell) {
+        var minimum = cell.MicroVisualMinimum ?? Minimum(cell.MicroVisualValues);
+        var maximum = cell.MicroVisualMaximum ?? Maximum(cell.MicroVisualValues);
+        if (Math.Abs(maximum - minimum) < double.Epsilon) maximum = minimum + 1;
+        return (minimum, maximum);
+    }
+
+    public static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
+
+    private static void ValidateTableCellMicroVisual(ChartTableCell cell) {
+        if (cell.BadgeText.Length > 24) throw new InvalidOperationException("Chart table cell badge text must be twenty-four characters or fewer.");
+        if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.None) return;
+        if (cell.MicroVisualValues.Count == 0) throw new InvalidOperationException("Chart table cell microvisuals must contain values.");
+        if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline && cell.MicroVisualValues.Count < 2) throw new InvalidOperationException("Chart table cell sparklines require at least two values.");
+        foreach (var value in cell.MicroVisualValues) if (!IsFinite(value)) throw new InvalidOperationException("Chart table cell microvisual values must be finite.");
+        if (cell.MicroVisualMinimum.HasValue && !IsFinite(cell.MicroVisualMinimum.Value)) throw new InvalidOperationException("Chart table cell microvisual minimum values must be finite.");
+        if (cell.MicroVisualMaximum.HasValue && !IsFinite(cell.MicroVisualMaximum.Value)) throw new InvalidOperationException("Chart table cell microvisual maximum values must be finite.");
+        if (cell.MicroVisualMinimum.HasValue && cell.MicroVisualMaximum.HasValue && cell.MicroVisualMaximum.Value <= cell.MicroVisualMinimum.Value) throw new InvalidOperationException("Chart table cell microvisual maximum must be greater than minimum.");
+    }
+
+    public static bool IsSafeActionUrl(string value) {
         if (string.IsNullOrWhiteSpace(value)) return false;
         var text = value.Trim();
         if (text.StartsWith("#", StringComparison.Ordinal) || text.StartsWith("/", StringComparison.Ordinal) || text.StartsWith("./", StringComparison.Ordinal) || text.StartsWith("../", StringComparison.Ordinal)) return true;

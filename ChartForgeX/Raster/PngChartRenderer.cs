@@ -214,14 +214,14 @@ public sealed partial class PngChartRenderer {
             }
             if (ShowXAxis(chart) && ShowAxisLines(chart)) {
                 var zeroY = map.Y(0);
-                if (zeroY > plot.Top && zeroY < plot.Bottom) c.DrawLine(plot.Left, zeroY, plot.Right, zeroY, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
+                if (zeroY > plot.Top && zeroY < plot.Bottom) DrawPngGuideLine(c, plot.Left, zeroY, plot.Right, zeroY, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
             }
             if (ShowXAxis(chart)) {
-                if (ShowAxisLines(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+                if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
                 DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, xLabels), PngXAxisTitleFontSize(chart));
             }
             if (ShowYAxis(chart)) {
-                if (ShowAxisLines(chart)) c.DrawLine(plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+                if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
                 DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
             }
             if (chart.Options.ShowAxes) {
@@ -246,11 +246,12 @@ public sealed partial class PngChartRenderer {
             DrawPngCardShadow(c, x, y, width, height, theme.CornerRadius, theme.ShadowColor, theme.ShadowOpacity);
         }
 
-        c.FillRoundedRect(x, y, width, height, theme.CornerRadius, theme.CardBackground);
+        c.FillRoundedRectVerticalGradient(x, y, width, height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
         if (theme.CardBorder.A > 0) {
             var borderInset = ChartVisualPrimitives.CardBorderInset;
             c.StrokeRoundedRect(x + borderInset, y + borderInset, width - borderInset * 2, height - borderInset * 2, Math.Max(0, theme.CornerRadius - borderInset), theme.CardBorder);
         }
+        DrawPngSurfaceHighlight(c, x, y, width, height, theme.CornerRadius, ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightOpacity);
     }
 
     private static void DrawPngCardShadow(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor shadow, double opacity) {
@@ -275,16 +276,43 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawPlotSurface(RgbaCanvas c, ChartOptions options, ChartTheme theme, ChartRect plot) {
-        if (options.ShowPlotBackground) c.FillRoundedRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, theme.PlotBackground);
+        if (options.ShowPlotBackground) c.FillRoundedRectVerticalGradient(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, ChartSurfacePolish.GradientTop(theme.PlotBackground), ChartSurfacePolish.GradientBottom(theme.PlotBackground));
         if (options.ShowPlotBackground && theme.PlotBorder.A > 0) c.StrokeRoundedRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, theme.PlotBorder);
+        if (options.ShowPlotBackground) DrawPngSurfaceHighlight(c, plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, ChartVisualPrimitives.PlotInnerHighlightInset, ChartVisualPrimitives.PlotInnerHighlightOpacity);
     }
 
     private static void DrawPngGridLine(RgbaCanvas c, double x1, double y1, double x2, double y2, ChartColor color, ChartGridLineStyle style) {
-        if (style.Dash > 0 && style.Gap > 0) {
-            c.DrawDashedLine(x1, y1, x2, y2, color, style.StrokeWidth, style.Dash, style.Gap);
+        DrawPngGuideLine(c, x1, y1, x2, y2, color, style.StrokeWidth, style.Dash, style.Gap);
+    }
+
+    private static void DrawPngGuideLine(RgbaCanvas c, double x1, double y1, double x2, double y2, ChartColor color, double strokeWidth, double dash = 0, double gap = 0) {
+        var horizontal = Math.Abs(y1 - y2) < 0.000001;
+        var vertical = Math.Abs(x1 - x2) < 0.000001;
+        if (horizontal) y1 = y2 = CrispStrokeCoordinate(y1, strokeWidth);
+        if (vertical) x1 = x2 = CrispStrokeCoordinate(x1, strokeWidth);
+        if (dash > 0 && gap > 0) {
+            c.DrawDashedLine(x1, y1, x2, y2, color, strokeWidth, dash, gap);
         } else {
-            c.DrawLine(x1, y1, x2, y2, color, style.StrokeWidth);
+            c.DrawLine(x1, y1, x2, y2, color, strokeWidth);
         }
+    }
+
+    private static void DrawPngSurfaceHighlight(RgbaCanvas c, double x, double y, double width, double height, double radius, double inset, double opacity) {
+        if (width <= inset * 2 || height <= inset * 2 || opacity <= 0) return;
+        c.StrokeRoundedRect(
+            x + inset,
+            y + inset,
+            Math.Max(0, width - inset * 2),
+            Math.Max(0, height - inset * 2),
+            Math.Max(0, radius - inset),
+            ApplyOpacity(ChartColor.White, opacity),
+            1);
+    }
+
+    private static double CrispStrokeCoordinate(double value, double strokeWidth) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) return value;
+        var roundedStroke = Math.Max(1, (int)Math.Round(strokeWidth));
+        return Math.Round(value) + (roundedStroke % 2 == 0 ? 0 : 0.5);
     }
 
     private static void DrawHeader(RgbaCanvas c, Chart chart) {
@@ -453,12 +481,12 @@ public sealed partial class PngChartRenderer {
 
         if (ShowXAxis(chart)) {
             var zeroX = map.X(0);
-            if (ShowAxisLines(chart) && zeroX > plot.Left && zeroX < plot.Right) c.DrawLine(zeroX, plot.Top, zeroX, plot.Bottom, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
-            if (ShowAxisLines(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowAxisLines(chart) && zeroX > plot.Left && zeroX < plot.Right) DrawPngGuideLine(c, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
+            if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, xLabels), PngXAxisTitleFontSize(chart));
         }
         if (ShowYAxis(chart)) {
-            if (ShowAxisLines(chart)) c.DrawLine(plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
             DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
         }
     }

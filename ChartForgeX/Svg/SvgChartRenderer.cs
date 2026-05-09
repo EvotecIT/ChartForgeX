@@ -145,10 +145,12 @@ public sealed partial class SvgChartRenderer {
         AppendSvgStart(sb, writer => writer.StartElement("defs").EndStartElement().Line());
         AppendSvg(sb, writer => writer
             .StartElement("style")
-            .Text($"#{id} text{{font-synthesis:none}} #{id} .cfx-crisp-stroke{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .cfx-interactive-region{{transition:opacity .12s ease,stroke-width .12s ease}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}")
+            .Text($"#{id} text{{font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region{{transition:opacity .12s ease,stroke-width .12s ease}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}")
             .EndElement()
             .Line());
         WriteSvgCardShadowFilter(sb, id, t);
+        WriteSvgSurfaceGradient(sb, id, "cardSurface", t.CardBackground);
+        WriteSvgSurfaceGradient(sb, id, "plotSurface", t.PlotBackground);
         AppendSvg(sb, writer => writer
             .StartElement("clipPath")
             .Attribute("id", $"{id}-plotClip")
@@ -184,8 +186,9 @@ public sealed partial class SvgChartRenderer {
             DrawSvgCardSurface(sb, id, t, w, h);
         }
         if (o.ShowPlotBackground) {
-            AppendSvg(sb, writer => writer.StartElement("rect").Attribute("x", plot.X).Attribute("y", plot.Y).Attribute("width", plot.Width).Attribute("height", plot.Height).Attribute("rx", t.PlotCornerRadius).Attribute("fill", t.PlotBackground.ToCss()).EndEmptyElement().Line());
+            AppendSvg(sb, writer => writer.StartElement("rect").Attribute("x", plot.X).Attribute("y", plot.Y).Attribute("width", plot.Width).Attribute("height", plot.Height).Attribute("rx", t.PlotCornerRadius).Attribute("fill", $"url(#{id}-plotSurface)").EndEmptyElement().Line());
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("class", "cfx-crisp-stroke").Attribute("x", plot.X + 0.5).Attribute("y", plot.Y + 0.5).Attribute("width", Math.Max(0, plot.Width - 1)).Attribute("height", Math.Max(0, plot.Height - 1)).Attribute("rx", Math.Max(0, t.PlotCornerRadius - 0.5)).Attribute("fill", "none").Attribute("stroke", t.PlotBorder.ToCss()).EndEmptyElement().Line());
+            DrawSvgSurfaceHighlight(sb, plot.X, plot.Y, plot.Width, plot.Height, t.PlotCornerRadius, ChartVisualPrimitives.PlotInnerHighlightInset, ChartVisualPrimitives.PlotInnerHighlightOpacity, "plot-inner-highlight");
         }
         if (o.ShowHeader) DrawHeader(sb, chart);
         if (IsPieLike(chart)) {
@@ -393,7 +396,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", width - cardInset * 2)
             .Attribute("height", height - cardInset * 2)
             .Attribute("rx", theme.CornerRadius)
-            .Attribute("fill", theme.CardBackground.ToCss())
+            .Attribute("fill", $"url(#{id}-cardSurface)")
             .Attribute("filter", $"url(#{id}-softShadow)")
             .EndEmptyElement()
             .Line());
@@ -409,6 +412,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke", theme.CardBorder.ToCss())
             .EndEmptyElement()
             .Line());
+        DrawSvgSurfaceHighlight(sb, cardInset, cardInset, width - cardInset * 2, height - cardInset * 2, theme.CornerRadius, ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightOpacity, "card-inner-highlight");
     }
 
     private static void DrawGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> xTicks, IReadOnlyList<double> yTicks, ChartMapper map) {
@@ -439,31 +443,16 @@ public sealed partial class SvgChartRenderer {
         }
         var zeroY = map.Y(0);
         if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroY > plot.Top && zeroY < plot.Bottom) {
-            AppendSvg(sb, writer => writer.StartElement("line").Attribute("x1", plot.Left).Attribute("y1", zeroY).Attribute("x2", plot.Right).Attribute("y2", zeroY).Attribute("stroke", t.Axis.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.ZeroAxisStrokeWidth).EndEmptyElement().Line());
+            WriteSvgGuideLine(sb, null, plot.Left, zeroY, plot.Right, zeroY, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
         }
         if (ShowXAxis(chart)) {
-            if (ShowAxisLines(chart)) AppendSvg(sb, writer => writer.StartElement("line").Attribute("x1", plot.Left).Attribute("y1", plot.Bottom).Attribute("x2", plot.Right).Attribute("y2", plot.Bottom).Attribute("stroke", t.Axis.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.AxisStrokeWidth).EndEmptyElement().Line());
+            if (ShowAxisLines(chart)) WriteSvgGuideLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart, xLabels));
         }
         if (ShowYAxis(chart)) {
-            if (ShowAxisLines(chart)) AppendSvg(sb, writer => writer.StartElement("line").Attribute("x1", plot.Left).Attribute("y1", plot.Top).Attribute("x2", plot.Left).Attribute("y2", plot.Bottom).Attribute("stroke", t.Axis.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.AxisStrokeWidth).EndEmptyElement().Line());
+            if (ShowAxisLines(chart)) WriteSvgGuideLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgYAxisTitle(sb, chart, plot, 26);
         }
-    }
-
-    private static void WriteSvgGridLine(StringBuilder sb, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double opacity, ChartGridLineStyle style) {
-        AppendSvg(sb, writer => {
-            writer.StartElement("line")
-                .Attribute("x1", x1)
-                .Attribute("y1", y1)
-                .Attribute("x2", x2)
-                .Attribute("y2", y2)
-                .Attribute("stroke", stroke)
-                .Attribute("stroke-width", strokeWidth)
-                .Attribute("opacity", opacity);
-            if (style.Dash > 0 && style.Gap > 0) writer.Attribute("stroke-dasharray", $"{F(style.Dash)} {F(style.Gap)}");
-            writer.EndEmptyElement().Line();
-        });
     }
 
     private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle, string? role = null, double maxWidth = 0, ChartColor? color = null) {

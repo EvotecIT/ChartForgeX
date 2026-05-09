@@ -172,6 +172,11 @@ internal static partial class SmokeTests {
     }
 
     private static void PngSmoothSeriesUseCurvedRasterPaths() {
+        var root = FindRepositoryRoot();
+        var canvas = string.Join("\n", Directory.EnumerateFiles(Path.Combine(root, "ChartForgeX", "Raster"), "RgbaCanvas*.cs", SearchOption.TopDirectoryOnly)
+            .OrderBy(file => file, StringComparer.Ordinal)
+            .Select(File.ReadAllText));
+        var cartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 90), new ChartPoint(3, 20), new ChartPoint(4, 82), new ChartPoint(5, 24) };
         var straight = Chart.Create()
             .WithSize(260, 160)
@@ -189,6 +194,9 @@ internal static partial class SmokeTests {
         }
 
         Assert(!straight.ToPng().SequenceEqual(smooth.ToPng()), "PNG renderer should honor smooth series instead of drawing the same angular path.");
+        Assert(cartesian.Contains("c.DrawPolyline(points, color, thickness)", StringComparison.Ordinal), "PNG cartesian lines should render flattened smooth paths as a continuous polyline.");
+        Assert(canvas.Contains("DrawLinePixelsButt", StringComparison.Ordinal), "PNG polyline strokes should avoid repeating rounded caps at every flattened curve segment.");
+        Assert(canvas.Contains("ShouldDrawPolylineJoin", StringComparison.Ordinal), "PNG polyline strokes should draw only meaningful joins instead of beaded segment halos.");
     }
 
     private static void PngRendersReportChrome() {
@@ -307,7 +315,7 @@ internal static partial class SmokeTests {
         var rangeArea = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.RangeArea.cs"));
         var waterfall = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Waterfall.cs"));
         var legend = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Legend.cs"));
-        Assert(primitives.Contains("StrokeHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineAmbientHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineHighlightOpacity", StringComparison.Ordinal) && primitives.Contains("CardSurfaceInset", StringComparison.Ordinal) && primitives.Contains("SvgCardShadowKeyYOffset", StringComparison.Ordinal) && primitives.Contains("PngCardShadowYOffset", StringComparison.Ordinal) && primitives.Contains("PngTextHaloOuterOpacity", StringComparison.Ordinal) && primitives.Contains("MarkerStrokeWidth", StringComparison.Ordinal) && primitives.Contains("RadarOutlineStrokeWidth", StringComparison.Ordinal) && primitives.Contains("TreemapTileBorderOpacity", StringComparison.Ordinal) && primitives.Contains("OhlcStrokeWidth", StringComparison.Ordinal) && primitives.Contains("WaterfallConnectorStrokeWidth", StringComparison.Ordinal), "Shared visual primitive constants should define stroke halo, line lighting, card shell, card shadow, text halo, marker, radial, flow, finance, range, and tile contracts.");
+        Assert(primitives.Contains("StrokeHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineAmbientHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineHighlightOpacity", StringComparison.Ordinal) && primitives.Contains("CardSurfaceInset", StringComparison.Ordinal) && primitives.Contains("CardInnerHighlightOpacity", StringComparison.Ordinal) && primitives.Contains("PlotInnerHighlightOpacity", StringComparison.Ordinal) && primitives.Contains("SvgGuideStrokeClass", StringComparison.Ordinal) && primitives.Contains("SvgPremiumStrokeClass", StringComparison.Ordinal) && primitives.Contains("SvgCardShadowKeyYOffset", StringComparison.Ordinal) && primitives.Contains("PngCardShadowYOffset", StringComparison.Ordinal) && primitives.Contains("PngTextHaloOuterOpacity", StringComparison.Ordinal) && primitives.Contains("MarkerStrokeWidth", StringComparison.Ordinal) && primitives.Contains("RadarOutlineStrokeWidth", StringComparison.Ordinal) && primitives.Contains("TreemapTileBorderOpacity", StringComparison.Ordinal) && primitives.Contains("OhlcStrokeWidth", StringComparison.Ordinal) && primitives.Contains("WaterfallConnectorStrokeWidth", StringComparison.Ordinal), "Shared visual primitive constants should define stroke halo, line lighting, card shell, card shadow, text halo, marker, radial, flow, finance, range, and tile contracts.");
         Assert(canvas.Contains("DrawLine(double x0, double y0, double x1, double y1, ChartColor color, double thickness)", StringComparison.Ordinal), "PNG canvas should preserve fractional stroke widths for SVG/PNG parity.");
         Assert(canvas.Contains("DrawArc(double cx, double cy, double radius, double startAngle, double endAngle, ChartColor color, double thickness)", StringComparison.Ordinal), "PNG canvas should preserve fractional arc widths for SVG/PNG parity.");
         Assert(canvas.Contains("StrokeRoundedRect(double x, double y, double width, double height, double radius, ChartColor color, double thickness", StringComparison.Ordinal), "PNG canvas should preserve fractional rounded-rectangle stroke widths for SVG/PNG parity.");
@@ -630,18 +638,22 @@ internal static partial class SmokeTests {
         Directory.CreateDirectory(output);
         try {
             var alpha = Chart.Create().WithSize(320, 180).WithTitle("Alpha & Beta").AddLine("Values", Points(1, 2, 3));
-            File.WriteAllText(Path.Combine(output, "alpha.html"), "<!doctype html><title>Alpha &amp; Beta</title><svg></svg>");
+            File.WriteAllText(Path.Combine(output, "alpha.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha.png"), alpha.ToPng());
-            File.WriteAllText(Path.Combine(output, "alpha 2.html"), "<!doctype html><title>Alpha Copy</title><svg></svg>");
+            File.WriteAllText(Path.Combine(output, "alpha 2.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha 2.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha 2.png"), alpha.ToPng());
-            File.WriteAllText(Path.Combine(output, "zeta.html"), "<!doctype html><title>Zeta</title><svg></svg>");
-            File.WriteAllText(Path.Combine(output, "zeta.svg"), Chart.Create().WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3)).ToSvg());
-            File.WriteAllBytes(Path.Combine(output, "zeta.png"), Chart.Create().WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3)).ToPng());
-            File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.html"), "<!doctype html><title>Dashboard Chart Portfolio</title><svg></svg>"); File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.svg"), alpha.ToSvg()); File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
+            var zeta = Chart.Create().WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3));
+            File.WriteAllText(Path.Combine(output, "zeta.html"), zeta.ToHtmlPage());
+            File.WriteAllText(Path.Combine(output, "zeta.svg"), zeta.ToSvg());
+            File.WriteAllBytes(Path.Combine(output, "zeta.png"), zeta.ToPng());
+            File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.html"), alpha.ToHtmlPage());
+            File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.svg"), alpha.ToSvg());
+            File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "travel-dotted-map-dark.html"), "<!doctype html><title>Travel Dotted Map</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "report.html"), "<!doctype html><title>Report</title><svg></svg>");
+            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().WithTitle(\"Alpha & Beta\");");
             File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}},{\"name\":\"zeta\",\"width\":640,\"height\":360,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
 
             GalleryWriter.Write(output);
@@ -691,6 +703,7 @@ internal static partial class SmokeTests {
             Assert(dashboard.Contains("<title>ChartForgeX Quality Dashboard</title>", StringComparison.Ordinal), "Quality dashboard should render a stable title.");
             Assert(dashboard.Contains("Chart pairs", StringComparison.Ordinal) && dashboard.Contains("Clean pairs", StringComparison.Ordinal), "Quality dashboard should summarize generated artifact health.");
             Assert(dashboard.Contains("2 pairs", StringComparison.Ordinal) && dashboard.Contains("2 clean", StringComparison.Ordinal), "Quality dashboard should summarize clean SVG/PNG pairs.");
+            Assert(dashboard.Contains("Healthy HTMLs", StringComparison.Ordinal), "Quality dashboard should summarize standalone HTML artifact health.");
             Assert(dashboard.Contains("min text", StringComparison.Ordinal), "Quality dashboard should expose SVG text readability statistics.");
             Assert(dashboard.Contains("min stroke", StringComparison.Ordinal), "Quality dashboard should expose SVG stroke readability statistics.");
             Assert(dashboard.Contains("min marker", StringComparison.Ordinal), "Quality dashboard should expose SVG marker readability statistics.");
@@ -709,6 +722,7 @@ internal static partial class SmokeTests {
             Assert(comparison.Contains("3 dimension matches", StringComparison.Ordinal), "Comparison page should summarize SVG/PNG dimension parity.");
             Assert(comparison.Contains("3 healthy SVGs", StringComparison.Ordinal), "Comparison page should summarize SVG artifact health.");
             Assert(comparison.Contains("3 healthy PNGs", StringComparison.Ordinal), "Comparison page should summarize PNG artifact health.");
+            Assert(comparison.Contains("3 healthy HTMLs", StringComparison.Ordinal), "Comparison page should summarize HTML artifact health.");
             Assert(comparison.Contains("0 warnings", StringComparison.Ordinal), "Comparison page should summarize review warnings.");
             Assert(comparison.Contains("2 baseline passes", StringComparison.Ordinal), "Comparison page should summarize visual-baseline matches.");
             Assert(comparison.Contains("1 baseline warnings", StringComparison.Ordinal), "Comparison page should summarize visual-baseline warnings.");
@@ -722,8 +736,11 @@ internal static partial class SmokeTests {
             Assert(comparison.Contains("<span class=\"format\">WIPE</span>", StringComparison.Ordinal), "Comparison page should include a center-wipe pane for SVG/PNG visual parity review.");
             Assert(comparison.Contains("<figure class=\"wipe-figure\">", StringComparison.Ordinal), "Comparison page should promote wipe previews to a full-width primary review pane.");
             Assert(comparison.Contains("class=\"wipe-controls\"", StringComparison.Ordinal), "Comparison page should include script-free wipe controls for SVG/PNG parity review.");
+            Assert(comparison.Contains("class=\"wipe-frame\"", StringComparison.Ordinal), "Comparison page should keep wipe controls outside the responsive media frame.");
+            Assert(comparison.Contains(".wipe-frame>.wipe-25:checked~.media", StringComparison.Ordinal), "Comparison page should avoid flex-stretching wipe labels at wide viewport sizes.");
             Assert(comparison.Contains("SVG 25%", StringComparison.Ordinal) && comparison.Contains("SVG 75%", StringComparison.Ordinal), "Comparison page should offer fixed wipe positions without requiring JavaScript.");
             Assert(comparison.Contains("clip-path:inset(0 calc(100% - var(--wipe)) 0 0)", StringComparison.Ordinal), "Comparison page should keep SVG and PNG framed together while moving the wipe split.");
+            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().WithTitle(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
             Assert(comparison.Contains(".pair{display:grid;grid-template-columns:repeat(2", StringComparison.Ordinal), "Comparison page should avoid squeezing SVG, PNG, and wipe panes into three narrow columns.");
             Assert(comparison.Contains("href=\"catalog.html\"", StringComparison.Ordinal), "Comparison page should link the grouped catalog page.");
             Assert(comparison.Contains("href=\"quality-dashboard.html\"", StringComparison.Ordinal), "Comparison page should link the artifact quality dashboard.");
@@ -743,6 +760,7 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"dimensionMatches\": 3", StringComparison.Ordinal), "Comparison manifest should summarize SVG/PNG dimension parity.");
             Assert(manifest.Contains("\"healthySvgs\": 3", StringComparison.Ordinal), "Comparison manifest should summarize healthy SVG artifacts.");
             Assert(manifest.Contains("\"healthyPngs\": 3", StringComparison.Ordinal), "Comparison manifest should summarize healthy PNG artifacts.");
+            Assert(manifest.Contains("\"healthyHtmls\": 3", StringComparison.Ordinal), "Comparison manifest should summarize healthy HTML artifacts.");
             Assert(manifest.Contains("\"warnings\": 0", StringComparison.Ordinal), "Comparison manifest should summarize review warnings.");
             Assert(manifest.Contains("\"baseline\":", StringComparison.Ordinal), "Comparison manifest should summarize visual-baseline status.");
             Assert(manifest.Contains("\"chartMatches\": 2", StringComparison.Ordinal), "Comparison manifest should include visual-baseline match counts.");
@@ -753,6 +771,7 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"svgMinimumStrokeWidth\": 0.75", StringComparison.Ordinal), "Comparison manifest should describe the minimum readable SVG stroke threshold.");
             Assert(manifest.Contains("\"svgMinimumMarkerRadius\": 3", StringComparison.Ordinal), "Comparison manifest should describe the minimum readable SVG marker threshold.");
             Assert(manifest.Contains("\"pngDistinctColors\": 8", StringComparison.Ordinal) && manifest.Contains("\"pngEdgeInkPixels\": 0", StringComparison.Ordinal), "Comparison manifest should describe PNG health thresholds.");
+            Assert(manifest.Contains("\"htmlRequiresSurfaceGradient\": true", StringComparison.Ordinal) && manifest.Contains("\"htmlRequiresPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should describe HTML polish health thresholds.");
             Assert(manifest.Contains("\"center-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe available parity review modes.");
             Assert(manifest.Contains("\"preset-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe script-free preset wipe review.");
             Assert(manifest.Contains("\"name\": \"alpha\"", StringComparison.Ordinal), "Comparison manifest should list chart assets by name.");
@@ -769,30 +788,8 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"visiblePixels\":", StringComparison.Ordinal) && manifest.Contains("\"foregroundPixels\":", StringComparison.Ordinal) && manifest.Contains("\"edgeInkPixels\":", StringComparison.Ordinal), "Comparison manifest should include PNG visibility, foreground, and edge statistics.");
             Assert(manifest.Contains("\"contentBounds\":", StringComparison.Ordinal), "Comparison manifest should include PNG content bounds.");
             Assert(manifest.Contains("\"distinctColors\":", StringComparison.Ordinal), "Comparison manifest should include PNG color diversity statistics.");
+            Assert(manifest.Contains("\"html\":", StringComparison.Ordinal) && manifest.Contains("\"hasSurfaceGradient\": true", StringComparison.Ordinal) && manifest.Contains("\"hasPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should include HTML polish statistics.");
             Assert(manifest.Contains("\"healthy\": true", StringComparison.Ordinal), "Comparison manifest should flag healthy PNG artifacts.");
-        } finally {
-            Directory.Delete(output, true);
-        }
-    }
-
-    private static void ExampleGalleryBaselineFlagsHighDensityRegressions() {
-        var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-baseline-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(output);
-        try {
-            var chart = Chart.Create().WithSize(320, 180).WithTitle("Alpha").AddLine("Values", Points(1, 2, 3));
-            File.WriteAllText(Path.Combine(output, "alpha.html"), "<!doctype html><title>Alpha</title><svg></svg>");
-            File.WriteAllText(Path.Combine(output, "alpha.svg"), chart.ToSvg());
-            File.WriteAllBytes(Path.Combine(output, "alpha.png"), chart.ToPng());
-            File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":2,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
-
-            GalleryWriter.Write(output);
-
-            var manifest = File.ReadAllText(Path.Combine(output, "svg-png-comparison.json"));
-            Assert(manifest.Contains("\"chartMatches\": 0", StringComparison.Ordinal), "Gallery manifest should fail baseline matches when PNG output density regresses.");
-            Assert(manifest.Contains("\"warnings\": 1", StringComparison.Ordinal), "Gallery manifest should count high-DPI visual-baseline warnings.");
-            Assert(manifest.Contains("\"clean\": false", StringComparison.Ordinal), "Gallery manifest should flag the visual baseline as not clean.");
-            var dashboard = File.ReadAllText(Path.Combine(output, "quality-dashboard.html"));
-            Assert(dashboard.Contains("Baseline warnings", StringComparison.Ordinal) && dashboard.Contains("<div class=\"value\">1</div>", StringComparison.Ordinal), "Quality dashboard should surface high-DPI visual-baseline warnings.");
         } finally {
             Directory.Delete(output, true);
         }

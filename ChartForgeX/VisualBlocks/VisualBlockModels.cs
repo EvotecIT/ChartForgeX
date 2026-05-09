@@ -360,7 +360,7 @@ public sealed class ChartTableRow {
 /// <summary>
 /// Describes one chart table cell.
 /// </summary>
-public sealed class ChartTableCell {
+public sealed partial class ChartTableCell {
     private string _text;
     private VisualTextAlignment? _alignment;
     private VisualStatus _status;

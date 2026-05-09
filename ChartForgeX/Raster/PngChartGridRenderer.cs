@@ -23,6 +23,10 @@ public sealed class PngChartGridRenderer {
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var output = new RgbaCanvas(layout.Width, layout.Height, 1, null, grid.PngOutputScale);
         output.Clear(background);
+        if (background.A > 0) {
+            var inset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
+            output.FillRoundedRectVerticalGradient(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
+        }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
@@ -66,4 +70,5 @@ public sealed class PngChartGridRenderer {
 
         return value.Substring(0, low) + suffix;
     }
+
 }

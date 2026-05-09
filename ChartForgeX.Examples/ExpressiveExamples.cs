@@ -215,16 +215,20 @@ internal static class ExpressiveExamples {
     private static Chart CreateDashboardPremiumTrendPreview() => Chart.Create()
         .WithHeader(false)
         .WithTransparentBackground(false)
-        .WithTheme(ChartTheme.DashboardLight().WithMarkerRadius(3.4))
+        .WithTheme(ChartTheme.SaasDashboardLight()
+            .WithPalette(new[] { ChartColor.FromHex("#2563EB"), ChartColor.FromHex("#14B8A6") })
+            .WithGuideColors(ChartColor.FromHex("#D7DEE8"), ChartColor.FromHex("#94A3B8"))
+            .WithMarkerRadius(3.2)
+            .WithTextColors(ChartColor.FromHex("#64748B"), ChartColor.FromHex("#8792A5")))
         .WithDashboardPanelStyle()
         .WithLegend(false)
-        .WithPadding(42, 26, 24, 54)
-        .WithSize(920, 360)
-        .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-        .WithYAxisBounds(0, 120)
-        .WithFocusedXAxisCategory(4, paletteIndex: 3)
-        .AddSmoothArea("Saved", Points(32, 50, 62, 78, 58, 88, 96))
-        .AddSmoothLine("Outreach", Points(20, 34, 42, 57, 44, 66, 74));
+        .WithPadding(36, 30, 26, 58)
+            .WithSize(840, 360)
+            .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+            .WithYAxisBounds(0, 100)
+            .WithHighlightedXAxisLabel(4, paletteIndex: 0)
+            .AddSmoothArea("Saved", Points(24, 36, 48, 58, 46, 68, 76))
+            .AddSmoothLine("Outreach", Points(18, 28, 36, 48, 40, 58, 66));
 
     private static ChartGrid CreatePictorialSymbolShowcaseGrid() {
         var shapes = new[] {

@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.Html;
@@ -66,7 +68,7 @@ public sealed class HtmlChartGridRenderer {
         if (grid.Charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart.");
         var title = grid.Title.Length == 0 ? "ChartForgeX report" : grid.Title;
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
-        var bg = theme.Background.A == 0 ? theme.CardBackground.ToCss() : theme.Background.ToCss();
+        var bg = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var fontFamily = CssFontFamily(theme.FontFamily);
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
@@ -81,8 +83,8 @@ public sealed class HtmlChartGridRenderer {
         return writer.Build();
     }
 
-    private static string BuildCss(string background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize) {
-        return "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:var(--cfx-grid-padding,24px);box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-grid{display:block;width:min(100%,1440px);margin:0 auto}.chartforgex-grid-header{margin:0 0 18px}.chartforgex-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-grid-panel-height,auto);gap:var(--cfx-grid-gap)}.chartforgex-grid-panel{min-width:0;width:100%;min-height:var(--cfx-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block}.chartforgex-grid.fit-stretch .chartforgex-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){body{padding:16px}.chartforgex-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}";
+    private static string BuildCss(ChartColor background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize) {
+        return HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "var(--cfx-grid-padding,24px)") + ".chartforgex-grid{display:block;width:min(100%,1440px);margin:0 auto}.chartforgex-grid-header{margin:0 0 18px}.chartforgex-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-grid-panel-height,auto);gap:var(--cfx-grid-gap)}.chartforgex-grid-panel{min-width:0;width:100%;min-height:var(--cfx-grid-panel-height,auto);display:grid;place-items:center;overflow:visible}.chartforgex-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-grid.fit-stretch .chartforgex-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){body{padding:16px}.chartforgex-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
     }
 
     private static string? PanelSpanStyle(int columnSpan, int rowSpan, bool hasFixedPanelSize) {

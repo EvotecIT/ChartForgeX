@@ -18,7 +18,7 @@ public sealed class HtmlVisualBlockRenderer {
         return new HtmlMarkupWriter()
             .StartElement("div")
             .Attribute("class", "chartforgex-visual-block")
-            .Attribute("style", "width:100%;max-width:" + block.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box")
+            .Attribute("style", "width:100%;max-width:" + block.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible")
             .EndStartElement()
             .RawTrusted(_svg.Render(block, NextScope()))
             .EndElement()
@@ -29,13 +29,13 @@ public sealed class HtmlVisualBlockRenderer {
     public string RenderPage(IVisualBlock block) {
         VisualBlockRendering.Validate(block);
         var theme = block.Options.Theme;
-        var bg = block.Options.TransparentBackground ? theme.CardBackground.ToCss() : theme.Background.A == 0 ? theme.CardBackground.ToCss() : theme.Background.ToCss();
+        var bg = block.Options.TransparentBackground ? theme.CardBackground : theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var title = string.IsNullOrWhiteSpace(block.AccessibleName) ? "ChartForgeX visual block" : block.AccessibleName;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, "body{margin:0;min-height:100vh;display:grid;place-items:start center;background:" + bg + ";font-family:" + VisualBlockRendering.CssFontFamily(theme.FontFamily) + ";padding:clamp(20px,5vh,48px) 24px 24px;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-block svg{max-width:100%;height:auto;display:block}@media(max-width:680px){body{padding:16px}}");
+        HtmlChartRenderer.WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, VisualBlockRendering.CssFontFamily(theme.FontFamily)) + ".chartforgex-visual-block svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0"));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(block)).Line()
@@ -48,4 +48,5 @@ public sealed class HtmlVisualBlockRenderer {
         var value = Interlocked.Increment(ref ScopeCounter);
         return "html-visual-block-" + value.ToString(CultureInfo.InvariantCulture);
     }
+
 }

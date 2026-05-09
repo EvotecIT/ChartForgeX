@@ -1,6 +1,8 @@
 namespace ChartForgeX.Rendering;
 
 internal static class ChartVisualPrimitives {
+    public const string SvgGuideStrokeClass = "cfx-guide-stroke";
+    public const string SvgPremiumStrokeClass = "cfx-premium-stroke";
     public const double StrokeHaloOpacity = 0.14;
     public const double LineHaloStrokeExtra = 5;
     public const double LineAmbientHaloOpacity = 0.055;
@@ -9,6 +11,14 @@ internal static class ChartVisualPrimitives {
     public const double LineHighlightStrokeRatio = 0.30;
     public const double CardSurfaceInset = 14;
     public const double CardBorderInset = 0.5;
+    public const double CardInnerHighlightInset = 1.5;
+    public const double CardInnerHighlightOpacity = 0.42;
+    public const double PlotInnerHighlightInset = 1.0;
+    public const double PlotInnerHighlightOpacity = 0.32;
+    public const double SurfaceGradientLightTopBlend = 0.18;
+    public const double SurfaceGradientLightBottomBlend = 0.035;
+    public const double SurfaceGradientDarkTopBlend = 0.08;
+    public const double SurfaceGradientDarkBottomBlend = 0.16;
     public const double SvgCardShadowKeyYOffset = 4;
     public const double SvgCardShadowKeyBlur = 6;
     public const double SvgCardShadowKeyOpacityRatio = 0.44;
@@ -48,6 +58,7 @@ internal static class ChartVisualPrimitives {
     public const double StatusMarkerRadius = 4;
     public const double StatusMarkerStrokeWidth = 1.5;
     public const double PngStatusMarkerOutlineRadius = 5.2;
+    public const double BulletContentInset = 18;
     public const double BulletTargetStrokeWidth = 3;
     public const double BulletAxisStrokeWidth = 1.1;
     public const double PngTextHaloInnerOffset = 1.0;
@@ -224,6 +235,9 @@ internal static class ChartVisualPrimitives {
     public const double FunnelSegmentGradientBottomBlend = 0.92;
     public const double FunnelDropoffLineStrokeWidth = 1.1;
     public const double FunnelDropoffLineOpacity = 0.62;
+    public const double FunnelLabelFontSizeMinimum = 13;
+    public const double FunnelValueFontSizeMinimum = 12;
+    public const double FunnelLabelHaloStrokeWidth = 2.2;
     public const double FunnelHighlightOpacityLight = 0.22;
     public const double FunnelHighlightOpacityDark = 0.14;
 
@@ -246,6 +260,7 @@ internal static class ChartVisualPrimitives {
     public const double TreeNodeLabelHorizontalPadding = 16;
     public const double TreeNodeLabelVerticalPadding = 9;
     public const double TreeNodeLabelLineHeightFactor = 1.12;
+    public const double TreeLayoutHorizontalPadding = 18;
     public const double TreeLayoutVerticalPadding = 18;
     public const double TreeLayoutLeafInset = 9;
     public const double TreeNodeBorderOpacity = 0.42;
