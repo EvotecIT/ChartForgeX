@@ -162,7 +162,12 @@ public sealed class SvgVisualBlockRenderer {
         var labelX = content.X;
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
-        if (card.Status != VisualStatus.None) writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", 0).Attribute("y", 0).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", options.Size.Height).Attribute("fill", statusColor.ToCss()).Attribute("clip-path", "url(#" + id + "-visualCardClip)").EndEmptyElement().Line();
+        if (card.Status != VisualStatus.None) {
+            writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", 0).Attribute("y", 0).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", options.Size.Height).Attribute("fill", statusColor.ToCss());
+            if (options.ShowCard && theme.UseCard) writer.Attribute("clip-path", "url(#" + id + "-visualCardClip)");
+            writer.EndEmptyElement().Line();
+        }
+
         if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
             var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));

@@ -126,7 +126,11 @@ public sealed class PngVisualBlockRenderer {
         var labelX = content.X;
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
-        if (card.Status != VisualStatus.None) canvas.FillRectClippedToRoundedRect(0, 0, ChartVisualPrimitives.MetricStatusBarWidth, options.Size.Height, 0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, statusColor);
+        if (card.Status != VisualStatus.None) {
+            if (options.ShowCard && theme.UseCard) canvas.FillRectClippedToRoundedRect(0, 0, ChartVisualPrimitives.MetricStatusBarWidth, options.Size.Height, 0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, statusColor);
+            else canvas.FillRect(0, 0, ChartVisualPrimitives.MetricStatusBarWidth, options.Size.Height, statusColor);
+        }
+
         if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
             var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
