@@ -265,10 +265,13 @@ public sealed partial class TopologyPngRenderer {
                 canvas.FillRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, Color(IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background));
                 canvas.StrokeRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, WithAlpha(Color(theme.Border), IsMonitoringDashboardStyle(options) ? (byte)184 : byte.MaxValue), 1);
             }
-            DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options);
             var baseColor = edge.IsMuted ? Color(theme.MutedForeground) : Color(theme.StatusColor(edge.Status));
-            var color = highlight.IsEdgeHighlighted(edge) ? baseColor : WithAlpha(baseColor, (byte)Math.Round(255 * highlight.DimmedOpacity));
-            DrawEdgeLabelLines(canvas, layout, cx, cy, color, Color(theme.MutedForeground), Color(theme.Background), IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates);
+            var isHighlighted = highlight.IsEdgeHighlighted(edge);
+            var color = isHighlighted ? baseColor : WithAlpha(baseColor, HighlightAlpha(255, false, highlight));
+            var secondaryColor = isHighlighted ? Color(theme.MutedForeground) : WithAlpha(Color(theme.MutedForeground), HighlightAlpha(255, false, highlight));
+            var haloColor = WithAlpha(Color(theme.Background), HighlightAlpha(255, isHighlighted, highlight));
+            DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options, highlight, isHighlighted);
+            DrawEdgeLabelLines(canvas, layout, cx, cy, color, secondaryColor, haloColor, IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates);
         }
     }
 

@@ -592,7 +592,10 @@ public static class TopologyChartExtensions {
                 .ThenBy(edge => edge.Id, StringComparer.Ordinal)
                 .ToList();
             if (edges.Count < 2) continue;
-            for (var i = 0; i < edges.Count; i++) edges[i].RouteLane = (i - (edges.Count - 1) / 2.0) * spacing;
+            for (var i = 0; i < edges.Count; i++) {
+                edges[i].RouteLane = (i - (edges.Count - 1) / 2.0) * spacing;
+                edges[i].HasRouteLaneOverride = true;
+            }
         }
 
         return chart;

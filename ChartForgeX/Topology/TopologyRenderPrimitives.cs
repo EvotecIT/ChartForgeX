@@ -658,6 +658,8 @@ internal static partial class TopologyRenderPrimitives {
             return new LabelBox(node.X - padding, node.Y - padding, node.X + node.Width + padding, node.Y + node.Height + padding);
         }
 
+        public static LabelBox FromBounds(double left, double top, double right, double bottom) => new(left, top, right, bottom);
+
         public static LabelBox FromGroup(TopologyGroup group, double padding) {
             return new LabelBox(group.X - padding, group.Y - padding, group.X + group.Width + padding, group.Y + group.Height + padding);
         }

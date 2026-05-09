@@ -10,7 +10,7 @@ internal static partial class TopologyRenderPrimitives {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var nodeBoxes = chart.Nodes
             .Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
-            .Select(node => LabelBox.FromNode(node, 8))
+            .Select(node => EdgeLabelNodeObstacle(node, options, 8))
             .ToList();
         var groupHeaderBoxes = chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 8)).ToList();
         var groupBoxes = chart.Groups.Select(group => LabelBox.FromGroup(group, 8)).ToList();
@@ -40,7 +40,7 @@ internal static partial class TopologyRenderPrimitives {
             if (options.IncludeGroups && options.IncludeGroupLabels) obstacles.AddRange(groupHeaderBoxes);
             if (options.IncludeGroups && IsInterGroupEdge(edge, nodes)) obstacles.AddRange(groupBoxes);
             var preferredGroup = options.IncludeGroups ? SameGroupBox(edge, nodes, chart.Groups) : null;
-            var currentOrder = edgeRenderOrders.TryGetValue(edge.Id, out var order) ? order : 0;
+            var currentOrder = edgeRenderOrders.TryGetValue(edge, out var order) ? order : 0;
             var routeClearance = avoidOwnRoute ? AutomaticRouteClearanceOffset(points, labelPoint, width, height, chart.Viewport, chart.Legend) : new ChartPoint(0, 0);
             var baseX = labelPoint.X + edge.LabelOffsetX + (Math.Abs(edge.LabelOffsetX) < 0.000001 ? routeClearance.X : 0);
             var baseY = labelPoint.Y + edge.LabelOffsetY + (Math.Abs(edge.LabelOffsetY) < 0.000001 ? routeClearance.Y : 0);
@@ -53,7 +53,19 @@ internal static partial class TopologyRenderPrimitives {
         return layouts;
     }
 
-    private static ChartPoint PlaceLabel(TopologyEdge edge, double baseX, double baseY, double width, double height, TopologyViewport viewport, TopologyLegend? legend, IReadOnlyList<LabelBox> nodeBoxes, IReadOnlyList<LabelBox> placedLabels, IReadOnlyList<EdgeSegment> edgeSegments, IReadOnlyDictionary<string, int> edgeRenderOrders, int currentRenderOrder, bool avoidOwnRoute, bool monitoringStyle, LabelBox? preferredGroup) {
+    private static LabelBox EdgeLabelNodeObstacle(TopologyNode node, TopologyRenderOptions options, double padding) {
+        if (EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Icon || !options.IncludeNodeLabels || !options.IncludeIconLabels) return LabelBox.FromNode(node, padding);
+        var labelWidth = IconLabelPlateWidth(node);
+        var labelY = IconLabelPlateY(node);
+        var centerX = CenterX(node);
+        return LabelBox.FromBounds(
+            Math.Min(node.X - padding, centerX - labelWidth / 2 - padding),
+            Math.Min(node.Y - padding, labelY - padding),
+            Math.Max(node.X + node.Width + padding, centerX + labelWidth / 2 + padding),
+            Math.Max(node.Y + node.Height + padding, labelY + 15 + padding));
+    }
+
+    private static ChartPoint PlaceLabel(TopologyEdge edge, double baseX, double baseY, double width, double height, TopologyViewport viewport, TopologyLegend? legend, IReadOnlyList<LabelBox> nodeBoxes, IReadOnlyList<LabelBox> placedLabels, IReadOnlyList<EdgeSegment> edgeSegments, IReadOnlyDictionary<TopologyEdge, int> edgeRenderOrders, int currentRenderOrder, bool avoidOwnRoute, bool monitoringStyle, LabelBox? preferredGroup) {
         var candidates = LabelCandidates(baseX, baseY, avoidOwnRoute);
         ChartPoint? best = null;
         var bestScore = double.MaxValue;
@@ -197,12 +209,12 @@ internal static partial class TopologyRenderPrimitives {
         return score;
     }
 
-    private static double EdgeOverlapScore(TopologyEdge edge, LabelBox box, IReadOnlyList<EdgeSegment> segments, IReadOnlyDictionary<string, int> edgeRenderOrders, int currentRenderOrder, bool avoidOwnRoute) {
+    private static double EdgeOverlapScore(TopologyEdge edge, LabelBox box, IReadOnlyList<EdgeSegment> segments, IReadOnlyDictionary<TopologyEdge, int> edgeRenderOrders, int currentRenderOrder, bool avoidOwnRoute) {
         var score = 0.0;
         var expanded = box.Expand(avoidOwnRoute ? 10 : 5);
         foreach (var segment in segments) {
             if (ReferenceEquals(edge, segment.Edge) && !avoidOwnRoute) continue;
-            if (!ReferenceEquals(edge, segment.Edge) && edgeRenderOrders.TryGetValue(segment.Edge.Id, out var segmentOrder) && segmentOrder < currentRenderOrder) continue;
+            if (!ReferenceEquals(edge, segment.Edge) && edgeRenderOrders.TryGetValue(segment.Edge, out var segmentOrder) && segmentOrder < currentRenderOrder) continue;
             if (expanded.Intersects(segment.Start, segment.End)) score += ReferenceEquals(edge, segment.Edge) ? 96 : 120;
         }
 

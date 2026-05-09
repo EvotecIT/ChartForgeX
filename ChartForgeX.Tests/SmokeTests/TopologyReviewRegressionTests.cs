@@ -139,6 +139,24 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(groupless.CenterY - 150) < 0.01, "Hidden group surfaces should not reserve phantom edge-label obstacles.");
     }
 
+    private static void TopologyEdgeLabelObstaclesReserveIconLabelPlates() {
+        var chart = TopologyChart.Create()
+            .WithId("icon-label-obstacle")
+            .WithViewport(420, 260, 20)
+            .WithLegend(null)
+            .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
+            .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
+            .AddNode("owner", "Payments Platform Owner", 176, 88, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 48, height: 42)
+            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
+            .WithNodeDisplay("owner", TopologyNodeDisplayMode.Icon);
+
+        var hiddenIconLabel = TopologyRenderPrimitives.EdgeLabelLayouts(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false, IncludeIconLabels = true }).Single();
+        var visibleIconLabel = TopologyRenderPrimitives.EdgeLabelLayouts(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = true, IncludeIconLabels = true }).Single();
+
+        Assert(Math.Abs(hiddenIconLabel.CenterY - 150) < 0.01, "Hidden icon labels should not reserve edge-label obstacles.");
+        Assert(Math.Abs(visibleIconLabel.CenterY - 150) > 0.01, "Rendered icon-label plates should reserve edge-label obstacles.");
+    }
+
     private static void TopologyHiddenNodesDoNotAffectViewportFitOrEdgeLabels() {
         var viewportChart = TopologyChart.Create()
             .WithId("hidden-fit")
@@ -207,6 +225,28 @@ internal static partial class SmokeTests {
         Assert(string.Equals(callout.Placement, "left-corner", StringComparison.Ordinal), "Explicit calloutPlacement metadata should be honored even when global map-edge preference is disabled.");
     }
 
+    private static void TopologySingleGeographicCalloutUsesNearestMapCorner() {
+        var chart = TopologyChart.Create()
+            .WithId("single-callout-corner")
+            .WithViewport(640, 340, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.Geographic)
+            .WithMapViewport(ChartMapViewport.World())
+            .AddGroup("apac", "APAC", 0, 0, 0, 0, TopologyHealthStatus.Warning, "1 site", symbol: "region")
+            .AddNode("sin", "Singapore", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Warning, "apac", width: 48, height: 36)
+            .WithGroupCoordinates("apac", 103.8198, 1.3521)
+            .WithNodeCoordinates("sin", 103.8198, 1.3521);
+
+        var callout = TopologyGeographicCallouts.Build(chart, new TopologyRenderOptions {
+            IncludeLegend = false,
+            IncludeGroups = false,
+            IncludeGeographicCallouts = true,
+            PreferGeographicCalloutMapEdges = true
+        }.WithMonitoringDashboardStyle(), TopologyTheme.Light()).Single();
+
+        Assert(string.Equals(callout.Placement, "right-corner", StringComparison.Ordinal), "A single eastern callout should prefer the right map corner instead of defaulting to the left.");
+    }
+
     private static void TopologyPngHalosUseHighlightAlpha() {
         var chart = TopologyChart.Create()
             .WithId("highlight-alpha")
@@ -241,6 +281,41 @@ internal static partial class SmokeTests {
         var expectedWidth = TopologyRenderPrimitives.IconLabelPlateWidth(node) + 16;
 
         Assert(obstacle.Width >= expectedWidth, "Geographic callout icon obstacles should reserve the rendered icon-label plate width.");
+    }
+
+    private static void TopologyGeographicCalloutIconObstaclesFollowRenderedLabels() {
+        var node = new TopologyNode {
+            Id = "owner",
+            Label = "Payments Platform Ownership Team",
+            X = 80,
+            Y = 60,
+            Width = 42,
+            Height = 36,
+            Kind = TopologyNodeKind.Service,
+            DisplayMode = TopologyNodeDisplayMode.Icon
+        };
+        var hiddenLabelObstacle = TopologyGeographicCallouts.CalloutBox.FromNodeVisual(node, new TopologyRenderOptions { IncludeNodeLabels = false, IncludeIconLabels = true });
+        var visibleLabelObstacle = TopologyGeographicCallouts.CalloutBox.FromNodeVisual(node, new TopologyRenderOptions { IncludeNodeLabels = true, IncludeIconLabels = true });
+
+        Assert(visibleLabelObstacle.Width > hiddenLabelObstacle.Width, "Geographic callout icon obstacles should only reserve icon-label plates when node labels are rendered.");
+    }
+
+    private static void TopologyReciprocalBundleMarksAssignedLanesExplicit() {
+        var chart = TopologyChart.Create()
+            .WithId("reciprocal-center-lane")
+            .WithViewport(340, 220, 20)
+            .WithLegend(null)
+            .AddNode("a", "A", 82, 86, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
+            .AddNode("b", "B", 228, 86, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 44, height: 44, symbol: "DC")
+            .AddEdge("z-center", "a", "b", "center", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("a-left", "a", "b", "left", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("m-right", "b", "a", "right", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .WithReciprocalEdgeRouteBundles(20);
+
+        var center = chart.Edges.Single(edge => edge.Id == "z-center");
+
+        Assert(Math.Abs(center.RouteLane) < 0.0001, "Reciprocal route bundles should assign the sorted middle edge to the center lane.");
+        Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, center)) < 0.0001, "Reciprocal route bundle lanes should be treated as explicit so inferred duplicate offsets do not move the center lane.");
     }
 
     private static void TopologyGeographicRegionHullsIgnoreHiddenNodes() {

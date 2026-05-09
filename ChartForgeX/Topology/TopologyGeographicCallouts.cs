@@ -140,6 +140,7 @@ internal static class TopologyGeographicCallouts {
     private static string? PreferredPlacement(TopologyGroup group, IReadOnlyDictionary<string, int> longitudeRank, bool preferMapEdges) {
         if (group.Metadata.TryGetValue("calloutPlacement", out var metadataPlacement) && !string.IsNullOrWhiteSpace(metadataPlacement)) return metadataPlacement.Trim();
         if (!preferMapEdges || longitudeRank.Count == 0 || !longitudeRank.TryGetValue(group.Id, out var rank)) return null;
+        if (longitudeRank.Count == 1) return group.Longitude.GetValueOrDefault() >= 0 ? "right-corner" : "left-corner";
         if (rank == 0) return "left-corner";
         if (rank == longitudeRank.Count - 1) return "right-corner";
         return "top";
@@ -297,9 +298,10 @@ internal static class TopologyGeographicCallouts {
             }
 
             if (mode == TopologyNodeDisplayMode.Icon) {
-                var labelWidth = options.IncludeIconLabels ? IconLabelPlateWidth(node) : node.Width;
+                var hasIconLabel = options.IncludeNodeLabels && options.IncludeIconLabels;
+                var labelWidth = hasIconLabel ? IconLabelPlateWidth(node) : node.Width;
                 var centerX = node.X + node.Width / 2;
-                if (!options.IncludeIconLabels) return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, node.Height + 16);
+                if (!hasIconLabel) return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, node.Height + 16);
                 var labelBottom = IconLabelPlateY(node) + 15;
                 return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, labelBottom - node.Y + 8);
             }
