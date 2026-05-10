@@ -37,6 +37,8 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-replication-health-hub", BuildReplicationHealthHub(), "Replication Health Hub", "Compact replication health view with central hub, grouped sites, dense dot nodes, and critical path emphasis.", replicationHealthOptions);
         SaveTopology(target, artifacts, "visual-directory-health-replication", BuildDirectoryHealthReplication(), "Directory Health Replication", "Small directory-health topology with site cards, domain controller nodes, and cross-site replication status.", routeOptions);
         SaveTopology(target, artifacts, "visual-service-dependency-map", BuildServiceDependencyMap(), "Service Dependency Map", "Generic service dependency topology showing upstream/downstream service health without TestimoX-specific types.");
+        SaveTopology(target, artifacts, "visual-directory-level-window", BuildDirectoryLevelWindow(), "Directory Level Window", "Forest/domain/group/user hierarchy rendered as levels 2..3 with ancestor breadcrumb context.", new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle());
+        SaveTopology(target, artifacts, "visual-team-hierarchy-builder", BuildTeamHierarchyBuilder(), "Team Hierarchy Builder", "Team/org topology generated from parent-child member data with level filtering and wrapped crowded levels.", new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle());
         SaveTopology(target, artifacts, "visual-geographic-topology-map", BuildGeographicTopologyMap(), "Geographic Topology Map", "Topology-native geographic layout with typed coordinates, projected site markers, curved WAN route arcs, labels, regional callouts, and SVG/PNG metadata hooks.", new TopologyRenderOptions { IncludeGroups = false, IncludeGeographicCallouts = true, GeographicCalloutMaxItems = 3, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle().WithSelectedGroup("APAC").WithSelectedNode("apac-hub").WithSelectedEdge("emea-apac"));
 
         SaveMap(target, artifacts, "visual-geographic-region-map", BuildGeographicRegionMap(), "Geographic Region Map", "Dotted-map chart with AMER, EMEA, and APAC hubs, weighted markers, and cross-region route overlays.");
@@ -497,6 +499,58 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("api-queue", "api", "queue", "1,287", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, TopologyDirection.Forward)
             .AddEdge("api-sql", "api", "sql", "P95 412 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Forward)
             .AddEdge("team-api", "team", "api", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved);
+    }
+
+    private static TopologyChart BuildTeamHierarchyBuilder() {
+        return TopologyChart.Create()
+            .WithId("visual-team-hierarchy-builder")
+            .WithTitle("Team Hierarchy Builder")
+            .WithSubtitle("Levels 0..3 generated from team member data; crowded levels wrap deterministically.")
+            .WithViewport(1180, 620, 28)
+            .WithLegend(TopologyLegend.Default()
+                .AddNodeKind("Team", TopologyNodeKind.Team, symbol: "TM")
+                .AddNodeKind("Person", TopologyNodeKind.Person, symbol: "U")
+                .AddEdgeKind("Ownership", TopologyEdgeKind.Ownership))
+            .AddTeam("platform-team", "Platform Team", new[] {
+                new TopologyTeamMember("marcel", "Marcel", "Founder") { Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("jeremiah", "Jeremiah", "Head of Sales") { ParentId = "marcel", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("deniz", "Deniz", "Project Manager") { ParentId = "marcel", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("ersad", "Ersad", "Product Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("pawel", "Pawel", "Illustration Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Warning },
+                new TopologyTeamMember("darius", "Darius", "Illustration Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("ruben", "Ruben", "Head of Branding") { ParentId = "deniz", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("emre", "Emre", "Product Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("halil", "Halil", "Product Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Warning },
+                new TopologyTeamMember("choirul", "Choirul", "Product Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("vipul", "Vipul", "Frontend Developer") { ParentId = "jeremiah", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("karan", "Karan", "Frontend Developer") { ParentId = "jeremiah", Status = TopologyHealthStatus.Critical },
+                new TopologyTeamMember("vishesh", "Vishesh", "Brand Designer") { ParentId = "jeremiah", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("kacper", "Kacper", "Motion Designer") { ParentId = "jeremiah", Status = TopologyHealthStatus.Healthy }
+            }, new TopologyTeamOptions { MaxLevel = 3 });
+    }
+
+    private static TopologyChart BuildDirectoryLevelWindow() {
+        return TopologyChart.Create()
+            .WithId("visual-directory-level-window")
+            .WithTitle("Directory Level Window")
+            .WithSubtitle("Levels 2..3 with forest and domain kept as breadcrumb context.")
+            .WithViewport(1180, 560, 28)
+            .WithLegend(TopologyLegend.Default()
+                .AddNodeKind("Forest / Domain", TopologyNodeKind.Namespace, symbol: "DOM")
+                .AddNodeKind("Group", TopologyNodeKind.Team, symbol: "GRP")
+                .AddNodeKind("User", TopologyNodeKind.Person, symbol: "U")
+                .AddEdgeKind("Membership", TopologyEdgeKind.Membership))
+            .AddHierarchy(new[] {
+                new TopologyHierarchyItem("forest", "evotec.xyz") { Kind = TopologyNodeKind.Namespace, IconId = "forest", Symbol = "FOR", Subtitle = "Forest" },
+                new TopologyHierarchyItem("domain", "ad.evotec.xyz", "forest") { Kind = TopologyNodeKind.Namespace, IconId = "domain", Symbol = "DOM", Subtitle = "Domain" },
+                new TopologyHierarchyItem("domain-admins", "Domain Admins", "domain") { Kind = TopologyNodeKind.Team, IconId = "team", Symbol = "DA", Status = TopologyHealthStatus.Critical, Subtitle = "Privileged group" },
+                new TopologyHierarchyItem("enterprise-admins", "Enterprise Admins", "domain") { Kind = TopologyNodeKind.Team, IconId = "team", Symbol = "EA", Status = TopologyHealthStatus.Warning, Subtitle = "Privileged group" },
+                new TopologyHierarchyItem("schema-admins", "Schema Admins", "domain") { Kind = TopologyNodeKind.Team, IconId = "team", Symbol = "SA", Subtitle = "Privileged group" },
+                new TopologyHierarchyItem("przemyslaw", "Przemyslaw Klys", "domain-admins") { Kind = TopologyNodeKind.Person, IconId = "person", Symbol = "U", Status = TopologyHealthStatus.Warning, Subtitle = "Direct member" },
+                new TopologyHierarchyItem("administrator", "Administrator", "enterprise-admins") { Kind = TopologyNodeKind.Person, IconId = "person", Symbol = "U", Status = TopologyHealthStatus.Critical, Subtitle = "Nested member" },
+                new TopologyHierarchyItem("svc-backup", "svc_backup", "schema-admins") { Kind = TopologyNodeKind.Person, IconId = "operator", Symbol = "SVC", Subtitle = "Service account" },
+                new TopologyHierarchyItem("admin-ws", "Admin Workstation", "przemyslaw") { Kind = TopologyNodeKind.Endpoint, IconId = "desktop", Symbol = "PC", Status = TopologyHealthStatus.Warning, Subtitle = "Level 4 hidden" }
+            }, new TopologyHierarchyOptions { MinLevel = 2, MaxLevel = 3, IncludeAncestorContext = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, EdgeKind = TopologyEdgeKind.Membership, EdgeStatus = TopologyHealthStatus.Healthy });
     }
 
     private static Chart BuildGeographicRegionMap() {
