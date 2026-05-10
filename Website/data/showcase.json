@@ -1,0 +1,136 @@
+{
+  "items": [
+    {
+      "category": "Smooth area",
+      "title": "Domain security checks (ReportDark)",
+      "body": "Stacked smooth areas with line series, target line, and weekend band for reporting security-check trends.",
+      "image": "/examples/generated/domain-security-dark.svg",
+      "docs": "/docs/themes/",
+      "code": "var dnssec = Chart.Create()\n    .WithTitle(\"Domain Security Checks\")\n    .WithSubtitle(\"Dependency-free SVG, HTML and PNG chart rendering\")\n    .WithXAxis(\"Run\")\n    .WithYAxis(\"Checks\")\n    .WithTheme(ChartTheme.ReportDark())\n    .WithSize(1180, 640)\n    .WithTransparentBackground(true)\n    .WithXLabels(\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\", \"Next\")\n    .AddSmoothArea(\"Passed\", Points(820, 940, 980, 1040, 1120, 1180, 1230, 1260))\n    .AddSmoothLine(\"Warnings\", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36))\n    .AddSmoothLine(\"Failed\", Points(22, 30, 28, 21, 18, 15, 13, 10), ChartColor.FromRgb(248, 113, 113))\n    .AddHorizontalLine(100, \"warning target\", ChartColor.FromRgb(251, 191, 36))\n    .AddVerticalBand(6, 7, \"weekend\", ChartColor.FromRgb(96, 165, 250), 0.10);\n\nSaveChart(dnssec, \"domain-security-dark\");",
+      "save_svg": "dnssec.SaveSvg(\"domain-security-dark.svg\");",
+      "save_html": "dnssec.SaveHtml(\"domain-security-dark.html\");",
+      "save_png": "dnssec.SavePng(\"domain-security-dark.png\");"
+    },
+    {
+      "category": "Bar + line combo",
+      "title": "Certificate transparency volume",
+      "body": "Bar series with a smooth line on a secondary y-axis, plus a horizontal band. Real ReportLight theme output, no JavaScript runtime needed.",
+      "image": "/examples/generated/ct-volume-light.svg",
+      "docs": "/docs/themes/",
+      "code": "var bars = Chart.Create()\n    .WithTitle(\"Certificate Transparency Volume\")\n    .WithSubtitle(\"Bar-line combo with a secondary y-axis and no JavaScript runtime\")\n    .WithXAxis(\"Day\")\n    .WithYAxis(\"Certificates\")\n    .WithSecondaryYAxis(\"Pass rate\", value => value.ToString(\"0\") + \"%\")\n    .WithSecondaryYAxisBounds(0, 100)\n    .WithTheme(ChartTheme.ReportLight())\n    .WithSize(1180, 640)\n    .WithXLabels(\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\")\n    .AddBarLineCombo(\n        \"Certificates\",\n        Points(4200, 5300, 6100, 5900, 7200, 8100, 7900),\n        \"Pass rate\",\n        Points(87, 89, 91, 90, 93, 95, 94),\n        ChartColor.FromRgb(37, 99, 235),\n        ChartColor.FromRgb(14, 165, 233),\n        smoothLine: true,\n        lineAxis: ChartAxisSide.Secondary)\n    .AddHorizontalBand(7000, 8500, \"high volume\", ChartColor.FromRgb(16, 185, 129), 0.12);\n\nSaveChart(bars, \"ct-volume-light\");",
+      "save_svg": "bars.SaveSvg(\"ct-volume-light.svg\");",
+      "save_html": "bars.SaveHtml(\"ct-volume-light.html\");",
+      "save_png": "bars.SavePng(\"ct-volume-light.png\");"
+    },
+    {
+      "category": "Stacked horizontal bar",
+      "title": "Domain control composition",
+      "body": "Stacked horizontal bars with running totals, data labels, and percent formatting. Reads naturally for long category names.",
+      "image": "/examples/generated/domain-control-horizontal-light.svg",
+      "docs": "/docs/themes/",
+      "code": "var horizontal = Chart.Create()\n    .WithTitle(\"Domain Control Composition\")\n    .WithSubtitle(\"Stacked horizontal bars keep long category labels readable\")\n    .WithXAxis(\"Coverage\")\n    .WithYAxis(\"Control\")\n    .WithTheme(ChartTheme.ReportLight())\n    .WithSize(920, 560)\n    .WithStackedHorizontalBars()\n    .WithStackTotals()\n    .WithDataLabels()\n    .WithValueFormatter(value => value.ToString(\"0\") + \"%\")\n    .WithXLabels(\"SPF alignment\", \"DMARC policy enforcement\", \"DNSSEC coverage\",\n                 \"Certificate transparency monitoring\", \"MTA-STS deployment\")\n    .AddHorizontalBar(\"Complete\", Points(72, 64, 52, 78, 44), ChartColor.FromRgb(16, 185, 129))\n    .AddHorizontalBar(\"Partial\",  Points(24, 24, 22, 14, 19), ChartColor.FromRgb(245, 158, 11))\n    .AddHorizontalBar(\"Missing\",  Points(4, 12, 26, 8, 37),   ChartColor.FromRgb(239, 68, 68));\n\nSaveChart(horizontal, \"domain-control-horizontal-light\");",
+      "save_svg": "horizontal.SaveSvg(\"domain-control-horizontal-light.svg\");",
+      "save_html": "horizontal.SaveHtml(\"domain-control-horizontal-light.html\");",
+      "save_png": "horizontal.SavePng(\"domain-control-horizontal-light.png\");"
+    },
+    {
+      "category": "Heatmap",
+      "title": "Control coverage matrix",
+      "body": "Heatmap rows for comparing domain groups across security controls. Built-in semantic scale colour-codes the values automatically.",
+      "image": "/examples/generated/control-coverage-heatmap-dark.svg",
+      "docs": "/docs/themes/",
+      "code": "var heatmap = Chart.Create()\n    .WithTitle(\"Control Coverage Matrix\")\n    .WithSubtitle(\"Heatmap rows for comparing domain groups across security controls\")\n    .WithXAxis(\"Control\")\n    .WithYAxis(\"Domain group\")\n    .WithTheme(ChartTheme.ReportDark())\n    .WithSize(980, 560)\n    .WithLegend(false)\n    .WithDataLabels()\n    .WithHeatmapScale(ChartHeatmapScale.Semantic)\n    .WithValueFormatter(value => value.ToString(\"0\") + \"%\")\n    .WithXLabels(\"SPF\", \"DMARC\", \"DNSSEC\", \"MTA-STS\", \"TLS-RPT\", \"CT\")\n    .AddHeatmapRow(\"Primary domains\",  Points(96, 88, 74, 63, 58, 92))\n    .AddHeatmapRow(\"Parked domains\",   Points(74, 62, 51, 42, 38, 66))\n    .AddHeatmapRow(\"Regional domains\", Points(82, 77, 68, 54, 49, 80))\n    .AddHeatmapRow(\"Acquired domains\", Points(58, 43, 36, 28, 25, 52));\n\nSaveChart(heatmap, \"control-coverage-heatmap-dark\");",
+      "save_svg": "heatmap.SaveSvg(\"control-coverage-heatmap-dark.svg\");",
+      "save_html": "heatmap.SaveHtml(\"control-coverage-heatmap-dark.html\");",
+      "save_png": "heatmap.SavePng(\"control-coverage-heatmap-dark.png\");"
+    },
+    {
+      "category": "Radar",
+      "title": "Security posture radar",
+      "body": "Radial comparison across major control areas. Two series — current vs target posture — with percentage formatting.",
+      "image": "/examples/generated/security-posture-radar-dark.svg",
+      "docs": "/docs/themes/",
+      "code": "var radar = Chart.Create()\n    .WithTitle(\"Security Posture Radar\")\n    .WithSubtitle(\"Radial comparison across major domain control areas\")\n    .WithTheme(ChartTheme.ReportDark())\n    .WithSize(920, 560)\n    .WithValueFormatter(value => value.ToString(\"0\") + \"%\")\n    .WithXLabels(\"Mail auth\", \"DNSSEC\", \"TLS\", \"CT\", \"Policy\", \"Monitoring\")\n    .AddRadar(\"Current posture\", Points(92, 74, 88, 96, 81, 84), ChartColor.FromRgb(96, 165, 250))\n    .AddRadar(\"Target posture\",  Points(96, 90, 94, 98, 92, 90), ChartColor.FromRgb(52, 211, 153));\n\nSaveChart(radar, \"security-posture-radar-dark\");",
+      "save_svg": "radar.SaveSvg(\"security-posture-radar-dark.svg\");",
+      "save_html": "radar.SaveHtml(\"security-posture-radar-dark.html\");",
+      "save_png": "radar.SavePng(\"security-posture-radar-dark.png\");"
+    },
+    {
+      "category": "Gauge · bullet · radial",
+      "title": "Control scorecards small-multiples",
+      "body": "ChartGrid composes a gauge, bullet rows, radar, and polar-area into a single static report grid with shared theming.",
+      "image": "/examples/generated/control-scorecards-grid.svg",
+      "docs": "/docs/themes/",
+      "code": "var controlScorecardGrid = ChartGrid.Create()\n    .WithTitle(\"Control Scorecard Small Multiples\")\n    .WithSubtitle(\"Static report grid composed from existing dependency-free chart renderers\")\n    .WithColumns(2)\n    .Add(gauge)\n    .Add(bullet)\n    .Add(radar)\n    .Add(polarArea);\n\nSaveGrid(controlScorecardGrid, \"control-scorecards-grid\");",
+      "save_svg": "controlScorecardGrid.SaveSvg(\"control-scorecards-grid.svg\");",
+      "save_html": "controlScorecardGrid.SaveHtml(\"control-scorecards-grid.html\");",
+      "save_png": "controlScorecardGrid.SavePng(\"control-scorecards-grid.png\");"
+    },
+    {
+      "category": "Waterfall",
+      "title": "Remediation impact waterfall",
+      "body": "Waterfall deltas show how findings changed during a cleanup cycle — opened, resolved, suppressed, accepted, regressed.",
+      "image": "/examples/generated/remediation-impact-waterfall-dark.svg",
+      "docs": "/docs/themes/",
+      "code": "var waterfall = Chart.Create()\n    .WithTitle(\"Remediation Impact\")\n    .WithSubtitle(\"Waterfall deltas show how findings changed during a cleanup cycle\")\n    .WithXAxis(\"Change\")\n    .WithYAxis(\"Open findings\")\n    .WithTheme(ChartTheme.ReportDark())\n    .WithSize(920, 540)\n    .WithDataLabels()\n    .WithXLabels(\"Opened\", \"Resolved\", \"Suppressed\", \"Accepted\", \"Regressed\")\n    .AddWaterfall(\"Finding delta\", Points(24, -68, -18, -9, 11), ChartColor.FromRgb(52, 211, 153));\n\nSaveChart(waterfall, \"remediation-impact-waterfall-dark\");",
+      "save_svg": "waterfall.SaveSvg(\"remediation-impact-waterfall-dark.svg\");",
+      "save_html": "waterfall.SaveHtml(\"remediation-impact-waterfall-dark.html\");",
+      "save_png": "waterfall.SavePng(\"remediation-impact-waterfall-dark.png\");"
+    },
+    {
+      "category": "Treemap",
+      "title": "Findings composition treemap",
+      "body": "Treemap tiles show proportional contribution by category. Values render as percentages with a single value-formatter.",
+      "image": "/examples/generated/findings-composition-treemap-light.svg",
+      "docs": "/docs/themes/",
+      "code": "var findingsTreemap = Chart.Create()\n    .WithTitle(\"Findings Composition\")\n    .WithSubtitle(\"Treemap tiles show proportional contribution by category\")\n    .WithTheme(ChartTheme.ReportLight())\n    .WithSize(920, 560)\n    .WithValueFormatter(value => value.ToString(\"0\") + \"%\")\n    .AddTreemap(\"Finding share\", new[] {\n        new ChartTreemapItem(\"Authentication\", 34),\n        new ChartTreemapItem(\"Certificate lifecycle\", 24),\n        new ChartTreemapItem(\"DNS hygiene\", 18),\n        new ChartTreemapItem(\"Policy drift\", 14),\n        new ChartTreemapItem(\"Monitoring gaps\", 10)\n    });\n\nSaveChart(findingsTreemap, \"findings-composition-treemap-light\");",
+      "save_svg": "findingsTreemap.SaveSvg(\"findings-composition-treemap-light.svg\");",
+      "save_html": "findingsTreemap.SaveHtml(\"findings-composition-treemap-light.html\");",
+      "save_png": "findingsTreemap.SavePng(\"findings-composition-treemap-light.png\");"
+    },
+    {
+      "category": "Sankey",
+      "title": "Finding flow Sankey",
+      "body": "Weighted paths from discovery through remediation outcomes. Ideal for quarterly retros and audit walkthroughs.",
+      "image": "/examples/generated/finding-flow-sankey-light.svg",
+      "docs": "/docs/themes/",
+      "code": "var findingFlow = Chart.Create()\n    .WithTitle(\"Finding Flow Sankey\")\n    .WithSubtitle(\"Weighted paths from discovery through remediation outcomes\")\n    .WithTheme(ChartTheme.ReportLight())\n    .WithSize(1040, 600)\n    .WithDataLabels()\n    .AddSankey(\"Findings\", new[] {\n        new ChartSankeyLink(\"Discovered\", \"Validated\", 72),\n        new ChartSankeyLink(\"Discovered\", \"Accepted risk\", 18),\n        new ChartSankeyLink(\"Validated\", \"Owner remediation\", 48),\n        new ChartSankeyLink(\"Validated\", \"Monitoring\", 24),\n        new ChartSankeyLink(\"Owner remediation\", \"Closed\", 34),\n        new ChartSankeyLink(\"Owner remediation\", \"Retesting\", 14)\n    });\n\nSaveChart(findingFlow, \"finding-flow-sankey-light\");",
+      "save_svg": "findingFlow.SaveSvg(\"finding-flow-sankey-light.svg\");",
+      "save_html": "findingFlow.SaveHtml(\"finding-flow-sankey-light.html\");",
+      "save_png": "findingFlow.SavePng(\"finding-flow-sankey-light.png\");"
+    },
+    {
+      "category": "Gantt",
+      "title": "Domain remediation Gantt",
+      "body": "Progress, task dependencies, milestones, and a current-schedule marker — all native to ChartForgeX, no extra libraries.",
+      "image": "/examples/generated/domain-remediation-gantt-light.svg",
+      "docs": "/docs/themes/",
+      "code": "var gantt = Chart.Create()\n    .WithTitle(\"Domain Remediation Gantt\")\n    .WithSubtitle(\"Progress, task dependencies, milestones, and current schedule marker\")\n    .WithXAxis(\"Schedule\")\n    .WithYAxis(\"Workstream\")\n    .WithTheme(ChartTheme.ReportLight())\n    .WithSize(1040, 600)\n    .WithDataLabels()\n    .WithGanttToday(new DateTime(2026, 2, 18))\n    .AddGanttTask(\"Inventory scope\",     new DateTime(2026, 1, 5),  new DateTime(2026, 1, 24), 0.90, color: ChartColor.FromRgb(37, 99, 235))\n    .AddGanttTask(\"Owner remediation\",   new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.62, dependsOn: 0, color: ChartColor.FromRgb(16, 185, 129))\n    .AddGanttTask(\"Control retesting\",   new DateTime(2026, 2, 18), new DateTime(2026, 3, 12), 0.28, dependsOn: 1, color: ChartColor.FromRgb(14, 165, 233))\n    .AddGanttTask(\"Monitoring handoff\",  new DateTime(2026, 3, 8),  new DateTime(2026, 3, 26), 0.12, dependsOn: 2, color: ChartColor.FromRgb(168, 85, 247))\n    .AddGanttMilestone(\"Executive sign-off\", new DateTime(2026, 3, 30), dependsOn: 3, color: ChartColor.FromRgb(245, 158, 11));\n\nSaveChart(gantt, \"domain-remediation-gantt-light\");",
+      "save_svg": "gantt.SaveSvg(\"domain-remediation-gantt-light.svg\");",
+      "save_html": "gantt.SaveHtml(\"domain-remediation-gantt-light.html\");",
+      "save_png": "gantt.SavePng(\"domain-remediation-gantt-light.png\");"
+    },
+    {
+      "category": "Topology",
+      "title": "Site topology with regions",
+      "body": "Regional site topology with hubs, branches, bridgeheads, route labels, and site-link health.",
+      "image": "/examples/generated/site-topology.svg",
+      "docs": "/docs/topology/",
+      "code": "TopologyChart.Create()\n    .WithId(\"site-topology\")\n    .WithTitle(\"Site Topology\")\n    .WithSubtitle(\"Sample regional site topology with hubs, branches, bridgeheads, and site-link health.\")\n    .WithViewport(1200, 680, 28)\n    .WithTheme(TopologyTheme.Light())\n    .WithLegend(TopologyLegend.Default()\n        .AddNodeKind(\"Hub site\", TopologyNodeKind.Hub, symbol: \"H\")\n        .AddNodeKind(\"Branch site\", TopologyNodeKind.Branch, symbol: \"B\")\n        .AddNodeKind(\"Bridgehead\", TopologyNodeKind.Server, symbol: \"BH\")\n        .AddEdgeKind(\"Site link\", TopologyEdgeKind.Link))\n    .AddGroup(\"AMER\", \"AMER\", 60, 110, 310, 330, TopologyHealthStatus.Healthy, \"47 sites\")\n    .AddGroup(\"EMEA\", \"EMEA\", 435, 110, 330, 330, TopologyHealthStatus.Warning, \"56 sites\")\n    .AddGroup(\"APAC\", \"APAC\", 835, 110, 310, 330, TopologyHealthStatus.Critical, \"39 sites\")\n    .AddNode(\"amer-hub\", \"AMER Hub\", 160, 170, TopologyNodeKind.Hub,    TopologyHealthStatus.Healthy,  \"AMER\", \"Hub site\")\n    .AddNode(\"lon-hub\",  \"EMEA Hub\", 540, 170, TopologyNodeKind.Hub,    TopologyHealthStatus.Healthy,  \"EMEA\", \"Hub site\")\n    .AddNode(\"apac-hub\", \"APAC Hub\", 930, 170, TopologyNodeKind.Hub,    TopologyHealthStatus.Healthy,  \"APAC\", \"Hub site\")\n    // … plus branches, bridgeheads, and edges with latency labels\n    .AddEdge(\"amer-emea\", \"amer-hub\", \"lon-hub\", \"24 ms\",  TopologyEdgeKind.Link, TopologyHealthStatus.Healthy)\n    .AddEdge(\"emea-apac\", \"lon-hub\",  \"apac-hub\", \"82 ms\", TopologyEdgeKind.Link, TopologyHealthStatus.Warning)\n    .AddEdge(\"apac-anz\",  \"apac-hub\", \"anz\",      \"142 ms\", TopologyEdgeKind.Link, TopologyHealthStatus.Critical);",
+      "save_svg": "siteTopology.SaveSvg(\"site-topology.svg\");",
+      "save_html": "siteTopology.SaveHtml(\"site-topology.html\");",
+      "save_png": "siteTopology.SavePng(\"site-topology.png\");"
+    },
+    {
+      "category": "Map",
+      "title": "Travel dotted world map",
+      "body": "Dotted world layer with highlighted longitude and latitude points plus routes between them.",
+      "image": "/examples/generated/travel-dotted-map-dark.svg",
+      "docs": "/docs/maps/",
+      "code": "Chart.Create()\n    .WithTitle(\"Travel Map\")\n    .WithSubtitle(\"Dotted world layer with highlighted longitude and latitude points\")\n    .WithTheme(ChartTheme.ReportDark())\n    .WithSize(980, 560)\n    .WithLegend(false)\n    .WithDataLabels()\n    .AddDottedMap(\"Visited\", new[] {\n        new ChartMapPoint(\"Indonesia\",     113.9213, -0.7893,  ChartColor.FromRgb(34, 197, 94)),\n        new ChartMapPoint(\"Spain\",          -3.7038, 40.4168, ChartColor.FromRgb(34, 197, 94)),\n        new ChartMapPoint(\"United States\", -98.5795, 39.8283, ChartColor.FromRgb(34, 197, 94)),\n        new ChartMapPoint(\"Norway\",          8.4689, 60.4720, ChartColor.FromRgb(59, 130, 246))\n    })\n    .AddMapRouteBetweenPoints(\"United States to Spain\",  \"United States\", \"Spain\",     ChartColor.FromRgb(34, 197, 94))\n    .AddMapRouteBetweenPoints(\"Spain to Indonesia\",       \"Spain\",         \"Indonesia\", ChartColor.FromRgb(59, 130, 246));",
+      "save_svg": "travelMap.SaveSvg(\"travel-dotted-map-dark.svg\");",
+      "save_html": "travelMap.SaveHtml(\"travel-dotted-map-dark.html\");",
+      "save_png": "travelMap.SavePng(\"travel-dotted-map-dark.png\");"
+    }
+  ]
+}

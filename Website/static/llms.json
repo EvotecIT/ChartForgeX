@@ -1,0 +1,21 @@
+{
+  "name": "ChartForgeX",
+  "description": "Dependency-free chart rendering for .NET reports, dashboards, documentation, and generated websites.",
+  "url": "https://chartforgex.evotec.xyz/",
+  "source": "https://github.com/EvotecIT/ChartForgeX",
+  "hub": "https://evotec.xyz/projects/chartforgex/",
+  "resources": {
+    "docs": "https://chartforgex.evotec.xyz/docs/",
+    "examples": "https://chartforgex.evotec.xyz/examples/",
+    "promotedCases": "https://chartforgex.evotec.xyz/examples/promoted-cases.json",
+    "promotedCasesSchema": "https://chartforgex.evotec.xyz/schemas/promoted-cases.schema.json",
+    "apiCatalog": "https://chartforgex.evotec.xyz/.well-known/api-catalog",
+    "agents": "https://chartforgex.evotec.xyz/agents.json",
+    "agentSkills": "https://chartforgex.evotec.xyz/.well-known/agent-skills/index.json"
+  },
+  "build": {
+    "examples": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release",
+    "topologyOnly": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release -- --topology-only",
+    "website": "powerforge-web pipeline --config .\\Website\\pipeline.json --mode dev"
+  }
+}

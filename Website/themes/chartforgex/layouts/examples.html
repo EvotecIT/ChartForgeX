@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page.title }} | {{ site.name }}</title>
+  {{ description_meta_html }}
+  {{ canonical_html }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+</head>
+<body class="cfx-project-site cfx-examples-page">
+  <div class="ev-site-shell">
+    {{ include "header" }}
+    <main class="ev-main">
+      <div class="ev-container">
+        <section class="ev-page-hero cfx-page-hero">
+          <p class="ev-eyebrow">ChartForgeX examples</p>
+          <h1>Rendered visuals with the C# that produced them.</h1>
+          <p>Browse selected ChartForgeX outputs, switch between SVG, PNG, and HTML when available, and keep the visual result close to the source pattern that created it.</p>
+        </section>
+
+        <section class="case-summary cfx-surface-summary">
+          <div>
+            <p class="eyebrow">Generated showcase</p>
+            <h2>One chart model, multiple useful outputs.</h2>
+            <p>Each selected example keeps the rendered visual, export formats, and C# pattern close together so the result can be reviewed visually and reused quickly.</p>
+          </div>
+          <div class="case-surface-strip" aria-label="Example surfaces">
+            <span>SVG</span>
+            <span>PNG</span>
+            <span>HTML</span>
+            <span>C#</span>
+          </div>
+        </section>
+
+        {{ if data.showcase && data.showcase.items }}
+        <section class="example-list" aria-label="ChartForgeX rendered examples">
+          {{ for ex in data.showcase.items }}
+          {{~
+            slug = ex.image | string.replace "/examples/generated/" "" | string.replace ".svg" ""
+            svg_url = ex.image
+            png_url = ex.image | string.replace ".svg" ".png"
+            html_url = ex.image | string.replace ".svg" ".html"
+          ~}}
+          <article class="example-card" data-example data-case-title="{{ ex.title }}" data-case-source="ChartForgeX.Examples" data-case-source-url="https://github.com/EvotecIT/ChartForgeX/tree/master/ChartForgeX.Examples" data-case-entry="{{ slug }}" data-case-output="{{ slug }}" data-case-path="{{ html_url }}" data-svg="{{ svg_url }}" data-png="{{ png_url }}" data-html="{{ html_url }}">
+            <div class="example-preview" data-preview-card>
+              <div class="format-toolbar" role="tablist" aria-label="Preview format">
+                <div class="format-pills">
+                  <button type="button" class="format-pill is-active" data-format="svg" aria-pressed="true">
+                    <span class="pill-tag">SVG</span><span class="pill-label">vector</span>
+                  </button>
+                  <button type="button" class="format-pill" data-format="png" aria-pressed="false">
+                    <span class="pill-tag">PNG</span><span class="pill-label">raster</span>
+                  </button>
+                  <button type="button" class="format-pill" data-format="html" aria-pressed="false">
+                    <span class="pill-tag">HTML</span><span class="pill-label">page</span>
+                  </button>
+                </div>
+                <a class="preview-open" href="{{ svg_url }}" target="_blank" rel="noopener" data-open>Open<span class="sr-only"> {{ ex.title }}</span></a>
+              </div>
+              <div class="preview-frame" data-preview-frame data-current="svg">
+                <div class="alpha-checker"></div>
+                <img class="preview-img" data-optional-preview src="{{ svg_url }}" alt="{{ ex.title }} preview" loading="lazy" decoding="async" />
+              </div>
+              <div class="preview-foot">
+                <span class="preview-host" data-preview-host>{{ slug }}.svg</span>
+                <code class="preview-call" data-preview-call>{{ if ex.save_svg }}{{ ex.save_svg }}{{ else }}chart.SaveSvg("{{ slug }}.svg");{{ end }}</code>
+              </div>
+            </div>
+
+            <div class="example-meta case-body">
+              <span class="case-kind">{{ ex.category }}</span>
+              <h2>{{ ex.title }}</h2>
+              <p>{{ ex.body }}</p>
+              <div class="artifact-links">
+                <a href="{{ html_url }}" target="_blank" rel="noopener">HTML<span class="sr-only"> {{ ex.title }}</span></a>
+                <a href="{{ svg_url }}" target="_blank" rel="noopener">SVG<span class="sr-only"> {{ ex.title }}</span></a>
+                <a href="{{ png_url }}" target="_blank" rel="noopener">PNG<span class="sr-only"> {{ ex.title }}</span></a>
+              </div>
+              <div class="case-actions">
+                <button type="button" data-copy-case>Copy source details</button>
+                <button type="button" data-copy-artifacts>Copy artifact paths</button>
+                <button type="button" data-copy-markdown>Copy Markdown</button>
+              </div>
+              <div class="code-card-head">
+                <span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span>
+                <span class="code-file">{{ slug }}.cs</span>
+              </div>
+              <pre class="example-code"><code class="language-csharp">{{ ex.code }}</code></pre>
+            </div>
+          </article>
+          {{ end }}
+        </section>
+        {{ end }}
+
+        <section class="link-grid support-grid">
+          <a class="link-card" href="/gallery/">
+            <span>Gallery</span>
+            <strong>Full generated catalog</strong>
+            <small>Browse the wider generated visual catalog by category.</small>
+          </a>
+          <a class="link-card" href="/examples/promoted-cases.json">
+            <span>Manifest</span>
+            <strong>Promoted case JSON</strong>
+            <small>Machine-readable metadata for reusable project-site galleries.</small>
+          </a>
+          <a class="link-card" href="/schemas/promoted-cases.schema.json">
+            <span>Schema</span>
+            <strong>Case manifest schema</strong>
+            <small>The shared contract behind promoted examples.</small>
+          </a>
+          <a class="link-card" href="/docs/">
+            <span>Docs</span>
+            <strong>Implementation notes</strong>
+            <small>Use the documentation surface for build and publishing details.</small>
+          </a>
+        </section>
+      </div>
+    </main>
+    {{ include "footer" }}
+  </div>
+  {{ assets.js_html }}
+  {{ extra_scripts_html }}
+</body>
+</html>

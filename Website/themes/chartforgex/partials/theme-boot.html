@@ -1,0 +1,11 @@
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem("chartforgex-theme");
+      var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      document.documentElement.setAttribute("data-theme", theme);
+    } catch (_) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  })();
+</script>
