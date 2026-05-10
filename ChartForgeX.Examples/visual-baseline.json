@@ -1533,7 +1533,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 468990,
-        "minDistinctColors": 1007,
+        "minDistinctColors": 1011,
         "maxEdgeInkPixels": 0
       }
     },

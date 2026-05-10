@@ -119,6 +119,12 @@ internal static class VisualBlockRendering {
         return value.Substring(0, low) + suffix;
     }
 
+    public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize) {
+        var fontSize = Math.Max(minimumFontSize, preferredFontSize);
+        while (fontSize > minimumFontSize && EstimateTextWidth(value, fontSize) > maxWidth) fontSize -= 0.5;
+        return Math.Max(minimumFontSize, fontSize);
+    }
+
     public static ChartRect ContentRect(VisualBlockOptions options) {
         return new ChartRect(
             options.Padding.Left,

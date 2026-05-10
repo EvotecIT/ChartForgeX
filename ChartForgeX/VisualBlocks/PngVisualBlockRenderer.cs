@@ -149,7 +149,11 @@ public sealed class PngVisualBlockRenderer {
             canvas.DrawCircle(cx, cy, badgeRadius, badgeColor.WithAlpha(48));
             canvas.DrawCircleOutline(cx, cy, badgeRadius, badgeColor, 1);
             if (card.Icon != VisualIcon.None) DrawIcon(canvas, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
-            else DrawCenteredText(canvas, card.Symbol, cx, cy, Math.Max(10, badgeRadius * 0.46), badgeColor, true);
+            else {
+                var symbolMaxWidth = badgeRadius * 1.62;
+                var symbolSize = MetricSymbolFontSize(card.Symbol, Math.Max(10, badgeRadius * 0.46), symbolMaxWidth);
+                DrawCenteredText(canvas, card.Symbol, cx, cy, symbolSize, ChartColorMath.TextOnBackground(badgeColor), true, symbolMaxWidth);
+            }
         }
 
         var labelSize = Math.Max(11, theme.SubtitleFontSize);
@@ -204,6 +208,12 @@ public sealed class PngVisualBlockRenderer {
         var measuredWidth = RgbaCanvas.MeasureTextEmphasizedWidth(value, requestedSize, null);
         if (measuredWidth <= maxWidth) return requestedSize;
         return Math.Max(22, Math.Floor(requestedSize * maxWidth / Math.Max(1, measuredWidth)));
+    }
+
+    private static double MetricSymbolFontSize(string value, double requestedSize, double maxWidth) {
+        var fontSize = requestedSize;
+        while (fontSize > 7.5 && RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) > maxWidth) fontSize -= 0.5;
+        return Math.Max(7.5, fontSize);
     }
 
     private static void DrawMetricMiniSparkline(RgbaCanvas canvas, MetricCard card, double x, double y, double width, double height) {
@@ -362,11 +372,12 @@ public sealed class PngVisualBlockRenderer {
         canvas.DrawLine(x - size * 0.20, y + size * 0.82, x - size * 0.04, y + size * 0.08, color, stroke);
     }
 
-    private static void DrawCenteredText(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized) {
-        var fitted = FitText(text, size, Math.Max(1, x * 2));
+    private static void DrawCenteredText(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {
+        var fitted = FitText(text, size, Math.Max(1, maxWidth ?? x * 2));
         var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, size, null) : RgbaCanvas.MeasureTextWidth(fitted, size, null);
-        if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y, fitted, color, size);
-        else canvas.DrawText(x - width / 2, y, fitted, color, size);
+        var height = RgbaCanvas.MeasureTextHeight(size, null);
+        if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y - height / 2, fitted, color, size);
+        else canvas.DrawText(x - width / 2, y - height / 2, fitted, color, size);
     }
 
     private static ChartColor ApplyOpacity(ChartColor color, double opacity) {

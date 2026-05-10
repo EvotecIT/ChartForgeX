@@ -181,9 +181,12 @@ public sealed class SvgVisualBlockRenderer {
                 valueYOffset = Math.Max(8, badgeRadius * 0.55);
             }
 
+            var symbolMaxWidth = badgeRadius * 1.62;
+            var symbolSize = VisualBlockRendering.FitFontSize(card.Symbol, symbolMaxWidth, Math.Max(10, badgeRadius * 0.46), 7.5);
+            var symbolColor = ChartColorMath.TextOnBackground(badgeColor);
             writer.StartElement("circle").Attribute("data-cfx-role", "metric-symbol-badge").Attribute("data-cfx-placement", leftBadge ? "top-left" : "top-right").Attribute("cx", cx).Attribute("cy", cy).Attribute("r", badgeRadius).Attribute("fill", badgeColor.WithAlpha(48).ToCss()).Attribute("stroke", badgeColor.ToCss()).EndEmptyElement().Line();
             if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
-            else writer.StartElement("text").Attribute("data-cfx-role", "metric-symbol").Attribute("x", cx).Attribute("y", cy + Math.Max(10, badgeRadius * 0.46) / 3.0).Attribute("text-anchor", "middle").Attribute("fill", badgeColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", Math.Max(10, badgeRadius * 0.46)).Attribute("font-weight", "850").Text(VisualBlockRendering.FitText(card.Symbol, Math.Max(10, badgeRadius * 0.46), badgeRadius * 1.45)).EndElement().Line();
+            else writer.StartElement("text").Attribute("data-cfx-role", "metric-symbol").Attribute("x", cx).Attribute("y", cy).Attribute("text-anchor", "middle").Attribute("dominant-baseline", "central").Attribute("alignment-baseline", "central").Attribute("fill", symbolColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", symbolSize).Attribute("font-weight", "850").Text(VisualBlockRendering.FitText(card.Symbol, symbolSize, symbolMaxWidth)).EndElement().Line();
         }
 
         var labelSize = Math.Max(11, theme.SubtitleFontSize);
