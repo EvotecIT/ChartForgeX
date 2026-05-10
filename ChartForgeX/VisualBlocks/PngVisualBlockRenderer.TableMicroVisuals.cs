@@ -11,8 +11,9 @@ public sealed partial class PngVisualBlockRenderer {
         var color = cell.MicroVisualColor ?? VisualBlockRendering.PaletteAt(theme, columnIndex);
         var bounds = VisualBlockRendering.TableCellMicroVisualBounds(cell);
         if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.MiniBars) {
-            var gap = cell.MicroVisualValues.Count > 8 ? 2.0 : 3.0;
-            var barWidth = Math.Max(2, (width - gap * Math.Max(0, cell.MicroVisualValues.Count - 1)) / cell.MicroVisualValues.Count);
+            var metrics = VisualBlockRendering.FitRepeatedItems(cell.MicroVisualValues.Count, width, cell.MicroVisualValues.Count > 8 ? 2.0 : 3.0, 2);
+            var gap = metrics.Gap;
+            var barWidth = metrics.ItemWidth;
             for (var i = 0; i < cell.MicroVisualValues.Count; i++) {
                 var ratio = MicroVisualRatio(cell.MicroVisualValues[i], bounds);
                 var barHeight = Math.Max(2, height * ratio);

@@ -351,7 +351,8 @@ public sealed partial class SvgVisualBlockRenderer {
         var theme = card.Options.Theme;
         var fill = card.ActionBackground ?? theme.PlotBackground;
         var foreground = card.ActionForeground ?? theme.Text;
-        writer.StartElement("rect").Attribute("data-cfx-role", "segmented-progress-action-band").Attribute("x", x - card.Options.Padding.Left).Attribute("y", footerY).Attribute("width", card.Options.Size.Width).Attribute("height", footerHeight).Attribute("fill", fill.ToCss()).EndEmptyElement().Line();
+        var inset = Math.Min(8, Math.Max(1, footerHeight * 0.16));
+        writer.StartElement("rect").Attribute("data-cfx-role", "segmented-progress-action-band").Attribute("x", x).Attribute("y", footerY + 1).Attribute("width", width).Attribute("height", Math.Max(1, footerHeight - inset - 1)).Attribute("rx", Math.Min(10, Math.Max(2, footerHeight * 0.18))).Attribute("fill", fill.ToCss()).EndEmptyElement().Line();
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var baseline = footerY + footerHeight * 0.64;
         if (card.ActionUrl.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "visual-action-link").Attribute("href", card.ActionUrl).Attribute("target", "_top").EndStartElement().Line();
@@ -361,8 +362,9 @@ public sealed partial class SvgVisualBlockRenderer {
     }
 
     private static void RenderSegmentedStrip(SvgMarkupWriter writer, SegmentedProgressRow row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ChartTheme theme) {
-        var gap = row.Segments > 50 ? 2.0 : 3.0;
-        var segmentWidth = Math.Max(2, (width - gap * (row.Segments - 1)) / row.Segments);
+        var metrics = VisualBlockRendering.FitRepeatedItems(row.Segments, width, row.Segments > 50 ? 2.0 : 3.0, 2);
+        var gap = metrics.Gap;
+        var segmentWidth = metrics.ItemWidth;
         var filled = VisualBlockRendering.FilledSegments(row);
         var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
         var emptyStroke = theme.PlotBorder.WithAlpha(120);
@@ -391,7 +393,7 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("rx", Math.Min(4, segmentWidth * 0.35))
                 .Attribute("fill", color.ToCss())
                 .Attribute("stroke", i < filled ? accent.WithAlpha(120).ToCss() : emptyStroke.ToCss())
-                .Attribute("stroke-width", 0.7)
+                .Attribute("stroke-width", 0.8)
                 .EndEmptyElement().Line();
             writer.StartElement("rect")
                 .Attribute("data-cfx-role", "segmented-progress-segment-highlight")
@@ -445,13 +447,13 @@ public sealed partial class SvgVisualBlockRenderer {
     private static void RenderCompositionStrip(SvgMarkupWriter writer, CompositionStatusCard card, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
         var total = VisualBlockRendering.CompositionTotal(card);
-        var gap = 4.0;
+        var gap = VisualBlockRendering.EffectiveStackGap(card.Segments.Count, width, 4);
+        var segmentArea = Math.Max(0, width - gap * Math.Max(0, card.Segments.Count - 1));
         var cursor = x;
         writer.StartElement("g").Attribute("data-cfx-role", "composition-strip").Attribute("data-cfx-total", total).EndStartElement().Line();
         for (var i = 0; i < card.Segments.Count; i++) {
             var segment = card.Segments[i];
-            var remainingGap = gap * Math.Max(0, card.Segments.Count - 1);
-            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, (width - remainingGap) * segment.Value / total);
+            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, segmentArea * segment.Value / total);
             if (segmentWidth <= 0) continue;
             var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
             writer.StartElement("rect")

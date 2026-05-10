@@ -21,7 +21,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var laneGap = 10.0;
         var laneHeight = Math.Max(26, (plotHeight - laneGap * Math.Max(0, laneCount - 1)) / laneCount);
         writer.StartElement("g").Attribute("data-cfx-role", "schedule-timeline-block").Attribute("data-cfx-start", block.Start).Attribute("data-cfx-end", block.End).EndStartElement().Line();
-        for (var tick = block.Start; tick <= block.End + block.TickInterval * 0.25; tick += block.TickInterval) {
+        foreach (var tick in VisualBlockRendering.ScheduleTicks(block)) {
             var x = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, tick);
             if (block.ShowGrid) writer.StartElement("line").Attribute("data-cfx-role", "schedule-grid-line").Attribute("x1", x).Attribute("y1", plotTop).Attribute("x2", x).Attribute("y2", plotTop + plotHeight).Attribute("stroke", theme.Grid.ToCss()).Attribute("stroke-opacity", 0.56).Attribute("stroke-dasharray", "4 5").EndEmptyElement().Line();
             WriteText(writer, VisualBlockRendering.FormatScheduleHour(tick), Math.Max(content.X, Math.Min(content.X + content.Width - 88, x - 44)), y + 18, 88, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "600");
@@ -32,13 +32,14 @@ public sealed partial class SvgVisualBlockRenderer {
             writer.StartElement("line").Attribute("data-cfx-role", "schedule-lane-line").Attribute("x1", content.X).Attribute("y1", laneY + laneHeight / 2).Attribute("x2", content.X + content.Width).Attribute("y2", laneY + laneHeight / 2).Attribute("stroke", theme.PlotBorder.WithAlpha(70).ToCss()).EndEmptyElement().Line();
         }
 
-        if (block.CurrentTime.HasValue) {
+        if (block.CurrentTime.HasValue && VisualBlockRendering.IsScheduleTimeInRange(block, block.CurrentTime.Value)) {
             var currentX = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, block.CurrentTime.Value);
             writer.StartElement("line").Attribute("data-cfx-role", "schedule-current-time").Attribute("x1", currentX).Attribute("y1", y + 24).Attribute("x2", currentX).Attribute("y2", plotTop + plotHeight).Attribute("stroke", theme.Warning.ToCss()).Attribute("stroke-width", 2).Attribute("stroke-dasharray", "6 5").EndEmptyElement().Line();
         }
 
         for (var i = 0; i < block.Events.Count; i++) {
             var item = block.Events[i];
+            if (!VisualBlockRendering.ScheduleEventIntersects(block, item)) continue;
             var color = item.Color ?? (item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
             var x1 = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, item.Start);
             var x2 = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, item.End);
@@ -85,6 +86,8 @@ public sealed partial class SvgVisualBlockRenderer {
         for (var i = block.HeaderActions.Count - 1; i >= 0; i--) {
             var action = block.HeaderActions[i];
             var actionWidth = Math.Min(140, Math.Max(62, VisualBlockRendering.EstimateTextWidth(action, theme.SubtitleFontSize) + 28));
+            actionWidth = Math.Min(actionWidth, Math.Max(0, cursor - x));
+            if (actionWidth < 36) break;
             cursor -= actionWidth;
             writer.StartElement("rect").Attribute("data-cfx-role", "schedule-header-action").Attribute("x", cursor).Attribute("y", y).Attribute("width", actionWidth).Attribute("height", 30).Attribute("rx", 8).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
             WriteText(writer, action, cursor + 12, y + 20, actionWidth - 24, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "650");

@@ -9,6 +9,9 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.VisualBlocks;
 
 internal static class VisualBlockRendering {
+    public const int MaximumScheduleTicks = 512;
+    public const int MaximumScheduleLanes = 256;
+
     public static void Validate(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
         if (block is ChartTable table) {
@@ -156,6 +159,7 @@ internal static class VisualBlockRendering {
         if (block is ScheduleTimelineBlock scheduleBlock) {
             if (!IsFinite(scheduleBlock.Start) || !IsFinite(scheduleBlock.End) || scheduleBlock.End <= scheduleBlock.Start) throw new InvalidOperationException("Schedule timeline time range must be finite and increasing.");
             if (!IsFinite(scheduleBlock.TickInterval) || scheduleBlock.TickInterval <= 0) throw new InvalidOperationException("Schedule timeline tick interval must be finite and greater than zero.");
+            if (ScheduleTickCount(scheduleBlock) > MaximumScheduleTicks) throw new InvalidOperationException("Schedule timeline tick interval creates too many ticks for the configured range.");
             if (scheduleBlock.CurrentTime.HasValue && !IsFinite(scheduleBlock.CurrentTime.Value)) throw new InvalidOperationException("Schedule timeline current time must be finite.");
             if (scheduleBlock.Events.Count == 0) throw new InvalidOperationException("Schedule timeline blocks must contain at least one event.");
             foreach (var action in scheduleBlock.HeaderActions) if (action.Length > 24) throw new InvalidOperationException("Schedule timeline header actions must be twenty-four characters or fewer.");
@@ -163,6 +167,7 @@ internal static class VisualBlockRendering {
                 if (item.Title.Length == 0) throw new InvalidOperationException("Schedule timeline events must define a title.");
                 if (!IsFinite(item.Start) || !IsFinite(item.End) || item.End < item.Start) throw new InvalidOperationException("Schedule timeline event times must be finite and increasing.");
                 if (item.Lane < 0) throw new InvalidOperationException("Schedule timeline event lanes must be zero or greater.");
+                if (item.Lane >= MaximumScheduleLanes) throw new InvalidOperationException("Schedule timeline event lanes must be below " + MaximumScheduleLanes.ToString(CultureInfo.InvariantCulture) + ".");
                 if (item.Badge.Length > 24) throw new InvalidOperationException("Schedule timeline event badges must be twenty-four characters or fewer.");
                 foreach (var avatar in item.Avatars) if (avatar.Length > 4) throw new InvalidOperationException("Schedule timeline avatar labels must be four characters or fewer.");
             }
@@ -335,14 +340,58 @@ internal static class VisualBlockRendering {
 
     public static double ScheduleRatio(ScheduleTimelineBlock block, double value) => SegmentRatio(value - block.Start, block.End - block.Start);
 
+    public static IEnumerable<double> ScheduleTicks(ScheduleTimelineBlock block) {
+        var limit = block.End + block.TickInterval * 0.25;
+        var tick = block.Start;
+        for (var i = 0; i < MaximumScheduleTicks && tick <= limit; i++) {
+            yield return tick;
+            var next = tick + block.TickInterval;
+            if (next <= tick) yield break;
+            tick = next;
+        }
+    }
+
+    public static bool IsScheduleTimeInRange(ScheduleTimelineBlock block, double value) =>
+        value >= block.Start && value <= block.End;
+
+    public static bool ScheduleEventIntersects(ScheduleTimelineBlock block, ScheduleTimelineEvent item) =>
+        item.End >= block.Start && item.Start <= block.End;
+
     public static string FormatScheduleHour(double value) {
         var whole = (int)Math.Floor(value);
         var minutes = (int)Math.Round((value - whole) * 60);
         if (minutes >= 60) { whole++; minutes -= 60; }
-        var suffix = whole >= 12 ? "PM" : "AM";
-        var hour = whole % 12;
+        var normalized = ((whole % 24) + 24) % 24;
+        var suffix = normalized >= 12 ? "PM" : "AM";
+        var hour = normalized % 12;
         if (hour == 0) hour = 12;
         return hour.ToString(CultureInfo.InvariantCulture) + (minutes == 0 ? ".00 " : "." + minutes.ToString("00", CultureInfo.InvariantCulture) + " ") + suffix;
+    }
+
+    public static (double ItemWidth, double Gap) FitRepeatedItems(int count, double width, double preferredGap, double minimumItemWidth) {
+        if (count <= 0 || width <= 0) return (0, 0);
+        if (count == 1) return (Math.Max(0, width), 0);
+        var minWidth = Math.Max(0.5, minimumItemWidth);
+        var gap = Math.Min(Math.Max(0, preferredGap), Math.Max(0, (width - minWidth * count) / (count - 1)));
+        var itemWidth = Math.Max(0.5, (width - gap * (count - 1)) / count);
+        if (itemWidth < minWidth && width < minWidth * count) {
+            gap = 0;
+            itemWidth = Math.Max(0.5, width / count);
+        }
+
+        return (itemWidth, gap);
+    }
+
+    public static double EffectiveStackGap(int count, double width, double preferredGap) {
+        if (count <= 1 || width <= 0) return 0;
+        return Math.Min(Math.Max(0, preferredGap), Math.Max(0, width * 0.35 / (count - 1)));
+    }
+
+    public static double EffectiveHeatmapGap(double plotWidth, double plotHeight, int columns, int rows, double desiredGap) {
+        var gap = Math.Max(0, desiredGap);
+        if (columns > 1) gap = Math.Min(gap, Math.Max(0, (plotWidth - columns) / (columns - 1)));
+        if (rows > 1) gap = Math.Min(gap, Math.Max(0, (plotHeight - rows) / (rows - 1)));
+        return gap;
     }
 
     public static (double Minimum, double Maximum) TableCellMicroVisualBounds(ChartTableCell cell) {
@@ -368,11 +417,21 @@ internal static class VisualBlockRendering {
     public static bool IsSafeActionUrl(string value) {
         if (string.IsNullOrWhiteSpace(value)) return false;
         var text = value.Trim();
-        if (text.StartsWith("#", StringComparison.Ordinal) || text.StartsWith("/", StringComparison.Ordinal) || text.StartsWith("./", StringComparison.Ordinal) || text.StartsWith("../", StringComparison.Ordinal)) return true;
-        if (!Uri.TryCreate(text, UriKind.Absolute, out var uri)) return false;
-        return string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(uri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase);
+        if (text.StartsWith("//", StringComparison.Ordinal)) return false;
+        if (Uri.TryCreate(text, UriKind.Absolute, out var uri)) {
+            return string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(uri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return Uri.TryCreate(text, UriKind.Relative, out _);
+    }
+
+    private static int ScheduleTickCount(ScheduleTimelineBlock block) {
+        var range = block.End - block.Start;
+        if (range <= 0 || block.TickInterval <= 0) return 0;
+        var count = Math.Floor(range / block.TickInterval) + 1;
+        return count >= int.MaxValue ? int.MaxValue : (int)count;
     }
 
     private static bool EqualsAny(string text, params string[] values) {

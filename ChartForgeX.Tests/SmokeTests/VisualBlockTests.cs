@@ -300,7 +300,8 @@ internal static partial class SmokeTests {
         var fixedHtml = fixedGrid.ToHtmlPage();
         Assert(fixedHtml.Contains("padding:var(--cfx-visual-grid-padding,24px)", StringComparison.Ordinal), "VisualGrid HTML should apply grid padding on the grid container where the custom property is scoped.");
         Assert(fixedHtml.Contains("chartforgex-visual-grid has-fixed-panels", StringComparison.Ordinal), "VisualGrid HTML should mark grids with fixed panel sizing.");
-        Assert(fixedHtml.Contains("grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,1fr))", StringComparison.Ordinal), "VisualGrid HTML should keep fixed-panel grids responsive inside narrow viewports.");
+        Assert(fixedHtml.Contains(".chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,var(--cfx-visual-grid-panel-width)));justify-content:center}", StringComparison.Ordinal), "VisualGrid HTML should preserve configured fixed panel widths.");
+        Assert(fixedHtml.Contains("min-height:0!important", StringComparison.Ordinal), "VisualGrid mobile CSS should reset inline row-span min-height.");
         Assert(fixedHtml.Contains("grid-auto-flow:row dense", StringComparison.Ordinal), "VisualGrid HTML should use dense placement like SVG/PNG layout.");
         Assert(fixedHtml.Contains(".chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%", StringComparison.Ordinal), "VisualGrid HTML contain mode should scale embedded SVGs to fixed panel bounds.");
         Assert(fixedHtml.Contains("min-height:calc((var(--cfx-visual-grid-panel-height) * 2) + (var(--cfx-visual-grid-gap) * 1))", StringComparison.Ordinal), "VisualGrid HTML should reserve physical height for row-spanning fixed panels.");

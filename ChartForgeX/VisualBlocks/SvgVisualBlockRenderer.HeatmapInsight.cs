@@ -15,8 +15,12 @@ public sealed partial class SvgVisualBlockRenderer {
         RenderBlockHeading(writer, card, ref y, content.X, content.Width);
         RenderHeatmapControls(writer, card, content.X, y, content.Width);
         y += card.LeftControl.Length > 0 || card.SelectedControl.Length > 0 || card.PeriodLabel.Length > 0 ? 34 : 2;
-        var railWidth = card.Insights.Count == 0 ? 0 : Math.Min(190, Math.Max(148, content.Width * 0.28));
-        var matrixWidth = content.Width - railWidth - (railWidth > 0 ? 24 : 0);
+        var railGap = card.Insights.Count == 0 ? 0 : Math.Min(24, Math.Max(8, content.Width * 0.06));
+        var minimumMatrixWidth = Math.Min(content.Width, 92 + card.Columns.Count * 12);
+        var desiredRailWidth = card.Insights.Count == 0 ? 0 : Math.Min(190, Math.Max(90, content.Width * 0.28));
+        var railWidth = card.Insights.Count == 0 ? 0 : Math.Min(desiredRailWidth, Math.Max(0, content.Width - railGap - minimumMatrixWidth));
+        if (railWidth < 72) { railWidth = 0; railGap = 0; }
+        var matrixWidth = Math.Max(1, content.Width - railWidth - railGap);
         var labelWidth = Math.Min(54, Math.Max(44, matrixWidth * 0.13));
         var cellGap = 6.0;
         var cellWidth = Math.Max(10, (matrixWidth - labelWidth - cellGap * Math.Max(0, card.Columns.Count - 1)) / card.Columns.Count);
@@ -52,7 +56,7 @@ public sealed partial class SvgVisualBlockRenderer {
             }
         }
 
-        if (railWidth > 0) RenderHeatmapInsightRail(writer, card, content.X + matrixWidth + 24, gridY, railWidth, Math.Max(1, options.Size.Height - options.Padding.Bottom - gridY));
+        if (railWidth > 0) RenderHeatmapInsightRail(writer, card, content.X + matrixWidth + railGap, gridY, railWidth, Math.Max(1, options.Size.Height - options.Padding.Bottom - gridY));
         writer.EndElement().Line();
     }
 
@@ -75,7 +79,9 @@ public sealed partial class SvgVisualBlockRenderer {
         }
 
         if (card.PeriodLabel.Length > 0) {
-            var w = Math.Min(width - (cursor - x), VisualBlockRendering.EstimateTextWidth(card.PeriodLabel, theme.SubtitleFontSize) + 34);
+            var remaining = Math.Max(0, width - (cursor - x));
+            if (remaining < 24) return;
+            var w = Math.Min(remaining, VisualBlockRendering.EstimateTextWidth(card.PeriodLabel, theme.SubtitleFontSize) + 34);
             writer.StartElement("rect").Attribute("data-cfx-role", "heatmap-period-control").Attribute("x", cursor).Attribute("y", y).Attribute("width", w).Attribute("height", buttonHeight).Attribute("rx", 8).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
             WriteText(writer, card.PeriodLabel, cursor + 12, y + 16, w - 24, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "650");
         }

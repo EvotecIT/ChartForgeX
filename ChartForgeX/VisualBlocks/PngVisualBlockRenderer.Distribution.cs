@@ -45,12 +45,12 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawDistributionStack(RgbaCanvas canvas, DistributionStripCard card, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
         var total = VisualBlockRendering.DistributionTotal(card);
-        var gap = 5.0;
+        var gap = VisualBlockRendering.EffectiveStackGap(card.Segments.Count, width, 5);
+        var segmentArea = Math.Max(0, width - gap * Math.Max(0, card.Segments.Count - 1));
         var cursor = x;
         for (var i = 0; i < card.Segments.Count; i++) {
             var segment = card.Segments[i];
-            var remainingGap = gap * Math.Max(0, card.Segments.Count - 1);
-            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, (width - remainingGap) * segment.Value / total);
+            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, segmentArea * segment.Value / total);
             if (segmentWidth <= 0) continue;
             var color = segment.Color ?? (segment.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, segment.Status));
             canvas.FillRoundedRect(cursor, y, segmentWidth, height, Math.Min(6, height / 2), color);

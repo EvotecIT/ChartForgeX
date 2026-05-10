@@ -226,6 +226,22 @@
       }
     },
     {
+      "name": "dashboard-appointment-operations-grid",
+      "width": 1376,
+      "height": 1525,
+      "svg": {
+        "minVisualNodes": 187,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 4196800,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "dashboard-attendance-hexbin-heatmap",
       "width": 760,
       "height": 520,
@@ -270,6 +286,22 @@
         "outputScale": 2,
         "minVisiblePixels": 228682,
         "minDistinctColors": 705,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-hr-operations-grid",
+      "width": 1376,
+      "height": 1831,
+      "svg": {
+        "minVisualNodes": 189,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 5038912,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -338,17 +370,33 @@
       }
     },
     {
-      "name": "dashboard-premium-trend-style",
-      "width": 920,
-      "height": 360,
+      "name": "dashboard-payment-analytics-grid",
+      "width": 1416,
+      "height": 1339,
       "svg": {
-        "minVisualNodes": 31,
+        "minVisualNodes": 773,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 662400,
+        "minVisiblePixels": 3792048,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-premium-trend-style",
+      "width": 840,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 604800,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -366,6 +414,70 @@
         "outputScale": 2,
         "minVisiblePixels": 228682,
         "minDistinctColors": 783,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-project-progress-card",
+      "width": 820,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 144,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 590400,
+        "minDistinctColors": 1901,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-project-schedule-timeline",
+      "width": 1320,
+      "height": 720,
+      "svg": {
+        "minVisualNodes": 95,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1900800,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-project-task-composition-card",
+      "width": 820,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 47,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 590400,
+        "minDistinctColors": 561,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-project-track-card",
+      "width": 820,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 41,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 632035,
+        "minDistinctColors": 906,
         "maxEdgeInkPixels": 0
       }
     },
@@ -510,6 +622,22 @@
         "outputScale": 2,
         "minVisiblePixels": 404800,
         "minDistinctColors": 559,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-shipment-activity-panel",
+      "width": 340,
+      "height": 470,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 20035,
+        "minDistinctColors": 932,
         "maxEdgeInkPixels": 0
       }
     },

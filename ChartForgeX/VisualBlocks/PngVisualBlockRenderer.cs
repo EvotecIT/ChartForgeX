@@ -282,7 +282,8 @@ public sealed partial class PngVisualBlockRenderer {
         var theme = card.Options.Theme;
         var fill = card.ActionBackground ?? theme.PlotBackground;
         var foreground = card.ActionForeground ?? theme.Text;
-        canvas.FillRect(0, footerY, card.Options.Size.Width, footerHeight, fill);
+        var inset = Math.Min(8, Math.Max(1, footerHeight * 0.16));
+        canvas.FillRoundedRect(x, footerY + 1, width, Math.Max(1, footerHeight - inset - 1), Math.Min(10, Math.Max(2, footerHeight * 0.18)), fill);
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var y = footerY + (footerHeight - fontSize) * 0.52;
         DrawAlignedText(canvas, card.ActionLabel, x, y, Math.Max(1, width - 38), VisualTextAlignment.Left, foreground, fontSize, false);
@@ -313,8 +314,9 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static void DrawSegmentedStrip(RgbaCanvas canvas, SegmentedProgressRow row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ChartTheme theme) {
-        var gap = row.Segments > 50 ? 2.0 : 3.0;
-        var segmentWidth = Math.Max(2, (width - gap * (row.Segments - 1)) / row.Segments);
+        var metrics = VisualBlockRendering.FitRepeatedItems(row.Segments, width, row.Segments > 50 ? 2.0 : 3.0, 2);
+        var gap = metrics.Gap;
+        var segmentWidth = metrics.ItemWidth;
         var filled = VisualBlockRendering.FilledSegments(row);
         var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
         var emptyStroke = theme.PlotBorder.WithAlpha(120);
@@ -325,11 +327,11 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.FillRoundedRect(segmentX + 0.6, y + 1.2, segmentWidth, height, radius, theme.MutedText.WithAlpha(i < filled ? (byte)28 : (byte)18));
             if (i < filled) {
                 canvas.FillRoundedRectVerticalGradient(segmentX, y, segmentWidth, height, radius, ChartSurfacePolish.GradientTop(color), ChartSurfacePolish.GradientBottom(color));
-                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, accent.WithAlpha(120), 0.7);
+                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, accent.WithAlpha(120), 0.8);
                 canvas.FillRoundedRect(segmentX + 1, y + 1, Math.Max(1, segmentWidth - 2), Math.Max(1, height * 0.32), Math.Min(3, segmentWidth * 0.28), ChartColor.White.WithAlpha(48));
             } else {
                 canvas.FillRoundedRectVerticalGradient(segmentX, y, segmentWidth, height, radius, ChartSurfacePolish.GradientTop(empty), ChartSurfacePolish.GradientBottom(empty));
-                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, emptyStroke, 0.7);
+                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, emptyStroke, 0.8);
                 canvas.FillRoundedRect(segmentX + 1, y + 1, Math.Max(1, segmentWidth - 2), Math.Max(1, height * 0.32), Math.Min(3, segmentWidth * 0.28), ChartColor.White.WithAlpha(92));
             }
         }
@@ -370,12 +372,12 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawCompositionStrip(RgbaCanvas canvas, CompositionStatusCard card, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
         var total = VisualBlockRendering.CompositionTotal(card);
-        var gap = 4.0;
+        var gap = VisualBlockRendering.EffectiveStackGap(card.Segments.Count, width, 4);
+        var segmentArea = Math.Max(0, width - gap * Math.Max(0, card.Segments.Count - 1));
         var cursor = x;
         for (var i = 0; i < card.Segments.Count; i++) {
             var segment = card.Segments[i];
-            var remainingGap = gap * Math.Max(0, card.Segments.Count - 1);
-            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, (width - remainingGap) * segment.Value / total);
+            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, segmentArea * segment.Value / total);
             if (segmentWidth <= 0) continue;
             var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
             canvas.FillRoundedRect(cursor, y, segmentWidth, height, Math.Min(7, height / 2), color);
@@ -460,7 +462,7 @@ public sealed partial class PngVisualBlockRenderer {
         var laneCount = VisualBlockRendering.ScheduleLaneCount(block);
         var laneGap = 10.0;
         var laneHeight = Math.Max(26, (plotHeight - laneGap * Math.Max(0, laneCount - 1)) / laneCount);
-        for (var tick = block.Start; tick <= block.End + block.TickInterval * 0.25; tick += block.TickInterval) {
+        foreach (var tick in VisualBlockRendering.ScheduleTicks(block)) {
             var x = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, tick);
             if (block.ShowGrid) canvas.DrawDashedLine(x, plotTop, x, plotTop + plotHeight, theme.Grid.WithAlpha(140), 1, 4, 5);
             DrawAlignedText(canvas, VisualBlockRendering.FormatScheduleHour(tick), Math.Max(content.X, Math.Min(content.X + content.Width - 88, x - 44)), y + 7, 88, VisualTextAlignment.Center, theme.MutedText, Math.Max(10, theme.SubtitleFontSize), true);
@@ -471,13 +473,14 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.DrawLine(content.X, laneY + laneHeight / 2, content.X + content.Width, laneY + laneHeight / 2, theme.PlotBorder.WithAlpha(70), 1);
         }
 
-        if (block.CurrentTime.HasValue) {
+        if (block.CurrentTime.HasValue && VisualBlockRendering.IsScheduleTimeInRange(block, block.CurrentTime.Value)) {
             var currentX = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, block.CurrentTime.Value);
             canvas.DrawDashedLine(currentX, y + 24, currentX, plotTop + plotHeight, theme.Warning, 2, 6, 5);
         }
 
         for (var i = 0; i < block.Events.Count; i++) {
             var item = block.Events[i];
+            if (!VisualBlockRendering.ScheduleEventIntersects(block, item)) continue;
             var color = item.Color ?? (item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
             var x1 = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, item.Start);
             var x2 = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, item.End);
@@ -511,6 +514,8 @@ public sealed partial class PngVisualBlockRenderer {
         for (var i = block.HeaderActions.Count - 1; i >= 0; i--) {
             var action = block.HeaderActions[i];
             var actionWidth = Math.Min(140, Math.Max(62, RgbaCanvas.MeasureTextEmphasizedWidth(action, theme.SubtitleFontSize, null) + 28));
+            actionWidth = Math.Min(actionWidth, Math.Max(0, cursor - x));
+            if (actionWidth < 36) break;
             cursor -= actionWidth;
             canvas.FillRoundedRect(cursor, y, actionWidth, 30, 8, ChartColor.White);
             canvas.StrokeRoundedRect(cursor, y, actionWidth, 30, 8, theme.CardBorder, 1);

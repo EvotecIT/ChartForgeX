@@ -15,8 +15,12 @@ public sealed partial class PngVisualBlockRenderer {
         DrawHeading(canvas, card, ref y, content.X, content.Width);
         DrawHeatmapControls(canvas, card, content.X, y, content.Width);
         y += card.LeftControl.Length > 0 || card.SelectedControl.Length > 0 || card.PeriodLabel.Length > 0 ? 34 : 2;
-        var railWidth = card.Insights.Count == 0 ? 0 : Math.Min(190, Math.Max(148, content.Width * 0.28));
-        var matrixWidth = content.Width - railWidth - (railWidth > 0 ? 24 : 0);
+        var railGap = card.Insights.Count == 0 ? 0 : Math.Min(24, Math.Max(8, content.Width * 0.06));
+        var minimumMatrixWidth = Math.Min(content.Width, 92 + card.Columns.Count * 12);
+        var desiredRailWidth = card.Insights.Count == 0 ? 0 : Math.Min(190, Math.Max(90, content.Width * 0.28));
+        var railWidth = card.Insights.Count == 0 ? 0 : Math.Min(desiredRailWidth, Math.Max(0, content.Width - railGap - minimumMatrixWidth));
+        if (railWidth < 72) { railWidth = 0; railGap = 0; }
+        var matrixWidth = Math.Max(1, content.Width - railWidth - railGap);
         var labelWidth = Math.Min(54, Math.Max(44, matrixWidth * 0.13));
         var cellGap = 6.0;
         var cellWidth = Math.Max(10, (matrixWidth - labelWidth - cellGap * Math.Max(0, card.Columns.Count - 1)) / card.Columns.Count);
@@ -42,7 +46,7 @@ public sealed partial class PngVisualBlockRenderer {
             }
         }
 
-        if (railWidth > 0) DrawHeatmapInsightRail(canvas, card, content.X + matrixWidth + 24, gridY, railWidth, Math.Max(1, options.Size.Height - options.Padding.Bottom - gridY));
+        if (railWidth > 0) DrawHeatmapInsightRail(canvas, card, content.X + matrixWidth + railGap, gridY, railWidth, Math.Max(1, options.Size.Height - options.Padding.Bottom - gridY));
     }
 
     private static void DrawHeatmapControls(RgbaCanvas canvas, HeatmapInsightCard card, double x, double y, double width) {
@@ -65,7 +69,9 @@ public sealed partial class PngVisualBlockRenderer {
         }
 
         if (card.PeriodLabel.Length > 0) {
-            var w = Math.Min(width - (cursor - x), RgbaCanvas.MeasureTextEmphasizedWidth(card.PeriodLabel, theme.SubtitleFontSize, null) + 34);
+            var remaining = Math.Max(0, width - (cursor - x));
+            if (remaining < 24) return;
+            var w = Math.Min(remaining, RgbaCanvas.MeasureTextEmphasizedWidth(card.PeriodLabel, theme.SubtitleFontSize, null) + 34);
             canvas.FillRoundedRect(cursor, y, w, buttonHeight, 8, ChartColor.White);
             canvas.StrokeRoundedRect(cursor, y, w, buttonHeight, 8, theme.CardBorder, 1);
             DrawAlignedText(canvas, card.PeriodLabel, cursor + 12, y + 5, w - 24, VisualTextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
