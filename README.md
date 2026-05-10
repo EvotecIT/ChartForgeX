@@ -58,6 +58,8 @@ Run the full local quality loop with:
 
 That restores, builds, runs smoke tests through `dotnet test`, regenerates example chart outputs and the static example gallery, packs `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html` into `artifacts/packages/Release`, creates matching `.snupkg` symbol packages, verifies package contents and dependency invariants, and installs the freshly packed HTML interactivity adapter into a clean temporary console app. The generated demo entry points are `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/catalog.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/quality-dashboard.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/svg-png-comparison.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/domain-security-interactive.html`, and `ChartForgeX.Examples/bin/Release/net8.0/output/executive-interactive-dashboard.html`. The catalog includes map/geography, theme, brand-kit, palette-swatch, pictorial-symbol, pictorial-Isotype, point-color customization, word-cloud-control, and interactive demo pages so visual choices can be reviewed in HTML, SVG, PNG, and opt-in self-contained HTML interactivity.
 
+External catalog map demos that depend on large local GeoJSON assets can be generated with `dotnet run --project ChartForgeX.Examples/ChartForgeX.Examples.csproj -c Release -- --include-external-map-examples`. They stay out of the default quality loop so local ignored datasets do not change CI output shape.
+
 ## Website pilot
 
 `Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The

@@ -128,7 +128,7 @@ var heatmap = Chart.Create()
     .AddHeatmapRow("Acquired domains", Points(58, 43, 36, 28, 25, 52));
 
 SaveChart(heatmap, "control-coverage-heatmap-dark");
-MapExamples.Write(output, DemoPngOutputScale);
+MapExamples.Write(output, DemoPngOutputScale, ExampleProgramOptions.HasArg(args, "--include-external-map-examples"));
 if (!ExampleProgramOptions.HasArg(args, "--skip-topology")) TopologyExamples.Write(output);
 
 var gauge = Chart.Create()

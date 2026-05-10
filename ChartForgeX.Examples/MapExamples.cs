@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static class MapExamples {
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartPngOutputScale pngOutputScale, bool includeExternalCatalogMaps = false) {
         Save(CreateCalendarHeatmap(), output, "developer-consistency-calendar-light", pngOutputScale);
         Save(CreateDottedMap(), output, "travel-dotted-map-dark", pngOutputScale);
         Save(CreateEuropeRevenueDottedMap(), output, "revenue-europe-country-map-light", pngOutputScale);
@@ -16,7 +16,7 @@ internal static class MapExamples {
         Save(CreateRegionMap(), output, "revenue-region-map-us-states-light", pngOutputScale);
         Save(CreateIndustrialBirthsRegionMap(), output, "industrial-births-region-map-us-states-light", pngOutputScale);
         Save(CreateTileMap(), output, "revenue-tile-map-us-states-light", pngOutputScale);
-        SaveOptionalCatalogRegionMapExamples(output, pngOutputScale);
+        if (includeExternalCatalogMaps) SaveOptionalCatalogRegionMapExamples(output, pngOutputScale);
     }
 
     private static Chart CreateCalendarHeatmap() {
@@ -307,10 +307,10 @@ internal static class MapExamples {
             .WithMapSurface(false)
             .WithLegend(false)
             .WithMapLabels(false)
-            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 165), 0.38)
+            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 165), 0.75)
             .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
             .WithRegionMapCoordinateBounds(-12, 42, 34, 72)
-            .AddMapBaseLayer(countries, ChartColor.FromHex("#E8E8E8"), ChartColor.FromHex("#D3D3D3"), 0.46)
+            .AddMapBaseLayer(countries, ChartColor.FromHex("#E8E8E8"), ChartColor.FromHex("#D3D3D3"), 0.75)
             .AddRegionHeatmap("Births per 10,000 residents", nuts3, EuNuts3IndustrialBirthsValues(nuts3), scale)
             .AddMapBoundaryLayer(countries, ChartColor.FromRgba(17, 24, 39, 230), 0.78);
     }
@@ -332,7 +332,7 @@ internal static class MapExamples {
             .WithMapSurface(false)
             .WithLegend(false)
             .WithMapLabels(false)
-            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 170), 0.46)
+            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 170), 0.75)
             .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
             .WithRegionMapCoordinateBounds(example.MinimumLongitude, example.MaximumLongitude, example.MinimumLatitude, example.MaximumLatitude)
             .AddRegionHeatmap("Births per 10,000 residents", definition, CatalogCountryValues(definition, example.CountryCode), scale);
