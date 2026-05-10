@@ -8,6 +8,7 @@
 - Added renderer compatibility checks for specialized chart types.
 - Added render-boundary guards for public mutable series, annotations, axis labels, and specialized chart payloads.
 - Added explicit SVG ID scope overloads for deterministic raw SVG embedding.
+- Added dependency-free BMP, PPM, and baseline TIFF export over the shared raster pixel buffer for charts, chart grids, visual blocks, visual grids, and topology charts, including row-buffered encoder writes, format-specific byte, stream, and save helpers, generic `ToRasterImage`, `WriteRasterImage`, extension-inferred render-first `SaveRasterImage`, broad extension-inferred `SaveImage`/`Save` helpers for SVG/HTML/PNG/raster outputs, pre-write format validation, throwing/non-throwing extension inference for paths plus bare extension tokens, supported-format and extension-alias discovery, and MIME helpers.
 - Added expressive built-in themes, CSS font stack presets, and fluent theme/palette customization helpers.
 - Added reusable brand kits and curated brand-kit presets for executive, product, people-infographic, editorial, and accessible report styles.
 - Added named `ChartColors`, stable CSS/System.Drawing web color lookup, alpha/opacity helpers, a command-center palette, and a transparent dark overlay theme for charts rendered over imagery or wallpapers.

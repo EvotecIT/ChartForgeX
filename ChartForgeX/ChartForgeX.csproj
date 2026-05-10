@@ -14,10 +14,10 @@
     <PackageId>ChartForgeX</PackageId>
     <Version>0.1.0</Version>
     <Authors>Evotec</Authors>
-    <Description>Dependency-free SVG/HTML/PNG chart rendering for .NET reports and dashboards.</Description>
-    <PackageReleaseNotes>Preview release of dependency-free SVG, HTML, and PNG chart rendering with static HTML grids and mosaic panel spans, expressive themes, dashboard presets, brand kits, font stacks, palette, role-based text, grid-header, per-series and point-level data-label styling, point callouts, per-series legend visibility, semantic series roles, pictorial symbol, pictorial Isotype, people-infographic, dashboard, and word-cloud control galleries, sunburst, pictorial, progress-bar, hexbin heatmap, reusable heatmap row models, and word cloud charts, wrapped/customizable pictorial symbols, custom donut center text/ring thickness, progress-bar, KPI ring, and legend placement controls, pasted hex palettes, shared SVG/PNG compact number formatting, scoped inline SVG IDs, and fail-fast validation for specialized chart data.</PackageReleaseNotes>
+    <Description>Dependency-free SVG, HTML, PNG, BMP, PPM, and TIFF chart rendering for .NET reports and dashboards.</Description>
+    <PackageReleaseNotes>Preview release of dependency-free SVG, HTML, PNG, BMP, PPM, and baseline TIFF chart rendering with shared raster buffers, stream/file/byte-array raster export helpers, static HTML grids and mosaic panel spans, expressive themes, dashboard presets, brand kits, font stacks, palette, role-based text, grid-header, per-series and point-level data-label styling, point callouts, per-series legend visibility, semantic series roles, pictorial symbol, pictorial Isotype, people-infographic, dashboard, and word-cloud control galleries, sunburst, pictorial, progress-bar, hexbin heatmap, reusable heatmap row models, and word cloud charts, wrapped/customizable pictorial symbols, custom donut center text/ring thickness, progress-bar, KPI ring, and legend placement controls, pasted hex palettes, shared SVG/PNG compact number formatting, scoped inline SVG IDs, and fail-fast validation for specialized chart data.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>charts;svg;html;png;reports;dashboard;zero-dependency</PackageTags>
+    <PackageTags>charts;svg;html;png;bmp;ppm;tiff;raster;reports;dashboard;zero-dependency</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

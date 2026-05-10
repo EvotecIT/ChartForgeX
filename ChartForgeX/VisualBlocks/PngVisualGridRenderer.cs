@@ -14,10 +14,9 @@ public sealed class PngVisualGridRenderer {
     private readonly PngVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid to PNG bytes.</summary>
-    public byte[] Render(VisualGrid grid) {
-        var canvas = RenderCanvas(grid);
-        return PngWriter.WriteRgba(canvas.OutputWidth, canvas.OutputHeight, canvas.ToOutputPixels());
-    }
+    public byte[] Render(VisualGrid grid) => PngWriter.WriteRgba(RenderImage(grid));
+
+    internal RgbaImage RenderImage(VisualGrid grid) => RenderCanvas(grid).ToImage();
 
     internal RgbaCanvas RenderCanvas(VisualGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));

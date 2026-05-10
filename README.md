@@ -124,7 +124,7 @@ using ChartForgeX.Themes;
 
 var chart = Chart.Create()
     .WithTitle("Domain Security Checks")
-    .WithSubtitle("Dependency-free SVG, HTML and PNG chart rendering")
+    .WithSubtitle("Dependency-free SVG, HTML, PNG, BMP, PPM, and TIFF chart rendering")
     .WithXAxis("Run")
     .WithYAxis("Checks")
     .WithTheme(ChartTheme.ReportDark())
@@ -140,6 +140,9 @@ var chart = Chart.Create()
 chart.SaveSvg("chart.svg");
 chart.SaveHtml("chart.html");
 chart.SavePng("chart.png");
+chart.SaveBmp("chart.bmp");
+chart.SavePpm("chart.ppm");
+chart.SaveTiff("chart.tiff");
 
 static IEnumerable<ChartPoint> Points(params double[] y) {
     for (var i = 0; i < y.Length; i++) yield return new ChartPoint(i + 1, y[i]);
@@ -167,6 +170,9 @@ var report = ChartGrid.Create()
 report.SaveHtml("scorecards.html");
 report.SaveSvg("scorecards.svg");
 report.SavePng("scorecards.png");
+report.SaveBmp("scorecards.bmp");
+report.SavePpm("scorecards.ppm");
+report.SaveTiff("scorecards.tiff");
 ```
 
 Use `Add(chart, columnSpan, rowSpan)` or `WithPanelSpan(index, columnSpan, rowSpan)` when a report needs a hero panel, wide trend, or tall narrative chart without creating a new chart type just for layout.
@@ -218,6 +224,9 @@ var snapshot = VisualGrid.Create()
 snapshot.SaveSvg("snapshot.svg");
 snapshot.SaveHtml("snapshot.html");
 snapshot.SavePng("snapshot.png");
+snapshot.SaveBmp("snapshot.bmp");
+snapshot.SavePpm("snapshot.ppm");
+snapshot.SaveTiff("snapshot.tiff");
 ```
 
 For PowerBGInfo-style KPI rows, `VisualGrid.CreateMetricStrip(...)` applies the standard compact card-section sizing:
@@ -280,6 +289,9 @@ var topology = TopologyChart.Create()
 topology.SaveSvg("site-topology.svg");
 topology.SaveHtml("site-topology.html");
 topology.SavePng("site-topology.png");
+topology.SaveBmp("site-topology.bmp");
+topology.SavePpm("site-topology.ppm");
+topology.SaveTiff("site-topology.tiff");
 ```
 
 Use groups for regions or clusters, nodes for assets or logical objects, and edges for connections or dependencies. Labels, secondary labels, tertiary labels, `Href`, `Tooltip`, `Metrics`, and `Metadata` are preserved as escaped SVG text, native `<title>` tooltips, link attributes, and `data-*` hooks so host applications can attach inspectors, filters, or selection panels. Edges can use explicit source/target ports, route lanes, `TopologyEdgeRouting.ObstacleAvoidingOrthogonal`, and `.WithEdgeLineStyle("edge-id", TopologyEdgeLineStyle.Dashed)`, which is useful for screenshot-style site-link maps, replication paths, and selected-object connectivity spokes where links need to enter a card from a specific side, route around dense node cards, or show relationship type separately from health. Route labels can stack primary, secondary, and tertiary text directly from edge labels or from `EdgeLabelMetricKey`, `EdgeSecondaryLabelMetricKey`, and `EdgeTertiaryLabelMetricKey`; `.WithEdgeMetricLabels("lag", "queue", "transport")` applies the metric label stack in one call, which keeps transport, cost/bandwidth, latency, queue, and last-success details host-selectable without rebuilding the chart. Nodes can use chart-wide display modes, per-node overrides such as `.WithNodeDisplay("branch-cluster", TopologyNodeDisplayMode.Dot, "+12")`, or kind-wide overrides such as `.WithNodesDisplay(TopologyNodeKind.Server, TopologyNodeDisplayMode.Card)` when a mixed diagram needs site tiles plus wider server or bridgehead cards. `TopologyNodeDisplayMode.Tile` renders compact site tiles with centered glyphs and labels below the tile, `IncludeTileSubtitles` adds a small subtitle chip when subnet, role, or site metadata needs to stay visible, and `CardSubtitleMode = TopologyCardSubtitleMode.Chip` renders card subtitles as status-like chips for server or bridgehead cards. Groups can use `.WithGroupSymbol("region-id", "region")` for small header marks, `.WithGroupColor("region-id", "#8B5CF6")` for region identity color, and `.WithGroupLayout("site-id", TopologyGroupLayoutPolicy.PairRows)` for dense grouped panel policy; SVG exposes both requested and applied group policies. Use `.WithMapViewport(...)`, `.WithNodeCoordinates(...)`, and `.WithGroupCoordinates(...)` with `TopologyLayoutMode.Geographic` when a topology should project sites or regions from real longitude/latitude coordinates; SVG/PNG include a land-dot background, regional boundaries where available, graticules, coordinate/geo-visibility hooks, quadratic map-arc links for curved geographic routes, and optional `IncludeGeographicCallouts` group summaries with selected-state, leader lines, health counts, and `data-callout-*` hooks. Nodes can use `.WithNodeColor("node-id", "#2563EB")` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes. Render options can mark selected groups, nodes, and edges with `.WithSelectedGroup(...)`, `.WithSelectedNode(...)`, and `.WithSelectedEdge(...)`; SVG emits `data-cfx-selected` and selected CSS classes while PNG gets matching selected outlines, which lets a host render selected-site or selected-path states without filtering the topology. Edges can use `.WithEdgeMuted("edge-id")` for quiet internal hierarchy lines. Disable `IncludeEdgeLabelBackplates` when latency labels should sit directly on route lines. V1 layout modes are deterministic: `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`; force-directed or physics layouts are intentionally out of scope for static report output. `Layered` can flow top-to-bottom or left-to-right with `TopologyLayoutDirection`; `DenseGrouped` packs region/site panels with hub/branch, grid, pair-row, mini-mesh, or collapsed-dot policies for dense dashboard maps, and assigns outside-facing ports plus stable lanes to repeated inter-group links unless the caller already supplied them. SVG edge wrappers expose inferred edge layout defaults through `data-edge-layout-inference`.
@@ -595,6 +607,43 @@ report.WithPngOutputScale(ChartPngOutputScale.Retina)
 ```
 
 SVG and HTML still use the theme `FontFamily` CSS stack. The PNG font path is optional and falls back automatically when the file is missing or unsupported.
+
+BMP, PPM, and TIFF export use the same dependency-free raster pipeline as PNG, then write simple opaque pixel formats: uncompressed 24-bit BMP, binary P6 PPM, and baseline uncompressed RGB TIFF. Because these formats do not preserve transparency in this mode, transparent pixels are flattened against white by default, or against a caller-supplied background:
+
+```csharp
+chart.SaveBmp("chart.bmp", new RasterImageOptions {
+    Background = ChartColors.White
+});
+
+chart.SavePpm("chart.ppm", new RasterImageOptions {
+    Background = ChartColors.White
+});
+
+chart.SaveTiff("chart.tiff", new RasterImageOptions {
+    Background = ChartColors.White
+});
+
+var bytes = chart.ToRasterImage(RasterImageFormat.Bmp);
+var contentType = RasterImageFormat.Bmp.GetMimeType();
+var extension = RasterImageFormat.Bmp.GetFileExtension();
+var extensionAliases = RasterImageFormat.Tiff.GetFileExtensions();
+var supportedFormats = RasterImageFormatExtensions.GetSupportedFormats();
+var inferredFormat = RasterImageFormatExtensions.FromFileExtension("chart.tif");
+var parsedBareExtension = RasterImageFormatExtensions.FromFileExtension("bmp");
+if (RasterImageFormatExtensions.TryFromFileExtension("chart.bmp", out var parsedFormat)) {
+    chart.SaveRasterImage("chart" + parsedFormat.GetFileExtension(), parsedFormat);
+}
+
+using var stream = System.IO.File.Create("chart.bmp");
+chart.WriteBmp(stream);
+chart.SaveRasterImage("chart.tiff");
+
+chart.SaveImage("chart.svg");
+chart.SaveImage("chart.html");
+chart.SaveImage("chart.png");
+chart.SaveImage("chart.bmp");
+chart.Save("chart.tiff");
+```
 
 Use `GetPngFontInfo()` when you want to verify which font source PNG rendering will use:
 

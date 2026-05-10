@@ -31,7 +31,9 @@ public sealed partial class PngChartRenderer {
     /// </summary>
     /// <param name="chart">The chart to render.</param>
     /// <returns>A PNG image.</returns>
-    public byte[] Render(Chart chart) => WritePng(RenderCanvas(chart));
+    public byte[] Render(Chart chart) => PngWriter.WriteRgba(RenderImage(chart));
+
+    internal RgbaImage RenderImage(Chart chart) => RenderCanvas(chart).ToImage();
 
     internal RgbaCanvas RenderCanvas(Chart chart) {
         ChartGuards.RenderCompatibility(chart);
@@ -526,8 +528,6 @@ public sealed partial class PngChartRenderer {
     }
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
-
-    private static byte[] WritePng(RgbaCanvas canvas) => PngWriter.WriteRgba(canvas.OutputWidth, canvas.OutputHeight, canvas.ToOutputPixels());
 
     private static IReadOnlyList<double> GetXTicks(Chart chart, ChartRange range, ChartRect plot) {
         if (chart.Options.XAxisLabels.Count == 0) {

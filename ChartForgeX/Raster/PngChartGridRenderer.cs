@@ -16,7 +16,11 @@ public sealed class PngChartGridRenderer {
     /// </summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <returns>A PNG image.</returns>
-    public byte[] Render(ChartGrid grid) {
+    public byte[] Render(ChartGrid grid) => PngWriter.WriteRgba(RenderImage(grid));
+
+    internal RgbaImage RenderImage(ChartGrid grid) => RenderCanvas(grid).ToImage();
+
+    internal RgbaCanvas RenderCanvas(ChartGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var layout = ChartGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
@@ -40,7 +44,7 @@ public sealed class PngChartGridRenderer {
             output.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, chartCanvas.OutputWidth, chartCanvas.OutputHeight, chartCanvas.ToOutputPixels());
         }
 
-        return PngWriter.WriteRgba(output.OutputWidth, output.OutputHeight, output.ToOutputPixels());
+        return output;
     }
 
     private static double StyleFontSize(ChartTextStyle style, double fallback) => style.FontSize ?? fallback;
