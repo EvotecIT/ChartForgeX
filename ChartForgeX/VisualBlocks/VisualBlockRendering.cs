@@ -33,6 +33,7 @@ internal static class VisualBlockRendering {
         if (block is MetricCard card) {
             if (card.Label.Length == 0) throw new InvalidOperationException("Metric cards must define a label.");
             if (card.Value.Length == 0) throw new InvalidOperationException("Metric cards must define a value.");
+            if (card.Unit.Length > 24) throw new InvalidOperationException("Metric card units must be twenty-four characters or fewer.");
             if (card.Symbol.Length > 12) throw new InvalidOperationException("Metric card symbols must be twelve characters or fewer.");
             foreach (var detail in card.Details) {
                 if (detail.Label.Length == 0) throw new InvalidOperationException("Metric card details must define a label.");
@@ -45,6 +46,7 @@ internal static class VisualBlockRendering {
             if (card.MiniBarMinimum.HasValue && card.MiniBarMaximum.HasValue && card.MiniBarMaximum.Value <= card.MiniBarMinimum.Value) throw new InvalidOperationException("Metric card mini bar maximum must be greater than minimum.");
             if (card.MiniBarHighlightIndex.HasValue && card.MiniBarHighlightIndex.Value >= card.MiniBars.Count) throw new InvalidOperationException("Metric card mini bar highlight index must reference an existing mini bar.");
             if (card.MiniSparklineMinimum.HasValue && card.MiniSparklineMaximum.HasValue && card.MiniSparklineMaximum.Value <= card.MiniSparklineMinimum.Value) throw new InvalidOperationException("Metric card mini sparkline maximum must be greater than minimum.");
+            if (card.SecondaryMiniSparkline.Count > 0 && card.SecondaryMiniSparkline.Count != card.MiniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
             return;
         }
 
@@ -176,6 +178,42 @@ internal static class VisualBlockRendering {
             return;
         }
 
+        if (block is DateStripBlock dateStrip) {
+            if (dateStrip.Header.Length > 64) throw new InvalidOperationException("Date strip headers must be sixty-four characters or fewer.");
+            if (dateStrip.PreviousSymbol.Length > 4) throw new InvalidOperationException("Date strip previous symbols must be four characters or fewer.");
+            if (dateStrip.NextSymbol.Length > 4) throw new InvalidOperationException("Date strip next symbols must be four characters or fewer.");
+            if (dateStrip.Items.Count == 0) throw new InvalidOperationException("Date strip blocks must contain at least one item.");
+            foreach (var item in dateStrip.Items) {
+                if (item.Label.Length == 0) throw new InvalidOperationException("Date strip items must define a label.");
+                if (item.Label.Length > 12) throw new InvalidOperationException("Date strip item labels must be twelve characters or fewer.");
+                if (item.Value.Length == 0) throw new InvalidOperationException("Date strip items must define a value.");
+                if (item.Value.Length > 16) throw new InvalidOperationException("Date strip item values must be sixteen characters or fewer.");
+            }
+
+            return;
+        }
+
+        if (block is EntityStripBlock entityStrip) {
+            if (entityStrip.Items.Count == 0) throw new InvalidOperationException("Entity strip blocks must contain at least one item.");
+            if (entityStrip.ActionLabel.Length > 48) throw new InvalidOperationException("Entity strip action labels must be forty-eight characters or fewer.");
+            if (entityStrip.ActionSymbol.Length > 4) throw new InvalidOperationException("Entity strip action symbols must be four characters or fewer.");
+            if (entityStrip.ActionUrl.Length > 0 && !IsSafeActionUrl(entityStrip.ActionUrl)) throw new InvalidOperationException("Entity strip action URLs must be relative URLs, http(s), or mailto links.");
+            foreach (var item in entityStrip.Items) {
+                if (item.Label.Length == 0) throw new InvalidOperationException("Entity strip items must define a label.");
+                if (item.AvatarText.Length > 4) throw new InvalidOperationException("Entity strip item avatar text must be four characters or fewer.");
+            }
+
+            return;
+        }
+
+        if (block is SectionHeaderBlock sectionHeader) {
+            if (sectionHeader.Title.Length == 0) throw new InvalidOperationException("Section header blocks must define a title.");
+            if (sectionHeader.ActionLabel.Length > 48) throw new InvalidOperationException("Section header action labels must be forty-eight characters or fewer.");
+            if (sectionHeader.ActionSymbol.Length > 4) throw new InvalidOperationException("Section header action symbols must be four characters or fewer.");
+            if (sectionHeader.ActionUrl.Length > 0 && !IsSafeActionUrl(sectionHeader.ActionUrl)) throw new InvalidOperationException("Section header action URLs must be relative URLs, http(s), or mailto links.");
+            return;
+        }
+
         throw new NotSupportedException("Unsupported visual block type: " + block.GetType().FullName);
     }
 
@@ -273,7 +311,11 @@ internal static class VisualBlockRendering {
     public static int MiniBarHighlightIndex(MetricCard card) => card.MiniBarHighlightIndex ?? card.MiniBars.Count - 1;
 
     public static (double Minimum, double Maximum) MiniSparklineBounds(MetricCard card) {
-        return ValueBounds(card.MiniSparkline, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: false);
+        if (card.SecondaryMiniSparkline.Count == 0) return ValueBounds(card.MiniSparkline, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: false);
+        var values = new List<double>(card.MiniSparkline.Count + card.SecondaryMiniSparkline.Count);
+        values.AddRange(card.MiniSparkline);
+        values.AddRange(card.SecondaryMiniSparkline);
+        return ValueBounds(values, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: false);
     }
 
     public static VisualMiniBar[] CreateMiniBars(MetricCard card, double x, double y, double width, double height) {
@@ -301,14 +343,23 @@ internal static class VisualBlockRendering {
     }
 
     public static VisualMiniSparkline CreateMiniSparkline(MetricCard card, double x, double y, double width, double height) {
+        return CreateMiniSparkline(card, card.MiniSparkline, card.MiniSparklineColor, card.MiniSparklineFillColor, x, y, width, height);
+    }
+
+    public static VisualMiniSparkline CreateSecondaryMiniSparkline(MetricCard card, double x, double y, double width, double height) {
+        var color = card.SecondaryMiniSparklineColor ?? (card.MiniSparklineColor ?? PaletteAt(card.Options.Theme, 0)).WithAlpha(220);
+        return CreateMiniSparkline(card, card.SecondaryMiniSparkline, color, null, x, y, width, height);
+    }
+
+    private static VisualMiniSparkline CreateMiniSparkline(MetricCard card, IReadOnlyList<double> values, ChartColor? lineColor, ChartColor? fill, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
         var bounds = MiniSparklineBounds(card);
-        var color = card.MiniSparklineColor ?? (card.Status == VisualStatus.None ? PaletteAt(theme, 0) : StatusColor(theme, card.Status));
-        var fillColor = card.MiniSparklineFillColor ?? color.WithAlpha((byte)Math.Round(255 * ChartVisualPrimitives.MiniSparklineFillOpacity));
-        var points = new ChartPoint[card.MiniSparkline.Count];
-        var step = width / Math.Max(1, card.MiniSparkline.Count - 1);
-        for (var i = 0; i < card.MiniSparkline.Count; i++) {
-            var ratio = Math.Max(0, Math.Min(1, (card.MiniSparkline[i] - bounds.Minimum) / (bounds.Maximum - bounds.Minimum)));
+        var color = lineColor ?? (card.Status == VisualStatus.None ? PaletteAt(theme, 0) : StatusColor(theme, card.Status));
+        var fillColor = fill ?? color.WithAlpha((byte)Math.Round(255 * ChartVisualPrimitives.MiniSparklineFillOpacity));
+        var points = new ChartPoint[values.Count];
+        var step = width / Math.Max(1, values.Count - 1);
+        for (var i = 0; i < values.Count; i++) {
+            var ratio = Math.Max(0, Math.Min(1, (values[i] - bounds.Minimum) / (bounds.Maximum - bounds.Minimum)));
             points[i] = new ChartPoint(x + i * step, y + height - ratio * height);
         }
 
@@ -316,7 +367,13 @@ internal static class VisualBlockRendering {
         area[0] = new ChartPoint(points[0].X, y + height);
         for (var i = 0; i < points.Length; i++) area[i + 1] = points[i];
         area[area.Length - 1] = new ChartPoint(points[points.Length - 1].X, y + height);
-        return new VisualMiniSparkline(points, area, color, fillColor, ChartVisualPrimitives.MiniSparklineStrokeWidth, ChartVisualPrimitives.MiniSparklineCurrentRadius);
+        var strokeWidth = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? 3.4 : ChartVisualPrimitives.MiniSparklineStrokeWidth;
+        var currentRadius = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? 5.2 : ChartVisualPrimitives.MiniSparklineCurrentRadius;
+        return new VisualMiniSparkline(points, area, color, fillColor, strokeWidth, currentRadius);
+    }
+
+    public static IReadOnlyList<ChartPoint> SmoothMiniSparklinePoints(VisualMiniSparkline sparkline) {
+        return ChartPathBuilder.FromPoints(sparkline.Points, ChartSeriesKind.Line, smooth: true).Flatten(5);
     }
 
     public static double CompositionTotal(CompositionStatusCard card) {

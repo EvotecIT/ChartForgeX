@@ -120,7 +120,9 @@ public sealed class HtmlVisualGridRenderer {
         sb.Append(";--cfx-visual-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
         sb.Append(";--cfx-visual-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
         sb.Append(";--cfx-visual-grid-panel-width:").Append(layout.PanelWidth.ToString(CultureInfo.InvariantCulture)).Append("px");
-        sb.Append(";--cfx-visual-grid-panel-height:").Append(layout.PanelHeight.ToString(CultureInfo.InvariantCulture)).Append("px");
+        sb.Append(";--cfx-visual-grid-panel-height:");
+        if (!grid.PanelSize.HasValue && grid.AdaptiveRowHeights) sb.Append("auto");
+        else sb.Append(layout.PanelHeight.ToString(CultureInfo.InvariantCulture)).Append("px");
 
         return sb.ToString();
     }

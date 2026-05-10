@@ -94,6 +94,17 @@ internal static partial class SmokeTests {
         Assert(symbolMetricSvg.Contains("dominant-baseline=\"central\"", StringComparison.Ordinal), "MetricCard symbols should be vertically centered inside their badge.");
         Assert(symbolMetric.ToPng().Length > 64, "MetricCard symbol badges should render in PNG output.");
 
+        var valueSurfaceMetric = MetricCard.Create()
+            .WithMetric("Litres of water", "4.5", unit: "Litres")
+            .WithIcon(VisualIcon.Droplet)
+            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .WithSize(300, 140);
+        var valueSurfaceSvg = valueSurfaceMetric.ToSvg("visual-block-metric-value-surface");
+        Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-value-surface\"", StringComparison.Ordinal), "MetricCard should render compact metric value surfaces.");
+        Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-value-surface-badge\"", StringComparison.Ordinal), "MetricCard value surfaces should keep icons inside the value tray.");
+        Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-unit\"", StringComparison.Ordinal), "MetricCard should render optional metric units separately from emphasized values.");
+        Assert(valueSurfaceMetric.ToPng().Length > 64, "MetricCard compact value surfaces should render PNG output.");
+
         var sparkMetric = MetricCard.Create()
             .WithMetric("Network", "842 Mbps")
             .WithStatus(VisualStatus.Info)
@@ -103,6 +114,21 @@ internal static partial class SmokeTests {
         Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-current\"", StringComparison.Ordinal), "MetricCard sparklines should mark the current value.");
         Assert(sparkSvg.Contains("842 Mbps", StringComparison.Ordinal), "MetricCard should shrink long values enough to fit beside micro visuals.");
         Assert(sparkMetric.ToPng().Length > 64, "MetricCard sparkline should render PNG output.");
+
+        var heroSparkMetric = MetricCard.Create()
+            .WithMetric("Running", "30 mins")
+            .WithMiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d })
+            .WithSecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d })
+            .WithMiniSparklineStyle(MetricCardSparklineStyle.Line)
+            .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
+            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .WithSize(360, 300);
+        var heroSparkSvg = heroSparkMetric.ToSvg("visual-block-metric-hero-sparkline");
+        Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-micro-surface\"", StringComparison.Ordinal), "MetricCard hero mini visuals should support an inset surface.");
+        Assert(heroSparkSvg.Contains("data-cfx-style=\"line\"", StringComparison.Ordinal), "MetricCard should render line-style sparklines without area fill.");
+        Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-secondary\"", StringComparison.Ordinal), "MetricCard should render a true secondary sparkline series.");
+        Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-start\"", StringComparison.Ordinal), "MetricCard line-style sparklines should mark the starting value.");
+        Assert(heroSparkMetric.ToPng().Length > 64, "MetricCard hero line sparkline should render PNG output.");
 
         var radialMetric = RadialMetricCard.Create()
             .WithMetric("Capacity left", "42%")
@@ -192,6 +218,47 @@ internal static partial class SmokeTests {
         Assert(heatmapSvg.Contains("16 appointments", StringComparison.Ordinal), "HeatmapInsightCard should render insight details.");
         Assert(heatmap.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "HeatmapInsightCard should render an embeddable HTML fragment.");
         Assert(heatmap.ToPng().Length > 64, "HeatmapInsightCard should render PNG output.");
+
+        var dateStrip = DateStripBlock.Create()
+            .WithHeader("May 9, 2026")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 150)
+            .AddItem("S", "9", selected: true, color: ChartColor.FromHex("#0F83F7"))
+            .AddItem("M", "10")
+            .AddItem("T", "11");
+        var dateStripSvg = dateStrip.ToSvg("visual-block-date-strip");
+        Assert(dateStripSvg.Contains("data-cfx-role=\"date-strip-block\"", StringComparison.Ordinal), "DateStripBlock should render a public block role.");
+        Assert(dateStripSvg.Contains("data-cfx-role=\"date-strip-header\"", StringComparison.Ordinal), "DateStripBlock should render optional header chrome.");
+        Assert(dateStripSvg.Contains("data-cfx-role=\"date-strip-item\"", StringComparison.Ordinal), "DateStripBlock should render date items.");
+        Assert(dateStripSvg.Contains("data-cfx-selected=\"true\"", StringComparison.Ordinal), "DateStripBlock should preserve selected item metadata.");
+        Assert(dateStrip.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "DateStripBlock should render an embeddable HTML fragment.");
+        Assert(dateStrip.ToPng().Length > 64, "DateStripBlock should render PNG output.");
+
+        var entityStrip = EntityStripBlock.Create()
+            .WithTitle("Duel with friends")
+            .WithAction("New")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 150)
+            .AddItem("Karrem", color: ChartColor.FromHex("#0F83F7"))
+            .AddItem("Peter", avatarText: "P", color: ChartColor.FromHex("#FF7A1A"));
+        var entityStripSvg = entityStrip.ToSvg("visual-block-entity-strip");
+        Assert(entityStripSvg.Contains("data-cfx-role=\"entity-strip-block\"", StringComparison.Ordinal), "EntityStripBlock should render a public block role.");
+        Assert(entityStripSvg.Contains("data-cfx-role=\"entity-strip-avatar\"", StringComparison.Ordinal), "EntityStripBlock should render avatar slots.");
+        Assert(entityStripSvg.Contains("data-cfx-icon=\"person\"", StringComparison.Ordinal), "EntityStripBlock should reuse built-in person icons when avatar text is not configured.");
+        Assert(entityStrip.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "EntityStripBlock should render an embeddable HTML fragment.");
+        Assert(entityStrip.ToPng().Length > 64, "EntityStripBlock should render PNG output.");
+
+        var sectionHeader = SectionHeaderBlock.Create()
+            .WithTitle("Today's Goals")
+            .WithAction("See all")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 48)
+            .WithCard(false)
+            .WithTransparentBackground();
+        var sectionHeaderSvg = sectionHeader.ToSvg("visual-block-section-header");
+        Assert(sectionHeaderSvg.Contains("data-cfx-role=\"section-header-title\"", StringComparison.Ordinal), "SectionHeaderBlock should render a public title role.");
+        Assert(sectionHeaderSvg.Contains("data-cfx-role=\"section-header-action\"", StringComparison.Ordinal), "SectionHeaderBlock should render optional trailing actions.");
+        Assert(sectionHeader.ToPng().Length > 64, "SectionHeaderBlock should render PNG output.");
 
         var workload = WorkloadListBlock.Create()
             .WithTitle("Today Staff Workload")
@@ -367,6 +434,19 @@ internal static partial class SmokeTests {
         Assert(autoHtml.Contains("--cfx-visual-grid-panel-height:260px", StringComparison.Ordinal), "Auto-sized VisualGrid HTML should emit the computed max panel height used by SVG/PNG layout.");
         Assert(autoHtml.Contains(".chartforgex-visual-grid-panel svg{width:auto;height:auto", StringComparison.Ordinal), "Auto-sized VisualGrid HTML should preserve child SVG intrinsic sizes.");
         Assert(!autoHtml.Contains("chartforgex-visual-grid has-fixed-panels", StringComparison.Ordinal), "Auto-sized VisualGrid HTML should not force fixed-panel child scaling.");
+
+        var adaptiveGrid = VisualGrid.Create()
+            .WithColumns(2)
+            .WithGap(20)
+            .WithAdaptiveRowHeights()
+            .Add(SectionHeaderBlock.Create().WithTitle("Today's Goals").WithSize(760, 44).WithCard(false).WithTransparentBackground(), columnSpan: 2)
+            .Add(MetricCard.Create().WithMetric("Short", 1).WithSize(360, 140))
+            .Add(MetricCard.Create().WithMetric("Tall", 2).WithSize(360, 300));
+        var adaptiveSvg = adaptiveGrid.ToSvg("visual-grid-adaptive-rows");
+        var adaptiveHtml = adaptiveGrid.ToHtmlFragment();
+        Assert(adaptiveSvg.Contains("data-cfx-role=\"section-header-title\"", StringComparison.Ordinal), "Adaptive VisualGrid rows should compose natural section headers.");
+        Assert(adaptiveHtml.Contains("--cfx-visual-grid-panel-height:auto", StringComparison.Ordinal), "Adaptive VisualGrid HTML should let natural row heights drive layout.");
+        Assert(adaptiveGrid.ToPng().Length > 64, "Adaptive VisualGrid rows should render PNG output.");
     }
 
     private static void VisualBlocksRejectInvalidInputsCloseToCaller() {
@@ -395,6 +475,10 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Status = (VisualStatus)999, "MetricCard should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Icon = (VisualIcon)999, "MetricCard should reject unknown icon values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().BadgePlacement = (MetricCardBadgePlacement)999, "MetricCard should reject unknown badge placements.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MicroVisualPlacement = (MetricCardMicroVisualPlacement)999, "MetricCard should reject unknown micro visual placements.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MiniSparklineStyle = (MetricCardSparklineStyle)999, "MetricCard should reject unknown mini sparkline styles.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MicroVisualSurface = (MetricCardMicroVisualSurface)999, "MetricCard should reject unknown micro visual surfaces.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1, unit: new string('x', 25)).ToSvg(), "MetricCard units should stay compact.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithAction(new string('x', 49)).ToSvg(), "MetricCard action labels should stay compact.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithAction("Open", "longer").ToSvg(), "MetricCard action symbols should stay compact.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithAction("Open", url: "javascript:alert(1)").ToSvg(), "MetricCard action URLs should reject scriptable URLs.");
@@ -405,6 +489,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => MetricCard.Create().WithMiniSparkline(new[] { 1d }), "MetricCard mini sparklines should require at least two values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().WithMiniSparkline(new[] { 1d, double.PositiveInfinity }), "MetricCard mini sparklines should reject non-finite values.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithMiniSparkline(new[] { 1d, 2d }, minimum: 3, maximum: 2).ToSvg(), "MetricCard mini sparklines should require maximum greater than minimum.");
+        AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1).WithMiniSparkline(new[] { 1d, 2d }).WithSecondaryMiniSparkline(new[] { 1d, 2d, 3d }).ToSvg(), "MetricCard secondary mini sparklines should match the primary count.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Missing", null).ToSvg(), "MetricCard should require a visible value.");
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().WithMetric("Missing", "1").ToSvg(), "RadialMetricCard should require at least one layer.");
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().AddLayer("Bad", 1, configure: _ => null!).ToSvg(), "RadialMetricCard should reject null fluent layer configuration results.");
@@ -430,6 +515,16 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().ToSvg(), "HeatmapInsightCard should require columns and rows.");
         AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().WithColumns("A", "B").AddRow("Bad", 1).ToSvg(), "HeatmapInsightCard rows should match the column count.");
         AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().WithColumns("A").WithColorKey(2, 1).AddRow("Bad", 1).ToSvg(), "HeatmapInsightCard should require a valid color key range.");
+        AssertThrows<InvalidOperationException>(() => DateStripBlock.Create().ToSvg(), "DateStripBlock should require items.");
+        AssertThrows<InvalidOperationException>(() => DateStripBlock.Create().AddItem("", "1").ToSvg(), "DateStripBlock should require item labels.");
+        AssertThrows<InvalidOperationException>(() => DateStripBlock.Create().AddItem("Monday and too long", "1").ToSvg(), "DateStripBlock item labels should stay compact.");
+        AssertThrows<InvalidOperationException>(() => EntityStripBlock.Create().ToSvg(), "EntityStripBlock should require items.");
+        AssertThrows<InvalidOperationException>(() => EntityStripBlock.Create().AddItem("", "A").ToSvg(), "EntityStripBlock should require item labels.");
+        AssertThrows<InvalidOperationException>(() => EntityStripBlock.Create().AddItem("Bad", "TOOLONG").ToSvg(), "EntityStripBlock avatar text should stay compact.");
+        AssertThrows<InvalidOperationException>(() => EntityStripBlock.Create().AddItem("Bad").WithAction("Open", url: "javascript:alert(1)").ToSvg(), "EntityStripBlock action URLs should reject scriptable URLs.");
+        AssertThrows<InvalidOperationException>(() => SectionHeaderBlock.Create().ToSvg(), "SectionHeaderBlock should require a title.");
+        AssertThrows<InvalidOperationException>(() => SectionHeaderBlock.Create().WithTitle("Bad").WithAction(new string('x', 49)).ToSvg(), "SectionHeaderBlock action labels should stay compact.");
+        AssertThrows<InvalidOperationException>(() => SectionHeaderBlock.Create().WithTitle("Bad").WithAction("Open", url: "javascript:alert(1)").ToSvg(), "SectionHeaderBlock action URLs should reject scriptable URLs.");
         AssertThrows<InvalidOperationException>(() => WorkloadListBlock.Create().ToSvg(), "WorkloadListBlock should require rows.");
         AssertThrows<InvalidOperationException>(() => WorkloadListBlock.Create().AddPerson("", "Role", 1).ToSvg(), "WorkloadListBlock should require row labels.");
         AssertThrows<InvalidOperationException>(() => WorkloadListBlock.Create().AddPerson("Bad", "Role", -1).ToSvg(), "WorkloadListBlock should reject negative values.");

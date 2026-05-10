@@ -25,6 +25,13 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--wellness-only")) {
+            WellnessDashboardExamples.Write(output, pngOutputScale);
+            GalleryWriter.Write(output);
+            Console.WriteLine("Generated wellness files in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--dashboard-shipment-only")) {
             DashboardPatternExamples.WriteShipmentActivityPanel(output, pngOutputScale);
             Console.WriteLine("Generated dashboard shipment panel in: " + output);

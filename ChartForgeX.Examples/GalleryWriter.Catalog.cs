@@ -68,7 +68,8 @@ public static partial class GalleryWriter {
             "Composed mobile-style health and nutrition cards plus generic layered radial primitives.",
             "wellness-layered-radial-progress",
             "wellness-weight-data-gauge",
-            "wellness-calories-intake-dashboard"),
+            "wellness-calories-intake-dashboard",
+            "wellness-weekly-progress-dashboard"),
         new(
             "Dashboard Patterns",
             "Reusable KPI cards, progress rows, honeycomb utilization, ticketing analytics, MRR trend cards, and composed dashboard grids.",

@@ -35,6 +35,9 @@ public sealed partial class PngVisualBlockRenderer {
         else if (block is CompositionStatusCard compositionCard) DrawCompositionStatus(canvas, compositionCard);
         else if (block is DistributionStripCard distributionCard) DrawDistributionStripCard(canvas, distributionCard);
         else if (block is HeatmapInsightCard heatmapCard) DrawHeatmapInsightCard(canvas, heatmapCard);
+        else if (block is DateStripBlock dateStrip) DrawDateStrip(canvas, dateStrip);
+        else if (block is EntityStripBlock entityStrip) DrawEntityStrip(canvas, entityStrip);
+        else if (block is SectionHeaderBlock sectionHeader) DrawSectionHeader(canvas, sectionHeader);
         else if (block is WorkloadListBlock workloadBlock) DrawWorkloadList(canvas, workloadBlock);
         else if (block is ActivityTimelineBlock activityBlock) DrawActivityTimeline(canvas, activityBlock);
         else if (block is ScheduleTimelineBlock scheduleBlock) DrawScheduleTimeline(canvas, scheduleBlock);
@@ -132,6 +135,9 @@ public sealed partial class PngVisualBlockRenderer {
         var footerHeight = hasAction ? Math.Min(46, Math.Max(36, options.Size.Height * 0.24)) : 0;
         var footerY = options.Size.Height - footerHeight;
         var detailBottom = hasAction ? footerY - 12 : options.Size.Height - options.Padding.Bottom;
+        var hasMicroVisual = card.MiniBars.Count > 0 || card.MiniSparkline.Count > 0;
+        var heroMicroVisual = hasMicroVisual && card.MicroVisualPlacement == MetricCardMicroVisualPlacement.Hero;
+        var valueInsetSurface = !hasMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset;
         var labelX = content.X;
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
@@ -143,7 +149,7 @@ public sealed partial class PngVisualBlockRenderer {
             else canvas.FillRect(0, 0, ChartVisualPrimitives.MetricStatusBarWidth, options.Size.Height, statusColor);
         }
 
-        if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
+        if (!valueInsetSurface && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) {
             var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
             var leftBadge = card.BadgePlacement == MetricCardBadgePlacement.TopLeft;
@@ -167,15 +173,32 @@ public sealed partial class PngVisualBlockRenderer {
 
         var labelSize = Math.Max(11, theme.SubtitleFontSize);
         var baseValueSize = Math.Min(54, Math.Max(26, options.Size.Height * 0.22));
-        var hasMicroVisual = card.MiniBars.Count > 0 || card.MiniSparkline.Count > 0;
-        var microWidth = hasMicroVisual ? Math.Min(112, Math.Max(58, content.Width * 0.32)) : 0;
-        var microHeight = Math.Min(56, Math.Max(34, options.Size.Height * 0.24));
+        var microWidth = hasMicroVisual ? heroMicroVisual ? Math.Max(92, content.Width - 48) : Math.Min(112, Math.Max(58, content.Width * 0.32)) : 0;
+        var microHeight = heroMicroVisual ? Math.Min(66, Math.Max(50, options.Size.Height * 0.30)) : Math.Min(56, Math.Max(34, options.Size.Height * 0.24));
         var valueWidth = hasMicroVisual ? Math.Max(1, content.Width - microWidth - 18) : content.Width;
-        var valueSize = MetricValueFontSize(card.Value, baseValueSize, valueWidth);
+        if (heroMicroVisual) valueWidth = content.Width;
+        if (valueInsetSurface && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) valueWidth = Math.Max(1, content.Width - 106);
+        var valueSize = MetricValueFontSize(card, baseValueSize, valueWidth);
         canvas.DrawTextEmphasized(labelX, content.Y, FitText(card.Label, labelSize, labelWidth), theme.MutedText, labelSize);
-        canvas.DrawTextEmphasized(content.X, content.Y + labelSize + 18 + valueYOffset, FitText(card.Value, valueSize, valueWidth), theme.Text, valueSize);
-        if (card.MiniSparkline.Count > 0) DrawMetricMiniSparkline(canvas, card, content.X + content.Width - microWidth, content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset, microWidth, microHeight);
-        else if (card.MiniBars.Count > 0) DrawMetricMiniBars(canvas, card, content.X + content.Width - microWidth, content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset, microWidth, microHeight);
+        if (valueInsetSurface) DrawMetricValueSurface(canvas, card, content, detailBottom, labelSize, valueSize, valueWidth, statusColor);
+        else DrawMetricValueText(canvas, card, content.X, content.Y + labelSize + 18 + valueYOffset, valueSize, valueWidth, theme.Text, theme.MutedText);
+        var microX = heroMicroVisual ? content.X + 24 : content.X + content.Width - microWidth;
+        var microY = heroMicroVisual ? content.Y + Math.Max(66, options.Size.Height * 0.36) : content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset;
+        if (heroMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset) {
+            var surfaceX = content.X;
+            var surfaceY = microY - 18;
+            var surfaceWidth = content.Width;
+            var surfaceHeight = Math.Max(88, detailBottom - surfaceY - 24);
+            canvas.FillRoundedRectVerticalGradient(surfaceX, surfaceY, surfaceWidth, surfaceHeight, Math.Min(18, theme.PlotCornerRadius + 6), ChartSurfacePolish.GradientTop(theme.PlotBackground.WithAlpha(170)), ChartSurfacePolish.GradientBottom(theme.PlotBackground.WithAlpha(170)));
+            canvas.StrokeRoundedRect(surfaceX, surfaceY, surfaceWidth, surfaceHeight, Math.Min(18, theme.PlotCornerRadius + 6), theme.PlotBorder.WithAlpha(125), 1);
+            microX = surfaceX + 28;
+            microY = surfaceY + 32;
+            microWidth = Math.Max(1, surfaceWidth - 56);
+            microHeight = Math.Max(34, surfaceHeight - 58);
+        }
+
+        if (card.MiniSparkline.Count > 0) DrawMetricMiniSparkline(canvas, card, microX, microY, microWidth, microHeight);
+        else if (card.MiniBars.Count > 0) DrawMetricMiniBars(canvas, card, microX, microY, microWidth, microHeight);
         var detailsTop = content.Y + labelSize + valueSize + 24 + valueYOffset;
         DrawMetricDetails(canvas, card, content, detailsTop, detailBottom);
         DrawMetricDetail(canvas, card, detailBottom, content.X, content.Width);
@@ -213,12 +236,6 @@ public sealed partial class PngVisualBlockRenderer {
         }
     }
 
-    private static double MetricValueFontSize(string value, double requestedSize, double maxWidth) {
-        var measuredWidth = RgbaCanvas.MeasureTextEmphasizedWidth(value, requestedSize, null);
-        if (measuredWidth <= maxWidth) return requestedSize;
-        return Math.Max(22, Math.Floor(requestedSize * maxWidth / Math.Max(1, measuredWidth)));
-    }
-
     private static double MetricSymbolFontSize(string value, double requestedSize, double maxWidth) {
         var fontSize = requestedSize;
         while (fontSize > 7.5 && RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) > maxWidth) fontSize -= 0.5;
@@ -227,8 +244,16 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawMetricMiniSparkline(RgbaCanvas canvas, MetricCard card, double x, double y, double width, double height) {
         var sparkline = VisualBlockRendering.CreateMiniSparkline(card, x, y, width, height);
-        canvas.FillPolygon(sparkline.Area, sparkline.FillColor);
-        for (var i = 1; i < sparkline.Points.Length; i++) canvas.DrawLine(sparkline.Points[i - 1].X, sparkline.Points[i - 1].Y, sparkline.Points[i].X, sparkline.Points[i].Y, sparkline.LineColor, sparkline.StrokeWidth);
+        var points = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? VisualBlockRendering.SmoothMiniSparklinePoints(sparkline) : sparkline.Points;
+        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Area) canvas.FillPolygon(sparkline.Area, sparkline.FillColor);
+        else if (card.SecondaryMiniSparkline.Count > 0) {
+            var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y + 6, width, height);
+            var secondaryPoints = VisualBlockRendering.SmoothMiniSparklinePoints(secondary);
+            for (var i = 1; i < secondaryPoints.Count; i++) canvas.DrawLine(secondaryPoints[i - 1].X, secondaryPoints[i - 1].Y, secondaryPoints[i].X, secondaryPoints[i].Y, secondary.LineColor, Math.Max(1.8, secondary.StrokeWidth * 0.72));
+        }
+
+        for (var i = 1; i < points.Count; i++) canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, sparkline.LineColor, sparkline.StrokeWidth);
+        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Line) canvas.DrawCircle(sparkline.Points[0].X, sparkline.Points[0].Y, sparkline.CurrentRadius * 0.82, sparkline.LineColor);
         canvas.DrawCircle(sparkline.Current.X, sparkline.Current.Y, sparkline.CurrentRadius, sparkline.LineColor);
     }
 
@@ -658,35 +683,6 @@ public sealed partial class PngVisualBlockRenderer {
             var angle = start + (end - start) * i / (layer.SeparatorCount + 1);
             canvas.DrawLine(cx + Math.Cos(angle) * inner, cy + Math.Sin(angle) * inner, cx + Math.Cos(angle) * outer, cy + Math.Sin(angle) * outer, separator, layer.SeparatorStrokeWidth);
         }
-    }
-
-    private static void DrawIcon(RgbaCanvas canvas, VisualIcon icon, double x, double y, double size, ChartColor color) {
-        var stroke = Math.Max(1.6, size * 0.16);
-        if (icon == VisualIcon.ForkKnife) {
-            canvas.DrawLine(x - size * 0.42, y - size * 0.54, x - size * 0.42, y + size * 0.48, color, stroke);
-            canvas.DrawLine(x - size * 0.66, y - size * 0.56, x - size * 0.66, y - size * 0.12, color, stroke);
-            canvas.DrawLine(x - size * 0.42, y - size * 0.56, x - size * 0.42, y - size * 0.12, color, stroke);
-            canvas.DrawLine(x - size * 0.18, y - size * 0.56, x - size * 0.18, y - size * 0.12, color, stroke);
-            canvas.DrawLine(x + size * 0.34, y + size * 0.48, x + size * 0.34, y - size * 0.52, color, stroke);
-            canvas.DrawArc(x + size * 0.48, y - size * 0.22, size * 0.25, -Math.PI / 2, Math.PI / 2, color, stroke);
-            return;
-        }
-
-        if (icon == VisualIcon.Flame) {
-            canvas.DrawLine(x, y + size * 0.62, x - size * 0.42, y + size * 0.10, color, stroke);
-            canvas.DrawLine(x - size * 0.42, y + size * 0.10, x - size * 0.08, y - size * 0.82, color, stroke);
-            canvas.DrawLine(x - size * 0.08, y - size * 0.82, x + size * 0.22, y - size * 0.22, color, stroke);
-            canvas.DrawLine(x + size * 0.22, y - size * 0.22, x + size * 0.54, y - size * 0.78, color, stroke);
-            canvas.DrawLine(x + size * 0.54, y - size * 0.78, x + size * 0.72, y + size * 0.18, color, stroke);
-            canvas.DrawLine(x + size * 0.72, y + size * 0.18, x, y + size * 0.62, color, stroke);
-            return;
-        }
-
-        canvas.DrawLine(x - size * 0.52, y - size * 0.32, x + size * 0.10, y - size * 0.92, color, stroke);
-        canvas.DrawLine(x + size * 0.10, y - size * 0.92, x, y - size * 0.26, color, stroke);
-        canvas.DrawLine(x, y - size * 0.26, x + size * 0.58, y - size * 0.08, color, stroke);
-        canvas.DrawLine(x + size * 0.58, y - size * 0.08, x - size * 0.20, y + size * 0.82, color, stroke);
-        canvas.DrawLine(x - size * 0.20, y + size * 0.82, x - size * 0.04, y + size * 0.08, color, stroke);
     }
 
     private static void DrawCenteredText(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {

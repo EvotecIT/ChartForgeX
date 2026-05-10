@@ -74,7 +74,15 @@ public enum VisualIcon {
     /// <summary>Heat, burn, or activity icon.</summary>
     Flame,
     /// <summary>Energy, activity, or alert icon.</summary>
-    Lightning
+    Lightning,
+    /// <summary>Water, hydration, or liquid icon.</summary>
+    Droplet,
+    /// <summary>Walking, running, or movement icon.</summary>
+    Runner,
+    /// <summary>Cycling or bike activity icon.</summary>
+    Bicycle,
+    /// <summary>Person, member, owner, or user icon.</summary>
+    Person
 }
 
 /// <summary>
@@ -85,6 +93,36 @@ public enum MetricCardBadgePlacement {
     TopRight,
     /// <summary>Place the badge before the label in the upper-left corner.</summary>
     TopLeft
+}
+
+/// <summary>
+/// Placement for metric-card mini charts.
+/// </summary>
+public enum MetricCardMicroVisualPlacement {
+    /// <summary>Render the mini chart inline beside the primary metric.</summary>
+    Inline,
+    /// <summary>Render the mini chart as a larger focus visual below the primary metric.</summary>
+    Hero
+}
+
+/// <summary>
+/// Presentation style for metric-card mini sparklines.
+/// </summary>
+public enum MetricCardSparklineStyle {
+    /// <summary>Render the sparkline as a compact area chart.</summary>
+    Area,
+    /// <summary>Render the sparkline as a stroked line without area fill.</summary>
+    Line
+}
+
+/// <summary>
+/// Optional surface treatment for metric-card mini visuals.
+/// </summary>
+public enum MetricCardMicroVisualSurface {
+    /// <summary>Render the mini visual directly on the card surface.</summary>
+    None,
+    /// <summary>Render the mini visual inside an inset plot card.</summary>
+    Inset
 }
 
 /// <summary>
@@ -580,6 +618,7 @@ public sealed class VisualGrid {
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;
     private VisualGridPanelFit _panelFit = VisualGridPanelFit.Contain;
+    private bool _adaptiveRowHeights;
     private bool _frameVisible;
 
     /// <summary>Gets or sets the grid title.</summary>
@@ -620,6 +659,9 @@ public sealed class VisualGrid {
             _panelFit = value;
         }
     }
+
+    /// <summary>Gets or sets whether rows without a fixed panel size use their natural item heights.</summary>
+    public bool AdaptiveRowHeights { get => _adaptiveRowHeights; set => _adaptiveRowHeights = value; }
 
     /// <summary>Gets or sets the optional grid theme.</summary>
     public ChartTheme? Theme { get; set; }
@@ -674,6 +716,9 @@ public sealed class VisualGrid {
 
     /// <summary>Sets how children fit fixed panels.</summary>
     public VisualGrid WithPanelFit(VisualGridPanelFit fit) { PanelFit = fit; return this; }
+
+    /// <summary>Sets whether rows without a fixed panel size use their natural item heights.</summary>
+    public VisualGrid WithAdaptiveRowHeights(bool enabled = true) { AdaptiveRowHeights = enabled; return this; }
 
     /// <summary>Sets the PNG output pixel multiplier.</summary>
     public VisualGrid WithPngOutputScale(int scale) { PngOutputScale = scale; return this; }
