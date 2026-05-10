@@ -48,6 +48,7 @@ internal static partial class SmokeTests {
         ("HTML page is static and JavaScript-free", HtmlPageIsStatic),
         ("Rendered markup stays self-contained", RenderedMarkupStaysSelfContained),
         ("PNG renderer emits a valid RGBA PNG", PngIsValid),
+        ("Opaque raster exports emit valid flattened images", OpaqueRasterExportsEmitValidFlattenedImages),
         ("PNG output is deflate-compressed", PngOutputIsCompressed),
         ("SVG and PNG preserve requested dimensions across chart kinds", SvgAndPngPreserveRequestedDimensionsAcrossChartKinds),
         ("PNG renderer uses readable axis layout", PngUsesReadableAxisLayout),

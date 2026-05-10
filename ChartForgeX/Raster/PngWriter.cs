@@ -7,6 +7,8 @@ using System.Text;
 namespace ChartForgeX.Raster;
 
 internal static class PngWriter {
+    public static byte[] WriteRgba(RgbaImage image) => WriteRgba(image.Width, image.Height, image.Pixels);
+
     public static byte[] WriteRgba(int width, int height, byte[] rgba) {
         using var ms = new MemoryStream();
         ms.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, 0, 8);

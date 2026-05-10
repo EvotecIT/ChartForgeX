@@ -14,7 +14,7 @@ namespace ChartForgeX;
 /// <summary>
 /// Provides convenience rendering and file export methods for charts.
 /// </summary>
-public static class ChartExtensions {
+public static partial class ChartExtensions {
     /// <summary>
     /// Configures the current chart theme in place.
     /// </summary>

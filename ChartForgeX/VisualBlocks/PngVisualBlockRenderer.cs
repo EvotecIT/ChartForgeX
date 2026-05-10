@@ -11,10 +11,9 @@ namespace ChartForgeX.VisualBlocks;
 /// </summary>
 public sealed partial class PngVisualBlockRenderer {
     /// <summary>Renders a visual block to PNG bytes.</summary>
-    public byte[] Render(IVisualBlock block) {
-        var canvas = RenderCanvas(block);
-        return PngWriter.WriteRgba(canvas.OutputWidth, canvas.OutputHeight, canvas.ToOutputPixels());
-    }
+    public byte[] Render(IVisualBlock block) => PngWriter.WriteRgba(RenderImage(block));
+
+    internal RgbaImage RenderImage(IVisualBlock block) => RenderCanvas(block).ToImage();
 
     internal RgbaCanvas RenderCanvas(IVisualBlock block) {
         VisualBlockRendering.Validate(block);

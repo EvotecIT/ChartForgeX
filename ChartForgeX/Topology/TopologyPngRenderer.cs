@@ -19,7 +19,9 @@ public sealed partial class TopologyPngRenderer {
     /// <param name="chart">The topology chart.</param>
     /// <param name="options">Optional render options.</param>
     /// <returns>A PNG image.</returns>
-    public byte[] Render(TopologyChart chart, TopologyRenderOptions? options = null) {
+    public byte[] Render(TopologyChart chart, TopologyRenderOptions? options = null) => PngWriter.WriteRgba(RenderImage(chart, options));
+
+    internal RgbaImage RenderImage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= new TopologyRenderOptions();
         if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
@@ -46,10 +48,10 @@ public sealed partial class TopologyPngRenderer {
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
         if (options.IncludeLegend && prepared.Legend != null) DrawLegend(canvas, prepared, theme);
         var pixels = canvas.ToOutputPixels();
-        if (!options.FitContentToViewport) return PngWriter.WriteRgba(canvas.OutputWidth, canvas.OutputHeight, pixels);
+        if (!options.FitContentToViewport) return new RgbaImage(canvas.OutputWidth, canvas.OutputHeight, pixels);
         var targetWidth = Math.Max(1, requestedWidth * Math.Max(1, options.PngOutputScale));
         var targetHeight = Math.Max(1, requestedHeight * Math.Max(1, options.PngOutputScale));
-        return PngWriter.WriteRgba(targetWidth, targetHeight, FitPixels(pixels, canvas.OutputWidth, canvas.OutputHeight, targetWidth, targetHeight, Color(theme.Background)));
+        return new RgbaImage(targetWidth, targetHeight, FitPixels(pixels, canvas.OutputWidth, canvas.OutputHeight, targetWidth, targetHeight, Color(theme.Background)));
     }
 
     private static void DrawGeographicFrame(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options) {
