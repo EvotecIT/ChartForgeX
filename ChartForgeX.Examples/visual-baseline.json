@@ -1442,6 +1442,22 @@
       }
     },
     {
+      "name": "transparent-report-summary-metric-strip",
+      "width": 980,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 29,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 69596,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "travel-dotted-map-dark",
       "width": 980,
       "height": 560,
@@ -1558,7 +1574,7 @@
       "width": 920,
       "height": 560,
       "svg": {
-        "minVisualNodes": 20,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },

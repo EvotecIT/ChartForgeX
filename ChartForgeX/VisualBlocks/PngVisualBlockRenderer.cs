@@ -127,7 +127,10 @@ public sealed class PngVisualBlockRenderer {
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
         if (card.Status != VisualStatus.None) {
-            if (options.ShowCard && theme.UseCard) canvas.FillRectClippedToRoundedRect(0, 0, ChartVisualPrimitives.MetricStatusBarWidth, options.Size.Height, 0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, statusColor);
+            if (options.ShowCard && theme.UseCard) {
+                var barInset = ChartVisualPrimitives.CardInnerHighlightInset;
+                canvas.FillRectClippedToRoundedRect(barInset, barInset, ChartVisualPrimitives.MetricStatusBarWidth, Math.Max(1, options.Size.Height - barInset * 2), 0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, statusColor);
+            }
             else canvas.FillRect(0, 0, ChartVisualPrimitives.MetricStatusBarWidth, options.Size.Height, statusColor);
         }
 

@@ -163,7 +163,8 @@ public sealed class SvgVisualBlockRenderer {
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
         if (card.Status != VisualStatus.None) {
-            writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", 0).Attribute("y", 0).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", options.Size.Height).Attribute("fill", statusColor.ToCss());
+            var barInset = options.ShowCard && theme.UseCard ? ChartVisualPrimitives.CardInnerHighlightInset : 0;
+            writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", barInset).Attribute("y", barInset).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", Math.Max(1, options.Size.Height - barInset * 2)).Attribute("fill", statusColor.ToCss());
             if (options.ShowCard && theme.UseCard) writer.Attribute("clip-path", "url(#" + id + "-visualCardClip)");
             writer.EndEmptyElement().Line();
         }

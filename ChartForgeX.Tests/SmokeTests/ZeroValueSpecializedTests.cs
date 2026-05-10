@@ -46,7 +46,8 @@ internal static partial class SmokeTests {
         Assert(FunnelSegmentTopWidth(funnelSvg, 1) <= 16, "Zero funnel stages should render as narrow explicit markers instead of implying nonzero volume.");
         Assert(funnelSvg.Contains("data-cfx-role=\"funnel-segment\" data-cfx-point=\"2\" data-cfx-label=\"Closed\" data-cfx-value=\"32\" data-cfx-retention=\"0.267\" data-cfx-dropoff=\"0\"", StringComparison.Ordinal), "Funnel stages after a zero previous stage should not report a fake drop-off from a zero baseline.");
         Assert(funnelSvg.Contains("funnelPointFill2", StringComparison.Ordinal) && funnelSvg.Contains("stop-color=\"#7C3AED\"", StringComparison.Ordinal), "Funnel point colors should not shift when earlier stages are zero.");
-        Assert(funnelSvg.Contains(">prev stage was 0</text>", StringComparison.Ordinal), "Funnel drop-off labels from a zero previous stage should describe the zero baseline instead of implying no change.");
+        Assert(!funnelSvg.Contains("prev stage was 0", StringComparison.Ordinal), "Funnel stages after a zero previous stage should avoid fake drop-off helper text.");
+        Assert(CountOccurrences(funnelSvg, "data-cfx-role=\"funnel-dropoff-line\"") == 1, "Funnel drop-off guide lines should only render when the previous stage has a nonzero baseline.");
         Assert(double.Parse(GetStringAttribute(funnelSvg, "data-cfx-role=\"funnel-label\"", "font-size"), CultureInfo.InvariantCulture) >= 12, "Wide funnel segments next to zero stages should not shrink labels against the narrow endpoint.");
         Assert(funnelSvg.Contains("stroke=\"rgba(15,23,42,0.588)\"", StringComparison.Ordinal) && funnelSvg.Contains("stroke-width=\"2.2\"", StringComparison.Ordinal), "White funnel labels should use a dark contrast halo instead of a light blur.");
         Assert(funnel.ToPng().Length > 64, "Funnel zero stages should render PNG output.");

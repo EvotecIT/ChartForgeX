@@ -71,12 +71,17 @@ public sealed partial class PngChartRenderer {
             var halo = FunnelTextHalo(labelColor, chart.Options.Theme.CardBackground);
             if (showLabels) {
                 if (values[i].Y <= 0) {
-                    var zeroLabelX = topRight + 12;
-                    var zeroLabelWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
-                    var zeroLabelFontSize = TextFontSizeForEmphasizedWidth(label, zeroLabelWidth, FunnelLabelFontSize(chart.Options.Theme.LegendFontSize));
-                    var zeroValueFontSize = TextFontSizeForEmphasizedWidth(value, zeroLabelWidth, FunnelValueFontSize(chart.Options.Theme.DataLabelFontSize));
+                    var zeroLabelX = topRight + 24;
+                    var zeroLabelMaxWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
+                    var zeroLabelFontSize = TextFontSizeForEmphasizedWidth(label, zeroLabelMaxWidth, FunnelLabelFontSize(chart.Options.Theme.LegendFontSize));
+                    var zeroValueFontSize = TextFontSizeForEmphasizedWidth(value, zeroLabelMaxWidth, FunnelValueFontSize(chart.Options.Theme.DataLabelFontSize));
+                    var zeroLabelPreferredWidth = Math.Max(72, Math.Max(EstimatePngEmphasizedTextWidth(label, zeroLabelFontSize), EstimatePngEmphasizedTextWidth(value, zeroValueFontSize)) + 18);
+                    var zeroLabelWidth = Math.Min(zeroLabelMaxWidth, zeroLabelPreferredWidth);
                     var zeroStackHeight = zeroLabelFontSize + zeroValueFontSize + 18;
                     var zeroBounds = new ChartRect(zeroLabelX, centerY - zeroStackHeight / 2.0, zeroLabelWidth, zeroStackHeight);
+                    var backdrop = ChartColorMath.WithOpacity(chart.Options.Theme.CardBackground, chart.Options.Theme.CardBackground.A == 0 ? 0 : 0.78);
+                    if (backdrop.A > 0) c.FillRoundedRect(zeroBounds.Left - 8, zeroBounds.Top - 5, zeroBounds.Width + 16, zeroBounds.Height + 10, 9, backdrop);
+                    if (chart.Options.Theme.PlotBorder.A > 0) c.StrokeRoundedRect(zeroBounds.Left - 8, zeroBounds.Top - 5, zeroBounds.Width + 16, zeroBounds.Height + 10, 9, ChartColorMath.WithOpacity(chart.Options.Theme.PlotBorder, 0.55), 1);
                     DrawReadablePngLabel(c, zeroBounds, zeroBounds.Left, zeroBounds.Top, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), zeroLabelFontSize);
                     DrawReadablePngLabel(c, zeroBounds, zeroBounds.Left, zeroBounds.Top + zeroLabelFontSize + 12, value, chart.Options.Theme.MutedText, ReadableLabelHalo(chart), zeroValueFontSize);
                 } else {
@@ -85,21 +90,21 @@ public sealed partial class PngChartRenderer {
                 }
             }
             if (showLabels && i > 0) {
+                var hasPreviousBaseline = values[i - 1].Y > 0;
                 var retention = FunnelRatio(values[i].Y, values[0].Y);
                 var dropOff = FunnelDropOff(values[i].Y, values[i - 1].Y);
                 var guideX = Math.Min(metricsX - 10, bottomRight + 8);
                 var retentionLabel = FormatPercent(retention) + " retained";
                 var dropOffLabel = FormatFunnelDropOffLabel(dropOff, values[i - 1].Y);
-                var dropOffColor = values[i - 1].Y <= 0 ? chart.Options.Theme.MutedText : chart.Options.Theme.Negative;
                 var metricMaxWidth = Math.Max(32, basePlot.Right - metricsX - 6);
                 var metricFontSize = Math.Min(
                     TextFontSizeForEmphasizedWidth(retentionLabel, metricMaxWidth, PngTickFontSize(chart)),
                     TextFontSizeForEmphasizedWidth(dropOffLabel, metricMaxWidth, PngTickFontSize(chart)));
                 retentionLabel = TrimReadablePngLabelToWidth(retentionLabel, metricFontSize, metricMaxWidth);
                 dropOffLabel = TrimReadablePngLabelToWidth(dropOffLabel, metricFontSize, metricMaxWidth);
-                c.DrawDashedLine(guideX, segmentY - gap * 0.35, guideX, segmentY + segmentDrawHeight * 0.55, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.FunnelDropoffLineOpacity), ChartVisualPrimitives.FunnelDropoffLineStrokeWidth, 3, 4);
+                if (hasPreviousBaseline) c.DrawDashedLine(guideX, segmentY - gap * 0.35, guideX, segmentY + segmentDrawHeight * 0.55, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.FunnelDropoffLineOpacity), ChartVisualPrimitives.FunnelDropoffLineStrokeWidth, 3, 4);
                 if (retentionLabel.Length > 0) c.DrawTextEmphasized(metricsX, centerY - metricFontSize - 4, retentionLabel, chart.Options.Theme.MutedText, metricFontSize);
-                if (dropOffLabel.Length > 0) c.DrawTextEmphasized(metricsX, centerY + 4, dropOffLabel, dropOffColor, metricFontSize);
+                if (hasPreviousBaseline && dropOffLabel.Length > 0) c.DrawTextEmphasized(metricsX, centerY + 4, dropOffLabel, chart.Options.Theme.Negative, metricFontSize);
             }
 
             y += segmentHeight + gap;

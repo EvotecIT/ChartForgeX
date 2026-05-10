@@ -114,6 +114,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal), "Metric status cards should still render the semantic accent bar.");
         Assert(svg.Contains("-visualCardClip", StringComparison.Ordinal), "Metric visual blocks should define a rounded card clipping path.");
         Assert(svg.Contains("clip-path=\"url(#", StringComparison.Ordinal), "Metric status bars should be clipped by the card radius instead of painting square corners.");
+        Assert(GetStringAttribute(svg, "data-cfx-role=\"metric-status-bar\"", "x") == "1.5", "Carded metric status bars should sit inside the card border instead of covering the rounded frame.");
         Assert(!svg.Contains("-visualBackground)", StringComparison.Ordinal), "Carded visual blocks should not paint a square SVG background behind rounded card corners.");
         var metricPng = ReadPngRgba(metric.ToPng(), out var metricPngWidth, out var metricPngHeight);
         Assert(AlphaAt(metricPng, metricPngWidth, 1, metricPngHeight - 2) == 0, "Carded visual block PNG output should leave the outside of rounded card corners transparent.");
@@ -157,6 +158,16 @@ internal static partial class SmokeTests {
         Assert(!transparentCardMetric.ToSvg("transparent-card-metric").Contains("data-cfx-role=\"visual-card-highlight\"", StringComparison.Ordinal), "Transparent visual block cards should not receive a visible SVG inner highlight.");
         Assert(transparentCardMetric.ToPng().Length > 64, "Transparent visual block cards should still render PNG output.");
 
+        var transparentGrid = VisualGrid.CreateMetricStrip("Transparent", new[] {
+                MetricCard.Create().WithMetric("Patch Rate", "94%").WithStatus(VisualStatus.Positive).WithTheme(transparentCardTheme),
+                MetricCard.Create().WithMetric("Warnings", "18").WithStatus(VisualStatus.Warning).WithTheme(transparentCardTheme)
+            }, columns: 2)
+            .WithTheme(transparentCardTheme);
+        var transparentGridSvg = transparentGrid.ToSvg("transparent-grid");
+        Assert(!transparentGridSvg.Contains("data-cfx-role=\"visual-grid-frame-highlight\"", StringComparison.Ordinal), "Transparent visual-grid sections should render only their outer frame, without an extra inner highlight line.");
+        var transparentGridPixels = ReadPngRgba(transparentGrid.ToPng(), out var transparentGridWidth, out _);
+        Assert(AlphaAt(transparentGridPixels, transparentGridWidth, 1, 1) == 0, "Transparent visual-grid sections should preserve transparent corners for overlay usage.");
+
         var translucentTheme = ChartTheme.ReportLight();
         translucentTheme.Background = ChartColor.FromRgba(15, 23, 42, 96);
         var chartGrid = ChartGrid.Create()
@@ -174,6 +185,19 @@ internal static partial class SmokeTests {
             .Add(ChartList.Create().WithTheme(ChartTheme.ReportLight()).WithSize(160, 90).AddItem("Ready"));
         var visualGridPixels = ReadPngRgba(visualGrid.ToPng(), out var visualGridWidth, out _);
         Assert(AlphaAt(visualGridPixels, visualGridWidth, 16, 16) == 96, "PNG visual grids should not compound translucent background alpha when adding polish.");
+    }
+
+    private static void FunnelZeroStageAvoidsFakeDropoffGuide() {
+        var chart = Chart.Create()
+            .WithSize(920, 560)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithXLabels("Opened", "Deferred", "Closed")
+            .AddFunnel("Review flow", Points(100, 0, 18));
+        var svg = chart.ToSvg("zero-stage-funnel");
+        Assert(svg.Contains("data-cfx-role=\"funnel-zero-label-backdrop\"", StringComparison.Ordinal), "Zero-value funnel stages should render as an intentional compact label chip.");
+        Assert(!svg.Contains("prev stage was 0", StringComparison.Ordinal), "Funnel stages after a zero stage should not show fake previous-stage drop-off text.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-dropoff-line\"") == 1, "Funnel drop-off guide lines should be omitted when the previous stage is zero.");
+        Assert(chart.ToPng().Length > 64, "Zero-value funnel stage polish should render PNG output.");
     }
 
     private static byte AlphaAt(byte[] rgba, int width, int x, int y) => rgba[(y * width + x) * 4 + 3];

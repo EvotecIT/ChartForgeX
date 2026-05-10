@@ -67,6 +67,7 @@ internal static partial class SmokeTests {
         ("Specialized chart layouts keep content inside plot frame", SpecializedChartLayoutsKeepContentInsidePlotFrame),
         ("Metric status bars respect rounded cards", MetricStatusBarsRespectRoundedCards),
         ("Transparent surfaces keep their alpha contract", TransparentSurfacesKeepTheirAlphaContract),
+        ("Funnel zero stage avoids fake dropoff guide", FunnelZeroStageAvoidsFakeDropoffGuide),
         ("PNG font path falls back gracefully", PngFontPathFallsBackGracefully),
         ("PNG font path supports TrueType collections", PngFontPathSupportsTrueTypeCollections),
         ("PNG font diagnostics describe fallback decisions", PngFontDiagnosticsDescribeFallbackDecisions),
