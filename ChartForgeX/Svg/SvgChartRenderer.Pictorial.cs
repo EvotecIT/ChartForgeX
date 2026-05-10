@@ -26,7 +26,7 @@ public sealed partial class SvgChartRenderer {
         var symbolArea = Math.Max(1, plot.Width - labelWidth - valueWidth - (showValues ? 22 : 10));
         var gap = Math.Max(1.2, Math.Min(7, symbolArea / columns * 0.16));
         var maxSymbolSize = Math.Max(1, (symbolArea - gap * (columns - 1)) / columns);
-        var baseSymbolSize = Math.Min(rowHeight * 0.72, maxSymbolSize);
+        var baseSymbolSize = Math.Min(rowHeight * 0.82, maxSymbolSize);
         var symbolSize = Math.Max(3, Math.Min(maxSymbolSize, baseSymbolSize * chart.Options.PictorialSymbolScale));
         var startX = plot.Left + labelWidth + 10;
         var totalHeight = rowHeight * totalSymbolRows + itemGap * (values.Length - 1);
@@ -191,7 +191,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("y", cy - radius)
                 .Attribute("width", radius * 2)
                 .Attribute("height", radius * 2)
-                .Attribute("rx", radius * 0.26)
+                .Attribute("rx", radius * 0.14)
                 .Attribute("fill", color.ToCss())
                 .EndEmptyElement()
                 .Line();

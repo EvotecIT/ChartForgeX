@@ -223,12 +223,12 @@ internal static class ExpressiveExamples {
         .WithDashboardPanelStyle()
         .WithLegend(false)
         .WithPadding(36, 30, 26, 58)
-            .WithSize(840, 360)
-            .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-            .WithYAxisBounds(0, 100)
-            .WithHighlightedXAxisLabel(4, paletteIndex: 0)
-            .AddSmoothArea("Saved", Points(24, 36, 48, 58, 46, 68, 76))
-            .AddSmoothLine("Outreach", Points(18, 28, 36, 48, 40, 58, 66));
+        .WithSize(920, 360)
+        .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+        .WithYAxisBounds(0, 100)
+        .WithHighlightedXAxisLabel(4, paletteIndex: 0)
+        .AddSmoothArea("Saved", Points(24, 36, 48, 58, 46, 68, 76))
+        .AddSmoothLine("Outreach", Points(18, 28, 36, 48, 40, 58, 66));
 
     private static ChartGrid CreatePictorialSymbolShowcaseGrid() {
         var shapes = new[] {
@@ -247,10 +247,10 @@ internal static class ExpressiveExamples {
         var grid = ChartGrid.Create()
             .WithTitle("Pictorial Symbol Showcase")
             .WithSubtitle("Built-in pictorial symbols for scorecards, ratings, audience mixes, and friendly summaries")
-            .WithTheme(ChartTheme.Candy())
+            .WithTheme(ChartTheme.Candy().WithCornerRadius(8, 4))
             .WithColumns(3)
             .WithPadding(24)
-            .WithPanelSize(340, 220);
+            .WithPanelSize(360, 190);
         for (var i = 0; i < shapes.Length; i++) {
             grid.Add(CreatePictorialShapePreview(shapes[i], palette[i % palette.Length]));
         }
@@ -261,11 +261,13 @@ internal static class ExpressiveExamples {
     private static Chart CreatePictorialShapePreview(ChartPictorialShape shape, ChartColor color) => Chart.Create()
         .WithTitle(shape.ToString())
         .WithSubtitle("Built-in symbol")
-        .WithTheme(ChartTheme.Candy())
-        .WithSize(340, 220)
+        .WithTheme(ChartTheme.Candy().WithCornerRadius(8, 4))
+        .WithSize(360, 190)
+        .WithLegend(false).WithPlotBackground(false)
+        .WithPadding(44, 30, 24, 34)
         .WithValueFormatter(value => value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "/5")
-        .WithPictorialColumns(5)
-        .WithPictorialMaximum(5)
+        .WithPictorialColumns(5).WithPictorialMaximum(5)
+        .WithPictorialSymbolScale(1.36)
         .AddPictorial("Shape", new[] { new ChartPictorialItem(shape.ToString(), 4.5, color) }, shape);
 
     private static ChartGrid CreatePictorialIsotypeShowcaseGrid() {

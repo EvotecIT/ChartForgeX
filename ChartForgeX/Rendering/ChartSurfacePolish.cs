@@ -5,7 +5,7 @@ namespace ChartForgeX.Rendering;
 
 internal static class ChartSurfacePolish {
     public static string CssGradient(ChartColor color) {
-        if (color.A == 0) return "transparent";
+        if (color.A == 0) return "linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 100%)";
         return "linear-gradient(180deg," + GradientTop(color).ToCss() + " 0%," + GradientBottom(color).ToCss() + " 100%)";
     }
 

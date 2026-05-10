@@ -23,7 +23,7 @@ public sealed class PngChartGridRenderer {
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var output = new RgbaCanvas(layout.Width, layout.Height, 1, null, grid.PngOutputScale);
         output.Clear(background);
-        if (background.A > 0) {
+        if (background.A == 255) {
             var inset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
             output.FillRoundedRectVerticalGradient(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
         }

@@ -58,6 +58,7 @@ internal static class ChartVisualPrimitives {
     public const double StatusMarkerRadius = 4;
     public const double StatusMarkerStrokeWidth = 1.5;
     public const double PngStatusMarkerOutlineRadius = 5.2;
+    public const double MetricStatusBarWidth = 7;
     public const double BulletContentInset = 18;
     public const double BulletTargetStrokeWidth = 3;
     public const double BulletAxisStrokeWidth = 1.1;

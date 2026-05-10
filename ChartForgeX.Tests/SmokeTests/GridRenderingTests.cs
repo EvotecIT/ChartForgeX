@@ -30,7 +30,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("--cfx-grid-padding:30px", StringComparison.Ordinal), "Chart grids should expose the requested padding.");
         Assert(html.Contains("--cfx-grid-panel-width:300px", StringComparison.Ordinal), "Chart grids should expose fixed panel widths.");
         Assert(html.Contains("--cfx-grid-panel-height:200px", StringComparison.Ordinal), "Chart grids should expose fixed panel heights.");
-        Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal) && html.Contains(".chartforgex-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}", StringComparison.Ordinal), "Chart grid HTML pages should use polished surfaces without clipping chart shadows.");
+        Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal) && html.Contains(".chartforgex-grid-panel{min-width:0;width:100%;min-height:var(--cfx-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}", StringComparison.Ordinal), "Chart grid HTML pages should use polished surfaces while keeping panel overflow isolated.");
         Assert(CountOccurrences(html, "<svg ") == 2, "Chart grids should render each chart as inline SVG.");
         Assert(html.Contains(">Control scorecards</h1>", StringComparison.Ordinal), "Chart grids should render report titles.");
         Assert(!html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Chart grids should remain JavaScript-free.");

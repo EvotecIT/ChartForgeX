@@ -80,6 +80,7 @@ public static partial class GalleryWriter {
             "dashboard-mrr-driver-bars",
             "dashboard-hr-overview-grid",
             "dashboard-saas-mrr-grid",
+            "transparent-report-summary-metric-strip",
             "dashboard-restaurant-reports-range-strip",
             "dashboard-restaurant-order-status",
             "dashboard-restaurant-customers-hexbin",

@@ -19,7 +19,9 @@ public sealed partial class SvgChartRenderer {
         var labeledRows = rows.Where(row => row.series.ShowDataLabels != false).ToArray();
         var labelReserve = labeledRows.Length == 0 ? 10 : Math.Min(240, Math.Max(128, labeledRows.Max(row => EstimateTextWidth(row.series.Name, t.LegendFontSize)) + 34));
         var valueReserve = labeledRows.Length == 0 ? 12 : Math.Min(142, Math.Max(84, labeledRows.Max(row => EstimateTextWidth(FormatValue(chart, BulletValue(row.series)), t.DataLabelFontSize)) + 38));
-        var plot = new ChartRect(basePlot.X + labelReserve, basePlot.Y + 18, Math.Max(80, basePlot.Width - labelReserve - valueReserve), Math.Max(80, basePlot.Height - 54));
+        var content = BulletContentBounds(basePlot);
+        FitBulletReserves(content.Width, ref labelReserve, ref valueReserve);
+        var plot = new ChartRect(content.X + labelReserve, content.Y + 18, Math.Max(1, content.Width - labelReserve - valueReserve), Math.Max(1, content.Height - 54));
         var rowHeight = Math.Min(64, plot.Height / Math.Max(1, rows.Length));
         var barHeight = Math.Max(16, Math.Min(26, rowHeight * 0.38));
 
@@ -65,7 +67,7 @@ public sealed partial class SvgChartRenderer {
                 .EndStartElement()
                 .Line();
             if (showLabels && rowLabel.Length > 0) {
-                WriteBulletText(writer, "bullet-row-label", basePlot.Left, y + 4, rowLabel, t.Text.ToCss(), BulletFontFamily(t.FontFamily), rowLabelFontSize, "700");
+                WriteBulletText(writer, "bullet-row-label", content.Left, y + 4, rowLabel, t.Text.ToCss(), BulletFontFamily(t.FontFamily), rowLabelFontSize, "700");
             }
             DrawBulletRanges(writer, row.series, plot, y, barHeight, min, max, accent);
 
@@ -120,9 +122,26 @@ public sealed partial class SvgChartRenderer {
             writer.EndElement().Line();
         }
 
-        DrawBulletAxis(writer, chart, plot, rows[0].series, basePlot.Bottom - 12);
+        DrawBulletAxis(writer, chart, plot, rows[0].series, content.Bottom - 12);
         writer.EndElement().Line();
         sb.Append(writer.Build());
+    }
+
+    private static ChartRect BulletContentBounds(ChartRect basePlot) =>
+        new(
+            basePlot.X + ChartVisualPrimitives.BulletContentInset,
+            basePlot.Y + ChartVisualPrimitives.BulletContentInset,
+            Math.Max(1, basePlot.Width - ChartVisualPrimitives.BulletContentInset * 2),
+            Math.Max(1, basePlot.Height - ChartVisualPrimitives.BulletContentInset * 2));
+
+    private static void FitBulletReserves(double contentWidth, ref double labelReserve, ref double valueReserve) {
+        var minimumPlotWidth = Math.Min(80, Math.Max(1, contentWidth * 0.25));
+        var reserveBudget = Math.Max(0, contentWidth - minimumPlotWidth);
+        var totalReserve = labelReserve + valueReserve;
+        if (totalReserve <= reserveBudget || totalReserve <= 0) return;
+        var ratio = reserveBudget / totalReserve;
+        labelReserve *= ratio;
+        valueReserve *= ratio;
     }
 
     private static void DrawBulletTargetLabel(SvgMarkupWriter writer, Chart chart, string label, double x, double y, ChartRect plot) {

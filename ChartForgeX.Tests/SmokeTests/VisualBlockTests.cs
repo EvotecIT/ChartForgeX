@@ -82,6 +82,18 @@ internal static partial class SmokeTests {
         Assert(metric.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "MetricCard should render an embeddable HTML fragment.");
         Assert(metric.ToPng().Length > 64, "MetricCard should render PNG output.");
 
+        var symbolMetric = MetricCard.Create()
+            .WithMetric("Patch Rate", "94%", "OK")
+            .WithSymbol("WRN")
+            .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
+            .WithStatus(VisualStatus.Warning)
+            .WithTheme(ChartTheme.TransparentOverlayDark())
+            .WithSize(300, 170);
+        var symbolMetricSvg = symbolMetric.ToSvg("visual-block-metric-symbol");
+        Assert(symbolMetricSvg.Contains("data-cfx-role=\"metric-symbol\"", StringComparison.Ordinal), "MetricCard should render text symbols when no icon is configured.");
+        Assert(symbolMetricSvg.Contains("dominant-baseline=\"central\"", StringComparison.Ordinal), "MetricCard symbols should be vertically centered inside their badge.");
+        Assert(symbolMetric.ToPng().Length > 64, "MetricCard symbol badges should render in PNG output.");
+
         var sparkMetric = MetricCard.Create()
             .WithMetric("Network", "842 Mbps")
             .WithStatus(VisualStatus.Info)
@@ -282,7 +294,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("Trend", StringComparison.Ordinal), "VisualGrid should embed chart SVG.");
         var gridHtml = grid.ToHtmlPage();
         Assert(gridHtml.Contains("chartforgex-visual-grid has-fixed-panels has-frame", StringComparison.Ordinal), "VisualGrid should render optional premium frames in static HTML pages.");
-        Assert(gridHtml.Contains("linear-gradient(180deg", StringComparison.Ordinal) && gridHtml.Contains("overflow:visible", StringComparison.Ordinal), "VisualGrid HTML pages should use polished surfaces without clipping child shadows.");
+        Assert(gridHtml.Contains("linear-gradient(180deg", StringComparison.Ordinal) && gridHtml.Contains(".chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}", StringComparison.Ordinal), "VisualGrid HTML pages should use polished surfaces while keeping child content inside each panel.");
         Assert(grid.ToPng().Length > 64, "VisualGrid should render PNG output.");
 
         var sparseGrid = VisualGrid.Create()

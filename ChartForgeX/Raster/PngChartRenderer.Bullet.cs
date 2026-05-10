@@ -20,7 +20,9 @@ public sealed partial class PngChartRenderer {
         var tickFontSize = PngTickFontSize(chart);
         var labelReserve = BulletLabelReserve(chart, rows, labelFontSize);
         var valueReserve = BulletValueReserve(chart, rows, valueFontSize);
-        var plot = new ChartRect(basePlot.X + labelReserve, basePlot.Y + 18, Math.Max(80, basePlot.Width - labelReserve - valueReserve), Math.Max(80, basePlot.Height - 54));
+        var content = BulletContentBounds(basePlot);
+        FitBulletReserves(content.Width, ref labelReserve, ref valueReserve);
+        var plot = new ChartRect(content.X + labelReserve, content.Y + 18, Math.Max(1, content.Width - labelReserve - valueReserve), Math.Max(1, content.Height - 54));
         var rowHeight = Math.Min(64, plot.Height / Math.Max(1, rows.Count));
         var barHeight = Math.Max(16, Math.Min(26, rowHeight * 0.38));
 
@@ -44,7 +46,7 @@ public sealed partial class PngChartRenderer {
             var rowLabelFontSize = TextFontSizeForEmphasizedWidth(row.Series.Name, rowLabelMaxWidth, labelFontSize);
             var rowLabel = TrimReadablePngLabelToWidth(row.Series.Name, rowLabelFontSize, rowLabelMaxWidth);
             var showLabels = row.Series.ShowDataLabels != false;
-            if (showLabels && rowLabel.Length > 0) c.DrawTextEmphasized(basePlot.Left, y - rowLabelFontSize / 2.0, rowLabel, chart.Options.Theme.Text, rowLabelFontSize);
+            if (showLabels && rowLabel.Length > 0) c.DrawTextEmphasized(content.Left, y - rowLabelFontSize / 2.0, rowLabel, chart.Options.Theme.Text, rowLabelFontSize);
             DrawBulletRanges(c, row.Series, plot, y, barHeight, min, max, accent);
             DrawGradientBar(c, plot.Left, y - barHeight * 0.24, Math.Max(2, valueX - plot.Left), barHeight * 0.48, barHeight * 0.24, accent);
             c.DrawLine(targetX, y - barHeight * 0.65, targetX, y + barHeight * 0.65, chart.Options.Theme.Text, ChartVisualPrimitives.BulletTargetStrokeWidth);
@@ -60,7 +62,24 @@ public sealed partial class PngChartRenderer {
             }
         }
 
-        DrawBulletAxis(c, chart, plot, rows[0].Series, basePlot.Bottom - 12);
+        DrawBulletAxis(c, chart, plot, rows[0].Series, content.Bottom - 12);
+    }
+
+    private static ChartRect BulletContentBounds(ChartRect basePlot) =>
+        new(
+            basePlot.X + ChartVisualPrimitives.BulletContentInset,
+            basePlot.Y + ChartVisualPrimitives.BulletContentInset,
+            Math.Max(1, basePlot.Width - ChartVisualPrimitives.BulletContentInset * 2),
+            Math.Max(1, basePlot.Height - ChartVisualPrimitives.BulletContentInset * 2));
+
+    private static void FitBulletReserves(double contentWidth, ref double labelReserve, ref double valueReserve) {
+        var minimumPlotWidth = Math.Min(80, Math.Max(1, contentWidth * 0.25));
+        var reserveBudget = Math.Max(0, contentWidth - minimumPlotWidth);
+        var totalReserve = labelReserve + valueReserve;
+        if (totalReserve <= reserveBudget || totalReserve <= 0) return;
+        var ratio = reserveBudget / totalReserve;
+        labelReserve *= ratio;
+        valueReserve *= ratio;
     }
 
     private static void DrawBulletRanges(RgbaCanvas c, ChartSeries series, ChartRect plot, double y, double barHeight, double min, double max, ChartColor accent) {

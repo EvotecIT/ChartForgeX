@@ -145,7 +145,8 @@ public sealed partial class SvgChartRenderer {
         AppendSvgStart(sb, writer => writer.StartElement("defs").EndStartElement().Line());
         AppendSvg(sb, writer => writer
             .StartElement("style")
-            .Text($"#{id} text{{font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region{{transition:opacity .12s ease,stroke-width .12s ease}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}")
+            .Text($"#{id} text{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region{{transition:opacity .12s ease,stroke-width .12s ease}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}")
+            .Text($"#{id} text{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region{{transition:opacity .12s ease,stroke-width .12s ease}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}")
             .EndElement()
             .Line());
         WriteSvgCardShadowFilter(sb, id, t);
@@ -188,7 +189,7 @@ public sealed partial class SvgChartRenderer {
         if (o.ShowPlotBackground) {
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("x", plot.X).Attribute("y", plot.Y).Attribute("width", plot.Width).Attribute("height", plot.Height).Attribute("rx", t.PlotCornerRadius).Attribute("fill", $"url(#{id}-plotSurface)").EndEmptyElement().Line());
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("class", "cfx-crisp-stroke").Attribute("x", plot.X + 0.5).Attribute("y", plot.Y + 0.5).Attribute("width", Math.Max(0, plot.Width - 1)).Attribute("height", Math.Max(0, plot.Height - 1)).Attribute("rx", Math.Max(0, t.PlotCornerRadius - 0.5)).Attribute("fill", "none").Attribute("stroke", t.PlotBorder.ToCss()).EndEmptyElement().Line());
-            DrawSvgSurfaceHighlight(sb, plot.X, plot.Y, plot.Width, plot.Height, t.PlotCornerRadius, ChartVisualPrimitives.PlotInnerHighlightInset, ChartVisualPrimitives.PlotInnerHighlightOpacity, "plot-inner-highlight");
+            if (t.PlotBackground.A > 0) DrawSvgSurfaceHighlight(sb, plot.X, plot.Y, plot.Width, plot.Height, t.PlotCornerRadius, ChartVisualPrimitives.PlotInnerHighlightInset, ChartVisualPrimitives.PlotInnerHighlightOpacity, "plot-inner-highlight");
         }
         if (o.ShowHeader) DrawHeader(sb, chart);
         if (IsPieLike(chart)) {
@@ -412,7 +413,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke", theme.CardBorder.ToCss())
             .EndEmptyElement()
             .Line());
-        DrawSvgSurfaceHighlight(sb, cardInset, cardInset, width - cardInset * 2, height - cardInset * 2, theme.CornerRadius, ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightOpacity, "card-inner-highlight");
+        if (theme.CardBackground.A > 0) {
+            DrawSvgSurfaceHighlight(sb, cardInset, cardInset, width - cardInset * 2, height - cardInset * 2, theme.CornerRadius, ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightOpacity, "card-inner-highlight");
+        }
     }
 
     private static void DrawGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> xTicks, IReadOnlyList<double> yTicks, ChartMapper map) {

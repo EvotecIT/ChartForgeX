@@ -22,6 +22,7 @@ internal static class WellnessDashboardExamples {
         SaveCaloriesCard(output, (int)pngOutputScale);
         SavePowerBgInfoStatsSection(output, (int)pngOutputScale);
         SaveReportMetricStrip(output, (int)pngOutputScale);
+        SaveTransparentReportMetricStrip(output, (int)pngOutputScale);
     }
 
     private static void SaveLayeredRadial(string output, ChartPngOutputScale pngOutputScale) {
@@ -226,6 +227,46 @@ internal static class WellnessDashboardExamples {
         grid.SaveSvg(Path.Combine(output, "report-summary-metric-strip.svg"));
         grid.SaveHtml(Path.Combine(output, "report-summary-metric-strip.html"));
         grid.SavePng(Path.Combine(output, "report-summary-metric-strip.png"));
+    }
+
+    private static void SaveTransparentReportMetricStrip(string output, int outputScale) {
+        var theme = ChartTheme.TransparentOverlayDark()
+            .WithSurfaceColors(ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.FromRgba(148, 163, 184, 118), ChartColor.FromRgba(148, 163, 184, 82))
+            .WithTextColors(ChartColor.FromHex("#F8FAFC"), ChartColor.FromRgba(226, 232, 240, 222))
+            .WithPalette("#2DD4BF", "#60A5FA", "#F59E0B", "#FB7185")
+            .WithCornerRadius(14, 8)
+            .WithShadowOpacity(0);
+
+        MetricCard Card(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color, bool sparkline) {
+            var card = MetricCard.Create()
+                .WithSize(300, 170)
+                .WithTheme(theme)
+                .WithMetric(label, value)
+                .WithTrend(trend)
+                .WithCaption(caption)
+                .WithSymbol(symbol)
+                .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
+                .WithStatus(status)
+                .WithAction("Open report");
+            return sparkline
+                ? card.WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(46))
+                : card.WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromRgba(148, 163, 184, 70));
+        }
+
+        var cards = new[] {
+            Card("Patch Rate", "94%", "+4 pp", "last 30 days", "OK", VisualStatus.Positive, new[] { 80d, 84d, 88d, 91d, 94d }, ChartColor.FromHex("#60A5FA"), true),
+            Card("Warnings", "18", "-7", "open controls", "WRN", VisualStatus.Warning, new[] { 72d, 64d, 51d, 42d, 35d }, ChartColor.FromHex("#F59E0B"), false),
+            Card("Coverage", "1,284", "+96", "assets scanned", "INV", VisualStatus.Info, new[] { 44d, 58d, 63d, 77d, 86d }, ChartColor.FromHex("#2DD4BF"), true)
+        };
+
+        var grid = VisualGrid.CreateMetricStrip("Transparent Report Summary", cards, columns: 3, panelWidth: 300, panelHeight: 170)
+            .WithSubtitle("Section and cards render as overlay chrome with transparent surfaces.")
+            .WithTheme(theme)
+            .WithPngOutputScale(outputScale);
+
+        grid.SaveSvg(Path.Combine(output, "transparent-report-summary-metric-strip.svg"));
+        grid.SaveHtml(Path.Combine(output, "transparent-report-summary-metric-strip.html"));
+        grid.SavePng(Path.Combine(output, "transparent-report-summary-metric-strip.png"));
     }
 
     private static ChartTheme WellnessTheme() => ChartTheme.Minimal()

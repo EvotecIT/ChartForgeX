@@ -60,7 +60,7 @@ public sealed partial class SvgChartRenderer {
             var retention = FunnelRatio(values[i].Y, values[0].Y);
             var dropOff = i == 0 ? 0 : FunnelDropOff(values[i].Y, values[i - 1].Y);
             var summary = label + ": " + value + ", retained " + FormatPercent(retention);
-            if (i > 0) summary += ", drop-off " + FormatPercent(dropOff);
+            if (i > 0 && values[i - 1].Y > 0) summary += ", drop-off " + FormatPercent(dropOff);
             writer
                 .StartElement("path")
                 .Attribute("data-cfx-role", "funnel-segment")
@@ -90,10 +90,9 @@ public sealed partial class SvgChartRenderer {
             if (showLabels) {
                 var labelWriter = new StringBuilder();
                 if (values[i].Y <= 0) {
-                    var zeroLabelX = topRight + 12;
-                    var zeroLabelWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
-                    DrawSvgTextLeft(labelWriter, chart, "funnel-label", label, zeroLabelX, centerY - 6, t.Text, labelFontSize, zeroLabelWidth, "800");
-                    DrawSvgTextLeft(labelWriter, chart, "funnel-value", value, zeroLabelX, centerY + 13, t.MutedText, valueFontSize, zeroLabelWidth, "750");
+                    var zeroLabelX = topRight + 18;
+                    var zeroLabelMaxWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
+                    DrawSvgTextLeft(labelWriter, chart, "funnel-zero-label", label + ": " + value, zeroLabelX, centerY + 4, t.MutedText, Math.Min(12.5, labelFontSize), zeroLabelMaxWidth, "750");
                 } else {
                     DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, centerY - 4, labelColor, labelFontSize, labelWidth, "800", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth);
                     DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, centerY + 15, labelColor, valueFontSize, labelWidth, "750", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth);
@@ -101,27 +100,29 @@ public sealed partial class SvgChartRenderer {
                 writer.Raw(labelWriter.ToString());
             }
             if (showLabels && i > 0) {
+                var hasPreviousBaseline = values[i - 1].Y > 0;
                 var guideX = Math.Min(metricsX - 10, bottomRight + 8);
                 var metricMaxWidth = Math.Max(32, basePlot.Right - metricsX - 6);
                 var retentionLabel = FormatPercent(retention) + " retained";
                 var dropOffLabel = FormatFunnelDropOffLabel(dropOff, values[i - 1].Y);
-                var dropOffColor = values[i - 1].Y <= 0 ? t.MutedText : t.Negative;
-                writer
-                    .StartElement("line")
-                    .Attribute("data-cfx-role", "funnel-dropoff-line")
-                    .Attribute("x1", guideX)
-                    .Attribute("y1", segmentY + gap * -0.35)
-                    .Attribute("x2", guideX)
-                    .Attribute("y2", segmentY + segmentDrawHeight * 0.55)
-                    .Attribute("stroke", t.Axis.ToCss())
-                    .Attribute("stroke-width", ChartVisualPrimitives.FunnelDropoffLineStrokeWidth)
-                    .Attribute("stroke-dasharray", "3 4")
-                    .Attribute("opacity", ChartVisualPrimitives.FunnelDropoffLineOpacity)
-                    .EndEmptyElement()
-                    .Line();
+                if (hasPreviousBaseline) {
+                    writer
+                        .StartElement("line")
+                        .Attribute("data-cfx-role", "funnel-dropoff-line")
+                        .Attribute("x1", guideX)
+                        .Attribute("y1", segmentY + gap * -0.35)
+                        .Attribute("x2", guideX)
+                        .Attribute("y2", segmentY + segmentDrawHeight * 0.55)
+                        .Attribute("stroke", t.Axis.ToCss())
+                        .Attribute("stroke-width", ChartVisualPrimitives.FunnelDropoffLineStrokeWidth)
+                        .Attribute("stroke-dasharray", "3 4")
+                        .Attribute("opacity", ChartVisualPrimitives.FunnelDropoffLineOpacity)
+                        .EndEmptyElement()
+                        .Line();
+                }
                 var metricsWriter = new StringBuilder();
                 DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, centerY - 3, t.MutedText, t.TickLabelFontSize, metricMaxWidth, "700");
-                DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, centerY + 14, dropOffColor, t.TickLabelFontSize, metricMaxWidth, "650");
+                if (hasPreviousBaseline) DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, centerY + 14, t.Negative, t.TickLabelFontSize, metricMaxWidth, "650");
                 writer.Raw(metricsWriter.ToString());
             }
 

@@ -64,20 +64,22 @@ public sealed class SvgVisualGridRenderer {
                 .Attribute("stroke-width", 1.4)
                 .EndEmptyElement()
                 .Line();
-            writer.StartElement("rect")
-                .Attribute("data-cfx-role", "visual-grid-frame-highlight")
-                .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
-                .Attribute("x", inset + ChartVisualPrimitives.CardInnerHighlightInset)
-                .Attribute("y", inset + ChartVisualPrimitives.CardInnerHighlightInset)
-                .Attribute("width", Math.Max(1, layout.Width - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
-                .Attribute("height", Math.Max(1, layout.Height - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
-                .Attribute("rx", Math.Max(theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset, 24))
-                .Attribute("fill", "none")
-                .Attribute("stroke", "#fff")
-                .Attribute("stroke-opacity", ChartVisualPrimitives.CardInnerHighlightOpacity)
-                .Attribute("stroke-width", 1)
-                .EndEmptyElement()
-                .Line();
+            if (background.A > 0) {
+                writer.StartElement("rect")
+                    .Attribute("data-cfx-role", "visual-grid-frame-highlight")
+                    .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
+                    .Attribute("x", inset + ChartVisualPrimitives.CardInnerHighlightInset)
+                    .Attribute("y", inset + ChartVisualPrimitives.CardInnerHighlightInset)
+                    .Attribute("width", Math.Max(1, layout.Width - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
+                    .Attribute("height", Math.Max(1, layout.Height - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
+                    .Attribute("rx", Math.Max(theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset, 24))
+                    .Attribute("fill", "none")
+                    .Attribute("stroke", "#fff")
+                    .Attribute("stroke-opacity", ChartVisualPrimitives.CardInnerHighlightOpacity)
+                    .Attribute("stroke-width", 1)
+                    .EndEmptyElement()
+                    .Line();
+            }
         }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);

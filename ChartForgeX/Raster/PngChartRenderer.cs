@@ -251,7 +251,9 @@ public sealed partial class PngChartRenderer {
             var borderInset = ChartVisualPrimitives.CardBorderInset;
             c.StrokeRoundedRect(x + borderInset, y + borderInset, width - borderInset * 2, height - borderInset * 2, Math.Max(0, theme.CornerRadius - borderInset), theme.CardBorder);
         }
-        DrawPngSurfaceHighlight(c, x, y, width, height, theme.CornerRadius, ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightOpacity);
+        if (theme.CardBackground.A > 0) {
+            DrawPngSurfaceHighlight(c, x, y, width, height, theme.CornerRadius, ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightOpacity);
+        }
     }
 
     private static void DrawPngCardShadow(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor shadow, double opacity) {
@@ -278,7 +280,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawPlotSurface(RgbaCanvas c, ChartOptions options, ChartTheme theme, ChartRect plot) {
         if (options.ShowPlotBackground) c.FillRoundedRectVerticalGradient(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, ChartSurfacePolish.GradientTop(theme.PlotBackground), ChartSurfacePolish.GradientBottom(theme.PlotBackground));
         if (options.ShowPlotBackground && theme.PlotBorder.A > 0) c.StrokeRoundedRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, theme.PlotBorder);
-        if (options.ShowPlotBackground) DrawPngSurfaceHighlight(c, plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, ChartVisualPrimitives.PlotInnerHighlightInset, ChartVisualPrimitives.PlotInnerHighlightOpacity);
+        if (options.ShowPlotBackground && theme.PlotBackground.A > 0) DrawPngSurfaceHighlight(c, plot.X, plot.Y, plot.Width, plot.Height, theme.PlotCornerRadius, ChartVisualPrimitives.PlotInnerHighlightInset, ChartVisualPrimitives.PlotInnerHighlightOpacity);
     }
 
     private static void DrawPngGridLine(RgbaCanvas c, double x1, double y1, double x2, double y2, ChartColor color, ChartGridLineStyle style) {
@@ -312,7 +314,7 @@ public sealed partial class PngChartRenderer {
     private static double CrispStrokeCoordinate(double value, double strokeWidth) {
         if (double.IsNaN(value) || double.IsInfinity(value)) return value;
         var roundedStroke = Math.Max(1, (int)Math.Round(strokeWidth));
-        return Math.Round(value) + (roundedStroke % 2 == 0 ? 0 : 0.5);
+        return roundedStroke % 2 == 0 ? Math.Round(value) : Math.Floor(value) + 0.5;
     }
 
     private static void DrawHeader(RgbaCanvas c, Chart chart) {

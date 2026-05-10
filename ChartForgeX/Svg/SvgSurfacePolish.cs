@@ -6,7 +6,7 @@ namespace ChartForgeX.Svg;
 internal static class SvgSurfacePolish {
     internal static void WriteScopedStrokeStyle(SvgMarkupWriter writer, string id) {
         writer.StartElement("style")
-            .Text("#" + id + " .cfx-guide-stroke,#" + id + " .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}")
+            .Text("#" + id + " .cfx-guide-stroke,#" + id + " .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#" + id + " text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}")
             .EndElement()
             .Line();
     }
