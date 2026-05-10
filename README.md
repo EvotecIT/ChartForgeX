@@ -637,6 +637,12 @@ if (RasterImageFormatExtensions.TryFromFileExtension("chart.bmp", out var parsed
 using var stream = System.IO.File.Create("chart.bmp");
 chart.WriteBmp(stream);
 chart.SaveRasterImage("chart.tiff");
+
+chart.SaveImage("chart.svg");
+chart.SaveImage("chart.html");
+chart.SaveImage("chart.png");
+chart.SaveImage("chart.bmp");
+chart.Save("chart.tiff");
 ```
 
 Use `GetPngFontInfo()` when you want to verify which font source PNG rendering will use:

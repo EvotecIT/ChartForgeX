@@ -95,6 +95,16 @@ internal static partial class SmokeTests {
             if (File.Exists(inferredPath)) File.Delete(inferredPath);
         }
 
+        AssertExtensionInferredSave("chart", ".svg", path => SampleChart().SaveImage(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<svg", StringComparison.Ordinal), "SaveImage should infer SVG from the output extension."));
+        AssertExtensionInferredSave("chart", ".html", path => SampleChart().Save(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Save should infer HTML from the output extension."));
+        AssertExtensionInferredSave("chart", ".png", path => SampleChart().SaveImage(path), bytes => AssertPngHeader(bytes));
+        AssertExtensionInferredSave("chart", ".bmp", path => SampleChart().Save(path), bytes => AssertBmpHeader(bytes, 640, 360));
+        AssertExtensionInferredSave("chart", ".tif", path => SampleChart().SaveImage(path), bytes => AssertTiffHeader(bytes, 640, 360));
+        AssertExtensionInferredSave("grid", ".ppm", path => GridForInferredSave().SaveImage(path), bytes => AssertPpmHeader(bytes, null, null));
+        AssertExtensionInferredSave("block", ".png", path => MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%").Save(path), bytes => AssertPngHeader(bytes));
+        AssertExtensionInferredSave("visual-grid", ".html", path => VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().WithMetric("CPU", "42%") }).SaveImage(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Visual grid SaveImage should infer HTML from the output extension."));
+        AssertThrows<ArgumentException>(() => SampleChart().SaveImage("chart.gif"), "SaveImage should reject unsupported image extensions.");
+
         var transparent = Chart.Create()
             .WithSize(32, 24)
             .WithTheme(ChartTheme.TransparentOverlayDark())
@@ -181,6 +191,22 @@ internal static partial class SmokeTests {
         } finally {
             if (File.Exists(topologyPath)) File.Delete(topologyPath);
         }
+
+        AssertExtensionInferredSave("topology", ".svg", path => topology.SaveImage(path, topologyOptions), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<svg", StringComparison.Ordinal), "Topology SaveImage should infer SVG from the output extension."));
+        AssertExtensionInferredSave("topology", ".png", path => topology.Save(path, topologyOptions), bytes => AssertPngHeader(bytes));
+        AssertExtensionInferredSave("topology", ".tiff", path => topology.SaveImage(path, topologyOptions), bytes => AssertTiffHeader(bytes, null, null));
+    }
+
+    private static ChartGrid GridForInferredSave() => ChartGrid.Create().WithPanelSize(180, 120).Add(Chart.Create().WithSize(180, 120).AddLine("Values", Points(1, 2, 3)));
+
+    private static void AssertExtensionInferredSave(string prefix, string extension, Action<string> saveAction, Action<byte[]> assertOutput) {
+        var path = Path.Combine(Path.GetTempPath(), "chartforgex-save-image-" + prefix + "-" + Guid.NewGuid().ToString("N") + extension);
+        try {
+            saveAction(path);
+            assertOutput(File.ReadAllBytes(path));
+        } finally {
+            if (File.Exists(path)) File.Delete(path);
+        }
     }
 
     private static void AssertFailedSavePreservesExistingFile(Action<string> saveAction, string message) {
@@ -193,6 +219,11 @@ internal static partial class SmokeTests {
         } finally {
             if (File.Exists(path)) File.Delete(path);
         }
+    }
+
+    private static void AssertPngHeader(byte[] png) {
+        Assert(png.Length > 64, "PNG output should contain an encoded image.");
+        Assert(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71, "PNG signature should be valid.");
     }
 
     private static void AssertBmpHeader(byte[] bmp, int? expectedWidth, int? expectedHeight) {
