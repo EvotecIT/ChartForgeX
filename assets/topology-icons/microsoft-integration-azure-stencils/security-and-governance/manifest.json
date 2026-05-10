@@ -1,0 +1,3543 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-security-and-governance",
+  "label": "Microsoft Azure Stencils - Security and Governance",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "153",
+    "import.svg.imported": "153",
+    "import.svg.skipped": "0",
+    "source.folder": "Security and Governance",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "multi-factor-authentication",
+      "label": "Multi Factor Authentication",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFA",
+      "color": "#7C3AED",
+      "category": "Security and Governance / Old Versions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 400 140",
+        "svgPath": "svg/multi-factor-authentication.svg",
+        "previewPath": "previews/multi-factor-authentication.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "old", "versions", "multi", "factor", "authentication", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Multi-Factor-Authentication.svg",
+        "source.path": "SVG-OLD-VERSIONS/Multi-Factor-Authentication.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 400 140"
+      }
+    },
+    {
+      "id": "access-control",
+      "label": "Access Control",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96.585 71.6328",
+        "svgPath": "svg/access-control.svg",
+        "previewPath": "previews/access-control.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "access", "control", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Access-Control.svg",
+        "source.path": "SVG/Access-Control.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96.585 71.6328"
+      }
+    },
+    {
+      "id": "access-keys",
+      "label": "Access Keys",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AK",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/access-keys.svg",
+        "previewPath": "previews/access-keys.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "access", "keys", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Access-keys.svg",
+        "source.path": "SVG/Access-keys.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "according",
+      "label": "According",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64.4 48.0642",
+        "svgPath": "svg/according.svg",
+        "previewPath": "previews/according.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "according", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "According.svg",
+        "source.path": "SVG/According.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64.4 48.0642"
+      }
+    },
+    {
+      "id": "advisor",
+      "label": "Advisor",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/advisor.svg",
+        "previewPath": "previews/advisor.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "advisor", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Advisor.svg",
+        "source.path": "SVG/Advisor.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "alerts",
+      "label": "Alerts",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/alerts.svg",
+        "previewPath": "previews/alerts.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "alerts", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Alerts.svg",
+        "source.path": "SVG/Alerts.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "application-change-analysis",
+      "label": "Application Change Analysis",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ACA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/application-change-analysis.svg",
+        "previewPath": "previews/application-change-analysis.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "application", "change", "analysis", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Application-Change-Analysis.svg",
+        "source.path": "SVG/Application-Change-Analysis.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "application-gateways",
+      "label": "Application Gateways",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/application-gateways.svg",
+        "previewPath": "previews/application-gateways.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "application", "gateways", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Application-Gateways.svg",
+        "source.path": "SVG/Application-Gateways.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "application-security-groups",
+      "label": "Application Security Groups",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ASG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/application-security-groups.svg",
+        "previewPath": "previews/application-security-groups.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "application", "security", "groups", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Application-security-groups.svg",
+        "source.path": "SVG/Application-security-groups.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "assign-tags",
+      "label": "Assign Tags",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AT",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/assign-tags.svg",
+        "previewPath": "previews/assign-tags.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "assign", "tags", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Assign-tags.svg",
+        "source.path": "SVG/Assign-tags.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "assignments",
+      "label": "Assignments",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/assignments.svg",
+        "previewPath": "previews/assignments.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "assignments", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Assignments.svg",
+        "source.path": "SVG/Assignments.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "automation-accounts",
+      "label": "Automation Accounts",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/automation-accounts.svg",
+        "previewPath": "previews/automation-accounts.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "automation", "accounts", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Automation-Accounts.svg",
+        "source.path": "SVG/Automation-Accounts.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-authentication-methods",
+      "label": "Azure Ad Authentication Methods",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAAM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-authentication-methods.svg",
+        "previewPath": "previews/azure-ad-authentication-methods.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure-ad-authentication-methods", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure AD Authentication methods.svg",
+        "source.path": "SVG/Azure AD Authentication methods.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-conditional-access",
+      "label": "Azure Ad Conditional Access",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AACA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-conditional-access.svg",
+        "previewPath": "previews/azure-ad-conditional-access.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure-ad-conditional-access", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure AD Conditional Access.svg",
+        "source.path": "SVG/Azure AD Conditional Access.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-identity-protection",
+      "label": "Azure Ad Identity Protection",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAIP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-identity-protection.svg",
+        "previewPath": "previews/azure-ad-identity-protection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure-ad-identity-protection", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure AD Identity Protection.svg",
+        "source.path": "SVG/Azure AD Identity Protection.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-identity-secure-score",
+      "label": "Azure Ad Identity Secure Score",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAIS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/azure-ad-identity-secure-score.svg",
+        "previewPath": "previews/azure-ad-identity-secure-score.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure-ad-identity-secure-score", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure AD Identity Secure Score.svg",
+        "source.path": "SVG/Azure AD Identity Secure Score.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "azure-ad-risky-sign-ins",
+      "label": "Azure Ad Risky Sign Ins",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AARS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/azure-ad-risky-sign-ins.svg",
+        "previewPath": "previews/azure-ad-risky-sign-ins.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure-ad-risky-sign", "ins", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure AD Risky sign-ins.svg",
+        "source.path": "SVG/Azure AD Risky sign-ins.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "azure-ad-risky-users",
+      "label": "Azure Ad Risky Users",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AARU",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/azure-ad-risky-users.svg",
+        "previewPath": "previews/azure-ad-risky-users.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure-ad-risky-users", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure AD Risky users.svg",
+        "source.path": "SVG/Azure AD Risky users.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "azure-active-directory-1",
+      "label": "Azure Active Directory 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAD1",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 400 140",
+        "svgPath": "svg/azure-active-directory-1.svg",
+        "previewPath": "previews/azure-active-directory-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "active", "directory", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Active-Directory-1.svg",
+        "source.path": "SVG/Azure-Active-Directory-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 400 140"
+      }
+    },
+    {
+      "id": "azure-active-directory-b2c",
+      "label": "Azure Active Directory B2c",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AADB",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 73.5435 69.085",
+        "svgPath": "svg/azure-active-directory-b2c.svg",
+        "previewPath": "previews/azure-active-directory-b2c.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "active", "directory", "b2c", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Active-Directory-B2C.svg",
+        "source.path": "SVG/Azure-Active-Directory-B2C.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 73.5435 69.085"
+      }
+    },
+    {
+      "id": "azure-active-directory-privileged-identity-management",
+      "label": "Azure Active Directory Privileged Identity Management",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AADP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 72.5268 72.5268",
+        "svgPath": "svg/azure-active-directory-privileged-identity-management.svg",
+        "previewPath": "previews/azure-active-directory-privileged-identity-management.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "active", "directory", "privileged", "identity", "management", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Active-Directory-Privileged-Identity-Management.svg",
+        "source.path": "SVG/Azure-Active-Directory-Privileged-Identity-Management.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 72.5268 72.5268"
+      }
+    },
+    {
+      "id": "azure-active-directory",
+      "label": "Azure Active Directory",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAD",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/azure-active-directory.svg",
+        "previewPath": "previews/azure-active-directory.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "active", "directory", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Active-Directory.svg",
+        "source.path": "SVG/Azure-Active-Directory.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "azure-ad-authentication-methods-2",
+      "label": "Azure Ad Authentication Methods",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAAM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-authentication-methods-2.svg",
+        "previewPath": "previews/azure-ad-authentication-methods-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "authentication", "methods", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Authentication-methods.svg",
+        "source.path": "SVG/Azure-AD-Authentication-methods.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-b2c",
+      "label": "Azure Ad B2c",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAB",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 115 115",
+        "svgPath": "svg/azure-ad-b2c.svg",
+        "previewPath": "previews/azure-ad-b2c.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "b2c", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-B2C.svg",
+        "source.path": "SVG/Azure-AD-B2C.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 115 115"
+      }
+    },
+    {
+      "id": "azure-ad-conditional-access-2",
+      "label": "Azure Ad Conditional Access",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AACA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-conditional-access-2.svg",
+        "previewPath": "previews/azure-ad-conditional-access-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "conditional", "access", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Conditional-Access.svg",
+        "source.path": "SVG/Azure-AD-Conditional-Access.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-connect-health",
+      "label": "Azure Ad Connect Health",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AACH",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-connect-health.svg",
+        "previewPath": "previews/azure-ad-connect-health.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "connect", "health", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Connect-Health.svg",
+        "source.path": "SVG/Azure-AD-Connect-Health.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-domain-services",
+      "label": "Azure Ad Domain Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AADS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-domain-services.svg",
+        "previewPath": "previews/azure-ad-domain-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "domain", "services", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Domain-Services.svg",
+        "source.path": "SVG/Azure-AD-Domain-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-identity-protection-2",
+      "label": "Azure Ad Identity Protection",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAIP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-identity-protection-2.svg",
+        "previewPath": "previews/azure-ad-identity-protection-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "identity", "protection", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Identity-Protection.svg",
+        "source.path": "SVG/Azure-AD-Identity-Protection.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-identity-secure-score-2",
+      "label": "Azure Ad Identity Secure Score",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAIS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/azure-ad-identity-secure-score-2.svg",
+        "previewPath": "previews/azure-ad-identity-secure-score-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "identity", "secure", "score", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Identity-Secure-Score.svg",
+        "source.path": "SVG/Azure-AD-Identity-Secure-Score.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "azure-ad-named-locations",
+      "label": "Azure Ad Named Locations",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AANL",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-named-locations.svg",
+        "previewPath": "previews/azure-ad-named-locations.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "named", "locations", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Named-Locations.svg",
+        "source.path": "SVG/Azure-AD-Named-Locations.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-password-protection",
+      "label": "Azure Ad Password Protection",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAPP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-password-protection.svg",
+        "previewPath": "previews/azure-ad-password-protection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "password", "protection", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Password-Protection.svg",
+        "source.path": "SVG/Azure-AD-Password-Protection.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-ad-risk-detections",
+      "label": "Azure Ad Risk Detections",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AARD",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 9 9",
+        "svgPath": "svg/azure-ad-risk-detections.svg",
+        "previewPath": "previews/azure-ad-risk-detections.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "risk", "detections", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Risk-Detections.svg",
+        "source.path": "SVG/Azure-AD-Risk-Detections.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 9 9"
+      }
+    },
+    {
+      "id": "azure-ad-risky-sign-ins-2",
+      "label": "Azure Ad Risky Sign Ins",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AARS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/azure-ad-risky-sign-ins-2.svg",
+        "previewPath": "previews/azure-ad-risky-sign-ins-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "risky", "sign", "ins", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Risky-sign-ins.svg",
+        "source.path": "SVG/Azure-AD-Risky-sign-ins.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "azure-ad-risky-users-2",
+      "label": "Azure Ad Risky Users",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AARU",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/azure-ad-risky-users-2.svg",
+        "previewPath": "previews/azure-ad-risky-users-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "risky", "users", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Risky-users.svg",
+        "source.path": "SVG/Azure-AD-Risky-users.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "azure-ad-security",
+      "label": "Azure Ad Security",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-ad-security.svg",
+        "previewPath": "previews/azure-ad-security.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ad", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-AD-Security.svg",
+        "source.path": "SVG/Azure-AD-Security.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-api-for-fhir",
+      "label": "Azure Api For Fhir",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAFF",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/azure-api-for-fhir.svg",
+        "previewPath": "previews/azure-api-for-fhir.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "api", "for", "fhir", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-API-for-FHIR.svg",
+        "source.path": "SVG/Azure-API-for-FHIR.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "azure-arc",
+      "label": "Azure Arc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 1152 1152",
+        "svgPath": "svg/azure-arc.svg",
+        "previewPath": "previews/azure-arc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "arc", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Arc.svg",
+        "source.path": "SVG/Azure-Arc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 1152 1152"
+      }
+    },
+    {
+      "id": "azure-ddos-protection",
+      "label": "Azure Ddos Protection",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ADP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 39.4988 55.8407",
+        "svgPath": "svg/azure-ddos-protection.svg",
+        "previewPath": "previews/azure-ddos-protection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "ddos", "protection", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-DDoS-Protection.svg",
+        "source.path": "SVG/Azure-DDoS-Protection.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 39.4988 55.8407"
+      }
+    },
+    {
+      "id": "azure-firewall",
+      "label": "Azure Firewall",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AF",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 38.925 38.925",
+        "svgPath": "svg/azure-firewall.svg",
+        "previewPath": "previews/azure-firewall.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "firewall", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Firewall.svg",
+        "source.path": "SVG/Azure-Firewall.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 38.925 38.925"
+      }
+    },
+    {
+      "id": "azure-firewalls",
+      "label": "Azure Firewalls",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AF",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/azure-firewalls.svg",
+        "previewPath": "previews/azure-firewalls.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "firewalls", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Firewalls.svg",
+        "source.path": "SVG/Azure-Firewalls.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "azure-information-protection-1",
+      "label": "Azure Information Protection 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AIP1",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 53.0995 53.32",
+        "svgPath": "svg/azure-information-protection-1.svg",
+        "previewPath": "previews/azure-information-protection-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "information", "protection", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Information-Protection-1.svg",
+        "source.path": "SVG/Azure-Information-Protection-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 53.0995 53.32"
+      }
+    },
+    {
+      "id": "azure-information-protection",
+      "label": "Azure Information Protection",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AIP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48.2569 56.0936",
+        "svgPath": "svg/azure-information-protection.svg",
+        "previewPath": "previews/azure-information-protection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "information", "protection", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Information-Protection.svg",
+        "source.path": "SVG/Azure-Information-Protection.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48.2569 56.0936"
+      }
+    },
+    {
+      "id": "azure-lighthouse",
+      "label": "Azure Lighthouse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AL",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-lighthouse.svg",
+        "previewPath": "previews/azure-lighthouse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "lighthouse", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Lighthouse.svg",
+        "source.path": "SVG/Azure-Lighthouse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-monitor",
+      "label": "Azure Monitor",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 39.0143 39.0069",
+        "svgPath": "svg/azure-monitor.svg",
+        "previewPath": "previews/azure-monitor.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "monitor", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Monitor.svg",
+        "source.path": "SVG/Azure-Monitor.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 39.0143 39.0069"
+      }
+    },
+    {
+      "id": "azure-security-center-for-iot",
+      "label": "Azure Security Center For Iot",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ASCF",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 82.2689 90.8747",
+        "svgPath": "svg/azure-security-center-for-iot.svg",
+        "previewPath": "previews/azure-security-center-for-iot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "security", "center", "for", "iot", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Security-Center-for-IoT.svg",
+        "source.path": "SVG/Azure-Security-Center-for-IoT.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 82.2689 90.8747"
+      }
+    },
+    {
+      "id": "azure-security-center",
+      "label": "Azure Security Center",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ASC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61.3881 74.8",
+        "svgPath": "svg/azure-security-center.svg",
+        "previewPath": "previews/azure-security-center.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "security", "center", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Security-Center.svg",
+        "source.path": "SVG/Azure-Security-Center.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61.3881 74.8"
+      }
+    },
+    {
+      "id": "azure-sentinel",
+      "label": "Azure Sentinel",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-sentinel.svg",
+        "previewPath": "previews/azure-sentinel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "sentinel", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Azure-Sentinel.svg",
+        "source.path": "SVG/Azure-Sentinel.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "batch-accounts",
+      "label": "Batch Accounts",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "96 243.8 568.8 536.5",
+        "svgPath": "svg/batch-accounts.svg",
+        "previewPath": "previews/batch-accounts.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "batch", "accounts", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Batch-accounts.svg",
+        "source.path": "SVG/Batch-accounts.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "96 243.8 568.8 536.5"
+      }
+    },
+    {
+      "id": "blueprints",
+      "label": "Blueprints",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/blueprints.svg",
+        "previewPath": "previews/blueprints.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "blueprints", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Blueprints.svg",
+        "source.path": "SVG/Blueprints.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "budgets",
+      "label": "Budgets",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/budgets.svg",
+        "previewPath": "previews/budgets.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "budgets", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Budgets.svg",
+        "source.path": "SVG/Budgets.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "compliance",
+      "label": "Compliance",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/compliance.svg",
+        "previewPath": "previews/compliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "compliance", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Compliance.svg",
+        "source.path": "SVG/Compliance.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "conditional-access-and-security-center",
+      "label": "Conditional Access And Security Center",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CAAS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 39.4988 53.3355",
+        "svgPath": "svg/conditional-access-and-security-center.svg",
+        "previewPath": "previews/conditional-access-and-security-center.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "conditional", "access", "and", "security", "center", "governance" ],
+      "metadata": {
+        "source.fileName": "Conditional-Access-and-Security-Center.svg",
+        "source.path": "SVG/Conditional-Access-and-Security-Center.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 39.4988 53.3355"
+      }
+    },
+    {
+      "id": "conditional-access",
+      "label": "Conditional Access",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/conditional-access.svg",
+        "previewPath": "previews/conditional-access.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "conditional", "access", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Conditional-Access.svg",
+        "source.path": "SVG/Conditional-Access.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "cost-alerts",
+      "label": "Cost Alerts",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/cost-alerts.svg",
+        "previewPath": "previews/cost-alerts.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "cost", "alerts", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Cost-Alerts.svg",
+        "source.path": "SVG/Cost-Alerts.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "cost-analysis",
+      "label": "Cost Analysis",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/cost-analysis.svg",
+        "previewPath": "previews/cost-analysis.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "cost", "analysis", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Cost-Analysis.svg",
+        "source.path": "SVG/Cost-Analysis.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "cost-management",
+      "label": "Cost Management",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/cost-management.svg",
+        "previewPath": "previews/cost-management.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "cost", "management", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Cost-Management.svg",
+        "source.path": "SVG/Cost-Management.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "cost",
+      "label": "Cost",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "-0.5 0.5 30 30",
+        "svgPath": "svg/cost.svg",
+        "previewPath": "previews/cost.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "cost", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Cost.svg",
+        "source.path": "SVG/Cost.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "-0.5 0.5 30 30"
+      }
+    },
+    {
+      "id": "create-custom-azure-ad-roles-1",
+      "label": "Create Custom Azure Ad Roles (1)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CCAA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/create-custom-azure-ad-roles-1.svg",
+        "previewPath": "previews/create-custom-azure-ad-roles-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "create", "custom", "azure", "ad", "roles", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Create-Custom-Azure-Ad-Roles-(1).svg",
+        "source.path": "SVG/Create-Custom-Azure-Ad-Roles-(1).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "customer-lockbox-for-microsoft-azure",
+      "label": "Customer Lockbox For Microsoft Azure",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CLFM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/customer-lockbox-for-microsoft-azure.svg",
+        "previewPath": "previews/customer-lockbox-for-microsoft-azure.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "customer", "lockbox", "for", "microsoft", "azure", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Customer-Lockbox-for-Microsoft-Azure.svg",
+        "source.path": "SVG/Customer-Lockbox-for-Microsoft-Azure.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "ddos-protection-plans",
+      "label": "Ddos Protection Plans",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DPP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/ddos-protection-plans.svg",
+        "previewPath": "previews/ddos-protection-plans.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ddos", "protection", "plans", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "DDoS-protection-plans.svg",
+        "source.path": "SVG/DDoS-protection-plans.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "dedicated-hsm",
+      "label": "Dedicated Hsm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DH",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 56.3148 51.82",
+        "svgPath": "svg/dedicated-hsm.svg",
+        "previewPath": "previews/dedicated-hsm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "dedicated", "hsm", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Dedicated-HSM.svg",
+        "source.path": "SVG/Dedicated-HSM.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 56.3148 51.82"
+      }
+    },
+    {
+      "id": "definitions",
+      "label": "Definitions",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/definitions.svg",
+        "previewPath": "previews/definitions.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "definitions", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Definitions.svg",
+        "source.path": "SVG/Definitions.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "design-for-security",
+      "label": "Design For Security",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DFS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 56.32 56.32",
+        "svgPath": "svg/design-for-security.svg",
+        "previewPath": "previews/design-for-security.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "design", "for", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Design-for-security.svg",
+        "source.path": "SVG/Design-for-security.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 56.32 56.32"
+      }
+    },
+    {
+      "id": "detect-threats",
+      "label": "Detect Threats",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DT",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 36.6791 49.5",
+        "svgPath": "svg/detect-threats.svg",
+        "previewPath": "previews/detect-threats.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "detect", "threats", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Detect-Threats.svg",
+        "source.path": "SVG/Detect-Threats.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 36.6791 49.5"
+      }
+    },
+    {
+      "id": "diagnostics-settings",
+      "label": "Diagnostics Settings",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/diagnostics-settings.svg",
+        "previewPath": "previews/diagnostics-settings.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "diagnostics", "settings", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Diagnostics-settings.svg",
+        "source.path": "SVG/Diagnostics-settings.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "directory-subscription",
+      "label": "Directory + Subscription",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D+S",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 19.723 20",
+        "svgPath": "svg/directory-subscription.svg",
+        "previewPath": "previews/directory-subscription.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "directory", "subscription", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Directory-+-Subscription.svg",
+        "source.path": "SVG/Directory-+-Subscription.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 19.723 20"
+      }
+    },
+    {
+      "id": "dns-zones",
+      "label": "Dns Zones",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DZ",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "-374 616 50 50",
+        "svgPath": "svg/dns-zones.svg",
+        "previewPath": "previews/dns-zones.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "dns", "zones", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "DNS-zones.svg",
+        "source.path": "SVG/DNS-zones.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "-374 616 50 50"
+      }
+    },
+    {
+      "id": "education",
+      "label": "Education",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "E",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 352 273",
+        "svgPath": "svg/education.svg",
+        "previewPath": "previews/education.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "education", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Education.svg",
+        "source.path": "SVG/Education.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 352 273"
+      }
+    },
+    {
+      "id": "endpoint-security",
+      "label": "Endpoint Security",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ES",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/endpoint-security.svg",
+        "previewPath": "previews/endpoint-security.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "endpoint", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Endpoint-security.svg",
+        "source.path": "SVG/Endpoint-security.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "extended-security-updates",
+      "label": "Extended Security Updates",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ESU",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/extended-security-updates.svg",
+        "previewPath": "previews/extended-security-updates.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "extended-security-updates", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Extended Security Updates.svg",
+        "source.path": "SVG/Extended Security Updates.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "extended-security-updates-2",
+      "label": "Extended Security Updates",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ESU",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/extended-security-updates-2.svg",
+        "previewPath": "previews/extended-security-updates-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "extended", "security", "updates", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Extended-Security-Updates.svg",
+        "source.path": "SVG/Extended-Security-Updates.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "firewall-manager",
+      "label": "Firewall Manager",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 34 34",
+        "svgPath": "svg/firewall-manager.svg",
+        "previewPath": "previews/firewall-manager.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "firewall", "manager", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Firewall-Manager.svg",
+        "source.path": "SVG/Firewall-Manager.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 34 34"
+      }
+    },
+    {
+      "id": "firewall-policies",
+      "label": "Firewall Policies",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 34 34",
+        "svgPath": "svg/firewall-policies.svg",
+        "previewPath": "previews/firewall-policies.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "firewall", "policies", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Firewall-Policies.svg",
+        "source.path": "SVG/Firewall-Policies.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 34 34"
+      }
+    },
+    {
+      "id": "firewalls-and-virtual-networks",
+      "label": "Firewalls And Virtual Networks",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FAVN",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/firewalls-and-virtual-networks.svg",
+        "previewPath": "previews/firewalls-and-virtual-networks.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "firewalls", "and", "virtual", "networks", "security", "governance" ],
+      "metadata": {
+        "source.fileName": "Firewalls-and-virtual-networks.svg",
+        "source.path": "SVG/Firewalls-and-virtual-networks.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "firewalls",
+      "label": "Firewalls",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/firewalls.svg",
+        "previewPath": "previews/firewalls.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "firewalls", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Firewalls.svg",
+        "source.path": "SVG/Firewalls.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "front-doors",
+      "label": "Front Doors",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FD",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/front-doors.svg",
+        "previewPath": "previews/front-doors.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "front", "doors", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Front-Doors.svg",
+        "source.path": "SVG/Front-Doors.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "gdpr-compliance",
+      "label": "Gdpr Compliance",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "GC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 46.5 46.5",
+        "svgPath": "svg/gdpr-compliance.svg",
+        "previewPath": "previews/gdpr-compliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "gdpr", "compliance", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "GDPR-Compliance.svg",
+        "source.path": "SVG/GDPR-Compliance.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 46.5 46.5"
+      }
+    },
+    {
+      "id": "groups",
+      "label": "Groups",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "G",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/groups.svg",
+        "previewPath": "previews/groups.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "groups", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Groups.svg",
+        "source.path": "SVG/Groups.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "identity-governance",
+      "label": "Identity Governance",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/identity-governance.svg",
+        "previewPath": "previews/identity-governance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "identity-governance", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Identity Governance.svg",
+        "source.path": "SVG/Identity Governance.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "identity-governance-2",
+      "label": "Identity Governance",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50.658 50.32",
+        "svgPath": "svg/identity-governance-2.svg",
+        "previewPath": "previews/identity-governance-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "identity", "governance", "security", "and" ],
+      "metadata": {
+        "source.fileName": "Identity-governance.svg",
+        "source.path": "SVG/Identity-governance.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50.658 50.32"
+      }
+    },
+    {
+      "id": "identity-manager",
+      "label": "Identity Manager",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 98.1085 72.7222",
+        "svgPath": "svg/identity-manager.svg",
+        "previewPath": "previews/identity-manager.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "identity", "manager", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Identity-Manager.svg",
+        "source.path": "SVG/Identity-Manager.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 98.1085 72.7222"
+      }
+    },
+    {
+      "id": "identity",
+      "label": "Identity",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "I",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 841.89 595.276",
+        "svgPath": "svg/identity.svg",
+        "previewPath": "previews/identity.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "identity", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Identity.svg",
+        "source.path": "SVG/Identity.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 841.89 595.276"
+      }
+    },
+    {
+      "id": "ip-groups",
+      "label": "Ip Groups",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/ip-groups.svg",
+        "previewPath": "previews/ip-groups.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ip", "groups", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "IP-Groups.svg",
+        "source.path": "SVG/IP-Groups.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "key-1",
+      "label": "Key 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "K1",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 45.2665 45.0364",
+        "svgPath": "svg/key-1.svg",
+        "previewPath": "previews/key-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "key", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Key-1.svg",
+        "source.path": "SVG/Key-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 45.2665 45.0364"
+      }
+    },
+    {
+      "id": "key-vaults-1",
+      "label": "Key Vaults 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "KV1",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 69.5667 74.8",
+        "svgPath": "svg/key-vaults-1.svg",
+        "previewPath": "previews/key-vaults-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "key", "vaults", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Key-Vaults-1.svg",
+        "source.path": "SVG/Key-Vaults-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 69.5667 74.8"
+      }
+    },
+    {
+      "id": "key-vaults-2",
+      "label": "Key Vaults 2",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "KV2",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/key-vaults-2.svg",
+        "previewPath": "previews/key-vaults-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "key", "vaults", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Key-vaults-2.svg",
+        "source.path": "SVG/Key-vaults-2.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "key-vaults",
+      "label": "Key Vaults",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "KV",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 91.8335 93.7779",
+        "svgPath": "svg/key-vaults.svg",
+        "previewPath": "previews/key-vaults.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "key", "vaults", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Key-Vaults.svg",
+        "source.path": "SVG/Key-Vaults.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 91.8335 93.7779"
+      }
+    },
+    {
+      "id": "key",
+      "label": "Key",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "K",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 45.2697 45.0327",
+        "svgPath": "svg/key.svg",
+        "previewPath": "previews/key.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "key", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Key.svg",
+        "source.path": "SVG/Key.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 45.2697 45.0327"
+      }
+    },
+    {
+      "id": "licenses",
+      "label": "Licenses",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "L",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 40 40",
+        "svgPath": "svg/licenses.svg",
+        "previewPath": "previews/licenses.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "licenses", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Licenses.svg",
+        "source.path": "SVG/Licenses.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 40 40"
+      }
+    },
+    {
+      "id": "login",
+      "label": "Login",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "L",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48.7271 59.6361",
+        "svgPath": "svg/login.svg",
+        "previewPath": "previews/login.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "login", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Login.svg",
+        "source.path": "SVG/Login.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48.7271 59.6361"
+      }
+    },
+    {
+      "id": "machines-azure-arc",
+      "label": "Machines Azure Arc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MAA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/machines-azure-arc.svg",
+        "previewPath": "previews/machines-azure-arc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "machines", "azure", "arc", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Machines-Azure-Arc.svg",
+        "source.path": "SVG/Machines-Azure-Arc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "managed-identities",
+      "label": "Managed Identities",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MI",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 76.031 100",
+        "svgPath": "svg/managed-identities.svg",
+        "previewPath": "previews/managed-identities.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "managed-identities", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Managed Identities.svg",
+        "source.path": "SVG/Managed Identities.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 76.031 100"
+      }
+    },
+    {
+      "id": "managed-applications-center",
+      "label": "Managed Applications Center",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MAC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/managed-applications-center.svg",
+        "previewPath": "previews/managed-applications-center.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "managed", "applications", "center", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Managed-applications-center.svg",
+        "source.path": "SVG/Managed-applications-center.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "managed-applications",
+      "label": "Managed Applications",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/managed-applications.svg",
+        "previewPath": "previews/managed-applications.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "managed", "applications", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Managed-applications.svg",
+        "source.path": "SVG/Managed-applications.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "managed-desktop",
+      "label": "Managed Desktop",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MD",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/managed-desktop.svg",
+        "previewPath": "previews/managed-desktop.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "managed", "desktop", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Managed-Desktop.svg",
+        "source.path": "SVG/Managed-Desktop.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "managed-identities-2",
+      "label": "Managed Identities",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MI",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48.1695 58.361",
+        "svgPath": "svg/managed-identities-2.svg",
+        "previewPath": "previews/managed-identities-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "managed", "identities", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Managed-Identities.svg",
+        "source.path": "SVG/Managed-Identities.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48.1695 58.361"
+      }
+    },
+    {
+      "id": "management-groups",
+      "label": "Management Groups",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 87.38 75.3032",
+        "svgPath": "svg/management-groups.svg",
+        "previewPath": "previews/management-groups.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "management", "groups", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Management-groups.svg",
+        "source.path": "SVG/Management-groups.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 87.38 75.3032"
+      }
+    },
+    {
+      "id": "mfa",
+      "label": "Mfa",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 14.976 20",
+        "svgPath": "svg/mfa.svg",
+        "previewPath": "previews/mfa.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "mfa", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "MFA.svg",
+        "source.path": "SVG/MFA.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 14.976 20"
+      }
+    },
+    {
+      "id": "microsoft-identity-manager",
+      "label": "Microsoft Identity Manager",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MIM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 151.9 51.8852",
+        "svgPath": "svg/microsoft-identity-manager.svg",
+        "previewPath": "previews/microsoft-identity-manager.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "identity", "manager", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Identity-Manager.svg",
+        "source.path": "SVG/Microsoft-Identity-Manager.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 151.9 51.8852"
+      }
+    },
+    {
+      "id": "microsoft-sentinel",
+      "label": "Microsoft Sentinel",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MS",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/microsoft-sentinel.svg",
+        "previewPath": "previews/microsoft-sentinel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "sentinel", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Microsoft-Sentinel.svg",
+        "source.path": "SVG/Microsoft-Sentinel.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "multi-factor-authentication-2",
+      "label": "Multi Factor Authentication",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 14.976 20",
+        "svgPath": "svg/multi-factor-authentication-2.svg",
+        "previewPath": "previews/multi-factor-authentication-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "multi", "factor-authentication", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Multi-Factor Authentication.svg",
+        "source.path": "SVG/Multi-Factor Authentication.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 14.976 20"
+      }
+    },
+    {
+      "id": "multi-factor-authentication-1",
+      "label": "Multi Factor Authentication 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFA1",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 24.7886 51.7323",
+        "svgPath": "svg/multi-factor-authentication-1.svg",
+        "previewPath": "previews/multi-factor-authentication-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "multi", "factor", "authentication", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Multi-factor-Authentication-1.svg",
+        "source.path": "SVG/Multi-factor-Authentication-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 24.7886 51.7323"
+      }
+    },
+    {
+      "id": "multi-factor-authentication-3",
+      "label": "Multi Factor Authentication",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MFA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 14.976 20",
+        "svgPath": "svg/multi-factor-authentication-3.svg",
+        "previewPath": "previews/multi-factor-authentication-3.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "multi", "factor", "authentication", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Multi-factor-Authentication.svg",
+        "source.path": "SVG/Multi-factor-Authentication.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 14.976 20"
+      }
+    },
+    {
+      "id": "nat-gateways",
+      "label": "Nat Gateways",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/nat-gateways.svg",
+        "previewPath": "previews/nat-gateways.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "nat", "gateways", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "NAT-gateways.svg",
+        "source.path": "SVG/NAT-gateways.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "network-security-group",
+      "label": "Network Security Group",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NSG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50.82 50.82",
+        "svgPath": "svg/network-security-group.svg",
+        "previewPath": "previews/network-security-group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "network", "security", "group", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Network-Security-Group.svg",
+        "source.path": "SVG/Network-Security-Group.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50.82 50.82"
+      }
+    },
+    {
+      "id": "network-security-groups-classic",
+      "label": "Network Security Groups (Classic)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NSG(",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/network-security-groups-classic.svg",
+        "previewPath": "previews/network-security-groups-classic.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "network", "security", "groups", "classic", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Network-security-groups-(classic).svg",
+        "source.path": "SVG/Network-security-groups-(classic).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "network-security-groups",
+      "label": "Network Security Groups",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NSG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/network-security-groups.svg",
+        "previewPath": "previews/network-security-groups.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "network", "security", "groups", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Network-security-groups.svg",
+        "source.path": "SVG/Network-security-groups.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "network-watcher",
+      "label": "Network Watcher",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NW",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/network-watcher.svg",
+        "previewPath": "previews/network-watcher.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "network", "watcher", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Network-Watcher.svg",
+        "source.path": "SVG/Network-Watcher.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "non-compliant",
+      "label": "Non Compliant",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/non-compliant.svg",
+        "previewPath": "previews/non-compliant.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "non", "compliant", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Non-compliant.svg",
+        "source.path": "SVG/Non-compliant.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "operation-log",
+      "label": "Operation Log",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OL",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/operation-log.svg",
+        "previewPath": "previews/operation-log.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "operation", "log", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Operation-Log.svg",
+        "source.path": "SVG/Operation-Log.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "organizational-relationships",
+      "label": "Organizational Relationships",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OR",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18.385 20",
+        "svgPath": "svg/organizational-relationships.svg",
+        "previewPath": "previews/organizational-relationships.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "organizational", "relationships", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Organizational-relationships.svg",
+        "source.path": "SVG/Organizational-relationships.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18.385 20"
+      }
+    },
+    {
+      "id": "pipeline-security-and-compliance",
+      "label": "Pipeline Security And Compliance",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PSAC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 60.5537 59.5665",
+        "svgPath": "svg/pipeline-security-and-compliance.svg",
+        "previewPath": "previews/pipeline-security-and-compliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "pipeline", "security", "and", "compliance", "governance" ],
+      "metadata": {
+        "source.fileName": "Pipeline-security-and-compliance.svg",
+        "source.path": "SVG/Pipeline-security-and-compliance.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 60.5537 59.5665"
+      }
+    },
+    {
+      "id": "policy",
+      "label": "Policy",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/policy.svg",
+        "previewPath": "previews/policy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "policy", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Policy.svg",
+        "source.path": "SVG/Policy.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "private-dns-zones",
+      "label": "Private Dns Zones",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PDZ",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/private-dns-zones.svg",
+        "previewPath": "previews/private-dns-zones.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "private", "dns", "zones", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Private-DNS-zones.svg",
+        "source.path": "SVG/Private-DNS-zones.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "recovery-services-vaults",
+      "label": "Recovery Services Vaults",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RSV",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/recovery-services-vaults.svg",
+        "previewPath": "previews/recovery-services-vaults.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "recovery", "services", "vaults", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Recovery-Services-vaults.svg",
+        "source.path": "SVG/Recovery-Services-vaults.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "remediation",
+      "label": "Remediation",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/remediation.svg",
+        "previewPath": "previews/remediation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "remediation", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Remediation.svg",
+        "source.path": "SVG/Remediation.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "resource-graph-explorer",
+      "label": "Resource Graph Explorer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RGE",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/resource-graph-explorer.svg",
+        "previewPath": "previews/resource-graph-explorer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "resource", "graph", "explorer", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Resource-Graph-Explorer.svg",
+        "source.path": "SVG/Resource-Graph-Explorer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "resource-graph-queries",
+      "label": "Resource Graph Queries",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RGQ",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/resource-graph-queries.svg",
+        "previewPath": "previews/resource-graph-queries.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "resource", "graph", "queries", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Resource-Graph-queries.svg",
+        "source.path": "SVG/Resource-Graph-queries.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "resource-guards",
+      "label": "Resource Guards)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/resource-guards.svg",
+        "previewPath": "previews/resource-guards.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "resource", "guards", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Resource-Guards).svg",
+        "source.path": "SVG/Resource-Guards).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "role-based-access-control",
+      "label": "Role Based Access Control",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RBAC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 52.1146 51.82",
+        "svgPath": "svg/role-based-access-control.svg",
+        "previewPath": "previews/role-based-access-control.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "role", "based", "access", "control", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Role-based-access-control.svg",
+        "source.path": "SVG/Role-based-access-control.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 52.1146 51.82"
+      }
+    },
+    {
+      "id": "roles",
+      "label": "Roles",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/roles.svg",
+        "previewPath": "previews/roles.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "roles", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Roles.svg",
+        "source.path": "SVG/Roles.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "secure-virtual-machine",
+      "label": "Secure Virtual Machine",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SVM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 90.0619 72.959",
+        "svgPath": "svg/secure-virtual-machine.svg",
+        "previewPath": "previews/secure-virtual-machine.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "secure", "virtual", "machine", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Secure-Virtual-Machine.svg",
+        "source.path": "SVG/Secure-Virtual-Machine.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 90.0619 72.959"
+      }
+    },
+    {
+      "id": "security-baselines",
+      "label": "Security Baselines",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SB",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/security-baselines.svg",
+        "previewPath": "previews/security-baselines.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security-baselines", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security Baselines.svg",
+        "source.path": "SVG/Security Baselines.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "security-1",
+      "label": "Security 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S1",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 36.7091 50.1654",
+        "svgPath": "svg/security-1.svg",
+        "previewPath": "previews/security-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-1.svg",
+        "source.path": "SVG/Security-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 36.7091 50.1654"
+      }
+    },
+    {
+      "id": "security-2",
+      "label": "Security 2",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S2",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 51.9127 60.6086",
+        "svgPath": "svg/security-2.svg",
+        "previewPath": "previews/security-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-2.svg",
+        "source.path": "SVG/Security-2.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 51.9127 60.6086"
+      }
+    },
+    {
+      "id": "security-3",
+      "label": "Security 3",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S3",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 69.5157 79.719",
+        "svgPath": "svg/security-3.svg",
+        "previewPath": "previews/security-3.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-3.svg",
+        "source.path": "SVG/Security-3.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 69.5157 79.719"
+      }
+    },
+    {
+      "id": "security-4",
+      "label": "Security 4",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S4",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 62.2276 56.32",
+        "svgPath": "svg/security-4.svg",
+        "previewPath": "previews/security-4.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-4.svg",
+        "source.path": "SVG/Security-4.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 62.2276 56.32"
+      }
+    },
+    {
+      "id": "security-baselines-2",
+      "label": "Security Baselines",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SB",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 120.533 126.82",
+        "svgPath": "svg/security-baselines-2.svg",
+        "previewPath": "previews/security-baselines-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "baselines", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-Baselines.svg",
+        "source.path": "SVG/Security-Baselines.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 120.533 126.82"
+      }
+    },
+    {
+      "id": "security-center-1",
+      "label": "Security Center 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SC1",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/security-center-1.svg",
+        "previewPath": "previews/security-center-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "center", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-Center-1.svg",
+        "source.path": "SVG/Security-Center-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "security-center",
+      "label": "Security Center",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/security-center.svg",
+        "previewPath": "previews/security-center.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "center", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-Center.svg",
+        "source.path": "SVG/Security-Center.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "security-compliance",
+      "label": "Security Compliance",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 84.6479 76.8165",
+        "svgPath": "svg/security-compliance.svg",
+        "previewPath": "previews/security-compliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "compliance", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-Compliance.svg",
+        "source.path": "SVG/Security-Compliance.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 84.6479 76.8165"
+      }
+    },
+    {
+      "id": "security-key",
+      "label": "Security Key",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SK",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 60.2176 46.5",
+        "svgPath": "svg/security-key.svg",
+        "previewPath": "previews/security-key.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "key", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security-Key.svg",
+        "source.path": "SVG/Security-Key.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 60.2176 46.5"
+      }
+    },
+    {
+      "id": "security-testing",
+      "label": "Security Testing",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ST",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 66.029 60.8869",
+        "svgPath": "svg/security-testing.svg",
+        "previewPath": "previews/security-testing.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "testing", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "security-testing.svg",
+        "source.path": "SVG/security-testing.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 66.029 60.8869"
+      }
+    },
+    {
+      "id": "security",
+      "label": "Security",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 841.89 595.276",
+        "svgPath": "svg/security.svg",
+        "previewPath": "previews/security.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Security.svg",
+        "source.path": "SVG/Security.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 841.89 595.276"
+      }
+    },
+    {
+      "id": "service-catalog-managed-application-definitions",
+      "label": "Service Catalog Managed Application Definitions",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SCMA",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/service-catalog-managed-application-definitions.svg",
+        "previewPath": "previews/service-catalog-managed-application-definitions.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "service", "catalog", "managed", "application", "definitions", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Service-catalog-managed-application-definitions.svg",
+        "source.path": "SVG/Service-catalog-managed-application-definitions.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "service-endpoint-policies",
+      "label": "Service Endpoint Policies",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SEP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/service-endpoint-policies.svg",
+        "previewPath": "previews/service-endpoint-policies.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "service", "endpoint", "policies", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Service-endpoint-policies.svg",
+        "source.path": "SVG/Service-endpoint-policies.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "service-providers",
+      "label": "Service Providers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/service-providers.svg",
+        "previewPath": "previews/service-providers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "service", "providers", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Service-providers.svg",
+        "source.path": "SVG/Service-providers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "solutions",
+      "label": "Solutions",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/solutions.svg",
+        "previewPath": "previews/solutions.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "solutions", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Solutions.svg",
+        "source.path": "SVG/Solutions.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "ssh-keys",
+      "label": "Ssh Keys",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SK",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/ssh-keys.svg",
+        "previewPath": "previews/ssh-keys.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ssh", "keys", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Ssh-Keys.svg",
+        "source.path": "SVG/Ssh-Keys.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "tags",
+      "label": "Tags",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 73.98 73.386",
+        "svgPath": "svg/tags.svg",
+        "previewPath": "previews/tags.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "tags", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Tags.svg",
+        "source.path": "SVG/Tags.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 73.98 73.386"
+      }
+    },
+    {
+      "id": "threat-protection",
+      "label": "Threat Protection",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 83.7167 47.9238",
+        "svgPath": "svg/threat-protection.svg",
+        "previewPath": "previews/threat-protection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "threat", "protection", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Threat-Protection.svg",
+        "source.path": "SVG/Threat-Protection.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 83.7167 47.9238"
+      }
+    },
+    {
+      "id": "threats",
+      "label": "Threats",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 51.7771 51.7772",
+        "svgPath": "svg/threats.svg",
+        "previewPath": "previews/threats.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "threats", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Threats.svg",
+        "source.path": "SVG/Threats.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 51.7771 51.7772"
+      }
+    },
+    {
+      "id": "update-management",
+      "label": "Update Management",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "UM",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/update-management.svg",
+        "previewPath": "previews/update-management.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "update", "management", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Update-management.svg",
+        "source.path": "SVG/Update-management.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "user-privacy",
+      "label": "User Privacy",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "UP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/user-privacy.svg",
+        "previewPath": "previews/user-privacy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "user-privacy", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "User privacy.svg",
+        "source.path": "SVG/User privacy.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "user-access-permissions",
+      "label": "User Access Permissions",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "UAP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 128.653 89.1317",
+        "svgPath": "svg/user-access-permissions.svg",
+        "previewPath": "previews/user-access-permissions.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "user", "access", "permissions", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "User-Access-Permissions.svg",
+        "source.path": "SVG/User-Access-Permissions.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 128.653 89.1317"
+      }
+    },
+    {
+      "id": "user-privacy-old",
+      "label": "User Privacy Old",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "UPO",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/user-privacy-old.svg",
+        "previewPath": "previews/user-privacy-old.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "user", "privacy", "old", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "User-privacy-old.svg",
+        "source.path": "SVG/User-privacy-old.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "user-privacy-2",
+      "label": "User Privacy",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "UP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/user-privacy-2.svg",
+        "previewPath": "previews/user-privacy-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "user", "privacy", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "User-privacy.svg",
+        "source.path": "SVG/User-privacy.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "users",
+      "label": "Users",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "U",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/users.svg",
+        "previewPath": "previews/users.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "users", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Users.svg",
+        "source.path": "SVG/Users.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "verifiable-credentials",
+      "label": "Verifiable Credentials",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VC",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/verifiable-credentials.svg",
+        "previewPath": "previews/verifiable-credentials.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "verifiable", "credentials", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Verifiable-Credentials-.svg",
+        "source.path": "SVG/Verifiable-Credentials-.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "virtual-network-gateways",
+      "label": "Virtual Network Gateways",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VNG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/virtual-network-gateways.svg",
+        "previewPath": "previews/virtual-network-gateways.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "virtual", "network", "gateways", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Virtual-network-gateways.svg",
+        "source.path": "SVG/Virtual-network-gateways.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "vpn-gateway",
+      "label": "Vpn Gateway",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VG",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 69.5667 74.8",
+        "svgPath": "svg/vpn-gateway.svg",
+        "previewPath": "previews/vpn-gateway.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "vpn", "gateway", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "VPN-Gateway.svg",
+        "source.path": "SVG/VPN-Gateway.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 69.5667 74.8"
+      }
+    },
+    {
+      "id": "vulnerability",
+      "label": "Vulnerability",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "V",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64.4 48.0642",
+        "svgPath": "svg/vulnerability.svg",
+        "previewPath": "previews/vulnerability.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "vulnerability", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "Vulnerability.svg",
+        "source.path": "SVG/Vulnerability.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64.4 48.0642"
+      }
+    },
+    {
+      "id": "waf-policies",
+      "label": "Waf Policies",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "WP",
+      "color": "#7C3AED",
+      "category": "Security and Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/waf-policies.svg",
+        "previewPath": "previews/waf-policies.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "waf", "policies", "security", "and", "governance" ],
+      "metadata": {
+        "source.fileName": "WAF-policies.svg",
+        "source.path": "SVG/WAF-policies.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    }
+  ]
+}

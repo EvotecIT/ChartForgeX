@@ -1,0 +1,2876 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-ai-and-machine-learning",
+  "label": "Microsoft Azure Stencils - AI and Machine Learning",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "124",
+    "import.svg.imported": "124",
+    "import.svg.skipped": "0",
+    "source.folder": "AI and Machine Learning",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "anomaly-detector",
+      "label": "Anomaly Detector",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AD",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning / Old Versions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/anomaly-detector.svg",
+        "previewPath": "previews/anomaly-detector.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "old", "versions", "anomaly", "detector", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Anomaly-Detector.svg",
+        "source.path": "SVG-OLD-VERSIONS/Anomaly-Detector.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "cognitive-services",
+      "label": "Cognitive Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning / Old Versions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/cognitive-services.svg",
+        "previewPath": "previews/cognitive-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "old", "versions", "cognitive", "services", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Cognitive-Services.svg",
+        "source.path": "SVG-OLD-VERSIONS/Cognitive-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "qna-maker",
+      "label": "Qna Maker",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "QM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning / Old Versions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/qna-maker.svg",
+        "previewPath": "previews/qna-maker.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "old", "versions", "qna", "maker", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Qna-Maker.svg",
+        "source.path": "SVG-OLD-VERSIONS/Qna-Maker.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "speech-services",
+      "label": "Speech Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning / Old Versions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/speech-services.svg",
+        "previewPath": "previews/speech-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "old", "versions", "speech", "services", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Speech-Services.svg",
+        "source.path": "SVG-OLD-VERSIONS/Speech-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "accelerate-machine-learning",
+      "label": "Accelerate Machine Learning",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AML",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/accelerate-machine-learning.svg",
+        "previewPath": "previews/accelerate-machine-learning.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "accelerate", "machine", "learning", "ai", "and" ],
+      "metadata": {
+        "source.fileName": "Accelerate-machine-learning.svg",
+        "source.path": "SVG/Accelerate-machine-learning.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "ai-services",
+      "label": "Ai Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/ai-services.svg",
+        "previewPath": "previews/ai-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ai", "services", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "AI-services.svg",
+        "source.path": "SVG/AI-services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "anomaly-detectors-2",
+      "label": "Anomaly Detectors (2)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AD(",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/anomaly-detectors-2.svg",
+        "previewPath": "previews/anomaly-detectors-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "anomaly", "detectors", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Anomaly-Detectors-(2).svg",
+        "source.path": "SVG/Anomaly-Detectors-(2).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "anomaly-detectors",
+      "label": "Anomaly Detectors",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AD",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/anomaly-detectors.svg",
+        "previewPath": "previews/anomaly-detectors.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "anomaly", "detectors", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Anomaly-Detectors.svg",
+        "source.path": "SVG/Anomaly-Detectors.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "apply-ai",
+      "label": "Apply Ai",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/apply-ai.svg",
+        "previewPath": "previews/apply-ai.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "apply", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Apply-AI.svg",
+        "source.path": "SVG/Apply-AI.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "automatic-model-optimization",
+      "label": "Automatic Model Optimization",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AMO",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/automatic-model-optimization.svg",
+        "previewPath": "previews/automatic-model-optimization.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "automatic", "model", "optimization", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Automatic-model-optimization.svg",
+        "source.path": "SVG/Automatic-model-optimization.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "automatically-extract-question-answer-pairs",
+      "label": "Automatically Extract Question Answer Pairs",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AEQA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/automatically-extract-question-answer-pairs.svg",
+        "previewPath": "previews/automatically-extract-question-answer-pairs.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "automatically", "extract", "question", "answer", "pairs", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Automatically-extract-question-answer-pairs.svg",
+        "source.path": "SVG/Automatically-extract-question-answer-pairs.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "azure-blockchain-service",
+      "label": "Azure Blockchain Service",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ABS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/azure-blockchain-service.svg",
+        "previewPath": "previews/azure-blockchain-service.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "blockchain", "service", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Azure-Blockchain-Service.svg",
+        "source.path": "SVG/Azure-Blockchain-Service.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "azure-kinect-dk-device",
+      "label": "Azure Kinect Dk Device",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AKDD",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/azure-kinect-dk-device.svg",
+        "previewPath": "previews/azure-kinect-dk-device.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "kinect", "dk", "device", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Azure-Kinect-DK-device.svg",
+        "source.path": "SVG/Azure-Kinect-DK-device.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "azure-kinect-dk",
+      "label": "Azure Kinect Dk",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AKD",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 62 62",
+        "svgPath": "svg/azure-kinect-dk.svg",
+        "previewPath": "previews/azure-kinect-dk.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "kinect", "dk", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Azure-Kinect-DK.svg",
+        "source.path": "SVG/Azure-Kinect-DK.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 62 62"
+      }
+    },
+    {
+      "id": "batch-ai",
+      "label": "Batch Ai",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/batch-ai.svg",
+        "previewPath": "previews/batch-ai.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "batch", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Batch-AI.svg",
+        "source.path": "SVG/Batch-AI.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "big-data",
+      "label": "Big Data",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BD",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 73.74",
+        "svgPath": "svg/big-data.svg",
+        "previewPath": "previews/big-data.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "big", "data", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Big-Data.svg",
+        "source.path": "SVG/Big-Data.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 73.74"
+      }
+    },
+    {
+      "id": "bing-autosuggest",
+      "label": "Bing Autosuggest",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-autosuggest.svg",
+        "previewPath": "previews/bing-autosuggest.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "autosuggest", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-Autosuggest.svg",
+        "source.path": "SVG/Bing-Autosuggest.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "bing-custom-search",
+      "label": "Bing Custom Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BCS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-custom-search.svg",
+        "previewPath": "previews/bing-custom-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "custom", "search", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-Custom-Search.svg",
+        "source.path": "SVG/Bing-Custom-Search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "bing-entity-search",
+      "label": "Bing Entity Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BES",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-entity-search.svg",
+        "previewPath": "previews/bing-entity-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "entity", "search", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-Entity-Search.svg",
+        "source.path": "SVG/Bing-Entity-Search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "bing-news-search",
+      "label": "Bing News Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BNS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-news-search.svg",
+        "previewPath": "previews/bing-news-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "news", "search", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-News-Search.svg",
+        "source.path": "SVG/Bing-News-Search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "bing-spell-check",
+      "label": "Bing Spell Check",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BSC",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-spell-check.svg",
+        "previewPath": "previews/bing-spell-check.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "spell", "check", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-Spell-Check.svg",
+        "source.path": "SVG/Bing-Spell-Check.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "bing-video-search",
+      "label": "Bing Video Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BVS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-video-search.svg",
+        "previewPath": "previews/bing-video-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "video", "search", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-Video-Search.svg",
+        "source.path": "SVG/Bing-Video-Search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "bing-visual-search",
+      "label": "Bing Visual Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BVS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-visual-search.svg",
+        "previewPath": "previews/bing-visual-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "visual", "search", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-Visual-Search.svg",
+        "source.path": "SVG/Bing-Visual-Search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "bing-web-search",
+      "label": "Bing Web Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BWS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/bing-web-search.svg",
+        "previewPath": "previews/bing-web-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bing", "web", "search", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Bing-Web-Search.svg",
+        "source.path": "SVG/Bing-Web-Search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "blockchain",
+      "label": "Blockchain",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/blockchain.svg",
+        "previewPath": "previews/blockchain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "blockchain", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Blockchain.svg",
+        "source.path": "SVG/Blockchain.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "bot-in-teams",
+      "label": "Bot In Teams",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BIT",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/bot-in-teams.svg",
+        "previewPath": "previews/bot-in-teams.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bot", "in", "teams", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "bot-in-Teams.svg",
+        "source.path": "SVG/bot-in-Teams.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "bot",
+      "label": "Bot",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/bot.svg",
+        "previewPath": "previews/bot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bot", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "bot.svg",
+        "source.path": "SVG/bot.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "built-in-ai-capabilities",
+      "label": "Built In Ai Capabilities",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BIAC",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/built-in-ai-capabilities.svg",
+        "previewPath": "previews/built-in-ai-capabilities.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "built", "in", "ai", "capabilities", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Built-in-AI-capabilities.svg",
+        "source.path": "SVG/Built-in-AI-capabilities.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "cognitive-services-2",
+      "label": "Cognitive Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/cognitive-services-2.svg",
+        "previewPath": "previews/cognitive-services-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "cognitive-services", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Cognitive Services.svg",
+        "source.path": "SVG/Cognitive Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "cognitive-search",
+      "label": "Cognitive Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/cognitive-search.svg",
+        "previewPath": "previews/cognitive-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "cognitive", "search", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Cognitive-Search.svg",
+        "source.path": "SVG/Cognitive-Search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "cognitive-services-3",
+      "label": "Cognitive Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "64.048 -1062.413 193.4 114.42",
+        "svgPath": "svg/cognitive-services-3.svg",
+        "previewPath": "previews/cognitive-services-3.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "cognitive", "services", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Cognitive-Services.svg",
+        "source.path": "SVG/Cognitive-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "64.048 -1062.413 193.4 114.42"
+      }
+    },
+    {
+      "id": "collaboration",
+      "label": "Collaboration",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/collaboration.svg",
+        "previewPath": "previews/collaboration.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "collaboration", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "collaboration.svg",
+        "source.path": "SVG/collaboration.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "communication-services",
+      "label": "Communication Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/communication-services.svg",
+        "previewPath": "previews/communication-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "communication", "services", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Communication-Services.svg",
+        "source.path": "SVG/Communication-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "computer-vision",
+      "label": "Computer Vision",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CV",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/computer-vision.svg",
+        "previewPath": "previews/computer-vision.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "computer-vision", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Computer vision.svg",
+        "source.path": "SVG/Computer vision.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "computer-vision-2",
+      "label": "Computer Vision",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CV",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/computer-vision-2.svg",
+        "previewPath": "previews/computer-vision-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "computer", "vision", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Computer-Vision.svg",
+        "source.path": "SVG/Computer-Vision.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "content-extraction",
+      "label": "Content Extraction",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CE",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/content-extraction.svg",
+        "previewPath": "previews/content-extraction.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "content", "extraction", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "content-extraction.svg",
+        "source.path": "SVG/content-extraction.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "content-moderator",
+      "label": "Content Moderator",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/content-moderator.svg",
+        "previewPath": "previews/content-moderator.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "content", "moderator", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Content-Moderator.svg",
+        "source.path": "SVG/Content-Moderator.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "content-moderators",
+      "label": "Content Moderators",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/content-moderators.svg",
+        "previewPath": "previews/content-moderators.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "content", "moderators", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Content-Moderators.svg",
+        "source.path": "SVG/Content-Moderators.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "conversations",
+      "label": "Conversations",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/conversations.svg",
+        "previewPath": "previews/conversations.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "conversations", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "conversations.svg",
+        "source.path": "SVG/conversations.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "custom-vision",
+      "label": "Custom Vision",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CV",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/custom-vision.svg",
+        "previewPath": "previews/custom-vision.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "custom-vision", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Custom vision.svg",
+        "source.path": "SVG/Custom vision.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "custom-translation-systems",
+      "label": "Custom Translation Systems",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CTS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 118.284 38.399",
+        "svgPath": "svg/custom-translation-systems.svg",
+        "previewPath": "previews/custom-translation-systems.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "custom", "translation", "systems", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "custom-translation-systems.svg",
+        "source.path": "SVG/custom-translation-systems.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 118.284 38.399"
+      }
+    },
+    {
+      "id": "custom-vision-2",
+      "label": "Custom Vision",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CV",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/custom-vision-2.svg",
+        "previewPath": "previews/custom-vision-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "custom", "vision", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Custom-Vision.svg",
+        "source.path": "SVG/Custom-Vision.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "customizable-settings",
+      "label": "Customizable Settings",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/customizable-settings.svg",
+        "previewPath": "previews/customizable-settings.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "customizable", "settings", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Customizable-settings.svg",
+        "source.path": "SVG/Customizable-settings.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "customized-experiences",
+      "label": "Customized Experiences",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CE",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/customized-experiences.svg",
+        "previewPath": "previews/customized-experiences.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "customized", "experiences", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Customized-experiences.svg",
+        "source.path": "SVG/Customized-experiences.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "data-science-training",
+      "label": "Data Science Training",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DST",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 376 260",
+        "svgPath": "svg/data-science-training.svg",
+        "previewPath": "previews/data-science-training.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "science", "training", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "data-science-training.svg",
+        "source.path": "SVG/data-science-training.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 376 260"
+      }
+    },
+    {
+      "id": "data-science-virtual-machine",
+      "label": "Data Science Virtual Machine",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DSVM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/data-science-virtual-machine.svg",
+        "previewPath": "previews/data-science-virtual-machine.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "science", "virtual", "machine", "ai", "and", "learning" ],
+      "metadata": {
+        "source.fileName": "Data-Science-Virtual-Machine.svg",
+        "source.path": "SVG/Data-Science-Virtual-Machine.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "deep-learning",
+      "label": "Deep Learning",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DL",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 370 256",
+        "svgPath": "svg/deep-learning.svg",
+        "previewPath": "previews/deep-learning.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "deep", "learning", "ai", "and", "machine" ],
+      "metadata": {
+        "source.fileName": "deep-learning.svg",
+        "source.path": "SVG/deep-learning.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 370 256"
+      }
+    },
+    {
+      "id": "deploy-bot",
+      "label": "Deploy Bot",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DB",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/deploy-bot.svg",
+        "previewPath": "previews/deploy-bot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "deploy", "bot", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "deploy-bot.svg",
+        "source.path": "SVG/deploy-bot.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "deploy-cognitive-services",
+      "label": "Deploy Cognitive Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DCS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/deploy-cognitive-services.svg",
+        "previewPath": "previews/deploy-cognitive-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "deploy", "cognitive", "services", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Deploy-Cognitive-Services.svg",
+        "source.path": "SVG/Deploy-Cognitive-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "detect-languages",
+      "label": "Detect Languages",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DL",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 67.05 35.197",
+        "svgPath": "svg/detect-languages.svg",
+        "previewPath": "previews/detect-languages.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "detect", "languages", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "detect-languages.svg",
+        "source.path": "SVG/detect-languages.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 67.05 35.197"
+      }
+    },
+    {
+      "id": "dictionary",
+      "label": "Dictionary",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 51.251 58.375",
+        "svgPath": "svg/dictionary.svg",
+        "previewPath": "previews/dictionary.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "dictionary", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "dictionary.svg",
+        "source.path": "SVG/dictionary.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 51.251 58.375"
+      }
+    },
+    {
+      "id": "discover",
+      "label": "Discover",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 106.3 120",
+        "svgPath": "svg/discover.svg",
+        "previewPath": "previews/discover.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "discover", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "discover.svg",
+        "source.path": "SVG/discover.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 106.3 120"
+      }
+    },
+    {
+      "id": "elastic-capacity",
+      "label": "Elastic Capacity",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EC",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 376 260",
+        "svgPath": "svg/elastic-capacity.svg",
+        "previewPath": "previews/elastic-capacity.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "elastic", "capacity", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "elastic-capacity.svg",
+        "source.path": "SVG/elastic-capacity.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 376 260"
+      }
+    },
+    {
+      "id": "enterprise-bot",
+      "label": "Enterprise Bot",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EB",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 85 85",
+        "svgPath": "svg/enterprise-bot.svg",
+        "previewPath": "previews/enterprise-bot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "enterprise", "bot", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "enterprise-bot.svg",
+        "source.path": "SVG/enterprise-bot.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 85 85"
+      }
+    },
+    {
+      "id": "extend-reach",
+      "label": "Extend Reach",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ER",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 53.986 44.802",
+        "svgPath": "svg/extend-reach.svg",
+        "previewPath": "previews/extend-reach.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "extend", "reach", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "extend-reach.svg",
+        "source.path": "SVG/extend-reach.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 53.986 44.802"
+      }
+    },
+    {
+      "id": "face-1",
+      "label": "Face 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F1",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/face-1.svg",
+        "previewPath": "previews/face-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "face", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Face-1.svg",
+        "source.path": "SVG/Face-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "face-apis",
+      "label": "Face Apis",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/face-apis.svg",
+        "previewPath": "previews/face-apis.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "face", "apis", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Face-Apis.svg",
+        "source.path": "SVG/Face-Apis.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "face",
+      "label": "Face",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/face.svg",
+        "previewPath": "previews/face.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "face", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Face.svg",
+        "source.path": "SVG/Face.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "fast-optimized",
+      "label": "Fast, Optimized",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FO",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 73 73",
+        "svgPath": "svg/fast-optimized.svg",
+        "previewPath": "previews/fast-optimized.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "fast", "optimized", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Fast,-optimized.svg",
+        "source.path": "SVG/Fast,-optimized.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 73 73"
+      }
+    },
+    {
+      "id": "form-recognizer",
+      "label": "Form Recognizer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FR",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/form-recognizer.svg",
+        "previewPath": "previews/form-recognizer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "form", "recognizer", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Form-Recognizer.svg",
+        "source.path": "SVG/Form-Recognizer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "form-recognizers",
+      "label": "Form Recognizers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FR",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/form-recognizers.svg",
+        "previewPath": "previews/form-recognizers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "form", "recognizers", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Form-Recognizers.svg",
+        "source.path": "SVG/Form-Recognizers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "genomics-accounts",
+      "label": "Genomics Accounts",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "GA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 60 60",
+        "svgPath": "svg/genomics-accounts.svg",
+        "previewPath": "previews/genomics-accounts.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "genomics", "accounts", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Genomics-accounts.svg",
+        "source.path": "SVG/Genomics-accounts.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 60 60"
+      }
+    },
+    {
+      "id": "hadoop",
+      "label": "Hadoop",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "H",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 101 51",
+        "svgPath": "svg/hadoop.svg",
+        "previewPath": "previews/hadoop.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "hadoop", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "hadoop.svg",
+        "source.path": "SVG/hadoop.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 101 51"
+      }
+    },
+    {
+      "id": "hbase",
+      "label": "Hbase",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "H",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 101 51",
+        "svgPath": "svg/hbase.svg",
+        "previewPath": "previews/hbase.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "hbase", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "hbase.svg",
+        "source.path": "SVG/hbase.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 101 51"
+      }
+    },
+    {
+      "id": "hdinsight",
+      "label": "Hdinsight",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "H",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 192 192",
+        "svgPath": "svg/hdinsight.svg",
+        "previewPath": "previews/hdinsight.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "hdinsight", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "HDInsight.svg",
+        "source.path": "SVG/HDInsight.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 192 192"
+      }
+    },
+    {
+      "id": "health-and-life-sciences",
+      "label": "Health And Life Sciences",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "HALS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 97 97",
+        "svgPath": "svg/health-and-life-sciences.svg",
+        "previewPath": "previews/health-and-life-sciences.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "health", "and", "life", "sciences", "ai", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Health-and-life-sciences.svg",
+        "source.path": "SVG/Health-and-life-sciences.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 97 97"
+      }
+    },
+    {
+      "id": "hive",
+      "label": "Hive",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "H",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 101 51",
+        "svgPath": "svg/hive.svg",
+        "previewPath": "previews/hive.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "hive", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "hive.svg",
+        "source.path": "SVG/hive.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 101 51"
+      }
+    },
+    {
+      "id": "identify",
+      "label": "Identify",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "I",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/identify.svg",
+        "previewPath": "previews/identify.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "identify", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Identify.svg",
+        "source.path": "SVG/Identify.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "immersive-reader",
+      "label": "Immersive Reader",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IR",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/immersive-reader.svg",
+        "previewPath": "previews/immersive-reader.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "immersive", "reader", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Immersive-Reader.svg",
+        "source.path": "SVG/Immersive-Reader.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "immersive-readers",
+      "label": "Immersive Readers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IR",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/immersive-readers.svg",
+        "previewPath": "previews/immersive-readers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "immersive", "readers", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Immersive-Readers.svg",
+        "source.path": "SVG/Immersive-Readers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "ink-recognizer",
+      "label": "Ink Recognizer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IR",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/ink-recognizer.svg",
+        "previewPath": "previews/ink-recognizer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ink", "recognizer", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Ink-Recognizer.svg",
+        "source.path": "SVG/Ink-Recognizer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "instant-answers",
+      "label": "Instant Answers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 194.2 101",
+        "svgPath": "svg/instant-answers.svg",
+        "previewPath": "previews/instant-answers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "instant", "answers", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Instant-answers.svg",
+        "source.path": "SVG/Instant-answers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 194.2 101"
+      }
+    },
+    {
+      "id": "intelligent",
+      "label": "Intelligent",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "I",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 115.1 119",
+        "svgPath": "svg/intelligent.svg",
+        "previewPath": "previews/intelligent.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "intelligent", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "intelligent.svg",
+        "source.path": "SVG/intelligent.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 115.1 119"
+      }
+    },
+    {
+      "id": "kafka",
+      "label": "Kafka",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "K",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 101 51",
+        "svgPath": "svg/kafka.svg",
+        "previewPath": "previews/kafka.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "kafka", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "kafka.svg",
+        "source.path": "SVG/kafka.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 101 51"
+      }
+    },
+    {
+      "id": "language-understanding",
+      "label": "Language Understanding",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LU",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/language-understanding.svg",
+        "previewPath": "previews/language-understanding.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "language-understanding", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Language understanding.svg",
+        "source.path": "SVG/Language understanding.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "language-understanding-2",
+      "label": "Language Understanding",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LU",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/language-understanding-2.svg",
+        "previewPath": "previews/language-understanding-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "language", "understanding", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Language-Understanding.svg",
+        "source.path": "SVG/Language-Understanding.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "language",
+      "label": "Language",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "L",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/language.svg",
+        "previewPath": "previews/language.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "language", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Language.svg",
+        "source.path": "SVG/Language.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "location-and-market-aware-results",
+      "label": "Location And Market Aware Results",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LAMA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 211.3 88.7",
+        "svgPath": "svg/location-and-market-aware-results.svg",
+        "previewPath": "previews/location-and-market-aware-results.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "location", "and", "market", "aware", "results", "ai", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Location-and-market-aware-results.svg",
+        "source.path": "SVG/Location-and-market-aware-results.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 211.3 88.7"
+      }
+    },
+    {
+      "id": "logistics-and-manufacturing",
+      "label": "Logistics And Manufacturing",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LAM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 97",
+        "svgPath": "svg/logistics-and-manufacturing.svg",
+        "previewPath": "previews/logistics-and-manufacturing.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logistics", "and", "manufacturing", "ai", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Logistics-and-manufacturing.svg",
+        "source.path": "SVG/Logistics-and-manufacturing.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 97"
+      }
+    },
+    {
+      "id": "machine-learning-service-workspaces",
+      "label": "Machine Learning Service Workspaces",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MLSW",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 951 1024",
+        "svgPath": "svg/machine-learning-service-workspaces.svg",
+        "previewPath": "previews/machine-learning-service-workspaces.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "machine", "learning", "service", "workspaces", "ai", "and" ],
+      "metadata": {
+        "source.fileName": "Machine-Learning-service-workspaces.svg",
+        "source.path": "SVG/Machine-Learning-service-workspaces.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 951 1024"
+      }
+    },
+    {
+      "id": "machine-learning-studio-web-service-plans",
+      "label": "Machine Learning Studio Web Service Plans",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MLSW",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/machine-learning-studio-web-service-plans.svg",
+        "previewPath": "previews/machine-learning-studio-web-service-plans.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "machine", "learning", "studio", "web", "service", "plans", "ai", "and" ],
+      "metadata": {
+        "source.fileName": "Machine-Learning-Studio-web-service-plans.svg",
+        "source.path": "SVG/Machine-Learning-Studio-web-service-plans.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "machine-learning-studio-web-services",
+      "label": "Machine Learning Studio Web Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MLSW",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/machine-learning-studio-web-services.svg",
+        "previewPath": "previews/machine-learning-studio-web-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "machine", "learning", "studio", "web", "services", "ai", "and" ],
+      "metadata": {
+        "source.fileName": "Machine-Learning-Studio-web-services.svg",
+        "source.path": "SVG/Machine-Learning-Studio-web-services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "machine-learning-studio-workspaces",
+      "label": "Machine Learning Studio Workspaces",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MLSW",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/machine-learning-studio-workspaces.svg",
+        "previewPath": "previews/machine-learning-studio-workspaces.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "machine", "learning", "studio", "workspaces", "ai", "and" ],
+      "metadata": {
+        "source.fileName": "Machine-Learning-Studio-workspaces.svg",
+        "source.path": "SVG/Machine-Learning-Studio-workspaces.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "machine-learning-studio",
+      "label": "Machine Learning Studio",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MLS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/machine-learning-studio.svg",
+        "previewPath": "previews/machine-learning-studio.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "machine", "learning", "studio", "ai", "and" ],
+      "metadata": {
+        "source.fileName": "Machine-Learning-Studio.svg",
+        "source.path": "SVG/Machine-Learning-Studio.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "manage",
+      "label": "Manage",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/manage.svg",
+        "previewPath": "previews/manage.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "manage", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "manage-.svg",
+        "source.path": "SVG/manage-.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "mlops",
+      "label": "Mlops",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/mlops.svg",
+        "previewPath": "previews/mlops.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "mlops", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "MLOps.svg",
+        "source.path": "SVG/MLOps.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "model-interpretability",
+      "label": "Model Interpretability",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MI",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/model-interpretability.svg",
+        "previewPath": "previews/model-interpretability.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "model", "interpretability", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "model-interpretability.svg",
+        "source.path": "SVG/model-interpretability.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "multiple-modes",
+      "label": "Multiple Modes",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/multiple-modes.svg",
+        "previewPath": "previews/multiple-modes.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "multiple", "modes", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "multiple-modes.svg",
+        "source.path": "SVG/multiple-modes.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "natural-language",
+      "label": "Natural Language",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NL",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 505 120",
+        "svgPath": "svg/natural-language.svg",
+        "previewPath": "previews/natural-language.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "natural", "language", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "natural-language.svg",
+        "source.path": "SVG/natural-language.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 505 120"
+      }
+    },
+    {
+      "id": "ocr",
+      "label": "Ocr",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 122.4 133",
+        "svgPath": "svg/ocr.svg",
+        "previewPath": "previews/ocr.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ocr", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "ocr.svg",
+        "source.path": "SVG/ocr.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 122.4 133"
+      }
+    },
+    {
+      "id": "open-source-sdk",
+      "label": "Open Source Sdk",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OSS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/open-source-sdk.svg",
+        "previewPath": "previews/open-source-sdk.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "open", "source", "sdk", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "open-source-sdk.svg",
+        "source.path": "SVG/open-source-sdk.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "optimized-audio",
+      "label": "Optimized Audio",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/optimized-audio.svg",
+        "previewPath": "previews/optimized-audio.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "optimized", "audio", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Optimized-audio.svg",
+        "source.path": "SVG/Optimized-audio.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "personalizer",
+      "label": "Personalizer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/personalizer.svg",
+        "previewPath": "previews/personalizer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "personalizer", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Personalizer.svg",
+        "source.path": "SVG/Personalizer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "phone-translation",
+      "label": "Phone Translation",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PT",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 75.786 45.988",
+        "svgPath": "svg/phone-translation.svg",
+        "previewPath": "previews/phone-translation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "phone", "translation", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "phone-translation.svg",
+        "source.path": "SVG/phone-translation.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 75.786 45.988"
+      }
+    },
+    {
+      "id": "predictability",
+      "label": "Predictability",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 192.998 134",
+        "svgPath": "svg/predictability.svg",
+        "previewPath": "previews/predictability.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "predictability", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "predictability.svg",
+        "source.path": "SVG/predictability.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 192.998 134"
+      }
+    },
+    {
+      "id": "pricing",
+      "label": "Pricing",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 192 192",
+        "svgPath": "svg/pricing.svg",
+        "previewPath": "previews/pricing.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "pricing", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "pricing.svg",
+        "source.path": "SVG/pricing.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 192 192"
+      }
+    },
+    {
+      "id": "productivity",
+      "label": "Productivity",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/productivity.svg",
+        "previewPath": "previews/productivity.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "productivity", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Productivity-.svg",
+        "source.path": "SVG/Productivity-.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "qna-bot",
+      "label": "Qna Bot",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "QB",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 85 85",
+        "svgPath": "svg/qna-bot.svg",
+        "previewPath": "previews/qna-bot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "qna", "bot", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "QnA-bot.svg",
+        "source.path": "SVG/QnA-bot.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 85 85"
+      }
+    },
+    {
+      "id": "qna-makers",
+      "label": "Qna Makers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "QM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/qna-makers.svg",
+        "previewPath": "previews/qna-makers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "qna", "makers", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Qna-Makers.svg",
+        "source.path": "SVG/Qna-Makers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "recommendations",
+      "label": "Recommendations",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 138.4 117.7",
+        "svgPath": "svg/recommendations.svg",
+        "previewPath": "previews/recommendations.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "recommendations", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "recommendations.svg",
+        "source.path": "SVG/recommendations.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 138.4 117.7"
+      }
+    },
+    {
+      "id": "related-searches",
+      "label": "Related Searches",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 200 92.6",
+        "svgPath": "svg/related-searches.svg",
+        "previewPath": "previews/related-searches.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "related", "searches", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Related-searches.svg",
+        "source.path": "SVG/Related-searches.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 200 92.6"
+      }
+    },
+    {
+      "id": "research",
+      "label": "Research",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 108.3 113",
+        "svgPath": "svg/research.svg",
+        "previewPath": "previews/research.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "research", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "research.svg",
+        "source.path": "SVG/research.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 108.3 113"
+      }
+    },
+    {
+      "id": "result-and-answer-ranking",
+      "label": "Result And Answer Ranking",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RAAR",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 159.8 120.7",
+        "svgPath": "svg/result-and-answer-ranking.svg",
+        "previewPath": "previews/result-and-answer-ranking.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "result", "and", "answer", "ranking", "ai", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Result-and-answer-ranking.svg",
+        "source.path": "SVG/Result-and-answer-ranking.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 159.8 120.7"
+      }
+    },
+    {
+      "id": "retail",
+      "label": "Retail",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 97",
+        "svgPath": "svg/retail.svg",
+        "previewPath": "previews/retail.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "retail", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Retail.svg",
+        "source.path": "SVG/Retail.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 97"
+      }
+    },
+    {
+      "id": "safe-search-and-adult-intent",
+      "label": "Safe Search And Adult Intent",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SSAA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 193.3 94.5",
+        "svgPath": "svg/safe-search-and-adult-intent.svg",
+        "previewPath": "previews/safe-search-and-adult-intent.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "safe", "search", "and", "adult", "intent", "ai", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Safe-search-and-adult-intent.svg",
+        "source.path": "SVG/Safe-search-and-adult-intent.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 193.3 94.5"
+      }
+    },
+    {
+      "id": "sdk",
+      "label": "Sdk",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sdk.svg",
+        "previewPath": "previews/sdk.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sdk", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "SDK.svg",
+        "source.path": "SVG/SDK.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "sequencing",
+      "label": "Sequencing",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 113.829 170",
+        "svgPath": "svg/sequencing.svg",
+        "previewPath": "previews/sequencing.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sequencing", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "sequencing.svg",
+        "source.path": "SVG/sequencing.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 113.829 170"
+      }
+    },
+    {
+      "id": "spark",
+      "label": "Spark",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 101 51",
+        "svgPath": "svg/spark.svg",
+        "previewPath": "previews/spark.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "spark", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "spark.svg",
+        "source.path": "SVG/spark.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 101 51"
+      }
+    },
+    {
+      "id": "speaker-recognition",
+      "label": "Speaker Recognition",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SR",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/speaker-recognition.svg",
+        "previewPath": "previews/speaker-recognition.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "speaker", "recognition", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Speaker-Recognition.svg",
+        "source.path": "SVG/Speaker-Recognition.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "speech-services-2",
+      "label": "Speech Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/speech-services-2.svg",
+        "previewPath": "previews/speech-services-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "speech", "services", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Speech-Services.svg",
+        "source.path": "SVG/Speech-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "speech-translation",
+      "label": "Speech Translation",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ST",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 264.506 113.852",
+        "svgPath": "svg/speech-translation.svg",
+        "previewPath": "previews/speech-translation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "speech", "translation", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Speech-Translation.svg",
+        "source.path": "SVG/Speech-Translation.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 264.506 113.852"
+      }
+    },
+    {
+      "id": "speed-insights",
+      "label": "Speed Insights",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SI",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/speed-insights.svg",
+        "previewPath": "previews/speed-insights.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "speed", "insights", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Speed-insights.svg",
+        "source.path": "SVG/Speed-insights.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "spelling-suggestions",
+      "label": "Spelling Suggestions",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 207.7 140",
+        "svgPath": "svg/spelling-suggestions.svg",
+        "previewPath": "previews/spelling-suggestions.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "spelling", "suggestions", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Spelling-suggestions.svg",
+        "source.path": "SVG/Spelling-suggestions.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 207.7 140"
+      }
+    },
+    {
+      "id": "storm",
+      "label": "Storm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 101 51",
+        "svgPath": "svg/storm.svg",
+        "previewPath": "previews/storm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "storm", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "storm.svg",
+        "source.path": "SVG/storm.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 101 51"
+      }
+    },
+    {
+      "id": "supercharged-machine-learning",
+      "label": "Supercharged Machine Learning",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SML",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/supercharged-machine-learning.svg",
+        "previewPath": "previews/supercharged-machine-learning.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "supercharged", "machine", "learning", "ai", "and" ],
+      "metadata": {
+        "source.fileName": "Supercharged-machine-learning-.svg",
+        "source.path": "SVG/Supercharged-machine-learning-.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "text-analytics",
+      "label": "Text Analytics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/text-analytics.svg",
+        "previewPath": "previews/text-analytics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "text", "analytics", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Text-Analytics.svg",
+        "source.path": "SVG/Text-Analytics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "text-to-speech",
+      "label": "Text To Speech",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TTS",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/text-to-speech.svg",
+        "previewPath": "previews/text-to-speech.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "text", "to", "speech", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Text-to-Speech.svg",
+        "source.path": "SVG/Text-to-Speech.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "transcribe",
+      "label": "Transcribe",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 117.905 95",
+        "svgPath": "svg/transcribe.svg",
+        "previewPath": "previews/transcribe.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "transcribe", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "transcribe.svg",
+        "source.path": "SVG/transcribe.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 117.905 95"
+      }
+    },
+    {
+      "id": "translator-text",
+      "label": "Translator Text",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TT",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/translator-text.svg",
+        "previewPath": "previews/translator-text.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "translator", "text", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Translator-Text.svg",
+        "source.path": "SVG/Translator-Text.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "translators",
+      "label": "Translators",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/translators.svg",
+        "previewPath": "previews/translators.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "translators", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Translators.svg",
+        "source.path": "SVG/Translators.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "video-analyzer-for-media",
+      "label": "Video Analyzer For Media",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VAFM",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 102 102",
+        "svgPath": "svg/video-analyzer-for-media.svg",
+        "previewPath": "previews/video-analyzer-for-media.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "video", "analyzer", "for", "media", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Video-Analyzer-For-Media.svg",
+        "source.path": "SVG/Video-Analyzer-For-Media.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 102 102"
+      }
+    },
+    {
+      "id": "video-analyzers",
+      "label": "Video Analyzers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VA",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 56 56",
+        "svgPath": "svg/video-analyzers.svg",
+        "previewPath": "previews/video-analyzers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "video", "analyzers", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Video-Analyzers.svg",
+        "source.path": "SVG/Video-Analyzers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 56 56"
+      }
+    },
+    {
+      "id": "video-indexer",
+      "label": "Video Indexer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VI",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 61 61",
+        "svgPath": "svg/video-indexer.svg",
+        "previewPath": "previews/video-indexer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "video", "indexer", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "Video-Indexer.svg",
+        "source.path": "SVG/Video-Indexer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 61 61"
+      }
+    },
+    {
+      "id": "worked-examples",
+      "label": "Worked Examples",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "WE",
+      "color": "#0078D4",
+      "category": "AI and Machine Learning",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 376 260",
+        "svgPath": "svg/worked-examples.svg",
+        "previewPath": "previews/worked-examples.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "worked", "examples", "ai", "and", "machine", "learning" ],
+      "metadata": {
+        "source.fileName": "worked-examples.svg",
+        "source.path": "SVG/worked-examples.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 376 260"
+      }
+    }
+  ]
+}

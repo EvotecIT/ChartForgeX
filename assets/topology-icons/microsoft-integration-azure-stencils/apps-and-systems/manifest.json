@@ -1,0 +1,231 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-apps-and-systems",
+  "label": "Microsoft Azure Stencils - Apps and Systems",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "9",
+    "import.svg.imported": "9",
+    "import.svg.skipped": "0",
+    "source.folder": "Apps and Systems",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "apimatic",
+      "label": "Apimatic",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 298 53",
+        "svgPath": "svg/apimatic.svg",
+        "previewPath": "previews/apimatic.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "apimatic", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "Apimatic.svg",
+        "source.path": "SVG/Apimatic.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 298 53"
+      }
+    },
+    {
+      "id": "fhir-1",
+      "label": "Fhir 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F1",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 400 400",
+        "svgPath": "svg/fhir-1.svg",
+        "previewPath": "previews/fhir-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "fhir", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "fhir-1.svg",
+        "source.path": "SVG/fhir-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 400 400"
+      }
+    },
+    {
+      "id": "fhir",
+      "label": "Fhir",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 255.85 103.84",
+        "svgPath": "svg/fhir.svg",
+        "previewPath": "previews/fhir.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "fhir", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "fhir.svg",
+        "source.path": "SVG/fhir.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 255.85 103.84"
+      }
+    },
+    {
+      "id": "internet-explorer",
+      "label": "Internet Explorer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IE",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 503.417 503.417",
+        "svgPath": "svg/internet-explorer.svg",
+        "previewPath": "previews/internet-explorer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "internet", "explorer", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "Internet-Explorer.svg",
+        "source.path": "SVG/Internet-Explorer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 503.417 503.417"
+      }
+    },
+    {
+      "id": "marketo",
+      "label": "Marketo",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 220 75",
+        "svgPath": "svg/marketo.svg",
+        "previewPath": "previews/marketo.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "marketo", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "Marketo.svg",
+        "source.path": "SVG/Marketo.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 220 75"
+      }
+    },
+    {
+      "id": "microsoft-edge",
+      "label": "Microsoft Edge",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ME",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 210 297",
+        "svgPath": "svg/microsoft-edge.svg",
+        "previewPath": "previews/microsoft-edge.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "microsoft", "edge", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "Microsoft_Edge.svg",
+        "source.path": "SVG/Microsoft_Edge.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 210 297"
+      }
+    },
+    {
+      "id": "openapi-initiative",
+      "label": "Openapi Initiative",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OI",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 421.373 118.014",
+        "svgPath": "svg/openapi-initiative.svg",
+        "previewPath": "previews/openapi-initiative.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "openapi", "initiative", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "Openapi-Initiative.svg",
+        "source.path": "SVG/Openapi-Initiative.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 421.373 118.014"
+      }
+    },
+    {
+      "id": "swagger",
+      "label": "Swagger",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 408.77 117.64",
+        "svgPath": "svg/swagger.svg",
+        "previewPath": "previews/swagger.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "swagger", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "Swagger.svg",
+        "source.path": "SVG/Swagger.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 408.77 117.64"
+      }
+    },
+    {
+      "id": "tableau",
+      "label": "Tableau",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#0078D4",
+      "category": "Apps and Systems",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 127.87 25",
+        "svgPath": "svg/tableau.svg",
+        "previewPath": "previews/tableau.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "tableau", "apps", "and", "systems" ],
+      "metadata": {
+        "source.fileName": "Tableau.svg",
+        "source.path": "SVG/Tableau.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 127.87 25"
+      }
+    }
+  ]
+}

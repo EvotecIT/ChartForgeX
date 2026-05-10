@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792 612" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#a0a1a2;stroke:none;stroke-width:0.75}
+		.st2 {fill:#7a7a7a;stroke:none;stroke-width:0.75}
+		.st3 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26" />
+		</v:userDefs>
+
+
+		<g id="cfxi-microsoft-azure-stencils-others-vpn-tunnel-group16411-1" transform="translate(18,-576.499)" v:mID="16411" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-others-vpn-tunnel-shape16412-2" v:mID="16412" v:groupContext="shape">
+
+				<path d="M4.4 612 C1.97 612 0 608.08 0 603.25 C0 598.42 1.97 594.5 4.4 594.5 L85.95 594.5 C88.38 594.5 90.35 598.42         90.35 603.25 C90.35 608.08 88.38 612 85.95 612 L4.4 612 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-vpn-tunnel-shape16413-4" v:mID="16413" v:groupContext="shape">
+
+				<ellipse cx="4.40175" cy="603.25" rx="4.40175" ry="8.75025" class="st2" />
+			</g>
+		</g>
+	</g>
+</svg>

@@ -1,0 +1,530 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-power-platform",
+  "label": "Microsoft Azure Stencils - Power Platform",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "22",
+    "import.svg.imported": "22",
+    "import.svg.skipped": "0",
+    "source.folder": "Power Platform",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "ai-builder",
+      "label": "Ai Builder",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AB",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ai-builder.svg",
+        "previewPath": "previews/ai-builder.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ai", "builder", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "AI-Builder.svg",
+        "source.path": "SVG/AI-Builder.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "app-template",
+      "label": "App Template",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AT",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/app-template.svg",
+        "previewPath": "previews/app-template.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "app", "template", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "App-Template.svg",
+        "source.path": "SVG/App-Template.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "chart-2",
+      "label": "Chart #2",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C#",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/chart-2.svg",
+        "previewPath": "previews/chart-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "chart", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Chart-#2.svg",
+        "source.path": "SVG/Chart-#2.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 75.2632 50.0243",
+        "svgPath": "svg/dashboard.svg",
+        "previewPath": "previews/dashboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "dashboard", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Dashboard.svg",
+        "source.path": "SVG/Dashboard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 75.2632 50.0243"
+      }
+    },
+    {
+      "id": "data-warehouse",
+      "label": "Data Warehouse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DW",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 39 38.55",
+        "svgPath": "svg/data-warehouse.svg",
+        "previewPath": "previews/data-warehouse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "warehouse", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Data-Warehouse.svg",
+        "source.path": "SVG/Data-Warehouse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 39 38.55"
+      }
+    },
+    {
+      "id": "data",
+      "label": "Data",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/data.svg",
+        "previewPath": "previews/data.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Data.svg",
+        "source.path": "SVG/Data.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "dataverse",
+      "label": "Dataverse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dataverse.svg",
+        "previewPath": "previews/dataverse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "dataverse", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Dataverse.svg",
+        "source.path": "SVG/Dataverse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "get-started-power-bi",
+      "label": "Get Started Power Bi",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "GSPB",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 103 103",
+        "svgPath": "svg/get-started-power-bi.svg",
+        "previewPath": "previews/get-started-power-bi.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "get", "started", "power", "bi", "platform" ],
+      "metadata": {
+        "source.fileName": "Get-Started-Power-Bi.svg",
+        "source.path": "SVG/Get-Started-Power-Bi.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 103 103"
+      }
+    },
+    {
+      "id": "human-workflow",
+      "label": "Human Workflow",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "HW",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 55.875 55.8763",
+        "svgPath": "svg/human-workflow.svg",
+        "previewPath": "previews/human-workflow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "human", "workflow", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Human-Workflow.svg",
+        "source.path": "SVG/Human-Workflow.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 55.875 55.8763"
+      }
+    },
+    {
+      "id": "metrics",
+      "label": "Metrics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/metrics.svg",
+        "previewPath": "previews/metrics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "metrics", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Metrics.svg",
+        "source.path": "SVG/Metrics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "page-design",
+      "label": "Page Design",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PD",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 51 50",
+        "svgPath": "svg/page-design.svg",
+        "previewPath": "previews/page-design.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "page", "design", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Page-Design.svg",
+        "source.path": "SVG/Page-Design.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 51 50"
+      }
+    },
+    {
+      "id": "pie-chart-4",
+      "label": "Pie Chart #4",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PC#",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 37.5099 37.5109",
+        "svgPath": "svg/pie-chart-4.svg",
+        "previewPath": "previews/pie-chart-4.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "pie", "chart", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Pie-Chart-#4.svg",
+        "source.path": "SVG/Pie-Chart-#4.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 37.5099 37.5109"
+      }
+    },
+    {
+      "id": "power-apps",
+      "label": "Power Apps",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PA",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-apps.svg",
+        "previewPath": "previews/power-apps.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "apps", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Apps.svg",
+        "source.path": "SVG/Power-Apps.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "power-automate-2",
+      "label": "Power Automate 2",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PA2",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/power-automate-2.svg",
+        "previewPath": "previews/power-automate-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "automate", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Automate-2.svg",
+        "source.path": "SVG/Power-Automate-2.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "power-automate",
+      "label": "Power Automate",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PA",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-automate.svg",
+        "previewPath": "previews/power-automate.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "automate", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Automate.svg",
+        "source.path": "SVG/Power-Automate.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "power-bi-dashboard",
+      "label": "Power Bi Dashboard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PBD",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/power-bi-dashboard.svg",
+        "previewPath": "previews/power-bi-dashboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "bi", "dashboard", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Bi-Dashboard.svg",
+        "source.path": "SVG/Power-Bi-Dashboard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "power-bi-embedded",
+      "label": "Power Bi Embedded",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PBE",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 40 40",
+        "svgPath": "svg/power-bi-embedded.svg",
+        "previewPath": "previews/power-bi-embedded.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "bi", "embedded", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Bi-Embedded.svg",
+        "source.path": "SVG/Power-Bi-Embedded.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 40 40"
+      }
+    },
+    {
+      "id": "power-bi",
+      "label": "Power Bi",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PB",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-bi.svg",
+        "previewPath": "previews/power-bi.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "bi", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Bi.svg",
+        "source.path": "SVG/Power-Bi.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "power-fx",
+      "label": "Power Fx",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PF",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-fx.svg",
+        "previewPath": "previews/power-fx.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "fx", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Fx.svg",
+        "source.path": "SVG/Power-Fx.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "power-pages",
+      "label": "Power Pages",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PP",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-pages.svg",
+        "previewPath": "previews/power-pages.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "pages", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Pages.svg",
+        "source.path": "SVG/Power-Pages.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "power-platform",
+      "label": "Power Platform",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PP",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-platform.svg",
+        "previewPath": "previews/power-platform.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Platform.svg",
+        "source.path": "SVG/Power-Platform.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "power-virtual-agents",
+      "label": "Power Virtual Agents",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PVA",
+      "color": "#742774",
+      "category": "Power Platform",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-virtual-agents.svg",
+        "previewPath": "previews/power-virtual-agents.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "power", "virtual", "agents", "platform" ],
+      "metadata": {
+        "source.fileName": "Power-Virtual-Agents.svg",
+        "source.path": "SVG/Power-Virtual-Agents.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    }
+  ]
+}

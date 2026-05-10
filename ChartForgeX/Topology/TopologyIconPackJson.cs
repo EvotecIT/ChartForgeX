@@ -10,9 +10,11 @@ namespace ChartForgeX.Topology;
 /// <summary>
 /// Reads and writes dependency-free JSON manifests for topology icon packs.
 /// </summary>
-public static class TopologyIconPackJson {
+public static partial class TopologyIconPackJson {
     /// <summary>Gets the manifest schema identifier.</summary>
     public const string Schema = "chartforgex.topology.iconPack";
+
+    private static readonly Encoding Utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     /// <summary>
     /// Adds a JSON manifest icon pack to the catalog.
@@ -68,6 +70,17 @@ public static class TopologyIconPackJson {
     /// <returns>The imported topology icon pack.</returns>
     public static TopologyIconPack FromJson(string json) {
         if (json == null) throw new ArgumentNullException(nameof(json));
+        return FromJson(json, null);
+    }
+
+    /// <summary>
+    /// Creates a topology icon pack from a JSON manifest and optionally resolves pack-local sidecar artwork.
+    /// </summary>
+    /// <param name="json">The JSON manifest.</param>
+    /// <param name="manifestDirectory">The manifest directory used to resolve sidecar artwork paths.</param>
+    /// <returns>The imported topology icon pack.</returns>
+    public static TopologyIconPack FromJson(string json, string? manifestDirectory) {
+        if (json == null) throw new ArgumentNullException(nameof(json));
         var root = JsonReader.Parse(json).AsObject("manifest");
         var schema = root.OptionalString("schema");
         if (!string.IsNullOrEmpty(schema) && !string.Equals(schema, Schema, StringComparison.OrdinalIgnoreCase)) {
@@ -100,6 +113,7 @@ public static class TopologyIconPackJson {
             pack.AddIcon(icon);
         }
 
+        if (!string.IsNullOrWhiteSpace(manifestDirectory)) ResolvePackArtworkFiles(pack, manifestDirectory!);
         return pack;
     }
 
@@ -110,11 +124,12 @@ public static class TopologyIconPackJson {
     /// <returns>The imported topology icon pack.</returns>
     public static TopologyIconPack LoadJsonManifest(string path) {
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Value cannot be empty.", nameof(path));
-        using var reader = File.OpenText(path);
-        var pack = LoadJsonManifest(reader);
-        pack.WithMetadata("manifest.path", Path.GetFullPath(path));
+        var fullPath = Path.GetFullPath(path);
+        var directory = Path.GetDirectoryName(fullPath);
+        var json = File.ReadAllText(path);
+        var pack = FromJson(json, directory);
+        pack.WithMetadata("manifest.path", fullPath);
         pack.WithMetadata("manifest.fileName", Path.GetFileName(path));
-        var directory = Path.GetDirectoryName(Path.GetFullPath(path));
         if (!string.IsNullOrWhiteSpace(directory)) pack.WithMetadata("manifest.directory", directory!);
         return pack;
     }
@@ -127,6 +142,18 @@ public static class TopologyIconPackJson {
     public static TopologyIconPack LoadJsonManifest(TextReader reader) {
         if (reader == null) throw new ArgumentNullException(nameof(reader));
         return FromJson(reader.ReadToEnd());
+    }
+
+    /// <summary>
+    /// Loads a topology icon pack from a JSON manifest text reader and resolves pack-local sidecar artwork.
+    /// </summary>
+    /// <param name="reader">The source text reader.</param>
+    /// <param name="manifestDirectory">The manifest directory used to resolve sidecar artwork paths.</param>
+    /// <returns>The imported topology icon pack.</returns>
+    public static TopologyIconPack LoadJsonManifest(TextReader reader, string manifestDirectory) {
+        if (reader == null) throw new ArgumentNullException(nameof(reader));
+        if (string.IsNullOrWhiteSpace(manifestDirectory)) throw new ArgumentException("Value cannot be empty.", nameof(manifestDirectory));
+        return FromJson(reader.ReadToEnd(), manifestDirectory);
     }
 
     /// <summary>
@@ -238,7 +265,7 @@ public static class TopologyIconPackJson {
 
         writer.EndArray();
         writer.EndObject();
-        return writer.ToString();
+        return NormalizeNewLines(writer.ToString());
     }
 
     /// <summary>
@@ -250,7 +277,7 @@ public static class TopologyIconPackJson {
     public static void SaveJsonManifest(this TopologyIconPack pack, string path, bool indented = true) {
         if (pack == null) throw new ArgumentNullException(nameof(pack));
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Value cannot be empty.", nameof(path));
-        File.WriteAllText(path, pack.ToJsonManifest(indented), Encoding.UTF8);
+        WriteUtf8NoBomFile(path, pack.ToJsonManifest(indented));
     }
 
     /// <summary>
@@ -286,19 +313,31 @@ public static class TopologyIconPackJson {
         return new TopologyIconArtwork {
             SvgViewBox = values.OptionalString("svgViewBox") ?? values.OptionalString("viewBox") ?? "0 0 24 24",
             SvgBody = values.OptionalString("svg"),
+            SvgPath = values.OptionalString("svgPath"),
+            PreviewPath = values.OptionalString("previewPath") ?? values.OptionalString("previewPngPath"),
             ImageHref = values.OptionalString("imageHref") ?? values.OptionalString("href"),
             PreserveAspectRatio = values.OptionalString("preserveAspectRatio") ?? "xMidYMid meet"
         };
     }
 
     private static void WriteArtwork(JsonWriter writer, TopologyIconArtwork? artwork) {
-        if (artwork == null || (!artwork.HasSvgBody && !artwork.HasImageHref)) return;
+        if (artwork == null || (!artwork.HasSvgBody && !artwork.HasSvgPath && !artwork.HasImageHref)) return;
         writer.BeginObjectProperty("artwork");
         writer.WriteOptionalProperty("svgViewBox", artwork.SvgViewBox);
-        writer.WriteOptionalProperty("svg", artwork.SvgBody);
+        if (!artwork.HasSvgPath) writer.WriteOptionalProperty("svg", artwork.SvgBody);
+        writer.WriteOptionalProperty("svgPath", artwork.SvgPath);
+        writer.WriteOptionalProperty("previewPath", artwork.PreviewPath);
         writer.WriteOptionalProperty("imageHref", artwork.ImageHref);
         writer.WriteOptionalProperty("preserveAspectRatio", artwork.PreserveAspectRatio);
         writer.EndObject();
+    }
+
+    internal static void WriteUtf8NoBomFile(string path, string content) {
+        File.WriteAllText(path, NormalizeNewLines(content), Utf8NoBom);
+    }
+
+    internal static string NormalizeNewLines(string content) {
+        return content.Replace("\r\n", "\n").Replace("\r", "\n");
     }
 
     private static void AddPackWithConflictBehavior(TopologyIconCatalog catalog, TopologyIconPack pack, string path, TopologyIconPackConflictBehavior conflictBehavior, List<TopologyIconPackLoadResult> results) {

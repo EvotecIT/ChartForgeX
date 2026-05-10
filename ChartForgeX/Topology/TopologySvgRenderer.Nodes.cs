@@ -418,6 +418,7 @@ public sealed partial class TopologySvgRenderer {
 
     private static string ArtworkKind(TopologyIconArtwork artwork) {
         if (artwork.HasSvgBody) return "svg";
+        if (artwork.HasSvgPath) return "svg";
         if (artwork.HasImageHref) return "image";
         return "empty";
     }

@@ -50,7 +50,7 @@ public static class TopologyIconCatalogExportExtensions {
         foreach (var pack in MatchingPacks(catalog, options)) {
             var path = Path.Combine(directoryPath, FileNameForPack(pack, options));
             if (!options.Overwrite && File.Exists(path)) throw new IOException("Topology icon pack manifest already exists: " + path);
-            File.WriteAllText(path, pack.ToJsonManifest(options.Indented), Encoding.UTF8);
+            TopologyIconPackJson.WriteUtf8NoBomFile(path, pack.ToJsonManifest(options.Indented));
             exportedPaths.Add(path);
         }
 

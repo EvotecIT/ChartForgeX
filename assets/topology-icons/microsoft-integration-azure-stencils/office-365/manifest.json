@@ -1,0 +1,1450 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-office-365",
+  "label": "Microsoft Azure Stencils - Office 365",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "65",
+    "import.svg.imported": "62",
+    "import.svg.skipped": "3",
+    "source.folder": "Office 365",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "accdb",
+      "label": "Accdb",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/accdb.svg",
+        "previewPath": "previews/accdb.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "accdb", "office", "365" ],
+      "metadata": {
+        "source.fileName": "accdb.svg",
+        "source.path": "SVG/accdb.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "bookings",
+      "label": "Bookings",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 20 28.78",
+        "svgPath": "svg/bookings.svg",
+        "previewPath": "previews/bookings.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "bookings", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Bookings.svg",
+        "source.path": "SVG/Bookings.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 20 28.78"
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/calendar.svg",
+        "previewPath": "previews/calendar.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "calendar", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Calendar.svg",
+        "source.path": "SVG/Calendar.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "csv",
+      "label": "Csv",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/csv.svg",
+        "previewPath": "previews/csv.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "csv", "office", "365" ],
+      "metadata": {
+        "source.fileName": "csv.svg",
+        "source.path": "SVG/csv.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "delve",
+      "label": "Delve",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/delve.svg",
+        "previewPath": "previews/delve.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "delve", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Delve.svg",
+        "source.path": "SVG/Delve.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "document",
+      "label": "Document",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/document.svg",
+        "previewPath": "previews/document.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "document", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Document.svg",
+        "source.path": "SVG/Document.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "docx",
+      "label": "Docx",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/docx.svg",
+        "previewPath": "previews/docx.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "docx", "office", "365" ],
+      "metadata": {
+        "source.fileName": "docx.svg",
+        "source.path": "SVG/docx.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "dynamics-365",
+      "label": "Dynamics 365",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D3",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dynamics-365.svg",
+        "previewPath": "previews/dynamics-365.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "dynamics", "365", "office" ],
+      "metadata": {
+        "source.fileName": "Dynamics-365.svg",
+        "source.path": "SVG/Dynamics-365.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "excel-doc",
+      "label": "Excel Doc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ED",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/excel-doc.svg",
+        "previewPath": "previews/excel-doc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "excel", "doc", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Excel-Doc.svg",
+        "source.path": "SVG/Excel-Doc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "excel",
+      "label": "Excel",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "E",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/excel.svg",
+        "previewPath": "previews/excel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "excel", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Excel.svg",
+        "source.path": "SVG/Excel.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "exchange",
+      "label": "Exchange",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "E",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 38 35",
+        "svgPath": "svg/exchange.svg",
+        "previewPath": "previews/exchange.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "exchange", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Exchange.svg",
+        "source.path": "SVG/Exchange.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 38 35"
+      }
+    },
+    {
+      "id": "fluid",
+      "label": "Fluid",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 40 40",
+        "svgPath": "svg/fluid.svg",
+        "previewPath": "previews/fluid.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "fluid", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Fluid.svg",
+        "source.path": "SVG/Fluid.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 40 40"
+      }
+    },
+    {
+      "id": "folder",
+      "label": "Folder",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/folder.svg",
+        "previewPath": "previews/folder.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "folder", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Folder.svg",
+        "source.path": "SVG/Folder.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "form-doc",
+      "label": "Form Doc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FD",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/form-doc.svg",
+        "previewPath": "previews/form-doc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "form", "doc", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Form-Doc.svg",
+        "source.path": "SVG/Form-Doc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "guides",
+      "label": "Guides",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "G",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/guides.svg",
+        "previewPath": "previews/guides.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "guides", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Guides.svg",
+        "source.path": "SVG/Guides.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "import-tool",
+      "label": "Import Tool",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IT",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/import-tool.svg",
+        "previewPath": "previews/import-tool.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "import", "tool", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Import-Tool.svg",
+        "source.path": "SVG/Import-Tool.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "infopath",
+      "label": "Infopath",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "I",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 1000 1000",
+        "svgPath": "svg/infopath.svg",
+        "previewPath": "previews/infopath.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infopath", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Infopath.svg",
+        "source.path": "SVG/Infopath.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 1000 1000"
+      }
+    },
+    {
+      "id": "kaizala",
+      "label": "Kaizala",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "K",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/kaizala.svg",
+        "previewPath": "previews/kaizala.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "kaizala", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Kaizala.svg",
+        "source.path": "SVG/Kaizala.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "layout",
+      "label": "Layout",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "L",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/layout.svg",
+        "previewPath": "previews/layout.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "layout", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Layout.svg",
+        "source.path": "SVG/Layout.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "lists-d",
+      "label": "Lists D",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LD",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/lists-d.svg",
+        "previewPath": "previews/lists-d.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "lists", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Lists-D.svg",
+        "source.path": "SVG/Lists-D.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "lists",
+      "label": "Lists",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "L",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/lists.svg",
+        "previewPath": "previews/lists.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "lists", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Lists.svg",
+        "source.path": "SVG/Lists.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "mr-portal",
+      "label": "Mr Portal",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MP",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mr-portal.svg",
+        "previewPath": "previews/mr-portal.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "mr", "portal", "office", "365" ],
+      "metadata": {
+        "source.fileName": "MR-Portal.svg",
+        "source.path": "SVG/MR-Portal.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "myanalytics",
+      "label": "Myanalytics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/myanalytics.svg",
+        "previewPath": "previews/myanalytics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "myanalytics", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Myanalytics.svg",
+        "source.path": "SVG/Myanalytics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "of-privacy",
+      "label": "Of Privacy",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OP",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/of-privacy.svg",
+        "previewPath": "previews/of-privacy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "of", "privacy", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Of-Privacy.svg",
+        "source.path": "SVG/Of-Privacy.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "office-365",
+      "label": "Office 365",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O3",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/office-365.svg",
+        "previewPath": "previews/office-365.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Office-365.svg",
+        "source.path": "SVG/Office-365.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "one",
+      "label": "One",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/one.svg",
+        "previewPath": "previews/one.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "one", "office", "365" ],
+      "metadata": {
+        "source.fileName": "one.svg",
+        "source.path": "SVG/one.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "onedrive",
+      "label": "Onedrive",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/onedrive.svg",
+        "previewPath": "previews/onedrive.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "onedrive", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Onedrive.svg",
+        "source.path": "SVG/Onedrive.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "onenote-doc",
+      "label": "Onenote Doc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OD",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/onenote-doc.svg",
+        "previewPath": "previews/onenote-doc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "onenote", "doc", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Onenote-Doc.svg",
+        "source.path": "SVG/Onenote-Doc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "onenote",
+      "label": "Onenote",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/onenote.svg",
+        "previewPath": "previews/onenote.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "onenote", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Onenote.svg",
+        "source.path": "SVG/Onenote.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "onetoc",
+      "label": "Onetoc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/onetoc.svg",
+        "previewPath": "previews/onetoc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "onetoc", "office", "365" ],
+      "metadata": {
+        "source.fileName": "onetoc.svg",
+        "source.path": "SVG/onetoc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "outlook",
+      "label": "Outlook",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "O",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/outlook.svg",
+        "previewPath": "previews/outlook.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "outlook", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Outlook.svg",
+        "source.path": "SVG/Outlook.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "pdf",
+      "label": "Pdf",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/pdf.svg",
+        "previewPath": "previews/pdf.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "pdf", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Pdf.svg",
+        "source.path": "SVG/Pdf.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "planner",
+      "label": "Planner",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/planner.svg",
+        "previewPath": "previews/planner.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "planner", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Planner.svg",
+        "source.path": "SVG/Planner.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "powerpoint-doc",
+      "label": "Powerpoint Doc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PD",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/powerpoint-doc.svg",
+        "previewPath": "previews/powerpoint-doc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "powerpoint", "doc", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Powerpoint-Doc.svg",
+        "source.path": "SVG/Powerpoint-Doc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "powerpoint",
+      "label": "Powerpoint",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/powerpoint.svg",
+        "previewPath": "previews/powerpoint.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "powerpoint", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Powerpoint.svg",
+        "source.path": "SVG/Powerpoint.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "ppsx",
+      "label": "Ppsx",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/ppsx.svg",
+        "previewPath": "previews/ppsx.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "ppsx", "office", "365" ],
+      "metadata": {
+        "source.fileName": "ppsx.svg",
+        "source.path": "SVG/ppsx.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "pptx",
+      "label": "Pptx",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/pptx.svg",
+        "previewPath": "previews/pptx.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "pptx", "office", "365" ],
+      "metadata": {
+        "source.fileName": "pptx.svg",
+        "source.path": "SVG/pptx.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "product-visualize",
+      "label": "Product Visualize",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PV",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/product-visualize.svg",
+        "previewPath": "previews/product-visualize.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "product", "visualize", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Product-Visualize.svg",
+        "source.path": "SVG/Product-Visualize.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "project-doc",
+      "label": "Project Doc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PD",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/project-doc.svg",
+        "previewPath": "previews/project-doc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "project", "doc", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Project-Doc.svg",
+        "source.path": "SVG/Project-Doc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "project-timesheet",
+      "label": "Project Timesheet",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PT",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/project-timesheet.svg",
+        "previewPath": "previews/project-timesheet.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "project", "timesheet", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Project-Timesheet.svg",
+        "source.path": "SVG/Project-Timesheet.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "project",
+      "label": "Project",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/project.svg",
+        "previewPath": "previews/project.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "project", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Project.svg",
+        "source.path": "SVG/Project.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "pub",
+      "label": "Pub",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/pub.svg",
+        "previewPath": "previews/pub.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "pub", "office", "365" ],
+      "metadata": {
+        "source.fileName": "pub.svg",
+        "source.path": "SVG/pub.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "remote-assist",
+      "label": "Remote Assist",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RA",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/remote-assist.svg",
+        "previewPath": "previews/remote-assist.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "remote", "assist", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Remote-Assist.svg",
+        "source.path": "SVG/Remote-Assist.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "return-to-school",
+      "label": "Return To School",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RTS",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/return-to-school.svg",
+        "previewPath": "previews/return-to-school.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "return", "to", "school", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Return-To-School.svg",
+        "source.path": "SVG/Return-To-School.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "return-to-work",
+      "label": "Return To Work",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RTW",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/return-to-work.svg",
+        "previewPath": "previews/return-to-work.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "return", "to", "work", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Return-To-Work.svg",
+        "source.path": "SVG/Return-To-Work.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "rewards",
+      "label": "Rewards",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/rewards.svg",
+        "previewPath": "previews/rewards.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "rewards", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Rewards.svg",
+        "source.path": "SVG/Rewards.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "scm-warehousing",
+      "label": "Scm Warehousing",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SW",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/scm-warehousing.svg",
+        "previewPath": "previews/scm-warehousing.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "scm", "warehousing", "office", "365" ],
+      "metadata": {
+        "source.fileName": "SCM-Warehousing.svg",
+        "source.path": "SVG/SCM-Warehousing.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "sharepoint",
+      "label": "Sharepoint",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/sharepoint.svg",
+        "previewPath": "previews/sharepoint.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sharepoint", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Sharepoint.svg",
+        "source.path": "SVG/Sharepoint.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "skype-for-business",
+      "label": "Skype For Business",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SFB",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/skype-for-business.svg",
+        "previewPath": "previews/skype-for-business.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "skype", "for", "business", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Skype-For-Business.svg",
+        "source.path": "SVG/Skype-For-Business.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "stream",
+      "label": "Stream",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/stream.svg",
+        "previewPath": "previews/stream.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "stream", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Stream.svg",
+        "source.path": "SVG/Stream.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "sway",
+      "label": "Sway",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "4 8 55 48",
+        "svgPath": "svg/sway.svg",
+        "previewPath": "previews/sway.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sway", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Sway.svg",
+        "source.path": "SVG/Sway.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "4 8 55 48"
+      }
+    },
+    {
+      "id": "teams",
+      "label": "Teams",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/teams.svg",
+        "previewPath": "previews/teams.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "teams", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Teams.svg",
+        "source.path": "SVG/Teams.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "to-do",
+      "label": "To Do",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TD",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/to-do.svg",
+        "previewPath": "previews/to-do.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "to", "do", "office", "365" ],
+      "metadata": {
+        "source.fileName": "To-Do.svg",
+        "source.path": "SVG/To-Do.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "visio-doc",
+      "label": "Visio Doc",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VD",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/visio-doc.svg",
+        "previewPath": "previews/visio-doc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "visio", "doc", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Visio-Doc.svg",
+        "source.path": "SVG/Visio-Doc.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "visio",
+      "label": "Visio",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "V",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/visio.svg",
+        "previewPath": "previews/visio.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "visio", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Visio.svg",
+        "source.path": "SVG/Visio.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "vsdx",
+      "label": "Vsdx",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "V",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/vsdx.svg",
+        "previewPath": "previews/vsdx.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "vsdx", "office", "365" ],
+      "metadata": {
+        "source.fileName": "vsdx.svg",
+        "source.path": "SVG/vsdx.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "vssx",
+      "label": "Vssx",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "V",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/vssx.svg",
+        "previewPath": "previews/vssx.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "vssx", "office", "365" ],
+      "metadata": {
+        "source.fileName": "vssx.svg",
+        "source.path": "SVG/vssx.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "whiteboard",
+      "label": "Whiteboard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/whiteboard.svg",
+        "previewPath": "previews/whiteboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "whiteboard", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Whiteboard.svg",
+        "source.path": "SVG/Whiteboard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "word",
+      "label": "Word",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/word.svg",
+        "previewPath": "previews/word.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "word", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Word.svg",
+        "source.path": "SVG/Word.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "xlsx",
+      "label": "Xlsx",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "X",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/xlsx.svg",
+        "previewPath": "previews/xlsx.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "xlsx", "office", "365" ],
+      "metadata": {
+        "source.fileName": "xlsx.svg",
+        "source.path": "SVG/xlsx.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 96 96"
+      }
+    },
+    {
+      "id": "xsn",
+      "label": "Xsn",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "X",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/xsn.svg",
+        "previewPath": "previews/xsn.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "xsn", "office", "365" ],
+      "metadata": {
+        "source.fileName": "xsn.svg",
+        "source.path": "SVG/xsn.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "yammer",
+      "label": "Yammer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "Y",
+      "color": "#D83B01",
+      "category": "Office 365",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/yammer.svg",
+        "previewPath": "previews/yammer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "yammer", "office", "365" ],
+      "metadata": {
+        "source.fileName": "Yammer.svg",
+        "source.path": "SVG/Yammer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    }
+  ]
+}

@@ -1,0 +1,806 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-iot",
+  "label": "Microsoft Azure Stencils - IoT",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "34",
+    "import.svg.imported": "34",
+    "import.svg.skipped": "0",
+    "source.folder": "IoT",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "iot-central-applications",
+      "label": "Iot Central Applications",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ICA",
+      "color": "#00A4EF",
+      "category": "IoT / Old Versions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/iot-central-applications.svg",
+        "previewPath": "previews/iot-central-applications.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "old", "versions", "iot", "central", "applications" ],
+      "metadata": {
+        "source.fileName": "Iot-Central-Applications.svg",
+        "source.path": "SVG-OLD-VERSIONS/Iot-Central-Applications.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "arduino-1",
+      "label": "Arduino #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A#",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 75.6099 55.0425",
+        "svgPath": "svg/arduino-1.svg",
+        "previewPath": "previews/arduino-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "arduino", "iot" ],
+      "metadata": {
+        "source.fileName": "Arduino-#1.svg",
+        "source.path": "SVG/Arduino-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 75.6099 55.0425"
+      }
+    },
+    {
+      "id": "arduino",
+      "label": "Arduino",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/arduino.svg",
+        "previewPath": "previews/arduino.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "arduino", "iot" ],
+      "metadata": {
+        "source.fileName": "Arduino.svg",
+        "source.path": "SVG/Arduino.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "device-provisioning-services",
+      "label": "Device Provisioning Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DPS",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 331 344.9",
+        "svgPath": "svg/device-provisioning-services.svg",
+        "previewPath": "previews/device-provisioning-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "device", "provisioning", "services", "iot" ],
+      "metadata": {
+        "source.fileName": "Device-Provisioning-Services.svg",
+        "source.path": "SVG/Device-Provisioning-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 331 344.9"
+      }
+    },
+    {
+      "id": "digital-twins",
+      "label": "Digital Twins",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DT",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/digital-twins.svg",
+        "previewPath": "previews/digital-twins.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "digital", "twins", "iot" ],
+      "metadata": {
+        "source.fileName": "Digital-Twins.svg",
+        "source.path": "SVG/Digital-Twins.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "drone-1",
+      "label": "Drone #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D#",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 65.4 20.325",
+        "svgPath": "svg/drone-1.svg",
+        "previewPath": "previews/drone-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "drone", "iot" ],
+      "metadata": {
+        "source.fileName": "Drone-#1.svg",
+        "source.path": "SVG/Drone-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 65.4 20.325"
+      }
+    },
+    {
+      "id": "drone-with-camera",
+      "label": "Drone With Camera",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DWC",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/drone-with-camera.svg",
+        "previewPath": "previews/drone-with-camera.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "drone", "with", "camera", "iot" ],
+      "metadata": {
+        "source.fileName": "Drone-With-Camera.svg",
+        "source.path": "SVG/Drone-With-Camera.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "iot-central-applications-2",
+      "label": "Iot Central Applications",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ICA",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/iot-central-applications-2.svg",
+        "previewPath": "previews/iot-central-applications-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "iot", "central", "applications" ],
+      "metadata": {
+        "source.fileName": "IoT-Central-Applications.svg",
+        "source.path": "SVG/IoT-Central-Applications.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "iot-chip-1",
+      "label": "Iot Chip #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IC#",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 74.5034 74.5034",
+        "svgPath": "svg/iot-chip-1.svg",
+        "previewPath": "previews/iot-chip-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "iot", "chip" ],
+      "metadata": {
+        "source.fileName": "IoT-Chip-#1.svg",
+        "source.path": "SVG/IoT-Chip-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 74.5034 74.5034"
+      }
+    },
+    {
+      "id": "iot-hub",
+      "label": "Iot Hub",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IH",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/iot-hub.svg",
+        "previewPath": "previews/iot-hub.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "iot", "hub" ],
+      "metadata": {
+        "source.fileName": "IoT-Hub.svg",
+        "source.path": "SVG/IoT-Hub.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "notification-hubs",
+      "label": "Notification Hubs",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NH",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/notification-hubs.svg",
+        "previewPath": "previews/notification-hubs.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "notification", "hubs", "iot" ],
+      "metadata": {
+        "source.fileName": "Notification-Hubs.svg",
+        "source.path": "SVG/Notification-Hubs.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "prototyping-electronic-board",
+      "label": "Prototyping Electronic Board",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PEB",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 82.0781 53.7592",
+        "svgPath": "svg/prototyping-electronic-board.svg",
+        "previewPath": "previews/prototyping-electronic-board.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "prototyping", "electronic", "board", "iot" ],
+      "metadata": {
+        "source.fileName": "Prototyping-electronic-Board.svg",
+        "source.path": "SVG/Prototyping-electronic-Board.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 82.0781 53.7592"
+      }
+    },
+    {
+      "id": "scooter",
+      "label": "Scooter",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 496 496",
+        "svgPath": "svg/scooter.svg",
+        "previewPath": "previews/scooter.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "scooter", "iot" ],
+      "metadata": {
+        "source.fileName": "Scooter.svg",
+        "source.path": "SVG/Scooter.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 496 496"
+      }
+    },
+    {
+      "id": "sensing-1",
+      "label": "Sensing #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S#",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 42.0657 24",
+        "svgPath": "svg/sensing-1.svg",
+        "previewPath": "previews/sensing-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sensing", "iot" ],
+      "metadata": {
+        "source.fileName": "Sensing-#1.svg",
+        "source.path": "SVG/Sensing-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 42.0657 24"
+      }
+    },
+    {
+      "id": "sensing",
+      "label": "Sensing",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/sensing.svg",
+        "previewPath": "previews/sensing.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "sensing", "iot" ],
+      "metadata": {
+        "source.fileName": "Sensing.svg",
+        "source.path": "SVG/Sensing.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "smart-appliances",
+      "label": "Smart Appliances",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SA",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/smart-appliances.svg",
+        "previewPath": "previews/smart-appliances.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "smart", "appliances", "iot" ],
+      "metadata": {
+        "source.fileName": "Smart-Appliances.svg",
+        "source.path": "SVG/Smart-Appliances.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "smart-factories",
+      "label": "Smart Factories",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SF",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/smart-factories.svg",
+        "previewPath": "previews/smart-factories.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "smart", "factories", "iot" ],
+      "metadata": {
+        "source.fileName": "Smart-Factories.svg",
+        "source.path": "SVG/Smart-Factories.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "smart-glasses",
+      "label": "Smart Glasses",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SG",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 53.1 13.7257",
+        "svgPath": "svg/smart-glasses.svg",
+        "previewPath": "previews/smart-glasses.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "smart", "glasses", "iot" ],
+      "metadata": {
+        "source.fileName": "Smart-Glasses.svg",
+        "source.path": "SVG/Smart-Glasses.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 53.1 13.7257"
+      }
+    },
+    {
+      "id": "smart-home",
+      "label": "Smart Home",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SH",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/smart-home.svg",
+        "previewPath": "previews/smart-home.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "smart", "home", "iot" ],
+      "metadata": {
+        "source.fileName": "Smart-Home.svg",
+        "source.path": "SVG/Smart-Home.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "smart-sensors",
+      "label": "Smart Sensors",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SS",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/smart-sensors.svg",
+        "previewPath": "previews/smart-sensors.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "smart", "sensors", "iot" ],
+      "metadata": {
+        "source.fileName": "Smart-Sensors.svg",
+        "source.path": "SVG/Smart-Sensors.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "smartwatch-4",
+      "label": "Smartwatch #4",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S#",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 14.1 24.15",
+        "svgPath": "svg/smartwatch-4.svg",
+        "previewPath": "previews/smartwatch-4.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "smartwatch", "iot" ],
+      "metadata": {
+        "source.fileName": "Smartwatch-#4.svg",
+        "source.path": "SVG/Smartwatch-#4.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 14.1 24.15"
+      }
+    },
+    {
+      "id": "stream-analytics",
+      "label": "Stream Analytics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SA",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/stream-analytics.svg",
+        "previewPath": "previews/stream-analytics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "stream", "analytics", "iot" ],
+      "metadata": {
+        "source.fileName": "Stream-Analytics.svg",
+        "source.path": "SVG/Stream-Analytics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "surveillance",
+      "label": "Surveillance",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 46.5 55.3745",
+        "svgPath": "svg/surveillance.svg",
+        "previewPath": "previews/surveillance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "surveillance", "iot" ],
+      "metadata": {
+        "source.fileName": "Surveillance.svg",
+        "source.path": "SVG/Surveillance.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 46.5 55.3745"
+      }
+    },
+    {
+      "id": "telemetry",
+      "label": "Telemetry",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 46.7439 59.6369",
+        "svgPath": "svg/telemetry.svg",
+        "previewPath": "previews/telemetry.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "telemetry", "iot" ],
+      "metadata": {
+        "source.fileName": "Telemetry.svg",
+        "source.path": "SVG/Telemetry.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 46.7439 59.6369"
+      }
+    },
+    {
+      "id": "time-series-insights-environments",
+      "label": "Time Series Insights Environments",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TSIE",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/time-series-insights-environments.svg",
+        "previewPath": "previews/time-series-insights-environments.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "time", "series", "insights", "environments", "iot" ],
+      "metadata": {
+        "source.fileName": "Time-Series-Insights-environments.svg",
+        "source.path": "SVG/Time-Series-Insights-environments.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "time-series-insights-event-sources",
+      "label": "Time Series Insights Event Sources",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TSIE",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/time-series-insights-event-sources.svg",
+        "previewPath": "previews/time-series-insights-event-sources.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "time", "series", "insights", "event", "sources", "iot" ],
+      "metadata": {
+        "source.fileName": "Time-Series-Insights-event-sources.svg",
+        "source.path": "SVG/Time-Series-Insights-event-sources.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "time-series-insights-reference-data-sets",
+      "label": "Time Series Insights Reference Data Sets",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TSIR",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/time-series-insights-reference-data-sets.svg",
+        "previewPath": "previews/time-series-insights-reference-data-sets.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "time", "series", "insights", "reference", "data", "sets", "iot" ],
+      "metadata": {
+        "source.fileName": "Time-Series-Insights-reference-data-sets.svg",
+        "source.path": "SVG/Time-Series-Insights-reference-data-sets.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "traffic-light",
+      "label": "Traffic Light",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "TL",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/traffic-light.svg",
+        "previewPath": "previews/traffic-light.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "traffic", "light", "iot" ],
+      "metadata": {
+        "source.fileName": "Traffic-Light.svg",
+        "source.path": "SVG/Traffic-Light.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "van",
+      "label": "Van",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "V",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 496 496",
+        "svgPath": "svg/van.svg",
+        "previewPath": "previews/van.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "van", "iot" ],
+      "metadata": {
+        "source.fileName": "Van.svg",
+        "source.path": "SVG/Van.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 496 496"
+      }
+    },
+    {
+      "id": "vending-machine",
+      "label": "Vending Machine",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VM",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 512 512",
+        "svgPath": "svg/vending-machine.svg",
+        "previewPath": "previews/vending-machine.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "vending", "machine", "iot" ],
+      "metadata": {
+        "source.fileName": "Vending-Machine.svg",
+        "source.path": "SVG/Vending-Machine.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 512 512"
+      }
+    },
+    {
+      "id": "video-cameras-1",
+      "label": "Video Cameras #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VC#",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/video-cameras-1.svg",
+        "previewPath": "previews/video-cameras-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "video", "cameras", "iot" ],
+      "metadata": {
+        "source.fileName": "Video-Cameras-#1.svg",
+        "source.path": "SVG/Video-Cameras-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "video-cameras",
+      "label": "Video Cameras",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VC",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/video-cameras.svg",
+        "previewPath": "previews/video-cameras.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "video", "cameras", "iot" ],
+      "metadata": {
+        "source.fileName": "Video-Cameras.svg",
+        "source.path": "SVG/Video-Cameras.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "webcam-1",
+      "label": "Webcam #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W#",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/webcam-1.svg",
+        "previewPath": "previews/webcam-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "webcam", "iot" ],
+      "metadata": {
+        "source.fileName": "Webcam-#1.svg",
+        "source.path": "SVG/Webcam-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "windows-10-iot-core-services",
+      "label": "Windows 10 Iot Core Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W1IC",
+      "color": "#00A4EF",
+      "category": "IoT",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 108 108.31",
+        "svgPath": "svg/windows-10-iot-core-services.svg",
+        "previewPath": "previews/windows-10-iot-core-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "windows", "10", "iot", "core", "services" ],
+      "metadata": {
+        "source.fileName": "Windows-10-IoT-Core-Services.svg",
+        "source.path": "SVG/Windows-10-IoT-Core-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 108 108.31"
+      }
+    }
+  ]
+}

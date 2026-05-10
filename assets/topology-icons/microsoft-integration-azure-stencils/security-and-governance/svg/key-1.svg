@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45.2665 45.0364" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#aae9fb;stroke:none;stroke-linecap:butt;stroke-width:0.75}
+		.st2 {fill:none;stroke:#556a8a;stroke-linecap:butt;stroke-width:1.5}
+		.st3 {fill:#ffffff;stroke:#556a8a;stroke-linecap:butt;stroke-width:1.5}
+		.st4 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+
+
+		<g id="cfxi-microsoft-azure-stencils-security-and-governance-key-1-group1099-1" transform="translate(4.46969,-1.5)" v:mID="1099" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-key-1-shape1100-2" v:mID="1100" v:groupContext="shape">
+
+				<path d="M24.88 22.39 A14.3775 14.3775 -180 1 0 19.74 29.09 L19.74 33.79 L24.3 33.79 L24.3 39.04 L30.3 39.04 L30.3         45.04 L39.3 45.04 L39.3 36.29 L24.88 22.39 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-key-1-shape1101-4" v:mID="1101" v:groupContext="shape">
+
+				<path d="M24.88 22.39 A14.3775 14.3775 -180 1 0 19.74 29.09 L19.74 33.79 L24.3 33.79 L24.3 39.04 L30.3 39.04 L30.3         45.04 L39.3 45.04 L39.3 36.29 L24.88 22.39 Z" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-key-1-shape1102-6" v:mID="1102" v:groupContext="shape" transform="translate(4.61679,-29.895)">
+
+				<ellipse cx="3.0375" cy="41.9989" rx="3.0375" ry="3.0375" class="st3" />
+			</g>
+		</g>
+	</g>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792 612" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#013c5c;stroke:none;stroke-width:0.9375}
+		.st2 {fill:#bdd7ee;stroke:none;stroke-width:0.9375}
+		.st3 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26" />
+		</v:userDefs>
+
+
+		<g id="cfxi-microsoft-azure-stencils-others-photographic-camera-group1122-1" transform="translate(18,-542.594)" v:mID="1122" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-others-photographic-camera-shape1123-2" v:mID="1123" v:groupContext="shape" transform="translate(0,1172.59) scale(1,-1)">
+
+				<path d="M27.68 592.23 L27.68 596.18 L37.57 596.18 L37.57 612 L13.84 612 L13.84 596.18 L23.73 596.18 L23.73 592.23         L9.89 592.23 L9.89 594.2 L3.95 594.2 L3.95 592.23 L0 592.23 L0 560.59 L51.41 560.59 L51.41 592.23 L27.68         592.23 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-photographic-camera-shape1124-4" v:mID="1124" v:groupContext="shape" transform="translate(41.5217,1196.32) scale(1,-1)">
+
+				<path d="M5.93 610.02 L0 610.02 L0 612 L5.93 612 L5.93 610.02 Z" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-photographic-camera-shape1125-6" v:mID="1125" v:groupContext="shape" transform="translate(15.8185,1198.3) scale(1,-1)">
+
+				<path d="M9.88 592.23 C4.42 592.23 0 596.65 0 602.11 C0 607.57 4.42 612 9.88 612 C15.35 612 19.77 607.57 19.77 602.11         C19.77 596.65 15.35 592.23 9.88 592.23 Z" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-others-photographic-camera-shape1126-8" v:mID="1126" v:groupContext="shape" transform="translate(15.8179,1174.57) scale(1,-1)">
+
+				<path d="M0 600.14 L0 612 L19.77 612 L19.77 600.14 L0 600.14 Z" class="st2" />
+			</g>
+		</g>
+	</g>
+</svg>
