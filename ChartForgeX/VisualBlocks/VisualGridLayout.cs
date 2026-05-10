@@ -33,12 +33,13 @@ internal sealed class VisualGridLayout {
             if (grid.PanelSize.HasValue) break;
             var size = ItemSize(item);
             var columnSpan = Math.Min(item.ColumnSpan, columns);
-            panelWidth = Math.Max(panelWidth, (int)Math.Ceiling((size.Width - (columnSpan - 1) * grid.Gap) / (double)columnSpan));
+            var itemPanelWidth = grid.AdaptiveRowHeights ? (int)Math.Ceiling((size.Width - (columnSpan - 1) * grid.Gap) / (double)columnSpan) : size.Width;
+            panelWidth = Math.Max(panelWidth, itemPanelWidth);
             panelHeight = Math.Max(panelHeight, size.Height);
         }
 
         var theme = grid.Theme ?? ItemTheme(grid.Items[0]);
-        var headerHeight = grid.Title.Length == 0 && grid.Subtitle.Length == 0 ? 0 : Math.Max(54, (int)Math.Ceiling(theme.TitleFontSize + (grid.Subtitle.Length == 0 ? 0 : theme.SubtitleFontSize) + 20));
+        var headerHeight = grid.Title.Length == 0 && grid.Subtitle.Length == 0 ? 0 : Math.Max(76, (int)Math.Ceiling(theme.TitleFontSize + (grid.Subtitle.Length == 0 ? 0 : theme.SubtitleFontSize) + 37));
         var width = grid.Padding * 2 + columns * panelWidth + (columns - 1) * grid.Gap;
         var occupied = new List<bool[]>();
         var placements = new List<VisualGridPlacement>(grid.Items.Count);

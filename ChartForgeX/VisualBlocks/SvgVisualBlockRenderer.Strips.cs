@@ -13,15 +13,18 @@ public sealed partial class SvgVisualBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
-        var headerHeight = block.Header.Length > 0 ? 36.0 : 0;
+        var headerHeight = block.Header.Length > 0 || block.ShowNavigation ? 36.0 : 0;
         var navReserve = block.ShowNavigation ? 72.0 : 0;
-        if (block.Header.Length > 0) {
+        if (block.Header.Length > 0 || block.ShowNavigation) {
             writer.StartElement("g").Attribute("data-cfx-role", "date-strip-header").EndStartElement().Line();
-            writer.StartElement("rect").Attribute("data-cfx-role", "date-strip-calendar-badge").Attribute("x", content.X).Attribute("y", y + 3).Attribute("width", 22).Attribute("height", 22).Attribute("rx", 6).Attribute("fill", theme.Text.WithAlpha(24).ToCss()).Attribute("stroke", theme.Text.WithAlpha(85).ToCss()).EndEmptyElement().Line();
-            writer.StartElement("line").Attribute("x1", content.X + 5).Attribute("y1", y + 9).Attribute("x2", content.X + 17).Attribute("y2", y + 9).Attribute("stroke", theme.Text.ToCss()).Attribute("stroke-width", 1.4).EndEmptyElement().Line();
-            writer.StartElement("circle").Attribute("cx", content.X + 8).Attribute("cy", y + 15).Attribute("r", 1.5).Attribute("fill", theme.Text.ToCss()).EndEmptyElement().Line();
-            writer.StartElement("circle").Attribute("cx", content.X + 14).Attribute("cy", y + 15).Attribute("r", 1.5).Attribute("fill", theme.Text.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, block.Header, content.X + 32, y + 22, Math.Max(1, content.Width - 32 - navReserve), VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 1), "750");
+            if (block.Header.Length > 0) {
+                writer.StartElement("rect").Attribute("data-cfx-role", "date-strip-calendar-badge").Attribute("x", content.X).Attribute("y", y + 3).Attribute("width", 22).Attribute("height", 22).Attribute("rx", 6).Attribute("fill", theme.Text.WithAlpha(24).ToCss()).Attribute("stroke", theme.Text.WithAlpha(85).ToCss()).EndEmptyElement().Line();
+                writer.StartElement("line").Attribute("x1", content.X + 5).Attribute("y1", y + 9).Attribute("x2", content.X + 17).Attribute("y2", y + 9).Attribute("stroke", theme.Text.ToCss()).Attribute("stroke-width", 1.4).EndEmptyElement().Line();
+                writer.StartElement("circle").Attribute("cx", content.X + 8).Attribute("cy", y + 15).Attribute("r", 1.5).Attribute("fill", theme.Text.ToCss()).EndEmptyElement().Line();
+                writer.StartElement("circle").Attribute("cx", content.X + 14).Attribute("cy", y + 15).Attribute("r", 1.5).Attribute("fill", theme.Text.ToCss()).EndEmptyElement().Line();
+                WriteText(writer, block.Header, content.X + 32, y + 22, Math.Max(1, content.Width - 32 - navReserve), VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 1), "750");
+            }
+
             if (block.ShowNavigation) {
                 var navY = y + 2;
                 RenderDateNavButton(writer, block.PreviousSymbol, content.X + content.Width - 66, navY, 28, theme, muted: true);
@@ -73,10 +76,15 @@ public sealed partial class SvgVisualBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         var actionWidth = block.ActionLabel.Length == 0 ? 0 : Math.Min(120, VisualBlockRendering.EstimateTextWidth(block.ActionSymbol + " " + block.ActionLabel, theme.SubtitleFontSize + 1) + 12);
-        if (block.Title.Length > 0) {
+        if (block.Title.Length > 0 || block.ActionLabel.Length > 0) {
             var titleSize = Math.Max(14, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 8));
-            WriteText(writer, block.Title, content.X, y + titleSize * 0.75, Math.Max(1, content.Width - actionWidth - 10), VisualTextAlignment.Left, theme.Text, theme.FontFamily, titleSize, "800");
-            if (block.ActionLabel.Length > 0) WriteText(writer, block.ActionSymbol + " " + block.ActionLabel, content.X + content.Width - actionWidth, y + titleSize * 0.75, actionWidth, VisualTextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
+            if (block.Title.Length > 0) WriteText(writer, block.Title, content.X, y + titleSize * 0.75, Math.Max(1, content.Width - actionWidth - 10), VisualTextAlignment.Left, theme.Text, theme.FontFamily, titleSize, "800");
+            if (block.ActionLabel.Length > 0) {
+                if (block.ActionUrl.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "entity-strip-action-link").Attribute("href", block.ActionUrl).Attribute("target", "_top").EndStartElement().Line();
+                WriteText(writer, block.ActionSymbol + " " + block.ActionLabel, content.X + content.Width - actionWidth, y + titleSize * 0.75, actionWidth, VisualTextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
+                if (block.ActionUrl.Length > 0) writer.EndElement().Line();
+            }
+
             y += titleSize + 14;
         }
 
@@ -115,6 +123,10 @@ public sealed partial class SvgVisualBlockRenderer {
         var actionWidth = actionText.Length == 0 ? 0 : Math.Min(150, VisualBlockRendering.EstimateTextWidth(actionText, Math.Max(12, theme.SubtitleFontSize + 1)) + 12);
         var baseline = content.Y + content.Height * 0.60;
         writer.StartElement("text").Attribute("data-cfx-role", "section-header-title").Attribute("x", content.X).Attribute("y", baseline).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", titleSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(block.Title, titleSize, Math.Max(1, content.Width - actionWidth - 12))).EndElement().Line();
-        if (actionText.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "section-header-action").Attribute("x", content.X + content.Width).Attribute("y", baseline).Attribute("text-anchor", "end").Attribute("fill", VisualBlockRendering.PaletteAt(theme, 0).ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", Math.Max(12, theme.SubtitleFontSize + 1)).Attribute("font-weight", "750").Text(VisualBlockRendering.FitText(actionText, Math.Max(12, theme.SubtitleFontSize + 1), actionWidth)).EndElement().Line();
+        if (actionText.Length > 0) {
+            if (block.ActionUrl.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "section-header-action-link").Attribute("href", block.ActionUrl).Attribute("target", "_top").EndStartElement().Line();
+            writer.StartElement("text").Attribute("data-cfx-role", "section-header-action").Attribute("x", content.X + content.Width).Attribute("y", baseline).Attribute("text-anchor", "end").Attribute("fill", VisualBlockRendering.PaletteAt(theme, 0).ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", Math.Max(12, theme.SubtitleFontSize + 1)).Attribute("font-weight", "750").Text(VisualBlockRendering.FitText(actionText, Math.Max(12, theme.SubtitleFontSize + 1), actionWidth)).EndElement().Line();
+            if (block.ActionUrl.Length > 0) writer.EndElement().Line();
+        }
     }
 }

@@ -10,7 +10,7 @@ public sealed partial class SvgVisualBlockRenderer {
     private static void RenderMetricValueSurface(SvgMarkupWriter writer, MetricCard card, ChartRect content, double detailBottom, double labelSize, double valueSize, double valueWidth, ChartColor statusColor) {
         var theme = card.Options.Theme;
         var y = content.Y + labelSize + 18;
-        var height = Math.Max(54, detailBottom - y - 4);
+        var height = Math.Max(1, detailBottom - y - 4);
         var radius = Math.Min(20, Math.Max(14, theme.PlotCornerRadius + 7));
         writer.StartElement("rect").Attribute("data-cfx-role", "metric-value-surface").Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", height).Attribute("rx", radius).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.WithAlpha(140).ToCss()).EndEmptyElement().Line();
         var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
@@ -28,18 +28,20 @@ public sealed partial class SvgVisualBlockRenderer {
             valueX = cx + badgeRadius + 24;
         }
 
-        RenderMetricValueText(writer, card, valueX, y + height * 0.5 + valueSize * 0.34, valueSize, valueWidth, theme.Text, theme.MutedText);
+        var surfaceValueWidth = Math.Max(1, Math.Min(valueWidth, content.X + content.Width - valueX - 22));
+        RenderMetricValueText(writer, card, valueX, y + height * 0.5 + valueSize * 0.34, valueSize, surfaceValueWidth, theme.Text, theme.MutedText);
     }
 
     private static void RenderMetricValueText(SvgMarkupWriter writer, MetricCard card, double x, double y, double valueSize, double maxWidth, ChartColor valueColor, ChartColor unitColor) {
         var unitSize = MetricUnitFontSize(valueSize);
         var gap = card.Unit.Length == 0 ? 0 : Math.Max(6, valueSize * 0.14);
-        var unitWidth = card.Unit.Length == 0 ? 0 : VisualBlockRendering.EstimateTextWidth(card.Unit, unitSize);
-        var valueWidth = Math.Max(1, maxWidth - unitWidth - gap);
+        var desiredUnitWidth = card.Unit.Length == 0 ? 0 : VisualBlockRendering.EstimateTextWidth(card.Unit, unitSize);
+        var valueWidth = Math.Max(1, maxWidth - desiredUnitWidth - gap);
         var fittedValue = VisualBlockRendering.FitText(card.Value, valueSize, valueWidth);
         writer.StartElement("text").Attribute("data-cfx-role", "metric-value").Attribute("x", x).Attribute("y", y).Attribute("fill", valueColor.ToCss()).Attribute("font-family", card.Options.Theme.FontFamily).Attribute("font-size", valueSize).Attribute("font-weight", "850").Text(fittedValue).EndElement().Line();
         if (card.Unit.Length == 0) return;
         var valueTextWidth = VisualBlockRendering.EstimateTextWidth(fittedValue, valueSize);
+        var unitWidth = Math.Max(1, maxWidth - valueTextWidth - gap);
         writer.StartElement("text").Attribute("data-cfx-role", "metric-unit").Attribute("x", x + valueTextWidth + gap).Attribute("y", y).Attribute("fill", unitColor.ToCss()).Attribute("font-family", card.Options.Theme.FontFamily).Attribute("font-size", unitSize).Attribute("font-weight", "650").Text(VisualBlockRendering.FitText(card.Unit, unitSize, unitWidth)).EndElement().Line();
     }
 

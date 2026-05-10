@@ -311,7 +311,7 @@ internal static class VisualBlockRendering {
     public static int MiniBarHighlightIndex(MetricCard card) => card.MiniBarHighlightIndex ?? card.MiniBars.Count - 1;
 
     public static (double Minimum, double Maximum) MiniSparklineBounds(MetricCard card) {
-        if (card.SecondaryMiniSparkline.Count == 0) return ValueBounds(card.MiniSparkline, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: false);
+        if (card.SecondaryMiniSparkline.Count == 0 || card.MiniSparklineStyle != MetricCardSparklineStyle.Line) return ValueBounds(card.MiniSparkline, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: false);
         var values = new List<double>(card.MiniSparkline.Count + card.SecondaryMiniSparkline.Count);
         values.AddRange(card.MiniSparkline);
         values.AddRange(card.SecondaryMiniSparkline);

@@ -277,6 +277,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         }
 
         if (_miniSparkline.Count < 2) throw new ArgumentException("Metric card mini sparklines require at least two values.", nameof(values));
+        if (_secondaryMiniSparkline.Count > 0 && _secondaryMiniSparkline.Count != _miniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
         MiniSparklineMinimum = minimum;
         MiniSparklineMaximum = maximum;
         MiniSparklineColor = color;
@@ -294,7 +295,6 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         MiniSparklineColor = null;
         MiniSparklineFillColor = null;
         SecondaryMiniSparklineColor = null;
-        MiniSparklineStyle = MetricCardSparklineStyle.Area;
         return this;
     }
 
@@ -332,6 +332,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         }
 
         if (_secondaryMiniSparkline.Count < 2) throw new ArgumentException("Metric card secondary mini sparklines require at least two values.", nameof(values));
+        if (_miniSparkline.Count > 0 && _secondaryMiniSparkline.Count != _miniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
         SecondaryMiniSparklineColor = color;
         return this;
     }

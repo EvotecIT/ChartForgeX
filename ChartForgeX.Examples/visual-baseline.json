@@ -1746,6 +1746,22 @@
       }
     },
     {
+      "name": "wellness-weekly-progress-dashboard",
+      "width": 820,
+      "height": 1002,
+      "svg": {
+        "minVisualNodes": 128,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 1
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 3286560,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "wellness-weight-data-gauge",
       "width": 560,
       "height": 420,

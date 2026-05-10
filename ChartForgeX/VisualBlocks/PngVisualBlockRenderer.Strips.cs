@@ -14,13 +14,16 @@ public sealed partial class PngVisualBlockRenderer {
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
         var navReserve = block.ShowNavigation ? 72.0 : 0;
-        if (block.Header.Length > 0) {
-            canvas.FillRoundedRect(content.X, y + 3, 22, 22, 6, theme.Text.WithAlpha(24));
-            canvas.StrokeRoundedRect(content.X, y + 3, 22, 22, 6, theme.Text.WithAlpha(85));
-            canvas.DrawLine(content.X + 5, y + 9, content.X + 17, y + 9, theme.Text, 1.4);
-            canvas.DrawCircle(content.X + 8, y + 15, 1.5, theme.Text);
-            canvas.DrawCircle(content.X + 14, y + 15, 1.5, theme.Text);
-            DrawAlignedText(canvas, block.Header, content.X + 32, y + 7, Math.Max(1, content.Width - 32 - navReserve), VisualTextAlignment.Left, theme.Text, Math.Max(13, theme.SubtitleFontSize + 1), true);
+        if (block.Header.Length > 0 || block.ShowNavigation) {
+            if (block.Header.Length > 0) {
+                canvas.FillRoundedRect(content.X, y + 3, 22, 22, 6, theme.Text.WithAlpha(24));
+                canvas.StrokeRoundedRect(content.X, y + 3, 22, 22, 6, theme.Text.WithAlpha(85));
+                canvas.DrawLine(content.X + 5, y + 9, content.X + 17, y + 9, theme.Text, 1.4);
+                canvas.DrawCircle(content.X + 8, y + 15, 1.5, theme.Text);
+                canvas.DrawCircle(content.X + 14, y + 15, 1.5, theme.Text);
+                DrawAlignedText(canvas, block.Header, content.X + 32, y + 7, Math.Max(1, content.Width - 32 - navReserve), VisualTextAlignment.Left, theme.Text, Math.Max(13, theme.SubtitleFontSize + 1), true);
+            }
+
             if (block.ShowNavigation) {
                 DrawDateNavButton(canvas, block.PreviousSymbol, content.X + content.Width - 66, y + 2, 28, theme, muted: true);
                 DrawDateNavButton(canvas, block.NextSymbol, content.X + content.Width - 30, y + 2, 28, theme, muted: false);
@@ -67,9 +70,9 @@ public sealed partial class PngVisualBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         var actionWidth = block.ActionLabel.Length == 0 ? 0 : Math.Min(120, RgbaCanvas.MeasureTextEmphasizedWidth(block.ActionSymbol + " " + block.ActionLabel, theme.SubtitleFontSize + 1, null) + 12);
-        if (block.Title.Length > 0) {
+        if (block.Title.Length > 0 || block.ActionLabel.Length > 0) {
             var titleSize = Math.Max(14, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 8));
-            DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 10), VisualTextAlignment.Left, theme.Text, titleSize, true);
+            if (block.Title.Length > 0) DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 10), VisualTextAlignment.Left, theme.Text, titleSize, true);
             if (block.ActionLabel.Length > 0) DrawAlignedText(canvas, block.ActionSymbol + " " + block.ActionLabel, content.X + content.Width - actionWidth, y + 1, actionWidth, VisualTextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(12, theme.SubtitleFontSize + 1), true);
             y += titleSize + 14;
         }

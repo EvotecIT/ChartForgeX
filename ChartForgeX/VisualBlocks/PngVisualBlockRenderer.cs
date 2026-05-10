@@ -188,18 +188,19 @@ public sealed partial class PngVisualBlockRenderer {
             var surfaceX = content.X;
             var surfaceY = microY - 18;
             var surfaceWidth = content.Width;
-            var surfaceHeight = Math.Max(88, detailBottom - surfaceY - 24);
+            var availableSurfaceHeight = Math.Max(1, detailBottom - surfaceY - 4);
+            var surfaceHeight = Math.Min(Math.Max(88, detailBottom - surfaceY - 24), availableSurfaceHeight);
             canvas.FillRoundedRectVerticalGradient(surfaceX, surfaceY, surfaceWidth, surfaceHeight, Math.Min(18, theme.PlotCornerRadius + 6), ChartSurfacePolish.GradientTop(theme.PlotBackground.WithAlpha(170)), ChartSurfacePolish.GradientBottom(theme.PlotBackground.WithAlpha(170)));
             canvas.StrokeRoundedRect(surfaceX, surfaceY, surfaceWidth, surfaceHeight, Math.Min(18, theme.PlotCornerRadius + 6), theme.PlotBorder.WithAlpha(125), 1);
             microX = surfaceX + 28;
-            microY = surfaceY + 32;
+            microY = surfaceY + Math.Min(32, Math.Max(10, surfaceHeight * 0.36));
             microWidth = Math.Max(1, surfaceWidth - 56);
-            microHeight = Math.Max(34, surfaceHeight - 58);
+            microHeight = Math.Max(1, surfaceHeight - (microY - surfaceY) - 18);
         }
 
         if (card.MiniSparkline.Count > 0) DrawMetricMiniSparkline(canvas, card, microX, microY, microWidth, microHeight);
         else if (card.MiniBars.Count > 0) DrawMetricMiniBars(canvas, card, microX, microY, microWidth, microHeight);
-        var detailsTop = content.Y + labelSize + valueSize + 24 + valueYOffset;
+        var detailsTop = heroMicroVisual ? microY + microHeight + 10 : content.Y + labelSize + valueSize + 24 + valueYOffset;
         DrawMetricDetails(canvas, card, content, detailsTop, detailBottom);
         DrawMetricDetail(canvas, card, detailBottom, content.X, content.Width);
         if (hasAction) DrawMetricAction(canvas, card, footerY, footerHeight, content.X, content.Width);
@@ -247,7 +248,7 @@ public sealed partial class PngVisualBlockRenderer {
         var points = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? VisualBlockRendering.SmoothMiniSparklinePoints(sparkline) : sparkline.Points;
         if (card.MiniSparklineStyle == MetricCardSparklineStyle.Area) canvas.FillPolygon(sparkline.Area, sparkline.FillColor);
         else if (card.SecondaryMiniSparkline.Count > 0) {
-            var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y + 6, width, height);
+            var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
             var secondaryPoints = VisualBlockRendering.SmoothMiniSparklinePoints(secondary);
             for (var i = 1; i < secondaryPoints.Count; i++) canvas.DrawLine(secondaryPoints[i - 1].X, secondaryPoints[i - 1].Y, secondaryPoints[i].X, secondaryPoints[i].Y, secondary.LineColor, Math.Max(1.8, secondary.StrokeWidth * 0.72));
         }

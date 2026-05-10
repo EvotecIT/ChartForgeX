@@ -105,6 +105,27 @@ internal static partial class SmokeTests {
         Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-unit\"", StringComparison.Ordinal), "MetricCard should render optional metric units separately from emphasized values.");
         Assert(valueSurfaceMetric.ToPng().Length > 64, "MetricCard compact value surfaces should render PNG output.");
 
+        var narrowValueSurfaceMetric = MetricCard.Create()
+            .WithMetric("Energy", "123456789", unit: "kilocalories-per-day")
+            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .WithSize(210, 140);
+        var narrowValueSurfaceSvg = narrowValueSurfaceMetric.ToSvg("visual-block-metric-narrow-value-surface");
+        Assert(narrowValueSurfaceSvg.Contains("data-cfx-role=\"metric-unit\"", StringComparison.Ordinal), "MetricCard narrow value surfaces should still render unit text.");
+        Assert(!narrowValueSurfaceSvg.Contains("kilocalories-per-day", StringComparison.Ordinal) && narrowValueSurfaceSvg.Contains("...", StringComparison.Ordinal), "MetricCard value surfaces should fit unit text to the remaining inset width.");
+        Assert(narrowValueSurfaceMetric.ToPng().Length > 64, "MetricCard narrow value surfaces should render PNG output.");
+
+        var compactValueSurfaceMetric = MetricCard.Create()
+            .WithMetric("Compact", "123", unit: "kilocalories-per-day")
+            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .WithSize(210, 90);
+        var compactValueSurfaceSvg = compactValueSurfaceMetric.ToSvg("visual-block-metric-compact-value-surface");
+        var compactValueSurface = System.Text.RegularExpressions.Regex.Match(compactValueSurfaceSvg, "data-cfx-role=\"metric-value-surface\"[^>]*y=\"([^\"]+)\"[^>]*height=\"([^\"]+)\"");
+        Assert(compactValueSurface.Success, "MetricCard compact inset values should render a measurable value surface.");
+        var compactValueSurfaceY = double.Parse(compactValueSurface.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        var compactValueSurfaceHeight = double.Parse(compactValueSurface.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert(compactValueSurfaceY + compactValueSurfaceHeight <= 90, "MetricCard compact inset value surfaces should stay within the card bounds.");
+        Assert(compactValueSurfaceMetric.ToPng().Length > 64, "MetricCard compact inset values should render PNG output.");
+
         var sparkMetric = MetricCard.Create()
             .WithMetric("Network", "842 Mbps")
             .WithStatus(VisualStatus.Info)
@@ -114,6 +135,15 @@ internal static partial class SmokeTests {
         Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-current\"", StringComparison.Ordinal), "MetricCard sparklines should mark the current value.");
         Assert(sparkSvg.Contains("842 Mbps", StringComparison.Ordinal), "MetricCard should shrink long values enough to fit beside micro visuals.");
         Assert(sparkMetric.ToPng().Length > 64, "MetricCard sparkline should render PNG output.");
+
+        var areaSparkMetric = MetricCard.Create()
+            .WithMetric("Hydration", "4.5 L")
+            .WithMiniSparkline(new[] { 1d, 2d, 3d })
+            .WithSecondaryMiniSparkline(new[] { 100d, 120d, 140d });
+        var areaSparkSvg = areaSparkMetric.ToSvg("visual-block-metric-area-sparkline");
+        Assert(areaSparkSvg.Contains("data-cfx-style=\"area\"", StringComparison.Ordinal), "MetricCard should keep the default filled area sparkline style.");
+        Assert(areaSparkSvg.Contains("data-cfx-max=\"3\"", StringComparison.Ordinal), "Area-style MetricCard sparklines should derive bounds from the visible primary series only.");
+        Assert(!areaSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-secondary\"", StringComparison.Ordinal), "Area-style MetricCard sparklines should not render hidden secondary series.");
 
         var heroSparkMetric = MetricCard.Create()
             .WithMetric("Running", "30 mins")
@@ -129,6 +159,30 @@ internal static partial class SmokeTests {
         Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-secondary\"", StringComparison.Ordinal), "MetricCard should render a true secondary sparkline series.");
         Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-start\"", StringComparison.Ordinal), "MetricCard line-style sparklines should mark the starting value.");
         Assert(heroSparkMetric.ToPng().Length > 64, "MetricCard hero line sparkline should render PNG output.");
+
+        var compactHeroSparkMetric = MetricCard.Create()
+            .WithMetric("Compact", "10")
+            .WithMiniSparkline(new[] { 2d, 5d, 3d, 8d })
+            .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
+            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .AddDetail("Ready", "84%")
+            .WithSize(260, 140);
+        var compactHeroSparkSvg = compactHeroSparkMetric.ToSvg("visual-block-metric-compact-hero-sparkline");
+        var compactSurface = System.Text.RegularExpressions.Regex.Match(compactHeroSparkSvg, "data-cfx-role=\"metric-micro-surface\"[^>]*y=\"([^\"]+)\"[^>]*height=\"([^\"]+)\"");
+        Assert(compactSurface.Success, "MetricCard compact hero inset sparklines should render a measurable inset surface.");
+        var compactSurfaceY = double.Parse(compactSurface.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        var compactSurfaceHeight = double.Parse(compactSurface.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert(compactSurfaceY + compactSurfaceHeight <= 140, "MetricCard compact hero inset surfaces should stay within the card bounds.");
+        Assert(!compactHeroSparkSvg.Contains("data-cfx-role=\"metric-detail\"", StringComparison.Ordinal), "MetricCard compact hero sparklines should skip detail pills when there is no non-overlapping space.");
+        Assert(compactHeroSparkMetric.ToPng().Length > 64, "MetricCard compact hero sparkline should render PNG output.");
+
+        var retainedSparklineStyleMetric = MetricCard.Create()
+            .WithMetric("Style", "1")
+            .WithMiniSparkline(new[] { 1d, 2d })
+            .WithMiniSparklineStyle(MetricCardSparklineStyle.Line)
+            .WithoutMiniSparkline()
+            .WithMiniSparkline(new[] { 2d, 4d });
+        Assert(retainedSparklineStyleMetric.ToSvg("visual-block-metric-retained-sparkline-style").Contains("data-cfx-style=\"line\"", StringComparison.Ordinal), "MetricCard should preserve configured sparkline style after clearing and replacing sparkline data.");
 
         var radialMetric = RadialMetricCard.Create()
             .WithMetric("Capacity left", "42%")
@@ -234,6 +288,16 @@ internal static partial class SmokeTests {
         Assert(dateStrip.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "DateStripBlock should render an embeddable HTML fragment.");
         Assert(dateStrip.ToPng().Length > 64, "DateStripBlock should render PNG output.");
 
+        var navOnlyDateStrip = DateStripBlock.Create()
+            .WithNavigation()
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 150)
+            .AddItem("S", "9", selected: true, color: ChartColor.FromHex("#0F83F7"))
+            .AddItem("M", "10");
+        var navOnlyDateStripSvg = navOnlyDateStrip.ToSvg("visual-block-date-strip-nav-only");
+        Assert(navOnlyDateStripSvg.Contains("data-cfx-role=\"date-strip-nav\"", StringComparison.Ordinal), "DateStripBlock navigation should render even when no header text is configured.");
+        Assert(navOnlyDateStrip.ToPng().Length > 64, "DateStripBlock navigation-only headers should render PNG output.");
+
         var entityStrip = EntityStripBlock.Create()
             .WithTitle("Duel with friends")
             .WithAction("New")
@@ -248,9 +312,19 @@ internal static partial class SmokeTests {
         Assert(entityStrip.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "EntityStripBlock should render an embeddable HTML fragment.");
         Assert(entityStrip.ToPng().Length > 64, "EntityStripBlock should render PNG output.");
 
+        var actionOnlyEntityStrip = EntityStripBlock.Create()
+            .WithAction("Open", url: "#friends")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 150)
+            .AddItem("Karrem", color: ChartColor.FromHex("#0F83F7"))
+            .AddItem("Peter", avatarText: "P", color: ChartColor.FromHex("#FF7A1A"));
+        var actionOnlyEntityStripSvg = actionOnlyEntityStrip.ToSvg("visual-block-entity-strip-action-only");
+        Assert(actionOnlyEntityStripSvg.Contains("data-cfx-role=\"entity-strip-action-link\"", StringComparison.Ordinal) && actionOnlyEntityStripSvg.Contains("href=\"#friends\"", StringComparison.Ordinal), "EntityStripBlock should render linked actions even when no title is configured.");
+        Assert(actionOnlyEntityStrip.ToPng().Length > 64, "EntityStripBlock action-only headers should render PNG output.");
+
         var sectionHeader = SectionHeaderBlock.Create()
             .WithTitle("Today's Goals")
-            .WithAction("See all")
+            .WithAction("See all", url: "#goals")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(620, 48)
             .WithCard(false)
@@ -258,6 +332,7 @@ internal static partial class SmokeTests {
         var sectionHeaderSvg = sectionHeader.ToSvg("visual-block-section-header");
         Assert(sectionHeaderSvg.Contains("data-cfx-role=\"section-header-title\"", StringComparison.Ordinal), "SectionHeaderBlock should render a public title role.");
         Assert(sectionHeaderSvg.Contains("data-cfx-role=\"section-header-action\"", StringComparison.Ordinal), "SectionHeaderBlock should render optional trailing actions.");
+        Assert(sectionHeaderSvg.Contains("data-cfx-role=\"section-header-action-link\"", StringComparison.Ordinal) && sectionHeaderSvg.Contains("href=\"#goals\"", StringComparison.Ordinal), "SectionHeaderBlock should render safe linked actions in SVG/HTML outputs.");
         Assert(sectionHeader.ToPng().Length > 64, "SectionHeaderBlock should render PNG output.");
 
         var workload = WorkloadListBlock.Create()

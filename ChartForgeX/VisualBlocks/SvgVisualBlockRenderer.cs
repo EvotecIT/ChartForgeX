@@ -221,17 +221,18 @@ public sealed partial class SvgVisualBlockRenderer {
             var surfaceX = content.X;
             var surfaceY = microY - 18;
             var surfaceWidth = content.Width;
-            var surfaceHeight = Math.Max(88, detailBottom - surfaceY - 24);
+            var availableSurfaceHeight = Math.Max(1, detailBottom - surfaceY - 4);
+            var surfaceHeight = Math.Min(Math.Max(88, detailBottom - surfaceY - 24), availableSurfaceHeight);
             writer.StartElement("rect").Attribute("data-cfx-role", "metric-micro-surface").Attribute("x", surfaceX).Attribute("y", surfaceY).Attribute("width", surfaceWidth).Attribute("height", surfaceHeight).Attribute("rx", Math.Min(18, theme.PlotCornerRadius + 6)).Attribute("fill", theme.PlotBackground.WithAlpha(170).ToCss()).Attribute("stroke", theme.PlotBorder.WithAlpha(125).ToCss()).EndEmptyElement().Line();
             microX = surfaceX + 28;
-            microY = surfaceY + 32;
+            microY = surfaceY + Math.Min(32, Math.Max(10, surfaceHeight * 0.36));
             microWidth = Math.Max(1, surfaceWidth - 56);
-            microHeight = Math.Max(34, surfaceHeight - 58);
+            microHeight = Math.Max(1, surfaceHeight - (microY - surfaceY) - 18);
         }
 
         if (card.MiniSparkline.Count > 0) RenderMetricMiniSparkline(writer, card, microX, microY, microWidth, microHeight);
         else if (card.MiniBars.Count > 0) RenderMetricMiniBars(writer, card, microX, microY, microWidth, microHeight);
-        var detailsTop = content.Y + labelSize + valueSize + 22 + valueYOffset;
+        var detailsTop = heroMicroVisual ? microY + microHeight + 10 : content.Y + labelSize + valueSize + 22 + valueYOffset;
         RenderMetricDetails(writer, card, content, detailsTop, detailBottom);
         RenderMetricDetail(writer, card, detailBottom, content.X, content.Width);
         if (hasAction) RenderMetricAction(writer, card, footerY, footerHeight, content.X, content.Width);
@@ -310,7 +311,7 @@ public sealed partial class SvgVisualBlockRenderer {
         } else {
             var path = SparklineSmoothPath(sparkline.Points, 0);
             if (card.SecondaryMiniSparkline.Count > 0) {
-                var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y + 6, width, height);
+                var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
                 writer.StartElement("path").Attribute("data-cfx-role", "metric-mini-sparkline-secondary").Attribute("d", SparklineSmoothPath(secondary.Points, 0)).Attribute("fill", "none").Attribute("stroke", secondary.LineColor.ToCss()).Attribute("stroke-width", Math.Max(1.8, secondary.StrokeWidth * 0.72)).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
             }
 

@@ -10,7 +10,7 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawMetricValueSurface(RgbaCanvas canvas, MetricCard card, ChartRect content, double detailBottom, double labelSize, double valueSize, double valueWidth, ChartColor statusColor) {
         var theme = card.Options.Theme;
         var y = content.Y + labelSize + 18;
-        var height = Math.Max(54, detailBottom - y - 4);
+        var height = Math.Max(1, detailBottom - y - 4);
         var radius = Math.Min(20, Math.Max(14, theme.PlotCornerRadius + 7));
         canvas.FillRoundedRectVerticalGradient(content.X, y, content.Width, height, radius, ChartSurfacePolish.GradientTop(theme.PlotBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
         canvas.StrokeRoundedRect(content.X, y, content.Width, height, radius, theme.PlotBorder.WithAlpha(140), 1);
@@ -33,18 +33,20 @@ public sealed partial class PngVisualBlockRenderer {
             valueX = cx + badgeRadius + 24;
         }
 
-        DrawMetricValueText(canvas, card, valueX, y + (height - valueSize) * 0.52, valueSize, valueWidth, theme.Text, theme.MutedText);
+        var surfaceValueWidth = Math.Max(1, Math.Min(valueWidth, content.X + content.Width - valueX - 22));
+        DrawMetricValueText(canvas, card, valueX, y + (height - valueSize) * 0.52, valueSize, surfaceValueWidth, theme.Text, theme.MutedText);
     }
 
     private static void DrawMetricValueText(RgbaCanvas canvas, MetricCard card, double x, double y, double valueSize, double maxWidth, ChartColor valueColor, ChartColor unitColor) {
         var unitSize = MetricUnitFontSize(valueSize);
         var gap = card.Unit.Length == 0 ? 0 : Math.Max(6, valueSize * 0.14);
-        var unitWidth = card.Unit.Length == 0 ? 0 : RgbaCanvas.MeasureTextWidth(card.Unit, unitSize, null);
-        var valueWidth = Math.Max(1, maxWidth - unitWidth - gap);
+        var desiredUnitWidth = card.Unit.Length == 0 ? 0 : RgbaCanvas.MeasureTextWidth(card.Unit, unitSize, null);
+        var valueWidth = Math.Max(1, maxWidth - desiredUnitWidth - gap);
         var fittedValue = FitText(card.Value, valueSize, valueWidth);
         canvas.DrawTextEmphasized(x, y, fittedValue, valueColor, valueSize);
         if (card.Unit.Length == 0) return;
         var valueTextWidth = RgbaCanvas.MeasureTextEmphasizedWidth(fittedValue, valueSize, null);
+        var unitWidth = Math.Max(1, maxWidth - valueTextWidth - gap);
         canvas.DrawText(x + valueTextWidth + gap, y + valueSize * 0.42, FitText(card.Unit, unitSize, unitWidth), unitColor, unitSize);
     }
 
