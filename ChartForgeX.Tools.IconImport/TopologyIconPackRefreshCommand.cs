@@ -191,7 +191,41 @@ internal static class TopologyIconPackRefreshCommand {
     }
 
     private static string EscapeJson(string value) {
-        return value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+        var builder = new System.Text.StringBuilder(value.Length + 8);
+        foreach (var character in value) {
+            switch (character) {
+                case '\\':
+                    builder.Append("\\\\");
+                    break;
+                case '"':
+                    builder.Append("\\\"");
+                    break;
+                case '\b':
+                    builder.Append("\\b");
+                    break;
+                case '\f':
+                    builder.Append("\\f");
+                    break;
+                case '\n':
+                    builder.Append("\\n");
+                    break;
+                case '\r':
+                    builder.Append("\\r");
+                    break;
+                case '\t':
+                    builder.Append("\\t");
+                    break;
+                default:
+                    if (char.IsControl(character)) {
+                        builder.Append("\\u");
+                        builder.Append(((int)character).ToString("x4", CultureInfo.InvariantCulture));
+                    } else {
+                        builder.Append(character);
+                    }
+                    break;
+            }
+        }
+        return builder.ToString();
     }
 
     internal sealed class RefreshOptions {

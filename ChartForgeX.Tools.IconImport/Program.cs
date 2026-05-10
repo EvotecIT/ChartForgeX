@@ -123,7 +123,7 @@ internal static partial class Program {
         foreach (var icon in pack.Icons.Where(icon => icon.Artwork != null && icon.Artwork.HasSvgPath)) {
             var outputPath = Path.Combine(previewRoot, icon.Id + ".png");
             try {
-                RenderSvgToPng(Path.Combine(packOutput, icon.Artwork!.SvgPath!.Replace('/', Path.DirectorySeparatorChar)), outputPath, size);
+                RenderSvgToPng(Path.Combine(packOutput, NormalizeAssetPath(icon.Artwork!.SvgPath!)), outputPath, size);
                 icon.Artwork!.PreviewPath = "previews/" + icon.Id + ".png";
                 written++;
             } catch (Exception exception) when (exception is InvalidOperationException || exception is IOException || exception is ArgumentException) {
@@ -133,6 +133,10 @@ internal static partial class Program {
         }
 
         return new PreviewReport(written, failed, errors);
+    }
+
+    private static string NormalizeAssetPath(string path) {
+        return path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
     }
 
     private static void RenderSvgToPng(string sourcePath, string outputPath, int size) {
