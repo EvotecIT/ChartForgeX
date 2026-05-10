@@ -7,7 +7,7 @@ Current visual-block primitives:
 - `ChartTable` for structured rows, columns, headers, alignment, formattable values, row striping, status columns, conditional row/cell colors, dense mode, table-cell badges/chips, mini bars/sparklines, transparent backgrounds, and SVG/PNG/HTML export.
 - `ChartList` for bullets, numbered lists, key/value rows, checklists, status lists, and compact inventory summaries.
 - `MetricCard` for one KPI with label, value, trend, status, optional comparison/supporting text, footer action text, and embedded mini bars or sparklines for compact history/current-state cards.
-- `SegmentedProgressCard` for dashboard cards with fixed-count segmented progress rows, delta pills, optional header symbol/menu chrome, and optional footer actions.
+- `SegmentedProgressCard` for dashboard cards with fixed-count segmented progress rows, dimensional tick chrome, delta pills, optional header symbol/menu chrome, and optional footer actions.
 - `CompositionStatusCard` for part-to-whole status cards with a stacked strip, legend rows, values, units, optional pattern hints, and optional footer actions.
 - `DistributionStripCard` for analytics cards with a stacked share strip, legend chips, row symbols, percentage rings, and trailing detail values.
 - `HeatmapInsightCard` for dashboard matrix cards with controls, value cells, a right-side insight rail, and a color key.
@@ -160,7 +160,7 @@ var attendance = Chart.Create()
     .WithDashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
 ```
 
-Segmented progress cards provide fixed-count progress rows for screenshot-style project cards:
+Segmented progress cards provide fixed-count progress rows for screenshot-style project cards. Filled and empty ticks include renderer-owned shadow/highlight layers, so cards can keep the soft reference look in both SVG and PNG without hand-drawing rectangles:
 
 ```csharp
 var progress = SegmentedProgressCard.Create()

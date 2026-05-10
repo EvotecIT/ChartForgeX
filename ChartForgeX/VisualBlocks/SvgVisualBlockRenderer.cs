@@ -318,7 +318,7 @@ public sealed partial class SvgVisualBlockRenderer {
         if (card.HeaderSymbol.Length > 0 || card.ShowMenu) RenderSegmentedProgressHeader(writer, card, ref y, content.X, content.Width);
         else RenderBlockHeading(writer, card, ref y, content.X, content.Width);
         var hasAction = card.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.16)) : 0;
+        var footerHeight = hasAction ? Math.Min(58, Math.Max(42, options.Size.Height * 0.16)) : 0;
         var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
         var rowHeight = Math.Max(48, Math.Min(72, (bottom - y) / Math.Max(1, card.Rows.Count)));
         writer.StartElement("g").Attribute("data-cfx-role", "segmented-progress-card").EndStartElement().Line();
@@ -364,19 +364,44 @@ public sealed partial class SvgVisualBlockRenderer {
         var gap = row.Segments > 50 ? 2.0 : 3.0;
         var segmentWidth = Math.Max(2, (width - gap * (row.Segments - 1)) / row.Segments);
         var filled = VisualBlockRendering.FilledSegments(row);
-        var empty = theme.PlotBackground.A > 0 ? theme.PlotBackground : theme.MutedText.WithAlpha(36);
+        var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
+        var emptyStroke = theme.PlotBorder.WithAlpha(120);
         writer.StartElement("g").Attribute("data-cfx-role", "segmented-progress-strip").Attribute("data-cfx-segments", row.Segments).Attribute("data-cfx-filled", filled).EndStartElement().Line();
         for (var i = 0; i < row.Segments; i++) {
+            var segmentX = x + i * (segmentWidth + gap);
+            var role = i < filled ? "segmented-progress-segment-filled" : "segmented-progress-segment-empty";
             var color = i < filled ? accent : empty;
             writer.StartElement("rect")
-                .Attribute("data-cfx-role", i < filled ? "segmented-progress-segment-filled" : "segmented-progress-segment-empty")
+                .Attribute("data-cfx-role", "segmented-progress-segment-shadow")
                 .Attribute("data-cfx-index", i)
-                .Attribute("x", x + i * (segmentWidth + gap))
+                .Attribute("x", segmentX + 0.6)
+                .Attribute("y", y + 1.2)
+                .Attribute("width", segmentWidth)
+                .Attribute("height", height)
+                .Attribute("rx", Math.Min(4, segmentWidth * 0.35))
+                .Attribute("fill", theme.MutedText.WithAlpha(i < filled ? (byte)28 : (byte)18).ToCss())
+                .EndEmptyElement().Line();
+            writer.StartElement("rect")
+                .Attribute("data-cfx-role", role)
+                .Attribute("data-cfx-index", i)
+                .Attribute("x", segmentX)
                 .Attribute("y", y)
                 .Attribute("width", segmentWidth)
                 .Attribute("height", height)
                 .Attribute("rx", Math.Min(4, segmentWidth * 0.35))
                 .Attribute("fill", color.ToCss())
+                .Attribute("stroke", i < filled ? accent.WithAlpha(120).ToCss() : emptyStroke.ToCss())
+                .Attribute("stroke-width", 0.7)
+                .EndEmptyElement().Line();
+            writer.StartElement("rect")
+                .Attribute("data-cfx-role", "segmented-progress-segment-highlight")
+                .Attribute("data-cfx-index", i)
+                .Attribute("x", segmentX + 1)
+                .Attribute("y", y + 1)
+                .Attribute("width", Math.Max(1, segmentWidth - 2))
+                .Attribute("height", Math.Max(1, height * 0.32))
+                .Attribute("rx", Math.Min(3, segmentWidth * 0.28))
+                .Attribute("fill", ChartColor.White.WithAlpha(i < filled ? (byte)48 : (byte)92).ToCss())
                 .EndEmptyElement().Line();
         }
 

@@ -33,6 +33,10 @@ internal static class DashboardPatternExamples {
         Save(ShipmentActivityPanel((int)pngOutputScale), output, "dashboard-shipment-activity-panel");
     }
 
+    public static void WriteProjectProgressCard(string output, ChartPngOutputScale pngOutputScale) {
+        Save(ProjectProgressCard((int)pngOutputScale), output, "dashboard-project-progress-card");
+    }
+
     private static VisualGrid AppointmentOperationsGrid(int outputScale) => VisualGrid.Create()
         .WithTitle("Appointment Operations Dashboard")
         .WithSubtitle("Heatmap, peak-hour bars, workload rows, and availability list from the supplied operations design.")

@@ -11,7 +11,7 @@ The screenshots contain these reusable chart and dashboard patterns:
 | Day/hour appointment heatmap | appointment volume dashboard | `Heatmap`, `HeatmapInsightCard`, `WithHeatmapCellGap`, `WithHeatmapCellRadius`, `WithHeatmapValueTextMode` | Added bounded heatmap cell geometry plus a reusable matrix card with controls, right-side busy-time insight rail, and color key. |
 | Peak-hour mini histogram | review peak hour panel | `Bar`, `WithDashboardBarStyle`, `ChartSeries.WithPointColorRange`, `WithHighlightedXAxisRange` | Added compact point-color range helper and selected-window band metadata for muted-vs-highlight bar windows. |
 | Staff workload list with progress bars | staff workload panel | `WorkloadListBlock` | Added reusable visual-block list rows with avatar/initial slot, per-row progress rail, overload status, optional selection control, and right-aligned values. |
-| Segmented tick progress | project progress card | `SegmentedProgressCard` | Added reusable fixed-count segmented progress rows with empty ticks, delta pills, header symbol/menu chrome, and footer actions. |
+| Segmented tick progress | project progress card | `SegmentedProgressCard` | Added reusable fixed-count segmented progress rows with dimensional filled/empty ticks, delta pills, header symbol/menu chrome, and footer actions. |
 | Stacked task distribution card | overall tasks card | `CompositionStatusCard` | Added composition-card visual block with large totals, striped segments, legend rows, values, units, and footer actions. |
 | Grouped capsule bars | project track card, HR dashboard | grouped `Bar`, dashboard bar styling | Need rounded capsule grouped-bar preset, group separators, and card metric header/action footer. |
 | Dense schedule swimlane | project timeline screenshot | `ScheduleTimelineBlock` | Added schedule/swimlane visual block with header action chips, time-of-day axis, lanes, current-time marker, rounded event pills, badges, avatar stacks, and clipped-event metadata. |
@@ -89,6 +89,7 @@ Renderer work:
 - SVG/PNG/HTML row layout.
 - Shared segmented-strip geometry helper.
 - Fixed segment count with stable gap/radius math.
+- Renderer-owned segment shadow/highlight chrome for filled and empty ticks.
 - Accessibility metadata in SVG/HTML.
 
 ### `CompositionStatusCard`

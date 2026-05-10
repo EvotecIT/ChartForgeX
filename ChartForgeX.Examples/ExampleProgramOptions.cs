@@ -31,6 +31,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--dashboard-project-progress-only")) {
+            DashboardPatternExamples.WriteProjectProgressCard(output, pngOutputScale);
+            Console.WriteLine("Generated dashboard project progress card in: " + output);
+            return true;
+        }
+
         return false;
     }
 }

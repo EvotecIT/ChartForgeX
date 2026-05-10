@@ -118,6 +118,8 @@ internal static partial class SmokeTests {
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-header-badge\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional header badges.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-menu-dot\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional menu dots.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-strip\"", StringComparison.Ordinal), "SegmentedProgressCard should render segmented strips.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-segment-shadow\"", StringComparison.Ordinal), "SegmentedProgressCard should render dimensional segment shadows.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-segment-highlight\"", StringComparison.Ordinal), "SegmentedProgressCard should render dimensional segment highlights.");
         Assert(segmentedSvg.Contains("data-cfx-segments=\"44\"", StringComparison.Ordinal), "SegmentedProgressCard should preserve fixed segment counts in SVG metadata.");
         Assert(segmentedSvg.Contains("data-cfx-filled=\"39\"", StringComparison.Ordinal), "SegmentedProgressCard should derive filled segment counts from value and maximum.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-delta-pill\"", StringComparison.Ordinal), "SegmentedProgressCard should render delta pills.");

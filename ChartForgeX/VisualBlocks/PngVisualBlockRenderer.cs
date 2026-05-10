@@ -251,7 +251,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (card.HeaderSymbol.Length > 0 || card.ShowMenu) DrawSegmentedProgressHeader(canvas, card, ref y, content.X, content.Width);
         else DrawHeading(canvas, card, ref y, content.X, content.Width);
         var hasAction = card.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.16)) : 0;
+        var footerHeight = hasAction ? Math.Min(58, Math.Max(42, options.Size.Height * 0.16)) : 0;
         var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
         var rowHeight = Math.Max(48, Math.Min(72, (bottom - y) / Math.Max(1, card.Rows.Count)));
         for (var rowIndex = 0; rowIndex < card.Rows.Count && y + 38 <= bottom; rowIndex++) {
@@ -316,10 +316,22 @@ public sealed partial class PngVisualBlockRenderer {
         var gap = row.Segments > 50 ? 2.0 : 3.0;
         var segmentWidth = Math.Max(2, (width - gap * (row.Segments - 1)) / row.Segments);
         var filled = VisualBlockRendering.FilledSegments(row);
-        var empty = theme.PlotBackground.A > 0 ? theme.PlotBackground : theme.MutedText.WithAlpha(36);
+        var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
+        var emptyStroke = theme.PlotBorder.WithAlpha(120);
         for (var i = 0; i < row.Segments; i++) {
+            var segmentX = x + i * (segmentWidth + gap);
+            var radius = Math.Min(4, segmentWidth * 0.35);
             var color = i < filled ? accent : empty;
-            canvas.FillRoundedRect(x + i * (segmentWidth + gap), y, segmentWidth, height, Math.Min(4, segmentWidth * 0.35), color);
+            canvas.FillRoundedRect(segmentX + 0.6, y + 1.2, segmentWidth, height, radius, theme.MutedText.WithAlpha(i < filled ? (byte)28 : (byte)18));
+            if (i < filled) {
+                canvas.FillRoundedRectVerticalGradient(segmentX, y, segmentWidth, height, radius, ChartSurfacePolish.GradientTop(color), ChartSurfacePolish.GradientBottom(color));
+                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, accent.WithAlpha(120), 0.7);
+                canvas.FillRoundedRect(segmentX + 1, y + 1, Math.Max(1, segmentWidth - 2), Math.Max(1, height * 0.32), Math.Min(3, segmentWidth * 0.28), ChartColor.White.WithAlpha(48));
+            } else {
+                canvas.FillRoundedRectVerticalGradient(segmentX, y, segmentWidth, height, radius, ChartSurfacePolish.GradientTop(empty), ChartSurfacePolish.GradientBottom(empty));
+                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, emptyStroke, 0.7);
+                canvas.FillRoundedRect(segmentX + 1, y + 1, Math.Max(1, segmentWidth - 2), Math.Max(1, height * 0.32), Math.Min(3, segmentWidth * 0.28), ChartColor.White.WithAlpha(92));
+            }
         }
     }
 
