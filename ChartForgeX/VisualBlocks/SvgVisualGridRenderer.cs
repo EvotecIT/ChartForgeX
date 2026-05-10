@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
@@ -90,12 +91,34 @@ public sealed class SvgVisualGridRenderer {
         for (var i = 0; i < layout.Cells.Count; i++) {
             var cell = layout.Cells[i];
             var childScope = id + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
-            var childSvg = cell.Item.Chart != null ? _chartRenderer.Render(cell.Item.Chart, childScope) : _blockRenderer.Render(cell.Item.Block!, childScope);
+            var childSvg = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, childScope) : RenderChildBlock(cell.Item.Block!, childScope);
             writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualGridPanelFit.Stretch)).Line();
         }
 
         writer.EndElement().Line();
         return writer.Build();
+    }
+
+    private string RenderChildChart(Chart chart, string childScope) {
+        var transparentBackground = chart.Options.TransparentBackground;
+        try {
+            chart.Options.TransparentBackground = true;
+            return _chartRenderer.Render(chart, childScope);
+        }
+        finally {
+            chart.Options.TransparentBackground = transparentBackground;
+        }
+    }
+
+    private string RenderChildBlock(IVisualBlock block, string childScope) {
+        var transparentBackground = block.Options.TransparentBackground;
+        try {
+            block.Options.TransparentBackground = true;
+            return _blockRenderer.Render(block, childScope);
+        }
+        finally {
+            block.Options.TransparentBackground = transparentBackground;
+        }
     }
 
     private static string PositionChildSvg(string svg, double x, double y, double width, double height, bool stretch) {

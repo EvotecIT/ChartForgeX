@@ -230,7 +230,7 @@
       "width": 1376,
       "height": 1525,
       "svg": {
-        "minVisualNodes": 190,
+        "minVisualNodes": 187,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -260,15 +260,15 @@
     {
       "name": "dashboard-chart-portfolio-grid",
       "width": 1224,
-      "height": 1775,
+      "height": 2331,
       "svg": {
-        "minVisualNodes": 424,
+        "minVisualNodes": 608,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 4345200,
+        "minVisiblePixels": 5706288,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -294,7 +294,7 @@
       "width": 1376,
       "height": 1831,
       "svg": {
-        "minVisualNodes": 192,
+        "minVisualNodes": 189,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -310,7 +310,7 @@
       "width": 1292,
       "height": 1009,
       "svg": {
-        "minVisualNodes": 160,
+        "minVisualNodes": 158,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -374,7 +374,7 @@
       "width": 1416,
       "height": 1339,
       "svg": {
-        "minVisualNodes": 776,
+        "minVisualNodes": 773,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -582,7 +582,7 @@
       "width": 1364,
       "height": 1171,
       "svg": {
-        "minVisualNodes": 124,
+        "minVisualNodes": 122,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -638,6 +638,86 @@
         "outputScale": 2,
         "minVisiblePixels": 20035,
         "minDistinctColors": 932,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-ticketing-analytics-grid",
+      "width": 1376,
+      "height": 1410,
+      "svg": {
+        "minVisualNodes": 246,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 3880320,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-ticketing-guest-funnel",
+      "width": 520,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 27,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 274315,
+        "minDistinctColors": 730,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-ticketing-package-mix",
+      "width": 520,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 274315,
+        "minDistinctColors": 756,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-ticketing-promoter-attribution",
+      "width": 720,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 58,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 469075,
+        "minDistinctColors": 1445,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-ticketing-revenue-trend",
+      "width": 1180,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 79,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1011555,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1302,7 +1382,7 @@
       "width": 1376,
       "height": 300,
       "svg": {
-        "minVisualNodes": 44,
+        "minVisualNodes": 42,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1350,7 +1430,7 @@
       "width": 980,
       "height": 294,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1622,7 +1702,7 @@
       "width": 1164,
       "height": 565,
       "svg": {
-        "minVisualNodes": 41,
+        "minVisualNodes": 40,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },

@@ -14,6 +14,11 @@ internal static class DashboardPortfolioExamples {
     private static readonly ChartColor RestaurantOrange = ChartColor.FromHex("#EF7F22");
     private static readonly ChartColor RestaurantPeach = ChartColor.FromHex("#FFB074");
     private static readonly ChartColor RestaurantGold = ChartColor.FromHex("#D0A400");
+    private static readonly ChartColor TicketMint = ChartColor.FromHex("#67D6CC");
+    private static readonly ChartColor TicketTeal = ChartColor.FromHex("#24B8A9");
+    private static readonly ChartColor TicketLavender = ChartColor.FromHex("#8A7AE6");
+    private static readonly ChartColor TicketAmber = ChartColor.FromHex("#F5BF72");
+    private static readonly ChartColor TicketRose = ChartColor.FromHex("#F39AAF");
 
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
         var scale = (int)pngOutputScale;
@@ -28,9 +33,14 @@ internal static class DashboardPortfolioExamples {
         var customers = RestaurantCustomersHexbin().WithPngOutputScale(pngOutputScale);
         var occupation = RestaurantOccupation().WithPngOutputScale(pngOutputScale);
         var weeklySummary = RestaurantWeeklySummary().WithPngOutputScale(pngOutputScale);
+        var ticketingTrend = TicketingRevenueTrend().WithPngOutputScale(pngOutputScale);
+        var ticketingPackages = TicketingPackageMix().WithPngOutputScale(pngOutputScale);
+        var ticketingPromoters = TicketingPromoterAttribution().WithPngOutputScale(pngOutputScale);
+        var ticketingFunnel = TicketingGuestFunnel().WithPngOutputScale(pngOutputScale);
         var hrOverview = HrOverviewGrid(scale);
         var saasOverview = SaasOverviewGrid(scale);
         var restaurantOverview = RestaurantOverviewGrid(scale);
+        var ticketingOverview = TicketingAnalyticsGrid(scale);
 
         Save(kpiSparkline, output, "dashboard-kpi-bar-sparkline");
         Save(deviceSplit, output, "dashboard-device-progress-bars");
@@ -43,13 +53,18 @@ internal static class DashboardPortfolioExamples {
         Save(customers, output, "dashboard-restaurant-customers-hexbin");
         Save(occupation, output, "dashboard-restaurant-occupation-bars");
         Save(weeklySummary, output, "dashboard-restaurant-weekly-summary");
+        Save(ticketingTrend, output, "dashboard-ticketing-revenue-trend");
+        Save(ticketingPackages, output, "dashboard-ticketing-package-mix");
+        Save(ticketingPromoters, output, "dashboard-ticketing-promoter-attribution");
+        Save(ticketingFunnel, output, "dashboard-ticketing-guest-funnel");
         Save(hrOverview, output, "dashboard-hr-overview-grid");
         Save(saasOverview, output, "dashboard-saas-mrr-grid");
         Save(restaurantOverview, output, "dashboard-restaurant-overview-grid");
+        Save(ticketingOverview, output, "dashboard-ticketing-analytics-grid");
 
         var grid = VisualGrid.Create()
             .WithTitle("Dashboard Chart Portfolio")
-            .WithSubtitle("Reusable screenshot-inspired KPI, attendance, restaurant, and MRR patterns.")
+            .WithSubtitle("Reusable screenshot-inspired KPI, ticketing, attendance, restaurant, and MRR patterns.")
             .WithColumns(3)
             .WithGap(18)
             .WithPadding(24)
@@ -67,6 +82,10 @@ internal static class DashboardPortfolioExamples {
             .Add(customers)
             .Add(occupation)
             .Add(weeklySummary)
+            .Add(ticketingTrend, columnSpan: 2)
+            .Add(ticketingPackages)
+            .Add(ticketingPromoters)
+            .Add(ticketingFunnel)
             .Add(mrrTrend, columnSpan: 2)
             .Add(mrrDrivers, columnSpan: 2);
 
@@ -287,6 +306,158 @@ internal static class DashboardPortfolioExamples {
         .AddSmoothLine("Current", Points(360, 480, 610, 540, 850, 880, 880), RestaurantGold)
             .AddTrendLine("Previous", new[] { new ChartPoint(1, 380), new ChartPoint(7, 750) }, Slate);
 
+    private static Chart TicketingRevenueTrend() {
+        var sales = new[] { 146d, 178d, 232d, 288d, 198d, 251d, 321d, 274d, 318d, 346d, 209d, 254d, 302d, 337d };
+        var revenue = sales.Select(value => value * 4.15).ToArray();
+        var chart = Chart.Create()
+            .WithTitle("Detailed Event Analytics")
+            .WithSubtitle("May 12 focus | EUR 42.8K revenue | 2,884 tickets sold")
+            .WithSize(1180, 460)
+            .WithTheme(TicketingTheme())
+            .WithDashboardBarPanelStyle()
+            .WithLegendPosition(ChartLegendPosition.TopRight)
+            .WithYAxisBounds(0, 1550)
+            .WithXAxisLabelDensity(ChartLabelDensity.Relaxed)
+            .WithValueFormatter(Euros)
+            .WithXLabels("May 01", "May 02", "May 03", "May 04", "May 05", "May 06", "May 07", "May 08", "May 09", "May 10", "May 11", "May 12", "May 13", "May 14")
+            .AddBar("Ticket revenue", Points(revenue), TicketMint)
+            .AddSmoothLine("Sales pace", Points(sales.Select(value => value * 4.15 + 120).ToArray()), TicketLavender)
+            .AddHorizontalLine(1200, "revenue goal", TicketTeal)
+            .AddVerticalLine(12, "May 12", TicketTeal)
+            .AddPointCallout("EUR 1.2K / 288 sales", 12, 1195, TicketTeal, ChartDataLabelPlacement.Above);
+
+        chart.Series[0]
+            .WithPointColor(3, TicketTeal)
+            .WithPointColor(11, TicketTeal)
+            .WithPointColor(13, TicketTeal);
+        return chart;
+    }
+
+    private static Chart TicketingPackageMix() => Chart.Create()
+        .WithTitle("Package Selling")
+        .WithSubtitle("Arrival-date packages and pick-and-choose inventory")
+        .WithSize(520, 300)
+        .WithTheme(TicketingTheme())
+        .WithLegend(false)
+        .WithProgressValues()
+        .WithProgressHandles(false)
+        .WithProgressBarThickness(0.38)
+        .WithProgressTrackOpacity(0.28)
+        .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+        .AddProgressBars("Packages", new[] {
+            new ChartProgressItem("Sunburn Pass", 92, TicketTeal),
+            new ChartProgressItem("Beach Team", 76, TicketLavender),
+            new ChartProgressItem("VIP Guest", 58, TicketAmber),
+            new ChartProgressItem("Free Guest", 34, TicketRose)
+        });
+
+    private static Chart TicketingPromoterAttribution() => Chart.Create()
+        .WithTitle("Promoter Attribution")
+        .WithSubtitle("Street teams, socials, and partner links by sold tickets")
+        .WithSize(720, 360)
+        .WithTheme(TicketingTheme())
+        .WithDashboardStackedRowStyle(showTotals: true)
+        .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
+        .WithXLabels("Sara Iacino", "Insta Link", "Beach Team", "Partner Bar", "Walk-in")
+        .AddHorizontalBar("Paid", Points(164, 182, 124, 88, 66), TicketTeal)
+        .AddHorizontalBar("Guestlist", Points(42, 38, 51, 22, 14), TicketLavender)
+        .AddHorizontalBar("Upsell", Points(82, 68, 42, 28, 12), TicketAmber);
+
+    private static Chart TicketingGuestFunnel() => Chart.Create()
+        .WithTitle("Guest Management Flow")
+        .WithSubtitle("Invite, confirmation, entry, and paid upgrade visibility")
+        .WithSize(520, 300)
+        .WithTheme(TicketingTheme())
+        .WithLegend(false)
+        .WithDashboardBarPanelStyle()
+        .WithXAxisBounds(0, 650)
+        .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
+        .WithXLabels("Invited", "Confirmed", "Arrived", "Paid upgrade")
+        .AddHorizontalBar("Guests", Points(620, 482, 376, 118), TicketLavender);
+
+    private static VisualGrid TicketingAnalyticsGrid(int outputScale) => VisualGrid.Create()
+        .WithTitle("Event Ticketing Analytics Dashboard")
+        .WithSubtitle("Screenshot-inspired ticket sales, package conversion, promoter attribution, and guest-flow panels.")
+        .WithColumns(4)
+        .WithGap(16)
+        .WithPadding(24)
+        .WithFrame()
+        .WithPanelSize(320, 170)
+        .WithPanelFit(VisualGridPanelFit.Stretch)
+        .WithTheme(TicketingTheme())
+        .WithPngOutputScale(outputScale)
+        .Add(MetricCard.Create()
+            .WithTitle("Ticket Sales")
+            .WithMetric("Sold today", "288")
+            .WithTrend("+12%")
+            .WithCaption("vs yesterday")
+            .WithStatus(VisualStatus.Positive)
+            .WithTheme(TicketingTheme())
+            .WithSize(320, 170)
+            .WithPadding(22, 24, 22, 18)
+            .AddDetail("Paid", "184", VisualStatus.Positive)
+            .AddDetail("Guestlist", "42", VisualStatus.Info)
+            .WithMiniBars(new[] { 146d, 178d, 232d, 288d, 198d, 251d }, maximum: 320, color: TicketTeal))
+        .Add(MetricCard.Create()
+            .WithTitle("Collected")
+            .WithMetric("Checked in", "288")
+            .WithCaption("Beach arrival cohort")
+            .WithStatus(VisualStatus.Info)
+            .WithTheme(TicketingTheme())
+            .WithSize(320, 170)
+            .WithPadding(22, 24, 22, 18)
+            .AddDetail("Scan rate", "100%", VisualStatus.Positive)
+            .AddDetail("No-show risk", "37", VisualStatus.Warning)
+            .WithMiniSparkline(new[] { 40d, 66d, 92d, 138d, 210d, 288d }, color: TicketLavender, fillColor: TicketLavender.WithAlpha(28)))
+        .Add(MetricCard.Create()
+            .WithTitle("Total Revenue")
+            .WithMetric("Gross", "EUR 42.8K")
+            .WithTrend("+8.4%")
+            .WithStatus(VisualStatus.Positive)
+            .WithTheme(TicketingTheme())
+            .WithSize(320, 170)
+            .WithPadding(22, 24, 22, 18)
+            .AddDetail("Goal", "EUR 40K", VisualStatus.Positive)
+            .AddDetail("Avg ticket", "EUR 41.5", VisualStatus.Info)
+            .WithMiniSparkline(new[] { 14d, 18d, 23d, 31d, 36d, 42.8d }, color: TicketTeal, fillColor: TicketMint.WithAlpha(34)))
+        .Add(TicketingGuestList().WithSize(320, 170))
+        .Add(TicketingRevenueTrend().WithSize(1328, 356), 4, 2)
+        .Add(TicketingPromoterAttribution().WithSize(656, 356), 2, 2)
+        .Add(TicketingPackageMix().WithSize(656, 356), 2, 2)
+        .Add(TicketingGuestFunnel().WithSize(656, 356), 2, 2)
+        .Add(TicketingChannelList().WithSize(656, 356), 2, 2);
+
+    private static ChartTable TicketingGuestList() => ChartTable.Create()
+        .WithTitle("Guest State")
+        .WithSubtitle("Current front-door status.")
+        .WithTheme(TicketingTheme())
+        .WithDenseMode()
+        .WithHeader(false)
+        .WithRowStriping(false)
+        .WithPadding(26, 28, 26, 24)
+        .AddColumn("Segment", width: 136)
+        .AddColumn("Type", alignment: VisualTextAlignment.Center, width: 74)
+        .AddColumn("Count", alignment: VisualTextAlignment.Right)
+        .AddRow("VIP Guests", "", "118")
+        .AddRow("Paying Guests", "", "376")
+        .AddRow("Free Guests", "", "104")
+        .AddRow("No-show Risk", "", "37")
+        .WithRow(0, row => row.Cells[1].WithBadge("VIP", VisualStatus.Warning, TicketAmber, VisualBadgeStyle.Outline))
+        .WithRow(1, row => row.Cells[1].WithBadge("Paid", VisualStatus.Positive, TicketTeal, VisualBadgeStyle.Outline))
+        .WithRow(2, row => row.Cells[1].WithBadge("Free", VisualStatus.Info, TicketLavender, VisualBadgeStyle.Outline))
+        .WithRow(3, row => row.Cells[1].WithBadge("Risk", VisualStatus.Negative, TicketRose, VisualBadgeStyle.Outline));
+
+    private static WorkloadListBlock TicketingChannelList() => WorkloadListBlock.Create()
+        .WithTitle("Tracker Links")
+        .WithSubtitle("Share links, deals, and payout-ready totals.")
+        .WithTheme(TicketingTheme())
+        .WithProgressRails()
+        .WithDividers(false)
+        .AddPerson("Instagram tracker", "shop.ticketapp.com/insta", 966, 1000, VisualStatus.Positive, "IG", "966", TicketTeal)
+        .AddPerson("Beach team QR", "street team handoff", 288, 1000, VisualStatus.Info, "QR", "288", TicketLavender)
+        .AddPerson("VIP guest list", "perk invite flow", 118, 1000, VisualStatus.Warning, "VIP", "118", TicketAmber)
+        .AddPerson("Cash desk", "walk-in fallback", 66, 1000, VisualStatus.Neutral, "POS", "66", Slate);
+
     private static VisualGrid RestaurantOverviewGrid(int outputScale) => VisualGrid.Create()
         .WithTitle("Restaurant Dashboard Composition")
         .WithSubtitle("Reports, order status, customers, occupation, and weekly trend panels.")
@@ -452,4 +623,15 @@ internal static class DashboardPortfolioExamples {
     private static ChartTheme SaasTheme() => ChartTheme.SaasDashboardLight();
 
     private static ChartTheme RestaurantTheme() => ChartTheme.RestaurantDashboardLight();
+
+    private static ChartTheme TicketingTheme() => ChartTheme.DashboardLight()
+        .WithSurfaceColors(ChartColor.FromHex("#F7F8F8"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#ECF3F2"), ChartColor.FromHex("#D8E7E5"))
+        .WithTextColors(ChartColor.FromHex("#16191D"), ChartColor.FromHex("#656D76"))
+        .WithPalette(TicketTeal.ToHex(), TicketLavender.ToHex(), TicketAmber.ToHex(), TicketRose.ToHex(), TicketMint.ToHex())
+        .WithTypography(22, 11.5, 10.5, 11, 11.5, 10.5)
+        .WithCornerRadius(18, 8)
+        .WithShadowOpacity(0.045)
+        .WithMarkerRadius(4.4);
+
+    private static string Euros(double value) => "EUR " + (value / 1000d).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "K";
 }

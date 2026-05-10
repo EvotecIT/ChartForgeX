@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using ChartForgeX.Core;
 using ChartForgeX.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -40,7 +41,7 @@ public sealed class HtmlVisualGridRenderer {
         for (var i = 0; i < grid.Items.Count; i++) {
             var item = grid.Items[i];
             var columnSpan = Math.Min(item.ColumnSpan, columns);
-            var childSvg = item.Chart != null ? _chartRenderer.Render(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : _blockRenderer.Render(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture));
+            var childSvg = item.Chart != null ? RenderChildChart(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : RenderChildBlock(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture));
             writer.StartElement("article")
                 .Attribute("class", "chartforgex-visual-grid-panel")
                 .Attribute("aria-label", ItemTitle(item))
@@ -52,6 +53,28 @@ public sealed class HtmlVisualGridRenderer {
 
         writer.EndElement().EndElement();
         return writer.Build();
+    }
+
+    private string RenderChildChart(Chart chart, string childScope) {
+        var transparentBackground = chart.Options.TransparentBackground;
+        try {
+            chart.Options.TransparentBackground = true;
+            return _chartRenderer.Render(chart, childScope);
+        }
+        finally {
+            chart.Options.TransparentBackground = transparentBackground;
+        }
+    }
+
+    private string RenderChildBlock(IVisualBlock block, string childScope) {
+        var transparentBackground = block.Options.TransparentBackground;
+        try {
+            block.Options.TransparentBackground = true;
+            return _blockRenderer.Render(block, childScope);
+        }
+        finally {
+            block.Options.TransparentBackground = transparentBackground;
+        }
     }
 
     /// <summary>Renders a visual grid as a complete HTML document.</summary>

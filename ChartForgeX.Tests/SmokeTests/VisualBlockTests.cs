@@ -318,6 +318,31 @@ internal static partial class SmokeTests {
         Assert(fixedHtml.Contains(".chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%", StringComparison.Ordinal), "VisualGrid HTML contain mode should scale embedded SVGs to fixed panel bounds.");
         Assert(fixedHtml.Contains("min-height:calc((var(--cfx-visual-grid-panel-height) * 2) + (var(--cfx-visual-grid-gap) * 1))", StringComparison.Ordinal), "VisualGrid HTML should reserve physical height for row-spanning fixed panels.");
 
+        var backgroundTrapTheme = ChartTheme.DashboardLight()
+            .WithSurfaceColors(ChartColor.FromHex("#FACC15"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#E5E7EB"))
+            .WithCornerRadius(18, 8);
+        var childSurfaceTheme = ChartTheme.DashboardLight()
+            .WithSurfaceColors(ChartColor.FromHex("#111827"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#E5E7EB"))
+            .WithCornerRadius(18, 8);
+        var backgroundTrapBlock = MetricCard.Create()
+            .WithMetric("No square", 1)
+            .WithTheme(childSurfaceTheme)
+            .WithSize(160, 100);
+        var backgroundTrapGrid = VisualGrid.Create()
+            .WithTheme(backgroundTrapTheme)
+            .WithColumns(1)
+            .WithPadding(24)
+            .WithPanelSize(160, 100)
+            .WithPanelFit(VisualGridPanelFit.Stretch)
+            .Add(backgroundTrapBlock);
+        var backgroundTrapSvg = backgroundTrapGrid.ToSvg("visual-grid-background-trap");
+        var backgroundTrapHtml = backgroundTrapGrid.ToHtmlFragment();
+        var backgroundTrapPixels = ReadPngRgba(backgroundTrapGrid.ToPng(), out var backgroundTrapWidth, out _);
+        Assert(!backgroundTrapSvg.Contains("-visualBackground)", StringComparison.Ordinal), "VisualGrid SVG should suppress child block background rectangles so rounded cards do not get square backplates.");
+        Assert(!backgroundTrapHtml.Contains("-visualBackground)", StringComparison.Ordinal), "VisualGrid HTML should suppress child block background rectangles so rounded cards do not get square backplates.");
+        Assert(CountNearColorInRect(backgroundTrapPixels, backgroundTrapWidth, 24, 24, 8, 8, 17, 24, 39, 36) == 0, "VisualGrid PNG should not paint child visual-block surface color behind rounded card corners.");
+        Assert(!backgroundTrapBlock.Options.TransparentBackground, "VisualGrid child transparency should be scoped to rendering and should not mutate the caller's visual block.");
+
         var stretchGrid = VisualGrid.Create()
             .WithPanelSize(500, 320)
             .WithPanelFit(VisualGridPanelFit.Stretch)
