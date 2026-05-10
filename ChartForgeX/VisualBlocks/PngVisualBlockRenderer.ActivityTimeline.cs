@@ -16,7 +16,8 @@ public sealed partial class PngVisualBlockRenderer {
         DrawHeading(canvas, block, ref y, content.X, content.Width);
         var bottom = options.Size.Height - options.Padding.Bottom;
         var spineX = content.X + 18;
-        canvas.DrawLine(spineX, y + 6, spineX, bottom, theme.PlotBorder, 2);
+        var spineEnd = ActivitySpineEnd(block, y, bottom);
+        canvas.DrawLine(spineX, y + 6, spineX, spineEnd, theme.PlotBorder, 2);
         for (var i = 0; i < block.Items.Count && y < bottom - 12; i++) {
             var item = block.Items[i];
             var rowHeight = ActivityRowHeight(item);
@@ -93,6 +94,20 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static double ActivityTimestampWidth(string timestamp, double fontSize) => Math.Min(190, Math.Max(110, RgbaCanvas.MeasureTextWidth(timestamp, fontSize, null) + 8));
+
+    private static double ActivitySpineEnd(ActivityTimelineBlock block, double y, double bottom) {
+        var cursor = y;
+        var end = y + 6;
+        for (var i = 0; i < block.Items.Count && cursor < bottom - 12; i++) {
+            var item = block.Items[i];
+            var rowHeight = ActivityRowHeight(item);
+            if (cursor + rowHeight > bottom + 1) break;
+            end = item.Kind == ActivityTimelineItemKind.Section ? cursor + 10 : item.Kind == ActivityTimelineItemKind.ChecklistItem ? cursor + 11 : item.Kind == ActivityTimelineItemKind.HiddenSummary ? cursor + 13 : cursor + 15;
+            cursor += rowHeight;
+        }
+
+        return Math.Min(bottom, Math.Max(y + 6, end + 22));
+    }
 
     private static double ActivityRowHeight(ActivityTimelineItem item) {
         if (item.Kind == ActivityTimelineItemKind.Section) return 30;

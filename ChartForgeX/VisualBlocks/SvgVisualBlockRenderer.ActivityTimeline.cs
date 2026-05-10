@@ -16,11 +16,12 @@ public sealed partial class SvgVisualBlockRenderer {
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
         var bottom = options.Size.Height - options.Padding.Bottom;
         var spineX = content.X + 18;
+        var spineEnd = ActivitySpineEnd(block, y, bottom);
         writer.StartElement("g")
             .Attribute("data-cfx-role", "activity-timeline-block")
             .Attribute("data-cfx-event-surfaces", block.ShowEventSurfaces ? "true" : "false")
             .EndStartElement().Line();
-        writer.StartElement("line").Attribute("data-cfx-role", "activity-spine").Attribute("x1", spineX).Attribute("y1", y + 6).Attribute("x2", spineX).Attribute("y2", bottom).Attribute("stroke", theme.PlotBorder.ToCss()).Attribute("stroke-width", 2).EndEmptyElement().Line();
+        writer.StartElement("line").Attribute("data-cfx-role", "activity-spine").Attribute("x1", spineX).Attribute("y1", y + 6).Attribute("x2", spineX).Attribute("y2", spineEnd).Attribute("stroke", theme.PlotBorder.ToCss()).Attribute("stroke-width", 2).EndEmptyElement().Line();
         for (var i = 0; i < block.Items.Count && y < bottom - 12; i++) {
             var item = block.Items[i];
             var rowHeight = ActivityRowHeight(item);
@@ -99,6 +100,20 @@ public sealed partial class SvgVisualBlockRenderer {
     }
 
     private static double ActivityTimestampWidth(string timestamp, double fontSize) => Math.Min(190, Math.Max(110, VisualBlockRendering.EstimateTextWidth(timestamp, fontSize) + 8));
+
+    private static double ActivitySpineEnd(ActivityTimelineBlock block, double y, double bottom) {
+        var cursor = y;
+        var end = y + 6;
+        for (var i = 0; i < block.Items.Count && cursor < bottom - 12; i++) {
+            var item = block.Items[i];
+            var rowHeight = ActivityRowHeight(item);
+            if (cursor + rowHeight > bottom + 1) break;
+            end = item.Kind == ActivityTimelineItemKind.Section ? cursor + 10 : item.Kind == ActivityTimelineItemKind.ChecklistItem ? cursor + 11 : item.Kind == ActivityTimelineItemKind.HiddenSummary ? cursor + 13 : cursor + 15;
+            cursor += rowHeight;
+        }
+
+        return Math.Min(bottom, Math.Max(y + 6, end + 22));
+    }
 
     private static double ActivityRowHeight(ActivityTimelineItem item) {
         if (item.Kind == ActivityTimelineItemKind.Section) return 30;

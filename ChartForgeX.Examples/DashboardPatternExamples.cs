@@ -213,7 +213,7 @@ internal static class DashboardPatternExamples {
 
     private static ActivityTimelineBlock ShipmentActivityPanel(int outputScale) => ActivityTimelineBlock.Create()
         .WithTheme(ShipmentTheme())
-        .WithSize(340, 720)
+        .WithSize(340, 470)
         .WithPadding(18, 18, 18, 18)
         .WithTransparentBackground()
         .WithCard(false)
