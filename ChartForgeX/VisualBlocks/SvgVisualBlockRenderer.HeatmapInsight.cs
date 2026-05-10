@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
@@ -52,7 +53,7 @@ public sealed partial class SvgVisualBlockRenderer {
                     .Attribute("rx", Math.Min(5, cellHeight * 0.32))
                     .Attribute("fill", color.ToCss())
                     .EndEmptyElement().Line();
-                WriteText(writer, value.ToString("0", CultureInfo.InvariantCulture), matrixX + labelWidth + column * (cellWidth + cellGap), rowY + cellHeight * 0.68, cellWidth, VisualTextAlignment.Center, value >= card.Maximum * 0.76 ? ChartColor.White : theme.Text, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "800");
+                WriteText(writer, value.ToString("0", CultureInfo.InvariantCulture), matrixX + labelWidth + column * (cellWidth + cellGap), rowY + cellHeight * 0.68, cellWidth, VisualTextAlignment.Center, ChartColorMath.TextOnBackground(color), theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "800");
             }
         }
 

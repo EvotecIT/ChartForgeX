@@ -11,6 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 internal static class VisualBlockRendering {
     public const int MaximumScheduleTicks = 512;
     public const int MaximumScheduleLanes = 256;
+    public const int MaximumTableMicroVisualPoints = 512;
 
     public static void Validate(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
@@ -371,12 +372,12 @@ internal static class VisualBlockRendering {
     public static (double ItemWidth, double Gap) FitRepeatedItems(int count, double width, double preferredGap, double minimumItemWidth) {
         if (count <= 0 || width <= 0) return (0, 0);
         if (count == 1) return (Math.Max(0, width), 0);
-        var minWidth = Math.Max(0.5, minimumItemWidth);
+        var minWidth = Math.Max(0, minimumItemWidth);
         var gap = Math.Min(Math.Max(0, preferredGap), Math.Max(0, (width - minWidth * count) / (count - 1)));
-        var itemWidth = Math.Max(0.5, (width - gap * (count - 1)) / count);
+        var itemWidth = Math.Max(0, (width - gap * (count - 1)) / count);
         if (itemWidth < minWidth && width < minWidth * count) {
             gap = 0;
-            itemWidth = Math.Max(0.5, width / count);
+            itemWidth = Math.Max(0, width / count);
         }
 
         return (itemWidth, gap);
@@ -407,6 +408,7 @@ internal static class VisualBlockRendering {
         if (cell.BadgeText.Length > 24) throw new InvalidOperationException("Chart table cell badge text must be twenty-four characters or fewer.");
         if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.None) return;
         if (cell.MicroVisualValues.Count == 0) throw new InvalidOperationException("Chart table cell microvisuals must contain values.");
+        if (cell.MicroVisualValues.Count > MaximumTableMicroVisualPoints) throw new InvalidOperationException("Chart table cell microvisuals must contain no more than " + MaximumTableMicroVisualPoints.ToString(CultureInfo.InvariantCulture) + " values.");
         if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline && cell.MicroVisualValues.Count < 2) throw new InvalidOperationException("Chart table cell sparklines require at least two values.");
         foreach (var value in cell.MicroVisualValues) if (!IsFinite(value)) throw new InvalidOperationException("Chart table cell microvisual values must be finite.");
         if (cell.MicroVisualMinimum.HasValue && !IsFinite(cell.MicroVisualMinimum.Value)) throw new InvalidOperationException("Chart table cell microvisual minimum values must be finite.");
@@ -428,7 +430,8 @@ internal static class VisualBlockRendering {
     }
 
     private static int ScheduleTickCount(ScheduleTimelineBlock block) {
-        var range = block.End - block.Start;
+        var limit = block.End + block.TickInterval * 0.25;
+        var range = limit - block.Start;
         if (range <= 0 || block.TickInterval <= 0) return 0;
         var count = Math.Floor(range / block.TickInterval) + 1;
         return count >= int.MaxValue ? int.MaxValue : (int)count;

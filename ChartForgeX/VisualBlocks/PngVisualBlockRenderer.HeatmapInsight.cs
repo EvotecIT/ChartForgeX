@@ -3,6 +3,7 @@ using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -42,7 +43,7 @@ public sealed partial class PngVisualBlockRenderer {
                 var color = HeatmapInsightColorForPng(card, value);
                 var x = matrixX + labelWidth + column * (cellWidth + cellGap);
                 canvas.FillRoundedRect(x, rowY, cellWidth, cellHeight, Math.Min(5, cellHeight * 0.32), color);
-                DrawAlignedText(canvas, value.ToString("0", CultureInfo.InvariantCulture), x, rowY + cellHeight * 0.2, cellWidth, VisualTextAlignment.Center, value >= card.Maximum * 0.76 ? ChartColor.White : theme.Text, Math.Max(9, theme.SubtitleFontSize - 2), true);
+                DrawAlignedText(canvas, value.ToString("0", CultureInfo.InvariantCulture), x, rowY + cellHeight * 0.2, cellWidth, VisualTextAlignment.Center, ChartColorMath.TextOnBackground(color), Math.Max(9, theme.SubtitleFontSize - 2), true);
             }
         }
 

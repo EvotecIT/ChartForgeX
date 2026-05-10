@@ -346,6 +346,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").WithMiniBars(new[] { double.NaN }), "ChartTable cell mini bars should reject non-finite values.");
         AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithSparkline(new[] { 1d })).ToSvg(), "ChartTable cell sparklines should require at least two values.");
         AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithMiniBars(new[] { 1d }, minimum: 2, maximum: 1)).ToSvg(), "ChartTable cell microvisual bounds should require maximum greater than minimum.");
+        var excessiveMicroVisualValues = new double[513];
+        for (var i = 0; i < excessiveMicroVisualValues.Length; i++) excessiveMicroVisualValues[i] = i;
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithMiniBars(excessiveMicroVisualValues)).ToSvg(), "ChartTable cell microvisuals should reject excessive point counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").MicroVisualKind = (ChartTableCellMicroVisualKind)999, "ChartTable cells should reject unknown microvisual kinds.");
         AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithBadge(new string('x', 25))).ToSvg(), "ChartTable cell badges should stay compact.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").BadgeStyle = (VisualBadgeStyle)999, "ChartTable cells should reject unknown badge styles.");
@@ -402,6 +405,7 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().ToSvg(), "ScheduleTimelineBlock should require events.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithTimeRange(9, 8).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock should reject inverted ranges.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithTimeRange(8, 17, 0).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock should reject non-positive tick intervals.");
+        AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithTimeRange(0, 511.8, 1).AddEvent("Bad", 0, 1).ToSvg(), "ScheduleTimelineBlock should validate the rendered tick count bound.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("", 8, 9).ToSvg(), "ScheduleTimelineBlock should require event titles.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("Bad", 9, 8).ToSvg(), "ScheduleTimelineBlock should reject inverted events.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("Bad", 8, 9, lane: -1).ToSvg(), "ScheduleTimelineBlock should reject negative lanes.");
