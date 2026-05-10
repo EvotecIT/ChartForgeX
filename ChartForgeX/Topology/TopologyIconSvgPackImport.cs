@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using ChartForgeX.Svg;
 
 namespace ChartForgeX.Topology;
 
@@ -72,6 +73,10 @@ public sealed class TopologyIconSvgPackImportOptions {
     public bool AllowNestedSvgRoot { get; set; } = true;
 }
 
+public static partial class TopologyIconSvgPackImporter {
+    private static readonly Regex SvgFragmentUrlReferenceRegex = new("url\\(\\s*(?<quote>['\"]?)#(?<id>[^'\"\\)]+)\\k<quote>\\s*\\)", RegexOptions.CultureInvariant);
+}
+
 /// <summary>
 /// Describes one file processed by the SVG icon-pack importer.
 /// </summary>
@@ -132,7 +137,7 @@ public sealed class TopologyIconSvgPackImportResult {
 /// <summary>
 /// Imports dependency-free SVG artwork into topology icon packs.
 /// </summary>
-public static class TopologyIconSvgPackImporter {
+public static partial class TopologyIconSvgPackImporter {
     /// <summary>
     /// Loads one SVG file as sanitized inline artwork for rendering.
     /// </summary>
@@ -267,7 +272,9 @@ public static class TopologyIconSvgPackImporter {
             var id = pair.Key;
             var replacement = pair.Value;
             var escaped = Regex.Escape(id);
-            result = Regex.Replace(result, "url\\(#" + escaped + "\\)", "url(#" + replacement + ")", RegexOptions.CultureInvariant);
+            result = SvgFragmentUrlReferenceRegex.Replace(result, match => match.Groups["id"].Value == id
+                ? "url(" + match.Groups["quote"].Value + "#" + replacement + match.Groups["quote"].Value + ")"
+                : match.Value);
             result = Regex.Replace(result, "(\\b(?:xlink:)?href\\s*=\\s*(['\"])#)" + escaped + "(\\2)", "$1" + replacement + "$3", RegexOptions.CultureInvariant);
         }
 
@@ -297,14 +304,42 @@ public static class TopologyIconSvgPackImporter {
     }
 
     private static void RemoveDanglingFragmentReferences(XElement root) {
-        var ids = new HashSet<string>(root.Descendants().Attributes().Where(attribute => string.Equals(attribute.Name.LocalName, "id", StringComparison.OrdinalIgnoreCase)).Select(attribute => attribute.Value), StringComparer.Ordinal);
-        var attributes = root.Descendants().Attributes().Where(attribute => Regex.IsMatch(attribute.Value, "url\\(#[^)]+\\)", RegexOptions.CultureInvariant)).ToList();
+        var ids = new HashSet<string>(root.DescendantsAndSelf().Attributes().Where(attribute => string.Equals(attribute.Name.LocalName, "id", StringComparison.OrdinalIgnoreCase)).Select(attribute => attribute.Value), StringComparer.Ordinal);
+        var attributes = root.DescendantsAndSelf().Attributes().Where(attribute => SvgFragmentUrlReferenceRegex.IsMatch(attribute.Value)).ToList();
         foreach (var attribute in attributes) {
-            var hasDanglingReference = Regex.Matches(attribute.Value, "url\\(#([^)]+)\\)", RegexOptions.CultureInvariant)
-                .Cast<Match>()
-                .Any(match => !ids.Contains(match.Groups[1].Value));
-            if (hasDanglingReference) attribute.Remove();
+            if (string.Equals(attribute.Name.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
+                RemoveDanglingStyleDeclarations(attribute, ids);
+                continue;
+            }
+
+            if (HasDanglingFragmentReference(attribute.Value, ids)) attribute.Remove();
         }
+    }
+
+    private static void RemoveDanglingStyleDeclarations(XAttribute attribute, HashSet<string> ids) {
+        SvgStyleDeclarationList style;
+        try {
+            style = SvgStyleDeclarationList.Parse(attribute.Value);
+        } catch (FormatException) {
+            if (HasDanglingFragmentReference(attribute.Value, ids)) attribute.Remove();
+            return;
+        } catch (ArgumentException) {
+            if (HasDanglingFragmentReference(attribute.Value, ids)) attribute.Remove();
+            return;
+        }
+
+        foreach (var declaration in style.Declarations.Where(declaration => HasDanglingFragmentReference(declaration.Value, ids)).ToList()) {
+            style.Remove(declaration.Name);
+        }
+
+        if (style.IsEmpty) attribute.Remove();
+        else attribute.Value = style.ToMarkup();
+    }
+
+    private static bool HasDanglingFragmentReference(string value, HashSet<string> ids) {
+        return SvgFragmentUrlReferenceRegex.Matches(value)
+            .Cast<Match>()
+            .Any(match => !ids.Contains(match.Groups["id"].Value));
     }
 
     private static string ReadViewBox(XElement root) {

@@ -180,6 +180,7 @@ internal static partial class SmokeTests {
             File.WriteAllText(Path.Combine(directory, "Azure", "SVG", "Data-Factory.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 48\"><title>Data Factory</title><path d=\"M6 10h14v28H6z\" fill=\"#0078D4\"/><path d=\"M28 8h14v32H28z\" fill=\"#50E6FF\"/></svg>");
             File.WriteAllText(Path.Combine(directory, "Office 365", "SVG", "Data-Factory.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"64\" height=\"64\"><desc>duplicate name</desc><circle cx=\"32\" cy=\"32\" r=\"22\" fill=\"#7FBA00\"/></svg>");
             File.WriteAllText(Path.Combine(directory, "Azure", "SVG", "Duplicate-Ids.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 48\"><defs><clipPath id='a'><rect width='20' height='20'/></clipPath><linearGradient id='a'><stop offset='0' stop-color='#fff'/></linearGradient></defs><rect width=\"48\" height=\"48\" clip-path=\"url(#a)\" fill=\"url(#a)\"/><use href='#a'/></svg>");
+            File.WriteAllText(Path.Combine(directory, "Azure", "SVG", "Mixed-Style.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" id=\"root-color\" viewBox=\"0 0 48 48\"><defs><linearGradient id=\"ok\"><stop offset=\"0\" stop-color=\"#fff\"/></linearGradient></defs><rect width=\"48\" height=\"48\" fill=\"url('#root-color')\" style=\"fill:url('#ok');filter:url(#missing);stroke:#111\"/></svg>");
             File.WriteAllText(Path.Combine(directory, "Azure", "SVG", "Visio-Defs.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 48\"><userDefs><clipPath id=\"clip0\"><rect width=\"48\" height=\"48\"/></clipPath></userDefs><rect width=\"48\" height=\"48\" clip-path=\"url(#clip0)\" fill=\"#0078D4\"/></svg>");
             File.WriteAllText(Path.Combine(directory, "Azure", "SVG", "Doctype.svg"), "<!DOCTYPE svg [<!ELEMENT svg ANY>]><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 48\"><rect width=\"48\" height=\"48\" clip-path=\"url(#missing)\" fill=\"#0078D4\"/></svg>");
             File.WriteAllText(Path.Combine(directory, "Azure", "SVG", "Unsafe.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 48\"><script>alert(1)</script><rect width=\"48\" height=\"48\" fill=\"#fff\"/></svg>");
@@ -198,7 +199,7 @@ internal static partial class SmokeTests {
                 StripDoctypeDeclarations = true
             });
 
-            Assert(result.ImportedCount == 5, "SVG pack imports should add safe SVG artwork files.");
+            Assert(result.ImportedCount == 6, "SVG pack imports should add safe SVG artwork files.");
             Assert(result.SkippedCount == 1 && result.HasSkippedFiles, "SVG pack imports should report skipped unsafe files.");
             Assert(result.Files.Any(file => !file.Imported && file.Message != null && file.Message.Contains("unsafe", StringComparison.OrdinalIgnoreCase)), "Skipped SVG files should expose a useful message.");
             Assert(result.Pack.Id == "microsoft-azure-stencils", "SVG imports should honor stable pack ids.");
@@ -221,6 +222,10 @@ internal static partial class SmokeTests {
             Assert(duplicateIds.Artwork != null && duplicateIds.Artwork.SvgBody!.Contains("id=\"cfxi-microsoft-azure-stencils-duplicate-ids-a\"", StringComparison.Ordinal), "Imported SVG ids should be prefixed for document-level isolation.");
             Assert(duplicateIds.Artwork!.SvgBody!.Contains("id=\"cfxi-microsoft-azure-stencils-duplicate-ids-a-2\"", StringComparison.Ordinal), "Duplicate source ids should get unique prefixed ids.");
             Assert(duplicateIds.Artwork!.SvgBody!.Contains("href=\"#cfxi-microsoft-azure-stencils-duplicate-ids-a\"", StringComparison.Ordinal), "Single-quoted href fragments should be rewritten to the prefixed id.");
+            var mixedStyle = result.Pack.Icons.First(icon => icon.Id == "mixed-style");
+            Assert(mixedStyle.Artwork != null && mixedStyle.Artwork.SvgBody!.Contains("fill=\"url('#root-color')\"", StringComparison.Ordinal), "Quoted root-level SVG url fragments should be included in dangling-reference validation.");
+            Assert(mixedStyle.Artwork!.SvgBody!.Contains("fill:url('#cfxi-microsoft-azure-stencils-mixed-style-ok')", StringComparison.Ordinal), "Quoted style url fragments should be rewritten to prefixed ids.");
+            Assert(!mixedStyle.Artwork!.SvgBody!.Contains("filter:url(#missing)", StringComparison.Ordinal) && mixedStyle.Artwork!.SvgBody!.Contains("stroke:#111", StringComparison.Ordinal), "Dangling style url references should remove only the invalid declaration.");
             var visioDefs = result.Pack.Icons.First(icon => icon.Id == "visio-defs");
             Assert(visioDefs.Artwork != null && visioDefs.Artwork.SvgBody!.Contains("clipPath", StringComparison.Ordinal), "Importer should preserve drawable definitions from Visio userDefs blocks.");
             Assert(result.Pack.Icons.Any(icon => icon.Id == "doctype"), "Importer should accept safe SVGs with internal-subset DOCTYPE declarations when stripping is enabled.");
@@ -232,12 +237,12 @@ internal static partial class SmokeTests {
             Assert(json.Contains("\"source.url\"", StringComparison.Ordinal), "Imported pack manifests should serialize provenance metadata.");
             Assert(json.Contains("\"source.path\"", StringComparison.Ordinal), "Imported pack manifests should serialize per-icon source paths.");
             var reloaded = TopologyIconPackJson.FromJson(json);
-            Assert(reloaded.Icons.Count == 5 && reloaded.Icons.All(icon => icon.Artwork != null), "Imported pack manifests should round-trip SVG artwork.");
+            Assert(reloaded.Icons.Count == 6 && reloaded.Icons.All(icon => icon.Artwork != null), "Imported pack manifests should round-trip SVG artwork.");
 
             var sidecarDirectory = Path.Combine(directory, "sidecar-pack");
             Directory.CreateDirectory(Path.Combine(sidecarDirectory, "svg"));
             File.WriteAllText(Path.Combine(sidecarDirectory, "svg", "data-factory.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 48\"><title>Data Factory</title><rect x=\"4\" y=\"8\" width=\"40\" height=\"32\" fill=\"#0078D4\"/></svg>");
-            var sidecarArtwork = TopologyIconArtwork.SvgFile("svg/data-factory.svg", previewPath: "previews/data-factory.png");
+            var sidecarArtwork = TopologyIconArtwork.SvgFile("svg\\data-factory.svg", svgViewBox: "0 0 96 96", previewPath: "previews/data-factory.png");
             sidecarArtwork.PreserveAspectRatio = "none";
             new TopologyIconPack("sidecar", "Sidecar", vendor: "Acme")
                 .AddIcon(new TopologyIconDefinition("sidecar", "data-factory", "Data Factory", TopologyNodeKind.Application) {
@@ -247,6 +252,7 @@ internal static partial class SmokeTests {
             var loadedSidecar = TopologyIconPackJson.LoadJsonManifest(Path.Combine(sidecarDirectory, "manifest.json"));
             var sidecarIcon = loadedSidecar.Icons.First(icon => icon.Id == "data-factory");
             Assert(sidecarIcon.Artwork != null && sidecarIcon.Artwork.HasSvgPath && sidecarIcon.Artwork.HasSvgBody, "Manifest loading should resolve pack-local SVG sidecar artwork for rendering.");
+            Assert(sidecarIcon.Artwork!.SvgViewBox == "0 0 96 96", "Manifest loading should preserve an explicit sidecar viewBox over the SVG file viewport.");
             Assert(sidecarIcon.Artwork!.PreviewPath == "previews/data-factory.png", "Manifest loading should preserve preview sidecar paths for picker UIs.");
             Assert(sidecarIcon.Artwork!.PreserveAspectRatio == "none", "Manifest loading should preserve sidecar preserveAspectRatio settings.");
             var sidecarRoundTrip = loadedSidecar.ToJsonManifest();

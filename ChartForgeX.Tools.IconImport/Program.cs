@@ -38,14 +38,16 @@ internal static class Program {
             WriteSourceReadme(sourceRoot, outputRoot, options);
 
             var reports = new List<PackImportReport>();
+            var usedFolderTokens = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (var folder in Directory.GetDirectories(sourceRoot).OrderBy(path => path, StringComparer.OrdinalIgnoreCase)) {
                 var folderName = Path.GetFileName(folder);
                 if (ExcludedTopLevelFolders.Any(excluded => string.Equals(excluded, folderName, StringComparison.OrdinalIgnoreCase))) continue;
                 var svgCount = Directory.GetFiles(folder, "*.svg", SearchOption.AllDirectories).Length;
                 if (svgCount == 0) continue;
 
-                var packId = PackIdFor(options, folderName);
-                var packOutput = Path.Combine(outputRoot, StableToken(folderName));
+                var folderToken = DeconflictToken(StableToken(folderName), usedFolderTokens);
+                var packId = PackIdFor(options, folderToken);
+                var packOutput = Path.Combine(outputRoot, folderToken);
                 Directory.CreateDirectory(packOutput);
                 var import = TopologyIconSvgPackImporter.ImportSvgPackFromDirectory(folder, new TopologyIconSvgPackImportOptions {
                     PackId = packId,
@@ -67,14 +69,14 @@ internal static class Program {
                 foreach (var icon in import.Pack.Icons) {
                     if (icon.Category != null) icon.Category = icon.Category.Replace("Svg Old Versions", "Old Versions", StringComparison.Ordinal);
                 }
-                var svgSidecars = WriteSvgSidecars(import.Pack, packOutput, options.GeneratePng);
+                var svgSidecars = WriteSvgSidecars(import.Pack, packOutput);
+                var previews = options.GeneratePng ? GeneratePreviews(import.Pack, packOutput, options.PreviewSize) : new PreviewReport(0, 0, Array.Empty<string>());
                 var validation = import.Pack.Validate();
                 if (!validation.IsValid) {
                     throw new InvalidOperationException("Imported pack '" + packId + "' has validation errors: " + string.Join("; ", validation.Errors.Select(issue => issue.Path + " " + issue.Message)));
                 }
 
                 import.Pack.SaveJsonManifest(Path.Combine(packOutput, "manifest.json"));
-                var previews = options.GeneratePng ? GeneratePreviews(import.Pack, packOutput, options.PreviewSize) : new PreviewReport(0, 0, Array.Empty<string>());
                 reports.Add(new PackImportReport(folderName, packId, svgCount, import.ImportedCount, import.SkippedCount, svgSidecars, previews.Written, previews.Failed, import.Files.Where(file => !file.Imported).Select(file => file.RelativePath + ": " + file.Message).Concat(previews.Errors).ToList()));
                 Console.WriteLine(packId + ": " + import.ImportedCount.ToString(CultureInfo.InvariantCulture) + " icons, " + import.SkippedCount.ToString(CultureInfo.InvariantCulture) + " skipped, " + svgSidecars.ToString(CultureInfo.InvariantCulture) + " svg files, " + previews.Written.ToString(CultureInfo.InvariantCulture) + " previews");
             }
@@ -87,7 +89,7 @@ internal static class Program {
         }
     }
 
-    private static int WriteSvgSidecars(TopologyIconPack pack, string packOutput, bool includePreviewPaths) {
+    private static int WriteSvgSidecars(TopologyIconPack pack, string packOutput) {
         var svgRoot = Path.Combine(packOutput, "svg");
         Directory.CreateDirectory(svgRoot);
         var written = 0;
@@ -100,7 +102,6 @@ internal static class Program {
             WriteUtf8NoBomFile(outputPath, svg);
             artwork.SvgBody = null;
             artwork.SvgPath = relativeSvgPath;
-            if (includePreviewPaths) artwork.PreviewPath = "previews/" + icon.Id + ".png";
             written++;
         }
 
@@ -117,6 +118,7 @@ internal static class Program {
             var outputPath = Path.Combine(previewRoot, icon.Id + ".png");
             try {
                 RenderSvgToPng(Path.Combine(packOutput, icon.Artwork!.SvgPath!.Replace('/', Path.DirectorySeparatorChar)), outputPath, size);
+                icon.Artwork!.PreviewPath = "previews/" + icon.Id + ".png";
                 written++;
             } catch (Exception exception) when (exception is InvalidOperationException || exception is IOException || exception is ArgumentException) {
                 failed++;
@@ -289,8 +291,20 @@ internal static class Program {
         return builder.ToString().Trim('-');
     }
 
-    private static string PackIdFor(ToolOptions options, string folderName) {
-        var folderToken = StableToken(folderName);
+    private static string DeconflictToken(string token, Dictionary<string, int> usedTokens) {
+        token = string.IsNullOrWhiteSpace(token) ? "pack" : token;
+        var suffix = 1;
+        var candidate = token;
+        while (usedTokens.ContainsKey(candidate)) {
+            suffix++;
+            candidate = token + "-" + suffix.ToString(CultureInfo.InvariantCulture);
+        }
+
+        usedTokens[candidate] = suffix;
+        return candidate;
+    }
+
+    private static string PackIdFor(ToolOptions options, string folderToken) {
         return string.IsNullOrWhiteSpace(options.PackIdPrefix) ? folderToken : StableToken(options.PackIdPrefix + "-" + folderToken);
     }
 

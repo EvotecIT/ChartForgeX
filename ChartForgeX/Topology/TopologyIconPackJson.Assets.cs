@@ -9,16 +9,18 @@ public static partial class TopologyIconPackJson {
             var artwork = icon.Artwork;
             if (artwork == null || artwork.HasSvgBody || !artwork.HasSvgPath) continue;
             var svgPath = ResolvePackAssetPath(manifestDirectory, artwork.SvgPath!, icon.Id + ".artwork.svgPath");
+            var manifestViewBox = artwork.SvgViewBox;
             var loaded = TopologyIconSvgPackImporter.LoadSvgArtworkFromFile(svgPath, pack.Id, icon.Id);
             artwork.SvgBody = loaded.SvgBody;
-            artwork.SvgViewBox = loaded.SvgViewBox;
+            artwork.SvgViewBox = string.IsNullOrWhiteSpace(manifestViewBox) ? loaded.SvgViewBox : manifestViewBox;
         }
     }
 
     private static string ResolvePackAssetPath(string manifestDirectory, string assetPath, string pathName) {
         if (!TopologyIconArtwork.IsSafeAssetPath(assetPath)) throw new ArgumentException("Unsafe topology icon asset path: " + pathName);
         var baseDirectory = Path.GetFullPath(manifestDirectory);
-        var fullPath = Path.GetFullPath(Path.Combine(baseDirectory, assetPath.Replace('/', Path.DirectorySeparatorChar)));
+        var normalizedAssetPath = assetPath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(baseDirectory, normalizedAssetPath));
         var baseWithSeparator = AppendDirectorySeparator(baseDirectory);
         if (!fullPath.StartsWith(baseWithSeparator, StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Topology icon asset path escapes its manifest directory: " + pathName);
         if (!File.Exists(fullPath)) throw new FileNotFoundException("Topology icon SVG asset was not found.", fullPath);
