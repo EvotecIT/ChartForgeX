@@ -80,15 +80,316 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartRegionMapItem("CA", -1), "Region map values should reject negatives.");
     }
 
+    private static void MapColorScaleRendersCustomChoroplethColors() {
+        var scale = ChartMapColorScale
+            .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 50)
+            .WithValueRange(0, 100)
+            .WithLabels("0", "50 median", ">100")
+            .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
+
+        var regions = new[] {
+            new ChartRegionMapItem("CA", 0),
+            new ChartRegionMapItem("NY", 50),
+            new ChartRegionMapItem("TX", 100)
+        };
+
+        var region = Chart.Create()
+            .WithSize(760, 420)
+            .WithMapLabels(false)
+            .WithMapColorScale(scale)
+            .AddRegionMap("Births", ChartMapCatalog.Get("us-states"), regions);
+        var tile = Chart.Create()
+            .WithSize(760, 420)
+            .WithMapColorScale(scale)
+            .AddTileMap("Births", ChartTileMapCatalog.Get("us-states"), regions);
+
+        var regionSvg = region.ToSvg();
+        var tileSvg = tile.ToSvg();
+        Assert(regionSvg.Contains("data-cfx-map-color-scale=\"custom\"", StringComparison.Ordinal), "Region maps should expose that a custom color scale is active.");
+        Assert(tileSvg.Contains("data-cfx-map-color-scale=\"custom\"", StringComparison.Ordinal), "Tile maps should expose that a custom color scale is active.");
+        Assert(regionSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Region maps should render the low color from a diverging map scale.");
+        Assert(regionSvg.Contains("fill=\"#FFF7ED\"", StringComparison.Ordinal), "Region maps should render the midpoint color from a diverging map scale.");
+        Assert(regionSvg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "Region maps should render the high color from a diverging map scale.");
+        Assert(tileSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Tile maps should render the low color from a diverging map scale.");
+        Assert(tileSvg.Contains("fill=\"#FFF7ED\"", StringComparison.Ordinal), "Tile maps should render the midpoint color from a diverging map scale.");
+        Assert(tileSvg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "Tile maps should render the high color from a diverging map scale.");
+        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-midpoint-label\" data-cfx-value=\"50\"", StringComparison.Ordinal), "Region maps should expose custom midpoint legend labels.");
+        Assert(tileSvg.Contains("data-cfx-role=\"tile-map-scale-midpoint-label\" data-cfx-value=\"50\"", StringComparison.Ordinal), "Tile maps should expose custom midpoint legend labels.");
+        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-step\" data-cfx-value=\"100\" data-cfx-status=\"positive\"", StringComparison.Ordinal), "Custom map color scales should classify high range values against the configured scale.");
+        Assert(tileSvg.Contains("data-cfx-role=\"tile-map-scale-step\" data-cfx-value=\"100\" data-cfx-status=\"positive\"", StringComparison.Ordinal), "Custom tile-map color scales should classify high range values against the configured scale.");
+        Assert(regionSvg.Contains(">0</text>", StringComparison.Ordinal), "Region map scale legends should honor custom low labels.");
+        Assert(regionSvg.Contains("&gt;100</text>", StringComparison.Ordinal), "Region map scale legends should escape and honor custom high labels.");
+        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-no-data\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Region maps should still reserve missing-data swatches with custom scales.");
+        Assert(regionSvg.Contains("fill=\"#E5E7EB\"", StringComparison.Ordinal), "Region maps should honor custom no-data colors.");
+        Assert(region.ToPng().Length > 64, "Custom color-scaled region maps should render PNG output.");
+        Assert(tile.ToPng().Length > 64, "Custom color-scaled tile maps should render PNG output.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartMapColorScale.Sequential(ChartColor.White, ChartColor.Black).WithValueRange(10, 10), "Map color scale ranges should reject equal bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartMapColorScale.Sequential(ChartColor.White, ChartColor.Black).WithMidpoint(double.NaN), "Map color scale midpoint values should reject non-finite values.");
+    }
+
+    private static void RegionHeatmapColorsEveryCustomRegionByValue() {
+        var definition = new ChartMapDefinition("districts", "Districts", 20, 20, new[] {
+            new ChartMapRegion("A", "Alpha", "M0 0L10 0L10 10L0 10Z"),
+            new ChartMapRegion("B", "Beta", "M10 0L20 0L20 10L10 10Z"),
+            new ChartMapRegion("C", "Gamma", "M0 10L10 10L10 20L0 20Z"),
+            new ChartMapRegion("D", "Delta", "M10 10L20 10L20 20L10 20Z")
+        });
+        var scale = ChartMapColorScale
+            .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 5)
+            .WithValueRange(0, 10);
+
+        var chart = Chart.Create()
+            .WithSize(360, 260)
+            .WithMapLabels(false)
+            .AddRegionHeatmap("Births", definition, new[] {
+                new ChartRegionMapItem("A", 0),
+                new ChartRegionMapItem("B", 2.5),
+                new ChartRegionMapItem("C", 7.5),
+                new ChartRegionMapItem("D", 10)
+            }, scale);
+
+        var svg = chart.ToSvg();
+        Assert(svg.Contains("data-cfx-label=\"Births\"", StringComparison.Ordinal), "Region heatmaps should render through the map series surface.");
+        Assert(svg.Contains("data-cfx-map-color-scale=\"custom\"", StringComparison.Ordinal), "Region heatmaps should activate their provided color scale.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"region-map-region\"") == 4, "Region heatmaps should render every custom region polygon.");
+        Assert(svg.Contains("data-cfx-region=\"A\" data-cfx-region-name=\"Alpha\" data-cfx-value=\"0\"", StringComparison.Ordinal), "Region heatmaps should preserve each polygon's own value.");
+        Assert(svg.Contains("data-cfx-region=\"D\" data-cfx-region-name=\"Delta\" data-cfx-value=\"10\"", StringComparison.Ordinal), "Region heatmaps should preserve the high polygon's own value.");
+        Assert(svg.Contains("data-cfx-region=\"A\"", StringComparison.Ordinal) && svg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Region heatmaps should color low-valued polygons with the low scale color.");
+        Assert(svg.Contains("data-cfx-region=\"D\"", StringComparison.Ordinal) && svg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "Region heatmaps should color high-valued polygons with the high scale color.");
+        Assert(chart.ToPng().Length > 64, "Region heatmaps should render PNG output.");
+    }
+
+    private static void MapHeatmapsCanUseReportStyleRightScale() {
+        var scale = ChartMapColorScale
+            .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 50)
+            .WithValueRange(0, 100)
+            .WithLabels("0", "50 median", ">100")
+            .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
+
+        var reportDefinition = new ChartMapDefinition("report-regions", "Report Regions", new ChartRect(-12, -72, 47, 38), new[] {
+            new ChartMapRegion("A", "Alpha", "M-10 -70L0 -70L0 -60L-10 -60Z"),
+            new ChartMapRegion("B", "Beta", "M5 -62L15 -62L15 -50L5 -50Z"),
+            new ChartMapRegion("C", "Gamma", "M18 -55L32 -55L32 -40L18 -40Z")
+        });
+        var contextDefinition = new ChartMapDefinition("context", "Context", new ChartRect(-12, -72, 47, 38), new[] {
+            new ChartMapRegion("BG", "Background", "M-12 -72L35 -72L35 -34L-12 -34Z")
+        });
+        var region = Chart.Create()
+            .WithSize(760, 420)
+            .WithCard(false)
+            .WithPlotBackground(false)
+            .WithMapSurface(false)
+            .WithMapLabels(false)
+            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 160), 0.42)
+            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+            .WithRegionMapCoordinateBounds(-12, 35, 34, 72)
+            .AddMapBaseLayer(contextDefinition, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#D4D4D8"), 0.8)
+            .AddRegionHeatmap("Births", reportDefinition, new[] {
+                new ChartRegionMapItem("A", 0),
+                new ChartRegionMapItem("B", 50),
+                new ChartRegionMapItem("C", 100)
+            }, scale)
+            .AddMapBoundaryLayer(contextDefinition, ChartColor.FromHex("#111827"), 1.4);
+        var tile = Chart.Create()
+            .WithSize(760, 420)
+            .WithCard(false)
+            .WithPlotBackground(false)
+            .WithMapSurface(false)
+            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+            .AddTileHeatmap("Births", ChartTileMapCatalog.Get("us-states"), new[] {
+                new ChartRegionMapItem("CA", 0),
+                new ChartRegionMapItem("NY", 50),
+                new ChartRegionMapItem("TX", 100)
+            }, scale);
+
+        var regionSvg = region.ToSvg();
+        var tileSvg = tile.ToSvg();
+        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-border\"", StringComparison.Ordinal), "Region heatmaps should support right-side scale legends for report maps.");
+        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-midpoint-label\" data-cfx-value=\"50\"", StringComparison.Ordinal), "Right-side region scale legends should expose midpoint labels.");
+        Assert(!regionSvg.Contains("data-cfx-role=\"region-map-surface\"", StringComparison.Ordinal), "Report-style region maps should be able to suppress the map surface.");
+        Assert(regionSvg.Contains("data-cfx-role=\"map-base-layer\"", StringComparison.Ordinal), "Report-style region maps should render context base geography behind data regions.");
+        Assert(regionSvg.Contains("data-cfx-role=\"map-boundary-layer\"", StringComparison.Ordinal), "Report-style region maps should render boundary overlays above data regions.");
+        Assert(regionSvg.Contains("stroke-width=\"0.42\"", StringComparison.Ordinal), "Report-style region maps should allow quiet internal region strokes.");
+        Assert(regionSvg.Contains("data-cfx-source-left=\"-12\" data-cfx-source-top=\"-72\" data-cfx-source-width=\"47\" data-cfx-source-height=\"38\"", StringComparison.Ordinal), "Report-style region maps should expose explicit coordinate framing metadata.");
+        Assert(regionSvg.IndexOf("data-cfx-role=\"map-base-layer\"", StringComparison.Ordinal) < regionSvg.IndexOf("data-cfx-role=\"region-map-region\"", StringComparison.Ordinal) && regionSvg.IndexOf("data-cfx-role=\"region-map-region\"", StringComparison.Ordinal) < regionSvg.IndexOf("data-cfx-role=\"map-boundary-layer\"", StringComparison.Ordinal), "Cartographic region-map layers should render base geography, data regions, then boundary overlays.");
+        Assert(tileSvg.Contains("data-cfx-role=\"tile-map-scale-border\"", StringComparison.Ordinal), "Tile heatmaps should support right-side scale legends for report maps.");
+        Assert(!tileSvg.Contains("data-cfx-role=\"tile-map-surface\"", StringComparison.Ordinal), "Report-style tile maps should be able to suppress the map surface.");
+        Assert(region.ToPng().Length > 64, "Report-style region heatmaps should render PNG output.");
+        Assert(tile.ToPng().Length > 64, "Report-style tile heatmaps should render PNG output.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapCoordinateBounds(35, -12, 34, 72), "Region map coordinate bounds should reject inverted longitudes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapCoordinateBounds(-12, 35, 72, 34), "Region map coordinate bounds should reject inverted latitudes.");
+    }
+
+    private static void GeoJsonMapDefinitionsImportPolygonFeaturesForRegionHeatmaps() {
+        const string geoJson = """
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "id": "PL911",
+              "properties": { "NUTS_ID": "PL911", "NUTS_NAME": "Warszawski stoleczny", "CNTR_CODE": "PL" },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[20.5,52.0],[21.5,52.0],[21.5,52.5],[20.5,52.5],[20.5,52.0]]]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "NUTS_ID": "DE300", "NUTS_NAME": "Berlin" },
+              "geometry": {
+                "type": "MultiPolygon",
+                "coordinates": [[[[13.0,52.2],[13.8,52.2],[13.8,52.8],[13.0,52.8],[13.0,52.2]]]]
+              }
+            }
+          ]
+        }
+        """;
+        var definition = ChartMapDefinition.FromGeoJson("nuts-mini", "NUTS mini", geoJson, new ChartMapGeoJsonOptions {
+            AliasPropertyNames = new[] { "CNTR_CODE" }
+        });
+        Assert(definition.Id == "nuts-mini", "GeoJSON map definitions should preserve caller IDs.");
+        Assert(definition.Regions.Count == 2, "GeoJSON map definitions should import polygon and multipolygon features.");
+        Assert(definition.TryResolveRegion("PL911", out var plCode) && plCode == "PL911", "GeoJSON map definitions should resolve NUTS_ID codes.");
+        Assert(definition.TryResolveRegion("Warszawski stoleczny", out plCode) && plCode == "PL911", "GeoJSON map definitions should resolve imported region names.");
+        Assert(definition.TryResolveRegion("PL", out plCode) && plCode == "PL911", "GeoJSON map definitions should resolve configured alias fields.");
+        Assert(definition.Bounds.Width > 0 && definition.Bounds.Height > 0, "GeoJSON map definitions should derive valid path bounds.");
+
+        var scale = ChartMapColorScale.Sequential(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#065F46")).WithValueRange(0, 10);
+        var svg = Chart.Create()
+            .WithSize(420, 260)
+            .WithMapLabels(false)
+            .AddRegionHeatmap("Births", definition, new[] {
+                new ChartRegionMapItem("PL911", 0),
+                new ChartRegionMapItem("DE300", 10)
+            }, scale)
+            .ToSvg();
+        Assert(svg.Contains("data-cfx-map-id=\"nuts-mini\"", StringComparison.Ordinal), "GeoJSON map definitions should render through the region heatmap surface.");
+        Assert(svg.Contains("data-cfx-region=\"PL911\"", StringComparison.Ordinal), "GeoJSON region heatmaps should preserve imported region codes.");
+        Assert(svg.Contains("data-cfx-region=\"DE300\"", StringComparison.Ordinal), "GeoJSON multipolygon regions should preserve imported region codes.");
+        Assert(svg.Contains("fill=\"#F97316\"", StringComparison.Ordinal) && svg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "GeoJSON region heatmaps should color imported polygons from data values.");
+
+        var filtered = ChartMapDefinition.FromGeoJson("nuts-filtered", "NUTS filtered", geoJson, new ChartMapGeoJsonOptions {
+            AliasPropertyNames = new[] { "CNTR_CODE" }
+        }.IncludeFeaturePropertyValues("CNTR_CODE", "PL"));
+        Assert(filtered.Regions.Count == 1 && filtered.TryResolveRegion("PL911", out _), "GeoJSON map definitions should support property-value filters for metric-layer scopes.");
+    }
+
+    private static void GeoJsonMapDefinitionsCanLimitImportedCoordinateBounds() {
+        const string geoJson = """
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": { "NUTS_ID": "PL911", "NUTS_NAME": "Warszawski stoleczny" },
+              "geometry": { "type": "Polygon", "coordinates": [[[20.5,52.0],[21.5,52.0],[21.5,52.5],[20.5,52.5],[20.5,52.0]]] }
+            },
+            {
+              "type": "Feature",
+              "properties": { "NUTS_ID": "FRY10", "NUTS_NAME": "Guadeloupe" },
+              "geometry": { "type": "Polygon", "coordinates": [[[-62.0,15.5],[-61.0,15.5],[-61.0,16.5],[-62.0,16.5],[-62.0,15.5]]] }
+            },
+            {
+              "type": "Feature",
+              "properties": { "NUTS_ID": "CZ010", "NUTS_NAME": "Praha" },
+              "geometry": { "type": "Polygon", "coordinates": [[[14.0,49.8],[15.0,49.8],[15.0,50.3],[14.0,50.3],[14.0,49.8]]] }
+            }
+          ]
+        }
+        """;
+
+        var definition = ChartMapDefinition.FromGeoJson("nuts-bounded", "NUTS bounded", geoJson, new ChartMapGeoJsonOptions()
+            .WithCoordinateBounds(10, 30, 49, 60));
+
+        Assert(definition.Regions.Count == 2, "GeoJSON coordinate bounds should keep features intersecting the requested longitude and latitude window.");
+        Assert(definition.TryResolveRegion("PL911", out _), "GeoJSON coordinate bounds should keep matching regions.");
+        Assert(definition.TryResolveRegion("CZ010", out _), "GeoJSON coordinate bounds should include matching edge regions.");
+        Assert(!definition.TryResolveRegion("FRY10", out _), "GeoJSON coordinate bounds should omit far-away regions so imported map bounds remain focused.");
+        Assert(definition.Bounds.Left > 10 && definition.Bounds.Right < 30, "Bounded GeoJSON definitions should derive map bounds from kept regions only.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartMapDefinition.FromGeoJson("bad", "Bad", geoJson, new ChartMapGeoJsonOptions().WithCoordinateBounds(30, 10, 49, 60)), "GeoJSON coordinate bounds should validate ordered longitudes.");
+    }
+
+    private static void MapDefinitionsIgnoreAmbiguousAliases() {
+        var definition = new ChartMapDefinition("ambiguous", "Ambiguous", 20, 10, new[] {
+            new ChartMapRegion("A1", "Jura", "M0 0L10 0L10 10L0 10Z"),
+            new ChartMapRegion("B1", "Jura", "M10 0L20 0L20 10L10 10Z")
+        });
+
+        Assert(definition.TryResolveRegion("A1", out var code) && code == "A1", "Map definitions should keep canonical codes resolvable when names are duplicated.");
+        Assert(definition.TryResolveRegion("B1", out code) && code == "B1", "Map definitions should keep every canonical code resolvable when names are duplicated.");
+        Assert(!definition.TryResolveRegion("Jura", out _), "Map definitions should not resolve ambiguous display names to an arbitrary region.");
+    }
+
     private static void MapCatalogsExposeBuiltInDefinitionsById() {
         Assert(ChartMapCatalog.All().Count >= 1, "Map catalogs should expose built-in geography definitions.");
+        Assert(ChartMapCatalog.Entries().Count > ChartMapCatalog.All().Count, "Map catalogs should expose known external geography entries separately from embedded map definitions.");
         Assert(ChartTileMapCatalog.All().Count >= 1, "Tile-map catalogs should expose built-in tile definitions.");
         Assert(ChartMapCatalog.Get("us-states").Id == "us-states", "Map catalogs should resolve built-in definitions by ID.");
+        Assert(ChartMapCatalog.Load("us-states").Id == "us-states", "Unified map catalog loading should return embedded definitions without an asset directory.");
+        Assert(ChartMapCatalog.GetEntry("eu-nuts3-2021").JoinKey == "NUTS_ID", "Map catalog entries should document the metric join key for external maps.");
+        Assert(ChartMapCatalog.GetEntry("us-counties-2024").JoinKey == "GEOID", "Map catalog entries should document US Census join keys.");
         Assert(ChartTileMapCatalog.Get("us-states").Id == "us-states", "Tile-map catalogs should resolve built-in definitions by ID.");
         Assert(ChartMapCatalog.TryGet("missing", out _) == false, "Map catalogs should reject unknown IDs without throwing.");
+        Assert(ChartMapCatalog.TryGetEntry("missing", out _) == false, "Map catalog entries should reject unknown IDs without throwing.");
         Assert(ChartTileMapCatalog.TryGet("missing", out _) == false, "Tile-map catalogs should reject unknown IDs without throwing.");
         AssertThrows<ArgumentException>(() => ChartMapCatalog.Get("missing"), "Map catalogs should throw clear errors for unknown IDs.");
+        AssertThrows<ArgumentException>(() => ChartMapCatalog.GetEntry("missing"), "Map catalog entries should throw clear errors for unknown IDs.");
+        AssertThrows<ArgumentException>(() => ChartMapCatalog.Load("eu-nuts3-2021"), "Unified map catalog loading should require an asset directory for external entries.");
         AssertThrows<ArgumentException>(() => ChartTileMapCatalog.Get("missing"), "Tile-map catalogs should throw clear errors for unknown IDs.");
+    }
+
+    private static void MapCatalogEntriesLoadKnownExternalGeoJsonDefinitions() {
+        const string geoJson = """
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "id": "PL911",
+              "properties": { "NUTS_ID": "PL911", "NUTS_NAME": "Warszawski stoleczny", "CNTR_CODE": "PL" },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[20.5,52.0],[21.5,52.0],[21.5,52.5],[20.5,52.5],[20.5,52.0]]]
+              }
+            },
+            {
+              "type": "Feature",
+              "id": "DE300",
+              "properties": { "NUTS_ID": "DE300", "NUTS_NAME": "Berlin", "CNTR_CODE": "DE" },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[13.0,52.2],[13.8,52.2],[13.8,52.8],[13.0,52.8],[13.0,52.2]]]
+              }
+            }
+          ]
+        }
+        """;
+
+        var entry = ChartMapCatalog.GetEntry("eu-nuts3-2021");
+        var definition = entry.FromGeoJson(geoJson);
+        var definitionFromCatalog = ChartMapCatalog.FromGeoJson("eu-nuts3-2021", geoJson);
+        var filtered = ChartMapCatalog.FromGeoJson("eu-nuts3-2021", geoJson, options => options.IncludeFeaturePropertyValues("CNTR_CODE", "PL"));
+        var directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "chartforgex-map-catalog-tests-" + System.Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(directory);
+        try {
+            System.IO.File.WriteAllText(System.IO.Path.Combine(directory, entry.FileName), geoJson);
+            var definitionFromDirectory = ChartMapCatalog.FromAssetDirectory("eu-nuts3-2021", directory);
+            var definitionFromUnifiedLoad = ChartMapCatalog.Load("eu-nuts3-2021", directory);
+            var filteredFromUnifiedLoad = ChartMapCatalog.Load("eu-nuts3-2021", directory, options => options.IncludeFeaturePropertyValues("CNTR_CODE", "PL"));
+            Assert(definitionFromDirectory.TryResolveRegion("PL911", out _), "Catalog asset directories should load the entry's standard file name without repeating it at the call site.");
+            Assert(definitionFromUnifiedLoad.TryResolveRegion("PL911", out _), "Unified map catalog loading should use the same external entry file-name conventions.");
+            Assert(filteredFromUnifiedLoad.TryResolveRegion("PL911", out _) && !filteredFromUnifiedLoad.TryResolveRegion("DE300", out _), "Unified map catalog loading should support country-focused option refinements.");
+        } finally {
+            System.IO.Directory.Delete(directory, recursive: true);
+        }
+
+        Assert(definition.Id == "eu-nuts3-2021", "External catalog entries should create definitions with stable catalog IDs.");
+        Assert(definition.Name == "EU NUTS3 2021", "External catalog entries should create definitions with stable catalog names.");
+        Assert(definition.TryResolveRegion("PL911", out var code) && code == "PL911", "External catalog entries should use their configured code fields.");
+        Assert(definition.TryResolveRegion("Warszawski stoleczny", out code) && code == "PL911", "External catalog entries should use their configured name fields.");
+        Assert(definitionFromCatalog.TryResolveRegion("PL911", out _), "Catalog-level GeoJSON loading should use the resolved entry import options.");
+        Assert(filtered.TryResolveRegion("PL911", out _) && !filtered.TryResolveRegion("DE300", out _), "Catalog-level GeoJSON loading should support country-focused filters without raw importer setup.");
     }
 
     private static void MapCatalogsAndDefinitionsExposeImmutableLists() {

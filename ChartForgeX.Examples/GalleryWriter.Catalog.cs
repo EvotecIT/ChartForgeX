@@ -106,7 +106,12 @@ public static partial class GalleryWriter {
             "map-viewport-showcase-grid",
             "revenue-europe-country-map-light",
             "revenue-us-state-geo-map-light",
-            "revenue-us-state-tile-map-light"),
+            "revenue-us-state-tile-map-light",
+            "eu-industrial-births-nuts3-light",
+            "industrial-births-region-map-us-states-light",
+            "industrial-births-poland-nuts3-light",
+            "industrial-births-france-nuts3-light",
+            "industrial-births-germany-nuts3-light"),
         new(
             "Visual Systems",
             "Themes, brand kits, palettes, fonts, and pictorial symbol picker outputs.",

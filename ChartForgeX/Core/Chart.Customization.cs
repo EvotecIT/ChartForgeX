@@ -1,3 +1,4 @@
+using System;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
@@ -137,6 +138,90 @@ public sealed partial class Chart {
     public Chart WithMapScaleLegend(bool visible = true) { Options.ShowMapScaleLegend = visible; return this; }
 
     /// <summary>
+    /// Sets where map scale legends should be rendered.
+    /// </summary>
+    /// <param name="position">The map scale legend position.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithMapScaleLegendPosition(ChartMapScaleLegendPosition position) { Options.MapScaleLegendPosition = position; return this; }
+
+    /// <summary>
+    /// Sets whether map charts render their own background surface.
+    /// </summary>
+    /// <param name="visible">True to render the map surface; otherwise false.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithMapSurface(bool visible = true) { Options.ShowMapSurface = visible; return this; }
+
+    /// <summary>
+    /// Sets the stroke rendered around data regions on map charts.
+    /// </summary>
+    /// <param name="color">The stroke color. Pass null to use the theme card background.</param>
+    /// <param name="width">The stroke width in rendered pixels.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithMapRegionStroke(ChartColor? color, double width = 1.1) {
+        ChartGuards.Finite(width, nameof(width));
+        if (width < 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Map region stroke width must not be negative.");
+        Options.MapRegionStrokeColor = color;
+        Options.MapRegionStrokeWidth = width;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the source-coordinate viewport used to frame region maps.
+    /// </summary>
+    /// <param name="bounds">The source coordinate bounds to render.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithRegionMapBounds(ChartRect bounds) {
+        if (bounds.Width <= 0 || bounds.Height <= 0) throw new ArgumentOutOfRangeException(nameof(bounds), "Region map bounds must have positive width and height.");
+        Options.RegionMapBounds = bounds;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the longitude/latitude viewport used to frame equirectangular GeoJSON region maps.
+    /// </summary>
+    /// <param name="minimumLongitude">The minimum longitude in degrees.</param>
+    /// <param name="maximumLongitude">The maximum longitude in degrees.</param>
+    /// <param name="minimumLatitude">The minimum latitude in degrees.</param>
+    /// <param name="maximumLatitude">The maximum latitude in degrees.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithRegionMapCoordinateBounds(double minimumLongitude, double maximumLongitude, double minimumLatitude, double maximumLatitude) {
+        ValidateRegionMapLongitude(minimumLongitude, nameof(minimumLongitude));
+        ValidateRegionMapLongitude(maximumLongitude, nameof(maximumLongitude));
+        ValidateRegionMapLatitude(minimumLatitude, nameof(minimumLatitude));
+        ValidateRegionMapLatitude(maximumLatitude, nameof(maximumLatitude));
+        if (maximumLongitude <= minimumLongitude) throw new ArgumentOutOfRangeException(nameof(maximumLongitude), maximumLongitude, "Maximum longitude must be greater than minimum longitude.");
+        if (maximumLatitude <= minimumLatitude) throw new ArgumentOutOfRangeException(nameof(maximumLatitude), maximumLatitude, "Maximum latitude must be greater than minimum latitude.");
+        Options.RegionMapBounds = new ChartRect(minimumLongitude, -maximumLatitude, maximumLongitude - minimumLongitude, maximumLatitude - minimumLatitude);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a non-data geography layer behind region maps.
+    /// </summary>
+    /// <param name="definition">The map geometry definition.</param>
+    /// <param name="fillColor">The fill color for the layer.</param>
+    /// <param name="strokeColor">The optional stroke color.</param>
+    /// <param name="strokeWidth">The stroke width in rendered pixels.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddMapBaseLayer(ChartMapDefinition definition, ChartColor fillColor, ChartColor? strokeColor = null, double strokeWidth = 0.8) {
+        Options.MapBaseLayers.Add(new ChartMapLayer(definition, fillColor, strokeColor, strokeWidth, "map-base-layer"));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a non-data boundary layer above region maps.
+    /// </summary>
+    /// <param name="definition">The map geometry definition.</param>
+    /// <param name="strokeColor">The boundary stroke color.</param>
+    /// <param name="strokeWidth">The stroke width in rendered pixels.</param>
+    /// <param name="fillColor">The optional fill color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddMapBoundaryLayer(ChartMapDefinition definition, ChartColor strokeColor, double strokeWidth = 1.4, ChartColor? fillColor = null) {
+        Options.MapOverlayLayers.Add(new ChartMapLayer(definition, fillColor, strokeColor, strokeWidth, "map-boundary-layer"));
+        return this;
+    }
+
+    /// <summary>
     /// Sets the longitude/latitude viewport used by dotted map charts.
     /// </summary>
     /// <param name="viewport">The map viewport to render.</param>
@@ -216,6 +301,16 @@ public sealed partial class Chart {
         }
 
         throw new System.ArgumentException("Map point label was not found in the current dotted map: " + trimmed + ".", parameterName);
+    }
+
+    private static void ValidateRegionMapLongitude(double value, string parameterName) {
+        ChartGuards.Finite(value, parameterName);
+        if (value < -180 || value > 180) throw new ArgumentOutOfRangeException(parameterName, value, "Longitude must be between -180 and 180 degrees.");
+    }
+
+    private static void ValidateRegionMapLatitude(double value, string parameterName) {
+        ChartGuards.Finite(value, parameterName);
+        if (value < -90 || value > 90) throw new ArgumentOutOfRangeException(parameterName, value, "Latitude must be between -90 and 90 degrees.");
     }
 
     /// <summary>

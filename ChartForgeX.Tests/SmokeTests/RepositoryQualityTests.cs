@@ -161,7 +161,7 @@ internal static partial class SmokeTests {
         Assert(svgFunnel.Contains("ChartColorMath.TextOnBackground(color, 0.58)", StringComparison.Ordinal) && pngFunnel.Contains("ChartColorMath.TextOnBackground(color, 0.58)", StringComparison.Ordinal), "SVG and PNG funnel labels should share foreground contrast thresholds.");
         Assert(svgTree.Contains("ChartColorMath.TextOnBackground(labelColor, 0.70)", StringComparison.Ordinal) && pngTree.Contains("ChartColorMath.TextOnBackground(labelColor, 0.70)", StringComparison.Ordinal), "SVG and PNG tree label halos should share luminance thresholds.");
         Assert(svgCalendar.Contains("ChartHeatmapSurface.CalendarColor", StringComparison.Ordinal) && pngCalendar.Contains("ChartHeatmapSurface.CalendarColor", StringComparison.Ordinal), "SVG and PNG calendar heatmaps should share color and empty-cell math.");
-        Assert(svgRegionMap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal) && pngRegionMap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal), "SVG and PNG region maps should share heatmap surface color decisions.");
+        Assert(svgRegionMap.Contains("ChartHeatmapSurface.MapColor", StringComparison.Ordinal) && pngRegionMap.Contains("ChartHeatmapSurface.MapColor", StringComparison.Ordinal), "SVG and PNG region maps should share heatmap surface color decisions.");
         Assert(svgTileMap.Contains("ChartHeatmapSurface.MapNoDataColor", StringComparison.Ordinal) && pngTileMap.Contains("ChartHeatmapSurface.MapNoDataColor", StringComparison.Ordinal), "SVG and PNG tile maps should share no-data color decisions.");
         Assert(svgDottedMap.Contains("ChartDottedMapSurface.LandDotColor", StringComparison.Ordinal) && pngDottedMap.Contains("ChartDottedMapSurface.LandDotColor", StringComparison.Ordinal), "SVG and PNG dotted maps should use shared land-dot surface color decisions.");
         Assert(svgDottedMap.Contains("ChartDottedMapSurface.BoundaryColor", StringComparison.Ordinal) && pngDottedMap.Contains("ChartDottedMapSurface.BoundaryColor", StringComparison.Ordinal), "SVG and PNG dotted maps should use shared boundary surface color decisions.");
@@ -296,6 +296,9 @@ internal static partial class SmokeTests {
             "AddRegionMap",
             "AddTileMap",
             "ChartMapCatalog",
+            "ChartMapCatalogEntry",
+            "Load",
+            "FromAssetDirectory",
             "ChartMapDefinition",
             "ChartMapRegion",
             "ChartTileMapCatalog",
@@ -304,6 +307,13 @@ internal static partial class SmokeTests {
             "ChartRegionMapItem",
             "WithMapLabels",
             "WithMapScaleLegend",
+            "WithMapScaleLegendPosition",
+            "WithMapSurface",
+            "WithMapRegionStroke",
+            "WithRegionMapBounds",
+            "WithRegionMapCoordinateBounds",
+            "AddMapBaseLayer",
+            "AddMapBoundaryLayer",
             "AddGauge",
             "AddCircle",
             "AddRadialBar",

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added map-specific sequential and diverging color scales plus explicit region/tile heatmap APIs for country, state, district, NUTS, or custom-polygon choropleths, including GeoJSON FeatureCollection import with optional coordinate bounds/property filters, known external map catalog entries with source/join-key metadata, explicit region-map viewport framing, cartographic base and boundary layers, custom value ranges, midpoint legend labels, no-data colors, right-side map legends, report-style surface suppression, and matching SVG/PNG rendering.
 - Added private-runner GitHub Actions quality workflow.
 - Added `dotnet test` support for the smoke suite.
 - Added public input validation for invalid chart sizes, padding, scales, ranges, and non-finite data points.

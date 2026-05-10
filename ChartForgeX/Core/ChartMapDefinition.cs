@@ -11,6 +11,7 @@ public sealed class ChartMapDefinition {
     private readonly ChartMapRegion[] _regions;
     private readonly IReadOnlyList<ChartMapRegion> _regionsView;
     private readonly Dictionary<string, string> _aliases;
+    private readonly HashSet<string> _ambiguousAliases;
 
     /// <summary>
     /// Gets the stable map identifier.
@@ -61,6 +62,7 @@ public sealed class ChartMapDefinition {
         Bounds = bounds;
         var materialized = new List<ChartMapRegion>();
         _aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        _ambiguousAliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var region in regions) {
             if (_aliases.ContainsKey(region.Code)) throw new ArgumentException("Duplicate map region code: " + region.Code + ".", nameof(regions));
             materialized.Add(region);
@@ -73,6 +75,17 @@ public sealed class ChartMapDefinition {
         _regions = materialized.ToArray();
         _regionsView = Array.AsReadOnly(_regions);
     }
+
+    /// <summary>
+    /// Creates a map definition from a GeoJSON FeatureCollection or Feature.
+    /// </summary>
+    /// <param name="id">The stable map identifier.</param>
+    /// <param name="name">The display name.</param>
+    /// <param name="geoJson">The GeoJSON document.</param>
+    /// <param name="options">Optional import settings.</param>
+    /// <returns>A reusable map definition.</returns>
+    public static ChartMapDefinition FromGeoJson(string id, string name, string geoJson, ChartMapGeoJsonOptions? options = null) =>
+        ChartMapGeoJson.ToMapDefinition(id, name, geoJson, options);
 
     /// <summary>
     /// Resolves a caller-provided region code or alias to the canonical region code.
@@ -91,8 +104,11 @@ public sealed class ChartMapDefinition {
 
     private void AddAlias(string alias, string code) {
         if (string.IsNullOrWhiteSpace(alias)) return;
+        if (_ambiguousAliases.Contains(alias)) return;
         if (_aliases.TryGetValue(alias, out var existing) && !string.Equals(existing, code, StringComparison.OrdinalIgnoreCase)) {
-            throw new ArgumentException("Duplicate map region alias: " + alias + ".");
+            _aliases.Remove(alias);
+            _ambiguousAliases.Add(alias);
+            return;
         }
 
         _aliases[alias] = code;

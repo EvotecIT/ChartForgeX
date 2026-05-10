@@ -978,6 +978,22 @@
       }
     },
     {
+      "name": "industrial-births-region-map-us-states-light",
+      "width": 980,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 41,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1026949,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "license-cost-light",
       "width": 760,
       "height": 460,
