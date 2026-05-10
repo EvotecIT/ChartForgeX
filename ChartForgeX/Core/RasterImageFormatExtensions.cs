@@ -141,10 +141,10 @@ public static class RasterImageFormatExtensions {
         string extension;
         if (!hasDirectorySeparator && value.IndexOf('.') < 0) {
             extension = "." + value;
+        } else if (!hasDirectorySeparator && value[0] == '.' && value.IndexOf('.', 1) < 0) {
+            extension = value;
         } else {
-            extension = value[0] == '.' && !hasDirectorySeparator
-                ? value
-                : Path.GetExtension(value);
+            extension = Path.GetExtension(value);
         }
 
         if (string.IsNullOrWhiteSpace(extension)) throw new ArgumentException("Raster image file extension cannot be empty.", nameof(pathOrExtension));

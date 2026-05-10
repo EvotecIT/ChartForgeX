@@ -41,9 +41,12 @@ internal static partial class SmokeTests {
         Assert(RasterImageFormatExtensions.FromFileExtension("tif") == RasterImageFormat.Tiff, "Bare TIF extension tokens should resolve to TIFF format.");
         Assert(RasterImageFormatExtensions.FromFileExtension("report.tif") == RasterImageFormat.Tiff, "TIF paths should resolve to TIFF format.");
         Assert(RasterImageFormatExtensions.FromFileExtension("report.tiff") == RasterImageFormat.Tiff, "TIFF paths should resolve to TIFF format.");
+        Assert(RasterImageFormatExtensions.FromFileExtension(".report.bmp") == RasterImageFormat.Bmp, "Dot-prefixed BMP filenames should resolve from the final extension.");
+        Assert(RasterImageFormatExtensions.FromFileExtension(".report.tif") == RasterImageFormat.Tiff, "Dot-prefixed TIF filenames should resolve from the final extension.");
         Assert(RasterImageFormatExtensions.TryFromFileExtension("report.bmp", out var inferredBmp) && inferredBmp == RasterImageFormat.Bmp, "BMP extensions should resolve through the non-throwing helper.");
         Assert(RasterImageFormatExtensions.TryFromFileExtension("tiff", out var inferredBareTiff) && inferredBareTiff == RasterImageFormat.Tiff, "Bare TIFF extension tokens should resolve through the non-throwing helper.");
         Assert(RasterImageFormatExtensions.TryFromFileExtension("report.TIFF", out var inferredTiff) && inferredTiff == RasterImageFormat.Tiff, "TIFF extensions should resolve through the non-throwing helper.");
+        Assert(RasterImageFormatExtensions.TryFromFileExtension(".report.PPM", out var inferredDotPrefixedPpm) && inferredDotPrefixedPpm == RasterImageFormat.Ppm, "Dot-prefixed filenames should resolve through the non-throwing helper.");
         Assert(!RasterImageFormatExtensions.TryFromFileExtension("report.gif", out _), "Unsupported raster extensions should not resolve through the non-throwing helper.");
         Assert(!RasterImageFormatExtensions.TryFromFileExtension(null, out _), "Null raster extensions should not resolve through the non-throwing helper.");
         Assert(!RasterImageFormatExtensions.TryFromFileExtension(" ", out _), "Empty raster extensions should not resolve through the non-throwing helper.");
@@ -100,6 +103,7 @@ internal static partial class SmokeTests {
         AssertExtensionInferredSave("chart", ".png", path => SampleChart().SaveImage(path), bytes => AssertPngHeader(bytes));
         AssertExtensionInferredSave("chart", ".bmp", path => SampleChart().Save(path), bytes => AssertBmpHeader(bytes, 640, 360));
         AssertExtensionInferredSave("chart", ".tif", path => SampleChart().SaveImage(path), bytes => AssertTiffHeader(bytes, 640, 360));
+        AssertDotPrefixedExtensionInferredSave(path => SampleChart().SaveImage(path), bytes => AssertBmpHeader(bytes, 640, 360));
         AssertExtensionInferredSave("grid", ".ppm", path => GridForInferredSave().SaveImage(path), bytes => AssertPpmHeader(bytes, null, null));
         AssertExtensionInferredSave("block", ".png", path => MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%").Save(path), bytes => AssertPngHeader(bytes));
         AssertExtensionInferredSave("visual-grid", ".html", path => VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().WithMetric("CPU", "42%") }).SaveImage(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Visual grid SaveImage should infer HTML from the output extension."));
@@ -201,6 +205,16 @@ internal static partial class SmokeTests {
 
     private static void AssertExtensionInferredSave(string prefix, string extension, Action<string> saveAction, Action<byte[]> assertOutput) {
         var path = Path.Combine(Path.GetTempPath(), "chartforgex-save-image-" + prefix + "-" + Guid.NewGuid().ToString("N") + extension);
+        try {
+            saveAction(path);
+            assertOutput(File.ReadAllBytes(path));
+        } finally {
+            if (File.Exists(path)) File.Delete(path);
+        }
+    }
+
+    private static void AssertDotPrefixedExtensionInferredSave(Action<string> saveAction, Action<byte[]> assertOutput) {
+        var path = Path.Combine(Path.GetTempPath(), ".chartforgex-save-image-" + Guid.NewGuid().ToString("N") + ".bmp");
         try {
             saveAction(path);
             assertOutput(File.ReadAllBytes(path));
