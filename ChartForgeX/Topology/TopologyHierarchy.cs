@@ -303,14 +303,24 @@ public static class TopologyHierarchyExtensions {
     }
 
     private static void ApplyHierarchyPorts(TopologyEdge edge, TopologyLayoutDirection direction) {
-        if (direction == TopologyLayoutDirection.LeftToRight) {
-            edge.SourcePort = TopologyEdgePort.Right;
-            edge.TargetPort = TopologyEdgePort.Left;
-            return;
+        switch (direction) {
+            case TopologyLayoutDirection.LeftToRight:
+                edge.SourcePort = TopologyEdgePort.Right;
+                edge.TargetPort = TopologyEdgePort.Left;
+                break;
+            case TopologyLayoutDirection.RightToLeft:
+                edge.SourcePort = TopologyEdgePort.Left;
+                edge.TargetPort = TopologyEdgePort.Right;
+                break;
+            case TopologyLayoutDirection.BottomToTop:
+                edge.SourcePort = TopologyEdgePort.Top;
+                edge.TargetPort = TopologyEdgePort.Bottom;
+                break;
+            default:
+                edge.SourcePort = TopologyEdgePort.Bottom;
+                edge.TargetPort = TopologyEdgePort.Top;
+                break;
         }
-
-        edge.SourcePort = TopologyEdgePort.Bottom;
-        edge.TargetPort = TopologyEdgePort.Top;
     }
 
     private static Dictionary<string, int> ResolveLevels(IReadOnlyList<TopologyHierarchyItem> items, IReadOnlyDictionary<string, TopologyHierarchyItem> byId, int rootLevel) {

@@ -18,7 +18,7 @@ internal static partial class TopologyLayoutEngine {
         if (totalWidth > availableW + 0.0001) return false;
         var minLeft = left;
         var maxRight = left + availableW;
-        var currentLeft = minLeft;
+        var currentLeft = minLeft + Math.Max(0, (availableW - totalWidth) / 2);
         foreach (var bucket in buckets) {
             bucket.Left = Math.Max(bucket.Center - bucket.Width / 2, currentLeft);
             currentLeft = bucket.Left + bucket.Width + HierarchyBucketGap;
@@ -61,7 +61,7 @@ internal static partial class TopologyLayoutEngine {
         if (totalHeight > availableH + 0.0001) return false;
         var minTop = top;
         var maxBottom = top + availableH;
-        var currentTop = minTop;
+        var currentTop = minTop + Math.Max(0, (availableH - totalHeight) / 2);
         foreach (var bucket in buckets) {
             bucket.Top = Math.Max(bucket.Center - bucket.Height / 2, currentTop);
             currentTop = bucket.Top + bucket.Height + HierarchyBucketGap;

@@ -189,6 +189,10 @@ function Assert-TopologyVisualCoverage {
         'visual-topology-explorer',
         'visual-replication-mesh-explorer',
         'visual-subnets-site-links-map',
+        'visual-nested-user-hierarchy',
+        'visual-nested-user-hierarchy-bottom-top',
+        'visual-nested-user-hierarchy-left-right',
+        'visual-nested-user-hierarchy-right-left',
         'visual-geographic-topology-map',
         'visual-geographic-region-map',
         'visual-site-distribution-map',
@@ -196,6 +200,64 @@ function Assert-TopologyVisualCoverage {
     )) {
         if (-not $artifactNames.ContainsKey($requiredName)) {
             throw "Topology visual coverage manifest is missing required artifact: $requiredName. See $manifestPath."
+        }
+    }
+
+    $nestedHierarchySvg = Join-Path $TopologyOutput 'visual-nested-user-hierarchy.svg'
+    $nestedHierarchySource = Get-Content -Path $nestedHierarchySvg -Raw
+    foreach ($requiredFragment in @(
+        'data-layout-mode="Layered"',
+        'data-layout-direction="TopToBottom"',
+        'data-cfx-meta-hierarchy-route="shared-bus"',
+        'data-cfx-meta-hierarchy-route-tier',
+        'data-fit-content-to-viewport="true"'
+    )) {
+        if (-not $nestedHierarchySource.Contains($requiredFragment)) {
+            throw "Topology nested hierarchy visual artifact is missing required SVG fragment '$requiredFragment'. See $nestedHierarchySvg."
+        }
+    }
+
+    $nestedHierarchyLeftRightSvg = Join-Path $TopologyOutput 'visual-nested-user-hierarchy-left-right.svg'
+    $nestedHierarchyLeftRightSource = Get-Content -Path $nestedHierarchyLeftRightSvg -Raw
+    foreach ($requiredFragment in @(
+        'data-layout-mode="Layered"',
+        'data-layout-direction="LeftToRight"',
+        'data-cfx-meta-hierarchy-route="shared-bus"',
+        'data-cfx-meta-hierarchy-route-tier',
+        'data-fit-content-to-viewport="true"'
+    )) {
+        if (-not $nestedHierarchyLeftRightSource.Contains($requiredFragment)) {
+            throw "Topology nested left-to-right hierarchy visual artifact is missing required SVG fragment '$requiredFragment'. See $nestedHierarchyLeftRightSvg."
+        }
+    }
+
+    $nestedHierarchyBottomTopSvg = Join-Path $TopologyOutput 'visual-nested-user-hierarchy-bottom-top.svg'
+    $nestedHierarchyBottomTopSource = Get-Content -Path $nestedHierarchyBottomTopSvg -Raw
+    foreach ($requiredFragment in @(
+        'data-layout-mode="Layered"',
+        'data-layout-direction="BottomToTop"',
+        'data-cfx-meta-hierarchy-route="shared-bus"',
+        'data-cfx-meta-hierarchy-route-tier',
+        'data-cfx-meta-hierarchy-route-busy',
+        'data-fit-content-to-viewport="true"'
+    )) {
+        if (-not $nestedHierarchyBottomTopSource.Contains($requiredFragment)) {
+            throw "Topology nested bottom-to-top hierarchy visual artifact is missing required SVG fragment '$requiredFragment'. See $nestedHierarchyBottomTopSvg."
+        }
+    }
+
+    $nestedHierarchyRightLeftSvg = Join-Path $TopologyOutput 'visual-nested-user-hierarchy-right-left.svg'
+    $nestedHierarchyRightLeftSource = Get-Content -Path $nestedHierarchyRightLeftSvg -Raw
+    foreach ($requiredFragment in @(
+        'data-layout-mode="Layered"',
+        'data-layout-direction="RightToLeft"',
+        'data-cfx-meta-hierarchy-route="shared-bus"',
+        'data-cfx-meta-hierarchy-route-tier',
+        'data-cfx-meta-hierarchy-route-busx',
+        'data-fit-content-to-viewport="true"'
+    )) {
+        if (-not $nestedHierarchyRightLeftSource.Contains($requiredFragment)) {
+            throw "Topology nested right-to-left hierarchy visual artifact is missing required SVG fragment '$requiredFragment'. See $nestedHierarchyRightLeftSvg."
         }
     }
 

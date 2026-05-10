@@ -118,6 +118,7 @@ internal static partial class SmokeTests {
             CreateSampleTopologyChart(TopologyLayoutMode.Layered),
             CreateSampleTopologyChart(TopologyLayoutMode.Matrix),
             CreateSampleTopologyChart(TopologyLayoutMode.DenseGrouped),
+            CreateSampleTopologyChart(TopologyLayoutMode.ForceDirected),
             CreateSampleTopologyChart(TopologyLayoutMode.Geographic)
         }) {
             var svg = chart.ToSvg();

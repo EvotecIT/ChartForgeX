@@ -21,6 +21,9 @@ internal static partial class TopologyVisualExamples {
         var replicationHealthOptions = new TopologyRenderOptions { IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Explicit }
             .WithMonitoringDashboardStyle()
             .WithNeutralGroupSurfaces();
+        var denseHierarchyOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
+            .WithMonitoringDashboardStyle()
+            .WithFitContentToViewport();
         var topologyExplorerOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
             .WithMonitoringDashboardStyle()
             .WithSelectedGroup("APAC")
@@ -39,6 +42,10 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-service-dependency-map", BuildServiceDependencyMap(), "Service Dependency Map", "Generic service dependency topology showing upstream/downstream service health without TestimoX-specific types.");
         SaveTopology(target, artifacts, "visual-directory-level-window", BuildDirectoryLevelWindow(), "Directory Level Window", "Forest/domain/group/user hierarchy rendered as levels 2..3 with ancestor breadcrumb context.", new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle());
         SaveTopology(target, artifacts, "visual-team-hierarchy-builder", BuildTeamHierarchyBuilder(), "Team Hierarchy Builder", "Team/org topology generated from parent-child member data with level filtering and wrapped crowded levels.", new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle());
+        SaveTopology(target, artifacts, "visual-nested-user-hierarchy", BuildNestedUserHierarchy(), "Nested User Hierarchy", "Parent-child directory fixture with nested OUs, groups, and users using tiered hierarchy buses and fit-to-panel rendering.", denseHierarchyOptions);
+        SaveTopology(target, artifacts, "visual-nested-user-hierarchy-left-right", BuildNestedUserHierarchy(TopologyLayoutDirection.LeftToRight), "Nested User Hierarchy Left-to-Right", "The same parent-child model rendered horizontally to validate alternate hierarchy flow and bus diagnostics.", denseHierarchyOptions);
+        SaveTopology(target, artifacts, "visual-nested-user-hierarchy-bottom-top", BuildNestedUserHierarchy(TopologyLayoutDirection.BottomToTop), "Nested User Hierarchy Bottom-to-Top", "The same parent-child model mirrored vertically to validate upward hierarchy flow and bus diagnostics.", denseHierarchyOptions);
+        SaveTopology(target, artifacts, "visual-nested-user-hierarchy-right-left", BuildNestedUserHierarchy(TopologyLayoutDirection.RightToLeft), "Nested User Hierarchy Right-to-Left", "The same parent-child model mirrored horizontally to validate reverse hierarchy flow and bus diagnostics.", denseHierarchyOptions);
         SaveTopology(target, artifacts, "visual-geographic-topology-map", BuildGeographicTopologyMap(), "Geographic Topology Map", "Topology-native geographic layout with typed coordinates, projected site markers, curved WAN route arcs, labels, regional callouts, and SVG/PNG metadata hooks.", new TopologyRenderOptions { IncludeGroups = false, IncludeGeographicCallouts = true, GeographicCalloutMaxItems = 3, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle().WithSelectedGroup("APAC").WithSelectedNode("apac-hub").WithSelectedEdge("emea-apac"));
 
         SaveMap(target, artifacts, "visual-geographic-region-map", BuildGeographicRegionMap(), "Geographic Region Map", "Dotted-map chart with AMER, EMEA, and APAC hubs, weighted markers, and cross-region route overlays.");
@@ -676,6 +683,10 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("    \"visual-topology-explorer\",");
         sb.AppendLine("    \"visual-replication-mesh-explorer\",");
         sb.AppendLine("    \"visual-subnets-site-links-map\",");
+        sb.AppendLine("    \"visual-nested-user-hierarchy\",");
+        sb.AppendLine("    \"visual-nested-user-hierarchy-bottom-top\",");
+        sb.AppendLine("    \"visual-nested-user-hierarchy-left-right\",");
+        sb.AppendLine("    \"visual-nested-user-hierarchy-right-left\",");
         sb.AppendLine("    \"visual-geographic-topology-map\"");
         sb.AppendLine("  ],");
         sb.AppendLine("  \"artifacts\": [");

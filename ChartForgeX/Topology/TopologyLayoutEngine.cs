@@ -32,12 +32,16 @@ internal static partial class TopologyLayoutEngine {
             case TopologyLayoutMode.DenseGrouped:
                 ApplyDenseGrouped(copy);
                 break;
+            case TopologyLayoutMode.ForceDirected:
+                ApplyForceDirected(copy);
+                break;
             case TopologyLayoutMode.Geographic:
                 ApplyGeographic(copy);
                 break;
         }
 
         TopologyLayoutNormalizer.Normalize(copy, options);
+        SyncHierarchyRouteDiagnostics(copy);
         return copy;
     }
 
@@ -61,8 +65,8 @@ internal static partial class TopologyLayoutEngine {
                     node.Height = 44;
                     break;
                 case TopologyNodeDisplayMode.Dot:
-                    node.Width = 22;
-                    node.Height = 22;
+                    node.Width = Math.Min(node.Width, 22);
+                    node.Height = Math.Min(node.Height, 22);
                     break;
                 case TopologyNodeDisplayMode.Hidden:
                     node.Width = Math.Min(node.Width, 1);
@@ -231,12 +235,14 @@ internal static partial class TopologyLayoutEngine {
         var layers = OrderLayeredGroups(nodes.GroupBy(node => GetLayer(node)).OrderBy(group => group.Key));
         var pad = Math.Max(24, chart.Viewport.Padding);
         var top = pad + (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72);
-        if (chart.LayoutDirection == TopologyLayoutDirection.LeftToRight) {
+        if (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft) {
             ApplyLayeredLeftToRight(chart, layers, pad, top);
+            if (chart.LayoutDirection == TopologyLayoutDirection.RightToLeft) MirrorLayoutHorizontally(chart, pad, chart.Viewport.Width - pad);
             return;
         }
 
         ApplyLayeredTopToBottom(chart, layers, pad, top);
+        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) MirrorLayoutVertically(chart, top, chart.Viewport.Height - pad - LegendReservedHeight(chart.Legend));
     }
 
     private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top) {
@@ -380,23 +386,50 @@ internal static partial class TopologyLayoutEngine {
         var rows = (int)Math.Ceiling(chart.Groups.Count / (double)columns);
         var cellW = (chart.Viewport.Width - pad * 2 - (columns - 1) * gap) / columns;
         var cellH = (chart.Viewport.Height - pad * 2 - titleOffset - legendOffset - (rows - 1) * gap) / rows;
+        var placements = new List<(TopologyGroup Group, List<TopologyNode> Nodes, int Column, int Row)>(chart.Groups.Count);
+        var columnWidths = new double[columns];
+        var rowHeights = new double[rows];
 
         for (var i = 0; i < chart.Groups.Count; i++) {
             var group = chart.Groups[i];
             var nodes = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).ToList();
             var col = i % columns;
             var row = i / columns;
-            if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(nodes));
-            if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(nodes));
+            var policy = ResolveDenseGroupPolicy(group, nodes);
+            if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(nodes, policy));
+            if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(nodes, policy));
+            columnWidths[col] = Math.Max(columnWidths[col], group.Width);
+            rowHeights[row] = Math.Max(rowHeights[row], group.Height);
+            placements.Add((group, nodes, col, row));
+        }
+
+        var columnX = new double[columns];
+        var nextX = pad;
+        for (var col = 0; col < columns; col++) {
+            columnX[col] = nextX;
+            nextX += columnWidths[col] + gap;
+        }
+
+        var rowY = new double[rows];
+        var nextY = pad + titleOffset;
+        for (var row = 0; row < rows; row++) {
+            rowY[row] = nextY;
+            nextY += rowHeights[row] + gap;
+        }
+
+        foreach (var placement in placements) {
+            var group = placement.Group;
             if (IsUnset(group.X) && IsUnset(group.Y)) {
-                group.X = pad + col * (cellW + gap);
-                group.Y = pad + titleOffset + row * (cellH + gap);
+                group.X = columnX[placement.Column];
+                group.Y = rowY[placement.Row];
             }
 
-            PlaceDenseNodesInGroup(nodes, group);
+            PlaceDenseNodesInGroup(placement.Nodes, group);
         }
 
         ApplyDenseGroupEdgeDefaults(chart);
+        if (chart.LayoutDirection == TopologyLayoutDirection.RightToLeft) MirrorLayoutHorizontally(chart, pad, chart.Viewport.Width - pad);
+        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) MirrorLayoutVertically(chart, pad + titleOffset, chart.Viewport.Height - pad - legendOffset);
     }
 
     private static void ApplyGeographic(TopologyChart chart) {
@@ -476,12 +509,12 @@ internal static partial class TopologyLayoutEngine {
         }
 
         if (policy == TopologyGroupLayoutPolicy.Grid || policy == TopologyGroupLayoutPolicy.CollapsedDots) {
-            PlaceDenseGrid(nodes, group, policy == TopologyGroupLayoutPolicy.CollapsedDots ? 5 : 4);
+            PlaceDenseGrid(nodes, group, policy == TopologyGroupLayoutPolicy.CollapsedDots ? DenseCollapsedDotColumns(nodes.Count) : 4, policy == TopologyGroupLayoutPolicy.CollapsedDots ? 12 : 34);
             return;
         }
 
         if (policy == TopologyGroupLayoutPolicy.PairRows) {
-            PlaceDenseGrid(nodes, group, 2);
+            PlaceDenseGrid(nodes, group, 2, 34);
             return;
         }
 
@@ -531,19 +564,20 @@ internal static partial class TopologyLayoutEngine {
         }
     }
 
-    private static void PlaceDenseGrid(IList<TopologyNode> nodes, TopologyGroup group, int maxColumns) {
+    private static void PlaceDenseGrid(IList<TopologyNode> nodes, TopologyGroup group, int maxColumns, double rowGap) {
         var innerX = group.X + 18;
         var innerY = group.Y + 74;
         var usableW = Math.Max(80, group.Width - 36);
         var columns = Math.Max(1, Math.Min(maxColumns, (int)Math.Ceiling(Math.Sqrt(nodes.Count))));
         var cellW = usableW / columns;
+        var maxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(44).Max();
         for (var i = 0; i < nodes.Count; i++) {
             var node = nodes[i];
             if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
             var col = i % columns;
             var row = i / columns;
             node.X = innerX + col * cellW + (cellW - node.Width) / 2;
-            node.Y = innerY + row * (node.Height + 34);
+            node.Y = innerY + row * (maxNodeHeight + rowGap);
         }
     }
 
@@ -632,7 +666,8 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private static int DenseGroupColumns(TopologyChart chart) {
-        if (chart.LayoutDirection == TopologyLayoutDirection.LeftToRight) return Math.Max(1, chart.Groups.Count);
+        if (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft) return Math.Max(1, chart.Groups.Count);
+        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) return 1;
         if (chart.Groups.Count <= 4) return chart.Groups.Count;
         return Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(chart.Groups.Count))));
     }
@@ -640,24 +675,6 @@ internal static partial class TopologyLayoutEngine {
     private static int DenseNodeColumns(int count) {
         if (count <= 0) return 1;
         return Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(count))));
-    }
-
-    private static double DenseGroupWidth(IList<TopologyNode> nodes) {
-        if (nodes.Count == 0) return 190;
-        var remaining = Math.Max(0, nodes.Count - 1);
-        var columns = DenseNodeColumns(remaining);
-        var maxNodeWidth = nodes.Select(node => node.Width).DefaultIfEmpty(90).Max();
-        return Math.Max(190, 36 + columns * Math.Max(70, maxNodeWidth + 18));
-    }
-
-    private static double DenseGroupHeight(IList<TopologyNode> nodes) {
-        if (nodes.Count == 0) return 170;
-        var hub = FindDenseHub(nodes);
-        var remaining = nodes.Count(node => !ReferenceEquals(node, hub));
-        var columns = DenseNodeColumns(remaining);
-        var rows = remaining == 0 ? 0 : (int)Math.Ceiling(remaining / (double)columns);
-        var maxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max();
-        return 98 + (hub?.Height ?? 0) + (rows == 0 ? 0 : 40 + rows * (maxNodeHeight + 34));
     }
 
     private static int GetLayer(TopologyNode node) {

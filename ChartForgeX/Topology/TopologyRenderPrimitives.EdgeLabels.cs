@@ -33,7 +33,7 @@ internal static partial class TopologyRenderPrimitives {
             var maxText = Math.Max(label.Length, Math.Max(secondary.Length, tertiary.Length));
             var lineCount = (string.IsNullOrWhiteSpace(label) ? 0 : 1) + (string.IsNullOrWhiteSpace(secondary) ? 0 : 1) + (string.IsNullOrWhiteSpace(tertiary) ? 0 : 1);
             var width = Math.Max(48, maxText * 7.2 + 18);
-            var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 1;
+            var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 0;
             var height = EdgeLabelHeight(lineCount, options);
             var obstacles = new List<LabelBox>(nodeBoxes.Count + (options.IncludeGroups && options.IncludeGroupLabels ? groupHeaderBoxes.Count : 0) + (options.IncludeGroups ? groupBoxes.Count : 0));
             obstacles.AddRange(nodeBoxes);
@@ -41,7 +41,7 @@ internal static partial class TopologyRenderPrimitives {
             if (options.IncludeGroups && IsInterGroupEdge(edge, nodes)) obstacles.AddRange(groupBoxes);
             var preferredGroup = options.IncludeGroups ? SameGroupBox(edge, nodes, chart.Groups) : null;
             var currentOrder = edgeRenderOrders.TryGetValue(edge, out var order) ? order : 0;
-            var routeClearance = avoidOwnRoute ? AutomaticRouteClearanceOffset(points, labelPoint, width, height, chart.Viewport, chart.Legend) : new ChartPoint(0, 0);
+            var routeClearance = avoidOwnRoute ? AutomaticRouteClearanceOffset(points, labelPoint, width, height, lineCount, chart.Viewport, chart.Legend) : new ChartPoint(0, 0);
             var baseX = labelPoint.X + edge.LabelOffsetX + (Math.Abs(edge.LabelOffsetX) < 0.000001 ? routeClearance.X : 0);
             var baseY = labelPoint.Y + edge.LabelOffsetY + (Math.Abs(edge.LabelOffsetY) < 0.000001 ? routeClearance.Y : 0);
             var center = PlaceLabel(edge, baseX, baseY, width, height, chart.Viewport, chart.Legend, obstacles, placed, edgeSegments, edgeRenderOrders, currentOrder, avoidOwnRoute, IsMonitoringDashboardStyle(options), preferredGroup);
@@ -74,7 +74,7 @@ internal static partial class TopologyRenderPrimitives {
             var clamped = ClampLabel(candidate, width, height, viewport, legend);
             var box = LabelBox.FromCenter(clamped.X, clamped.Y, width, height);
             var score = OverlapScore(box, nodeBoxes) * 4 +
-                OverlapScore(box, placedLabels, placedPadding) * (monitoringStyle ? 4 : 2) +
+                OverlapScore(box, placedLabels, placedPadding) * (monitoringStyle ? 10 : 2) +
                 EdgeOverlapScore(edge, box, edgeSegments, edgeRenderOrders, currentRenderOrder, avoidOwnRoute) * 8 +
                 Distance(new ChartPoint(baseX, baseY), clamped) * 0.05 +
                 SameGroupPenalty(preferredGroup, clamped, monitoringStyle);
@@ -124,19 +124,21 @@ internal static partial class TopologyRenderPrimitives {
         return lineCount == 2 ? 38 : 52;
     }
 
-    private static ChartPoint AutomaticRouteClearanceOffset(IReadOnlyList<ChartPoint> points, ChartPoint labelPoint, double width, double height, TopologyViewport viewport, TopologyLegend? legend) {
+    private static ChartPoint AutomaticRouteClearanceOffset(IReadOnlyList<ChartPoint> points, ChartPoint labelPoint, double width, double height, int lineCount, TopologyViewport viewport, TopologyLegend? legend) {
         var segment = NearestRouteSegment(points, labelPoint);
         var dx = segment.End.X - segment.Start.X;
         var dy = segment.End.Y - segment.Start.Y;
+        var horizontalClearance = lineCount <= 1 ? 26 : 46;
+        var verticalClearance = lineCount <= 1 ? 24 : 42;
         if (Math.Abs(dy) > Math.Abs(dx)) {
             var leftSpace = labelPoint.X - viewport.Padding - width / 2;
             var rightSpace = viewport.Width - viewport.Padding - (labelPoint.X + width / 2);
-            return new ChartPoint(rightSpace >= leftSpace ? 46 : -46, 0);
+            return new ChartPoint(rightSpace >= leftSpace ? horizontalClearance : -horizontalClearance, 0);
         }
 
         var topSpace = labelPoint.Y - viewport.Padding - height / 2;
         var bottomSpace = viewport.Height - viewport.Padding - LegendReservedHeight(legend) - (labelPoint.Y + height / 2);
-        return new ChartPoint(0, bottomSpace >= topSpace ? 42 : -42);
+        return new ChartPoint(0, bottomSpace >= topSpace ? verticalClearance : -verticalClearance);
     }
 
     private static (ChartPoint Start, ChartPoint End) NearestRouteSegment(IReadOnlyList<ChartPoint> points, ChartPoint labelPoint) {
@@ -183,7 +185,17 @@ internal static partial class TopologyRenderPrimitives {
             new ChartPoint(0, -104),
             new ChartPoint(0, 104),
             new ChartPoint(124, 0),
-            new ChartPoint(-124, 0)
+            new ChartPoint(-124, 0),
+            new ChartPoint(0, -142),
+            new ChartPoint(0, 142),
+            new ChartPoint(0, -184),
+            new ChartPoint(0, 184),
+            new ChartPoint(148, -112),
+            new ChartPoint(-148, -112),
+            new ChartPoint(148, 112),
+            new ChartPoint(-148, 112),
+            new ChartPoint(186, 0),
+            new ChartPoint(-186, 0)
         };
         foreach (var offset in offsets) yield return new ChartPoint(x + offset.X, y + offset.Y);
     }

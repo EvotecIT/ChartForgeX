@@ -18,6 +18,8 @@ public enum TopologyLayoutMode {
     Matrix,
     /// <summary>Place groups in dense deterministic panels and pack each group's hub/branch nodes inside the panel.</summary>
     DenseGrouped,
+    /// <summary>Place connected nodes with a deterministic force-directed simulation using repulsion, link attraction, and group gravity.</summary>
+    ForceDirected,
     /// <summary>Project nodes and groups from longitude/latitude coordinates into the topology viewport.</summary>
     Geographic
 }
@@ -29,7 +31,11 @@ public enum TopologyLayoutDirection {
     /// <summary>Place layers from top to bottom.</summary>
     TopToBottom,
     /// <summary>Place layers from left to right.</summary>
-    LeftToRight
+    LeftToRight,
+    /// <summary>Place layers from bottom to top.</summary>
+    BottomToTop,
+    /// <summary>Place layers from right to left.</summary>
+    RightToLeft
 }
 
 /// <summary>

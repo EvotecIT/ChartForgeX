@@ -612,6 +612,10 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-edge-id", edge.Id)
                     .Attribute("data-label-x", cx)
                     .Attribute("data-label-y", cy)
+                    .Attribute("data-label-width", layout.Width)
+                    .Attribute("data-label-height", layout.Height)
+                    .Attribute("data-label-line-count", EdgeLabelLineCount(layout))
+                    .Attribute("data-label-clearance", ShouldDrawEdgeLabelClearance(layout, options) ? "true" : "false")
                     .Attribute("data-edge-label-render-order", renderOrder)
                     .Attribute("data-cfx-selected", selected);
                 if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
@@ -635,6 +639,14 @@ public sealed partial class TopologySvgRenderer {
         }
 
         root.AddElement(layer);
+    }
+
+    private static int EdgeLabelLineCount(TopologyEdgeLabelLayout layout) {
+        var count = 0;
+        if (!string.IsNullOrWhiteSpace(layout.Label)) count++;
+        if (!string.IsNullOrWhiteSpace(layout.SecondaryLabel)) count++;
+        if (!string.IsNullOrWhiteSpace(layout.TertiaryLabel)) count++;
+        return count;
     }
 
     private static void AddEdgeLabelLines(SvgElement group, TopologyEdgeLabelLayout layout, double cx, double cy, string primaryColor, string secondaryColor, TopologyTheme theme, TopologyRenderOptions options) {

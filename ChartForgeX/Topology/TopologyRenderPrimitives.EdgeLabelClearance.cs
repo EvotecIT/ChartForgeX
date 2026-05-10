@@ -7,7 +7,7 @@ internal static partial class TopologyRenderPrimitives {
         if (!string.IsNullOrWhiteSpace(layout.Label)) lineCount++;
         if (!string.IsNullOrWhiteSpace(layout.SecondaryLabel)) lineCount++;
         if (!string.IsNullOrWhiteSpace(layout.TertiaryLabel)) lineCount++;
-        return lineCount > 1;
+        return lineCount > 0;
     }
 
     public static TopologyGroup? EdgeLabelClearanceGroup(TopologyChart chart, TopologyEdgeLabelLayout layout) {
