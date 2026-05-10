@@ -13,6 +13,8 @@ Use it for static or embeddable diagrams such as service maps, SQL/server depend
 
 Groups, nodes, and edges can carry `Href`, `Tooltip`, `CssClass`, `Metrics`, and `Metadata`. Edges can also carry explicit `Waypoints` for deterministic manual route bends around dense content. Use `SourcePort`, `TargetPort`, or `.WithEdgePorts(...)` when a route should attach to a specific node side such as hub-to-hub site links, vertical replication paths, or selected-object connectivity spokes. Use `RouteLane` or `.WithEdgeRouteLane(...)` to shift the generated orthogonal lane while keeping the endpoints anchored to their ports. Use `.WithEdgeLabelOffset(...)` when a dense monitoring layout needs a latency or transport label nudged away from a nearby site title without changing the route itself. Set `TopologyEdgeRouting.ObstacleAvoidingOrthogonal` when a route should score deterministic Manhattan lanes and prefer paths that avoid nearby node cards, group headers, labels, and already-routed edges. Nodes have an optional `Symbol` for short visual glyphs such as `SQL`, `API`, `DC`, `GC`, initials, or role abbreviations without baking those product roles into ChartForgeX enums. A node can override the chart-wide display mode with `DisplayMode` and can expose a short `Badge`, which is useful for collapsed clusters, counts, roles, or small site markers. The SVG renderer escapes text safely, emits native SVG `<title>` tooltips, emits stable `data-*` attributes including source/target group ids on grouped edges, and wraps linked elements in SVG anchors. Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 
+For Visio-style diagram building, nodes and groups can also reference reusable icon ids through `IconId` or the `.AddIconNode(...)`, `.AddAutoIconNode(...)`, `.WithNodeIcon(...)`, and `.WithGroupIcon(...)` helpers. `TopologyIconCatalog.Default()` includes product-neutral packs for common infrastructure, network devices, Microsoft Active Directory, cloud elements, and people/teams. Hosts can register vendor packs with `new TopologyIconPack("veeam", "Veeam").AddIcon(...)` or import a portable JSON manifest with `TopologyIconPackJson.FromJson(...)` / `TopologyIconCatalog.AddJsonPack(...)`, then pass the catalog through `TopologyRenderOptions.IconCatalog`. Vendor packs can add pre-built `TopologyIconDefinition` instances, and both packs and icons support `.WithMetadata(...)` for adapter data such as product family, documentation URL, SKU, or source pack metadata. They also support `.WithTags(...)`, and packs can use `.WithIconTags(...)`, so picker search can handle aliases such as `loadbalancer`, `repo`, `dc`, or vendor vocabulary without changing display labels. Icons map to a generic `TopologyNodeKind`, a renderer-owned `TopologyIconShape`, a fallback symbol, optional color, category, and optional display-mode default. SVG and PNG render explicit glyphs for core stencil shapes such as server, storage, database, application, service, endpoint, certificate, network, switch, router, firewall, load balancer, forest, domain, site, people, and team. SVG and HTML renderers can also use `TopologyIconArtwork` for real inline SVG fragments or host-managed image hrefs, while PNG keeps using the shape/symbol fallback until a host supplies raster artwork. Group headers that carry an `IconId` use the same glyph language, while explicit `region` / `globe` symbols keep the map-style header mark. `catalog.Search(new TopologyIconCatalogQuery { ... })` gives host pickers a product-neutral way to filter by search text, pack id, vendor, category, tags, and built-in/custom pack source. `catalog.GetPackIds(...)`, `catalog.GetVendors(...)`, `catalog.GetCategories(...)`, and `catalog.GetTags(...)` expose picker facets without forcing a UI into ChartForgeX. `catalog.ToPaletteChart(...)` uses the same filter model through `TopologyIconPaletteOptions`, so hosts can offer built-in and vendor packs from one reusable model. SVG and HTML selection payloads expose icon id, pack, label, shape, artwork type, metadata, and tags so a dashboard palette or inspector can work from stable catalog metadata instead of parsing labels.
+
 Use `AddAutoGroup(id, label, status, ...)` and `AddAutoNode(id, label, kind, status, groupId, ...)` when a host has structured topology facts but does not want to hand-place every item. Pair those helpers with `DenseGrouped`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, or `Geographic` layout so examples and product adapters remain data-first instead of SVG- or pixel-first. Coordinate overloads remain available for intentional manual diagrams.
 
 When `TopologyRenderOptions.IncludeDataAttributes` is enabled, which is the default, SVG output emits sanitized `data-cfx-meta-*` and `data-cfx-metric-*` attributes for groups, nodes, and edges. Caller-provided `CssClass` tokens are sanitized and appended to the matching SVG element so host wrappers can target product-specific states without ChartForgeX needing product-specific enums.
@@ -123,7 +125,152 @@ var metricSvg = chart.ToSvg(new TopologyRenderOptions {
     EdgeSecondaryLabelMetricKey = "queue",
     LegendMode = TopologyLegendMode.Merge
 });
+
+var vendorCatalog = TopologyIconCatalog.Default()
+    .AddPack(new TopologyIconPack("veeam", "Veeam", vendor: "Veeam")
+        .WithMetadata("website", "https://www.veeam.com")
+        .WithTags("backup", "vendor")
+        .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", "#00B336", "Backup")
+        .AddIcon(new TopologyIconDefinition("veeam", "repository", "Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
+            Symbol = "REPO",
+            Color = "#007A5A",
+            Category = "Backup"
+        }
+        .WithArtwork(TopologyIconArtwork.InlineSvg("<rect x=\"8\" y=\"8\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/><rect x=\"8\" y=\"20\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#00B336\"/><rect x=\"8\" y=\"32\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/>", "0 0 44 48"))
+        .WithMetadata("product", "Backup and Replication")
+        .WithTags("repo", "repository")));
+
+var manifestJson = new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet")
+    .WithTags("network", "security", "vendor")
+    .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", "#DA291C", "Security")
+    .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", "#DA291C", "Network")
+    .ToJsonManifest();
+
+var manifestCatalog = TopologyIconCatalog.Default().AddJsonPack(manifestJson);
+var importedPack = TopologyIconPackJson.FromJson(manifestJson);
+var fileCatalog = TopologyIconCatalog.Default().AddJsonPackFile("docs/topology-icon-pack.fortinet.json");
+var folderCatalog = TopologyIconCatalog.Default().AddJsonPacksFromDirectory("docs", "topology-icon-pack.*.json");
+
+importedPack.SaveJsonManifest("artifacts/veeam-icon-pack.json");
+var loadedPack = TopologyIconPackJson.LoadJsonManifest("artifacts/veeam-icon-pack.json");
+var loadedPacks = TopologyIconPackJson.LoadJsonManifestsFromDirectory("docs", "topology-icon-pack.*.json");
+var loadReport = TopologyIconPackJson.LoadJsonManifestResultsFromDirectory("docs", "topology-icon-pack.*.json");
+var validPacks = loadReport.Where(result => result.Succeeded).Select(result => result.Pack);
+var invalidPacks = loadReport.Where(result => !result.Succeeded).Select(result => new { result.FileName, result.ErrorMessage });
+var catalogLoad = TopologyIconPackJson.LoadJsonCatalogFromDirectory("docs", "topology-icon-pack.*.json");
+var loadedCatalog = catalogLoad.Catalog;
+var catalogErrors = catalogLoad.FailedResults;
+var layeredCatalog = TopologyIconPackJson.LoadJsonCatalogFromDirectory("docs", new TopologyIconCatalogLoadOptions {
+    SearchPattern = "topology-icon-pack.*.json",
+    IncludeBuiltInPacks = true,
+    ConflictBehavior = TopologyIconPackConflictBehavior.Skip
+});
+var exportedPackFiles = vendorCatalog.SaveJsonManifestsToDirectory("artifacts/icon-packs");
+var exportedAllPackFiles = vendorCatalog.SaveJsonManifestsToDirectory("artifacts/all-icon-packs", new TopologyIconCatalogExportOptions {
+    IncludeBuiltInPacks = true
+});
+var packValidation = importedPack.Validate();
+var catalogValidation = vendorCatalog.Validate();
+
+var vendors = vendorCatalog.GetVendors();
+var categories = vendorCatalog.GetCategories(new TopologyIconCatalogQuery { SearchText = "backup" });
+var tags = vendorCatalog.GetTags();
+var packFolders = vendorCatalog.GetPackSummaries();
+var vendorFolders = vendorCatalog.GetVendorSummaries();
+
+var network = TopologyChart.Create()
+    .WithTitle("Network Diagram")
+    .AddIconNode("fw", "Firewall", "network:firewall", 80, 120, TopologyHealthStatus.Healthy, catalog: vendorCatalog)
+    .AddIconNode("sw", "Core Switch", "network:switch", 260, 120, TopologyHealthStatus.Warning, catalog: vendorCatalog)
+    .AddIconNode("repo", "Backup Repo", "veeam:repository", 440, 120, TopologyHealthStatus.Healthy, catalog: vendorCatalog)
+    .AddEdge("fw-sw", "fw", "sw", "10 Gbps", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy)
+    .AddEdge("sw-repo", "sw", "repo", "backup", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning);
+
+var networkSvg = network.ToSvg(new TopologyRenderOptions { IconCatalog = vendorCatalog });
+
+var palette = vendorCatalog.ToPaletteChart(new TopologyIconPaletteOptions {
+    Title = "Network Diagram Icons",
+    Subtitle = "Choose reusable built-in and vendor icon models."
+});
+
+var vendorSecurity = new TopologyIconPaletteOptions {
+    Title = "Vendor Security Icons",
+    IncludeBuiltInPacks = false
+};
+vendorSecurity.Vendors.Add("Veeam");
+vendorSecurity.Categories.Add("Backup");
+var filteredPalette = vendorCatalog.ToPaletteChart(vendorSecurity);
+
+var paletteHtml = palette.ToHtmlPage(new TopologyRenderOptions {
+    IconCatalog = vendorCatalog,
+    EnableHtmlInteractions = true
+});
+
+var stencilBrowserHtml = vendorCatalog.ToStencilBrowserHtmlPage(new TopologyIconStencilBrowserOptions {
+    Title = "Topology Stencil Browser",
+    Subtitle = "Search and choose built-in and vendor icons from one reusable catalog.",
+    PacksPerRow = 3,
+    ColumnsPerPack = 4
+});
+
+var svgImport = TopologyIconSvgPackImporter.ImportSvgPackFromDirectory("external/Microsoft-Azure-Stencils-Pack", new TopologyIconSvgPackImportOptions {
+    PackId = "microsoft-azure-stencils",
+    PackLabel = "Microsoft Azure Stencils",
+    Vendor = "Microsoft",
+    SourceUrl = "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio",
+    SourceRevision = "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    SourceLicense = "MIT",
+    SourceLicenseUrl = "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    SourceLicensePath = "LICENSE"
+});
+svgImport.Pack.SaveJsonManifest("artifacts/icon-packs/topology-icon-pack.microsoft-azure-stencils.json");
 ```
+
+Portable icon-pack manifests use the schema id `chartforgex.topology.iconPack`. The core library reads and writes this manifest without external JSON dependencies, so packs can be shipped by host applications, vendor adapters, or report templates while keeping ChartForgeX dependency-free. Host apps can load from strings, `TextReader`, individual files, or deterministic manifest directories, and can save packs back to strings, `TextWriter`, files, or whole manifest folders. `SaveJsonManifestsToDirectory(...)` exports custom/vendor packs by default, while `TopologyIconCatalogExportOptions` can include built-ins, control overwrite behavior, use a query filter, and customize exported file names. `Validate()` on a pack or catalog reports blocking authoring errors and picker-quality warnings, which gives vendor pack tooling a simple preflight before accepting custom packs, including unsafe SVG or image href checks for artwork-backed icons. The normal directory APIs are fail-fast, while `LoadJsonManifestResultsFromDirectory(...)` returns one `TopologyIconPackLoadResult` per file so a picker can load valid packs and still show invalid vendor manifests with clear file-specific errors. `LoadJsonCatalogFromDirectory(...)` goes one step further and returns a `TopologyIconCatalogLoadResult` containing the ready-to-use catalog, successfully loaded packs, skipped packs, failed files, and add-time errors such as duplicate pack ids. `TopologyIconCatalogLoadOptions` lets hosts choose whether built-in packs are included, whether child folders are scanned, and whether duplicate pack ids should report errors, be skipped, or replace the existing pack. Packs loaded from files receive `manifest.path`, `manifest.fileName`, and `manifest.directory` metadata, which lets a host inspector show where a vendor pack came from without maintaining a side table. Runtime `manifest.*` metadata is not written back into portable manifest output. Large generated packs should prefer the sidecar layout documented in `docs/topology-icon-packs.md`, where manifests reference pack-local `svg/*.svg` artwork and optional `previews/*.png` thumbnails instead of embedding large SVG strings in JSON. Small copyable vendor samples live in `docs/topology-icon-pack.veeam.json`, `docs/topology-icon-pack.fortinet.json`, and `docs/topology-icon-pack.azure-example.json`:
+
+Artwork-backed icons add an optional `artwork` object to the icon manifest. Use `svg` for a trusted SVG fragment inside the supplied `svgViewBox`, or `imageHref` for a host-managed asset URL or data URI. The icon still needs `shape`, `symbol`, and `color` because those are the fallback language for PNG rendering, text-only exports, and hosts that choose not to embed artwork.
+
+For large stencil sources, `TopologyIconSvgPackImporter.ImportSvgPackFromDirectory(...)` turns a folder tree of `.svg` files into the same portable manifest model without adding a renderer dependency. The importer uses the source folder path as the category, omits common `SVG` leaf folders, creates deterministic ids from file names, suffixes duplicate ids, strips non-artwork SVG metadata such as `title`, `desc`, and `metadata`, rejects DTD content, and can skip unsafe SVG fragments before they enter the catalog. It also records source provenance on the pack (`source.url`, `source.revision`, `source.license`, `source.licenseUrl`, `source.licensePath`) and per icon (`source.path`, `source.fileName`, `source.viewBox`). That gives a future asset-import PR a clear audit trail: one reviewed importer command, one pinned source revision, one license file, and generated manifests that explain where every icon came from.
+
+SVG-to-PNG conversion should remain an import/build step rather than a ChartForgeX runtime dependency. A vendor asset PR can use an external converter such as `resvg`, Inkscape, `Magick.NET`, or `Svg.Skia` to generate preview thumbnails beside the manifest, but the core manifest and SVG/HTML renderers only need trusted inline SVG artwork. PNG chart output keeps using the renderer-owned `shape`, `symbol`, and `color` fallback unless a host adds its own raster artwork pipeline.
+
+```json
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "veeam",
+  "label": "Veeam",
+  "vendor": "Veeam",
+  "packVersion": "13",
+  "builtIn": false,
+  "tags": [ "backup", "vendor" ],
+  "metadata": {
+    "website": "https://www.veeam.com"
+  },
+  "icons": [
+    {
+      "id": "repository",
+      "label": "Backup Repository",
+      "nodeKind": "Storage",
+      "shape": "Storage",
+      "symbol": "REPO",
+      "color": "#007A5A",
+      "category": "Backup",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 44 48",
+        "svg": "<rect x=\"8\" y=\"8\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/><rect x=\"8\" y=\"20\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#00B336\"/><rect x=\"8\" y=\"32\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/>"
+      },
+      "tags": [ "repo", "repository" ],
+      "metadata": {
+        "product": "Backup and Replication"
+      }
+    }
+  ]
+}
+```
+
+For picker and stencil-browser shells, `GetPackSummaries(...)` and `GetVendorSummaries(...)` produce stable folder data from the same `TopologyIconCatalogQuery` filters used by search and palette charts. Pack summaries expose matching icon counts, categories, tags, built-in/custom source, version, vendor, and manifest source path. Vendor summaries group packs under labels such as `ChartForgeX`, `Microsoft`, `Veeam`, or `Fortinet`, with roll-up pack ids, categories, tags, and icon counts. `ToStencilBrowserHtmlPage(...)` composes those summaries with a palette chart into a ready-to-host browser page with search, vendor filters, pack filters, category filters, click selection, and a details panel. Selecting an icon dispatches `cfx-icon-browser-select` with stable fields such as icon id, pack id, label, shape, artwork type, category, vendor, pack label, and tags. The host still owns the production UI, but it does not need to parse icons manually to build folders, tabs, counters, source badges, or a first-pass stencil picker.
 
 `TopologySvgRenderer` outputs a complete standalone SVG with `viewBox`, `defs`, scoped CSS, groups below edges, edge labels above edges, nodes above labels, status badges, optional legends, optional geographic callouts, and accessibility metadata. `TopologyPngRenderer` draws the same model through ChartForgeX's dependency-free raster canvas for report exports. `TopologyHtmlRenderer` wraps the generated SVG in a neutral `.cfx-topology-wrapper` div with chart metadata. Complete HTML pages are static and script-free by default. Set `TopologyRenderOptions.EnableHtmlInteractions = true` to include the tiny interaction script that marks clicked groups, nodes, or edges and dispatches `cfx-topology-select` / `cfx-topology-clear` events. Selection details include the selected id, kind, status, metadata, metrics, group/node/edge context, callout counts, route diagnostics, geographic route-arc diagnostics, and related node/edge/group ids so HtmlForgeX or TestimoX can populate inspector panels without reparsing SVG markup. Selectable topology elements are keyboard focusable, Enter/Space activates selection, Escape clears selection, pointer/focus hover highlights related elements and dispatches `cfx-topology-hover` / `cfx-topology-hover-clear`, arrow keys cycle focus through related topology elements and dispatch `cfx-topology-navigate`, and hosts can dispatch `cfx-topology-set-selection` or `cfx-topology-clear-selection` on the wrapper to control state. With interactions enabled, set `TopologyRenderOptions.EnableHtmlViewportControls = true` to add opt-in zoom, pan, wheel-zoom, reset, `cfx-topology-viewport`, `cfx-topology-set-viewport`, and `cfx-topology-reset-viewport` support for large diagrams. Set `TopologyRenderOptions.EnableHtmlExportControls = true` to add opt-in SVG/PNG export buttons and `cfx-topology-export` events. Set `TopologyRenderOptions.EnableHtmlSynchronizedState = true` with `HtmlSyncGroupName` to mirror selection clears and viewport state across same-page topology wrappers using `cfx-topology-sync` / `cfx-topology-apply-sync`.
 
@@ -171,6 +318,7 @@ The example console app writes sample diagrams to `artifacts/topology-demo/` and
 - `geographic-topology.svg`
 - `dc-connectivity.svg`
 - `service-dependency.svg`
+- `icon-palette.svg`
 - `visual-geographic-topology-map.svg`
 - `service-dependency-api-neighbors-view.svg`
 - `service-dependency-critical-dependencies-view.svg`

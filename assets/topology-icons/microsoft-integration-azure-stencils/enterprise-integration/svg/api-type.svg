@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792 612" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:none;stroke-width:0.75}
+		.st2 {fill:#e5e5e5;stroke:none;stroke-width:0.75}
+		.st3 {fill:none;stroke:#556a8a;stroke-width:1.5}
+		.st4 {fill:none}
+		.st5 {stroke:#556a8a;stroke-width:1.5}
+		.st6 {fill:#2bc7f4;stroke:none;stroke-width:0.75}
+		.st7 {fill:#ed7d31;stroke:none;stroke-width:0.75}
+		.st8 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26" />
+		</v:userDefs>
+
+
+		<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-group10280-1" transform="translate(27,-540.691)" v:mID="10280" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-group10281-2" transform="translate(8.39329E-14,-6.80893)" v:mID="10281" v:groupContext="group">
+
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10282-3" v:mID="10282" v:groupContext="shape" transform="translate(7.19425E-14,-6.80977)">
+
+					<path d="M39.69 595.56 A23.25 23.25 0 1 1 16.44 572.31 A23.25 23.25 0 0 1 39.69 595.56 Z" class="st1" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10283-5" v:mID="10283" v:groupContext="shape" transform="translate(16.4402,0)">
+
+					<path d="M23.25 588.75 A23.25 23.25 0 0 1 0 612 L0 565.5 A23.25 23.25 0 0 1 23.25 588.75 Z" class="st2" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10284-7" v:mID="10284" v:groupContext="shape" transform="translate(7.19425E-14,-6.80977)">
+
+					<path d="M39.69 595.56 A23.25 23.25 0 1 1 16.44 572.31 A23.25 23.25 0 0 1 39.69 595.56 Z" class="st3" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10285-9" v:mID="10285" v:groupContext="shape" transform="translate(8.94023,-10.41)">
+
+					<path d="M-0 612 A9.375 9.375 -180 1 0 -0 599.83 L0 612 Z" class="st4" />
+					<path d="M-0 612 A9.375 9.375 -180 1 0 -0 599.83" class="st5" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10286-12" v:mID="10286" v:groupContext="shape" transform="translate(2.19023,-16.5)">
+
+					<path d="M12 612 L0 612 L0 592.5 L28.5 592.5 L28.5 612 L22.5 612 L12 612 Z" class="st4" />
+					<path d="M12 612 L0 612 L0 592.5 L28.5 592.5 L28.5 612 L22.5 612" class="st5" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10287-15" v:mID="10287" v:groupContext="shape" transform="translate(11.8952,-11.625)">
+
+					<ellipse cx="4.875" cy="607.125" rx="4.875" ry="4.875" class="st6" />
+				</g>
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10288-17" v:mID="10288" v:groupContext="shape" transform="translate(19.8451,0)">
+
+				<ellipse cx="13.5" cy="598.5" rx="13.5" ry="13.5" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-api-type-shape10289-19" v:mID="10289" v:groupContext="shape" transform="translate(20.8451,-1)">
+
+				<ellipse cx="12.5" cy="599.5" rx="12.5" ry="12.5" class="st7" />
+			</g>
+		</g>
+	</g>
+</svg>

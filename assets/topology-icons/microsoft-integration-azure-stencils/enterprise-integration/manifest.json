@@ -1,0 +1,1680 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-enterprise-integration",
+  "label": "Microsoft Azure Stencils - Enterprise Integration",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "72",
+    "import.svg.imported": "72",
+    "import.svg.skipped": "0",
+    "source.folder": "Enterprise Integration",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "logic-apps",
+      "label": "Logic Apps",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration / Old Versions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/logic-apps.svg",
+        "previewPath": "previews/logic-apps.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "old", "versions", "logic", "apps", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-Apps.svg",
+        "source.path": "SVG-OLD-VERSIONS/Logic-Apps.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "agreements",
+      "label": "Agreements",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/agreements.svg",
+        "previewPath": "previews/agreements.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "agreements", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Agreements.svg",
+        "source.path": "SVG/Agreements.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "api-centers",
+      "label": "Api Centers",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/api-centers.svg",
+        "previewPath": "previews/api-centers.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "api", "centers", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "API-Centers.svg",
+        "source.path": "SVG/API-Centers.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "api-connections",
+      "label": "Api Connections",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/api-connections.svg",
+        "previewPath": "previews/api-connections.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "api", "connections", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "API-Connections.svg",
+        "source.path": "SVG/API-Connections.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "api-management-services",
+      "label": "Api Management Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AMS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/api-management-services.svg",
+        "previewPath": "previews/api-management-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "api", "management", "services", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "API-Management-services.svg",
+        "source.path": "SVG/API-Management-services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "api-type",
+      "label": "Api Type",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AT",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/api-type.svg",
+        "previewPath": "previews/api-type.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "api", "type", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "API-type.svg",
+        "source.path": "SVG/API-type.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "apim-schemas",
+      "label": "Apim Schemas",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/apim-schemas.svg",
+        "previewPath": "previews/apim-schemas.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "apim", "schemas", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "APIM-Schemas.svg",
+        "source.path": "SVG/APIM-Schemas.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "apis-1",
+      "label": "Apis (1)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A(",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/apis-1.svg",
+        "previewPath": "previews/apis-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "apis-1", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "APIs (1).svg",
+        "source.path": "SVG/APIs (1).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "app-files",
+      "label": "App Files",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AF",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/app-files.svg",
+        "previewPath": "previews/app-files.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "app-files", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "App files.svg",
+        "source.path": "SVG/App files.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "app-configuration",
+      "label": "App Configuration",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/app-configuration.svg",
+        "previewPath": "previews/app-configuration.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "app", "configuration", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "App-Configuration.svg",
+        "source.path": "SVG/App-Configuration.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "app-services",
+      "label": "App Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/app-services.svg",
+        "previewPath": "previews/app-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "app", "services", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "App-Services.svg",
+        "source.path": "SVG/App-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "assemblies",
+      "label": "Assemblies",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/assemblies.svg",
+        "previewPath": "previews/assemblies.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "assemblies", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Assemblies.svg",
+        "source.path": "SVG/Assemblies.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "azure-api-for-fhir",
+      "label": "Azure Api For Fhir",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AAFF",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/azure-api-for-fhir.svg",
+        "previewPath": "previews/azure-api-for-fhir.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "azure", "api", "for", "fhir", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Azure-API-for-FHIR.svg",
+        "source.path": "SVG/Azure-API-for-FHIR.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "backends",
+      "label": "Backends",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/backends.svg",
+        "previewPath": "previews/backends.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "backends", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Backends.svg",
+        "source.path": "SVG/Backends.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "batch-configurations",
+      "label": "Batch Configurations",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "BC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/batch-configurations.svg",
+        "previewPath": "previews/batch-configurations.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "batch", "configurations", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Batch-Configurations.svg",
+        "source.path": "SVG/Batch-Configurations.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "batch",
+      "label": "Batch",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/batch.svg",
+        "previewPath": "previews/batch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "batch", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Batch.svg",
+        "source.path": "SVG/Batch.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "callback-url",
+      "label": "Callback Url",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CU",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/callback-url.svg",
+        "previewPath": "previews/callback-url.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "callback", "url", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Callback-URL.svg",
+        "source.path": "SVG/Callback-URL.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "data-mapper",
+      "label": "Data Mapper",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DM",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/data-mapper.svg",
+        "previewPath": "previews/data-mapper.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "data", "mapper", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Data-Mapper.svg",
+        "source.path": "SVG/Data-Mapper.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "deployment-center",
+      "label": "Deployment Center",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/deployment-center.svg",
+        "previewPath": "previews/deployment-center.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "deployment", "center", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Deployment-Center.svg",
+        "source.path": "SVG/Deployment-Center.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "enterprise-applications",
+      "label": "Enterprise Applications",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/enterprise-applications.svg",
+        "previewPath": "previews/enterprise-applications.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "enterprise", "applications", "integration" ],
+      "metadata": {
+        "source.fileName": "Enterprise-applications.svg",
+        "source.path": "SVG/Enterprise-applications.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-available-partners",
+      "label": "Event Grid Available Partners",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGAP",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-available-partners.svg",
+        "previewPath": "previews/event-grid-available-partners.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "available", "partners", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Available-partners.svg",
+        "source.path": "SVG/Event-Grid-Available-partners.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-domains",
+      "label": "Event Grid Domains",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGD",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-domains.svg",
+        "previewPath": "previews/event-grid-domains.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "domains", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Domains.svg",
+        "source.path": "SVG/Event-Grid-Domains.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-namespaces",
+      "label": "Event Grid Namespaces",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGN",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-namespaces.svg",
+        "previewPath": "previews/event-grid-namespaces.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "namespaces", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Namespaces.svg",
+        "source.path": "SVG/Event-Grid-Namespaces.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-partner-configurations",
+      "label": "Event Grid Partner Configurations",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGPC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-partner-configurations.svg",
+        "previewPath": "previews/event-grid-partner-configurations.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "partner", "configurations", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Partner-configurations.svg",
+        "source.path": "SVG/Event-Grid-Partner-configurations.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-partner-namespaces",
+      "label": "Event Grid Partner Namespaces",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGPN",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-partner-namespaces.svg",
+        "previewPath": "previews/event-grid-partner-namespaces.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "partner", "namespaces", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Partner-namespaces.svg",
+        "source.path": "SVG/Event-Grid-Partner-namespaces.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-partner-registrations",
+      "label": "Event Grid Partner Registrations",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGPR",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-partner-registrations.svg",
+        "previewPath": "previews/event-grid-partner-registrations.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "partner", "registrations", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Partner-registrations.svg",
+        "source.path": "SVG/Event-Grid-Partner-registrations.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-partner-topics",
+      "label": "Event Grid Partner Topics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGPT",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-partner-topics.svg",
+        "previewPath": "previews/event-grid-partner-topics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "partner", "topics", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Partner-topics.svg",
+        "source.path": "SVG/Event-Grid-Partner-topics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-subscriptions",
+      "label": "Event Grid Subscriptions",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-subscriptions.svg",
+        "previewPath": "previews/event-grid-subscriptions.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "subscriptions", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Subscriptions.svg",
+        "source.path": "SVG/Event-Grid-Subscriptions.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-system-topics",
+      "label": "Event Grid System Topics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGST",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-system-topics.svg",
+        "previewPath": "previews/event-grid-system-topics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "system", "topics", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-System-Topics.svg",
+        "source.path": "SVG/Event-Grid-System-Topics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-topics-in-kubernetes",
+      "label": "Event Grid Topics In Kubernetes",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGTI",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-topics-in-kubernetes.svg",
+        "previewPath": "previews/event-grid-topics-in-kubernetes.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "topics", "in", "kubernetes", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Topics-In-Kubernetes.svg",
+        "source.path": "SVG/Event-Grid-Topics-In-Kubernetes.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid-topics",
+      "label": "Event Grid Topics",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EGT",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid-topics.svg",
+        "previewPath": "previews/event-grid-topics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "topics", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid-Topics.svg",
+        "source.path": "SVG/Event-Grid-Topics.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-grid",
+      "label": "Event Grid",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EG",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-grid.svg",
+        "previewPath": "previews/event-grid.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "grid", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Grid.svg",
+        "source.path": "SVG/Event-Grid.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-hubs-clusters",
+      "label": "Event Hubs Clusters",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EHC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-hubs-clusters.svg",
+        "previewPath": "previews/event-hubs-clusters.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "hubs", "clusters", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Hubs-Clusters.svg",
+        "source.path": "SVG/Event-Hubs-Clusters.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "event-hubs",
+      "label": "Event Hubs",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EH",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/event-hubs.svg",
+        "previewPath": "previews/event-hubs.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "event", "hubs", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Event-Hubs.svg",
+        "source.path": "SVG/Event-Hubs.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "export",
+      "label": "Export",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "E",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/export.svg",
+        "previewPath": "previews/export.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "export", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Export.svg",
+        "source.path": "SVG/Export.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "fhir-js-api",
+      "label": "Fhir Js Api",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FJA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 200 200",
+        "svgPath": "svg/fhir-js-api.svg",
+        "previewPath": "previews/fhir-js-api.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "fhir", "js", "api", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "FHIR-JS-API.svg",
+        "source.path": "SVG/FHIR-JS-API.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 200 200"
+      }
+    },
+    {
+      "id": "fhir-schema",
+      "label": "Fhir Schema",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 200 200",
+        "svgPath": "svg/fhir-schema.svg",
+        "previewPath": "previews/fhir-schema.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "fhir", "schema", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "FHIR-Schema.svg",
+        "source.path": "SVG/FHIR-Schema.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 200 200"
+      }
+    },
+    {
+      "id": "file-shares",
+      "label": "File Shares",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/file-shares.svg",
+        "previewPath": "previews/file-shares.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "file", "shares", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "File-shares.svg",
+        "source.path": "SVG/File-shares.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "function-app",
+      "label": "Function App",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/function-app.svg",
+        "previewPath": "previews/function-app.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "function", "app", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Function-App.svg",
+        "source.path": "SVG/Function-App.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "geo-recovery",
+      "label": "Geo Recovery",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "GR",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/geo-recovery.svg",
+        "previewPath": "previews/geo-recovery.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "geo", "recovery", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Geo-Recovery.svg",
+        "source.path": "SVG/Geo-Recovery.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "hl7-fhir-paas-1",
+      "label": "Hl7 Fhir Paas 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "HFP1",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svgPath": "svg/hl7-fhir-paas-1.svg",
+        "previewPath": "previews/hl7-fhir-paas-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "hl7", "fhir", "paas", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "HL7-FHIR-PaaS-1.svg",
+        "source.path": "SVG/HL7-FHIR-PaaS-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 48 48"
+      }
+    },
+    {
+      "id": "hybrid-connections",
+      "label": "Hybrid Connections",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "HC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/hybrid-connections.svg",
+        "previewPath": "previews/hybrid-connections.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "hybrid", "connections", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Hybrid-Connections.svg",
+        "source.path": "SVG/Hybrid-Connections.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "integration-accounts",
+      "label": "Integration Accounts",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "IA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/integration-accounts.svg",
+        "previewPath": "previews/integration-accounts.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "integration", "accounts", "enterprise" ],
+      "metadata": {
+        "source.fileName": "Integration-accounts.svg",
+        "source.path": "SVG/Integration-accounts.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "integration-service-environments",
+      "label": "Integration Service Environments",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ISE",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/integration-service-environments.svg",
+        "previewPath": "previews/integration-service-environments.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "integration", "service", "environments", "enterprise" ],
+      "metadata": {
+        "source.fileName": "Integration-Service-Environments.svg",
+        "source.path": "SVG/Integration-Service-Environments.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "logic-app-code-view",
+      "label": "Logic App Code View",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LACV",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 12",
+        "svgPath": "svg/logic-app-code-view.svg",
+        "previewPath": "previews/logic-app-code-view.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "app", "code", "view", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-app-code-view.svg",
+        "source.path": "SVG/Logic-app-code-view.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 12"
+      }
+    },
+    {
+      "id": "logic-app-designer",
+      "label": "Logic App Designer",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LAD",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0.5 0.5 50 50",
+        "svgPath": "svg/logic-app-designer.svg",
+        "previewPath": "previews/logic-app-designer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "app", "designer", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-app-designer.svg",
+        "source.path": "SVG/Logic-app-designer.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0.5 0.5 50 50"
+      }
+    },
+    {
+      "id": "logic-apps-code-view-1",
+      "label": "Logic Apps Code View #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LACV",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/logic-apps-code-view-1.svg",
+        "previewPath": "previews/logic-apps-code-view-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "apps", "code", "view", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-Apps-Code-View-#1.svg",
+        "source.path": "SVG/Logic-Apps-Code-View-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "logic-apps-custom-connector-old",
+      "label": "Logic Apps Custom Connector Old",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LACC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/logic-apps-custom-connector-old.svg",
+        "previewPath": "previews/logic-apps-custom-connector-old.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "apps", "custom", "connector", "old", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-Apps-Custom-Connector-old.svg",
+        "source.path": "SVG/Logic-Apps-Custom-Connector-old.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "logic-apps-custom-connector",
+      "label": "Logic Apps Custom Connector",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LACC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/logic-apps-custom-connector.svg",
+        "previewPath": "previews/logic-apps-custom-connector.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "apps", "custom", "connector", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-Apps-Custom-Connector.svg",
+        "source.path": "SVG/Logic-Apps-Custom-Connector.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "logic-apps-service",
+      "label": "Logic Apps Service",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LAS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/logic-apps-service.svg",
+        "previewPath": "previews/logic-apps-service.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "apps", "service", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-Apps-Service.svg",
+        "source.path": "SVG/Logic-Apps-Service.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "logic-apps-versions",
+      "label": "Logic Apps Versions",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LAV",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/logic-apps-versions.svg",
+        "previewPath": "previews/logic-apps-versions.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "apps", "versions", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-apps-Versions.svg",
+        "source.path": "SVG/Logic-apps-Versions.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "logic-apps-2",
+      "label": "Logic Apps",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/logic-apps-2.svg",
+        "previewPath": "previews/logic-apps-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "logic", "apps", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Logic-Apps.svg",
+        "source.path": "SVG/Logic-Apps.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "management-api",
+      "label": "Management Api",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 14.7 14.7",
+        "svgPath": "svg/management-api.svg",
+        "previewPath": "previews/management-api.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "management-api", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Management API.svg",
+        "source.path": "SVG/Management API.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 14.7 14.7"
+      }
+    },
+    {
+      "id": "maps",
+      "label": "Maps",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/maps.svg",
+        "previewPath": "previews/maps.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "maps", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Maps.svg",
+        "source.path": "SVG/Maps.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "named-values",
+      "label": "Named Values",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "NV",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/named-values.svg",
+        "previewPath": "previews/named-values.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "named-values", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Named values.svg",
+        "source.path": "SVG/Named values.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "on-premises-data-gateways",
+      "label": "On Premises Data Gateways",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OPDG",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/on-premises-data-gateways.svg",
+        "previewPath": "previews/on-premises-data-gateways.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "on", "premises", "data", "gateways", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "On-premises-Data-Gateways.svg",
+        "source.path": "SVG/On-premises-Data-Gateways.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "parameters-1",
+      "label": "Parameters (1)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P(",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/parameters-1.svg",
+        "previewPath": "previews/parameters-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "parameters-1", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Parameters (1).svg",
+        "source.path": "SVG/Parameters (1).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "partners",
+      "label": "Partners",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/partners.svg",
+        "previewPath": "previews/partners.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "partners", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Partners.svg",
+        "source.path": "SVG/Partners.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "policy-fragments",
+      "label": "Policy Fragments",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PF",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/policy-fragments.svg",
+        "previewPath": "previews/policy-fragments.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "policy-fragments", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Policy fragments.svg",
+        "source.path": "SVG/Policy fragments.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "policy",
+      "label": "Policy",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/policy.svg",
+        "previewPath": "previews/policy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "policy", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Policy.svg",
+        "source.path": "SVG/Policy.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "products",
+      "label": "Products",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/products.svg",
+        "previewPath": "previews/products.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "products", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Products.svg",
+        "source.path": "SVG/Products.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "relays",
+      "label": "Relays",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/relays.svg",
+        "previewPath": "previews/relays.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "relays", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Relays.svg",
+        "source.path": "SVG/Relays.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "rosettanet-pip",
+      "label": "Rosettanet Pip",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RP",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 100 100",
+        "svgPath": "svg/rosettanet-pip.svg",
+        "previewPath": "previews/rosettanet-pip.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "rosettanet", "pip", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Rosettanet-Pip.svg",
+        "source.path": "SVG/Rosettanet-Pip.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 100 100"
+      }
+    },
+    {
+      "id": "schemas",
+      "label": "Schemas",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/schemas.svg",
+        "previewPath": "previews/schemas.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "schemas", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Schemas.svg",
+        "source.path": "SVG/Schemas.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "service-bus",
+      "label": "Service Bus",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SB",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/service-bus.svg",
+        "previewPath": "previews/service-bus.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "service", "bus", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Service-Bus.svg",
+        "source.path": "SVG/Service-Bus.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "service-connector",
+      "label": "Service Connector",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SC",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/service-connector.svg",
+        "previewPath": "previews/service-connector.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "service", "connector", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Service-Connector.svg",
+        "source.path": "SVG/Service-Connector.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "software-as-a-service-saas",
+      "label": "Software As A Service (Saas)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SAAS",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/software-as-a-service-saas.svg",
+        "previewPath": "previews/software-as-a-service-saas.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "software", "as", "service", "saas", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Software-as-a-Service-(SaaS).svg",
+        "source.path": "SVG/Software-as-a-Service-(SaaS).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "storage-accounts",
+      "label": "Storage Accounts",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SA",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/storage-accounts.svg",
+        "previewPath": "previews/storage-accounts.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "storage", "accounts", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Storage-accounts.svg",
+        "source.path": "SVG/Storage-accounts.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "web-api-type",
+      "label": "Web Api Type",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "WAT",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/web-api-type.svg",
+        "previewPath": "previews/web-api-type.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "web", "api", "type", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Web-API-type.svg",
+        "source.path": "SVG/Web-API-type.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "web-application-firewall-policies-waf",
+      "label": "Web Application Firewall Policies (Waf)",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "WAFP",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/web-application-firewall-policies-waf.svg",
+        "previewPath": "previews/web-application-firewall-policies-waf.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "web", "application", "firewall", "policies", "waf", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Web-Application-Firewall-policies-(WAF).svg",
+        "source.path": "SVG/Web-Application-Firewall-policies-(WAF).svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "workflows",
+      "label": "Workflows",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/workflows.svg",
+        "previewPath": "previews/workflows.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "workflows", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Workflows.svg",
+        "source.path": "SVG/Workflows.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "workspaces",
+      "label": "Workspaces",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W",
+      "color": "#0078D4",
+      "category": "Enterprise Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/workspaces.svg",
+        "previewPath": "previews/workspaces.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "workspaces", "enterprise", "integration" ],
+      "metadata": {
+        "source.fileName": "Workspaces.svg",
+        "source.path": "SVG/Workspaces.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    }
+  ]
+}

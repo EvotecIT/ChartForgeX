@@ -10,7 +10,7 @@ namespace ChartForgeX.Topology;
 /// <summary>
 /// Provides convenience rendering and export methods for topology charts.
 /// </summary>
-public static class TopologyChartExtensions {
+public static partial class TopologyChartExtensions {
     /// <summary>
     /// Sets the topology chart id.
     /// </summary>
@@ -155,9 +155,10 @@ public static class TopologyChartExtensions {
     /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
     /// <param name="symbol">The optional short visual symbol shown in the group header.</param>
     /// <param name="color">The optional group accent color, independent from health status.</param>
+    /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddAutoGroup(this TopologyChart chart, string id, string label, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null) {
-        return AddGroup(chart, id, label, 0, 0, 0, 0, status, subtitle, href, tooltip, cssClass, symbol, color);
+    public static TopologyChart AddAutoGroup(this TopologyChart chart, string id, string label, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null, string? iconId = null) {
+        return AddGroup(chart, id, label, 0, 0, 0, 0, status, subtitle, href, tooltip, cssClass, symbol, color, iconId);
     }
 
     /// <summary>
@@ -177,8 +178,9 @@ public static class TopologyChartExtensions {
     /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
     /// <param name="symbol">The optional short visual symbol shown in the group header.</param>
     /// <param name="color">The optional group accent color, independent from health status.</param>
+    /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddGroup(this TopologyChart chart, string id, string label, double x, double y, double width, double height, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null) {
+    public static TopologyChart AddGroup(this TopologyChart chart, string id, string label, double x, double y, double width, double height, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null, string? iconId = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var groupId = RequiredText(id, nameof(id), "Topology group ids");
         var groupLabel = RequiredText(label, nameof(label), "Topology group labels");
@@ -187,7 +189,7 @@ public static class TopologyChartExtensions {
         ValidateNonNegative(width, nameof(width), "Topology group widths");
         ValidateNonNegative(height, nameof(height), "Topology group heights");
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
-        chart.Groups.Add(new TopologyGroup { Id = groupId, Label = groupLabel, X = x, Y = y, Width = width, Height = height, Status = status, Subtitle = subtitle, Href = href, Tooltip = tooltip, CssClass = cssClass, Symbol = symbol, Color = color });
+        chart.Groups.Add(new TopologyGroup { Id = groupId, Label = groupLabel, X = x, Y = y, Width = width, Height = height, Status = status, Subtitle = subtitle, Href = href, Tooltip = tooltip, CssClass = cssClass, Symbol = symbol, IconId = OptionalText(iconId), Color = color });
         return chart;
     }
 
@@ -208,9 +210,10 @@ public static class TopologyChartExtensions {
     /// <param name="symbol">The optional short visual symbol shown inside the node icon.</param>
     /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
     /// <param name="color">The optional node accent color, independent from health status.</param>
+    /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddAutoNode(this TopologyChart chart, string id, string label, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null) {
-        return AddNode(chart, id, label, 0, 0, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color);
+    public static TopologyChart AddAutoNode(this TopologyChart chart, string id, string label, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null) {
+        return AddNode(chart, id, label, 0, 0, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color, iconId);
     }
 
     /// <summary>
@@ -232,8 +235,9 @@ public static class TopologyChartExtensions {
     /// <param name="symbol">The optional short visual symbol shown inside the node icon.</param>
     /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
     /// <param name="color">The optional node accent color, independent from health status.</param>
+    /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null) {
+    public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var nodeId = RequiredText(id, nameof(id), "Topology node ids");
         var nodeLabel = RequiredText(label, nameof(label), "Topology node labels");
@@ -244,7 +248,7 @@ public static class TopologyChartExtensions {
         ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
         var nodeGroupId = string.IsNullOrWhiteSpace(groupId) ? null : groupId!.Trim();
-        chart.Nodes.Add(new TopologyNode { Id = nodeId, Label = nodeLabel, X = x, Y = y, Kind = kind, Symbol = symbol, Status = status, GroupId = nodeGroupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color });
+        chart.Nodes.Add(new TopologyNode { Id = nodeId, Label = nodeLabel, X = x, Y = y, Kind = kind, Symbol = symbol, IconId = OptionalText(iconId), Status = status, GroupId = nodeGroupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color });
         return chart;
     }
 
@@ -772,6 +776,8 @@ public static class TopologyChartExtensions {
         if (trimmed.Length == 0) throw new ArgumentException(displayName + " must not be empty.", parameterName);
         return trimmed;
     }
+
+    private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 
     private static void ValidateFinite(double value, string parameterName, string displayName) {
         if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, displayName + " must be finite numbers.");

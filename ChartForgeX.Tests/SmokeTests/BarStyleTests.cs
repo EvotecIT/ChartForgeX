@@ -49,6 +49,19 @@ internal static partial class SmokeTests {
         var axisHighlightOptions = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Core", "ChartOptions.AxisLabels.cs"));
         Assert(axisHighlightOptions.Contains("AxisValueEquals", StringComparison.Ordinal), "X-axis label highlights should resolve generated tick values with a floating-point tolerance.");
         Assert(ChartOptions.AxisValueEquals(2, 2 + 5e-10) && !ChartOptions.AxisValueEquals(1_000_000_000_000, 1_000_000_000_000 + 0.01), "X-axis label highlight tolerance should cover generated tick drift without bleeding across dense high-magnitude axes.");
+        var highlightedRangeChart = Chart.Create()
+            .WithXLabels("8am", "9am", "10am", "11am")
+            .WithHighlightedXAxisRange(1.5, 3.5, ChartColor.FromHex("#DE442F"), 0.08, "peak-window")
+            .AddBar("Reviews", Points(3, 9, 10, 4));
+        var highlightedRangeSvg = highlightedRangeChart.ToSvg();
+        Assert(highlightedRangeSvg.Contains("data-cfx-role=\"annotation-band\" data-cfx-kind=\"vertical-band\" data-cfx-value=\"1.5\" data-cfx-end=\"3.5\" data-cfx-label=\"peak-window\"", StringComparison.Ordinal), "Highlighted x-axis ranges should render selected-window metadata as annotation bands.");
+        Assert(highlightedRangeChart.Options.XAxisLabelHighlights.Count == 2 && highlightedRangeChart.Options.XAxisLabelHighlights.ContainsKey(2) && highlightedRangeChart.Options.XAxisLabelHighlights.ContainsKey(3), "Highlighted x-axis ranges should color explicit labels inside the selected window.");
+        Assert(highlightedRangeChart.ClearHighlightedXAxisLabels().Options.XAxisLabelHighlights.Count == 0 && highlightedRangeChart.Annotations.Count == 0, "Clearing x-axis highlights should remove selected-window bands.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithHighlightedXAxisRange(1, 2, paletteIndex: -1), "Palette-based x-axis range highlights should reject negative palette indexes.");
+        var pointRange = Chart.Create().AddBar("Peak", Points(3, 6, 9, 4)).Series[0].WithPointColorRange(1, 2, ChartColor.FromHex("#DE442F"));
+        Assert(pointRange.PointColors.Count == 3 && pointRange.PointColors[1]!.Value.ToHex() == "#DE442F" && pointRange.PointColors[2]!.Value.ToHex() == "#DE442F", "Point color ranges should support compact highlighted bar windows.");
+        AssertThrows<ArgumentOutOfRangeException>(() => pointRange.WithPointColorRange(2, 0, ChartColor.FromHex("#DE442F")), "Point color ranges should reject empty ranges.");
+        AssertThrows<ArgumentOutOfRangeException>(() => pointRange.WithPointColorRange(3, 2, ChartColor.FromHex("#DE442F")), "Point color ranges should reject ranges outside the series.");
         var clearedFocus = Chart.Create().WithFocusedXAxisCategory(2, paletteIndex: 1).ClearHighlightedXAxisLabels();
         Assert(clearedFocus.Options.XAxisLabelHighlights.Count == 0 && clearedFocus.Annotations.Count == 0, "Clearing x-axis label highlights should also clear focus guide annotations.");
         var keptManualGuide = Chart.Create()
@@ -71,6 +84,20 @@ internal static partial class SmokeTests {
         var panelSvg = Chart.Create().WithSize(320, 200).WithTheme(ChartTheme.DashboardLight()).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToSvg();
         Assert(CountOccurrences(panelSvg, "<feDropShadow") == 2 && panelSvg.Contains("dy=\"4\"", StringComparison.Ordinal) && panelSvg.Contains("stdDeviation=\"6\"", StringComparison.Ordinal) && panelSvg.Contains("dy=\"14\"", StringComparison.Ordinal) && panelSvg.Contains("stdDeviation=\"18\"", StringComparison.Ordinal) && panelSvg.Contains("flood-color=\"#0F172A\"", StringComparison.Ordinal), "SVG dashboard panels should use layered premium card shadow primitives.");
         Assert(panelSvg.Contains("data-cfx-role=\"card-surface\"", StringComparison.Ordinal) && panelSvg.Contains("data-cfx-role=\"card-border\"", StringComparison.Ordinal), "SVG dashboard panels should expose reusable card shell roles.");
+        var trendPanel = Chart.Create()
+            .WithSize(520, 300)
+            .WithTheme(ChartTheme.DashboardLight())
+            .WithDashboardTrendPanelStyle(showLegend: true)
+            .WithXLabels("Jan", "Feb", "Mar", "Apr")
+            .AddSmoothLine("On-time", Points(21, 23, 25, 37), ChartColor.FromHex("#7057E6"))
+            .AddSmoothLine("Absent", Points(18, 22, 17, 14), ChartColor.FromHex("#5FD3D9"))
+            .WithDashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
+        var trendPanelSvg = trendPanel.ToSvg();
+        Assert(trendPanel.Options.ShowCard && trendPanel.Options.ShowLegend && !trendPanel.Options.ShowYAxis && !trendPanel.Options.ShowAxisLines, "Dashboard trend panels should preserve card composition with compact axes.");
+        Assert(trendPanelSvg.Contains("data-cfx-role=\"point-callout-label\"", StringComparison.Ordinal), "Dashboard trend focus should render a point callout label.");
+        Assert(trendPanelSvg.Contains("data-cfx-role=\"annotation-line\" data-cfx-kind=\"vertical-line\" data-cfx-value=\"4\" data-cfx-label=\"Apr\"", StringComparison.Ordinal), "Dashboard trend focus should render crosshair marker metadata.");
+        Assert(trendPanelSvg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal), "Dashboard trend panels should reuse premium line highlight layers.");
+        AssertThrows<ArgumentNullException>(() => Chart.Create().WithDashboardTrendFocus(1, 2, null!), "Dashboard trend focus should reject null labels.");
 
         var horizontalSvg = Chart.Create()
             .WithSize(640, 360)
@@ -96,6 +123,20 @@ internal static partial class SmokeTests {
             .ToSvg();
         var horizontalPanelYPositions = ExtractHorizontalBarYPositions(horizontalPanelSvg);
         Assert(horizontalPanelYPositions.Length == 8 && horizontalPanelYPositions.Max() - horizontalPanelYPositions.Min() > 80, "Dashboard horizontal bars should use left padding for category labels and preserve usable vertical row spacing.");
+        var stackedRowSvg = Chart.Create()
+            .WithSize(640, 300)
+            .WithTheme(ChartTheme.DashboardLight())
+            .WithDashboardStackedRowStyle(showTotals: true)
+            .WithXLabels("Engineering", "Maintenance", "HSEQ")
+            .AddHorizontalBar("All employee", Points(68, 62, 74), ChartColor.FromHex("#7057E6"))
+            .AddHorizontalBar("Terminated", Points(25, 28, 24), ChartColor.FromHex("#5FD3D9"))
+            .AddHorizontalBar("New hires", Points(14, 12, 15), ChartColor.FromHex("#FFB05C"))
+            .ToSvg();
+        Assert(Chart.Create().WithDashboardStackedRowStyle(showTotals: true).Options.ShowStackTotals, "Dashboard stacked row style should enable trailing totals when requested.");
+        Assert(Chart.Create().WithDashboardStackedRowStyle(showLegend: false).Options.ShowLegend == false, "Dashboard stacked row style should make inline legends optional.");
+        Assert(stackedRowSvg.Contains("data-cfx-role=\"horizontal-bar-cap\"", StringComparison.Ordinal), "Dashboard stacked rows should reuse segmented horizontal bar caps.");
+        Assert(stackedRowSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Dashboard stacked rows should render trailing totals through existing data-label primitives.");
+        Assert(!stackedRowSvg.Contains("data-cfx-role=\"x-axis\"", StringComparison.Ordinal), "Dashboard stacked rows should hide the numeric x-axis by default.");
 
         var rangeSvg = Chart.Create()
             .WithSize(640, 360)

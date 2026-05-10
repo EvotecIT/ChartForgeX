@@ -47,6 +47,7 @@ public sealed class HtmlChartRenderer {
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, CssFontFamily(chart.Options.Theme.FontFamily)) + ".chartforgex-chart{width:min(100%," + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-chart svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-chart{width:100%;max-width:none}.chartforgex-chart svg{width:100%;height:auto}"));
+        WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, CssFontFamily(chart.Options.Theme.FontFamily)) + ".chartforgex-chart{width:min(100%," + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-chart svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-chart{width:100%;max-width:none}.chartforgex-chart svg{width:100%;height:auto}"));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(chart, constrainMaxWidth: false)).Line()

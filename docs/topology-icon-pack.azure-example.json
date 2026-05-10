@@ -1,0 +1,60 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "azure-example",
+  "label": "Azure Example Icons",
+  "vendor": "Microsoft",
+  "packVersion": "sample",
+  "builtIn": false,
+  "tags": [ "azure", "cloud", "vendor", "sample" ],
+  "metadata": {
+    "licensing": "Sample artwork; hosts can replace these with approved official vendor assets."
+  },
+  "icons": [
+    {
+      "id": "data-factory",
+      "label": "Data Factory",
+      "nodeKind": "Process",
+      "shape": "Application",
+      "symbol": "ADF",
+      "color": "#0078D4",
+      "category": "Azure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svg": "<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"6\" width=\"13\" height=\"32\" rx=\"2\" fill=\"#50E6FF\"/><path d=\"M20 17 H28 M20 31 H28\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"13.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"29\" r=\"2.6\" fill=\"#FFFFFF\"/>"
+      },
+      "tags": [ "data-factory", "pipeline", "etl" ]
+    },
+    {
+      "id": "key-vault",
+      "label": "Key Vault",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "KV",
+      "color": "#0078D4",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svg": "<circle cx=\"24\" cy=\"16\" r=\"9\" fill=\"#50E6FF\"/><rect x=\"13\" y=\"21\" width=\"22\" height=\"18\" rx=\"3\" fill=\"#0078D4\"/><path d=\"M20 21 v-5 a4 4 0 0 1 8 0 v5\" fill=\"none\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"24\" cy=\"30\" r=\"3\" fill=\"#FFFFFF\"/><path d=\"M24 33 v4\" stroke=\"#FFFFFF\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>"
+      },
+      "tags": [ "key-vault", "secret", "certificate" ]
+    },
+    {
+      "id": "resource-group",
+      "label": "Resource Group",
+      "nodeKind": "Group",
+      "shape": "Network",
+      "symbol": "RG",
+      "color": "#0078D4",
+      "category": "Azure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 48 48",
+        "svg": "<rect x=\"7\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#50E6FF\"/><rect x=\"17\" y=\"27\" width=\"14\" height=\"13\" rx=\"2\" fill=\"#7FBA00\"/><path d=\"M20 14.5 H28 M24 21 V27\" stroke=\"#243A5E\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>"
+      },
+      "tags": [ "resource-group", "group", "azure" ]
+    }
+  ]
+}

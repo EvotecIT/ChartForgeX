@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.5 159.4" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	.st0{fill:#6583aa;}
+	.st1{fill:none;}
+	.st2{font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;}
+	.st3{font-size:33px;}
+</style>
+
+<g id="cfxi-microsoft-azure-stencils-others-hl7-Layer_2" xmlns="http://www.w3.org/2000/svg">
+	<g id="cfxi-microsoft-azure-stencils-others-hl7-Documents">
+		<path class="st0" d="M126.2,36.2L83.7,0.8C83.1,0.3,82.3,0,81.5,0H17.7c-2,0-3.5,1.6-3.5,3.5v10.6H3.5c-2,0-3.5,1.6-3.5,3.5v138.1    c0,2,1.6,3.5,3.5,3.5h106.2c2,0,3.5-1.6,3.5-3.5v-10.6h10.6c2,0,3.5-1.6,3.5-3.5V39C127.5,37.9,127,36.9,126.2,36.2z M118.4,39    h-37V8.1L118.4,39z M106.2,152.3H7.1v-131h7.1v120.4c0,2,1.6,3.5,3.5,3.5h88.5V152.3z M21.2,138.1V7.1h53.1v35.4    c0,2,1.6,3.5,3.5,3.5h42.5v92.1H21.2z" />
+	</g>
+</g>
+<rect x="43.4" y="64.7" class="st1" width="73" height="34" xmlns="http://www.w3.org/2000/svg" />
+<text transform="matrix(1 0 0 1 43.4176 88.1097)" class="st0 st2 st3" xmlns="http://www.w3.org/2000/svg">HL7</text>
+</svg>

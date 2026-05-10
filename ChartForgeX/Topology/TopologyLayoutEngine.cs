@@ -636,6 +636,7 @@ internal static class TopologyLayoutEngine {
             Tooltip = group.Tooltip,
             CssClass = group.CssClass,
             Symbol = group.Symbol,
+            IconId = group.IconId,
             Color = group.Color,
             LayoutPolicy = group.LayoutPolicy,
             AppliedLayoutPolicy = group.AppliedLayoutPolicy
@@ -651,6 +652,7 @@ internal static class TopologyLayoutEngine {
             Subtitle = node.Subtitle,
             Kind = node.Kind,
             Symbol = node.Symbol,
+            IconId = node.IconId,
             DisplayMode = node.DisplayMode,
             Badge = node.Badge,
             Status = node.Status,

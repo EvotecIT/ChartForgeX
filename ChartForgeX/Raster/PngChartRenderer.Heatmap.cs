@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Raster;
 
@@ -45,10 +46,12 @@ public sealed partial class PngChartRenderer {
         var rightLabelReserve = HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Right) || HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Outside) ? sideLabelWidth + 22 : 0;
         var labelBounds = new ChartRect(plot.X + labelWidth + labelGap, plot.Y, Math.Max(1, plot.Width - labelWidth - labelGap), Math.Max(1, plot.Height - bottomReserve));
         plot = new ChartRect(labelBounds.X + leftLabelReserve, labelBounds.Y, Math.Max(1, labelBounds.Width - leftLabelReserve - rightLabelReserve), labelBounds.Height);
-        var gap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columnValues.Count, plot.Height / rows.Count) * 0.05));
+        var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columnValues.Count, plot.Height / rows.Count) * 0.05));
+        var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, plot.Height, columnValues.Count, rows.Count, chart.Options.HeatmapCellGap ?? autoGap);
         var cellWidth = Math.Max(1, (plot.Width - gap * (columnValues.Count - 1)) / columnValues.Count);
         var cellHeight = Math.Max(1, (plot.Height - gap * (rows.Count - 1)) / rows.Count);
-        var radius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
+        var autoRadius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
+        var radius = Math.Min(chart.Options.HeatmapCellRadius ?? autoRadius, Math.Min(cellWidth, cellHeight) / 2);
 
         for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
             var series = rows[rowIndex];
@@ -70,7 +73,10 @@ public sealed partial class PngChartRenderer {
                 c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
-                if (ShouldDrawDataLabels(chart, series) && cellWidth >= EstimatePngEmphasizedTextWidth("100%", dataFontSize) + 12 && cellHeight >= dataFontSize + 10) {
+                var labelFits = cellWidth >= EstimatePngEmphasizedTextWidth("100%", dataFontSize) + 12 && cellHeight >= dataFontSize + 10;
+                var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
+                    chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
+                if (drawValueText) {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
@@ -114,14 +120,14 @@ public sealed partial class PngChartRenderer {
     private static bool IsHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Heatmap);
 
     private static bool HasHeatmapSideLabels(Chart chart, IReadOnlyList<ChartSeries> rows, ChartDataLabelPlacement placement) {
-        foreach (var row in rows) if (ShouldDrawDataLabels(chart, row) && DataLabelPlacement(chart, row) == placement) return true;
+        foreach (var row in rows) if (ShouldReserveHeatmapValueLabels(chart, row) && DataLabelPlacement(chart, row) == placement) return true;
         return false;
     }
 
     private static double HeatmapSideLabelWidth(Chart chart, IReadOnlyList<ChartSeries> rows, IReadOnlyList<double> columns) {
         var max = 0.0;
         foreach (var row in rows) {
-            if (!ShouldDrawDataLabels(chart, row)) continue;
+            if (!ShouldReserveHeatmapValueLabels(chart, row)) continue;
             var placement = DataLabelPlacement(chart, row);
             if (placement != ChartDataLabelPlacement.Left && placement != ChartDataLabelPlacement.Right && placement != ChartDataLabelPlacement.Outside) continue;
             for (var i = 0; i < columns.Count; i++) {
@@ -133,6 +139,11 @@ public sealed partial class PngChartRenderer {
         }
 
         return Math.Min(88, max);
+    }
+
+    private static bool ShouldReserveHeatmapValueLabels(Chart chart, ChartSeries series) {
+        if (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
+        return chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || ShouldDrawDataLabels(chart, series);
     }
 
     private static void AddHeatmapColumns(SortedSet<double> columns, ChartSeries series) {

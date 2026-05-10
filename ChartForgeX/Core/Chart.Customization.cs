@@ -102,6 +102,27 @@ public sealed partial class Chart {
     public Chart WithHeatmapColumnLabels(bool visible = true) { Options.ShowHeatmapColumnLabels = visible; return this; }
 
     /// <summary>
+    /// Sets the heatmap cell gap in pixels. Pass null to use the automatic dashboard-safe gap.
+    /// </summary>
+    /// <param name="gap">The cell gap in pixels, or null for automatic sizing.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithHeatmapCellGap(double? gap) { Options.HeatmapCellGap = gap; return this; }
+
+    /// <summary>
+    /// Sets the heatmap cell corner radius in pixels. Pass null to use the automatic radius.
+    /// </summary>
+    /// <param name="radius">The cell corner radius in pixels, or null for automatic sizing.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithHeatmapCellRadius(double? radius) { Options.HeatmapCellRadius = radius; return this; }
+
+    /// <summary>
+    /// Sets when heatmap cell values should render as text.
+    /// </summary>
+    /// <param name="mode">The heatmap value text mode.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithHeatmapValueTextMode(ChartHeatmapValueTextMode mode) { Options.HeatmapValueTextMode = mode; return this; }
+
+    /// <summary>
     /// Sets whether region labels should be rendered on map charts.
     /// </summary>
     /// <param name="visible">True to render map region labels; otherwise false.</param>

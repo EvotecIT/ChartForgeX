@@ -18,6 +18,25 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--dashboard-patterns-only")) {
+            DashboardPatternExamples.Write(output, pngOutputScale);
+            GalleryWriter.Write(output);
+            Console.WriteLine("Generated dashboard pattern files in: " + output);
+            return true;
+        }
+
+        if (HasArg(args, "--dashboard-shipment-only")) {
+            DashboardPatternExamples.WriteShipmentActivityPanel(output, pngOutputScale);
+            Console.WriteLine("Generated dashboard shipment panel in: " + output);
+            return true;
+        }
+
+        if (HasArg(args, "--dashboard-project-progress-only")) {
+            DashboardPatternExamples.WriteProjectProgressCard(output, pngOutputScale);
+            Console.WriteLine("Generated dashboard project progress card in: " + output);
+            return true;
+        }
+
         return false;
     }
 }
