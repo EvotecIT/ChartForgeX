@@ -8,4 +8,6 @@ artifacts/
 /.claude/
 /.playwright-mcp/
 /*.png
-/Website/
+Website/_reports/
+Website/_site/
+Website/_temp/
