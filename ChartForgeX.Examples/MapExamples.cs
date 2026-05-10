@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static class MapExamples {
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartPngOutputScale pngOutputScale, bool includeExternalCatalogMaps = false) {
         Save(CreateCalendarHeatmap(), output, "developer-consistency-calendar-light", pngOutputScale);
         Save(CreateDottedMap(), output, "travel-dotted-map-dark", pngOutputScale);
         Save(CreateEuropeRevenueDottedMap(), output, "revenue-europe-country-map-light", pngOutputScale);
@@ -14,7 +14,9 @@ internal static class MapExamples {
 
         SaveGrid(CreateMapViewportShowcaseGrid(), output, "map-viewport-showcase-grid", pngOutputScale);
         Save(CreateRegionMap(), output, "revenue-region-map-us-states-light", pngOutputScale);
+        Save(CreateIndustrialBirthsRegionMap(), output, "industrial-births-region-map-us-states-light", pngOutputScale);
         Save(CreateTileMap(), output, "revenue-tile-map-us-states-light", pngOutputScale);
+        if (includeExternalCatalogMaps) SaveOptionalCatalogRegionMapExamples(output, pngOutputScale);
     }
 
     private static Chart CreateCalendarHeatmap() {
@@ -219,6 +221,25 @@ internal static class MapExamples {
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), StateRevenue(), ChartColor.FromRgb(37, 99, 235));
     }
 
+    private static Chart CreateIndustrialBirthsRegionMap() {
+        var colorScale = ChartMapColorScale
+            .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 3.2)
+            .WithValueRange(0, 10)
+            .WithLabels("0", "3.2 median", ">10")
+            .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
+
+        return Chart.Create()
+            .WithTitle("Where Industrial Firms Are Being Born")
+            .WithSubtitle("Births per 10,000 residents with a diverging choropleth scale")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(980, 560)
+            .WithLegend(false)
+            .WithMapLabels(false)
+            .WithMapColorScale(colorScale)
+            .WithValueFormatter(value => value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture))
+            .AddRegionHeatmap("Births", ChartMapCatalog.Get("us-states"), StateIndustrialBirths());
+    }
+
     private static IEnumerable<ChartRegionMapItem> StateRevenue() {
         var states = new[] {
             "AK", "ME", "VT", "NH", "WA", "MT", "ND", "MN", "WI", "MI", "NY", "MA", "RI",
@@ -233,6 +254,141 @@ internal static class MapExamples {
             var value = 28 + ((code[0] * 7 + code[1] * 11 + i * 5) % 68);
             yield return new ChartRegionMapItem(code, value);
         }
+    }
+
+    private static IEnumerable<ChartRegionMapItem> StateIndustrialBirths() {
+        var states = new[] {
+            "AK", "ME", "VT", "NH", "WA", "MT", "ND", "MN", "WI", "MI", "NY", "MA", "RI",
+            "OR", "ID", "SD", "IA", "IL", "IN", "OH", "PA", "NJ", "CT",
+            "CA", "NV", "WY", "NE", "MO", "KY", "WV", "VA", "MD", "DE",
+            "AZ", "UT", "CO", "KS", "AR", "TN", "NC", "SC", "DC",
+            "HI", "NM", "OK", "LA", "MS", "AL", "GA", "TX", "FL"
+        };
+
+        var suppressed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "AK", "HI", "WY", "WV", "MS" };
+        for (var i = 0; i < states.Length; i++) {
+            var code = states[i];
+            if (suppressed.Contains(code)) continue;
+            var baseValue = ((code[0] * 13 + code[1] * 17 + i * 9) % 125) / 10.0;
+            var regionalLift = code is "CA" or "TX" or "NC" or "GA" or "UT" ? 2.4 : code is "MI" or "OH" or "PA" or "IL" ? -2.1 : 0;
+            yield return new ChartRegionMapItem(code, Math.Max(0, baseValue + regionalLift));
+        }
+    }
+
+    private static void SaveOptionalCatalogRegionMapExamples(string output, ChartPngOutputScale pngOutputScale) {
+        var assets = FindCatalogAssetDirectory();
+        if (assets == null) return;
+        Save(CreateNuts3EuropeIndustrialBirthsMap(assets), output, "eu-industrial-births-nuts3-light", pngOutputScale);
+        foreach (var example in new[] {
+            new CatalogCountryMapExample("Poland", "PL", "industrial-births-poland-nuts3-light", 14, 25, 49, 55),
+            new CatalogCountryMapExample("France", "FR", "industrial-births-france-nuts3-light", -6, 10, 41, 52),
+            new CatalogCountryMapExample("Germany", "DE", "industrial-births-germany-nuts3-light", 5, 16, 47, 56)
+        }) {
+            Save(CreateNuts3CountryIndustrialBirthsMap(assets, example), output, example.FileName, pngOutputScale);
+        }
+    }
+
+    private static Chart CreateNuts3EuropeIndustrialBirthsMap(string assets) {
+        var euCodes = new[] { "AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "EL", "ES", "FI", "FR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "NL", "PL", "PT", "RO", "SE", "SI", "SK" };
+        var nuts3 = ChartMapCatalog.Load("eu-nuts3-2021", assets, options => {
+            options.WithCoordinateBounds(-12, 42, 34, 72);
+            options.IncludeFeaturePropertyValues("CNTR_CODE", euCodes);
+        });
+        var countries = ChartMapCatalog.Load("eu-nuts0-2021", assets, options => options.WithCoordinateBounds(-12, 42, 34, 72, includeIntersections: false));
+        var scale = IndustrialBirthsScale();
+
+        return Chart.Create()
+            .WithTitle("Where new industrial firms are being born across EU regions")
+            .WithSubtitle("Catalog-loaded EU NUTS3 geometry with per-region heatmap values")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(1120, 768)
+            .WithCard(false)
+            .WithPlotBackground(false)
+            .WithMapSurface(false)
+            .WithLegend(false)
+            .WithMapLabels(false)
+            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 165), 0.75)
+            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+            .WithRegionMapCoordinateBounds(-12, 42, 34, 72)
+            .AddMapBaseLayer(countries, ChartColor.FromHex("#E8E8E8"), ChartColor.FromHex("#D3D3D3"), 0.75)
+            .AddRegionHeatmap("Births per 10,000 residents", nuts3, EuNuts3IndustrialBirthsValues(nuts3), scale)
+            .AddMapBoundaryLayer(countries, ChartColor.FromRgba(17, 24, 39, 230), 0.78);
+    }
+
+    private static Chart CreateNuts3CountryIndustrialBirthsMap(string assets, CatalogCountryMapExample example) {
+        var definition = ChartMapCatalog.Load("eu-nuts3-2021", assets, options => {
+            options.WithCoordinateBounds(example.MinimumLongitude, example.MaximumLongitude, example.MinimumLatitude, example.MaximumLatitude);
+            options.IncludeFeaturePropertyValues("CNTR_CODE", example.CountryCode);
+        });
+        var scale = IndustrialBirthsScale();
+
+        return Chart.Create()
+            .WithTitle(example.Country + " NUTS3 Industrial Births")
+            .WithSubtitle("Catalog-loaded EU NUTS3 geometry filtered by CNTR_CODE=" + example.CountryCode)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(860, 680)
+            .WithCard(false)
+            .WithPlotBackground(false)
+            .WithMapSurface(false)
+            .WithLegend(false)
+            .WithMapLabels(false)
+            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 170), 0.75)
+            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+            .WithRegionMapCoordinateBounds(example.MinimumLongitude, example.MaximumLongitude, example.MinimumLatitude, example.MaximumLatitude)
+            .AddRegionHeatmap("Births per 10,000 residents", definition, CatalogCountryValues(definition, example.CountryCode), scale);
+    }
+
+    private static ChartMapColorScale IndustrialBirthsScale() {
+        return ChartMapColorScale
+            .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 3.2)
+            .WithValueRange(0, 10)
+            .WithLabels("0", "3.2 median", ">10")
+            .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
+    }
+
+    private static IEnumerable<ChartRegionMapItem> EuNuts3IndustrialBirthsValues(ChartMapDefinition definition) {
+        foreach (var region in definition.Regions) {
+            var country = region.Code.Length >= 2 ? region.Code.Substring(0, 2) : region.Code;
+            if (country == "IT" || country == "CY") continue;
+            var noise = ((region.Code[region.Code.Length - 1] * 13 + region.Code.Length * 11) % 71) / 10.0 - 3.0;
+            var baseline = country switch {
+                "FR" => 6.2,
+                "PL" => 5.1,
+                "CZ" or "SK" or "HU" => 6.4,
+                "EE" or "LV" or "LT" => 7.2,
+                "RO" or "BG" or "EL" or "HR" or "SI" => 4.8,
+                "DE" or "NL" or "BE" or "AT" => 2.1,
+                "ES" => 1.4,
+                _ => 3.4
+            };
+            if ((country == "DE" || country == "NL" || country == "BE") && noise < -1.6) continue;
+            yield return new ChartRegionMapItem(region.Code, Math.Min(10, Math.Max(0, baseline + noise)));
+        }
+    }
+
+    private static IEnumerable<ChartRegionMapItem> CatalogCountryValues(ChartMapDefinition definition, string countryCode) {
+        foreach (var region in definition.Regions) {
+            var noise = ((region.Code[region.Code.Length - 1] * 19 + region.Code.Length * 7) % 61) / 10.0;
+            var baseline = countryCode switch {
+                "PL" => 4.7,
+                "FR" => 5.6,
+                "DE" => 2.2,
+                _ => 3.2
+            };
+            if (countryCode == "DE" && noise < 1.0) continue;
+            yield return new ChartRegionMapItem(region.Code, Math.Min(10, Math.Max(0, baseline + noise - 2.4)));
+        }
+    }
+
+    private static string? FindCatalogAssetDirectory() {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory != null) {
+            var candidate = Path.Combine(directory.FullName, "artifacts");
+            if (File.Exists(Path.Combine(candidate, ChartMapCatalog.GetEntry("eu-nuts3-2021").FileName))) return candidate;
+            directory = directory.Parent;
+        }
+
+        return null;
     }
 
     private static void Save(Chart chart, string output, string name, ChartPngOutputScale pngOutputScale) {
@@ -274,6 +430,26 @@ internal static class MapExamples {
             Label = label;
             FromPointLabel = fromPointLabel;
             ToPointLabel = toPointLabel;
+        }
+    }
+
+    private readonly struct CatalogCountryMapExample {
+        public readonly string Country;
+        public readonly string CountryCode;
+        public readonly string FileName;
+        public readonly double MinimumLongitude;
+        public readonly double MaximumLongitude;
+        public readonly double MinimumLatitude;
+        public readonly double MaximumLatitude;
+
+        public CatalogCountryMapExample(string country, string countryCode, string fileName, double minimumLongitude, double maximumLongitude, double minimumLatitude, double maximumLatitude) {
+            Country = country;
+            CountryCode = countryCode;
+            FileName = fileName;
+            MinimumLongitude = minimumLongitude;
+            MaximumLongitude = maximumLongitude;
+            MinimumLatitude = minimumLatitude;
+            MaximumLatitude = maximumLatitude;
         }
     }
 }

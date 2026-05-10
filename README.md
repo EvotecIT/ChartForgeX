@@ -58,6 +58,8 @@ Run the full local quality loop with:
 
 That restores, builds, runs smoke tests through `dotnet test`, regenerates example chart outputs and the static example gallery, packs `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html` into `artifacts/packages/Release`, creates matching `.snupkg` symbol packages, verifies package contents and dependency invariants, and installs the freshly packed HTML interactivity adapter into a clean temporary console app. The generated demo entry points are `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/catalog.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/quality-dashboard.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/svg-png-comparison.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/domain-security-interactive.html`, and `ChartForgeX.Examples/bin/Release/net8.0/output/executive-interactive-dashboard.html`. The catalog includes map/geography, theme, brand-kit, palette-swatch, pictorial-symbol, pictorial-Isotype, point-color customization, word-cloud-control, and interactive demo pages so visual choices can be reviewed in HTML, SVG, PNG, and opt-in self-contained HTML interactivity.
 
+External catalog map demos that depend on large local GeoJSON assets can be generated with `dotnet run --project ChartForgeX.Examples/ChartForgeX.Examples.csproj -c Release -- --include-external-map-examples`. They stay out of the default quality loop so local ignored datasets do not change CI output shape.
+
 ## Website pilot
 
 `Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The
@@ -403,8 +405,8 @@ var observed = Chart.Create()
 | Calendar heatmap | `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` | Contribution-style day grids for activity, uptime, and habit tracking |
 | Dotted map | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints` | Travel-map and operations-map views with generated land-dot layers, focused regional viewports, highlighted points, and connector routes |
 | Topology | `TopologyChart`, `TopologyNode`, `TopologyEdge`, `TopologyGroup`, `TopologySvgRenderer` | Deterministic SVG-first topology diagrams for grouped regions, dependencies, site links, replication paths, subnets, and service maps |
-| Region map | `AddRegionMap`, `ChartMapCatalog`, `ChartMapDefinition`, `ChartMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Reusable geographic choropleth maps where map geometry is data and the renderer supplies the visual treatment |
-| Tile map | `AddTileMap`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` | Dependency-free regional choropleth tile maps where tile geography is data and the renderer supplies the visual treatment |
+| Region map / heatmap | `AddRegionMap`, `AddRegionHeatmap`, `AddMapBaseLayer`, `AddMapBoundaryLayer`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapDefinition.FromGeoJson`, `ChartMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `WithMapColorScale` | Reusable geographic choropleth maps where every country, state, district, NUTS region, or custom polygon can be colored independently from data and composed with cartographic context layers |
+| Tile map / heatmap | `AddTileMap`, `AddTileHeatmap`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithMapColorScale` | Dependency-free regional choropleth tile maps where every tile can be colored independently from data |
 | Gauge | `AddGauge` | Single score or KPI |
 | Circle | `AddCircle`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale` | Compact single-value progress KPIs with tunable ring sizing |
 | Radial bar | `AddRadialBar`, `WithRadialBarCenterLabel`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` | Circular progress rings for multiple KPI percentages with tunable radius and stroke weight |
@@ -1018,7 +1020,7 @@ var markets = Chart.Create()
 
 Use `ChartMapViewport.World()`, `Europe()`, `NorthAmerica()`, `SouthAmerica()`, `Africa()`, `Asia()`, `Oceania()`, `Poland()`, or `new ChartMapViewport(...)` to focus the dotted layer on a continent, country, or custom bounding box. Route and connector lines render on dotted maps when both endpoints are inside the selected viewport. Prefer `AddMapRouteBetweenPoints` or `AddMapConnectorBetweenPoints` when the line should target existing rendered markers; use coordinate-based `AddMapRoute` and `AddMapConnector` for arbitrary longitude/latitude overlays.
 
-Region maps separate the map definition from the visual treatment. Built-in geographies are resolved by catalog ID, and custom definitions can be created from SVG path data with `ChartMapDefinition` and `ChartMapRegion`:
+Region maps separate the map definition from the visual treatment. Built-in geographies are resolved by catalog ID, and custom definitions can be created from SVG path data with `ChartMapDefinition` and `ChartMapRegion`. Each `ChartMapRegion` is one polygon or compound polygon, and each matching `ChartRegionMapItem` supplies that region's value:
 
 ```csharp
 var regions = Chart.Create()
@@ -1031,6 +1033,88 @@ var regions = Chart.Create()
         new ChartRegionMapItem("FL", 61)
     });
 ```
+
+Use `AddRegionHeatmap(...)` or `WithMapColorScale(...)` when a choropleth needs a real color ramp rather than the default single-color intensity scale. The geometry can be countries, states, NUTS regions, counties, sales districts, or any custom SVG map. Diverging scales support explicit value ranges, midpoint labels, and no-data colors, which is useful for median-centered maps such as industrial births per resident:
+
+```csharp
+var scale = ChartMapColorScale
+    .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 3.2)
+    .WithValueRange(0, 10)
+    .WithLabels("0", "3.2 median", ">10")
+    .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
+
+var births = Chart.Create()
+    .WithTitle("Where Industrial Firms Are Being Born")
+    .WithSubtitle("Births per 10,000 residents")
+    .WithMapLabels(false)
+    .AddRegionHeatmap("Births", ChartMapCatalog.Get("us-states"), new[] {
+        new ChartRegionMapItem("CA", 8.6),
+        new ChartRegionMapItem("TX", 10.8),
+        new ChartRegionMapItem("MI", 1.7)
+    }, scale);
+```
+
+GeoJSON feature collections can be imported directly when the boundary source already exists as polygons. Common region-code fields such as `NUTS_ID`, `id`, `code`, `ISO_A2`, and `GEOID` are searched by default, with region names taken from fields such as `NUTS_NAME`, `NAME_LATN`, or `name`:
+
+```csharp
+var nuts3 = ChartMapCatalog.Load(
+    "eu-nuts3-2021",
+    "maps",
+    options => options
+        .WithCoordinateBounds(-12, 42, 34, 72)
+        .IncludeFeaturePropertyValues("CNTR_CODE", "AT", "BE", "BG", "CZ", "DE", "DK", "EE", "EL", "ES", "FI", "FR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "NL", "PL", "PT", "RO", "SE", "SI", "SK"));
+
+var countries = ChartMapCatalog.Load(
+    "eu-nuts0-2021",
+    "maps",
+    options => options.WithCoordinateBounds(-12, 42, 34, 72));
+
+var map = Chart.Create()
+    .WithTitle("Where Industrial Firms Are Being Born Across EU Regions")
+    .WithSubtitle("Industrial enterprise births per 10,000 residents")
+    .WithCard(false)
+    .WithPlotBackground(false)
+    .WithMapSurface(false)
+    .WithMapLabels(false)
+    .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 160), 0.42)
+    .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+    .WithRegionMapCoordinateBounds(-12, 42, 34, 72)
+    .AddMapBaseLayer(countries, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#D4D4D8"))
+    .AddRegionHeatmap("Births", nuts3, new[] {
+        new ChartRegionMapItem("PL911", 4.8),
+        new ChartRegionMapItem("DE300", 2.1),
+        new ChartRegionMapItem("FR101", 6.9)
+    }, scale)
+    .AddMapBoundaryLayer(countries, ChartColor.FromHex("#111827"), 1.2);
+```
+
+Known external map catalogs expose metadata and import defaults without embedding every large boundary file in the core package. This keeps common maps discoverable while letting applications host the actual GeoJSON assets in their own repo, CDN, or package:
+
+```csharp
+foreach (var entry in ChartMapCatalog.Entries()) {
+    Console.WriteLine($"{entry.Id}: join data by {entry.JoinKey}");
+}
+
+var nuts3 = ChartMapCatalog.FromGeoJsonFile(
+    "eu-nuts3-2021",
+    "maps/nuts3-20m-2021.geojson");
+
+var sameNuts3 = ChartMapCatalog.FromAssetDirectory(
+    "eu-nuts3-2021",
+    "maps");
+
+var polandNuts3 = ChartMapCatalog.Load(
+    "eu-nuts3-2021",
+    "maps",
+    options => options.IncludeFeaturePropertyValues("CNTR_CODE", "PL"));
+
+var usStates = ChartMapCatalog.Load("us-states");
+var worldCountries = ChartMapCatalog.Load("world-admin0-natural-earth-50m", "maps");
+```
+
+The catalog ID, such as `eu-nuts3-2021`, is the stable semantic identity: it selects the import defaults, source metadata, level, join key, and standard file name. The path only answers where the application stores that asset. Use `FromAssetDirectory(...)` when the directory follows the catalog file names, or `FromGeoJsonFile(...)` when the file has a custom location or name.
+
+Built-in entries such as `us-states` are embedded. Larger entries such as `eu-nuts3-2021`, `us-counties-2024`, `world-admin0-natural-earth-50m`, and `global-adm1-geoboundaries` are cataloged with source, level, join-key, and recommended file-name metadata so they can be hosted externally and loaded with the same chart API.
 
 Tile maps use the same data model with a reusable grid definition. Built-in tile maps are also resolved by catalog ID, and custom equal-area layouts can be created with `ChartTileMapDefinition` and `ChartTileMapRegion`:
 
@@ -1046,6 +1130,7 @@ var tiles = Chart.Create()
 ```
 
 Map definitions can expose aliases such as short codes, full names, or common alternate names, normalizing all rendered metadata to canonical region codes.
+Use `WithRegionMapCoordinateBounds(minLon, maxLon, minLat, maxLat)` to frame equirectangular GeoJSON maps independently from the data geometry, or `WithRegionMapBounds(...)` when custom map definitions use their own coordinate system.
 Geographic region labels render only when a region has enough room for the code. Use `WithMapLabels(false)` or `WithMapScaleLegend(false)` when a map is embedded in a compact card and hover/focus titles can carry the region identity.
 Map SVG containers expose summary metadata such as `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, `data-cfx-point-count`, `data-cfx-visible-point-count`, `data-cfx-valued-point-count`, `data-cfx-viewport`, region coverage counts, and `data-cfx-min-value`/`data-cfx-max-value` for value-colored maps, while highlighted points, connectors, and regions remain keyboard-focusable or hover-descriptive and include native hover titles.
 

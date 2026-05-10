@@ -6,6 +6,36 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     /// <summary>
+    /// Sets the color scale used by region and tile maps.
+    /// </summary>
+    /// <param name="scale">The map color scale, or null to use the default map coloring.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithMapColorScale(ChartMapColorScale? scale) {
+        Options.MapColorScale = scale;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a two-color sequential scale used by region and tile maps.
+    /// </summary>
+    /// <param name="lowColor">The low-value color.</param>
+    /// <param name="highColor">The high-value color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithMapColorScale(ChartColor lowColor, ChartColor highColor) =>
+        WithMapColorScale(ChartMapColorScale.Sequential(lowColor, highColor));
+
+    /// <summary>
+    /// Sets a three-color diverging scale used by region and tile maps.
+    /// </summary>
+    /// <param name="lowColor">The low-value color.</param>
+    /// <param name="midpointColor">The midpoint color.</param>
+    /// <param name="highColor">The high-value color.</param>
+    /// <param name="midpointValue">An optional midpoint value. When omitted, the midpoint is halfway between the effective minimum and maximum.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithMapColorScale(ChartColor lowColor, ChartColor midpointColor, ChartColor highColor, double? midpointValue = null) =>
+        WithMapColorScale(ChartMapColorScale.Diverging(lowColor, midpointColor, highColor, midpointValue));
+
+    /// <summary>
     /// Adds a geographic region map from a reusable map definition.
     /// </summary>
     /// <param name="name">The series name.</param>
@@ -17,6 +47,19 @@ public sealed partial class Chart {
         if (definition == null) throw new ArgumentNullException(nameof(definition));
         Options.RegionMapDefinition = definition;
         return AddRegionMap(name, definition, regions, ChartSeriesKind.RegionMap, "Region maps", color);
+    }
+
+    /// <summary>
+    /// Adds a geographic region heatmap from a reusable map definition.
+    /// </summary>
+    /// <param name="name">The series name.</param>
+    /// <param name="definition">The map geometry definition.</param>
+    /// <param name="regions">The region values to render. Each map region is colored independently from its own value.</param>
+    /// <param name="scale">An optional map color scale used to color the regions.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddRegionHeatmap(string name, ChartMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartMapColorScale? scale = null) {
+        if (scale != null) Options.MapColorScale = scale;
+        return AddRegionMap(name, definition, regions);
     }
 
     private Chart AddRegionMap(string name, ChartMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartSeriesKind kind, string chartName, ChartColor? color) {
