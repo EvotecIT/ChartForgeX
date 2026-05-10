@@ -14,10 +14,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
-        RenderActivityChrome(writer, block, ref y, content.X, content.Width);
-        var hasAction = block.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.12)) : 0;
-        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
+        var bottom = options.Size.Height - options.Padding.Bottom;
         var spineX = content.X + 18;
         writer.StartElement("g")
             .Attribute("data-cfx-role", "activity-timeline-block")
@@ -37,7 +34,6 @@ public sealed partial class SvgVisualBlockRenderer {
         }
 
         writer.EndElement().Line();
-        if (hasAction) RenderFooterAction(writer, block.ActionLabel, block.ActionSymbol, block.ActionUrl, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
     }
 
     private static void RenderActivitySection(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width) {

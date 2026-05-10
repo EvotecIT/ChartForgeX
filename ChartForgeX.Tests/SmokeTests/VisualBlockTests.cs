@@ -204,10 +204,6 @@ internal static partial class SmokeTests {
             .WithSubtitle("Shipment status feed")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(620, 620)
-            .WithToolbarActions("Hold", "Edit")
-            .AddTab("All", "2 shipments")
-            .AddTab("Shipment 1", "Today")
-            .WithNotePlaceholder("Add note...")
             .WithEventSurfaces(false)
             .AddSection("In-progress")
             .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by Royal Mail Standard", "S")
@@ -221,9 +217,6 @@ internal static partial class SmokeTests {
         Assert(activitySvg.Contains("data-cfx-role=\"activity-timeline-block\"", StringComparison.Ordinal), "ActivityTimelineBlock should render a public block role.");
         Assert(activitySvg.Contains("data-cfx-event-surfaces=\"false\"", StringComparison.Ordinal), "ActivityTimelineBlock should expose compact event surface mode.");
         Assert(activitySvg.Contains(">S</text>", StringComparison.Ordinal), "ActivityTimelineBlock should render compact event symbols.");
-        Assert(activitySvg.Contains("data-cfx-role=\"activity-toolbar-action\"", StringComparison.Ordinal), "ActivityTimelineBlock should render optional toolbar actions.");
-        Assert(activitySvg.Contains("data-cfx-role=\"activity-tab\"", StringComparison.Ordinal), "ActivityTimelineBlock should render optional tab chips.");
-        Assert(activitySvg.Contains("data-cfx-role=\"activity-note-box\"", StringComparison.Ordinal), "ActivityTimelineBlock should render optional note boxes.");
         Assert(activitySvg.Contains("data-cfx-role=\"activity-spine\"", StringComparison.Ordinal), "ActivityTimelineBlock should render the connector spine.");
         Assert(activitySvg.Contains("data-cfx-role=\"activity-event-node\"", StringComparison.Ordinal), "ActivityTimelineBlock should render event nodes.");
         Assert(activitySvg.Contains("data-cfx-role=\"activity-check-node\"", StringComparison.Ordinal), "ActivityTimelineBlock should render nested checklist nodes.");
@@ -403,7 +396,6 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().ToSvg(), "ActivityTimelineBlock should require items.");
         AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddEvent("").ToSvg(), "ActivityTimelineBlock should require item text.");
         AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddHiddenSummary(-1, "items").ToSvg(), "ActivityTimelineBlock should reject negative hidden counts.");
-        AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddTab("All", new string('x', 37)).AddEvent("Ok").ToSvg(), "ActivityTimelineBlock tab details should stay compact.");
         AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddEvent("Bad", symbol: "TOOLONG").ToSvg(), "ActivityTimelineBlock item symbols should stay compact.");
         AssertThrows<ArgumentOutOfRangeException>(() => ActivityTimelineItem.Event("Bad", null, VisualStatus.Neutral, null, null).Kind = (ActivityTimelineItemKind)999, "ActivityTimelineItem kind property should reject unknown kinds.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().ToSvg(), "ScheduleTimelineBlock should require events.");

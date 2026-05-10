@@ -212,19 +212,15 @@ internal static class DashboardPatternExamples {
         .AddEvent("Review & Feedback", 11.0, 14.0, 8, Orange, VisualStatus.Warning, avatars: new[] { "RF", "PD", "SC" });
 
     private static ActivityTimelineBlock ShipmentActivityPanel(int outputScale) => ActivityTimelineBlock.Create()
-        .WithTitle("Timeline")
         .WithTheme(ShipmentTheme())
-        .WithSize(620, 820)
-        .WithPadding(34, 34, 34, 30)
+        .WithSize(340, 720)
+        .WithPadding(18, 18, 18, 18)
+        .WithTransparentBackground()
+        .WithCard(false)
         .WithPngOutputScale(outputScale)
-        .WithToolbarActions("Hold", "Edit", "...")
         .WithEventSurfaces(false)
-        .AddTab("All", "2 shipments")
-        .AddTab("Shipment 1", "Est. dispatch: Today")
-        .AddTab("Shipment 2", "Est. dispatch: Tomorrow")
-        .WithNotePlaceholder("Add note...")
         .AddSection("In-progress")
-        .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by: Royal Mail (Standard)", "S")
+        .AddEvent("Shipment", status: VisualStatus.Info, detail: "Delivery by: Royal Mail (Standard)", symbol: "S")
         .AddChecklistItem("Estimated dispatch: Today", completed: false)
         .AddChecklistItem("Estimated delivery: 2-3 business days", completed: false)
         .AddEvent("Shipment 1", status: VisualStatus.Neutral, symbol: "1")
@@ -234,8 +230,7 @@ internal static class DashboardPatternExamples {
         .AddEvent("Shipment 2", status: VisualStatus.Neutral, symbol: "2")
         .AddSection("Completed")
         .AddHiddenSummary(6, "items hidden")
-        .AddEvent("Order created", "Mar 10, 2026 10:20 am", VisualStatus.Positive, detail: "UK#2337 created via Shopify", symbol: "OK")
-        .WithAction("View customer details");
+        .AddEvent("Order created", status: VisualStatus.Positive, detail: "UK#2337 created via Shopify", symbol: "OK");
 
     private static VisualGrid HrOperationsGrid(int outputScale) => VisualGrid.Create()
         .WithTitle("HR Operations Dashboard")

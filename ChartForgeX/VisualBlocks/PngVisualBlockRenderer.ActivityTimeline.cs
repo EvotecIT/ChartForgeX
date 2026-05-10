@@ -8,60 +8,13 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class PngVisualBlockRenderer {
-    private static void DrawActivityChrome(RgbaCanvas canvas, ActivityTimelineBlock block, ref double y, double x, double width) {
-        var theme = block.Options.Theme;
-        if (block.ToolbarActions.Count > 0) {
-            var cursor = x + width;
-            for (var i = block.ToolbarActions.Count - 1; i >= 0; i--) {
-                var action = block.ToolbarActions[i];
-                var actionWidth = Math.Min(92, RgbaCanvas.MeasureTextEmphasizedWidth(action, theme.SubtitleFontSize, null) + 24);
-                cursor -= actionWidth;
-                canvas.FillRoundedRect(cursor, y, actionWidth, 28, 8, ChartColor.White);
-                canvas.StrokeRoundedRect(cursor, y, actionWidth, 28, 8, theme.CardBorder, 1);
-                DrawAlignedText(canvas, action, cursor, y + 7, actionWidth, VisualTextAlignment.Center, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
-                cursor -= 8;
-            }
-
-            y += 38;
-        }
-
-        if (block.Tabs.Count > 0) {
-            var cursor = x;
-            foreach (var tab in block.Tabs) {
-                var labelWidth = RgbaCanvas.MeasureTextEmphasizedWidth(tab.Label, Math.Max(12, theme.SubtitleFontSize + 1), null);
-                var detailWidth = tab.Detail.Length == 0 ? 0 : RgbaCanvas.MeasureTextWidth(tab.Detail, Math.Max(10, theme.SubtitleFontSize - 1), null);
-                var tabWidth = Math.Min(210, Math.Max(96, Math.Max(labelWidth, detailWidth) + 32));
-                canvas.FillRoundedRect(cursor, y, tabWidth, 52, 8, ChartColor.White);
-                canvas.StrokeRoundedRect(cursor, y, tabWidth, 52, 8, theme.CardBorder, 1);
-                DrawAlignedText(canvas, tab.Label, cursor + 14, y + 10, tabWidth - 26, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
-                if (tab.Detail.Length > 0) DrawAlignedText(canvas, tab.Detail, cursor + 14, y + 30, tabWidth - 26, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), false);
-                cursor += tabWidth + 10;
-            }
-
-            y += 66;
-        }
-
-        if (block.NotePlaceholder.Length > 0) {
-            canvas.FillRoundedRect(x, y, width, 54, 8, ChartColor.White);
-            canvas.StrokeRoundedRect(x, y, width, 54, 8, theme.CardBorder, 1);
-            DrawAlignedText(canvas, block.NotePlaceholder, x + 14, y + 18, width - 58, VisualTextAlignment.Left, theme.MutedText, Math.Max(12, theme.SubtitleFontSize + 1), false);
-            var sendColor = VisualBlockRendering.PaletteAt(theme, 0);
-            canvas.FillRoundedRect(x + width - 38, y + 17, 22, 22, 7, sendColor.WithAlpha(72));
-            DrawAlignedText(canvas, ">", x + width - 37, y + 22, 20, VisualTextAlignment.Center, sendColor, 12, true);
-            y += 76;
-        }
-    }
-
     private static void DrawActivityTimeline(RgbaCanvas canvas, ActivityTimelineBlock block) {
         var options = block.Options;
         var theme = options.Theme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
-        DrawActivityChrome(canvas, block, ref y, content.X, content.Width);
-        var hasAction = block.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.12)) : 0;
-        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
+        var bottom = options.Size.Height - options.Padding.Bottom;
         var spineX = content.X + 18;
         canvas.DrawLine(spineX, y + 6, spineX, bottom, theme.PlotBorder, 2);
         for (var i = 0; i < block.Items.Count && y < bottom - 12; i++) {
@@ -75,8 +28,6 @@ public sealed partial class PngVisualBlockRenderer {
             else DrawActivityEvent(canvas, block, item, y, rowHeight, spineX, content.X, content.Width, color);
             y += rowHeight;
         }
-
-        if (hasAction) DrawFooterAction(canvas, block.ActionLabel, block.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
     }
 
     private static void DrawActivitySection(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width) {

@@ -143,58 +143,15 @@ public enum ActivityTimelineItemKind {
 /// </summary>
 public sealed class ActivityTimelineBlock : VisualBlock<ActivityTimelineBlock> {
     private readonly List<ActivityTimelineItem> _items = new();
-    private readonly List<ActivityTimelineTab> _tabs = new();
-    private readonly List<string> _toolbarActions = new();
-    private string _actionLabel = string.Empty;
-    private string _actionSymbol = ">";
-    private string _actionUrl = string.Empty;
-    private string _notePlaceholder = string.Empty;
 
     /// <summary>Gets timeline items.</summary>
     public IReadOnlyList<ActivityTimelineItem> Items => _items;
 
-    /// <summary>Gets optional tab chips rendered above the timeline feed.</summary>
-    public IReadOnlyList<ActivityTimelineTab> Tabs => _tabs;
-
-    /// <summary>Gets optional toolbar actions rendered in the header.</summary>
-    public IReadOnlyList<string> ToolbarActions => _toolbarActions;
-
-    /// <summary>Gets optional note placeholder rendered above the timeline feed.</summary>
-    public string NotePlaceholder { get => _notePlaceholder; set => _notePlaceholder = value ?? throw new ArgumentNullException(nameof(value)); }
-
     /// <summary>Gets or sets whether event rows render a contained surface behind their content.</summary>
     public bool ShowEventSurfaces { get; set; } = true;
 
-    /// <summary>Gets optional footer action text.</summary>
-    public string ActionLabel { get => _actionLabel; set => _actionLabel = value ?? throw new ArgumentNullException(nameof(value)); }
-
-    /// <summary>Gets optional footer action symbol.</summary>
-    public string ActionSymbol { get => _actionSymbol; set => _actionSymbol = value ?? throw new ArgumentNullException(nameof(value)); }
-
-    /// <summary>Gets optional footer action URL for SVG/HTML outputs.</summary>
-    public string ActionUrl { get => _actionUrl; set => _actionUrl = value ?? throw new ArgumentNullException(nameof(value)); }
-
     /// <summary>Creates a new activity timeline block.</summary>
     public static ActivityTimelineBlock Create() => new();
-
-    /// <summary>Adds a tab chip above the timeline feed.</summary>
-    public ActivityTimelineBlock AddTab(string label, string? detail = null) {
-        _tabs.Add(new ActivityTimelineTab(label, detail));
-        return this;
-    }
-
-    /// <summary>Sets an optional note placeholder rendered above the timeline feed.</summary>
-    public ActivityTimelineBlock WithNotePlaceholder(string placeholder) {
-        NotePlaceholder = placeholder ?? throw new ArgumentNullException(nameof(placeholder));
-        return this;
-    }
-
-    /// <summary>Sets compact toolbar actions rendered in the header.</summary>
-    public ActivityTimelineBlock WithToolbarActions(params string[] actions) {
-        _toolbarActions.Clear();
-        if (actions != null) foreach (var action in actions) _toolbarActions.Add(action ?? string.Empty);
-        return this;
-    }
 
     /// <summary>Sets whether primary events render as card-like surfaces or compact inline rows.</summary>
     public ActivityTimelineBlock WithEventSurfaces(bool enabled = true) {
@@ -225,34 +182,6 @@ public sealed class ActivityTimelineBlock : VisualBlock<ActivityTimelineBlock> {
         _items.Add(ActivityTimelineItem.Hidden(count, label));
         return this;
     }
-
-    /// <summary>Sets optional footer action text.</summary>
-    public ActivityTimelineBlock WithAction(string label, string? symbol = null, string? url = null) {
-        ActionLabel = label ?? throw new ArgumentNullException(nameof(label));
-        ActionSymbol = symbol ?? ">";
-        ActionUrl = url ?? string.Empty;
-        return this;
-    }
-}
-
-/// <summary>
-/// A compact tab chip rendered above an activity timeline.
-/// </summary>
-public sealed class ActivityTimelineTab {
-    private string _label;
-    private string _detail = string.Empty;
-
-    /// <summary>Initializes a timeline tab.</summary>
-    public ActivityTimelineTab(string label, string? detail = null) {
-        _label = label ?? throw new ArgumentNullException(nameof(label));
-        _detail = detail ?? string.Empty;
-    }
-
-    /// <summary>Gets or sets the tab label.</summary>
-    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
-
-    /// <summary>Gets or sets optional tab detail text.</summary>
-    public string Detail { get => _detail; set => _detail = value ?? throw new ArgumentNullException(nameof(value)); }
 }
 
 /// <summary>

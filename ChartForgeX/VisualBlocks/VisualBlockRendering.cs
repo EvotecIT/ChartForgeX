@@ -143,17 +143,6 @@ internal static class VisualBlockRendering {
 
         if (block is ActivityTimelineBlock activityBlock) {
             if (activityBlock.Items.Count == 0) throw new InvalidOperationException("Activity timeline blocks must contain at least one item.");
-            if (activityBlock.NotePlaceholder.Length > 64) throw new InvalidOperationException("Activity timeline note placeholders must be sixty-four characters or fewer.");
-            if (activityBlock.ActionLabel.Length > 48) throw new InvalidOperationException("Activity timeline block action labels must be forty-eight characters or fewer.");
-            if (activityBlock.ActionSymbol.Length > 4) throw new InvalidOperationException("Activity timeline block action symbols must be four characters or fewer.");
-            if (activityBlock.ActionUrl.Length > 0 && !IsSafeActionUrl(activityBlock.ActionUrl)) throw new InvalidOperationException("Activity timeline block action URLs must be relative URLs, http(s), or mailto links.");
-            foreach (var tab in activityBlock.Tabs) {
-                if (tab.Label.Length == 0) throw new InvalidOperationException("Activity timeline tabs must define a label.");
-                if (tab.Label.Length > 24) throw new InvalidOperationException("Activity timeline tab labels must be twenty-four characters or fewer.");
-                if (tab.Detail.Length > 36) throw new InvalidOperationException("Activity timeline tab details must be thirty-six characters or fewer.");
-            }
-
-            foreach (var action in activityBlock.ToolbarActions) if (action.Length > 16) throw new InvalidOperationException("Activity timeline toolbar actions must be sixteen characters or fewer.");
             foreach (var item in activityBlock.Items) {
                 if (item.Title.Length == 0) throw new InvalidOperationException("Activity timeline items must define text.");
                 if (item.Badge.Length > 24) throw new InvalidOperationException("Activity timeline item badges must be twenty-four characters or fewer.");
