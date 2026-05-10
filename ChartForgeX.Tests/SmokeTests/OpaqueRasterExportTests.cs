@@ -78,6 +78,15 @@ internal static partial class SmokeTests {
             if (File.Exists(invalidFormatPath)) File.Delete(invalidFormatPath);
         }
 
+        Chart nullChart = null!;
+        AssertFailedSavePreservesExistingFile(path => nullChart.SaveRasterImage(path, RasterImageFormat.Bmp), "Chart raster file export should render before opening the destination.");
+        ChartGrid nullGrid = null!;
+        AssertFailedSavePreservesExistingFile(path => nullGrid.SaveRasterImage(path, RasterImageFormat.Bmp), "Chart grid raster file export should render before opening the destination.");
+        IVisualBlock nullBlock = null!;
+        AssertFailedSavePreservesExistingFile(path => nullBlock.SaveRasterImage(path, RasterImageFormat.Bmp), "Visual block raster file export should render before opening the destination.");
+        VisualGrid nullVisualGrid = null!;
+        AssertFailedSavePreservesExistingFile(path => nullVisualGrid.SaveRasterImage(path, RasterImageFormat.Bmp), "Visual grid raster file export should render before opening the destination.");
+
         var inferredPath = Path.Combine(Path.GetTempPath(), "chartforgex-raster-" + Guid.NewGuid().ToString("N") + ".tif");
         try {
             SampleChart().SaveRasterImage(inferredPath);
@@ -162,12 +171,27 @@ internal static partial class SmokeTests {
             if (File.Exists(invalidTopologyPath)) File.Delete(invalidTopologyPath);
         }
 
+        TopologyChart nullTopology = null!;
+        AssertFailedSavePreservesExistingFile(path => nullTopology.SaveRasterImage(path, RasterImageFormat.Bmp), "Topology raster file export should render before opening the destination.");
+
         var topologyPath = Path.Combine(Path.GetTempPath(), "chartforgex-topology-raster-" + Guid.NewGuid().ToString("N") + ".ppm");
         try {
             topology.SaveRasterImage(topologyPath, topologyOptions);
             AssertPpmHeader(File.ReadAllBytes(topologyPath), null, null);
         } finally {
             if (File.Exists(topologyPath)) File.Delete(topologyPath);
+        }
+    }
+
+    private static void AssertFailedSavePreservesExistingFile(Action<string> saveAction, string message) {
+        var path = Path.Combine(Path.GetTempPath(), "chartforgex-preserve-raster-" + Guid.NewGuid().ToString("N") + ".bmp");
+        var original = new byte[] { 1, 2, 3, 4 };
+        File.WriteAllBytes(path, original);
+        try {
+            AssertThrows<Exception>(() => saveAction(path), message);
+            Assert(File.ReadAllBytes(path).SequenceEqual(original), message + " Existing file contents should remain unchanged.");
+        } finally {
+            if (File.Exists(path)) File.Delete(path);
         }
     }
 

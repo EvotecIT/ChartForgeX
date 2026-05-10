@@ -125,9 +125,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="options">Optional render options.</param>
     /// <param name="imageOptions">Optional raster export options.</param>
     public static void SaveRasterImage(this TopologyChart chart, string path, RasterImageFormat format, TopologyRenderOptions? options = null, RasterImageOptions? imageOptions = null) {
-        RasterImageEncoder.ThrowIfUnsupported(format);
-        using var stream = File.Create(path);
-        chart.WriteRasterImage(stream, format, options, imageOptions);
+        File.WriteAllBytes(path, chart.ToRasterImage(format, options, imageOptions));
     }
 
     /// <summary>

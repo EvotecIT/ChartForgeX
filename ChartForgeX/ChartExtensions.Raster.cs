@@ -111,9 +111,7 @@ public static partial class ChartExtensions {
     /// <param name="format">The raster image format.</param>
     /// <param name="options">Optional raster export options.</param>
     public static void SaveRasterImage(this Chart chart, string path, RasterImageFormat format, RasterImageOptions? options = null) {
-        RasterImageEncoder.ThrowIfUnsupported(format);
-        using var stream = File.Create(path);
-        chart.WriteRasterImage(stream, format, options);
+        File.WriteAllBytes(path, chart.ToRasterImage(format, options));
     }
 
     /// <summary>
@@ -229,9 +227,7 @@ public static partial class ChartExtensions {
     /// <param name="format">The raster image format.</param>
     /// <param name="options">Optional raster export options.</param>
     public static void SaveRasterImage(this ChartGrid grid, string path, RasterImageFormat format, RasterImageOptions? options = null) {
-        RasterImageEncoder.ThrowIfUnsupported(format);
-        using var stream = File.Create(path);
-        grid.WriteRasterImage(stream, format, options);
+        File.WriteAllBytes(path, grid.ToRasterImage(format, options));
     }
 
     /// <summary>
@@ -347,9 +343,7 @@ public static partial class ChartExtensions {
     /// <param name="format">The raster image format.</param>
     /// <param name="options">Optional raster export options.</param>
     public static void SaveRasterImage(this IVisualBlock block, string path, RasterImageFormat format, RasterImageOptions? options = null) {
-        RasterImageEncoder.ThrowIfUnsupported(format);
-        using var stream = File.Create(path);
-        block.WriteRasterImage(stream, format, options);
+        File.WriteAllBytes(path, block.ToRasterImage(format, options));
     }
 
     /// <summary>
@@ -465,9 +459,7 @@ public static partial class ChartExtensions {
     /// <param name="format">The raster image format.</param>
     /// <param name="options">Optional raster export options.</param>
     public static void SaveRasterImage(this VisualGrid grid, string path, RasterImageFormat format, RasterImageOptions? options = null) {
-        RasterImageEncoder.ThrowIfUnsupported(format);
-        using var stream = File.Create(path);
-        grid.WriteRasterImage(stream, format, options);
+        File.WriteAllBytes(path, grid.ToRasterImage(format, options));
     }
 
     /// <summary>
