@@ -42,11 +42,33 @@ public sealed class PngVisualGridRenderer {
         }
 
         foreach (var cell in layout.Cells) {
-            var child = cell.Item.Chart != null ? _chartRenderer.RenderCanvas(cell.Item.Chart) : _blockRenderer.RenderCanvas(cell.Item.Block!);
+            var child = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart) : RenderChildBlock(cell.Item.Block!);
             canvas.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, child.OutputWidth, child.OutputHeight, child.ToOutputPixels());
         }
 
         return canvas;
+    }
+
+    private RgbaCanvas RenderChildChart(Chart chart) {
+        var transparentBackground = chart.Options.TransparentBackground;
+        try {
+            chart.Options.TransparentBackground = true;
+            return _chartRenderer.RenderCanvas(chart);
+        }
+        finally {
+            chart.Options.TransparentBackground = transparentBackground;
+        }
+    }
+
+    private RgbaCanvas RenderChildBlock(IVisualBlock block) {
+        var transparentBackground = block.Options.TransparentBackground;
+        try {
+            block.Options.TransparentBackground = true;
+            return _blockRenderer.RenderCanvas(block);
+        }
+        finally {
+            block.Options.TransparentBackground = transparentBackground;
+        }
     }
 
     private static string FitText(string value, double fontSize, double maxWidth) {
