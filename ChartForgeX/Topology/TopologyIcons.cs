@@ -128,13 +128,13 @@ public sealed class TopologyIconCatalog {
             .AddIcon("global-catalog", "Global Catalog", TopologyNodeKind.Server, TopologyIconShape.DomainController, "GC", "#0F766E", "Directory")
             .AddIcon("site", "AD Site", TopologyNodeKind.Location, TopologyIconShape.Site, "SITE", "#16A34A", "Directory")
             .AddIcon("site-link", "AD Site Link", TopologyNodeKind.Network, TopologyIconShape.Network, "LINK", "#2563EB", "Directory")
-            .AddIcon("subnet", "AD Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", "#0891B2", "Directory")
+            .AddIcon("ad-subnet", "AD Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", "#0891B2", "Directory")
             .AddIcon("bridgehead", "Bridgehead Server", TopologyNodeKind.Server, TopologyIconShape.DomainController, "BH", "#0F766E", "Directory")
             .WithIconTags("domain-controller", "dc", "ldap", "kerberos")
             .WithIconTags("read-only-domain-controller", "rodc", "read-only")
             .WithIconTags("global-catalog", "gc")
             .WithIconTags("site-link", "replication", "transport")
-            .WithIconTags("subnet", "cidr", "network-segment")
+            .WithIconTags("ad-subnet", "subnet", "cidr", "network-segment")
             .WithIconTags("bridgehead", "replication", "inter-site");
     }
 

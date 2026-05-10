@@ -11,6 +11,10 @@ internal static partial class SmokeTests {
             .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", "#00B336", "Backup")
             .AddIcon("repository", "Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", "#007A5A", "Backup");
         var catalog = TopologyIconCatalog.Default().AddPack(vendorPack);
+        var unqualifiedSubnet = catalog.Resolve("subnet");
+        Assert(unqualifiedSubnet?.QualifiedId == "network:subnet", "Unqualified subnet should keep resolving to the generic network icon.");
+        Assert(catalog.Resolve("microsoft-ad:ad-subnet") != null, "AD subnet should stay available through its qualified icon id.");
+        Assert(catalog.Search(new TopologyIconCatalogQuery { SearchText = "subnet" }).Any(icon => icon.QualifiedId == "microsoft-ad:ad-subnet"), "AD subnet should remain discoverable by subnet search.");
 
         var chart = TopologyChart.Create()
             .WithId("icon-pack-demo")
@@ -334,9 +338,9 @@ internal static partial class SmokeTests {
     private static void TopologyDefaultAdCatalogExposesAdvancedDirectoryAliases() {
         var catalog = TopologyIconCatalog.Default();
         Assert(catalog.Resolve("microsoft-ad:bridgehead") != null, "Built-in AD catalog should include a bridgehead icon.");
-        Assert(catalog.Resolve("microsoft-ad:subnet") != null, "Built-in AD catalog should include an AD subnet icon.");
+        Assert(catalog.Resolve("microsoft-ad:ad-subnet") != null, "Built-in AD catalog should include an AD subnet icon.");
         Assert(catalog.Search(new TopologyIconCatalogQuery { SearchText = "rodc" }).Any(item => item.QualifiedId == "microsoft-ad:read-only-domain-controller"), "Built-in AD catalog should make RODC searchable.");
-        Assert(catalog.Search(new TopologyIconCatalogQuery { SearchText = "cidr" }).Any(item => item.QualifiedId == "microsoft-ad:subnet" || item.QualifiedId == "network:subnet"), "Subnet aliases should be searchable by CIDR vocabulary.");
+        Assert(catalog.Search(new TopologyIconCatalogQuery { SearchText = "cidr" }).Any(item => item.QualifiedId == "microsoft-ad:ad-subnet" || item.QualifiedId == "network:subnet"), "Subnet aliases should be searchable by CIDR vocabulary.");
         Assert(catalog.Search(new TopologyIconCatalogQuery { SearchText = "inter-site" }).Any(item => item.QualifiedId == "microsoft-ad:bridgehead"), "Bridgehead aliases should support replication-oriented picker searches.");
     }
 

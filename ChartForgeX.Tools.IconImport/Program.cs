@@ -356,13 +356,16 @@ internal static partial class Program {
             "Generated packs use manifest.json plus pack-local svg/*.svg sidecars and optional previews/*.png thumbnails.\n" +
             "\n" +
             "Usage:\n" +
-            "  dotnet run --project ChartForgeX.Tools.IconImport -- --source <folder> [options]\n" +
-            "  dotnet run --project ChartForgeX.Tools.IconImport -- --refresh-pack <folder> [options]\n" +
+            "  dotnet run --project ChartForgeX.Tools.IconImport -- --source <folder> [import options]\n" +
+            "  dotnet run --project ChartForgeX.Tools.IconImport -- --refresh-pack <folder> [refresh options]\n" +
             "\n" +
-            "Required:\n" +
+            "Import mode required:\n" +
             "  --source <folder>              Source folder containing one or more category folders with SVG files.\n" +
             "\n" +
-            "Options:\n" +
+            "Refresh mode required:\n" +
+            "  --refresh-pack <folder>        Existing sidecar pack folder containing manifest.json plus svg/*.svg.\n" +
+            "\n" +
+            "Import options:\n" +
             "  --output <folder>              Output folder. Default: assets/topology-icons/imported-svg-pack\n" +
             "  --source-revision <revision>   Source revision. Defaults to git rev-parse HEAD when source is a git repo.\n" +
             "  --source-url <url>             Upstream URL stored in generated provenance metadata.\n" +
@@ -373,10 +376,14 @@ internal static partial class Program {
             "  --pack-id-prefix <prefix>      Prefix for generated pack ids.\n" +
             "  --pack-label-prefix <prefix>   Prefix for generated pack labels.\n" +
             "  --generate-png                 Generate preview PNG thumbnails beside SVG sidecars.\n" +
+            "\n" +
+            "Refresh options:\n" +
             "  --preview-size <pixels>        Preview PNG size from 32 to 512. Default: 128.\n" +
-            "  --refresh-pack <folder>        Refresh one existing sidecar pack from manifest.json plus svg/*.svg.\n" +
             "  --validate-only                Validate a sidecar pack without writing previews or reports.\n" +
             "  --contact-sheet <path>         Write a PNG contact sheet from refreshed or existing previews.\n" +
+            "  --contact-sheet-columns <n>    Contact sheet column count from 1 to 12. Default: 8.\n" +
+            "\n" +
+            "Common options:\n" +
             "  --help                         Show this help.\n";
 
         public string SourceDirectory { get; private set; } = string.Empty;
