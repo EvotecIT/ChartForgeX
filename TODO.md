@@ -7,11 +7,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
 - Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
-- Use the benchmark harness before broad renderer migrations:
-
-```powershell
-dotnet run --project ChartForgeX.Benchmarks -c Release -- 500
-```
+- Add a performance harness only when it becomes part of CI or a documented release review gate.
 
 ## Topology
 
@@ -42,7 +38,7 @@ dotnet run --project ChartForgeX.Benchmarks -c Release -- 500
 ## Release Readiness
 
 - Keep the first-release public surface stable where it represents real charting concepts; make pre-release breaking changes only for clearer naming, stronger typing, dependency boundaries, or product-neutral API design.
-- Keep extension-inferred export behavior documented in `docs/export-api.md`; new output formats should update `SaveImage`/`Save`, raster metadata helpers, and smoke tests together.
+- Keep extension-inferred export behavior documented in README; new output formats should update `SaveImage`/`Save`, raster metadata helpers, and smoke tests together.
 - Keep map catalog discovery split between embedded entries and known external entries so hosts can tell package-shipped geometry from user-supplied GeoJSON assets.
 - Use GitHub Releases as the release-note source of truth; keep package release notes short enough for NuGet and do not maintain a second long-form repository changelog.
 - Keep package license metadata aligned across `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html`.

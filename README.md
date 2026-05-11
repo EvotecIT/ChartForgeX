@@ -59,6 +59,19 @@ Optional interaction support is split into separate packages:
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
 
+## Supported Outputs
+
+| API shape | Purpose |
+| --- | --- |
+| `ToSvg`, `ToHtmlFragment`, `ToHtmlPage`, `ToPng` | Return the main report-grade formats directly. |
+| `SaveSvg`, `SaveHtml`, `SavePng` | Save the main formats explicitly. |
+| `ToBmp`, `ToPpm`, `ToTiff`, `ToRasterImage` | Return opaque flattened raster formats from the shared raster buffer. |
+| `WriteBmp`, `WritePpm`, `WriteTiff`, `WriteRasterImage` | Stream opaque raster formats without forcing a final byte-array allocation. |
+| `SaveBmp`, `SavePpm`, `SaveTiff`, `SaveRasterImage` | Save opaque raster formats explicitly or by raster extension. |
+| `SaveImage`, `Save` | Infer the output format from the file extension. |
+
+`SaveImage` and `Save` infer `.svg`, `.html`, `.htm`, `.png`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` applies to opaque raster formats, where transparent pixels are flattened against a background color; PNG stays on the PNG renderer path and keeps chart/grid PNG options such as output scale.
+
 ## Release Maturity
 
 The first release should be treated as a broad preview with a serious stability bar. The public surface is intended to be kept stable where it represents real charting concepts, and changed intentionally where a pre-release API would otherwise lock in awkward names or host-specific assumptions.
@@ -336,9 +349,7 @@ Refresh visual baselines only after reviewing the generated gallery:
 ## Documentation
 
 - [Architecture notes](docs/architecture.md)
-- [Export API](docs/export-api.md)
 - [Topology reference](docs/topology.md)
 - [Visual blocks reference](docs/visual-blocks.md)
-- [Rendering engine benchmarking](docs/rendering-engine-benchmarking.md)
 - [Contributing and release workflow](CONTRIBUTING.md)
 - [Centralized TODO](TODO.md)
