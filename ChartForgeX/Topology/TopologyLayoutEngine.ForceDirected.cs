@@ -461,15 +461,8 @@ internal static partial class TopologyLayoutEngine {
                 var anchorMaxX = anchor.X + anchor.Width * 0.48 - particle.Node.Width / 2;
                 var anchorMinY = anchor.Y - anchor.Height * 0.46 + particle.Node.Height / 2;
                 var anchorMaxY = anchor.Y + anchor.Height * 0.46 - particle.Node.Height / 2;
-                if (anchorMaxX >= anchorMinX) {
-                    minX = Math.Max(minX, anchorMinX);
-                    maxX = Math.Min(maxX, anchorMaxX);
-                }
-
-                if (anchorMaxY >= anchorMinY) {
-                    minY = Math.Max(minY, anchorMinY);
-                    maxY = Math.Min(maxY, anchorMaxY);
-                }
+                ApplyForceAnchorClamp(ref minX, ref maxX, anchorMinX, anchorMaxX, anchor.X);
+                ApplyForceAnchorClamp(ref minY, ref maxY, anchorMinY, anchorMaxY, anchor.Y);
             }
 
             particle.X = ClampForce(particle.X, minX, maxX);
@@ -499,10 +492,12 @@ internal static partial class TopologyLayoutEngine {
                 groupBottom = Math.Min(groupBottom, anchor.Y + anchor.Height / 2);
             }
 
-            group.X = ClampForce(minX - 34, groupLeft, Math.Max(groupLeft, groupRight - 80));
-            group.Y = ClampForce(minY - 58, groupTop, Math.Max(groupTop, groupBottom - 80));
-            group.Width = Math.Max(150, Math.Min(groupRight - group.X, maxX - minX + 68));
-            group.Height = Math.Max(118, Math.Min(groupBottom - group.Y, maxY - minY + 92));
+            var availableWidth = Math.Max(1, groupRight - groupLeft);
+            var availableHeight = Math.Max(1, groupBottom - groupTop);
+            group.Width = Math.Min(availableWidth, Math.Max(Math.Min(150, availableWidth), maxX - minX + 68));
+            group.Height = Math.Min(availableHeight, Math.Max(Math.Min(118, availableHeight), maxY - minY + 92));
+            group.X = ClampForce(minX - 34, groupLeft, Math.Max(groupLeft, groupRight - group.Width));
+            group.Y = ClampForce(minY - 58, groupTop, Math.Max(groupTop, groupBottom - group.Height));
             group.Metadata["layout.force.nodeCount"] = groupParticles.Count.ToString(CultureInfo.InvariantCulture);
         }
     }
@@ -529,5 +524,17 @@ internal static partial class TopologyLayoutEngine {
     private static double ClampForce(double value, double min, double max) {
         if (max < min) return min;
         return value < min ? min : value > max ? max : value;
+    }
+
+    private static void ApplyForceAnchorClamp(ref double min, ref double max, double anchorMin, double anchorMax, double anchorCenter) {
+        if (anchorMax >= anchorMin) {
+            min = Math.Max(min, anchorMin);
+            max = Math.Min(max, anchorMax);
+            return;
+        }
+
+        var center = ClampForce(anchorCenter, min, max);
+        min = center;
+        max = center;
     }
 }
