@@ -288,7 +288,7 @@ public sealed partial class TopologySvgRenderer {
         var sb = new StringBuilder();
         sb.Append("#" + id + " text{font-family:" + CssFontFamily(theme.FontFamily) + ";font-synthesis:none;letter-spacing:0}");
         sb.Append("#" + id + " ." + prefix + "__link{cursor:pointer}");
-        sb.Append("#" + id + " ." + prefix + "__edge{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}");
+        sb.Append("#" + id + " ." + prefix + "__edge,#" + id + " ." + prefix + "__edge-halo{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}");
         sb.Append("#" + id + " ." + prefix + "__node-card,#" + id + " ." + prefix + "__group-card{vector-effect:non-scaling-stroke}");
         sb.Append("#" + id + " ." + prefix + "--highlighted{filter:url(#" + id + "-shadow)}");
         sb.Append("#" + id + " ." + prefix + "--selected{filter:url(#" + id + "-selected-shadow)}");
@@ -571,6 +571,7 @@ public sealed partial class TopologySvgRenderer {
                     .Class(prefix + "__edge-halo")
                     .Attribute("data-cfx-role", geographicHalo ? "topology-geographic-route-halo" : "topology-edge-route-halo")
                     .Attribute("d", EdgePath(chart, edge, nodes, points))
+                    .Attribute("fill", "none")
                     .Attribute("stroke", theme.Background)
                     .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options) + (geographicHalo ? 4.2 : 3.4))
                     .Attribute("stroke-linecap", "round")
@@ -582,6 +583,7 @@ public sealed partial class TopologySvgRenderer {
                 path
                     .Class(prefix + "__edge")
                     .Attribute("d", EdgePath(chart, edge, nodes, points))
+                    .Attribute("fill", "none")
                     .Attribute("stroke", color)
                     .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options))
                     .Attribute("stroke-dasharray", dash)

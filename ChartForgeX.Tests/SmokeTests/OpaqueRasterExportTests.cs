@@ -98,16 +98,16 @@ internal static partial class SmokeTests {
             if (File.Exists(inferredPath)) File.Delete(inferredPath);
         }
 
-        AssertExtensionInferredSave("chart", ".svg", path => SampleChart().SaveImage(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<svg", StringComparison.Ordinal), "SaveImage should infer SVG from the output extension."));
+        AssertExtensionInferredSave("chart", ".svg", path => SampleChart().Save(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<svg", StringComparison.Ordinal), "Save should infer SVG from the output extension."));
         AssertExtensionInferredSave("chart", ".html", path => SampleChart().Save(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Save should infer HTML from the output extension."));
-        AssertExtensionInferredSave("chart", ".png", path => SampleChart().SaveImage(path), bytes => AssertPngHeader(bytes));
+        AssertExtensionInferredSave("chart", ".png", path => SampleChart().Save(path), bytes => AssertPngHeader(bytes));
         AssertExtensionInferredSave("chart", ".bmp", path => SampleChart().Save(path), bytes => AssertBmpHeader(bytes, 640, 360));
-        AssertExtensionInferredSave("chart", ".tif", path => SampleChart().SaveImage(path), bytes => AssertTiffHeader(bytes, 640, 360));
-        AssertDotPrefixedExtensionInferredSave(path => SampleChart().SaveImage(path), bytes => AssertBmpHeader(bytes, 640, 360));
-        AssertExtensionInferredSave("grid", ".ppm", path => GridForInferredSave().SaveImage(path), bytes => AssertPpmHeader(bytes, null, null));
+        AssertExtensionInferredSave("chart", ".tif", path => SampleChart().Save(path), bytes => AssertTiffHeader(bytes, 640, 360));
+        AssertDotPrefixedExtensionInferredSave(path => SampleChart().Save(path), bytes => AssertBmpHeader(bytes, 640, 360));
+        AssertExtensionInferredSave("grid", ".ppm", path => GridForInferredSave().Save(path), bytes => AssertPpmHeader(bytes, null, null));
         AssertExtensionInferredSave("block", ".png", path => MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%").Save(path), bytes => AssertPngHeader(bytes));
-        AssertExtensionInferredSave("visual-grid", ".html", path => VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().WithMetric("CPU", "42%") }).SaveImage(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Visual grid SaveImage should infer HTML from the output extension."));
-        AssertThrows<ArgumentException>(() => SampleChart().SaveImage("chart.gif"), "SaveImage should reject unsupported image extensions.");
+        AssertExtensionInferredSave("visual-grid", ".html", path => VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().WithMetric("CPU", "42%") }).Save(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Visual grid Save should infer HTML from the output extension."));
+        AssertThrows<ArgumentException>(() => SampleChart().Save("chart.gif"), "Save should reject unsupported image extensions.");
 
         var transparent = Chart.Create()
             .WithSize(32, 24)
@@ -196,9 +196,9 @@ internal static partial class SmokeTests {
             if (File.Exists(topologyPath)) File.Delete(topologyPath);
         }
 
-        AssertExtensionInferredSave("topology", ".svg", path => topology.SaveImage(path, topologyOptions), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<svg", StringComparison.Ordinal), "Topology SaveImage should infer SVG from the output extension."));
+        AssertExtensionInferredSave("topology", ".svg", path => topology.Save(path, topologyOptions), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<svg", StringComparison.Ordinal), "Topology Save should infer SVG from the output extension."));
         AssertExtensionInferredSave("topology", ".png", path => topology.Save(path, topologyOptions), bytes => AssertPngHeader(bytes));
-        AssertExtensionInferredSave("topology", ".tiff", path => topology.SaveImage(path, topologyOptions), bytes => AssertTiffHeader(bytes, null, null));
+        AssertExtensionInferredSave("topology", ".tiff", path => topology.Save(path, topologyOptions), bytes => AssertTiffHeader(bytes, null, null));
     }
 
     private static ChartGrid GridForInferredSave() => ChartGrid.Create().WithPanelSize(180, 120).Add(Chart.Create().WithSize(180, 120).AddLine("Values", Points(1, 2, 3)));
