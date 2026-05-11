@@ -6,6 +6,11 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsAotCompatible Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
+    <PublishAot Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.0'">false</PublishAot>
+    <EnableTrimAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableSingleFileAnalyzer>
+    <EnableAotAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableAotAnalyzer>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -18,7 +23,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReleaseNotes>Preview release of dependency-free SVG, HTML, PNG, BMP, PPM, and baseline TIFF chart rendering with shared raster buffers, stream/file/byte-array raster export helpers, static HTML grids and mosaic panel spans, expressive themes, dashboard presets, brand kits, font stacks, palette, role-based text, grid-header, per-series and point-level data-label styling, point callouts, per-series legend visibility, semantic series roles, pictorial symbol, pictorial Isotype, people-infographic, dashboard, and word-cloud control galleries, sunburst, pictorial, progress-bar, hexbin heatmap, reusable heatmap row models, and word cloud charts, wrapped/customizable pictorial symbols, custom donut center text/ring thickness, progress-bar, KPI ring, and legend placement controls, pasted hex palettes, shared SVG/PNG compact number formatting, scoped inline SVG IDs, and fail-fast validation for specialized chart data.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>charts;svg;html;png;bmp;ppm;tiff;raster;reports;dashboard;zero-dependency</PackageTags>
+    <PackageTags>charts;svg;html;png;bmp;ppm;tiff;raster;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -16,7 +15,7 @@ internal static class HtmlInteractiveAssets {
     internal static string Script => ScriptResource.Value;
 
     private static string ReadResource(string resourceName) {
-        var assembly = typeof(HtmlInteractiveAssets).GetTypeInfo().Assembly;
+        var assembly = typeof(HtmlInteractiveAssets).Assembly;
         using var stream = assembly.GetManifestResourceStream(resourceName);
         if (stream == null) {
             throw new InvalidOperationException("Embedded interactive HTML asset was not found: " + resourceName);

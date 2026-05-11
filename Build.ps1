@@ -4,6 +4,8 @@ param(
 
     [switch] $SkipExamples,
 
+    [switch] $SkipAot,
+
     [switch] $SkipPack,
 
     [switch] $UpdateVisualBaseline,
@@ -349,6 +351,66 @@ function Invoke-DotNetCommand {
     }
 }
 
+function Get-NativeAotRuntimeIdentifier {
+    $architecture = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+        if ($architecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { return 'win-arm64' }
+        return 'win-x64'
+    }
+
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Linux)) {
+        if ($architecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { return 'linux-arm64' }
+        return 'linux-x64'
+    }
+
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)) {
+        if ($architecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { return 'osx-arm64' }
+        return 'osx-x64'
+    }
+
+    throw "Native AOT smoke validation does not know the runtime identifier for $([System.Runtime.InteropServices.RuntimeInformation]::OSDescription) / $architecture."
+}
+
+function Invoke-NativeSmokeExecutable {
+    param(
+        [Parameter(Mandatory = $true)] [string] $ExecutablePath,
+        [Parameter(Mandatory = $true)] [int] $TimeoutSeconds
+    )
+
+    if (-not (Test-Path $ExecutablePath)) {
+        throw "Native AOT smoke executable was not found: $ExecutablePath"
+    }
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $ExecutablePath
+    $startInfo.WorkingDirectory = Split-Path -Parent $ExecutablePath
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    $standardOutput = $process.StandardOutput.ReadToEndAsync()
+    $standardError = $process.StandardError.ReadToEndAsync()
+
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        try {
+            $process.Kill($true)
+        } catch {
+            $process.Kill()
+        }
+
+        throw "Native AOT smoke executable timed out after $TimeoutSeconds second(s): $ExecutablePath"
+    }
+
+    if ($process.ExitCode -ne 0) {
+        $output = (($standardOutput.GetAwaiter().GetResult(), $standardError.GetAwaiter().GetResult()) -join [Environment]::NewLine).Trim()
+        if ($output.Length -gt 0) {
+            throw "Native AOT smoke executable failed with exit code $($process.ExitCode): $output"
+        }
+
+        throw "Native AOT smoke executable failed with exit code $($process.ExitCode)."
+    }
+}
+
 $ErrorActionPreference = 'Stop'
 if ($PSVersionTable.PSVersion.Major -ge 7) {
     $PSNativeCommandUseErrorActionPreference = $true
@@ -359,6 +421,7 @@ try {
     $solution = Join-Path $root 'ChartForgeX.sln'
     $tests = Join-Path $root 'ChartForgeX.Tests/ChartForgeX.Tests.csproj'
     $examples = Join-Path $root 'ChartForgeX.Examples/ChartForgeX.Examples.csproj'
+    $aotSmoke = Join-Path $root 'ChartForgeX.AotSmoke/ChartForgeX.AotSmoke.csproj'
     $library = Join-Path $root 'ChartForgeX/ChartForgeX.csproj'
     $interactivityLibrary = Join-Path $root 'ChartForgeX.Interactivity/ChartForgeX.Interactivity.csproj'
     $htmlInteractivityLibrary = Join-Path $root 'ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj'
@@ -369,6 +432,14 @@ try {
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore') -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+
+    if (-not $SkipAot) {
+        $nativeAotRid = Get-NativeAotRuntimeIdentifier
+        Invoke-DotNetCommand -Arguments @('publish', $aotSmoke, '-c', $Configuration, '-r', $nativeAotRid, '--self-contained', 'true') -Description 'Native AOT smoke publish' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+        $nativeAotExecutableName = if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) { 'ChartForgeX.AotSmoke.exe' } else { 'ChartForgeX.AotSmoke' }
+        $nativeAotExecutable = Join-Path $root "ChartForgeX.AotSmoke/bin/$Configuration/net8.0/$nativeAotRid/publish/$nativeAotExecutableName"
+        Invoke-NativeSmokeExecutable -ExecutablePath $nativeAotExecutable -TimeoutSeconds $PackageConsumerTimeoutSeconds
+    }
 
     if (-not $SkipExamples) {
         Invoke-DotNetCommand -Arguments @('run', '--project', $examples, '-c', $Configuration, '--no-build') -Description 'Example generation' -TimeoutSeconds $DotNetCommandTimeoutSeconds

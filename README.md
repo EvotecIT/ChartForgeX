@@ -71,6 +71,12 @@ Optional interaction support is split into separate packages:
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
 
+## Native AOT and Trimming
+
+ChartForgeX is designed to work in trimmed and Native AOT applications on modern .NET targets. The `net8.0` and `net10.0` package assets declare AOT compatibility, enable trim/single-file/AOT analyzers, and avoid reflection-driven serialization or dynamic code paths in the rendering surface.
+
+The release quality loop publishes and runs `ChartForgeX.AotSmoke` as a Native AOT executable. That smoke app renders SVG, static HTML, PNG, chart grids, visual blocks, topology diagrams, and the self-contained HTML interaction adapter, so AOT regressions fail before a package is published.
+
 ## Output API
 
 The output API follows one rule: `To*` returns content, `Save*` writes a file, and `Write*` streams bytes.

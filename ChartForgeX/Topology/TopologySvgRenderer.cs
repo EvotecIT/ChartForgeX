@@ -14,6 +14,14 @@ namespace ChartForgeX.Topology;
 /// Renders topology charts to static SVG markup.
 /// </summary>
 public sealed partial class TopologySvgRenderer {
+    private static readonly TopologyHealthStatus[] TopologyHealthStatuses = {
+        TopologyHealthStatus.Healthy,
+        TopologyHealthStatus.Warning,
+        TopologyHealthStatus.Critical,
+        TopologyHealthStatus.Unknown,
+        TopologyHealthStatus.Disabled
+    };
+
     /// <summary>
     /// Renders a topology chart to complete SVG markup.
     /// </summary>
@@ -264,7 +272,7 @@ public sealed partial class TopologySvgRenderer {
 
         AddDropShadowFilter(defs, id + "-shadow", "#0F172A", IsMonitoringDashboardStyle(options) ? 0.065 : 0.10);
         AddDropShadowFilter(defs, id + "-selected-shadow", "#2563EB", IsMonitoringDashboardStyle(options) ? 0.13 : 0.18);
-        foreach (var status in Enum.GetValues(typeof(TopologyHealthStatus)).Cast<TopologyHealthStatus>()) {
+        foreach (var status in GetTopologyHealthStatuses()) {
             var color = theme.StatusColor(status);
             defs.Element("marker", marker => {
                 marker
@@ -283,6 +291,8 @@ public sealed partial class TopologySvgRenderer {
 
         return defs;
     }
+
+    private static IEnumerable<TopologyHealthStatus> GetTopologyHealthStatuses() => TopologyHealthStatuses;
 
     private static string BuildCss(string id, string prefix, TopologyTheme theme) {
         var sb = new StringBuilder();

@@ -19,6 +19,10 @@ internal static partial class SmokeTests {
         Assert(script.Contains("@('README.md')", StringComparison.Ordinal), "Build script should verify README package inclusion without requiring separate changelog packaging.");
         Assert(script.Contains("lib/$framework/$($packageProject.Assembly).$extension", StringComparison.Ordinal), "Build script should verify package framework assets.");
         Assert(script.Contains("ChartForgeX-package-consumer", StringComparison.Ordinal), "Build script should verify package consumption from a clean project.");
+        Assert(script.Contains("[switch] $SkipAot", StringComparison.Ordinal), "Build script should allow intentional Native AOT smoke skips for local triage.");
+        Assert(script.Contains("ChartForgeX.AotSmoke", StringComparison.Ordinal), "Build script should publish and run the Native AOT smoke app.");
+        Assert(script.Contains("Get-NativeAotRuntimeIdentifier", StringComparison.Ordinal), "Build script should resolve the current OS runtime identifier for Native AOT validation.");
+        Assert(script.Contains("Invoke-NativeSmokeExecutable", StringComparison.Ordinal), "Build script should execute the compiled Native AOT smoke binary.");
         Assert(script.Contains("globalPackagesFolder", StringComparison.Ordinal), "Build script should isolate the package consumer cache so same-version local packages are retested.");
         Assert(script.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal), "Build script should time-limit all dotnet validation commands.");
         Assert(script.Contains("Invoke-DotNetCommand", StringComparison.Ordinal), "Build script should route dotnet calls through one timeout-aware command runner.");

@@ -36,6 +36,10 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "GenerateDocumentationFile", "true"), "Library project should generate XML documentation.");
         var testProject = Path.Combine(root, "ChartForgeX.Tests", "ChartForgeX.Tests.csproj");
         Assert(HasXmlProperty(testProject, "IsTestProject", "true"), "Smoke suite should be discoverable by dotnet test.");
+        var aotSmokeProject = Path.Combine(root, "ChartForgeX.AotSmoke", "ChartForgeX.AotSmoke.csproj");
+        Assert(File.Exists(aotSmokeProject), "Repository should include a Native AOT consumer smoke project.");
+        Assert(HasXmlProperty(aotSmokeProject, "PublishAot", "true"), "Native AOT smoke project should publish with Native AOT enabled.");
+        Assert(HasXmlProperty(aotSmokeProject, "TrimMode", "full"), "Native AOT smoke project should use full trimming.");
 
         foreach (var packageReference in GetXmlElements(libraryProject, "PackageReference")) {
             var include = packageReference.Attribute("Include")?.Value ?? string.Empty;
@@ -216,9 +220,12 @@ internal static partial class SmokeTests {
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj")
         }) {
             Assert(HasXmlProperty(packageProject, "PackageLicenseExpression", "MIT"), "Package should declare the MIT license: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));
+            Assert(HasXmlProperty(packageProject, "IsAotCompatible", "true"), "Modern package assets should declare AOT compatibility: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));
+            Assert(HasXmlProperty(packageProject, "EnableTrimAnalyzer", "true"), "Modern package assets should enable trim analysis: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));
+            Assert(HasXmlProperty(packageProject, "EnableAotAnalyzer", "true"), "Modern package assets should enable AOT analysis: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));
         }
         var tags = GetXmlValue(libraryProject, "PackageTags");
-        foreach (var tag in new[] { "charts", "svg", "reports", "zero-dependency" }) {
+        foreach (var tag in new[] { "charts", "svg", "reports", "zero-dependency", "aot", "nativeaot", "trimming" }) {
             Assert(tags.Contains(tag, StringComparison.OrdinalIgnoreCase), "Package tags should include " + tag + ".");
         }
     }
@@ -254,6 +261,7 @@ internal static partial class SmokeTests {
         Assert(readme.Contains("Report intent", StringComparison.Ordinal) && readme.Contains("Theme starting point", StringComparison.Ordinal) && readme.Contains("Brand kit starting point", StringComparison.Ordinal), "README should help users choose between themes and brand kits.");
         Assert(readme.Contains("## Project Status", StringComparison.Ordinal) && readme.Contains("TODO.md", StringComparison.Ordinal), "README should summarize project status without keeping internal release-boundary prose on the front page.");
         Assert(readme.Contains("## Output API", StringComparison.Ordinal) && readme.Contains("chart.Save(\"chart.svg\")", StringComparison.Ordinal) && readme.Contains("SaveRasterImage", StringComparison.Ordinal) && readme.Contains("RasterImageOptions", StringComparison.Ordinal), "README should document the export API behavior contract directly.");
+        Assert(readme.Contains("## Native AOT and Trimming", StringComparison.Ordinal) && readme.Contains("ChartForgeX.AotSmoke", StringComparison.Ordinal) && readme.Contains("Native AOT executable", StringComparison.Ordinal), "README should document AOT and trimming support as a verified release contract.");
         Assert(readme.Contains("GitHub Releases", StringComparison.Ordinal) && readme.Contains("NuGet package notes", StringComparison.Ordinal), "README should explain where release notes belong.");
         Assert(readme.Contains("WithPanelSpan", StringComparison.Ordinal) && readme.Contains("columnSpan", StringComparison.Ordinal), "README should document grid panel spans.");
         Assert(readme.Contains("ChartColor.FromHex", StringComparison.Ordinal) && readme.Contains("ChartPalettes.FromHex", StringComparison.Ordinal), "README should document pasted hex color customization.");
