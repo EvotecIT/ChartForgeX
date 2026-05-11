@@ -239,6 +239,31 @@ internal static partial class SmokeTests {
 
         Assert(anchorXs.All(x => x >= 24 && x <= 136), "Weighted force anchors should stay inside the actual narrow viewport bounds.");
         Assert(prepared.Groups.All(group => group.Metadata["layout.force.anchor.strategy"] == "weighted-row"), "The narrow viewport fixture should exercise the weighted-row fast path.");
+        Assert(prepared.Groups.All(group => group.X >= 24 && group.X + group.Width <= 136), "Weighted force group panels should stay inside their narrow viewport anchor spans.");
+        Assert(prepared.Groups.All(group => group.Width <= double.Parse(group.Metadata["layout.force.anchor.width"], CultureInfo.InvariantCulture) + 0.01), "Weighted force group panels should not exceed narrow anchor widths.");
+    }
+
+    private static void TopologyForceDirectedLayoutKeepsTinyAnchorParticlesConstrained() {
+        var chart = TopologyChart.Create()
+            .WithId("force-tiny-explicit-anchors")
+            .WithViewport(220, 180, 16)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddGroup("left", "Left", 60, 42, 24, 44, TopologyHealthStatus.Healthy)
+            .AddGroup("right", "Right", 136, 42, 24, 44, TopologyHealthStatus.Warning)
+            .AddAutoNode("left-node", "Left Node", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "left", width: 96, height: 48)
+            .AddAutoNode("right-node", "Right Node", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "right", width: 96, height: 48);
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var leftGroup = prepared.Groups.Single(group => group.Id == "left");
+        var rightGroup = prepared.Groups.Single(group => group.Id == "right");
+        var leftNode = prepared.Nodes.Single(node => node.Id == "left-node");
+        var rightNode = prepared.Nodes.Single(node => node.Id == "right-node");
+
+        Assert(Math.Abs(leftNode.X + leftNode.Width / 2 - 72) < 0.01, "Force particles should remain constrained to tiny explicit anchor centers when the node is wider than the anchor.");
+        Assert(Math.Abs(rightNode.X + rightNode.Width / 2 - 148) < 0.01, "Tiny explicit anchors should keep particles separated instead of falling back to viewport-wide clamps.");
+        Assert(leftGroup.X >= 60 && leftGroup.X + leftGroup.Width <= 84, "Tiny explicit force group panels should not exceed the left anchor span.");
+        Assert(rightGroup.X >= 136 && rightGroup.X + rightGroup.Width <= 160, "Tiny explicit force group panels should not exceed the right anchor span.");
     }
 
     private static void TopologyMonitoringBundleRouteLabelsRemainReadable() {

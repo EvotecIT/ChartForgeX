@@ -260,6 +260,7 @@ internal static partial class SmokeTests {
         ("Topology force-directed layout treats zero-origin groups as explicit anchors", TopologyForceDirectedLayoutTreatsZeroOriginGroupsAsExplicitAnchors),
         ("Topology force-directed layout keeps size-only groups auto anchored", TopologyForceDirectedLayoutKeepsSizeOnlyGroupsAutoAnchored),
         ("Topology force-directed layout keeps weighted anchors inside narrow viewport", TopologyForceDirectedLayoutKeepsWeightedAnchorsInsideNarrowViewport),
+        ("Topology force-directed layout keeps tiny anchor particles constrained", TopologyForceDirectedLayoutKeepsTinyAnchorParticlesConstrained),
         ("Topology monitoring bundle route labels remain readable", TopologyMonitoringBundleRouteLabelsRemainReadable),
         ("Topology dense grouped layout prepares large AD site subnet fixture", TopologyDenseGroupedLayoutPreparesLargeAdSiteSubnetFixture),
         ("Topology collapsed-dot placement uses sizing column count", TopologyCollapsedDotPlacementUsesSizingColumnCount),
