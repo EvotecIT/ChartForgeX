@@ -183,7 +183,7 @@ internal static partial class TopologyLayoutEngine {
         var explicitFallbackWidth = Math.Max(90, (right - left) / Math.Max(1, Math.Min(3, orderedGroups.Count)));
         var explicitFallbackHeight = Math.Max(72, (bottom - top) / Math.Max(1, Math.Min(2, orderedGroups.Count)));
         foreach (var group in chart.Groups) {
-            if (!IsUnset(group.X) || !IsUnset(group.Y)) {
+            if (HasExplicitGroupPlacement(group)) {
                 var width = group.Width > 0 ? group.Width : explicitFallbackWidth;
                 var height = group.Height > 0 ? group.Height : explicitFallbackHeight;
                 result[group.Id] = new ForceAnchor(group.X + width / 2, group.Y + height / 2, width, height, "explicit");

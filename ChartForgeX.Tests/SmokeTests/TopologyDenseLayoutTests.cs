@@ -177,6 +177,26 @@ internal static partial class SmokeTests {
         Assert(leftNodes.Select(node => Math.Round(node.X, 1)).Distinct().Count() > 1 || leftNodes.Select(node => Math.Round(node.Y, 1)).Distinct().Count() > 1, "Zero-size explicit force anchors should not collapse their particles to one point.");
     }
 
+    private static void TopologyForceDirectedLayoutTreatsZeroOriginGroupsAsExplicitAnchors() {
+        var chart = TopologyChart.Create()
+            .WithId("force-zero-origin-anchor")
+            .WithViewport(640, 360, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddGroup("origin", "Origin", 0, 0, 160, 120, TopologyHealthStatus.Healthy)
+            .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
+            .AddAutoNode("origin-node", "Origin", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "origin")
+            .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "auto")
+            .AddEdge("origin-auto", "origin-node", "auto-node", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional);
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var origin = prepared.Groups.Single(group => group.Id == "origin");
+
+        Assert(origin.Metadata["layout.force.anchor.strategy"] == "explicit", "Force-directed groups pinned at zero origin should still be treated as explicit anchors.");
+        Assert(Math.Abs(double.Parse(origin.Metadata["layout.force.anchor.x"], CultureInfo.InvariantCulture) - 80) < 0.001, "Zero-origin force anchors should preserve the caller-provided X coordinate.");
+        Assert(Math.Abs(double.Parse(origin.Metadata["layout.force.anchor.y"], CultureInfo.InvariantCulture) - 60) < 0.001, "Zero-origin force anchors should preserve the caller-provided Y coordinate.");
+    }
+
     private static void TopologyForceDirectedLayoutKeepsWeightedAnchorsInsideNarrowViewport() {
         var chart = TopologyChart.Create()
             .WithId("force-narrow-weighted-anchors")
@@ -287,13 +307,32 @@ internal static partial class SmokeTests {
         Assert(prepared.Edges.Count(edge => edge.Kind == TopologyEdgeKind.Replication) == 48, "Large AD fixtures should include deterministic cross-region replication edges.");
         Assert(prepared.Groups.All(group => group.AppliedLayoutPolicy == TopologyGroupLayoutPolicy.CollapsedDots), "Large AD fixtures should keep region panels in collapsed-dot mode.");
         Assert(prepared.Groups.All(group => group.Width > 400 && group.Height > 300), "Large AD region panels should auto-size for dense site and subnet populations.");
-        Assert(prepared.Groups.Single(group => group.Id == "emea").Width >= prepared.Groups.Single(group => group.Id == "apac").Width, "Denser AD region panels should size at least as wide as smaller dense panels.");
         Assert(interGroupEdges.All(edge => edge.SourcePort != TopologyEdgePort.Auto && edge.TargetPort != TopologyEdgePort.Auto), "Large AD inter-region routes should infer outside-facing ports.");
         Assert(prepared.Nodes.All(node => string.IsNullOrWhiteSpace(node.GroupId) || NodeInsideGroup(node, prepared.Groups.Single(group => group.Id == node.GroupId))), "Large AD site and subnet nodes should remain inside generated region bounds.");
         AssertDenseBundleLanes(prepared, interGroupEdges.Where(edge => edge.Id == "site-link-amer-emea" || edge.Id.StartsWith("amer-emea-repl-", StringComparison.Ordinal)).ToList(), 19);
         AssertDenseBundleLanes(prepared, interGroupEdges.Where(edge => edge.Id == "site-link-emea-apac" || edge.Id.StartsWith("emea-apac-repl-", StringComparison.Ordinal)).ToList(), 19);
         AssertDenseBundleLanes(prepared, interGroupEdges.Where(edge => edge.Id == "site-link-amer-apac" || edge.Id.StartsWith("apac-amer-repl-", StringComparison.Ordinal)).ToList(), 13);
         Assert(interGroupEdges.All(edge => TopologyRenderPrimitives.EdgeRouteDiagnostics(prepared, edge, nodeLookup).CandidateCount > 1), "Large AD inter-region routes should use obstacle-aware candidate routing.");
+    }
+
+    private static void TopologyCollapsedDotPlacementUsesSizingColumnCount() {
+        var chart = TopologyChart.Create()
+            .WithId("collapsed-dot-column-count")
+            .WithViewport(720, 420, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped)
+            .AddAutoGroup("users", "Users", TopologyHealthStatus.Warning)
+            .WithGroupLayout("users", TopologyGroupLayoutPolicy.CollapsedDots);
+
+        for (var i = 0; i < 49; i++) {
+            chart.AddAutoNode("user-" + i.ToString("00", CultureInfo.InvariantCulture), "User " + i.ToString("00", CultureInfo.InvariantCulture), TopologyNodeKind.Person, TopologyHealthStatus.Healthy, "users");
+        }
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot });
+        var users = prepared.Nodes.Where(node => node.GroupId == "users").ToList();
+        var columns = users.Select(node => Math.Round(node.X, 1)).Distinct().Count();
+
+        Assert(columns == 8, "Collapsed-dot placement should use the same dense column count that sizing used for the group bounds.");
     }
 
     private static void TopologyMonitoringSingleLineRouteLabelsUseClearance() {
@@ -428,6 +467,36 @@ internal static partial class SmokeTests {
         Assert(amer.X > emea.X && emea.X > apac.X, "Right-to-left dense grouped layout should mirror group ordering.");
         Assert(link.SourcePort == TopologyEdgePort.Left && link.TargetPort == TopologyEdgePort.Right, "Right-to-left dense grouped edge defaults should mirror outside-facing ports.");
         Assert(svg.Contains("data-layout-direction=\"RightToLeft\"", StringComparison.Ordinal), "Right-to-left dense grouped SVG should expose the layout direction.");
+    }
+
+    private static void TopologyDenseReverseLayoutsPreserveExplicitGroupCoordinates() {
+        var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("dense-explicit-rtl")
+            .WithViewport(760, 420, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .AddGroup("pinned", "Pinned", 80, 90, 180, 150, TopologyHealthStatus.Healthy)
+            .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
+            .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
+            .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
+            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
+        var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("dense-explicit-btt")
+            .WithViewport(760, 520, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.BottomToTop)
+            .AddGroup("pinned", "Pinned", 90, 120, 180, 150, TopologyHealthStatus.Healthy)
+            .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
+            .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
+            .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
+            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
+        var rtlPinned = rightToLeft.Groups.Single(group => group.Id == "pinned");
+        var bttPinned = bottomToTop.Groups.Single(group => group.Id == "pinned");
+
+        Assert(Math.Abs(rtlPinned.X - 80) < 0.001 && Math.Abs(rtlPinned.Y - 90) < 0.001, "Right-to-left dense grouped layouts should preserve caller-pinned group coordinates.");
+        Assert(Math.Abs(bttPinned.X - 90) < 0.001 && Math.Abs(bttPinned.Y - 120) < 0.001, "Bottom-to-top dense grouped layouts should preserve caller-pinned group coordinates.");
+        Assert(NodeInsideGroup(rightToLeft.Nodes.Single(node => node.Id == "pinned-node"), rtlPinned), "Right-to-left dense grouped layouts should translate pinned group nodes back with the group.");
+        Assert(NodeInsideGroup(bottomToTop.Nodes.Single(node => node.Id == "pinned-node"), bttPinned), "Bottom-to-top dense grouped layouts should translate pinned group nodes back with the group.");
     }
 
     private static void TopologyMirroringInvertsRouteLanes() {

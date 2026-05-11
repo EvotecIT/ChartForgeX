@@ -5,6 +5,18 @@ using System.Linq;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
+    private static int DenseGroupColumns(TopologyChart chart) {
+        if (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft) return Math.Max(1, chart.Groups.Count);
+        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop && chart.Groups.Count <= 4) return 1;
+        if (chart.Groups.Count <= 4) return chart.Groups.Count;
+        return Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(chart.Groups.Count))));
+    }
+
+    private static int DenseNodeColumns(int count) {
+        if (count <= 0) return 1;
+        return Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(count))));
+    }
+
     private static int DenseCollapsedDotColumns(int count) {
         if (count <= 0) return 1;
         return Math.Max(5, (int)Math.Ceiling(Math.Sqrt(count * 1.3)));
