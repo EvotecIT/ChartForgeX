@@ -27,6 +27,18 @@ public static class ChartMapCatalog {
     }
 
     /// <summary>
+    /// Gets metadata for map definitions embedded in the core package.
+    /// </summary>
+    /// <returns>The embedded catalog entries.</returns>
+    public static IReadOnlyList<ChartMapCatalogEntry> EmbeddedEntries() => ChartMapCatalogEntry.BuiltIns();
+
+    /// <summary>
+    /// Gets metadata for known external map definitions that must be supplied by a host application or repository asset.
+    /// </summary>
+    /// <returns>The known external catalog entries.</returns>
+    public static IReadOnlyList<ChartMapCatalogEntry> ExternalEntries() => ChartMapExternalCatalog.Entries();
+
+    /// <summary>
     /// Gets a built-in map definition by ID.
     /// </summary>
     /// <param name="id">The map definition ID.</param>

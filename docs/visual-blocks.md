@@ -160,7 +160,7 @@ var attendance = Chart.Create()
     .WithDashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
 ```
 
-Segmented progress cards provide fixed-count progress rows for screenshot-style project cards. Filled and empty ticks include renderer-owned shadow/highlight layers, so cards can keep the soft reference look in both SVG and PNG without hand-drawing rectangles:
+Segmented progress cards provide fixed-count progress rows for project and status cards. Filled and empty ticks include renderer-owned shadow/highlight layers, so cards can keep a polished report look in both SVG and PNG without hand-drawing rectangles:
 
 ```csharp
 var progress = SegmentedProgressCard.Create()

@@ -55,6 +55,16 @@ public sealed class ChartMapCatalogEntry {
     public bool IsEmbedded { get; }
 
     /// <summary>
+    /// Gets a value indicating whether the entry is a known external dataset that must be supplied by the host.
+    /// </summary>
+    public bool IsExternal => !IsEmbedded;
+
+    /// <summary>
+    /// Gets how the map catalog entry is made available to callers.
+    /// </summary>
+    public ChartMapCatalogEntryKind Kind => IsEmbedded ? ChartMapCatalogEntryKind.Embedded : ChartMapCatalogEntryKind.External;
+
+    /// <summary>
     /// Gets a value indicating whether the entry is normally too large to embed in the core package.
     /// </summary>
     public bool IsLarge { get; }

@@ -36,11 +36,11 @@ These should stay, but they deserve extra naming and consumer-fit review before 
 
 | Area | Stays | Cleanup decision |
 | --- | --- | --- |
-| Map charts | `DottedMap`, `RegionMap`, `TileMap`, map viewports, route helpers, GeoJSON import helpers | Keep. Built-in map definitions and external catalog loading are useful, but avoid product-specific maps or hidden asset requirements. External/large datasets must stay opt-in. |
+| Map charts | `DottedMap`, `RegionMap`, `TileMap`, map viewports, route helpers, GeoJSON import helpers | Keep. Built-in map definitions and external catalog loading are useful, but avoid product-specific maps or hidden asset requirements. External/large datasets must stay opt-in and discoverable through external catalog entries. |
 | Pictorial/progress/word visuals | `Pictorial`, `ProgressBar`, `WordCloud` | Keep. Treat as chart families only while their input is data-driven and bounded. Do not turn arbitrary infographic layout into chart-series APIs. |
 | Dashboard style helpers | dashboard themes, dashboard bar/row/trend presets, highlight ranges, point-color ranges | Keep helpers that reduce repeated renderer code. Avoid one-off helpers named after screenshots or products. |
 | Opaque raster exports | BMP, PPM, TIFF and `RasterImageFormat` helpers | Keep as utility exports over the shared raster buffer. PNG remains the main report-grade raster target. |
-| Generic save helpers | `Save`, `SaveImage`, `SaveRasterImage`, extension-inferred helpers | Keep for convenience, but review naming and exception behavior before 1.0 so callers are not surprised. |
+| Generic save helpers | `Save`, `SaveImage`, `SaveRasterImage`, extension-inferred helpers | Keep for convenience. The extension-inferred behavior is part of the first-release contract and is documented in `docs/export-api.md`. |
 
 ## Not Chart Series
 
@@ -67,10 +67,10 @@ Those belong in `VisualBlocks`, `Topology`, examples, host applications, or adap
 
 ## Cleanup Before 1.0
 
-- Review `Save`, `SaveImage`, `SaveRasterImage`, and `ToRasterImage` naming as one API group.
-- Review map catalog names and external-catalog discovery so built-in, generated, and host-provided map definitions are easy to distinguish.
-- Review visual-block names that came from dashboard screenshots and keep only generic reusable names.
-- Add focused docs for extension-inferred export behavior and unsupported file extensions.
+- Keep `Save`, `SaveImage`, `SaveRasterImage`, and `ToRasterImage` documented as one export API group.
+- Keep map catalog names and external-catalog discovery split so built-in and host-provided map definitions are easy to distinguish.
+- Keep visual-block names generic and reusable instead of naming APIs after specific screenshots, products, or host applications.
+- Maintain focused docs for extension-inferred export behavior and unsupported file extensions.
 - Keep release notes in GitHub Releases and keep package release notes short.
 - Promote only stable visual examples into numeric visual baselines; keep topology/geographic baseline promotion explicit.
 

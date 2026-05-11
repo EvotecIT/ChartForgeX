@@ -15,7 +15,7 @@ dotnet run --project ChartForgeX.Benchmarks -c Release -- 500
 
 ## Topology
 
-- Add denser replication and site-link fixtures that prove routes do not cross node cards in common screenshot-like layouts.
+- Add denser replication and site-link fixtures that prove routes do not cross node cards in common real-world layouts.
 - Tune label-clearance and route-overlap weights with real dense examples.
 - Turn the stencil browser into a small builder demo only if the reusable contract is a `TopologyChart` export, not host UI state.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
@@ -42,8 +42,8 @@ dotnet run --project ChartForgeX.Benchmarks -c Release -- 500
 ## Release Readiness
 
 - Keep the first-release public surface stable where it represents real charting concepts; make pre-release breaking changes only for clearer naming, stronger typing, dependency boundaries, or product-neutral API design.
-- Review `Save`, `SaveImage`, `SaveRasterImage`, and `ToRasterImage` naming/exception behavior as one export API group before 1.0.
-- Review map catalog naming and external-catalog discovery so built-in, generated, and host-provided map definitions are easy to distinguish.
+- Keep extension-inferred export behavior documented in `docs/export-api.md`; new output formats should update `SaveImage`/`Save`, raster metadata helpers, and smoke tests together.
+- Keep map catalog discovery split between embedded entries and known external entries so hosts can tell package-shipped geometry from user-supplied GeoJSON assets.
 - Use GitHub Releases as the release-note source of truth; keep package release notes short enough for NuGet and do not maintain a second long-form repository changelog.
 - Keep package license metadata aligned across `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html`.
 - Update package versions and release metadata in all package projects when preparing a release.
