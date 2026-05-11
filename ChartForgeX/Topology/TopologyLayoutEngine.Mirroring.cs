@@ -11,6 +11,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var node in chart.Nodes) node.Y = axis - node.Y - node.Height;
         foreach (var edge in chart.Edges) {
             MirrorVerticalPorts(edge);
+            edge.RouteLane = -edge.RouteLane;
             for (var i = 0; i < edge.Waypoints.Count; i++) {
                 var point = edge.Waypoints[i];
                 edge.Waypoints[i] = new ChartPoint(point.X, axis - point.Y);
@@ -28,6 +29,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var node in chart.Nodes) node.X = axis - node.X - node.Width;
         foreach (var edge in chart.Edges) {
             MirrorHorizontalPorts(edge);
+            edge.RouteLane = -edge.RouteLane;
             for (var i = 0; i < edge.Waypoints.Count; i++) {
                 var point = edge.Waypoints[i];
                 edge.Waypoints[i] = new ChartPoint(axis - point.X, point.Y);

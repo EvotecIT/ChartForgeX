@@ -180,10 +180,21 @@ internal static partial class TopologyLayoutEngine {
             .Where(node => !string.IsNullOrWhiteSpace(node.GroupId))
             .GroupBy(node => node.GroupId!, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
-        if (orderedGroups.Count > 1 && orderedGroups.Count <= 4) {
-            var gap = 34d;
-            var availableW = Math.Max(120, right - left - gap * (orderedGroups.Count - 1));
-            var availableH = Math.Max(120, bottom - top);
+        var explicitFallbackWidth = Math.Max(90, (right - left) / Math.Max(1, Math.Min(3, orderedGroups.Count)));
+        var explicitFallbackHeight = Math.Max(72, (bottom - top) / Math.Max(1, Math.Min(2, orderedGroups.Count)));
+        foreach (var group in chart.Groups) {
+            if (!IsUnset(group.X) || !IsUnset(group.Y)) {
+                var width = group.Width > 0 ? group.Width : explicitFallbackWidth;
+                var height = group.Height > 0 ? group.Height : explicitFallbackHeight;
+                result[group.Id] = new ForceAnchor(group.X + width / 2, group.Y + height / 2, width, height, "explicit");
+            }
+        }
+
+        if (result.Count == 0 && orderedGroups.Count > 1 && orderedGroups.Count <= 4) {
+            var totalWidth = Math.Max(1, right - left);
+            var gap = orderedGroups.Count > 1 ? Math.Min(34d, Math.Max(4d, totalWidth * 0.08)) : 0d;
+            var availableW = Math.Max(1, totalWidth - gap * (orderedGroups.Count - 1));
+            var availableH = Math.Max(1, bottom - top);
             var weights = orderedGroups
                 .Select(group => Math.Max(1.4, Math.Sqrt(nodeCounts.TryGetValue(group.Id, out var nodeCount) ? nodeCount : 1)))
                 .ToList();
@@ -204,13 +215,6 @@ internal static partial class TopologyLayoutEngine {
         var rows = Math.Max(1, (int)Math.Ceiling(orderedGroups.Count / (double)columns));
         var cellW = (right - left) / columns;
         var cellH = (bottom - top) / rows;
-        for (var i = 0; i < chart.Groups.Count; i++) {
-            var group = chart.Groups[i];
-            if (!IsUnset(group.X) || !IsUnset(group.Y)) {
-                result[group.Id] = new ForceAnchor(group.X + Math.Max(group.Width, 1) / 2, group.Y + Math.Max(group.Height, 1) / 2, Math.Max(group.Width, 1), Math.Max(group.Height, 1), "explicit");
-            }
-        }
-
         for (var i = 0; i < orderedGroups.Count; i++) {
             var group = orderedGroups[i];
             if (result.ContainsKey(group.Id)) continue;
@@ -453,10 +457,19 @@ internal static partial class TopologyLayoutEngine {
             var maxY = bottom - particle.Node.Height / 2;
             if (!string.IsNullOrWhiteSpace(particle.Node.GroupId) &&
                 groupAnchors.TryGetValue(particle.Node.GroupId!, out var anchor)) {
-                minX = Math.Max(minX, anchor.X - anchor.Width * 0.48 + particle.Node.Width / 2);
-                maxX = Math.Min(maxX, anchor.X + anchor.Width * 0.48 - particle.Node.Width / 2);
-                minY = Math.Max(minY, anchor.Y - anchor.Height * 0.46 + particle.Node.Height / 2);
-                maxY = Math.Min(maxY, anchor.Y + anchor.Height * 0.46 - particle.Node.Height / 2);
+                var anchorMinX = anchor.X - anchor.Width * 0.48 + particle.Node.Width / 2;
+                var anchorMaxX = anchor.X + anchor.Width * 0.48 - particle.Node.Width / 2;
+                var anchorMinY = anchor.Y - anchor.Height * 0.46 + particle.Node.Height / 2;
+                var anchorMaxY = anchor.Y + anchor.Height * 0.46 - particle.Node.Height / 2;
+                if (anchorMaxX >= anchorMinX) {
+                    minX = Math.Max(minX, anchorMinX);
+                    maxX = Math.Min(maxX, anchorMaxX);
+                }
+
+                if (anchorMaxY >= anchorMinY) {
+                    minY = Math.Max(minY, anchorMinY);
+                    maxY = Math.Min(maxY, anchorMaxY);
+                }
             }
 
             particle.X = ClampForce(particle.X, minX, maxX);

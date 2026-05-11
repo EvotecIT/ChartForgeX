@@ -667,7 +667,7 @@ internal static partial class TopologyLayoutEngine {
 
     private static int DenseGroupColumns(TopologyChart chart) {
         if (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft) return Math.Max(1, chart.Groups.Count);
-        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) return 1;
+        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop && chart.Groups.Count <= 4) return 1;
         if (chart.Groups.Count <= 4) return chart.Groups.Count;
         return Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(chart.Groups.Count))));
     }

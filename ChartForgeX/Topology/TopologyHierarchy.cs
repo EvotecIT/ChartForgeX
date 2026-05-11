@@ -305,17 +305,11 @@ public static class TopologyHierarchyExtensions {
     private static void ApplyHierarchyPorts(TopologyEdge edge, TopologyLayoutDirection direction) {
         switch (direction) {
             case TopologyLayoutDirection.LeftToRight:
+            case TopologyLayoutDirection.RightToLeft:
                 edge.SourcePort = TopologyEdgePort.Right;
                 edge.TargetPort = TopologyEdgePort.Left;
                 break;
-            case TopologyLayoutDirection.RightToLeft:
-                edge.SourcePort = TopologyEdgePort.Left;
-                edge.TargetPort = TopologyEdgePort.Right;
-                break;
             case TopologyLayoutDirection.BottomToTop:
-                edge.SourcePort = TopologyEdgePort.Top;
-                edge.TargetPort = TopologyEdgePort.Bottom;
-                break;
             default:
                 edge.SourcePort = TopologyEdgePort.Bottom;
                 edge.TargetPort = TopologyEdgePort.Top;

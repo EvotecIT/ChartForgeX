@@ -130,6 +130,75 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-meta-layout-force-role=\"hub\"", StringComparison.Ordinal), "SVG should expose force hub metadata for host adapters.");
     }
 
+    private static void TopologyForceDirectedLayoutHonorsExplicitGroupAnchors() {
+        var chart = TopologyChart.Create()
+            .WithId("force-explicit-anchors")
+            .WithViewport(640, 360, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddGroup("left", "Left", 80, 90, 180, 120, TopologyHealthStatus.Healthy)
+            .AddGroup("right", "Right", 380, 100, 180, 120, TopologyHealthStatus.Warning)
+            .AddAutoNode("left-1", "Left 1", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "left")
+            .AddAutoNode("left-2", "Left 2", TopologyNodeKind.Person, TopologyHealthStatus.Healthy, "left")
+            .AddAutoNode("right-1", "Right 1", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "right")
+            .AddAutoNode("right-2", "Right 2", TopologyNodeKind.Person, TopologyHealthStatus.Warning, "right")
+            .AddEdge("cross", "left-1", "right-1", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional);
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var left = prepared.Groups.Single(group => group.Id == "left");
+        var right = prepared.Groups.Single(group => group.Id == "right");
+
+        Assert(left.Metadata["layout.force.anchor.strategy"] == "explicit", "Small force layouts should not replace explicit group anchors with weighted-row anchors.");
+        Assert(right.Metadata["layout.force.anchor.strategy"] == "explicit", "Small force layouts should keep every explicit group anchor.");
+        Assert(Math.Abs(double.Parse(left.Metadata["layout.force.anchor.x"], CultureInfo.InvariantCulture) - 170) < 0.001, "Explicit left group anchor should preserve the provided X and width.");
+        Assert(Math.Abs(double.Parse(right.Metadata["layout.force.anchor.x"], CultureInfo.InvariantCulture) - 470) < 0.001, "Explicit right group anchor should preserve the provided X and width.");
+    }
+
+    private static void TopologyForceDirectedLayoutHandlesZeroSizeExplicitGroupAnchors() {
+        var chart = TopologyChart.Create()
+            .WithId("force-zero-size-anchor")
+            .WithViewport(640, 360, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddGroup("left", "Left", 90, 80, 0, 0, TopologyHealthStatus.Healthy)
+            .AddGroup("right", "Right", 360, 90, 0, 0, TopologyHealthStatus.Warning);
+
+        for (var i = 0; i < 4; i++) {
+            chart.AddAutoNode("left-" + i.ToString("00", CultureInfo.InvariantCulture), "Left " + i.ToString("00", CultureInfo.InvariantCulture), TopologyNodeKind.Person, TopologyHealthStatus.Healthy, "left", width: 50, height: 34)
+                .AddAutoNode("right-" + i.ToString("00", CultureInfo.InvariantCulture), "Right " + i.ToString("00", CultureInfo.InvariantCulture), TopologyNodeKind.Person, TopologyHealthStatus.Warning, "right", width: 50, height: 34);
+        }
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var left = prepared.Groups.Single(group => group.Id == "left");
+        var leftNodes = prepared.Nodes.Where(node => node.GroupId == "left").ToList();
+
+        Assert(double.Parse(left.Metadata["layout.force.anchor.width"], CultureInfo.InvariantCulture) > 1, "Zero-size explicit force groups should receive a usable fallback anchor width.");
+        Assert(double.Parse(left.Metadata["layout.force.anchor.height"], CultureInfo.InvariantCulture) > 1, "Zero-size explicit force groups should receive a usable fallback anchor height.");
+        Assert(leftNodes.Select(node => Math.Round(node.X, 1)).Distinct().Count() > 1 || leftNodes.Select(node => Math.Round(node.Y, 1)).Distinct().Count() > 1, "Zero-size explicit force anchors should not collapse their particles to one point.");
+    }
+
+    private static void TopologyForceDirectedLayoutKeepsWeightedAnchorsInsideNarrowViewport() {
+        var chart = TopologyChart.Create()
+            .WithId("force-narrow-weighted-anchors")
+            .WithViewport(160, 240, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddAutoGroup("one", "One", TopologyHealthStatus.Healthy)
+            .AddAutoGroup("two", "Two", TopologyHealthStatus.Warning)
+            .AddAutoGroup("three", "Three", TopologyHealthStatus.Critical)
+            .AddAutoNode("one-node", "One", TopologyNodeKind.Person, TopologyHealthStatus.Healthy, "one", width: 16, height: 16)
+            .AddAutoNode("two-node", "Two", TopologyNodeKind.Person, TopologyHealthStatus.Warning, "two", width: 16, height: 16)
+            .AddAutoNode("three-node", "Three", TopologyNodeKind.Person, TopologyHealthStatus.Critical, "three", width: 16, height: 16);
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot });
+        var anchorXs = prepared.Groups
+            .Select(group => double.Parse(group.Metadata["layout.force.anchor.x"], CultureInfo.InvariantCulture))
+            .ToList();
+
+        Assert(anchorXs.All(x => x >= 24 && x <= 136), "Weighted force anchors should stay inside the actual narrow viewport bounds.");
+        Assert(prepared.Groups.All(group => group.Metadata["layout.force.anchor.strategy"] == "weighted-row"), "The narrow viewport fixture should exercise the weighted-row fast path.");
+    }
+
     private static void TopologyMonitoringBundleRouteLabelsRemainReadable() {
         var chart = TopologyChart.Create()
             .WithId("dense-route-label-bundle")
@@ -308,6 +377,32 @@ internal static partial class SmokeTests {
         Assert(rightEdges.All(edge => Math.Abs(edge.Waypoints[1].Y - TopologyRenderPrimitives.CenterY(rightToLeft.Nodes.Single(node => node.Id == edge.TargetNodeId))) < 0.001), "Right-to-left hierarchy bus waypoints should stay aligned to the final normalized child center.");
     }
 
+    private static void TopologyLayeredHierarchyMirrorsSingleChildPorts() {
+        var items = new List<TopologyHierarchyItem> {
+            new("root", "Root") { Kind = TopologyNodeKind.Team },
+            new("child", "Child", "root") { Kind = TopologyNodeKind.Person }
+        };
+        var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("single-bottom-to-top-hierarchy")
+            .WithViewport(320, 280, 24)
+            .WithLegend(null)
+            .AddHierarchy(items, new TopologyHierarchyOptions { LayoutDirection = TopologyLayoutDirection.BottomToTop, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 70, NodeHeight = 46 }), options: new TopologyRenderOptions { IncludeLegend = false });
+        var bottomEdge = bottomToTop.Edges.Single();
+
+        Assert(bottomEdge.SourcePort == TopologyEdgePort.Top, "Bottom-to-top single-child hierarchy routes should leave parents upward after mirroring.");
+        Assert(bottomEdge.TargetPort == TopologyEdgePort.Bottom, "Bottom-to-top single-child hierarchy routes should enter children from below after mirroring.");
+
+        var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("single-right-to-left-hierarchy")
+            .WithViewport(360, 240, 24)
+            .WithLegend(null)
+            .AddHierarchy(items, new TopologyHierarchyOptions { LayoutDirection = TopologyLayoutDirection.RightToLeft, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 70, NodeHeight = 46 }), options: new TopologyRenderOptions { IncludeLegend = false });
+        var rightEdge = rightToLeft.Edges.Single();
+
+        Assert(rightEdge.SourcePort == TopologyEdgePort.Left, "Right-to-left single-child hierarchy routes should leave parents toward the left after mirroring.");
+        Assert(rightEdge.TargetPort == TopologyEdgePort.Right, "Right-to-left single-child hierarchy routes should enter children from the right after mirroring.");
+    }
+
     private static void TopologyDenseGroupedLayoutSupportsRightToLeftFlow() {
         var chart = TopologyChart.Create()
             .WithId("dense-right-left")
@@ -335,6 +430,34 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-layout-direction=\"RightToLeft\"", StringComparison.Ordinal), "Right-to-left dense grouped SVG should expose the layout direction.");
     }
 
+    private static void TopologyMirroringInvertsRouteLanes() {
+        var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("rtl-route-lane")
+            .WithViewport(720, 360, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .AddAutoGroup("left", "Left", TopologyHealthStatus.Healthy)
+            .AddAutoGroup("right", "Right", TopologyHealthStatus.Warning)
+            .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
+            .AddAutoNode("right-node", "Right", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "right")
+            .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
+            .WithEdgeRouteLane("link", 24), options: new TopologyRenderOptions { IncludeLegend = false });
+        var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("btt-route-lane")
+            .WithViewport(360, 620, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.BottomToTop)
+            .AddAutoGroup("top", "Top", TopologyHealthStatus.Healthy)
+            .AddAutoGroup("bottom", "Bottom", TopologyHealthStatus.Warning)
+            .AddAutoNode("top-node", "Top", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "top")
+            .AddAutoNode("bottom-node", "Bottom", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "bottom")
+            .AddEdge("link", "top-node", "bottom-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
+            .WithEdgeRouteLane("link", 18), options: new TopologyRenderOptions { IncludeLegend = false });
+
+        Assert(Math.Abs(rightToLeft.Edges.Single().RouteLane + 24) < 0.001, "Right-to-left mirroring should invert the route-lane sign for regenerated edge geometry.");
+        Assert(Math.Abs(bottomToTop.Edges.Single().RouteLane + 18) < 0.001, "Bottom-to-top mirroring should invert the route-lane sign for regenerated edge geometry.");
+    }
+
     private static void TopologyDenseGroupedLayoutSupportsBottomToTopFlow() {
         var chart = TopologyChart.Create()
             .WithId("dense-bottom-top")
@@ -360,6 +483,25 @@ internal static partial class SmokeTests {
         Assert(core.Y > middle.Y && middle.Y > edge.Y, "Bottom-to-top dense grouped layout should mirror group ordering vertically.");
         Assert(link.SourcePort == TopologyEdgePort.Top && link.TargetPort == TopologyEdgePort.Bottom, "Bottom-to-top dense grouped edge defaults should mirror outside-facing ports.");
         Assert(svg.Contains("data-layout-direction=\"BottomToTop\"", StringComparison.Ordinal), "Bottom-to-top dense grouped SVG should expose the layout direction.");
+    }
+
+    private static void TopologyDenseGroupedBottomToTopKeepsMultiColumnPacking() {
+        var chart = TopologyChart.Create()
+            .WithId("dense-bottom-top-columns")
+            .WithViewport(900, 720, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.BottomToTop);
+
+        for (var i = 0; i < 6; i++) {
+            var id = "group-" + i.ToString("00", CultureInfo.InvariantCulture);
+            chart.AddAutoGroup(id, "Group " + i.ToString("00", CultureInfo.InvariantCulture), TopologyHealthStatus.Healthy)
+                .AddAutoNode(id + "-hub", "Hub " + i.ToString("00", CultureInfo.InvariantCulture), TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, id);
+        }
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var columns = prepared.Groups.Select(group => Math.Round(group.X, 1)).Distinct().Count();
+
+        Assert(columns > 1, "Bottom-to-top dense grouped layouts should keep multi-column packing before the final vertical mirror.");
     }
 
     private static List<TopologyHierarchyItem> ManyChildHierarchyItems() {
