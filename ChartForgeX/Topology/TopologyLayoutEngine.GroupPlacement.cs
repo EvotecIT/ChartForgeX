@@ -6,7 +6,15 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    private readonly record struct PlacementDelta(double Dx, double Dy);
+    private readonly struct PlacementDelta {
+        internal PlacementDelta(double dx, double dy) {
+            Dx = dx;
+            Dy = dy;
+        }
+
+        internal double Dx { get; }
+        internal double Dy { get; }
+    }
 
     private static Dictionary<string, (double X, double Y)> ExplicitGroupPositions(IEnumerable<TopologyGroup> groups) {
         var result = new Dictionary<string, (double X, double Y)>(StringComparer.Ordinal);
