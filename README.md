@@ -1,19 +1,19 @@
 # ChartForgeX - Dependency-Free Chart Rendering for .NET
 
-ChartForgeX is available as a NuGet package from the NuGet Gallery.
+ChartForgeX renders polished charts, visual blocks, topology diagrams, and static report visuals from .NET without adding a browser charting runtime to generated output.
 
-NuGet Package
+## NuGet Package
 
 [![nuget downloads](https://img.shields.io/nuget/dt/ChartForgeX?label=nuget%20downloads)](https://www.nuget.org/packages/ChartForgeX)
 [![nuget version](https://img.shields.io/nuget/v/ChartForgeX)](https://www.nuget.org/packages/ChartForgeX)
 
-Project Information
+## Project Information
 
 [![top language](https://img.shields.io/github/languages/top/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
 [![license](https://img.shields.io/github/license/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
 [![quality](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml/badge.svg)](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml)
 
-Author & Social
+## Author & Social
 
 [![Twitter follow](https://img.shields.io/twitter/follow/PrzemyslawKlys.svg?label=Twitter%20%40PrzemyslawKlys&style=social)](https://twitter.com/PrzemyslawKlys)
 [![Blog](https://img.shields.io/badge/Blog-evotec.xyz-2A6496.svg)](https://evotec.xyz/hub)
@@ -21,11 +21,11 @@ Author & Social
 [![Threads](https://img.shields.io/badge/Threads-@PrzemyslawKlys-000000.svg?logo=Threads&logoColor=White)](https://www.threads.net/@przemyslaw.klys)
 [![Discord](https://img.shields.io/discord/508328927853281280?style=flat-square&label=discord%20chat)](https://evo.yt/discord)
 
-## What it's all about
+## What It's For
 
-**ChartForgeX** renders polished SVG, static HTML, and PNG charts for .NET reports, dashboards, documentation, email, generated websites, and other static-output hosts.
+ChartForgeX is for generated reports, documentation, email, static websites, dashboards, wallpapers, Office-style generators, and other hosts that need deterministic visuals without a JavaScript chart dependency.
 
-The goal is not to clone browser-first charting libraries. The goal is a reusable, no-JavaScript-by-default rendering layer that HtmlForgeX, DomainDetective, TestimoX, GPOZaurr, ADEssentials, OfficeIMO-style generators, and similar tools can embed without bringing a graphics stack with them.
+The core package renders SVG, static HTML, PNG, BMP, PPM, and baseline TIFF. Static HTML is script-free by default. Optional interactions are split into separate adapter packages so a static report can stay static, while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
 
 ## Install
 
@@ -39,31 +39,23 @@ Optional interaction support is split into separate packages:
 
 | Package | Purpose |
 | --- | --- |
-| `ChartForgeX` | Static SVG, HTML, and PNG rendering. |
+| `ChartForgeX` | Static SVG, HTML, PNG, BMP, PPM, and TIFF rendering. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
 
-## Documentation Links
+## Release Maturity
 
-- Repository: [https://github.com/EvotecIT/ChartForgeX](https://github.com/EvotecIT/ChartForgeX)
-- NuGet package: [https://www.nuget.org/packages/ChartForgeX](https://www.nuget.org/packages/ChartForgeX)
-- Architecture notes: [docs/architecture.md](docs/architecture.md)
-- Topology reference: [docs/topology.md](docs/topology.md)
-- Visual blocks reference: [docs/visual-blocks.md](docs/visual-blocks.md)
-- Rendering engine benchmarking: [docs/rendering-engine-benchmarking.md](docs/rendering-engine-benchmarking.md)
-- Contributor guide: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Centralized TODO: [TODO.md](TODO.md)
+The first release should be treated as a broad preview with a serious stability bar. The public surface is intended to be kept stable where it represents real charting concepts, and changed intentionally where a pre-release API would otherwise lock in awkward names or host-specific assumptions.
 
-## Features
+| Area | Release stance |
+| --- | --- |
+| Core charts, themes, SVG, static HTML, PNG, validation, and package layout | Supported first-release API. Avoid breaking changes except for clear correctness or naming fixes. |
+| BMP, PPM, TIFF, raster helper APIs, and stream/file/byte-array export helpers | Supported utility API over the shared raster buffer. PNG remains the main raster target for report quality. |
+| Topology diagrams, deterministic layouts, icon catalogs, and geographic topology | Supported, with dense routing and geographic polish still tracked before numeric visual-baseline promotion. |
+| Visual blocks such as tables, metric cards, status cards, workload lists, activity timelines, and schedule strips | Supported report-fragment API, but advanced dashboard-card patterns should continue to be refined from real host usage. |
+| External GeoJSON/map catalogs and large vendor icon-pack workflows | Opt-in extension workflow. Keep these generic, provenance-aware, and outside the core runtime dependency path. |
 
-- Renders static charts as SVG, HTML fragments/pages, and PNG files.
-- Keeps the default HTML output script-free and self-contained.
-- Shares chart models, themes, validation, layout rules, and visual tokens across SVG and PNG.
-- Provides reusable visual blocks for exact report facts: tables, lists, metric cards, and mixed grids.
-- Includes product-neutral topology diagrams for deterministic infrastructure, dependency, relationship, and geographic-style views.
-- validates chart data before rendering so invalid payloads fail near the caller instead of producing partial markup or malformed PNGs.
-- Rejects invalid specialized data such as non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
-- Supports scoped inline SVG ids through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")` so repeated charts can be embedded safely.
+No chart type is marked for removal in this release pass. Active follow-up work belongs in `TODO.md` until it becomes durable reference documentation.
 
 ## Quick Start
 
@@ -75,7 +67,7 @@ using ChartForgeX.Themes;
 
 var chart = Chart.Create()
     .WithTitle("Domain Security Checks")
-    .WithSubtitle("Dependency-free SVG, HTML, and PNG chart rendering")
+    .WithSubtitle("Dependency-free SVG, HTML, PNG, BMP, PPM, and TIFF chart rendering")
     .WithXAxis("Run")
     .WithYAxis("Checks")
     .WithTheme(ChartTheme.ReportDark())
@@ -88,6 +80,9 @@ var chart = Chart.Create()
 chart.SaveSvg("chart.svg");
 chart.SaveHtml("chart.html");
 chart.SavePng("chart.png");
+chart.SaveBmp("chart.bmp");
+chart.SavePpm("chart.ppm");
+chart.SaveTiff("chart.tiff");
 
 static IEnumerable<ChartPoint> Points(params double[] y) {
     for (var i = 0; i < y.Length; i++) {
@@ -98,7 +93,7 @@ static IEnumerable<ChartPoint> Points(params double[] y) {
 
 ## Composition
 
-Use `ChartGrid` for chart-only small multiples, comparison grids, and mosaic reports. Panel spans allow a report to mix hero panels with smaller supporting charts without creating a new chart type for layout.
+Use `ChartGrid` for chart-only small multiples, comparison grids, and mosaic reports. `Add(chart, columnSpan, rowSpan)` and `WithPanelSpan(index, columnSpan, rowSpan)` let a report mix hero panels with smaller supporting charts without creating a chart type just for layout.
 
 ```csharp
 var report = ChartGrid.Create()
@@ -114,6 +109,9 @@ var report = ChartGrid.Create()
 report.SaveHtml("scorecards.html");
 report.SaveSvg("scorecards.svg");
 report.SavePng("scorecards.png");
+report.SaveBmp("scorecards.bmp");
+report.SavePpm("scorecards.ppm");
+report.SaveTiff("scorecards.tiff");
 ```
 
 Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series.
@@ -121,7 +119,7 @@ Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts ins
 ```csharp
 using ChartForgeX.VisualBlocks;
 
-var table = ChartTable.Create()
+var drives = ChartTable.Create()
     .WithTitle("Drive Summary")
     .AddColumn("Drive")
     .AddColumn("Used", VisualTextAlignment.Right, format: "0%")
@@ -132,7 +130,7 @@ var table = ChartTable.Create()
     .WithStatusColumn("Status")
     .WithDenseMode();
 
-var strip = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
+var snapshot = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
     MetricCard.Create().WithMetric("CPU Load", "38%").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
     MetricCard.Create().WithMetric("Memory Used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
 });
@@ -140,7 +138,7 @@ var strip = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 
 ## Topology Diagrams
 
-`ChartForgeX.Topology` is for reusable, deterministic diagrams. It owns the product-neutral model, validation, layout helpers, SVG rendering, PNG rendering, and static HTML wrapper. Host projects own dashboard shells, data collection, filters, inspectors, and product-specific calculations.
+`ChartForgeX.Topology` is for reusable deterministic diagrams. It owns the product-neutral model, validation, layout helpers, SVG rendering, PNG rendering, and static HTML wrapper. Host projects own dashboard shells, data collection, filters, inspectors, and product-specific calculations.
 
 ```csharp
 using ChartForgeX.Topology;
@@ -160,6 +158,9 @@ var topology = TopologyChart.Create()
 topology.SaveSvg("service-map.svg");
 topology.SaveHtml("service-map.html");
 topology.SavePng("service-map.png");
+topology.SaveBmp("service-map.bmp");
+topology.SavePpm("service-map.ppm");
+topology.SaveTiff("service-map.tiff");
 ```
 
 Supported topology layout modes are `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`. Geographic topology uses `ChartMapViewport` with typed coordinates, route arcs, region hulls, and optional callouts while keeping the model reusable across infrastructure, cloud, tenant, inventory, and domain-specific hosts.
@@ -174,7 +175,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Combo charts | `AddBarLineCombo`, `AddColumnLineCombo`, `AddBarAreaCombo`, `AddColumnAreaCombo`, `AddScatterLineCombo` |
 | Bars and distributions | `AddBar`, `AddHistogram`, `AddLollipop`, `AddBubble`, `AddErrorBar`, `AddCandlestick`, `AddOhlc`, `AddRangeBand`, `AddRangeArea`, `AddDumbbell`, `AddPareto`, `AddRangeBar`, `AddBoxPlot`, `AddHorizontalBar`, `WithStackedHorizontalBars` |
 | Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` |
-| Maps | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints`, `AddRegionMap`, `AddTileMap`, `ChartMapCatalog`, `ChartMapDefinition`, `ChartMapRegion`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend` |
+| Maps | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints`, `AddRegionMap`, `AddTileMap`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapRegion`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `AddMapBaseLayer`, `AddMapBoundaryLayer` |
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddRadialBar`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolarArea` |
 | Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `ChartSankeyLink`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
 | Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
@@ -182,7 +183,16 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
 
-Specialized SVG containers expose stable metadata for downstream QA and host integration. Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data. Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`. Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts. Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
+## Renderer Contracts
+
+- ChartForgeX validates chart data before rendering so invalid payloads fail near the caller instead of producing partial markup or malformed PNGs.
+- Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
+- Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely.
+- Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
+- Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
+- Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.
+- Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
+- Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 
 ## Customization cookbook
 
@@ -232,11 +242,24 @@ chart.Series[0]
 ## Output and Safety
 
 - SVG is the highest-fidelity static target.
-- HTML wraps inline SVG into static, self-contained pages or fragments.
+- HTML wraps inline SVG into static self-contained pages or fragments.
 - PNG uses ChartForgeX's dependency-free raster path and supports real alpha transparency.
+- BMP, PPM, and TIFF are opaque utility exports over the same raster buffer.
 - JavaScript belongs in opt-in adapter packages, not in the default static renderer.
-- Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 - Public APIs fail fast on invalid sizes, ranges, enum values, and specialized series payloads.
+
+## Website Pilot
+
+`Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The central Evotec project hub remains the registry page, while the dedicated site is meant for the richer gallery and demo experience at `https://chartforgex.evotec.xyz/`.
+
+Build the examples first with `./Build.ps1`, then build the site from `Website/`:
+
+```powershell
+.\build.ps1 -Dev
+.\build.ps1 -Ci
+```
+
+Promoted website examples should be reproducible cases, not screenshots: show the rendered preview, link the HTML/SVG/PNG artifacts, and point to the source file or builder method that generates the same output.
 
 ## Repository Map
 
@@ -248,13 +271,14 @@ ChartForgeX
 |   |-- Rendering                  # shared rendering math and polish helpers
 |   |-- Svg                        # SVG renderer
 |   |-- Html                       # static HTML renderer
-|   |-- Raster                     # PNG renderer and writer
+|   |-- Raster                     # PNG/BMP/PPM/TIFF renderer and encoders
 |   |-- Topology                   # product-neutral topology model/renderers
 |   `-- VisualBlocks               # tables, lists, metric cards, visual grids
 |-- ChartForgeX.Interactivity       # host-neutral interaction contracts
 |-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
+|-- Website                         # dedicated PowerForge.Web pilot site
 |-- docs                            # focused reference notes
 |-- AGENTS.md                       # contributor/agent expectations
 |-- CONTRIBUTING.md                 # development and release workflow

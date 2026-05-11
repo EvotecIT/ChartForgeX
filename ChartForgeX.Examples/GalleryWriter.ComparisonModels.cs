@@ -51,7 +51,7 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct ComparisonAsset {
-        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth) {
+        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth, HtmlHealth htmlHealth) {
             Name = name;
             SvgDimensions = svgDimensions;
             PngDimensions = pngDimensions;
@@ -59,6 +59,7 @@ public static partial class GalleryWriter {
             PngBytes = pngBytes;
             SvgHealth = svgHealth;
             PngHealth = pngHealth;
+            HtmlHealth = htmlHealth;
         }
 
         public string Name { get; }
@@ -74,6 +75,8 @@ public static partial class GalleryWriter {
         public SvgHealth SvgHealth { get; }
 
         public PngHealth PngHealth { get; }
+
+        public HtmlHealth HtmlHealth { get; }
 
         public int PngScale {
             get {
@@ -101,6 +104,7 @@ public static partial class GalleryWriter {
                 if (SvgHealth.ClippedTextNodes > 0) warnings.Add("SVG text bounds warning");
                 if (!PngHealth.IsHealthy) warnings.Add("PNG health warning");
                 if (PngHealth.EdgeInkPixels > MaximumHealthyPngEdgeInkPixels) warnings.Add("PNG edge pressure warning");
+                if (!HtmlHealth.IsHealthy) warnings.Add("HTML health warning");
                 return warnings.ToArray();
             }
         }
@@ -172,6 +176,37 @@ public static partial class GalleryWriter {
         public long EdgeBandPixels { get; }
 
         public bool IsHealthy => VisiblePixels >= MinimumHealthyPngVisiblePixels && ForegroundPixels >= MinimumHealthyPngVisiblePixels && DistinctColors >= MinimumHealthyPngDistinctColors && EdgeInkPixels <= MaximumHealthyPngEdgeInkPixels;
+    }
+
+    private readonly struct HtmlHealth {
+        public HtmlHealth(long bytes, bool hasDocumentShell, bool hasViewport, bool hasInlineSvg, bool hasSurfaceGradient, bool hasTextPolish, bool hasVisibleOverflow, bool hasPrintCss) {
+            Bytes = bytes;
+            HasDocumentShell = hasDocumentShell;
+            HasViewport = hasViewport;
+            HasInlineSvg = hasInlineSvg;
+            HasSurfaceGradient = hasSurfaceGradient;
+            HasTextPolish = hasTextPolish;
+            HasVisibleOverflow = hasVisibleOverflow;
+            HasPrintCss = hasPrintCss;
+        }
+
+        public long Bytes { get; }
+
+        public bool HasDocumentShell { get; }
+
+        public bool HasViewport { get; }
+
+        public bool HasInlineSvg { get; }
+
+        public bool HasSurfaceGradient { get; }
+
+        public bool HasTextPolish { get; }
+
+        public bool HasVisibleOverflow { get; }
+
+        public bool HasPrintCss { get; }
+
+        public bool IsHealthy => Bytes > 0 && HasDocumentShell && HasViewport && HasInlineSvg && HasSurfaceGradient && HasTextPolish && HasVisibleOverflow && HasPrintCss;
     }
 
     private readonly struct PngContentBounds {

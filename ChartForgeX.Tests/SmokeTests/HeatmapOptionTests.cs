@@ -27,6 +27,21 @@ internal static partial class SmokeTests {
         Assert(!withoutColumns.Contains("data-cfx-role=\"heatmap-column-label\"", System.StringComparison.Ordinal), "Heatmap column labels should be optional.");
         Assert(HeatmapSample().WithHeatmapColumnLabels(false).ToPng().Length > 64, "Heatmaps without column labels should render valid PNG output.");
         Assert(HeatmapSample().WithAxes(false).WithLegend(false).ToPng().Length > 64, "Compact heatmap options should render valid PNG output.");
+
+        var polished = HeatmapSample()
+            .WithDataLabels(false)
+            .WithHeatmapCellGap(5)
+            .WithHeatmapCellRadius(7)
+            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
+            .ToSvg();
+        Assert(polished.Contains("data-cfx-cell-gap=\"5\"", System.StringComparison.Ordinal), "Heatmaps should expose configured cell gaps in SVG metadata.");
+        Assert(polished.Contains("data-cfx-cell-radius=\"", System.StringComparison.Ordinal), "Heatmaps should expose effective cell radius in SVG metadata.");
+        Assert(polished.Contains("data-cfx-value-text-mode=\"Always\"", System.StringComparison.Ordinal), "Heatmaps should expose value text mode metadata.");
+        Assert(polished.Contains(">80<", System.StringComparison.Ordinal), "Heatmap value text mode should allow values without enabling general data labels.");
+        Assert(HeatmapSample().WithHeatmapCellGap(5).WithHeatmapCellRadius(7).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).ToPng().Length > 64, "Polished heatmap options should render valid PNG output.");
+        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().WithHeatmapCellGap(-1), "Heatmap cell gaps should reject negative values.");
+        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().WithHeatmapCellRadius(25), "Heatmap cell radius should stay bounded.");
+        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().WithHeatmapValueTextMode((ChartHeatmapValueTextMode)999), "Heatmap value text mode should reject unknown enum values.");
     }
 
     private static void HeatmapRowsCanMaskCells() {

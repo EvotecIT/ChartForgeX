@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" preserveAspectRatio="xMidYMid meet">
+<g>
+<defs>
+<linearGradient id="rack-switch-body" x1="18" y1="27" x2="78" y2="69" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F8FAFC"/><stop offset="0.55" stop-color="#CBD5E1"/><stop offset="1" stop-color="#64748B"/></linearGradient>
+<linearGradient id="rack-switch-face" x1="18" y1="36" x2="78" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1E293B"/><stop offset="1" stop-color="#020617"/></linearGradient>
+<filter id="rack-switch-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.28"/></filter>
+</defs>
+<path d="M17 34 L25 26 H71 L79 34 V62 L72 70 H24 L17 62 Z" fill="url(#rack-switch-body)" filter="url(#rack-switch-shadow)"/>
+<rect x="21" y="36" width="54" height="25" rx="3" fill="url(#rack-switch-face)"/>
+<path d="M23 34 H73" stroke="#FFFFFF" stroke-width="2" opacity="0.55"/>
+<circle cx="27" cy="48" r="2.1" fill="#38BDF8"/>
+<circle cx="34" cy="48" r="2.1" fill="#22C55E"/>
+<rect x="40" y="43" width="6" height="5" rx="1" fill="#94A3B8"/>
+<rect x="48" y="43" width="6" height="5" rx="1" fill="#94A3B8"/>
+<rect x="56" y="43" width="6" height="5" rx="1" fill="#94A3B8"/>
+<rect x="64" y="43" width="6" height="5" rx="1" fill="#94A3B8"/>
+<path d="M40 52 H70" stroke="#38BDF8" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+<rect x="26" y="56" width="45" height="2" rx="1" fill="#64748B" opacity="0.9"/>
+<text x="48" y="81" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#0F172A">SWITCH</text>
+</g>
+</svg>

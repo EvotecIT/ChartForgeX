@@ -1,0 +1,90 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/schemas/powerforge.web.pipelinespec.schema.json",
+  "cache": true,
+  "cachePath": "./_temp/pipeline-cache.json",
+  "profile": true,
+  "profilePath": "./_temp/pipeline-profile.json",
+  "steps": [
+    {
+      "task": "build",
+      "id": "build-site",
+      "config": "./site.json",
+      "out": "./_site",
+      "clean": true
+    },
+    {
+      "task": "verify",
+      "id": "verify-site",
+      "dependsOn": "build-site",
+      "config": "./site.json"
+    },
+    {
+      "task": "verify",
+      "id": "verify-ci",
+      "dependsOn": "build-site",
+      "modes": ["ci"],
+      "config": "./site.json",
+      "baseline": "./.powerforge/verify-baseline.json",
+      "failOnNewWarnings": true,
+      "failOnNavLint": true,
+      "failOnThemeContract": true,
+      "warningPreviewCount": 10,
+      "errorPreviewCount": 10
+    },
+    {
+      "task": "sitemap",
+      "id": "build-sitemap",
+      "dependsOn": "verify-site",
+      "siteRoot": "./_site",
+      "baseUrl": "https://chartforgex.evotec.xyz",
+      "json": true,
+      "jsonOut": "./_site/sitemap/index.json",
+      "html": true,
+      "htmlOutput": "./_site/sitemap/index.html",
+      "htmlTitle": "ChartForgeX Sitemap"
+    },
+    {
+      "task": "optimize",
+      "id": "optimize-site",
+      "dependsOn": "build-sitemap",
+      "skipModes": ["dev"],
+      "siteRoot": "./_site",
+      "config": "./site.json",
+      "criticalCss": "./themes/chartforgex/critical.css",
+      "minifyHtml": true,
+      "minifyCss": true,
+      "minifyJs": true,
+      "optimizeImages": true,
+      "imageExtensions": [".png", ".jpg", ".jpeg", ".webp"],
+      "imageQuality": 86,
+      "imageStripMetadata": true,
+      "imageGenerateWebp": true,
+      "imagePreferNextGen": true,
+      "imageEnhanceTags": true,
+      "hashAssets": true,
+      "hashExtensions": [".css", ".js"],
+      "cacheHeaders": true,
+      "cacheHeadersOut": "_headers",
+      "reportPath": "./_reports/optimize-report.json"
+    },
+    {
+      "task": "audit",
+      "id": "audit-site",
+      "dependsOn": "optimize-site",
+      "skipModes": ["dev"],
+      "siteRoot": "./_site",
+      "baseline": "./.powerforge/audit-baseline.json",
+      "exclude": "examples/generated/**,examples/topology/**",
+      "ignoreNav": "search/**,sitemap/**",
+      "failOnNewIssues": true,
+      "maxTotalFiles": 5000,
+      "requiredRoutes": "/,/examples/,/gallery/,/docs/,/404.html,/sitemap/",
+      "failOnCategories": "budget,link,asset,rendered-console-error,rendered-request-failure",
+      "summary": true,
+      "summaryPath": "./_reports/audit-summary.json",
+      "checkUtf8": true,
+      "checkMetaCharset": true,
+      "checkUnicodeReplacementChars": true
+    }
+  ]
+}

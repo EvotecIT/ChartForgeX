@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-10T14:13:27.8118965Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "backup",
+  "iconCount": 14,
+  "previewSize": 128,
+  "previewPngFiles": 14,
+  "previewFailures": 0,
+  "issues": []
+}

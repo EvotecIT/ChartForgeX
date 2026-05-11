@@ -1,0 +1,82 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/schemas/powerforge.web.themespec.schema.json",
+  "schemaVersion": 2,
+  "contractVersion": 2,
+  "name": "chartforgex",
+  "engine": "scriban",
+  "defaultLayout": "page",
+  "layoutsPath": "layouts",
+  "partialsPath": "partials",
+  "scriptsPath": "scripts",
+  "features": ["docs", "search", "notFound"],
+  "slots": {
+    "site-header": "header",
+    "site-footer": "footer",
+    "docs-sidebar": "docs-sidebar",
+    "theme-tokens": "theme-tokens"
+  },
+  "featureContracts": {
+    "docs": {
+      "requiredLayouts": ["docs"],
+      "requiredPartials": ["header", "footer", "docs-sidebar", "theme-tokens"]
+    },
+    "notFound": {
+      "requiredSurfaces": ["notFound"]
+    }
+  },
+  "tokens": {
+    "color": {
+      "bg": "#09090b",
+      "bgElevated": "#18181b",
+      "bgSubtle": "#0f0f12",
+      "panel": "rgba(24, 24, 27, 0.75)",
+      "panelStrong": "rgba(30, 30, 35, 0.88)",
+      "surface": "rgba(24, 24, 27, 0.82)",
+      "surfaceHover": "rgba(39, 39, 42, 0.9)",
+      "ink": "#fafafa",
+      "inkStrong": "#ffffff",
+      "inkSubtle": "#d4d4d8",
+      "muted": "#a1a1aa",
+      "accent": "#a78bfa",
+      "accentHover": "#c4b5fd",
+      "accent2": "#fbbf24",
+      "accent2Hover": "#fcd34d",
+      "accent3": "#2dd4bf",
+      "border": "rgba(167, 139, 250, 0.12)",
+      "borderStrong": "rgba(167, 139, 250, 0.22)",
+      "heroGlow": "rgba(167, 139, 250, 0.22)",
+      "heroGlow2": "rgba(167, 139, 250, 0.18)",
+      "gridLine": "rgba(167, 139, 250, 0.05)",
+      "headerBg": "rgba(9, 9, 11, 0.78)",
+      "chipBg": "rgba(167, 139, 250, 0.1)",
+      "chipBorder": "rgba(167, 139, 250, 0.35)",
+      "codeBg": "#0f0f12",
+      "codeBorder": "rgba(161, 161, 170, 0.2)",
+      "badgeBg": "rgba(167, 139, 250, 0.08)",
+      "badgeBorder": "rgba(167, 139, 250, 0.3)",
+      "danger": "#f87171",
+      "success": "#2dd4bf",
+      "warning": "#fbbf24",
+      "info": "#60a5fa"
+    },
+    "radius": {
+      "base": "20px",
+      "sm": "12px",
+      "xs": "8px"
+    },
+    "shadow": {
+      "panel": "0 24px 48px rgba(0, 0, 0, 0.35), 0 0 80px rgba(167, 139, 250, 0.04)",
+      "soft": "0 12px 24px rgba(0, 0, 0, 0.2), 0 0 40px rgba(167, 139, 250, 0.03)",
+      "lift": "0 20px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(167, 139, 250, 0.06)"
+    },
+    "layout": {
+      "maxWidth": "1220px",
+      "contentWidth": "860px"
+    },
+    "font": {
+      "body": "Manrope, Segoe UI, sans-serif",
+      "display": "Space Grotesk, Segoe UI, sans-serif",
+      "mono": "JetBrains Mono, Cascadia Mono, monospace"
+    }
+  }
+}

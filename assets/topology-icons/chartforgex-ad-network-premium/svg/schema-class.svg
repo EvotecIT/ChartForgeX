@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" preserveAspectRatio="xMidYMid meet">
+<g>
+<defs>
+<linearGradient id="schema-class-plate" x1="12" y1="8" x2="84" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#EDE9FE"/><stop offset="0.58" stop-color="#7C3AED" stop-opacity="0.72"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+<linearGradient id="schema-class-metal" x1="20" y1="14" x2="76" y2="82" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F8FAFC"/><stop offset="1" stop-color="#CBD5E1"/></linearGradient>
+<filter id="schema-class-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#0F172A" flood-opacity="0.24"/></filter>
+</defs>
+<rect x="8" y="8" width="80" height="80" rx="20" fill="url(#schema-class-plate)" stroke="#FFFFFF" stroke-width="2" opacity="0.98"/>
+<circle cx="72" cy="24" r="12" fill="#FFFFFF" opacity="0.20"/>
+<path d="M18 73 C34 63 57 63 78 74" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.28"/>
+<rect x="24" y="24" width="48" height="43" rx="7" fill="#FFFFFF" filter="url(#schema-class-shadow)"/><path d="M34 38 H45 L49 32 H62" fill="none" stroke="#7C3AED" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 52 H45 L50 58 H63" fill="none" stroke="#7C3AED" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="38" r="4" fill="#7C3AED"/><circle cx="34" cy="52" r="4" fill="#7C3AED"/><circle cx="63" cy="32" r="4" fill="#7C3AED"/><circle cx="63" cy="58" r="4" fill="#7C3AED"/>
+<rect x="25" y="69" width="46" height="16" rx="8" fill="#0F172A" opacity="0.74"/>
+<text x="48" y="81" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF">CLS</text>
+</g>
+</svg>

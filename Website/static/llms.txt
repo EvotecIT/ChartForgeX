@@ -1,0 +1,37 @@
+# ChartForgeX
+
+ChartForgeX is an Evotec project for dependency-free chart rendering in .NET. It creates SVG, PNG, and static HTML visuals for reports, dashboards, documentation, and generated project sites without requiring a JavaScript chart runtime.
+
+## Canonical URLs
+
+- Site: https://chartforgex.evotec.xyz/
+- Examples: https://chartforgex.evotec.xyz/examples/
+- Documentation: https://chartforgex.evotec.xyz/docs/
+- Promoted cases: https://chartforgex.evotec.xyz/examples/promoted-cases.json
+- Case schema: https://chartforgex.evotec.xyz/schemas/promoted-cases.schema.json
+- Source: https://github.com/EvotecIT/ChartForgeX
+- Evotec hub summary: https://evotec.xyz/projects/chartforgex/
+
+## Reproducible Example Model
+
+Promoted cases connect a rendered preview with the shipped HTML, SVG, or PNG artifacts plus the source file or builder method that generated the output. Use `/examples/promoted-cases.json` for structured case data before scraping the examples page.
+
+## Build Hints
+
+From the repository root:
+
+```powershell
+dotnet run --project .\ChartForgeX.Examples\ChartForgeX.Examples.csproj -c Release
+```
+
+Topology-only examples:
+
+```powershell
+dotnet run --project .\ChartForgeX.Examples\ChartForgeX.Examples.csproj -c Release -- --topology-only
+```
+
+Website build:
+
+```powershell
+powerforge-web pipeline --config .\Website\pipeline.json --mode dev
+```

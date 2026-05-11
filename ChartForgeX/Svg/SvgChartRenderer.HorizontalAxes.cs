@@ -46,22 +46,8 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHorizontalAxisLine(StringBuilder sb, string? role, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double? opacity = null, ChartGridLineStyle? style = null) {
-        var writer = new SvgMarkupWriter(256);
-        writer.StartElement("line");
-        writer.Attribute("data-cfx-role", role);
-        writer
-            .Attribute("x1", x1)
-            .Attribute("y1", y1)
-            .Attribute("x2", x2)
-            .Attribute("y2", y2)
-            .Attribute("stroke", stroke)
-            .Attribute("stroke-width", strokeWidth);
-        if (opacity.HasValue) writer.Attribute("opacity", opacity.Value);
-        if (style != null && style.Dash > 0 && style.Gap > 0) writer.Attribute("stroke-dasharray", $"{F(style.Dash)} {F(style.Gap)}");
-        writer.EndEmptyElement().Line();
-        sb.Append(writer.Build());
-    }
+    private static void WriteHorizontalAxisLine(StringBuilder sb, string? role, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double? opacity = null, ChartGridLineStyle? style = null) =>
+        WriteSvgGuideLine(sb, role, x1, y1, x2, y2, stroke, strokeWidth, opacity, style);
 
     private static double HorizontalValueGridOpacity(ChartGridLineStyle style) => IsDefaultHorizontalGridStyle(style) ? ChartVisualPrimitives.HorizontalBarValueGridOpacity : style.VerticalOpacity;
 

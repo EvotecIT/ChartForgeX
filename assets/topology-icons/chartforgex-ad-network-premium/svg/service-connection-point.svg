@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" preserveAspectRatio="xMidYMid meet">
+<g>
+<defs>
+<linearGradient id="service-connection-point-plate" x1="12" y1="8" x2="84" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#CCFBF1"/><stop offset="0.58" stop-color="#0F766E" stop-opacity="0.72"/><stop offset="1" stop-color="#0F766E"/></linearGradient>
+<linearGradient id="service-connection-point-metal" x1="20" y1="14" x2="76" y2="82" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F8FAFC"/><stop offset="1" stop-color="#CBD5E1"/></linearGradient>
+<filter id="service-connection-point-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#0F172A" flood-opacity="0.24"/></filter>
+</defs>
+<rect x="8" y="8" width="80" height="80" rx="20" fill="url(#service-connection-point-plate)" stroke="#FFFFFF" stroke-width="2" opacity="0.98"/>
+<circle cx="72" cy="24" r="12" fill="#FFFFFF" opacity="0.20"/>
+<path d="M18 73 C34 63 57 63 78 74" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.28"/>
+<circle cx="48" cy="45" r="18" fill="#FFFFFF" filter="url(#service-connection-point-shadow)"/><circle cx="48" cy="45" r="7" fill="#0F766E"/><circle cx="25" cy="31" r="5" fill="#FFFFFF"/><circle cx="71" cy="31" r="5" fill="#FFFFFF"/><circle cx="25" cy="61" r="5" fill="#FFFFFF"/><circle cx="71" cy="61" r="5" fill="#FFFFFF"/><path d="M30 33 L42 40 M66 33 L54 40 M30 59 L42 50 M66 59 L54 50" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+<rect x="25" y="69" width="46" height="16" rx="8" fill="#0F172A" opacity="0.74"/>
+<text x="48" y="81" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF">SCP</text>
+</g>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" preserveAspectRatio="xMidYMid meet">
+<g>
+<defs>
+<linearGradient id="organizational-unit-plate" x1="12" y1="8" x2="84" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#E2E8F0"/><stop offset="0.58" stop-color="#64748B" stop-opacity="0.72"/><stop offset="1" stop-color="#64748B"/></linearGradient>
+<linearGradient id="organizational-unit-metal" x1="20" y1="14" x2="76" y2="82" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F8FAFC"/><stop offset="1" stop-color="#CBD5E1"/></linearGradient>
+<filter id="organizational-unit-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#0F172A" flood-opacity="0.24"/></filter>
+</defs>
+<rect x="8" y="8" width="80" height="80" rx="20" fill="url(#organizational-unit-plate)" stroke="#FFFFFF" stroke-width="2" opacity="0.98"/>
+<circle cx="72" cy="24" r="12" fill="#FFFFFF" opacity="0.20"/>
+<path d="M18 73 C34 63 57 63 78 74" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.28"/>
+<path d="M22 29 H42 L48 36 H74 V64 C74 68 71 70 67 70 H29 C25 70 22 68 22 64 Z" fill="#FFFFFF" filter="url(#organizational-unit-shadow)"/><path d="M28 43 H67 M28 52 H61" stroke="#64748B" stroke-width="4" stroke-linecap="round"/><circle cx="64" cy="58" r="8" fill="#64748B" opacity="0.28"/>
+<rect x="25" y="69" width="46" height="16" rx="8" fill="#0F172A" opacity="0.74"/>
+<text x="48" y="81" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF">OU</text>
+</g>
+</svg>

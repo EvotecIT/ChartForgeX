@@ -5,6 +5,7 @@ public static partial class GalleryWriter {
     private static void WriteQualityDashboard(string output, ComparisonAsset[] pairs, int matchingPairs, BaselineSummary baseline) {
         var healthySvgs = pairs.Count(pair => pair.SvgHealth.IsHealthy);
         var healthyPngs = pairs.Count(pair => pair.PngHealth.IsHealthy);
+        var healthyHtmls = pairs.Count(pair => pair.HtmlHealth.IsHealthy);
         var warningCount = pairs.Sum(pair => pair.Warnings.Length);
         var cleanPairs = pairs.Count(pair => pair.Warnings.Length == 0);
         var assigned = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -25,7 +26,7 @@ public static partial class GalleryWriter {
         sb.AppendLine("<body>");
         sb.AppendLine("<header>");
         sb.AppendLine("<h1>ChartForgeX Quality Dashboard</h1>");
-        sb.AppendLine("<p>Static artifact checks for generated SVG and dependency-free PNG outputs.</p>");
+        sb.AppendLine("<p>Static artifact checks for generated SVG, dependency-free PNG, and standalone HTML outputs.</p>");
         sb.AppendLine("<div class=\"nav\"><a href=\"" + IndexFileName + "\">All examples</a><a href=\"" + CatalogFileName + "\">Grouped catalog</a><a href=\"" + ComparisonFileName + "\">SVG/PNG comparison</a><a href=\"" + ComparisonManifestFileName + "\">Manifest JSON</a></div>");
         sb.AppendLine("</header>");
         sb.AppendLine("<main>");
@@ -35,6 +36,7 @@ public static partial class GalleryWriter {
         AppendMetric(sb, "Dimension matches", matchingPairs);
         AppendMetric(sb, "Healthy SVGs", healthySvgs);
         AppendMetric(sb, "Healthy PNGs", healthyPngs);
+        AppendMetric(sb, "Healthy HTMLs", healthyHtmls);
         AppendMetric(sb, "Warnings", warningCount);
         AppendMetric(sb, "Baseline passes", baseline.ChartMatches);
         AppendMetric(sb, "Baseline warnings", baseline.Warnings);

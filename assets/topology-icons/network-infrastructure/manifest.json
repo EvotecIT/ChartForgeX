@@ -1,0 +1,302 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "network-infrastructure",
+  "label": "Network Infrastructure Icons",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "network", "infrastructure", "switching", "routing", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Generic physical network infrastructure topology roles. This is not a vendor-branded pack.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-10",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "rack-switch",
+      "label": "Rack Switch",
+      "nodeKind": "Network",
+      "shape": "NetworkSwitch",
+      "symbol": "SW",
+      "color": "#2563EB",
+      "category": "Switching",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/rack-switch.svg",
+        "previewPath": "previews/rack-switch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "switch", "rack", "ethernet" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "core-switch",
+      "label": "Core Switch",
+      "nodeKind": "Network",
+      "shape": "NetworkSwitch",
+      "symbol": "CORE",
+      "color": "#7C3AED",
+      "category": "Switching",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/core-switch.svg",
+        "previewPath": "previews/core-switch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core", "switch", "datacenter" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "layer3-switch",
+      "label": "Layer 3 Switch",
+      "nodeKind": "Network",
+      "shape": "NetworkSwitch",
+      "symbol": "L3",
+      "color": "#0891B2",
+      "category": "Switching",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/layer3-switch.svg",
+        "previewPath": "previews/layer3-switch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "layer3", "switch", "routing" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "poe-switch",
+      "label": "PoE Switch",
+      "nodeKind": "Network",
+      "shape": "NetworkSwitch",
+      "symbol": "POE",
+      "color": "#D97706",
+      "category": "Switching",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/poe-switch.svg",
+        "previewPath": "previews/poe-switch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "poe", "switch", "power" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "edge-router",
+      "label": "Edge Router",
+      "nodeKind": "Gateway",
+      "shape": "Router",
+      "symbol": "EDGE",
+      "color": "#2563EB",
+      "category": "Routing",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/edge-router.svg",
+        "previewPath": "previews/edge-router.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "edge", "router", "wan" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "branch-router",
+      "label": "Branch Router",
+      "nodeKind": "Gateway",
+      "shape": "Router",
+      "symbol": "RTR",
+      "color": "#0F766E",
+      "category": "Routing",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/branch-router.svg",
+        "previewPath": "previews/branch-router.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "branch", "router", "office" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "wireless-access-point",
+      "label": "Wireless Access Point",
+      "nodeKind": "Network",
+      "shape": "Router",
+      "symbol": "AP",
+      "color": "#16A34A",
+      "category": "Wireless",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/wireless-access-point.svg",
+        "previewPath": "previews/wireless-access-point.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "wireless", "access-point", "wifi" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "mesh-access-point",
+      "label": "Mesh Access Point",
+      "nodeKind": "Network",
+      "shape": "Router",
+      "symbol": "MESH",
+      "color": "#7C3AED",
+      "category": "Wireless",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mesh-access-point.svg",
+        "previewPath": "previews/mesh-access-point.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "mesh", "access-point", "wifi" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "firewall-appliance",
+      "label": "Firewall Appliance",
+      "nodeKind": "Gateway",
+      "shape": "Firewall",
+      "symbol": "FW",
+      "color": "#DC2626",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/firewall-appliance.svg",
+        "previewPath": "previews/firewall-appliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "firewall", "appliance", "security" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "load-balancer-appliance",
+      "label": "Load Balancer Appliance",
+      "nodeKind": "Gateway",
+      "shape": "LoadBalancer",
+      "symbol": "LB",
+      "color": "#0891B2",
+      "category": "Application Delivery",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/load-balancer-appliance.svg",
+        "previewPath": "previews/load-balancer-appliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "load-balancer", "adc", "vip" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "vpn-gateway",
+      "label": "VPN Gateway",
+      "nodeKind": "Gateway",
+      "shape": "Router",
+      "symbol": "VPN",
+      "color": "#7C3AED",
+      "category": "Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/vpn-gateway.svg",
+        "previewPath": "previews/vpn-gateway.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "vpn", "gateway", "tunnel" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "patch-panel",
+      "label": "Patch Panel",
+      "nodeKind": "Network",
+      "shape": "Network",
+      "symbol": "PATCH",
+      "color": "#64748B",
+      "category": "Cabling",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/patch-panel.svg",
+        "previewPath": "previews/patch-panel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "patch-panel", "rack", "cabling" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "fiber-uplink",
+      "label": "Fiber Uplink",
+      "nodeKind": "Network",
+      "shape": "NetworkSegment",
+      "symbol": "FIB",
+      "color": "#F59E0B",
+      "category": "Cabling",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/fiber-uplink.svg",
+        "previewPath": "previews/fiber-uplink.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "fiber", "uplink", "sfp" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "sfp-transceiver",
+      "label": "SFP Transceiver",
+      "nodeKind": "Network",
+      "shape": "NetworkSegment",
+      "symbol": "SFP",
+      "color": "#D97706",
+      "category": "Cabling",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sfp-transceiver.svg",
+        "previewPath": "previews/sfp-transceiver.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "sfp", "transceiver", "fiber" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    }
+  ]
+}

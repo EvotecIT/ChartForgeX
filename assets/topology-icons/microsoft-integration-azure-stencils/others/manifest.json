@@ -1,0 +1,2209 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "microsoft-azure-stencils-others",
+  "label": "Microsoft Azure Stencils - Others",
+  "vendor": "Microsoft",
+  "packVersion": "d332d145",
+  "builtIn": false,
+  "tags": [ "svg", "imported", "stencil" ],
+  "metadata": {
+    "import.kind": "svg-folder",
+    "import.svg.files": "99",
+    "import.svg.imported": "95",
+    "import.svg.skipped": "4",
+    "source.folder": "Others",
+    "source.license": "MIT",
+    "source.licensePath": "LICENSE",
+    "source.licenseUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio/blob/master/LICENSE",
+    "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+    "source.url": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio"
+  },
+  "icons": [
+    {
+      "id": "building-5",
+      "label": "Building #5",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B#",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 27 105.457",
+        "svgPath": "svg/building-5.svg",
+        "previewPath": "previews/building-5.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "building", "others" ],
+      "metadata": {
+        "source.fileName": "Building-#5.svg",
+        "source.path": "SVG/Buildings/Building-#5.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 27 105.457"
+      }
+    },
+    {
+      "id": "buildings-5",
+      "label": "Buildings #5",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B#",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 135 89.4352",
+        "svgPath": "svg/buildings-5.svg",
+        "previewPath": "previews/buildings-5.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "others" ],
+      "metadata": {
+        "source.fileName": "Buildings-#5.svg",
+        "source.path": "SVG/Buildings/Buildings-#5.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 135 89.4352"
+      }
+    },
+    {
+      "id": "electricity-pole",
+      "label": "Electricity Pole",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "EP",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/electricity-pole.svg",
+        "previewPath": "previews/electricity-pole.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "electricity", "pole", "others" ],
+      "metadata": {
+        "source.fileName": "Electricity-Pole.svg",
+        "source.path": "SVG/Buildings/Electricity-Pole.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "factory-2",
+      "label": "Factory #2",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F#",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/factory-2.svg",
+        "previewPath": "previews/factory-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "factory", "others" ],
+      "metadata": {
+        "source.fileName": "Factory-#2.svg",
+        "source.path": "SVG/Buildings/Factory-#2.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "high-voltage-pole",
+      "label": "High Voltage Pole",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "HVP",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/high-voltage-pole.svg",
+        "previewPath": "previews/high-voltage-pole.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "high", "voltage", "pole", "others" ],
+      "metadata": {
+        "source.fileName": "High-Voltage-Pole.svg",
+        "source.path": "SVG/Buildings/High-Voltage-Pole.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "house",
+      "label": "House",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "H",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 62 62",
+        "svgPath": "svg/house.svg",
+        "previewPath": "previews/house.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "house", "others" ],
+      "metadata": {
+        "source.fileName": "House.svg",
+        "source.path": "SVG/Buildings/House.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 62 62"
+      }
+    },
+    {
+      "id": "oil-rig",
+      "label": "Oil Rig",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "OR",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/oil-rig.svg",
+        "previewPath": "previews/oil-rig.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "oil", "rig", "others" ],
+      "metadata": {
+        "source.fileName": "Oil-Rig.svg",
+        "source.path": "SVG/Buildings/Oil-Rig.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "wind-pole",
+      "label": "Wind Pole",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "WP",
+      "color": "#0078D4",
+      "category": "Others / Buildings",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/wind-pole.svg",
+        "previewPath": "previews/wind-pole.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "buildings", "wind", "pole", "others" ],
+      "metadata": {
+        "source.fileName": "Wind-Pole.svg",
+        "source.path": "SVG/Buildings/Wind-Pole.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "azure-boards",
+      "label": "Azure Boards",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AB",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 49 49",
+        "svgPath": "svg/azure-boards.svg",
+        "previewPath": "previews/azure-boards.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "azure", "boards", "others" ],
+      "metadata": {
+        "source.fileName": "Azure-Boards.svg",
+        "source.path": "SVG/Developer/Azure-Boards.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 49 49"
+      }
+    },
+    {
+      "id": "client-app",
+      "label": "Client App",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CA",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/client-app.svg",
+        "previewPath": "previews/client-app.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "client", "app", "others" ],
+      "metadata": {
+        "source.fileName": "Client-App.svg",
+        "source.path": "SVG/Developer/Client-App.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "cobol",
+      "label": "Cobol",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 107 16.88",
+        "svgPath": "svg/cobol.svg",
+        "previewPath": "previews/cobol.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "cobol", "others" ],
+      "metadata": {
+        "source.fileName": "Cobol.svg",
+        "source.path": "SVG/Developer/Cobol.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 107 16.88"
+      }
+    },
+    {
+      "id": "devops-add-packages",
+      "label": "Devops Add Packages",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DAP",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-add-packages.svg",
+        "previewPath": "previews/devops-add-packages.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "add", "packages", "others" ],
+      "metadata": {
+        "source.fileName": "devops-add-packages.svg",
+        "source.path": "SVG/Developer/devops-add-packages.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-advanced-workflows",
+      "label": "Devops Advanced Workflows",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DAW",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-advanced-workflows.svg",
+        "previewPath": "previews/devops-advanced-workflows.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "advanced", "workflows", "others" ],
+      "metadata": {
+        "source.fileName": "devops-advanced-workflows.svg",
+        "source.path": "SVG/Developer/devops-advanced-workflows.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-capture-data",
+      "label": "Devops Capture Data",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DCD",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-capture-data.svg",
+        "previewPath": "previews/devops-capture-data.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "capture", "data", "others" ],
+      "metadata": {
+        "source.fileName": "devops-capture-data.svg",
+        "source.path": "SVG/Developer/devops-capture-data.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-code-search",
+      "label": "Devops Code Search",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DCS",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-code-search.svg",
+        "previewPath": "previews/devops-code-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "code", "search", "others" ],
+      "metadata": {
+        "source.fileName": "devops-code-search.svg",
+        "source.path": "SVG/Developer/devops-code-search.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-connected",
+      "label": "Devops Connected",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DC",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-connected.svg",
+        "previewPath": "previews/devops-connected.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "connected", "others" ],
+      "metadata": {
+        "source.fileName": "devops-connected.svg",
+        "source.path": "SVG/Developer/devops-connected.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-containers-kubernetes",
+      "label": "Devops Containers Kubernetes",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DCK",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-containers-kubernetes.svg",
+        "previewPath": "previews/devops-containers-kubernetes.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "containers", "kubernetes", "others" ],
+      "metadata": {
+        "source.fileName": "devops-containers-kubernetes.svg",
+        "source.path": "SVG/Developer/devops-containers-kubernetes.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-deploy-cloud",
+      "label": "Devops Deploy Cloud",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DDC",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-deploy-cloud.svg",
+        "previewPath": "previews/devops-deploy-cloud.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "deploy", "cloud", "others" ],
+      "metadata": {
+        "source.fileName": "devops-deploy-cloud.svg",
+        "source.path": "SVG/Developer/devops-deploy-cloud.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-extensible",
+      "label": "Devops Extensible",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DE",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-extensible.svg",
+        "previewPath": "previews/devops-extensible.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "extensible", "others" ],
+      "metadata": {
+        "source.fileName": "devops-extensible.svg",
+        "source.path": "SVG/Developer/devops-extensible.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-git-client",
+      "label": "Devops Git Client",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DGC",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-git-client.svg",
+        "previewPath": "previews/devops-git-client.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "git", "client", "others" ],
+      "metadata": {
+        "source.fileName": "devops-git-client.svg",
+        "source.path": "SVG/Developer/devops-git-client.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-language-platform",
+      "label": "Devops Language Platform",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DLP",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-language-platform.svg",
+        "previewPath": "previews/devops-language-platform.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "language", "platform", "others" ],
+      "metadata": {
+        "source.fileName": "devops-language-platform.svg",
+        "source.path": "SVG/Developer/devops-language-platform.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-open-source",
+      "label": "Devops Open Source",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DOS",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-open-source.svg",
+        "previewPath": "previews/devops-open-source.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "open", "source", "others" ],
+      "metadata": {
+        "source.fileName": "devops-open-source.svg",
+        "source.path": "SVG/Developer/devops-open-source.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-package-types",
+      "label": "Devops Package Types",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DPT",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-package-types.svg",
+        "previewPath": "previews/devops-package-types.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "package", "types", "others" ],
+      "metadata": {
+        "source.fileName": "devops-package-types.svg",
+        "source.path": "SVG/Developer/devops-package-types.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-project-insights",
+      "label": "Devops Project Insights",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DPI",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-project-insights.svg",
+        "previewPath": "previews/devops-project-insights.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "project", "insights", "others" ],
+      "metadata": {
+        "source.fileName": "devops-project-insights.svg",
+        "source.path": "SVG/Developer/devops-project-insights.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-projects",
+      "label": "Devops Projects",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DP",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 40 40",
+        "svgPath": "svg/devops-projects.svg",
+        "previewPath": "previews/devops-projects.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "projects", "others" ],
+      "metadata": {
+        "source.fileName": "DevOps-Projects.svg",
+        "source.path": "SVG/Developer/DevOps-Projects.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 40 40"
+      }
+    },
+    {
+      "id": "devops-scrum",
+      "label": "Devops Scrum",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DS",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-scrum.svg",
+        "previewPath": "previews/devops-scrum.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "scrum", "others" ],
+      "metadata": {
+        "source.fileName": "devops-scrum.svg",
+        "source.path": "SVG/Developer/devops-scrum.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-share-code",
+      "label": "Devops Share Code",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DSC",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-share-code.svg",
+        "previewPath": "previews/devops-share-code.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "share", "code", "others" ],
+      "metadata": {
+        "source.fileName": "devops-share-code.svg",
+        "source.path": "SVG/Developer/devops-share-code.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-test",
+      "label": "Devops Test",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DT",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-test.svg",
+        "previewPath": "previews/devops-test.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "test", "others" ],
+      "metadata": {
+        "source.fileName": "devops-test.svg",
+        "source.path": "SVG/Developer/devops-test.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-traceability",
+      "label": "Devops Traceability",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DT",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-traceability.svg",
+        "previewPath": "previews/devops-traceability.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "traceability", "others" ],
+      "metadata": {
+        "source.fileName": "devops-traceability.svg",
+        "source.path": "SVG/Developer/devops-traceability.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devops-web-hooks",
+      "label": "Devops Web Hooks",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DWH",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 80 80",
+        "svgPath": "svg/devops-web-hooks.svg",
+        "previewPath": "previews/devops-web-hooks.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devops", "web", "hooks", "others" ],
+      "metadata": {
+        "source.fileName": "devops-web-hooks.svg",
+        "source.path": "SVG/Developer/devops-web-hooks.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 80 80"
+      }
+    },
+    {
+      "id": "devtest-labs",
+      "label": "Devtest Labs",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DL",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/devtest-labs.svg",
+        "previewPath": "previews/devtest-labs.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "devtest", "labs", "others" ],
+      "metadata": {
+        "source.fileName": "DevTest-Labs.svg",
+        "source.path": "SVG/Developer/DevTest-Labs.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "java",
+      "label": "Java",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "J",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/java.svg",
+        "previewPath": "previews/java.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "java", "others" ],
+      "metadata": {
+        "source.fileName": "Java.svg",
+        "source.path": "SVG/Developer/Java.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "js",
+      "label": "Js",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "J",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/js.svg",
+        "previewPath": "previews/js.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "js", "others" ],
+      "metadata": {
+        "source.fileName": "JS.svg",
+        "source.path": "SVG/Developer/JS.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "lab-services",
+      "label": "Lab Services",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LS",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/lab-services.svg",
+        "previewPath": "previews/lab-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "lab", "services", "others" ],
+      "metadata": {
+        "source.fileName": "Lab-Services.svg",
+        "source.path": "SVG/Developer/Lab-Services.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "performance-test",
+      "label": "Performance Test",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PT",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/performance-test.svg",
+        "previewPath": "previews/performance-test.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "performance", "test", "others" ],
+      "metadata": {
+        "source.fileName": "Performance-test.svg",
+        "source.path": "SVG/Developer/Performance-test.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "powershell",
+      "label": "Powershell",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/powershell.svg",
+        "previewPath": "previews/powershell.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "powershell", "others" ],
+      "metadata": {
+        "source.fileName": "PowerShell.svg",
+        "source.path": "SVG/Developer/PowerShell.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "python-tools",
+      "label": "Python Tools",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PT",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64 64",
+        "svgPath": "svg/python-tools.svg",
+        "previewPath": "previews/python-tools.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "python", "tools", "others" ],
+      "metadata": {
+        "source.fileName": "Python-Tools.svg",
+        "source.path": "SVG/Developer/Python-Tools.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64 64"
+      }
+    },
+    {
+      "id": "redeployment",
+      "label": "Redeployment",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/redeployment.svg",
+        "previewPath": "previews/redeployment.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "redeployment", "others" ],
+      "metadata": {
+        "source.fileName": "Redeployment.svg",
+        "source.path": "SVG/Developer/Redeployment.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "umbraco-web-app",
+      "label": "Umbraco Web App",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "UWA",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/umbraco-web-app.svg",
+        "previewPath": "previews/umbraco-web-app.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "umbraco", "web", "app", "others" ],
+      "metadata": {
+        "source.fileName": "Umbraco-Web-App.svg",
+        "source.path": "SVG/Developer/Umbraco-Web-App.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "vr",
+      "label": "Vr",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "V",
+      "color": "#0078D4",
+      "category": "Others / Developer",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 37.431 32.031",
+        "svgPath": "svg/vr.svg",
+        "previewPath": "previews/vr.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "developer", "vr", "others" ],
+      "metadata": {
+        "source.fileName": "VR.svg",
+        "source.path": "SVG/Developer/VR.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 37.431 32.031"
+      }
+    },
+    {
+      "id": "arduino-1",
+      "label": "Arduino #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A#",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 75.6099 55.0425",
+        "svgPath": "svg/arduino-1.svg",
+        "previewPath": "previews/arduino-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "arduino", "others" ],
+      "metadata": {
+        "source.fileName": "Arduino-#1.svg",
+        "source.path": "SVG/Devices/Arduino-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 75.6099 55.0425"
+      }
+    },
+    {
+      "id": "arduino",
+      "label": "Arduino",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/arduino.svg",
+        "previewPath": "previews/arduino.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "arduino", "others" ],
+      "metadata": {
+        "source.fileName": "Arduino.svg",
+        "source.path": "SVG/Devices/Arduino.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "floppy-disk",
+      "label": "Floppy Disk",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "FD",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 47 47",
+        "svgPath": "svg/floppy-disk.svg",
+        "previewPath": "previews/floppy-disk.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "floppy", "disk", "others" ],
+      "metadata": {
+        "source.fileName": "Floppy-Disk.svg",
+        "source.path": "SVG/Devices/Floppy-Disk.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 47 47"
+      }
+    },
+    {
+      "id": "keyboard",
+      "label": "Keyboard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "K",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/keyboard.svg",
+        "previewPath": "previews/keyboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "keyboard", "others" ],
+      "metadata": {
+        "source.fileName": "Keyboard.svg",
+        "source.path": "SVG/Devices/Keyboard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "laptop-red-1",
+      "label": "Laptop Red #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LR#",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 81.068 47.4567",
+        "svgPath": "svg/laptop-red-1.svg",
+        "previewPath": "previews/laptop-red-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "laptop", "red", "others" ],
+      "metadata": {
+        "source.fileName": "Laptop-Red-#1.svg",
+        "source.path": "SVG/Devices/Laptop-Red-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 81.068 47.4567"
+      }
+    },
+    {
+      "id": "mouse",
+      "label": "Mouse",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "M",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 27.4043 53.1837",
+        "svgPath": "svg/mouse.svg",
+        "previewPath": "previews/mouse.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "mouse", "others" ],
+      "metadata": {
+        "source.fileName": "Mouse.svg",
+        "source.path": "SVG/Devices/Mouse.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 27.4043 53.1837"
+      }
+    },
+    {
+      "id": "photographic-camera",
+      "label": "Photographic Camera",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PC",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/photographic-camera.svg",
+        "previewPath": "previews/photographic-camera.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "photographic", "camera", "others" ],
+      "metadata": {
+        "source.fileName": "Photographic-Camera.svg",
+        "source.path": "SVG/Devices/Photographic-Camera.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "prototyping-electronic-board",
+      "label": "Prototyping Electronic Board",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "PEB",
+      "color": "#0078D4",
+      "category": "Others / Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 82.0781 53.7592",
+        "svgPath": "svg/prototyping-electronic-board.svg",
+        "previewPath": "previews/prototyping-electronic-board.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "devices", "prototyping", "electronic", "board", "others" ],
+      "metadata": {
+        "source.fileName": "Prototyping-electronic-Board.svg",
+        "source.path": "SVG/Devices/Prototyping-electronic-Board.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 82.0781 53.7592"
+      }
+    },
+    {
+      "id": "hl7",
+      "label": "Hl7",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "H",
+      "color": "#0078D4",
+      "category": "Others / Files",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 127.5 159.4",
+        "svgPath": "svg/hl7.svg",
+        "previewPath": "previews/hl7.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "files", "hl7", "others" ],
+      "metadata": {
+        "source.fileName": "hl7.svg",
+        "source.path": "SVG/Files/hl7.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 127.5 159.4"
+      }
+    },
+    {
+      "id": "yaml-1",
+      "label": "Yaml 1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "Y1",
+      "color": "#0078D4",
+      "category": "Others / Files",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 37.9365 37.9365",
+        "svgPath": "svg/yaml-1.svg",
+        "previewPath": "previews/yaml-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "files", "yaml", "others" ],
+      "metadata": {
+        "source.fileName": "YAML-1.svg",
+        "source.path": "SVG/Files/YAML-1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 37.9365 37.9365"
+      }
+    },
+    {
+      "id": "yaml",
+      "label": "Yaml",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "Y",
+      "color": "#0078D4",
+      "category": "Others / Files",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 841.89 595.276",
+        "svgPath": "svg/yaml.svg",
+        "previewPath": "previews/yaml.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "files", "yaml", "others" ],
+      "metadata": {
+        "source.fileName": "YAML.svg",
+        "source.path": "SVG/Files/YAML.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 841.89 595.276"
+      }
+    },
+    {
+      "id": "add-filter",
+      "label": "Add Filter",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AF",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 17",
+        "svgPath": "svg/add-filter.svg",
+        "previewPath": "previews/add-filter.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "add", "filter", "others" ],
+      "metadata": {
+        "source.fileName": "Add-Filter.svg",
+        "source.path": "SVG/Generic/Add-Filter.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 17"
+      }
+    },
+    {
+      "id": "add",
+      "label": "Add",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "A",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/add.svg",
+        "previewPath": "previews/add.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "add", "others" ],
+      "metadata": {
+        "source.fileName": "Add.svg",
+        "source.path": "SVG/Generic/Add.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "arrow-right",
+      "label": "Arrow Right",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "AR",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/arrow-right.svg",
+        "previewPath": "previews/arrow-right.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "arrow", "right", "others" ],
+      "metadata": {
+        "source.fileName": "Arrow-Right.svg",
+        "source.path": "SVG/Generic/Arrow-Right.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "bag-1",
+      "label": "Bag #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B#",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 56.4904 49.4546",
+        "svgPath": "svg/bag-1.svg",
+        "previewPath": "previews/bag-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "bag", "others" ],
+      "metadata": {
+        "source.fileName": "Bag-#1.svg",
+        "source.path": "SVG/Generic/Bag-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 56.4904 49.4546"
+      }
+    },
+    {
+      "id": "bag-2",
+      "label": "Bag #2",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "B#",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 64.056 50.3115",
+        "svgPath": "svg/bag-2.svg",
+        "previewPath": "previews/bag-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "bag", "others" ],
+      "metadata": {
+        "source.fileName": "Bag-#2.svg",
+        "source.path": "SVG/Generic/Bag-#2.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 64.056 50.3115"
+      }
+    },
+    {
+      "id": "chat",
+      "label": "Chat",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/chat.svg",
+        "previewPath": "previews/chat.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "chat", "others" ],
+      "metadata": {
+        "source.fileName": "Chat.svg",
+        "source.path": "SVG/Generic/Chat.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "chevron-down",
+      "label": "Chevron Down",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CD",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 12 12",
+        "svgPath": "svg/chevron-down.svg",
+        "previewPath": "previews/chevron-down.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "chevron", "down", "others" ],
+      "metadata": {
+        "source.fileName": "Chevron-Down.svg",
+        "source.path": "SVG/Generic/Chevron-Down.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 12 12"
+      }
+    },
+    {
+      "id": "chevron-up",
+      "label": "Chevron Up",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CU",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 12 12",
+        "svgPath": "svg/chevron-up.svg",
+        "previewPath": "previews/chevron-up.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "chevron", "up", "others" ],
+      "metadata": {
+        "source.fileName": "Chevron-Up.svg",
+        "source.path": "SVG/Generic/Chevron-Up.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 12 12"
+      }
+    },
+    {
+      "id": "chevron",
+      "label": "Chevron",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "C",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 12 12",
+        "svgPath": "svg/chevron.svg",
+        "previewPath": "previews/chevron.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "chevron", "others" ],
+      "metadata": {
+        "source.fileName": "Chevron.svg",
+        "source.path": "SVG/Generic/Chevron.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 12 12"
+      }
+    },
+    {
+      "id": "delete-close",
+      "label": "Delete   Close",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DC",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 11 11",
+        "svgPath": "svg/delete-close.svg",
+        "previewPath": "previews/delete-close.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "delete", "close", "others" ],
+      "metadata": {
+        "source.fileName": "Delete---Close.svg",
+        "source.path": "SVG/Generic/Delete---Close.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 11 11"
+      }
+    },
+    {
+      "id": "delete",
+      "label": "Delete",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0.5 0.5 24 24",
+        "svgPath": "svg/delete.svg",
+        "previewPath": "previews/delete.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "delete", "others" ],
+      "metadata": {
+        "source.fileName": "Delete.svg",
+        "source.path": "SVG/Generic/Delete.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0.5 0.5 24 24"
+      }
+    },
+    {
+      "id": "dots",
+      "label": "Dots",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/dots.svg",
+        "previewPath": "previews/dots.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "dots", "others" ],
+      "metadata": {
+        "source.fileName": "Dots.svg",
+        "source.path": "SVG/Generic/Dots.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "download",
+      "label": "Download",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "D",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/download.svg",
+        "previewPath": "previews/download.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "download", "others" ],
+      "metadata": {
+        "source.fileName": "Download.svg",
+        "source.path": "SVG/Generic/Download.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "ebooks",
+      "label": "Ebooks",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "E",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/ebooks.svg",
+        "previewPath": "previews/ebooks.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "ebooks", "others" ],
+      "metadata": {
+        "source.fileName": "eBooks.svg",
+        "source.path": "SVG/Generic/eBooks.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "edit",
+      "label": "Edit",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "E",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/edit.svg",
+        "previewPath": "previews/edit.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "edit", "others" ],
+      "metadata": {
+        "source.fileName": "Edit.svg",
+        "source.path": "SVG/Generic/Edit.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "education",
+      "label": "Education",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "E",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/education.svg",
+        "previewPath": "previews/education.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "education", "others" ],
+      "metadata": {
+        "source.fileName": "Education.svg",
+        "source.path": "SVG/Generic/Education.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "favorite",
+      "label": "Favorite",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 12 12",
+        "svgPath": "svg/favorite.svg",
+        "previewPath": "previews/favorite.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "favorite", "others" ],
+      "metadata": {
+        "source.fileName": "Favorite.svg",
+        "source.path": "SVG/Generic/Favorite.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 12 12"
+      }
+    },
+    {
+      "id": "feedback",
+      "label": "Feedback",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "F",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 15 15",
+        "svgPath": "svg/feedback.svg",
+        "previewPath": "previews/feedback.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "feedback", "others" ],
+      "metadata": {
+        "source.fileName": "Feedback.svg",
+        "source.path": "SVG/Generic/Feedback.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 15 15"
+      }
+    },
+    {
+      "id": "information-1",
+      "label": "Information #1",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "I#",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/information-1.svg",
+        "previewPath": "previews/information-1.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "information", "others" ],
+      "metadata": {
+        "source.fileName": "Information-#1.svg",
+        "source.path": "SVG/Generic/Information-#1.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "information",
+      "label": "Information",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "I",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/information.svg",
+        "previewPath": "previews/information.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "information", "others" ],
+      "metadata": {
+        "source.fileName": "Information.svg",
+        "source.path": "SVG/Generic/Information.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "issues",
+      "label": "Issues",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "I",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 9 9",
+        "svgPath": "svg/issues.svg",
+        "previewPath": "previews/issues.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "issues", "others" ],
+      "metadata": {
+        "source.fileName": "Issues.svg",
+        "source.path": "SVG/Generic/Issues.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 9 9"
+      }
+    },
+    {
+      "id": "link",
+      "label": "Link",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "L",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/link.svg",
+        "previewPath": "previews/link.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "link", "others" ],
+      "metadata": {
+        "source.fileName": "Link.svg",
+        "source.path": "SVG/Generic/Link.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "message-data-share-invitations",
+      "label": "Message   Data Share Invitations",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "MDSI",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 32 32",
+        "svgPath": "svg/message-data-share-invitations.svg",
+        "previewPath": "previews/message-data-share-invitations.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "message", "data", "share", "invitations", "others" ],
+      "metadata": {
+        "source.fileName": "Message---Data-Share-Invitations.svg",
+        "source.path": "SVG/Generic/Message---Data-Share-Invitations.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 32 32"
+      }
+    },
+    {
+      "id": "new-dashboard",
+      "label": "New Dashboard",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "ND",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/new-dashboard.svg",
+        "previewPath": "previews/new-dashboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "new", "dashboard", "others" ],
+      "metadata": {
+        "source.fileName": "New-Dashboard.svg",
+        "source.path": "SVG/Generic/New-Dashboard.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "notifications",
+      "label": "Notifications",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "N",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/notifications.svg",
+        "previewPath": "previews/notifications.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "notifications", "others" ],
+      "metadata": {
+        "source.fileName": "Notifications.svg",
+        "source.path": "SVG/Generic/Notifications.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "pin",
+      "label": "Pin",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "P",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 15.5 15.5",
+        "svgPath": "svg/pin.svg",
+        "previewPath": "previews/pin.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "pin", "others" ],
+      "metadata": {
+        "source.fileName": "Pin.svg",
+        "source.path": "SVG/Generic/Pin.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 15.5 15.5"
+      }
+    },
+    {
+      "id": "release-notes",
+      "label": "Release Notes",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "RN",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/release-notes.svg",
+        "previewPath": "previews/release-notes.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "release", "notes", "others" ],
+      "metadata": {
+        "source.fileName": "Release-Notes.svg",
+        "source.path": "SVG/Generic/Release-Notes.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "resize",
+      "label": "Resize",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 14 14",
+        "svgPath": "svg/resize.svg",
+        "previewPath": "previews/resize.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "resize", "others" ],
+      "metadata": {
+        "source.fileName": "Resize.svg",
+        "source.path": "SVG/Generic/Resize.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 14 14"
+      }
+    },
+    {
+      "id": "restart",
+      "label": "Restart",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "R",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/restart.svg",
+        "previewPath": "previews/restart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "restart", "others" ],
+      "metadata": {
+        "source.fileName": "Restart.svg",
+        "source.path": "SVG/Generic/Restart.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "shopping-bag",
+      "label": "Shopping Bag",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SB",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/shopping-bag.svg",
+        "previewPath": "previews/shopping-bag.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "shopping", "bag", "others" ],
+      "metadata": {
+        "source.fileName": "Shopping-Bag.svg",
+        "source.path": "SVG/Generic/Shopping-Bag.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "stop",
+      "label": "Stop",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "S",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/stop.svg",
+        "previewPath": "previews/stop.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "stop", "others" ],
+      "metadata": {
+        "source.fileName": "Stop.svg",
+        "source.path": "SVG/Generic/Stop.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "troubleshoot",
+      "label": "Troubleshoot",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "T",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 50 50",
+        "svgPath": "svg/troubleshoot.svg",
+        "previewPath": "previews/troubleshoot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "troubleshoot", "others" ],
+      "metadata": {
+        "source.fileName": "Troubleshoot.svg",
+        "source.path": "SVG/Generic/Troubleshoot.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 50 50"
+      }
+    },
+    {
+      "id": "upload",
+      "label": "Upload",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "U",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 16 16",
+        "svgPath": "svg/upload.svg",
+        "previewPath": "previews/upload.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "upload", "others" ],
+      "metadata": {
+        "source.fileName": "Upload.svg",
+        "source.path": "SVG/Generic/Upload.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 16 16"
+      }
+    },
+    {
+      "id": "warning",
+      "label": "Warning",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 9 9",
+        "svgPath": "svg/warning.svg",
+        "previewPath": "previews/warning.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "warning", "others" ],
+      "metadata": {
+        "source.fileName": "Warning.svg",
+        "source.path": "SVG/Generic/Warning.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 9 9"
+      }
+    },
+    {
+      "id": "world",
+      "label": "World",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "W",
+      "color": "#0078D4",
+      "category": "Others / Generic",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/world.svg",
+        "previewPath": "previews/world.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "generic", "world", "others" ],
+      "metadata": {
+        "source.fileName": "World.svg",
+        "source.path": "SVG/Generic/World.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "dns-vm",
+      "label": "Dns Vm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DV",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/dns-vm.svg",
+        "previewPath": "previews/dns-vm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "dns", "vm", "others" ],
+      "metadata": {
+        "source.fileName": "DNS-VM.svg",
+        "source.path": "SVG/Infrastructure/DNS-VM.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "dynamics-crm-vm",
+      "label": "Dynamics Crm Vm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "DCV",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 37.3545 32.6377",
+        "svgPath": "svg/dynamics-crm-vm.svg",
+        "previewPath": "previews/dynamics-crm-vm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "dynamics", "crm", "vm", "others" ],
+      "metadata": {
+        "source.fileName": "Dynamics-CRM-VM.svg",
+        "source.path": "SVG/Infrastructure/Dynamics-CRM-VM.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 37.3545 32.6377"
+      }
+    },
+    {
+      "id": "linux-vm",
+      "label": "Linux Vm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LV",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 40.1543 31.4713",
+        "svgPath": "svg/linux-vm.svg",
+        "previewPath": "previews/linux-vm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "linux", "vm", "others" ],
+      "metadata": {
+        "source.fileName": "Linux-VM.svg",
+        "source.path": "SVG/Infrastructure/Linux-VM.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 40.1543 31.4713"
+      }
+    },
+    {
+      "id": "sharepoint-vm",
+      "label": "Sharepoint Vm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SV",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 45.0889 33.2813",
+        "svgPath": "svg/sharepoint-vm.svg",
+        "previewPath": "previews/sharepoint-vm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "sharepoint", "vm", "others" ],
+      "metadata": {
+        "source.fileName": "SharePoint-VM.svg",
+        "source.path": "SVG/Infrastructure/SharePoint-VM.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 45.0889 33.2813"
+      }
+    },
+    {
+      "id": "sql-server-vm",
+      "label": "Sql Server Vm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "SSV",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 36.6023 31.6342",
+        "svgPath": "svg/sql-server-vm.svg",
+        "previewPath": "previews/sql-server-vm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "sql", "server", "vm", "others" ],
+      "metadata": {
+        "source.fileName": "SQL-Server-VM.svg",
+        "source.path": "SVG/Infrastructure/SQL-Server-VM.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 36.6023 31.6342"
+      }
+    },
+    {
+      "id": "virtual-clusters",
+      "label": "Virtual Clusters",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VC",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/virtual-clusters.svg",
+        "previewPath": "previews/virtual-clusters.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "virtual", "clusters", "others" ],
+      "metadata": {
+        "source.fileName": "Virtual-Clusters.svg",
+        "source.path": "SVG/Infrastructure/Virtual-Clusters.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    },
+    {
+      "id": "vpn-tunnel",
+      "label": "Vpn Tunnel",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "VT",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/vpn-tunnel.svg",
+        "previewPath": "previews/vpn-tunnel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "vpn", "tunnel", "others" ],
+      "metadata": {
+        "source.fileName": "VPN-Tunnel.svg",
+        "source.path": "SVG/Infrastructure/VPN-Tunnel.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "windows-vm",
+      "label": "Windows Vm",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "WV",
+      "color": "#0078D4",
+      "category": "Others / Infrastructure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 792 612",
+        "svgPath": "svg/windows-vm.svg",
+        "previewPath": "previews/windows-vm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "infrastructure", "windows", "vm", "others" ],
+      "metadata": {
+        "source.fileName": "Windows-VM.svg",
+        "source.path": "SVG/Infrastructure/Windows-VM.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 792 612"
+      }
+    },
+    {
+      "id": "users",
+      "label": "Users",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "U",
+      "color": "#0078D4",
+      "category": "Others / Users",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 18 18",
+        "svgPath": "svg/users.svg",
+        "previewPath": "previews/users.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "svg", "users", "others" ],
+      "metadata": {
+        "source.fileName": "Users.svg",
+        "source.path": "SVG/Users/Users.svg",
+        "source.revision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+        "source.viewBox": "0 0 18 18"
+      }
+    }
+  ]
+}

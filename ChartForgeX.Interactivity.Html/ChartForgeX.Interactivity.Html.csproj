@@ -15,6 +15,7 @@
     <Version>0.1.0</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML and SVG interaction adapter for ChartForgeX charts.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;interactive;html;svg;reports;dashboard;zero-dependency</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>

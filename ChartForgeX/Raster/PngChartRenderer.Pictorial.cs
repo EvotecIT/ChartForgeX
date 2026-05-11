@@ -30,7 +30,7 @@ public sealed partial class PngChartRenderer {
         var symbolArea = Math.Max(1, plot.Width - labelWidth - valueWidth - (showValues ? 22 : 10));
         var gap = Math.Max(1.2, Math.Min(7, symbolArea / columns * 0.16));
         var maxSymbolSize = Math.Max(1, (symbolArea - gap * (columns - 1)) / columns);
-        var baseSymbolSize = Math.Min(rowHeight * 0.72, maxSymbolSize);
+        var baseSymbolSize = Math.Min(rowHeight * 0.82, maxSymbolSize);
         var symbolSize = Math.Max(3, Math.Min(maxSymbolSize, baseSymbolSize * chart.Options.PictorialSymbolScale));
         var startX = plot.Left + labelWidth + 10;
         var totalHeight = rowHeight * totalSymbolRows + itemGap * (series.Points.Count - 1);
@@ -98,7 +98,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawPngPictorialSymbol(RgbaCanvas c, ChartPictorialShape shape, double cx, double cy, double radius, ChartColor color) {
         if (shape == ChartPictorialShape.Square) {
-            c.FillRoundedRect(cx - radius, cy - radius, radius * 2, radius * 2, radius * 0.26, color);
+            c.FillRoundedRect(cx - radius, cy - radius, radius * 2, radius * 2, radius * 0.14, color);
         } else if (shape == ChartPictorialShape.Diamond) {
             c.FillPolygon(new[] { new ChartPoint(cx, cy - radius), new ChartPoint(cx + radius, cy), new ChartPoint(cx, cy + radius), new ChartPoint(cx - radius, cy) }, color);
         } else if (shape == ChartPictorialShape.Triangle) {

@@ -34,6 +34,10 @@ public static partial class GalleryWriter {
     }
 
     private static int DominantPngVisibleColor(int[] pixels, int fallback) {
+        return DominantPngVisibleColor((IEnumerable<int>)pixels, fallback);
+    }
+
+    private static int DominantPngVisibleColor(IEnumerable<int> pixels, int fallback) {
         var colors = new Dictionary<int, int>();
         foreach (var color in pixels) {
             if ((color & 0xff) == 0) continue;
@@ -47,8 +51,11 @@ public static partial class GalleryWriter {
 
     private static long CountPngEdgeInk(List<int> edgeColors, int background) {
         var count = 0L;
+        var transparentCorner = (background & 0xff) == 0;
+        if (transparentCorner) background = DominantPngVisibleColor(edgeColors, background);
         foreach (var color in edgeColors) {
             if ((color & 0xff) == 0) continue;
+            if (transparentCorner && (color & 0xff) < 255) continue;
             if (PngColorDistance(color, background) > PngEdgeInkTolerance) count++;
         }
 

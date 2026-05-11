@@ -17,6 +17,8 @@ dotnet run --project ChartForgeX.Benchmarks -c Release -- 500
 
 - Add denser replication and site-link fixtures that prove routes do not cross node cards in common screenshot-like layouts.
 - Tune label-clearance and route-overlap weights with real dense examples.
+- Turn the stencil browser into a small builder demo only if the reusable contract is a `TopologyChart` export, not host UI state.
+- Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
 - Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
 - Promote topology artifacts into `visual-baseline.json` only after dense routing and geographic layout polish are stable enough for numeric baselines.
 - Keep dashboard shells outside ChartForgeX; host projects such as HtmlForgeX and TestimoX should own sidebars, filters, inspectors, cards, and collected product data.
@@ -37,7 +39,9 @@ dotnet run --project ChartForgeX.Benchmarks -c Release -- 500
 
 ## Release Readiness
 
-- Choose and add package license metadata before a public NuGet release.
+- Keep the first-release public surface stable where it represents real charting concepts; make pre-release breaking changes only for clearer naming, stronger typing, dependency boundaries, or product-neutral API design.
+- Keep `CHANGELOG.md` as the release ledger and keep package release notes short enough for NuGet.
+- Keep package license metadata aligned across `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html`.
 - Update package versions and release metadata in all package projects when preparing a release.
 - Run the full quality loop and inspect generated examples before publishing packages.
 - Publish `.nupkg` and `.snupkg` files from `artifacts/packages/Release`.

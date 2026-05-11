@@ -15,6 +15,7 @@
     <Version>0.1.0</Version>
     <Authors>Evotec</Authors>
     <Description>Host-neutral interaction contracts for ChartForgeX chart renderers and adapters.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;interactivity;svg;html;reports;dashboard;zero-dependency</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>

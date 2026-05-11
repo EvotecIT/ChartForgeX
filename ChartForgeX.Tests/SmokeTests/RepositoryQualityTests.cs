@@ -161,7 +161,7 @@ internal static partial class SmokeTests {
         Assert(svgFunnel.Contains("ChartColorMath.TextOnBackground(color, 0.58)", StringComparison.Ordinal) && pngFunnel.Contains("ChartColorMath.TextOnBackground(color, 0.58)", StringComparison.Ordinal), "SVG and PNG funnel labels should share foreground contrast thresholds.");
         Assert(svgTree.Contains("ChartColorMath.TextOnBackground(labelColor, 0.70)", StringComparison.Ordinal) && pngTree.Contains("ChartColorMath.TextOnBackground(labelColor, 0.70)", StringComparison.Ordinal), "SVG and PNG tree label halos should share luminance thresholds.");
         Assert(svgCalendar.Contains("ChartHeatmapSurface.CalendarColor", StringComparison.Ordinal) && pngCalendar.Contains("ChartHeatmapSurface.CalendarColor", StringComparison.Ordinal), "SVG and PNG calendar heatmaps should share color and empty-cell math.");
-        Assert(svgRegionMap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal) && pngRegionMap.Contains("ChartHeatmapSurface.Color", StringComparison.Ordinal), "SVG and PNG region maps should share heatmap surface color decisions.");
+        Assert(svgRegionMap.Contains("ChartHeatmapSurface.MapColor", StringComparison.Ordinal) && pngRegionMap.Contains("ChartHeatmapSurface.MapColor", StringComparison.Ordinal), "SVG and PNG region maps should share heatmap surface color decisions.");
         Assert(svgTileMap.Contains("ChartHeatmapSurface.MapNoDataColor", StringComparison.Ordinal) && pngTileMap.Contains("ChartHeatmapSurface.MapNoDataColor", StringComparison.Ordinal), "SVG and PNG tile maps should share no-data color decisions.");
         Assert(svgDottedMap.Contains("ChartDottedMapSurface.LandDotColor", StringComparison.Ordinal) && pngDottedMap.Contains("ChartDottedMapSurface.LandDotColor", StringComparison.Ordinal), "SVG and PNG dotted maps should use shared land-dot surface color decisions.");
         Assert(svgDottedMap.Contains("ChartDottedMapSurface.BoundaryColor", StringComparison.Ordinal) && pngDottedMap.Contains("ChartDottedMapSurface.BoundaryColor", StringComparison.Ordinal), "SVG and PNG dotted maps should use shared boundary surface color decisions.");
@@ -192,6 +192,7 @@ internal static partial class SmokeTests {
         var libraryProject = Path.Combine(FindRepositoryRoot(), "ChartForgeX", "ChartForgeX.csproj");
         Assert(HasXmlProperty(libraryProject, "PackageId", "ChartForgeX"), "PackageId should remain stable.");
         Assert(HasXmlProperty(libraryProject, "PackageReadmeFile", "README.md"), "Package should include the README.");
+        Assert(HasXmlProperty(libraryProject, "PackageLicenseExpression", "MIT"), "Core package should declare the repository license.");
         Assert(HasXmlProperty(libraryProject, "PackageProjectUrl", "https://github.com/EvotecIT/ChartForgeX"), "Package should expose the project URL.");
         Assert(HasXmlProperty(libraryProject, "RepositoryUrl", "https://github.com/EvotecIT/ChartForgeX"), "Package should expose the repository URL.");
         Assert(HasXmlProperty(libraryProject, "RepositoryType", "git"), "Package repository type should be git.");
@@ -205,6 +206,14 @@ internal static partial class SmokeTests {
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "AGENTS.md")), "Repository should include agent guidance.");
+        Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "LICENSE")), "Repository should include a root license file.");
+        foreach (var packageProject in new[] {
+            libraryProject,
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.csproj"),
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj")
+        }) {
+            Assert(HasXmlProperty(packageProject, "PackageLicenseExpression", "MIT"), "Package should declare the MIT license: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));
+        }
         var tags = GetXmlValue(libraryProject, "PackageTags");
         foreach (var tag in new[] { "charts", "svg", "reports", "zero-dependency" }) {
             Assert(tags.Contains(tag, StringComparison.OrdinalIgnoreCase), "Package tags should include " + tag + ".");
@@ -296,6 +305,9 @@ internal static partial class SmokeTests {
             "AddRegionMap",
             "AddTileMap",
             "ChartMapCatalog",
+            "ChartMapCatalogEntry",
+            "Load",
+            "FromAssetDirectory",
             "ChartMapDefinition",
             "ChartMapRegion",
             "ChartTileMapCatalog",
@@ -304,6 +316,13 @@ internal static partial class SmokeTests {
             "ChartRegionMapItem",
             "WithMapLabels",
             "WithMapScaleLegend",
+            "WithMapScaleLegendPosition",
+            "WithMapSurface",
+            "WithMapRegionStroke",
+            "WithRegionMapBounds",
+            "WithRegionMapCoordinateBounds",
+            "AddMapBaseLayer",
+            "AddMapBoundaryLayer",
             "AddGauge",
             "AddCircle",
             "AddRadialBar",

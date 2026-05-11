@@ -1,0 +1,44 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "veeam",
+  "label": "Veeam",
+  "vendor": "Veeam",
+  "packVersion": "13",
+  "builtIn": false,
+  "tags": [ "backup", "vendor", "repository" ],
+  "metadata": {
+    "website": "https://www.veeam.com",
+    "source": "sample-manifest"
+  },
+  "icons": [
+    {
+      "id": "backup-server",
+      "label": "Backup Server",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "VBR",
+      "color": "#00B336",
+      "category": "Backup",
+      "displayMode": "Tile",
+      "tags": [ "vbr", "backup-server" ],
+      "metadata": {
+        "product": "Backup and Replication"
+      }
+    },
+    {
+      "id": "repository",
+      "label": "Backup Repository",
+      "nodeKind": "Storage",
+      "shape": "Storage",
+      "symbol": "REPO",
+      "color": "#007A5A",
+      "category": "Storage",
+      "displayMode": "Tile",
+      "tags": [ "repo", "repository", "object-storage" ],
+      "metadata": {
+        "product": "Backup and Replication"
+      }
+    }
+  ]
+}

@@ -7,19 +7,21 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public enum TopologyLayoutMode {
     /// <summary>Use coordinates supplied on groups and nodes.</summary>
-    Manual,
+    Manual = 0,
     /// <summary>Place groups in a deterministic grid and place unpositioned nodes inside their groups.</summary>
-    GroupGrid,
+    GroupGrid = 1,
     /// <summary>Place a hub near the center and branch nodes around it.</summary>
-    HubAndSpoke,
+    HubAndSpoke = 2,
     /// <summary>Place nodes by metadata layer in a deterministic layered flow.</summary>
-    Layered,
+    Layered = 3,
     /// <summary>Place nodes in a deterministic matrix.</summary>
-    Matrix,
+    Matrix = 4,
     /// <summary>Place groups in dense deterministic panels and pack each group's hub/branch nodes inside the panel.</summary>
-    DenseGrouped,
+    DenseGrouped = 5,
     /// <summary>Project nodes and groups from longitude/latitude coordinates into the topology viewport.</summary>
-    Geographic
+    Geographic = 6,
+    /// <summary>Place connected nodes with a deterministic force-directed simulation using repulsion, link attraction, and group gravity.</summary>
+    ForceDirected = 7
 }
 
 /// <summary>
@@ -29,7 +31,11 @@ public enum TopologyLayoutDirection {
     /// <summary>Place layers from top to bottom.</summary>
     TopToBottom,
     /// <summary>Place layers from left to right.</summary>
-    LeftToRight
+    LeftToRight,
+    /// <summary>Place layers from bottom to top.</summary>
+    BottomToTop,
+    /// <summary>Place layers from right to left.</summary>
+    RightToLeft
 }
 
 /// <summary>
@@ -139,6 +145,60 @@ public enum TopologyNodeDisplayMode {
     Dot,
     /// <summary>Do not render the node; keep it available as an edge anchor or route point.</summary>
     Hidden
+}
+
+/// <summary>
+/// Defines renderer-owned topology icon shape hints.
+/// </summary>
+public enum TopologyIconShape {
+    /// <summary>Choose a shape from the icon or node kind.</summary>
+    Auto,
+    /// <summary>Render a generic labeled badge.</summary>
+    Badge,
+    /// <summary>Render a server or compute stack.</summary>
+    Server,
+    /// <summary>Render a database cylinder.</summary>
+    Database,
+    /// <summary>Render storage media.</summary>
+    Storage,
+    /// <summary>Render a cloud mark.</summary>
+    Cloud,
+    /// <summary>Render a network fabric mark.</summary>
+    Network,
+    /// <summary>Render a network segment mark.</summary>
+    NetworkSegment,
+    /// <summary>Render a switch mark.</summary>
+    NetworkSwitch,
+    /// <summary>Render a router mark.</summary>
+    Router,
+    /// <summary>Render a firewall mark.</summary>
+    Firewall,
+    /// <summary>Render a load balancer mark.</summary>
+    LoadBalancer,
+    /// <summary>Render an Active Directory forest mark.</summary>
+    Forest,
+    /// <summary>Render a domain or tenant boundary mark.</summary>
+    Domain,
+    /// <summary>Render a domain controller mark.</summary>
+    DomainController,
+    /// <summary>Render a read-only domain controller mark.</summary>
+    ReadOnlyDomainController,
+    /// <summary>Render a site or location mark.</summary>
+    Site,
+    /// <summary>Render an application mark.</summary>
+    Application,
+    /// <summary>Render a service mark.</summary>
+    Service,
+    /// <summary>Render a certificate mark.</summary>
+    Certificate,
+    /// <summary>Render a desktop endpoint mark.</summary>
+    Desktop,
+    /// <summary>Render a laptop endpoint mark.</summary>
+    Laptop,
+    /// <summary>Render a person mark.</summary>
+    Person,
+    /// <summary>Render a team mark.</summary>
+    Team
 }
 
 /// <summary>

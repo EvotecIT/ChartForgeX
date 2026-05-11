@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.1146 51.82" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#59b4d9;stroke:none;stroke-width:0.75}
+		.st2 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+
+
+		<g id="cfxi-microsoft-azure-stencils-security-and-governance-role-based-access-control-group5-1" transform="translate(0.75,-0.75)" v:mID="5" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-role-based-access-control-shape6-2" v:mID="6" v:groupContext="shape" transform="translate(24.8599,-29.651)">
+
+				<path d="M20.67 41.49 C20.67 47.19 16.04 51.82 10.33 51.82 C4.63 51.82 0 47.19 0 41.49 C0 35.78 4.63 31.15 10.33         31.15 C16.04 31.15 20.67 35.78 20.67 41.49 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-role-based-access-control-shape7-4" v:mID="7" v:groupContext="shape" transform="translate(19.7741,-2.41585E-13)">
+
+				<path d="M22.98 25.71 L15.42 36.3 L7.86 25.71 L0 25.71 L0 51.82 L30.84 51.82 L30.84 25.71 L22.98 25.71 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-role-based-access-control-shape8-6" v:mID="8" v:groupContext="shape" transform="translate(2.85669,-16.8344)">
+
+				<path d="M11.61 46.02 C11.61 49.22 9.01 51.82 5.81 51.82 C2.6 51.82 0 49.22 0 46.02 C0 42.81 2.6 40.21 5.81 40.21         C9.01 40.21 11.61 42.81 11.61 46.02 Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-role-based-access-control-shape9-8" v:mID="9" v:groupContext="shape">
+
+				<path d="M12.91 37.15 L8.66 43.1 L4.42 37.15 L0 37.15 L0 51.82 L17.33 51.82 L17.33 37.15 L12.91 37.15 Z" class="st1" />
+			</g>
+		</g>
+	</g>
+</svg>

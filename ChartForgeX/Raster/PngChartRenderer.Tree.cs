@@ -102,7 +102,9 @@ public sealed partial class PngChartRenderer {
         var nextLeaf = 0;
         AssignY(root);
         foreach (var node in nodes) {
-            node.X = maxDepth == 0 ? plot.Left + plot.Width / 2 - nodeWidth / 2 : plot.Left + node.Depth / (double)maxDepth * (plot.Width - nodeWidth);
+            var horizontalPadding = Math.Min(ChartVisualPrimitives.TreeLayoutHorizontalPadding, Math.Max(0, (plot.Width - nodeWidth) / 2));
+            var availableWidth = Math.Max(1, plot.Width - nodeWidth - horizontalPadding * 2);
+            node.X = maxDepth == 0 ? plot.Left + plot.Width / 2 - nodeWidth / 2 : plot.Left + horizontalPadding + node.Depth / (double)maxDepth * availableWidth;
             node.Y -= nodeHeight / 2;
         }
 

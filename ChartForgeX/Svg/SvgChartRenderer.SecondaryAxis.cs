@@ -78,9 +78,10 @@ public sealed partial class SvgChartRenderer {
         writer
             .StartElement("line")
             .Attribute("data-cfx-role", "secondary-y-axis")
-            .Attribute("x1", plot.Right)
+            .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
+            .Attribute("x1", CrispStrokeCoordinate(plot.Right, ChartVisualPrimitives.AxisStrokeWidth))
             .Attribute("y1", plot.Top)
-            .Attribute("x2", plot.Right)
+            .Attribute("x2", CrispStrokeCoordinate(plot.Right, ChartVisualPrimitives.AxisStrokeWidth))
             .Attribute("y2", plot.Bottom)
             .Attribute("stroke", color)
             .Attribute("stroke-width", ChartVisualPrimitives.AxisStrokeWidth)

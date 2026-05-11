@@ -1,0 +1,342 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "network-security",
+  "label": "Network Security Icons",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "network", "security", "firewall", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Generic network security topology roles. This is not a vendor-branded pack.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-10",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "firewall",
+      "label": "Firewall",
+      "nodeKind": "Gateway",
+      "shape": "Firewall",
+      "symbol": "FW",
+      "color": "#DA291C",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/firewall.svg",
+        "previewPath": "previews/firewall.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "firewall", "security", "gateway" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "switch",
+      "label": "Switch",
+      "nodeKind": "Network",
+      "shape": "NetworkSwitch",
+      "symbol": "SW",
+      "color": "#DA291C",
+      "category": "Network",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/switch.svg",
+        "previewPath": "previews/switch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "switch", "lan", "network" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "access-point",
+      "label": "Access Point",
+      "nodeKind": "Network",
+      "shape": "Router",
+      "symbol": "AP",
+      "color": "#DA291C",
+      "category": "Wireless",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/access-point.svg",
+        "previewPath": "previews/access-point.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "access-point", "wireless", "network" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "security-manager",
+      "label": "Security Manager",
+      "nodeKind": "Service",
+      "shape": "Application",
+      "symbol": "MGR",
+      "color": "#DA291C",
+      "category": "Management",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/security-manager.svg",
+        "previewPath": "previews/security-manager.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "management", "security", "policy" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "log-analyzer",
+      "label": "Log Analyzer",
+      "nodeKind": "Database",
+      "shape": "Database",
+      "symbol": "LOG",
+      "color": "#DA291C",
+      "category": "Monitoring",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/log-analyzer.svg",
+        "previewPath": "previews/log-analyzer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "logs", "analytics", "monitoring" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "ipsec-vpn",
+      "label": "IPsec VPN",
+      "nodeKind": "Gateway",
+      "shape": "Router",
+      "symbol": "VPN",
+      "color": "#DA291C",
+      "category": "Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ipsec-vpn.svg",
+        "previewPath": "previews/ipsec-vpn.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "vpn", "ipsec", "tunnel" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "sd-wan",
+      "label": "SD-WAN",
+      "nodeKind": "Gateway",
+      "shape": "LoadBalancer",
+      "symbol": "SDW",
+      "color": "#DA291C",
+      "category": "Network",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sd-wan.svg",
+        "previewPath": "previews/sd-wan.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "sd-wan", "wan", "overlay" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "authenticator",
+      "label": "Authenticator",
+      "nodeKind": "Service",
+      "shape": "Certificate",
+      "symbol": "AUTH",
+      "color": "#DA291C",
+      "category": "Identity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/authenticator.svg",
+        "previewPath": "previews/authenticator.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "radius", "identity", "authentication" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "mfa-token",
+      "label": "MFA Token",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "2FA",
+      "color": "#DA291C",
+      "category": "Identity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mfa-token.svg",
+        "previewPath": "previews/mfa-token.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "mfa", "2fa", "token" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "web-application-firewall",
+      "label": "Web Application Firewall",
+      "nodeKind": "Gateway",
+      "shape": "Firewall",
+      "symbol": "WAF",
+      "color": "#DA291C",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/web-application-firewall.svg",
+        "previewPath": "previews/web-application-firewall.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "waf", "web", "firewall" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "mail-security",
+      "label": "Mail Security",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "MAIL",
+      "color": "#DA291C",
+      "category": "Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mail-security.svg",
+        "previewPath": "previews/mail-security.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "mail", "security", "messaging" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "endpoint-detection",
+      "label": "Endpoint Detection",
+      "nodeKind": "Endpoint",
+      "shape": "Desktop",
+      "symbol": "EDR",
+      "color": "#DA291C",
+      "category": "Endpoint",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/endpoint-detection.svg",
+        "previewPath": "previews/endpoint-detection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "endpoint", "edr", "detection" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "sandbox",
+      "label": "Sandbox",
+      "nodeKind": "Process",
+      "shape": "Application",
+      "symbol": "SBX",
+      "color": "#DA291C",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sandbox.svg",
+        "previewPath": "previews/sandbox.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "sandbox", "detonation", "malware" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "siem",
+      "label": "SIEM",
+      "nodeKind": "Database",
+      "shape": "Database",
+      "symbol": "SIEM",
+      "color": "#DA291C",
+      "category": "Monitoring",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/siem.svg",
+        "previewPath": "previews/siem.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "siem", "events", "monitoring" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "cloud-security",
+      "label": "Cloud Security",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "CLD",
+      "color": "#DA291C",
+      "category": "Cloud",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/cloud-security.svg",
+        "previewPath": "previews/cloud-security.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud", "security", "management" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "security-fabric",
+      "label": "Security Fabric",
+      "nodeKind": "Network",
+      "shape": "Network",
+      "symbol": "FAB",
+      "color": "#DA291C",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/security-fabric.svg",
+        "previewPath": "previews/security-fabric.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-fabric", "mesh", "fabric" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    }
+  ]
+}

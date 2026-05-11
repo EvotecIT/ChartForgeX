@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-10T14:13:54.3284892Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "network-security",
+  "iconCount": 16,
+  "previewSize": 128,
+  "previewPngFiles": 16,
+  "previewFailures": 0,
+  "issues": []
+}

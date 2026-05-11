@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domain Security Interactive</title>
+<style>:root {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Arial, sans-serif;
+}
+
+.cfx-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.cfx-dashboard {
+  width: min(100%, 1440px);
+  display: grid;
+  grid-template-columns: repeat(var(--cfx-dashboard-columns, 2), minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cfx-interactive-chart {
+  position: relative;
+  width: min(100%, 1200px);
+}
+
+.cfx-dashboard .cfx-interactive-chart {
+  width: 100%;
+}
+
+.cfx-stage {
+  position: relative;
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.cfx-stage svg {
+  margin: auto;
+  transform: translate(var(--cfx-pan-x, 0), var(--cfx-pan-y, 0)) scale(var(--cfx-zoom, 1));
+  transform-origin: center center;
+  transition: transform .12s ease;
+  will-change: transform;
+}
+
+.cfx-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cfx-tool {
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #111827;
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 9px;
+}
+
+.cfx-tool:hover,
+.cfx-tool:focus-visible,
+.cfx-tool[aria-pressed="true"] {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+.cfx-tooltip {
+  position: fixed;
+  z-index: 20;
+  max-width: 280px;
+  border: 1px solid rgba(56, 189, 248, .45);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, .96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .26);
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 8px 10px;
+  pointer-events: none;
+}
+
+.cfx-tooltip[hidden] {
+  display: none;
+}
+
+.cfx-brush-box {
+  position: absolute;
+  z-index: 10;
+  border: 1px solid rgba(56, 189, 248, .95);
+  background: rgba(56, 189, 248, .18);
+  pointer-events: none;
+}
+
+.cfx-brush-box[hidden] {
+  display: none;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage {
+  cursor: grab;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage:active {
+  cursor: grabbing;
+}
+
+.cfx-interactive-chart[data-cfx-mode="brush"] .cfx-stage {
+  cursor: crosshair;
+}
+
+.cfx-interactive-chart [data-cfx-label],
+.cfx-interactive-chart [data-cfx-role="legend-item"],
+.cfx-interactive-chart .cfx-interactive-region {
+  cursor: pointer;
+}
+
+.cfx-interactive-chart .cfx-selected {
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, .75));
+  opacity: 1 !important;
+  stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
+}
+
+.cfx-interactive-chart .cfx-series-muted {
+  opacity: .18 !important;
+}
+
+@media (max-width: 900px) {
+  .cfx-shell {
+    padding: 14px;
+  }
+
+  .cfx-dashboard {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
+</head>
+<body>
+<main class="cfx-shell">
+<section class="cfx-interactive-chart" data-cfx-chart-id="domain-security-interactive" data-cfx-interaction-features="ReportReview, Zoom, Pan, Brush, SynchronizedCharts, Export" data-cfx-interaction-group="example-gallery">
+<div class="cfx-toolbar"><button class="cfx-tool" type="button" data-cfx-zoom="in" title="Zoom in">Zoom +</button><button class="cfx-tool" type="button" data-cfx-zoom="out" title="Zoom out">Zoom -</button><button class="cfx-tool" type="button" data-cfx-mode-button="pan" aria-pressed="false" title="Pan chart">Pan</button><button class="cfx-tool" type="button" data-cfx-mode-button="brush" aria-pressed="false" title="Brush select region">Brush</button><button class="cfx-tool" type="button" data-cfx-export="svg" title="Download SVG">SVG</button><button class="cfx-tool" type="button" data-cfx-export="png" title="Download PNG">PNG</button><button class="cfx-tool" type="button" data-cfx-reset="true">Reset</button></div>
+<div class="cfx-stage">
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="640" viewBox="0 0 1180 640" role="img" aria-labelledby="cfx5451030b-title cfx5451030b-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+<title id="cfx5451030b-title">Domain Security Checks</title>
+<desc id="cfx5451030b-desc">Domain Security Checks with 3 data series: Passed, Warnings, Failed.</desc>
+<defs>
+<style>#cfx5451030b text{font-synthesis:none} #cfx5451030b .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx5451030b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx5451030b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx5451030b .cfx-interactive-region:hover,#cfx5451030b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx5451030b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.097"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.22"/></filter>
+<clipPath id="cfx5451030b-plotClip"><rect x="76.68" y="112" width="1067.32" height="416.5" rx="8"/></clipPath>
+<linearGradient id="cfx5451030b-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#60A5FA" stop-opacity="0.32"/><stop offset="100%" stop-color="#60A5FA" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5451030b-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#73B0FB" stop-opacity="1"/><stop offset="100%" stop-color="#5A9BEB" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5451030b-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FBBF24" stop-opacity="0.32"/><stop offset="100%" stop-color="#FBBF24" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5451030b-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FBC73E" stop-opacity="1"/><stop offset="100%" stop-color="#ECB422" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5451030b-area2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F87171" stop-opacity="0.32"/><stop offset="100%" stop-color="#F87171" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5451030b-seriesFill2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F98282" stop-opacity="1"/><stop offset="100%" stop-color="#E96A6A" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#60A5FA" stop-opacity="1"/><stop offset="100%" stop-color="#60A5FA" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#22D3EE" stop-opacity="1"/><stop offset="100%" stop-color="#22D3EE" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#34D399" stop-opacity="1"/><stop offset="100%" stop-color="#34D399" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FBBF24" stop-opacity="1"/><stop offset="100%" stop-color="#FBBF24" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F87171" stop-opacity="1"/><stop offset="100%" stop-color="#F87171" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#A78BFA" stop-opacity="1"/><stop offset="100%" stop-color="#A78BFA" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F472B6" stop-opacity="1"/><stop offset="100%" stop-color="#F472B6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5451030b-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2DD4BF" stop-opacity="1"/><stop offset="100%" stop-color="#2DD4BF" stop-opacity="0.78"/></linearGradient>
+</defs>
+<g id="cfx5451030b">
+<rect data-cfx-role="card-surface" x="14" y="14" width="1152" height="612" rx="12" fill="#101827" filter="url(#cfx5451030b-softShadow)"/>
+<rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="1151" height="611" rx="11.5" fill="none" stroke="rgba(148,163,184,0.133)"/>
+<rect x="76.68" y="112" width="1067.32" height="416.5" rx="8" fill="#080D18"/>
+<rect class="cfx-crisp-stroke" x="77.18" y="112.5" width="1066.32" height="415.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.11)"/>
+<text data-cfx-role="chart-title" x="40" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Domain Security Checks</text>
+<text data-cfx-role="chart-subtitle" x="40" y="79" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Dependency-free SVG, HTML and PNG chart rendering</text>
+<rect data-cfx-role="annotation-band" data-cfx-kind="vertical-band" data-cfx-value="6" data-cfx-end="7" data-cfx-label="weekend" x="839.051" y="112" width="152.474" height="416.5" fill="#60A5FA" opacity="0.1"/>
+<rect data-cfx-role="annotation-label" data-cfx-label="weekend" x="847.051" y="117" width="57.69" height="23" rx="5" fill="#101827" opacity="0.92" stroke="#BAC6D6" stroke-opacity="0.36"/>
+<text data-cfx-role="annotation-label-text" data-cfx-label="weekend" x="856.051" y="133" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="750">weekend</text>
+<line x1="76.68" y1="528.5" x2="1144" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="532.5" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">0</text>
+<line x1="76.68" y1="469" x2="1144" y2="469" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="473" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">200</text>
+<line x1="76.68" y1="409.5" x2="1144" y2="409.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="413.5" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">400</text>
+<line x1="76.68" y1="350" x2="1144" y2="350" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="354" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">600</text>
+<line x1="76.68" y1="290.5" x2="1144" y2="290.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="294.5" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">800</text>
+<line x1="76.68" y1="231" x2="1144" y2="231" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="235" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">1k</text>
+<line x1="76.68" y1="171.5" x2="1144" y2="171.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="175.5" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">1.2k</text>
+<line x1="76.68" y1="112" x2="1144" y2="112" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="116" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">1.4k</text>
+<line x1="76.68" y1="112" x2="76.68" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="84.68" y="549.5" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Mon</text>
+<line x1="229.154" y1="112" x2="229.154" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="229.154" y="549.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Tue</text>
+<line x1="381.629" y1="112" x2="381.629" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="381.629" y="549.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Wed</text>
+<line x1="534.103" y1="112" x2="534.103" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="534.103" y="549.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Thu</text>
+<line x1="686.577" y1="112" x2="686.577" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="686.577" y="549.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Fri</text>
+<line x1="839.051" y1="112" x2="839.051" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="839.051" y="549.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Sat</text>
+<line x1="991.526" y1="112" x2="991.526" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="991.526" y="549.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Sun</text>
+<line x1="1144" y1="112" x2="1144" y2="528.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="1136" y="549.5" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Next</text>
+<line x1="76.68" y1="528.5" x2="1144" y2="528.5" stroke="rgba(203,213,225,0.412)" stroke-width="1.2"/>
+<text x="610.34" y="572.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Run</text>
+<line x1="76.68" y1="112" x2="76.68" y2="528.5" stroke="rgba(203,213,225,0.412)" stroke-width="1.2"/>
+<text transform="translate(26 320.25) rotate(-90)" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Checks</text>
+<g clip-path="url(#cfx5451030b-plotClip)">
+<path data-cfx-role="area" data-cfx-series="0" data-cfx-point-count="8" d="M 76.68 284.55 C 102.092 278.6 178.33 256.783 229.154 248.85 C 279.979 240.917 330.804 241.908 381.629 236.95 C 432.453 231.992 483.278 226.042 534.103 219.1 C 584.928 212.158 635.752 202.242 686.577 195.3 C 737.402 188.358 788.227 182.904 839.051 177.45 C 889.876 171.996 940.701 166.542 991.526 162.575 C 1042.35 158.608 1118.588 155.138 1144 153.65 L 1144 528.5 L 76.68 528.5 Z" fill="url(#cfx5451030b-area0)"/>
+<path data-cfx-role="area-line-ambient-halo" data-cfx-series="0" data-cfx-point-count="8" d="M 76.68 284.55 C 102.092 278.6 178.33 256.783 229.154 248.85 C 279.979 240.917 330.804 241.908 381.629 236.95 C 432.453 231.992 483.278 226.042 534.103 219.1 C 584.928 212.158 635.752 202.242 686.577 195.3 C 737.402 188.358 788.227 182.904 839.051 177.45 C 889.876 171.996 940.701 166.542 991.526 162.575 C 1042.35 158.608 1118.588 155.138 1144 153.65" fill="none" stroke="#60A5FA" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
+<path data-cfx-role="area-line-halo" data-cfx-series="0" data-cfx-point-count="8" d="M 76.68 284.55 C 102.092 278.6 178.33 256.783 229.154 248.85 C 279.979 240.917 330.804 241.908 381.629 236.95 C 432.453 231.992 483.278 226.042 534.103 219.1 C 584.928 212.158 635.752 202.242 686.577 195.3 C 737.402 188.358 788.227 182.904 839.051 177.45 C 889.876 171.996 940.701 166.542 991.526 162.575 C 1042.35 158.608 1118.588 155.138 1144 153.65" fill="none" stroke="#60A5FA" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.14"/>
+<path data-cfx-role="area-line" data-cfx-series="0" data-cfx-point-count="8" d="M 76.68 284.55 C 102.092 278.6 178.33 256.783 229.154 248.85 C 279.979 240.917 330.804 241.908 381.629 236.95 C 432.453 231.992 483.278 226.042 534.103 219.1 C 584.928 212.158 635.752 202.242 686.577 195.3 C 737.402 188.358 788.227 182.904 839.051 177.45 C 889.876 171.996 940.701 166.542 991.526 162.575 C 1042.35 158.608 1118.588 155.138 1144 153.65" fill="none" stroke="#60A5FA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path data-cfx-role="area-line-highlight" data-cfx-series="0" data-cfx-point-count="8" d="M 76.68 284.55 C 102.092 278.6 178.33 256.783 229.154 248.85 C 279.979 240.917 330.804 241.908 381.629 236.95 C 432.453 231.992 483.278 226.042 534.103 219.1 C 584.928 212.158 635.752 202.242 686.577 195.3 C 737.402 188.358 788.227 182.904 839.051 177.45 C 889.876 171.996 940.701 166.542 991.526 162.575 C 1042.35 158.608 1118.588 155.138 1144 153.65" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.13"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-y="820" cx="76.68" cy="284.55" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="1" data-cfx-x="2" data-cfx-y="940" cx="229.154" cy="248.85" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="2" data-cfx-x="3" data-cfx-y="980" cx="381.629" cy="236.95" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="3" data-cfx-x="4" data-cfx-y="1040" cx="534.103" cy="219.1" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="4" data-cfx-x="5" data-cfx-y="1120" cx="686.577" cy="195.3" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="5" data-cfx-x="6" data-cfx-y="1180" cx="839.051" cy="177.45" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="6" data-cfx-x="7" data-cfx-y="1230" cx="991.526" cy="162.575" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="7" data-cfx-x="8" data-cfx-y="1260" cx="1144" cy="153.65" r="3.25" fill="#60A5FA" stroke="#101827" stroke-width="2"/>
+<path data-cfx-role="line-ambient-halo" data-cfx-series="1" data-cfx-point-count="8" d="M 76.68 492.8 C 102.092 491.908 178.33 488.04 229.154 487.445 C 279.979 486.85 330.804 487.842 381.629 489.23 C 432.453 490.618 483.278 494.089 534.103 495.775 C 584.928 497.461 635.752 498.155 686.577 499.345 C 737.402 500.535 788.227 501.626 839.051 502.915 C 889.876 504.204 940.701 506.188 991.526 507.08 C 1042.35 507.973 1118.588 508.072 1144 508.27" fill="none" stroke="#FBBF24" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
+<path data-cfx-role="line-halo" data-cfx-series="1" data-cfx-point-count="8" d="M 76.68 492.8 C 102.092 491.908 178.33 488.04 229.154 487.445 C 279.979 486.85 330.804 487.842 381.629 489.23 C 432.453 490.618 483.278 494.089 534.103 495.775 C 584.928 497.461 635.752 498.155 686.577 499.345 C 737.402 500.535 788.227 501.626 839.051 502.915 C 889.876 504.204 940.701 506.188 991.526 507.08 C 1042.35 507.973 1118.588 508.072 1144 508.27" fill="none" stroke="#FBBF24" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.14"/>
+<path data-cfx-role="line" data-cfx-series="1" data-cfx-point-count="8" d="M 76.68 492.8 C 102.092 491.908 178.33 488.04 229.154 487.445 C 279.979 486.85 330.804 487.842 381.629 489.23 C 432.453 490.618 483.278 494.089 534.103 495.775 C 584.928 497.461 635.752 498.155 686.577 499.345 C 737.402 500.535 788.227 501.626 839.051 502.915 C 889.876 504.204 940.701 506.188 991.526 507.08 C 1042.35 507.973 1118.588 508.072 1144 508.27" fill="none" stroke="#FBBF24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path data-cfx-role="line-highlight" data-cfx-series="1" data-cfx-point-count="8" d="M 76.68 492.8 C 102.092 491.908 178.33 488.04 229.154 487.445 C 279.979 486.85 330.804 487.842 381.629 489.23 C 432.453 490.618 483.278 494.089 534.103 495.775 C 584.928 497.461 635.752 498.155 686.577 499.345 C 737.402 500.535 788.227 501.626 839.051 502.915 C 889.876 504.204 940.701 506.188 991.526 507.08 C 1042.35 507.973 1118.588 508.072 1144 508.27" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.13"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="0" data-cfx-x="1" data-cfx-y="120" cx="76.68" cy="492.8" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="1" data-cfx-x="2" data-cfx-y="138" cx="229.154" cy="487.445" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="2" data-cfx-x="3" data-cfx-y="132" cx="381.629" cy="489.23" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="3" data-cfx-x="4" data-cfx-y="110" cx="534.103" cy="495.775" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="4" data-cfx-x="5" data-cfx-y="98" cx="686.577" cy="499.345" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="5" data-cfx-x="6" data-cfx-y="86" cx="839.051" cy="502.915" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="6" data-cfx-x="7" data-cfx-y="72" cx="991.526" cy="507.08" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="7" data-cfx-x="8" data-cfx-y="68" cx="1144" cy="508.27" r="3.25" fill="#FBBF24" stroke="#101827" stroke-width="2"/>
+<path data-cfx-role="line-ambient-halo" data-cfx-series="2" data-cfx-point-count="8" d="M 76.68 521.955 C 102.092 521.558 178.33 519.873 229.154 519.575 C 279.979 519.278 330.804 519.724 381.629 520.17 C 432.453 520.616 483.278 521.757 534.103 522.253 C 584.928 522.748 635.752 522.848 686.577 523.145 C 737.402 523.443 788.227 523.79 839.051 524.038 C 889.876 524.285 940.701 524.385 991.526 524.633 C 1042.35 524.88 1118.588 525.376 1144 525.525" fill="none" stroke="#F87171" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
+<path data-cfx-role="line-halo" data-cfx-series="2" data-cfx-point-count="8" d="M 76.68 521.955 C 102.092 521.558 178.33 519.873 229.154 519.575 C 279.979 519.278 330.804 519.724 381.629 520.17 C 432.453 520.616 483.278 521.757 534.103 522.253 C 584.928 522.748 635.752 522.848 686.577 523.145 C 737.402 523.443 788.227 523.79 839.051 524.038 C 889.876 524.285 940.701 524.385 991.526 524.633 C 1042.35 524.88 1118.588 525.376 1144 525.525" fill="none" stroke="#F87171" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.14"/>
+<path data-cfx-role="line" data-cfx-series="2" data-cfx-point-count="8" d="M 76.68 521.955 C 102.092 521.558 178.33 519.873 229.154 519.575 C 279.979 519.278 330.804 519.724 381.629 520.17 C 432.453 520.616 483.278 521.757 534.103 522.253 C 584.928 522.748 635.752 522.848 686.577 523.145 C 737.402 523.443 788.227 523.79 839.051 524.038 C 889.876 524.285 940.701 524.385 991.526 524.633 C 1042.35 524.88 1118.588 525.376 1144 525.525" fill="none" stroke="#F87171" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path data-cfx-role="line-highlight" data-cfx-series="2" data-cfx-point-count="8" d="M 76.68 521.955 C 102.092 521.558 178.33 519.873 229.154 519.575 C 279.979 519.278 330.804 519.724 381.629 520.17 C 432.453 520.616 483.278 521.757 534.103 522.253 C 584.928 522.748 635.752 522.848 686.577 523.145 C 737.402 523.443 788.227 523.79 839.051 524.038 C 889.876 524.285 940.701 524.385 991.526 524.633 C 1042.35 524.88 1118.588 525.376 1144 525.525" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.13"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="0" data-cfx-x="1" data-cfx-y="22" cx="76.68" cy="521.955" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="1" data-cfx-x="2" data-cfx-y="30" cx="229.154" cy="519.575" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="2" data-cfx-x="3" data-cfx-y="28" cx="381.629" cy="520.17" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="3" data-cfx-x="4" data-cfx-y="21" cx="534.103" cy="522.253" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="4" data-cfx-x="5" data-cfx-y="18" cx="686.577" cy="523.145" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="5" data-cfx-x="6" data-cfx-y="15" cx="839.051" cy="524.038" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="6" data-cfx-x="7" data-cfx-y="13" cx="991.526" cy="524.633" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="7" data-cfx-x="8" data-cfx-y="10" cx="1144" cy="525.525" r="3.25" fill="#F87171" stroke="#101827" stroke-width="2"/>
+</g>
+<line data-cfx-role="annotation-line" data-cfx-kind="horizontal-line" data-cfx-value="100" data-cfx-label="warning target" x1="76.68" y1="498.75" x2="1144" y2="498.75" stroke="#FBBF24" stroke-width="1.6" stroke-dasharray="6 5"/>
+<rect data-cfx-role="annotation-label" data-cfx-label="warning target" x="1040.72" y="475.75" width="95.28" height="23" rx="5" fill="#101827" opacity="0.92" stroke="#FBBF24" stroke-opacity="0.36"/>
+<text data-cfx-role="annotation-label-text" data-cfx-label="warning target" x="1127" y="491.75" text-anchor="end" fill="#FBBF24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="750">warning target</text>
+<g data-cfx-role="legend" data-cfx-position="Bottom">
+<g data-cfx-role="legend-row" transform="translate(448.52 612)">
+<g data-cfx-role="legend-item" data-cfx-series="0" data-cfx-kind="Area" data-cfx-label="Passed">
+<line x1="0" y1="-4" x2="18" y2="-4" stroke="#60A5FA" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="9" cy="-4" r="4" fill="#60A5FA" stroke="#101827" stroke-width="1.6"/>
+<text data-cfx-role="legend-label" data-cfx-series="0" x="26" y="0" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Passed</text>
+</g>
+<g data-cfx-role="legend-item" data-cfx-series="1" data-cfx-kind="Line" data-cfx-label="Warnings">
+<line x1="90.18" y1="-4" x2="108.18" y2="-4" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="99.18" cy="-4" r="4" fill="#FBBF24" stroke="#101827" stroke-width="1.6"/>
+<text data-cfx-role="legend-label" data-cfx-series="1" x="116.18" y="0" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Warnings</text>
+</g>
+<g data-cfx-role="legend-item" data-cfx-series="2" data-cfx-kind="Line" data-cfx-label="Failed">
+<line x1="192.78" y1="-4" x2="210.78" y2="-4" stroke="#F87171" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="201.78" cy="-4" r="4" fill="#F87171" stroke="#101827" stroke-width="1.6"/>
+<text data-cfx-role="legend-label" data-cfx-series="2" x="218.78" y="0" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Failed</text>
+</g>
+</g>
+</g>
+</g>
+</svg>
+
+<div class="cfx-brush-box" hidden></div>
+</div>
+<div class="cfx-tooltip" role="status" aria-live="polite" hidden></div>
+</section>
+</main>
+<script>(() => {
+  const hasFeature = (root, name) => (root.dataset.cfxInteractionFeatures || '').toLowerCase().includes(name.toLowerCase());
+  const text = (node) => {
+    const data = node.dataset || {};
+    return node.getAttribute('aria-label') || data.cfxLabel || data.cfxValue || data.cfxRole || '';
+  };
+  const showTip = (root, tip, node, event) => {
+    if (!hasFeature(root, 'Tooltips')) return;
+    const value = text(node);
+    if (!value) return;
+    tip.textContent = value;
+    tip.hidden = false;
+    moveTip(tip, event);
+  };
+  const moveTip = (tip, event) => {
+    if (!event || tip.hidden) return;
+    const x = Math.min(window.innerWidth - 24, event.clientX + 14);
+    const y = Math.min(window.innerHeight - 24, event.clientY + 14);
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+  };
+  const hideTip = (tip) => { tip.hidden = true; };
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const getState = (root) => ({
+    zoom: Number(root.dataset.cfxZoom || '1'),
+    panX: Number(root.dataset.cfxPanX || '0'),
+    panY: Number(root.dataset.cfxPanY || '0')
+  });
+  const applyViewport = (root, state) => {
+    state.zoom = clamp(state.zoom, 0.5, 6);
+    state.panX = clamp(state.panX, -4000, 4000);
+    state.panY = clamp(state.panY, -4000, 4000);
+    root.dataset.cfxZoom = state.zoom.toFixed(3);
+    root.dataset.cfxPanX = state.panX.toFixed(1);
+    root.dataset.cfxPanY = state.panY.toFixed(1);
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return;
+    stage.style.setProperty('--cfx-zoom', state.zoom);
+    stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
+    stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
+  };
+  const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
+  const emitHostEvent = (root, name, detail) => {
+    root.dispatchEvent(new CustomEvent(name, { detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
+  };
+  const emitSync = (root, payload) => {
+    if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
+    const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
+    root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
+    document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
+      if (sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
+    });
+  };
+  const setMode = (root, mode) => {
+    root.dataset.cfxMode = root.dataset.cfxMode === mode ? '' : mode;
+    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
+      button.setAttribute('aria-pressed', button.dataset.cfxModeButton === root.dataset.cfxMode ? 'true' : 'false');
+    });
+  };
+  const resetViewport = (root) => {
+    applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+    root.dataset.cfxBrush = '';
+    root.dataset.cfxMode = '';
+    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+  };
+  const zoomBy = (root, factor) => {
+    if (!hasFeature(root, 'Zoom')) return;
+    const state = getState(root);
+    state.zoom *= factor;
+    applyViewport(root, state);
+    emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+    emitSync(root, { action: 'viewport', state: getState(root) });
+  };
+  const serializeSvg = (root) => {
+    const svg = root.querySelector('.cfx-stage svg');
+    return svg ? { svg, data: new XMLSerializer().serializeToString(svg) } : null;
+  };
+  const downloadBlob = (root, blob, extension, format) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = (root.dataset.cfxChartId || 'chart') + '.' + extension;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    emitHostEvent(root, 'cfxexport', { format });
+  };
+  const svgSize = (svg) => {
+    const viewBox = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
+    const rect = svg.getBoundingClientRect ? svg.getBoundingClientRect() : { width: 0, height: 0 };
+    const width = Math.max(1, Math.round((viewBox && viewBox.width) || (svg.width && svg.width.baseVal ? svg.width.baseVal.value : 0) || rect.width || 800));
+    const height = Math.max(1, Math.round((viewBox && viewBox.height) || (svg.height && svg.height.baseVal ? svg.height.baseVal.value : 0) || rect.height || 450));
+    return { width, height };
+  };
+  const exportSvg = (root) => {
+    if (!hasFeature(root, 'Export')) return;
+    const serialized = serializeSvg(root);
+    if (!serialized) return;
+    downloadBlob(root, new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' }), 'svg', 'svg');
+  };
+  const exportPng = (root) => {
+    if (!hasFeature(root, 'Export')) return;
+    const serialized = serializeSvg(root);
+    if (!serialized) return;
+    const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
+    const sourceUrl = URL.createObjectURL(source);
+    const image = new Image();
+    image.onload = () => {
+      const size = svgSize(serialized.svg);
+      const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
+      const canvas = document.createElement('canvas');
+      canvas.width = size.width * scale;
+      canvas.height = size.height * scale;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        URL.revokeObjectURL(sourceUrl);
+        return;
+      }
+      context.setTransform(scale, 0, 0, scale, 0, 0);
+      context.clearRect(0, 0, size.width, size.height);
+      context.drawImage(image, 0, 0, size.width, size.height);
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(sourceUrl);
+        if (blob) downloadBlob(root, blob, 'png', 'png');
+      }, 'image/png');
+    };
+    image.onerror = () => URL.revokeObjectURL(sourceUrl);
+    image.src = sourceUrl;
+  };
+  const setSeriesMuted = (root, series, muted) => {
+    root.querySelectorAll('[data-cfx-series]').forEach((node) => {
+      if ((node.dataset ? node.dataset.cfxSeries : undefined) !== series) return;
+      const role = node.dataset ? node.dataset.cfxRole || '' : '';
+      if (role.indexOf('legend') === 0) {
+        node.dataset.cfxMuted = muted ? 'true' : 'false';
+        return;
+      }
+      node.classList.toggle('cfx-series-muted', muted);
+    });
+  };
+  const toggleSeries = (root, item) => {
+    if (!hasFeature(root, 'LegendToggles')) return;
+    const series = item.dataset.cfxSeries;
+    if (series === undefined) return;
+    const muted = item.dataset.cfxMuted !== 'true';
+    setSeriesMuted(root, series, muted);
+    emitHostEvent(root, 'cfxseries', { series, muted });
+    emitSync(root, { action: 'series', series, muted });
+  };
+  const toggleSelection = (root, node) => {
+    if (!hasFeature(root, 'Selection')) return;
+    const selected = !node.classList.contains('cfx-selected');
+    setNodeSelected(node, selected);
+    emitHostEvent(root, 'cfxselect', { label: text(node), selected });
+    emitSync(root, { action: 'selection', label: text(node), selected });
+  };
+  const setNodeSelected = (node, selected) => {
+    node.classList.toggle('cfx-selected', selected);
+    node.setAttribute('aria-selected', selected ? 'true' : 'false');
+  };
+  const applySelectionByLabel = (root, label, selected) => {
+    if (!label) return;
+    root.querySelectorAll('.cfx-interactive-region,[data-cfx-label]').forEach((node) => {
+      if (text(node) === label) setNodeSelected(node, selected);
+    });
+  };
+  const applySync = (root, detail) => {
+    if (!detail || detail.chartId === root.dataset.cfxChartId) return;
+    if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
+    else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
+    else if (detail.action === 'selection') applySelectionByLabel(root, detail.label || '', detail.selected === true);
+    else if (detail.action === 'series' && detail.series !== undefined) setSeriesMuted(root, detail.series, detail.muted === true);
+  };
+  document.querySelectorAll('.cfx-interactive-chart').forEach((root) => {
+    const tip = root.querySelector('.cfx-tooltip');
+    const stage = root.querySelector('.cfx-stage');
+    const brush = root.querySelector('.cfx-brush-box');
+    if (!tip) return;
+    applyViewport(root, getState(root));
+    const targets = root.querySelectorAll('.cfx-interactive-region,[data-cfx-label],[data-cfx-role="legend-item"]');
+    targets.forEach((node) => {
+      if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
+      node.addEventListener('pointerenter', (event) => showTip(root, tip, node, event));
+      node.addEventListener('pointermove', (event) => moveTip(tip, event));
+      node.addEventListener('pointerleave', () => hideTip(tip));
+      node.addEventListener('focus', (event) => showTip(root, tip, node, event));
+      node.addEventListener('blur', () => hideTip(tip));
+      node.addEventListener('click', () => {
+        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') toggleSeries(root, node);
+        else toggleSelection(root, node);
+      });
+      node.addEventListener('keydown', (event) => {
+        if (!hasFeature(root, 'KeyboardNavigation')) return;
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+    });
+    root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
+      button.addEventListener('click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
+    });
+    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
+      button.addEventListener('click', () => setMode(root, button.dataset.cfxModeButton || ''));
+    });
+    root.querySelectorAll('[data-cfx-export]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (button.dataset.cfxExport === 'png') exportPng(root);
+        else exportSvg(root);
+      });
+    });
+    if (stage) {
+      stage.addEventListener('wheel', (event) => {
+        if (!hasFeature(root, 'Zoom')) return;
+        event.preventDefault();
+        zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
+      }, { passive: false });
+      let drag = null;
+      stage.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
+          const state = getState(root);
+          drag = { mode: 'pan', id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
+          stage.setPointerCapture(event.pointerId);
+        } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
+          const rect = stage.getBoundingClientRect();
+          drag = { mode: 'brush', id: event.pointerId, left: event.clientX - rect.left, top: event.clientY - rect.top };
+          brush.hidden = false;
+          brush.style.left = drag.left + 'px';
+          brush.style.top = drag.top + 'px';
+          brush.style.width = '0px';
+          brush.style.height = '0px';
+          stage.setPointerCapture(event.pointerId);
+        }
+      });
+      stage.addEventListener('pointermove', (event) => {
+        if (!drag || drag.id !== event.pointerId) return;
+        if (drag.mode === 'pan') {
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + event.clientX - drag.x, panY: drag.panY + event.clientY - drag.y });
+        } else if (drag.mode === 'brush' && brush) {
+          const rect = stage.getBoundingClientRect();
+          const x = clamp(event.clientX - rect.left, 0, rect.width);
+          const y = clamp(event.clientY - rect.top, 0, rect.height);
+          const left = Math.min(drag.left, x);
+          const top = Math.min(drag.top, y);
+          brush.style.left = left + 'px';
+          brush.style.top = top + 'px';
+          brush.style.width = Math.abs(x - drag.left) + 'px';
+          brush.style.height = Math.abs(y - drag.top) + 'px';
+        }
+      });
+      stage.addEventListener('pointerup', (event) => {
+        if (!drag || drag.id !== event.pointerId) return;
+        if (drag.mode === 'brush' && brush) {
+          root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
+          emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
+          emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
+        } else if (drag.mode === 'pan') {
+          emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+          emitSync(root, { action: 'viewport', state: getState(root) });
+        }
+        stage.releasePointerCapture(event.pointerId);
+        drag = null;
+      });
+      stage.addEventListener('pointercancel', () => { drag = null; });
+    }
+    const reset = root.querySelector('[data-cfx-reset]');
+    if (reset) reset.addEventListener('click', () => {
+      resetViewport(root);
+      emitHostEvent(root, 'cfxreset', {});
+      emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+      emitSync(root, { action: 'viewport', state: getState(root) });
+      root.querySelectorAll('.cfx-selected').forEach((node) => {
+        node.classList.remove('cfx-selected');
+        node.removeAttribute('aria-selected');
+      });
+      root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
+      root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
+      if (brush) brush.hidden = true;
+      hideTip(tip);
+    });
+  });
+})();</script>
+</body>
+</html>

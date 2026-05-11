@@ -32,12 +32,13 @@ public sealed class SvgChartGridRenderer {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var layout = ChartGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
-        var background = theme.Background.A == 0 ? theme.CardBackground.ToCss() : theme.Background.ToCss();
+        var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var id = "cfx-grid-" + StableHash(idScope ?? string.Empty, grid.Title, grid.Charts.Count.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(4096);
         writer
             .StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
+            .Attribute("id", id)
             .Attribute("width", layout.Width)
             .Attribute("height", layout.Height)
             .Attribute("viewBox", "0 0 " + layout.Width.ToString(CultureInfo.InvariantCulture) + " " + layout.Height.ToString(CultureInfo.InvariantCulture))
@@ -59,10 +60,17 @@ public sealed class SvgChartGridRenderer {
             .Text("Static chart grid containing " + grid.Charts.Count.ToString(CultureInfo.InvariantCulture) + " charts.")
             .EndElement()
             .Line()
+            .StartElement("defs")
+            .EndStartElement()
+            .Line();
+        SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
+        SvgSurfacePolish.WriteSurfaceGradient(writer, id, "gridSurface", background);
+        writer.EndElement()
+            .Line()
             .StartElement("rect")
             .Attribute("width", "100%")
             .Attribute("height", "100%")
-            .Attribute("fill", background)
+            .Attribute("fill", background.A == 0 ? "transparent" : "url(#" + id + "-gridSurface)")
             .EndEmptyElement()
             .Line();
         if (layout.HeaderHeight > 0) {

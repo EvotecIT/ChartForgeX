@@ -1,0 +1,384 @@
+{
+  "categories": [
+    {
+      "id": "charts",
+      "label": "Charts"
+    },
+    {
+      "id": "dashboards",
+      "label": "Dashboards"
+    },
+    {
+      "id": "topology",
+      "label": "Topology"
+    },
+    {
+      "id": "maps",
+      "label": "Maps"
+    },
+    {
+      "id": "infographics",
+      "label": "Infographics"
+    },
+    {
+      "id": "themes",
+      "label": "Themes"
+    }
+  ],
+  "items": [
+    {
+      "category": "charts",
+      "title": "Domain security checks",
+      "body": "Stacked smooth area with target line and weekend band.",
+      "tags": [
+        "SmoothArea",
+        "ReportDark"
+      ],
+      "image": "/examples/generated/domain-security-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Certificate transparency volume",
+      "body": "Bar+line combo with secondary y-axis.",
+      "tags": [
+        "BarLineCombo",
+        "ReportLight"
+      ],
+      "image": "/examples/generated/ct-volume-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Domain control composition",
+      "body": "Stacked horizontal bars with totals and labels.",
+      "tags": [
+        "StackedHorizontal"
+      ],
+      "image": "/examples/generated/domain-control-horizontal-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Control coverage matrix",
+      "body": "Heatmap with semantic value scale.",
+      "tags": [
+        "Heatmap"
+      ],
+      "image": "/examples/generated/control-coverage-heatmap-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Security findings grouped",
+      "body": "Grouped bar comparison across two report runs.",
+      "tags": [
+        "GroupedBar"
+      ],
+      "image": "/examples/generated/security-findings-grouped-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Findings composition treemap",
+      "body": "Treemap proportions by category.",
+      "tags": [
+        "Treemap"
+      ],
+      "image": "/examples/generated/findings-composition-treemap-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Finding flow Sankey",
+      "body": "Weighted paths from discovery to remediation.",
+      "tags": [
+        "Sankey"
+      ],
+      "image": "/examples/generated/finding-flow-sankey-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Remediation impact waterfall",
+      "body": "Delta bars showing changes during cleanup.",
+      "tags": [
+        "Waterfall"
+      ],
+      "image": "/examples/generated/remediation-impact-waterfall-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Security posture radar",
+      "body": "Radial comparison across control areas.",
+      "tags": [
+        "Radar"
+      ],
+      "image": "/examples/generated/security-posture-radar-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Security posture gauge",
+      "body": "Single-value gauge for executive summaries.",
+      "tags": [
+        "Gauge"
+      ],
+      "image": "/examples/generated/security-posture-gauge-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Domain remediation funnel",
+      "body": "Stage retention from discovery to monitoring.",
+      "tags": [
+        "Funnel"
+      ],
+      "image": "/examples/generated/domain-remediation-funnel-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Domain remediation Gantt",
+      "body": "Tasks, dependencies, milestones, today marker.",
+      "tags": [
+        "Gantt"
+      ],
+      "image": "/examples/generated/domain-remediation-gantt-light.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Control scorecards",
+      "body": "Gauge, bullet, radar and polar combined.",
+      "tags": [
+        "ChartGrid",
+        "SmallMultiples"
+      ],
+      "image": "/examples/generated/control-scorecards-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Wellness dashboard",
+      "body": "Calorie intake dashboard with daily targets.",
+      "tags": [
+        "Dashboard"
+      ],
+      "image": "/examples/generated/wellness-calories-intake-dashboard.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Restaurant overview",
+      "body": "Mixed-canvas restaurant operations grid.",
+      "tags": [
+        "Dashboard",
+        "VisualGrid"
+      ],
+      "image": "/examples/generated/dashboard-restaurant-overview-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "SaaS MRR drivers",
+      "body": "Monthly recurring revenue grid with drivers.",
+      "tags": [
+        "Dashboard",
+        "Bars"
+      ],
+      "image": "/examples/generated/dashboard-saas-mrr-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Chart portfolio",
+      "body": "Hand-picked tour of the chart catalog.",
+      "tags": [
+        "Portfolio"
+      ],
+      "image": "/examples/generated/dashboard-chart-portfolio-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "PowerBGInfo snapshot",
+      "body": "Endpoint snapshot rendered for live wallpapers.",
+      "tags": [
+        "Wallpaper",
+        "Overlay"
+      ],
+      "image": "/examples/generated/powerbginfo-endpoint-snapshot.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Site topology",
+      "body": "Regional sites with hubs, branches, and bridgeheads.",
+      "tags": [
+        "Topology"
+      ],
+      "image": "/examples/generated/site-topology.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Replication mesh",
+      "body": "Deterministic replication paths across DCs.",
+      "tags": [
+        "Topology",
+        "AD"
+      ],
+      "image": "/examples/generated/replication-mesh.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Service dependency",
+      "body": "API neighbors and critical-path filter view.",
+      "tags": [
+        "Topology",
+        "Service"
+      ],
+      "image": "/examples/generated/service-dependency.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Geographic topology",
+      "body": "Topology projected onto a real geographic viewport.",
+      "tags": [
+        "Topology",
+        "Geo"
+      ],
+      "image": "/examples/generated/geographic-topology.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Travel dotted world",
+      "body": "World layer with route connectors between points.",
+      "tags": [
+        "Map",
+        "Dotted"
+      ],
+      "image": "/examples/generated/travel-dotted-map-dark.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Europe revenue map",
+      "body": "Country-level dotted layer for EMEA revenue.",
+      "tags": [
+        "Map",
+        "Europe"
+      ],
+      "image": "/examples/generated/revenue-europe-country-map-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "US states region map",
+      "body": "Region map filled with revenue weighting.",
+      "tags": [
+        "Map",
+        "Region"
+      ],
+      "image": "/examples/generated/revenue-region-map-us-states-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "US states tile map",
+      "body": "Tile renderer with z/x/y addressing.",
+      "tags": [
+        "Map",
+        "Tiles"
+      ],
+      "image": "/examples/generated/revenue-tile-map-us-states-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Poland route viewport",
+      "body": "Bounded viewport with route connectors.",
+      "tags": [
+        "Map",
+        "Bounds"
+      ],
+      "image": "/examples/generated/map-poland-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "World viewport showcase",
+      "body": "Same map at world / Europe / Poland / custom bounds.",
+      "tags": [
+        "Map",
+        "Viewports"
+      ],
+      "image": "/examples/generated/map-world-route-light.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "Audience pictorial",
+      "body": "Pictorial infographic with the Candy theme.",
+      "tags": [
+        "Pictorial",
+        "Candy"
+      ],
+      "image": "/examples/generated/audience-pictorial-candy.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "People infographic",
+      "body": "People-shaped figures sized by share.",
+      "tags": [
+        "Pictorial"
+      ],
+      "image": "/examples/generated/people-infographic-showcase-grid.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "Word cloud",
+      "body": "Editorial word cloud for support themes.",
+      "tags": [
+        "WordCloud",
+        "Editorial"
+      ],
+      "image": "/examples/generated/support-themes-word-cloud-editorial.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "Pictorial isotype",
+      "body": "Isotype-style symbols showcase.",
+      "tags": [
+        "Pictorial",
+        "Isotype"
+      ],
+      "image": "/examples/generated/pictorial-isotype-showcase-grid.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "Sunburst aurora",
+      "body": "Sunburst control partition with the Aurora theme.",
+      "tags": [
+        "Sunburst",
+        "Aurora"
+      ],
+      "image": "/examples/generated/control-partition-sunburst-aurora.svg"
+    },
+    {
+      "category": "themes",
+      "title": "Theme + font showcase",
+      "body": "Aurora, Editorial, Candy, and Terminal themes.",
+      "tags": [
+        "Theme",
+        "Showcase"
+      ],
+      "image": "/examples/generated/theme-font-showcase-grid.svg"
+    },
+    {
+      "category": "themes",
+      "title": "Brand kit showcase",
+      "body": "Executive, Product, Editorial, Accessible kits.",
+      "tags": [
+        "BrandKit"
+      ],
+      "image": "/examples/generated/brand-kit-showcase-grid.svg"
+    },
+    {
+      "category": "themes",
+      "title": "Palette swatch",
+      "body": "Reusable palette swatch grid.",
+      "tags": [
+        "Palette"
+      ],
+      "image": "/examples/generated/palette-swatch-showcase-grid.svg"
+    },
+    {
+      "category": "themes",
+      "title": "Editorial text style",
+      "body": "Editorial typography with serif treatment.",
+      "tags": [
+        "Editorial",
+        "Type"
+      ],
+      "image": "/examples/generated/text-style-showcase-editorial.svg"
+    }
+  ]
+}

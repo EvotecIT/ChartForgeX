@@ -129,6 +129,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets how topology nodes should be presented.</summary>
     public TopologyNodeDisplayMode NodeDisplayMode { get; set; } = TopologyNodeDisplayMode.Card;
 
+    /// <summary>Gets or sets an optional icon catalog used to resolve node and group icon ids. When unset, the built-in catalog is used.</summary>
+    public TopologyIconCatalog? IconCatalog { get; set; }
+
     /// <summary>Gets or sets how the topology legend should be sourced.</summary>
     public TopologyLegendMode LegendMode { get; set; } = TopologyLegendMode.Explicit;
 

@@ -5,3 +5,9 @@ obj/
 *.suo
 TestResults/
 artifacts/
+/.claude/
+/.playwright-mcp/
+/*.png
+Website/_reports/
+Website/_site/
+Website/_temp/

@@ -1,0 +1,23 @@
+{
+  "name": "ChartForgeX",
+  "description": "Agent-facing discovery metadata for ChartForgeX documentation, generated examples, promoted cases, and source-linked chart reproduction.",
+  "url": "https://chartforgex.evotec.xyz/",
+  "resources": {
+    "robots": "https://chartforgex.evotec.xyz/robots.txt",
+    "sitemap": "https://chartforgex.evotec.xyz/sitemap.xml",
+    "llms": "https://chartforgex.evotec.xyz/llms.txt",
+    "llmsJson": "https://chartforgex.evotec.xyz/llms.json",
+    "apiCatalog": "https://chartforgex.evotec.xyz/.well-known/api-catalog",
+    "agentSkills": "https://chartforgex.evotec.xyz/.well-known/agent-skills/index.json",
+    "promotedCases": "https://chartforgex.evotec.xyz/examples/promoted-cases.json",
+    "promotedCasesSchema": "https://chartforgex.evotec.xyz/schemas/promoted-cases.schema.json",
+    "source": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "capabilities": {
+    "sourceLinkedExamples": true,
+    "generatedArtifacts": ["html", "svg", "png"],
+    "markdownArtifacts": false,
+    "mcpServerCard": null,
+    "a2aAgentCard": null
+  }
+}

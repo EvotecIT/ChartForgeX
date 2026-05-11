@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page.title }} | {{ site.name }}</title>
+  {{ description_meta_html }}
+  {{ canonical_html }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+</head>
+<body class="cfx-project-site cfx-gallery-page">
+  <div class="ev-site-shell">
+    {{ include "header" }}
+    <main class="ev-main">
+      <div class="ev-container">
+        <section class="ev-page-hero cfx-page-hero">
+          <p class="ev-eyebrow">ChartForgeX gallery</p>
+          <h1>Generated chart output catalog.</h1>
+          <p>Browse generated SVG outputs across charts, dashboards, maps, themes, topology, and infographic-style visuals.</p>
+        </section>
+
+        {{ if data.gallery && data.gallery.categories }}
+        <section class="gallery-filter" aria-label="Filter gallery">
+          <button type="button" class="is-active" data-gallery-filter="all" aria-pressed="true">All</button>
+          {{ for cat in data.gallery.categories }}
+          <button type="button" data-gallery-filter="{{ cat.id }}" aria-pressed="false">{{ cat.label }}</button>
+          {{ end }}
+        </section>
+        {{ end }}
+
+        {{ if data.gallery && data.gallery.items }}
+        <section class="gallery-page-grid" aria-label="Generated ChartForgeX visuals">
+          {{ for item in data.gallery.items }}
+          <a class="gallery-page-card" href="{{ item.image }}" target="_blank" rel="noopener" data-gallery-card data-category="{{ item.category }}" aria-label="Open {{ item.title }} SVG">
+            <div class="gallery-page-thumb">
+              <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" decoding="async" />
+            </div>
+            <div class="gallery-page-meta">
+              <span>{{ item.category }}</span>
+              <h2>{{ item.title }}</h2>
+              <p>{{ item.body }}</p>
+              {{ if item.tags && item.tags.size > 0 }}
+              <div class="gallery-page-tags">
+                {{ for tag in item.tags }}<small>{{ tag }}</small>{{ end }}
+              </div>
+              {{ end }}
+            </div>
+          </a>
+          {{ end }}
+        </section>
+        {{ end }}
+      </div>
+    </main>
+    {{ include "footer" }}
+  </div>
+  {{ assets.js_html }}
+  {{ extra_scripts_html }}
+</body>
+</html>

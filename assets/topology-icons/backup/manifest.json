@@ -1,0 +1,302 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "backup",
+  "label": "Backup and Recovery Icons",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "backup", "recovery", "storage", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Generic backup and recovery topology roles. This is not a vendor-branded pack.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-10",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "backup-server",
+      "label": "Backup Server",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "BKP",
+      "color": "#00B336",
+      "category": "Backup",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/backup-server.svg",
+        "previewPath": "previews/backup-server.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "backup-server", "backup", "control-plane" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "backup-proxy",
+      "label": "Backup Proxy",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "PRX",
+      "color": "#00B336",
+      "category": "Backup",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/backup-proxy.svg",
+        "previewPath": "previews/backup-proxy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "proxy", "transport", "backup" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "repository",
+      "label": "Backup Repository",
+      "nodeKind": "Storage",
+      "shape": "Storage",
+      "symbol": "REPO",
+      "color": "#007A5A",
+      "category": "Storage",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/repository.svg",
+        "previewPath": "previews/repository.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "repo", "repository", "backup-storage" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "object-storage",
+      "label": "Object Storage Repository",
+      "nodeKind": "Storage",
+      "shape": "Cloud",
+      "symbol": "OBJ",
+      "color": "#007A5A",
+      "category": "Storage",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/object-storage.svg",
+        "previewPath": "previews/object-storage.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "object-storage", "capacity-tier", "repository" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "hardened-repository",
+      "label": "Hardened Repository",
+      "nodeKind": "Storage",
+      "shape": "Storage",
+      "symbol": "HARD",
+      "color": "#007A5A",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/hardened-repository.svg",
+        "previewPath": "previews/hardened-repository.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hardened", "immutable", "linux-repository" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "scale-out-repository",
+      "label": "Scale-Out Repository",
+      "nodeKind": "Storage",
+      "shape": "Storage",
+      "symbol": "SOR",
+      "color": "#007A5A",
+      "category": "Storage",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/scale-out-repository.svg",
+        "previewPath": "previews/scale-out-repository.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "scale-out", "repository", "extent" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "tape-library",
+      "label": "Tape Library",
+      "nodeKind": "Storage",
+      "shape": "Storage",
+      "symbol": "TAPE",
+      "color": "#007A5A",
+      "category": "Archive",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/tape-library.svg",
+        "previewPath": "previews/tape-library.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tape", "library", "archive" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "backup-job",
+      "label": "Backup Job",
+      "nodeKind": "Process",
+      "shape": "Service",
+      "symbol": "JOB",
+      "color": "#00B336",
+      "category": "Backup",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/backup-job.svg",
+        "previewPath": "previews/backup-job.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "job", "policy", "schedule" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "replication-job",
+      "label": "Replication Job",
+      "nodeKind": "Process",
+      "shape": "Service",
+      "symbol": "REPL",
+      "color": "#00B336",
+      "category": "Replication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/replication-job.svg",
+        "previewPath": "previews/replication-job.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "replication", "job", "dr" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "recovery-lab",
+      "label": "Recovery Lab",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "LAB",
+      "color": "#0F766E",
+      "category": "Validation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/recovery-lab.svg",
+        "previewPath": "previews/recovery-lab.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lab", "validation", "recovery" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "backup-manager",
+      "label": "Backup Manager",
+      "nodeKind": "Service",
+      "shape": "Application",
+      "symbol": "MGR",
+      "color": "#00B336",
+      "category": "Management",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/backup-manager.svg",
+        "previewPath": "previews/backup-manager.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "manager", "portal", "management" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "backup-console",
+      "label": "Backup Console",
+      "nodeKind": "Endpoint",
+      "shape": "Desktop",
+      "symbol": "UI",
+      "color": "#00B336",
+      "category": "Management",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/backup-console.svg",
+        "previewPath": "previews/backup-console.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "console", "ui", "operator" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "mount-server",
+      "label": "Mount Server",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "MNT",
+      "color": "#007A5A",
+      "category": "Recovery",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mount-server.svg",
+        "previewPath": "previews/mount-server.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "mount", "restore", "recovery" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "wan-accelerator",
+      "label": "WAN Accelerator",
+      "nodeKind": "Gateway",
+      "shape": "Router",
+      "symbol": "WAN",
+      "color": "#00B336",
+      "category": "Network",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/wan-accelerator.svg",
+        "previewPath": "previews/wan-accelerator.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "wan", "accelerator", "network" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    }
+  ]
+}

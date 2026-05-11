@@ -1,0 +1,1066 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-ad-network-premium",
+  "label": "ChartForgeX AD and Network Premium",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-expanded",
+  "builtIn": false,
+  "tags": [ "active-directory", "network", "directory-objects", "identity", "premium", "first-party", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-10",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX",
+    "trademark.note": "Active Directory and Microsoft names are used only as nominative diagram labels."
+  },
+  "icons": [
+    {
+      "id": "forest",
+      "label": "Forest",
+      "nodeKind": "Namespace",
+      "shape": "Forest",
+      "symbol": "FOR",
+      "color": "#16A34A",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/forest.svg",
+        "previewPath": "previews/forest.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ad", "forest", "directory", "trust-root" ],
+      "metadata": {
+        "artwork.template": "Directory",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "domain",
+      "label": "Domain",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "DOM",
+      "color": "#2563EB",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/domain.svg",
+        "previewPath": "previews/domain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ad", "domain", "dns", "security-boundary" ],
+      "metadata": {
+        "artwork.template": "Directory",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "child-domain",
+      "label": "Child Domain",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "CHD",
+      "color": "#2563EB",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/child-domain.svg",
+        "previewPath": "previews/child-domain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "child-domain", "tree", "domain" ],
+      "metadata": {
+        "artwork.template": "Directory",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "domain-controller",
+      "label": "Domain Controller",
+      "nodeKind": "Server",
+      "shape": "DomainController",
+      "symbol": "DC",
+      "color": "#2563EB",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/domain-controller.svg",
+        "previewPath": "previews/domain-controller.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "dc", "ldap", "kerberos" ],
+      "metadata": {
+        "artwork.template": "Server",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "read-only-domain-controller",
+      "label": "Read-Only Domain Controller",
+      "nodeKind": "Server",
+      "shape": "ReadOnlyDomainController",
+      "symbol": "RODC",
+      "color": "#7C3AED",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/read-only-domain-controller.svg",
+        "previewPath": "previews/read-only-domain-controller.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "rodc", "read-only", "branch" ],
+      "metadata": {
+        "artwork.template": "ReadOnlyServer",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "global-catalog",
+      "label": "Global Catalog",
+      "nodeKind": "Server",
+      "shape": "DomainController",
+      "symbol": "GC",
+      "color": "#0F766E",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/global-catalog.svg",
+        "previewPath": "previews/global-catalog.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "gc", "global-catalog", "index" ],
+      "metadata": {
+        "artwork.template": "Directory",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "pdc-emulator",
+      "label": "PDC Emulator",
+      "nodeKind": "Server",
+      "shape": "DomainController",
+      "symbol": "PDC",
+      "color": "#2563EB",
+      "category": "FSMO",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/pdc-emulator.svg",
+        "previewPath": "previews/pdc-emulator.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "fsmo", "pdc", "time-source" ],
+      "metadata": {
+        "artwork.template": "Server",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "schema-master",
+      "label": "Schema Master",
+      "nodeKind": "Server",
+      "shape": "DomainController",
+      "symbol": "SCH",
+      "color": "#7C3AED",
+      "category": "FSMO",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/schema-master.svg",
+        "previewPath": "previews/schema-master.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "fsmo", "schema", "forest" ],
+      "metadata": {
+        "artwork.template": "Policy",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "rid-master",
+      "label": "RID Master",
+      "nodeKind": "Server",
+      "shape": "DomainController",
+      "symbol": "RID",
+      "color": "#0F766E",
+      "category": "FSMO",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/rid-master.svg",
+        "previewPath": "previews/rid-master.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "fsmo", "rid", "identity" ],
+      "metadata": {
+        "artwork.template": "Policy",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "infrastructure-master",
+      "label": "Infrastructure Master",
+      "nodeKind": "Server",
+      "shape": "DomainController",
+      "symbol": "INF",
+      "color": "#0891B2",
+      "category": "FSMO",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/infrastructure-master.svg",
+        "previewPath": "previews/infrastructure-master.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "fsmo", "infrastructure", "reference" ],
+      "metadata": {
+        "artwork.template": "Server",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "site",
+      "label": "AD Site",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "SITE",
+      "color": "#16A34A",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/site.svg",
+        "previewPath": "previews/site.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ad-site", "site", "location" ],
+      "metadata": {
+        "artwork.template": "Application",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "site-link",
+      "label": "AD Site Link",
+      "nodeKind": "Network",
+      "shape": "Network",
+      "symbol": "LINK",
+      "color": "#2563EB",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/site-link.svg",
+        "previewPath": "previews/site-link.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "site-link", "replication", "transport" ],
+      "metadata": {
+        "artwork.template": "Link",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "site-link-bridge",
+      "label": "Site Link Bridge",
+      "nodeKind": "Network",
+      "shape": "Network",
+      "symbol": "BRG",
+      "color": "#0F766E",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/site-link-bridge.svg",
+        "previewPath": "previews/site-link-bridge.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "bridge", "site-link", "replication" ],
+      "metadata": {
+        "artwork.template": "Link",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "subnet",
+      "label": "Subnet",
+      "nodeKind": "NetworkSegment",
+      "shape": "NetworkSegment",
+      "symbol": "NET",
+      "color": "#0891B2",
+      "category": "Network",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/subnet.svg",
+        "previewPath": "previews/subnet.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "subnet", "cidr", "network-segment" ],
+      "metadata": {
+        "artwork.template": "Network",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "bridgehead",
+      "label": "Bridgehead Server",
+      "nodeKind": "Server",
+      "shape": "DomainController",
+      "symbol": "BH",
+      "color": "#0F766E",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/bridgehead.svg",
+        "previewPath": "previews/bridgehead.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "bridgehead", "inter-site", "replication" ],
+      "metadata": {
+        "artwork.template": "Server",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "replication-connection",
+      "label": "Replication Connection",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "REP",
+      "color": "#2563EB",
+      "category": "Replication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/replication-connection.svg",
+        "previewPath": "previews/replication-connection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "replication", "connection", "ntds" ],
+      "metadata": {
+        "artwork.template": "Link",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "kcc",
+      "label": "Knowledge Consistency Checker",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "KCC",
+      "color": "#0F766E",
+      "category": "Replication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/kcc.svg",
+        "previewPath": "previews/kcc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "kcc", "replication", "topology" ],
+      "metadata": {
+        "artwork.template": "Policy",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "gpo",
+      "label": "Group Policy Object",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "GPO",
+      "color": "#D97706",
+      "category": "Policy",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/gpo.svg",
+        "previewPath": "previews/gpo.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "gpo", "policy", "group-policy" ],
+      "metadata": {
+        "artwork.template": "Policy",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "ou",
+      "label": "Organizational Unit",
+      "nodeKind": "Team",
+      "shape": "Domain",
+      "symbol": "OU",
+      "color": "#64748B",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ou.svg",
+        "previewPath": "previews/ou.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ou", "container", "delegation" ],
+      "metadata": {
+        "artwork.template": "Directory",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "trust",
+      "label": "Domain Trust",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "TRST",
+      "color": "#7C3AED",
+      "category": "Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/trust.svg",
+        "previewPath": "previews/trust.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "trust", "forest-trust", "domain-trust" ],
+      "metadata": {
+        "artwork.template": "Link",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "dns-zone",
+      "label": "DNS Zone",
+      "nodeKind": "Namespace",
+      "shape": "Network",
+      "symbol": "DNS",
+      "color": "#0891B2",
+      "category": "DNS",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dns-zone.svg",
+        "previewPath": "previews/dns-zone.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "dns", "zone", "locator" ],
+      "metadata": {
+        "artwork.template": "Network",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "certificate-authority",
+      "label": "Certificate Authority",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CA",
+      "color": "#D97706",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/certificate-authority.svg",
+        "previewPath": "previews/certificate-authority.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "adcs", "certificate", "pki" ],
+      "metadata": {
+        "artwork.template": "Shield",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "adfs",
+      "label": "Federation Service",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "ADFS",
+      "color": "#2563EB",
+      "category": "Identity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/adfs.svg",
+        "previewPath": "previews/adfs.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "adfs", "federation", "sso" ],
+      "metadata": {
+        "artwork.template": "Application",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "laps",
+      "label": "Local Admin Password Solution",
+      "nodeKind": "Service",
+      "shape": "Certificate",
+      "symbol": "LAPS",
+      "color": "#D97706",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/laps.svg",
+        "previewPath": "previews/laps.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "laps", "password", "security" ],
+      "metadata": {
+        "artwork.template": "Shield",
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "user",
+      "label": "User",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "USR",
+      "color": "#2563EB",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/user.svg",
+        "previewPath": "previews/user.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "user", "person", "samaccountname", "principal" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "privileged-user",
+      "label": "Privileged User",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "ADM",
+      "color": "#7C3AED",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/privileged-user.svg",
+        "previewPath": "previews/privileged-user.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "user", "admin", "privileged", "tier0" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "disabled-user",
+      "label": "Disabled User",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "DIS",
+      "color": "#64748B",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/disabled-user.svg",
+        "previewPath": "previews/disabled-user.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "user", "disabled", "stale", "principal" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "security-group",
+      "label": "Security Group",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "SEC",
+      "color": "#0F766E",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/security-group.svg",
+        "previewPath": "previews/security-group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "group", "security-group", "sid", "acl" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "distribution-group",
+      "label": "Distribution Group",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "DL",
+      "color": "#0891B2",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/distribution-group.svg",
+        "previewPath": "previews/distribution-group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "group", "distribution-group", "mail-enabled" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "dynamic-group",
+      "label": "Dynamic Group",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "DYN",
+      "color": "#D97706",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dynamic-group.svg",
+        "previewPath": "previews/dynamic-group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "group", "dynamic", "query", "membership" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "computer",
+      "label": "Computer",
+      "nodeKind": "Endpoint",
+      "shape": "Desktop",
+      "symbol": "PC",
+      "color": "#2563EB",
+      "category": "Device",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/computer.svg",
+        "previewPath": "previews/computer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "computer", "workstation", "device", "endpoint" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "server-computer",
+      "label": "Server Computer",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "SRV",
+      "color": "#2563EB",
+      "category": "Device",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/server-computer.svg",
+        "previewPath": "previews/server-computer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "computer", "server", "member-server", "device" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "domain-joined-device",
+      "label": "Domain Joined Device",
+      "nodeKind": "Endpoint",
+      "shape": "Desktop",
+      "symbol": "DJ",
+      "color": "#16A34A",
+      "category": "Device",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/domain-joined-device.svg",
+        "previewPath": "previews/domain-joined-device.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "domain-joined", "device", "computer", "workstation" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "service-account",
+      "label": "Service Account",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "SVC",
+      "color": "#7C3AED",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/service-account.svg",
+        "previewPath": "previews/service-account.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "service-account", "user", "service-principal", "credential" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "managed-service-account",
+      "label": "Managed Service Account",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "MSA",
+      "color": "#0F766E",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/managed-service-account.svg",
+        "previewPath": "previews/managed-service-account.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "msa", "managed-service-account", "service-account" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "group-managed-service-account",
+      "label": "Group Managed Service Account",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "GMSA",
+      "color": "#0F766E",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/group-managed-service-account.svg",
+        "previewPath": "previews/group-managed-service-account.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "gmsa", "group-managed-service-account", "service-account" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "delegated-managed-service-account",
+      "label": "Delegated Managed Service Account",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "DMSA",
+      "color": "#0891B2",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/delegated-managed-service-account.svg",
+        "previewPath": "previews/delegated-managed-service-account.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "dmsa", "delegated-managed-service-account", "service-account" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "CNT",
+      "color": "#0891B2",
+      "category": "Object",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/contact.svg",
+        "previewPath": "previews/contact.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "contact", "mail-contact", "address-book" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "organizational-unit",
+      "label": "Organizational Unit",
+      "nodeKind": "Team",
+      "shape": "Domain",
+      "symbol": "OU",
+      "color": "#64748B",
+      "category": "Container",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/organizational-unit.svg",
+        "previewPath": "previews/organizational-unit.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ou", "organizational-unit", "container", "delegation" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "container",
+      "label": "Container",
+      "nodeKind": "Team",
+      "shape": "Domain",
+      "symbol": "CN",
+      "color": "#94A3B8",
+      "category": "Container",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/container.svg",
+        "previewPath": "previews/container.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "container", "cn", "directory-container" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "foreign-security-principal",
+      "label": "Foreign Security Principal",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "FSP",
+      "color": "#D97706",
+      "category": "Principal",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/foreign-security-principal.svg",
+        "previewPath": "previews/foreign-security-principal.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "foreign-security-principal", "sid", "trust", "external" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "printer",
+      "label": "Printer",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "PRN",
+      "color": "#64748B",
+      "category": "Resource",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/printer.svg",
+        "previewPath": "previews/printer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "printer", "print-queue", "resource" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "shared-folder",
+      "label": "Shared Folder",
+      "nodeKind": "Storage",
+      "shape": "Storage",
+      "symbol": "SHR",
+      "color": "#D97706",
+      "category": "Resource",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/shared-folder.svg",
+        "previewPath": "previews/shared-folder.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "shared-folder", "file-share", "resource", "unc" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "certificate-template",
+      "label": "Certificate Template",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "TPL",
+      "color": "#D97706",
+      "category": "PKI",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/certificate-template.svg",
+        "previewPath": "previews/certificate-template.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-template", "adcs", "pki", "template" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "password-settings-object",
+      "label": "Password Settings Object",
+      "nodeKind": "Service",
+      "shape": "Certificate",
+      "symbol": "PSO",
+      "color": "#7C3AED",
+      "category": "Policy",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/password-settings-object.svg",
+        "previewPath": "previews/password-settings-object.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "pso", "fgpp", "password-policy", "fine-grained-password-policy" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "dns-record",
+      "label": "DNS Record",
+      "nodeKind": "Namespace",
+      "shape": "Network",
+      "symbol": "DNS",
+      "color": "#0891B2",
+      "category": "DNS",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dns-record.svg",
+        "previewPath": "previews/dns-record.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "dns", "record", "a-record", "srv-record" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "bitlocker-recovery-key",
+      "label": "BitLocker Recovery Key",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "BLK",
+      "color": "#2563EB",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/bitlocker-recovery-key.svg",
+        "previewPath": "previews/bitlocker-recovery-key.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "bitlocker", "recovery-key", "msfve", "secret" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "service-connection-point",
+      "label": "Service Connection Point",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "SCP",
+      "color": "#0F766E",
+      "category": "Service",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/service-connection-point.svg",
+        "previewPath": "previews/service-connection-point.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "service-connection-point", "scp", "discovery", "service" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "adminsdholder",
+      "label": "AdminSDHolder",
+      "nodeKind": "Service",
+      "shape": "Certificate",
+      "symbol": "SD",
+      "color": "#DC2626",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/adminsdholder.svg",
+        "previewPath": "previews/adminsdholder.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "adminsdholder", "sdprop", "protected-users", "security-descriptor" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "schema-class",
+      "label": "Schema Class",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "CLS",
+      "color": "#7C3AED",
+      "category": "Schema",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/schema-class.svg",
+        "previewPath": "previews/schema-class.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "schema", "classschema", "attribute", "ldap-display-name" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "sites-and-services",
+      "label": "Sites and Services",
+      "nodeKind": "Network",
+      "shape": "Network",
+      "symbol": "S&S",
+      "color": "#16A34A",
+      "category": "Directory",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sites-and-services.svg",
+        "previewPath": "previews/sites-and-services.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "sites-and-services", "ntds-site-settings", "subnet", "site-link" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    }
+  ]
+}

@@ -1,0 +1,356 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792 612" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#d6d6d6;stroke:none;stroke-width:0.75}
+		.st2 {fill:#e5e5e5;stroke:none;stroke-width:0.75}
+		.st3 {fill:#4285f4;stroke:none;stroke-width:0.75}
+		.st4 {fill:#353d44;stroke:none;stroke-width:0.75}
+		.st5 {fill:#bfbfbf;stroke:none;stroke-width:0.75}
+		.st6 {fill:#999999;stroke:none;stroke-width:0.75}
+		.st7 {fill:#999999;fill-opacity:0.5;stroke:none;stroke-width:0.75}
+		.st8 {fill:#f05722;stroke:none;stroke-width:0.75}
+		.st9 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26" />
+		</v:userDefs>
+
+
+		<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group980-1" transform="translate(18,-519.856)" v:mID="980" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape981-2" v:mID="981" v:groupContext="shape" transform="translate(36.3726,-2.79789)">
+
+				<rect x="0" y="605.005" width="22.3831" height="6.99473" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape982-4" v:mID="982" v:groupContext="shape" transform="translate(27.9789,0)">
+
+				<rect x="0" y="609.202" width="39.1705" height="2.79789" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape983-6" v:mID="983" v:groupContext="shape" transform="translate(0,-20.9842)">
+
+				<path d="M95.13 561.64 C95.13 560.1 93.87 558.84 92.33 558.84 L2.8 558.84 C1.26 558.84 0 560.1 0 561.64 L0 612 L95.13         612 L95.13 561.64 Z" class="st3" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape984-8" v:mID="984" v:groupContext="shape" transform="translate(0,-20.9842)">
+
+				<path d="M92.33 561.64 C92.33 561.64 92.33 561.64 92.33 561.64 L92.33 609.2 L2.8 609.2 L2.8 561.64 C2.8 561.64 2.8         561.64 2.8 561.64 L92.33 561.64 L92.33 561.64 ZM92.33 558.84 L2.8 558.84 C1.26 558.84 0 560.1 0 561.64         L0 612 L95.13 612 L95.13 561.64 C95.13 560.1 93.87 558.84 92.33 558.84 Z" class="st4" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape985-10" v:mID="985" v:groupContext="shape" transform="translate(0,-9.79262)">
+
+				<path d="M0 600.81 L0 609.2 C0 610.74 1.26 612 2.8 612 L92.33 612 C93.87 612 95.13 610.74 95.13 609.2 L95.13 600.81         L0 600.81 Z" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape986-12" v:mID="986" v:groupContext="shape" transform="translate(43.3673,-13.9895)">
+
+				<rect x="0" y="609.202" width="8.39367" height="2.79789" class="st4" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape987-14" v:mID="987" v:groupContext="shape" transform="translate(36.3726,-8.39367)">
+
+				<rect x="0" y="610.601" width="22.3831" height="1.39895" class="st5" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape988-16" v:mID="988" v:groupContext="shape" transform="translate(41.9684,-26.58)">
+
+				<rect x="0" y="572.851" width="47.6516" height="39.1488" class="st3" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape989-18" v:mID="989" v:groupContext="shape" transform="translate(41.9684,-65.7288)">
+
+				<rect x="0" y="609.202" width="47.6516" height="2.79789" class="st6" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group990-20" transform="translate(5.59578,-26.58)" v:mID="990" v:groupContext="group">
+
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape991-21" v:mID="991" v:groupContext="shape">
+
+					<rect x="0" y="570.053" width="33.5747" height="41.9467" class="st4" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape992-23" v:mID="992" v:groupContext="shape" transform="translate(0,-39.1705)">
+
+					<rect x="0" y="609.224" width="33.5747" height="2.77621" class="st6" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group993-25" transform="translate(2.79789,-2.29637)" v:mID="993" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group994-26" v:mID="994" v:groupContext="group">
+
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape995-27" v:mID="995" v:groupContext="shape" transform="translate(0,-4.26119)">
+
+							<rect x="0" y="611.301" width="9.81448" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape996-29" v:mID="996" v:groupContext="shape" transform="translate(11.1916,-4.26119)">
+
+							<rect x="0" y="611.301" width="8.39367" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape997-31" v:mID="997" v:groupContext="shape" transform="translate(4.20777,-1.4633)">
+
+							<rect x="0" y="611.301" width="6.9838" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape998-33" v:mID="998" v:groupContext="shape" transform="translate(2.79789,-2.79789)">
+
+							<rect x="0" y="611.301" width="2.81975" height="0.699473" class="st8" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape999-35" v:mID="999" v:groupContext="shape" transform="translate(6.9838,-2.79789)">
+
+							<rect x="0" y="611.301" width="5.60671" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1000-37" v:mID="1000" v:groupContext="shape" transform="translate(5.61764,0)">
+
+							<rect x="0" y="611.301" width="8.37182" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1001-39" v:mID="1001" v:groupContext="shape" transform="translate(15.3884,0)">
+
+							<rect x="0" y="611.301" width="12.5905" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1002-41" v:mID="1002" v:groupContext="shape" transform="translate(12.5905,-1.43584)">
+
+							<rect x="0" y="611.301" width="2.79789" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1003-43" v:mID="1003" v:groupContext="shape" transform="translate(16.8092,-1.4633)">
+
+							<rect x="0" y="611.301" width="5.59578" height="0.699473" class="st3" />
+						</g>
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group1004-45" transform="translate(0,-7.18324)" v:mID="1004" v:groupContext="group">
+
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1005-46" v:mID="1005" v:groupContext="shape" transform="translate(1.4208,-21.0118)">
+
+							<rect x="0" y="611.301" width="9.77076" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1006-48" v:mID="1006" v:groupContext="shape" transform="translate(12.6124,-11.2309)">
+
+							<rect x="0" y="611.301" width="6.97287" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1007-50" v:mID="1007" v:groupContext="shape" transform="translate(6.9838,-18.2139)">
+
+							<rect x="0" y="611.301" width="5.60671" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1008-52" v:mID="1008" v:groupContext="shape" transform="translate(14.0059,-18.2139)">
+
+							<rect x="0" y="611.301" width="8.39909" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1009-54" v:mID="1009" v:groupContext="shape" transform="translate(2.79789,-11.2309)">
+
+							<rect x="0" y="611.301" width="8.39909" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1010-56" v:mID="1010" v:groupContext="shape" transform="translate(0,-22.4383)">
+
+							<rect x="0" y="611.301" width="4.19684" height="0.699473" class="st3" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1011-58" v:mID="1011" v:groupContext="shape" transform="translate(5.6012,-22.4383)">
+
+							<rect x="0" y="611.301" width="9.7872" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1012-60" v:mID="1012" v:groupContext="shape" transform="translate(2.79789,-19.6129)">
+
+							<rect x="0" y="611.301" width="4.18591" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1013-62" v:mID="1013" v:groupContext="shape" transform="translate(4.19684,-18.2139)">
+
+							<rect x="0" y="611.301" width="1.4208" height="0.699473" class="st3" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1014-64" v:mID="1014" v:groupContext="shape" transform="translate(8.41553,-19.6129)">
+
+							<rect x="0" y="611.301" width="5.57392" height="0.699473" class="st8" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1015-66" v:mID="1015" v:groupContext="shape" transform="translate(8.41553,0)">
+
+							<rect x="0" y="611.301" width="5.57392" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1016-68" v:mID="1016" v:groupContext="shape" transform="translate(8.41553,-12.6181)">
+
+							<rect x="0" y="611.301" width="16.7655" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1017-70" v:mID="1017" v:groupContext="shape" transform="translate(15.3993,-19.6129)">
+
+							<rect x="0" y="611.301" width="4.18591" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1018-72" v:mID="1018" v:groupContext="shape" transform="translate(5.61764,-16.815)">
+
+							<rect x="0" y="611.301" width="9.78169" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1019-74" v:mID="1019" v:groupContext="shape" transform="translate(2.79789,-6.97173)">
+
+							<rect x="0" y="611.301" width="13.9895" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1020-76" v:mID="1020" v:groupContext="shape" transform="translate(5.61764,-4.17384)">
+
+							<rect x="0" y="611.301" width="6.97287" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1021-78" v:mID="1021" v:groupContext="shape" transform="translate(14.0113,-4.17384)">
+
+							<rect x="0" y="611.301" width="4.20777" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1022-80" v:mID="1022" v:groupContext="shape" transform="translate(19.6071,-4.20156)">
+
+							<rect x="0" y="611.301" width="2.77603" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1023-82" v:mID="1023" v:groupContext="shape" transform="translate(0,-26.5432)">
+
+							<rect x="0" y="611.301" width="5.59578" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1024-84" v:mID="1024" v:groupContext="shape" transform="translate(1.4208,-25.2087)">
+
+							<rect x="0" y="611.301" width="5.56299" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1025-86" v:mID="1025" v:groupContext="shape" transform="translate(1.4208,0)">
+
+							<rect x="0" y="611.301" width="5.56299" height="0.699473" class="st7" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1026-88" v:mID="1026" v:groupContext="shape" transform="translate(1.4208,-12.6181)">
+
+							<rect x="0" y="611.301" width="5.56299" height="0.699473" class="st3" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1027-90" v:mID="1027" v:groupContext="shape" transform="translate(4.20777,-5.6096)">
+
+							<rect x="0" y="611.301" width="6.9838" height="0.699473" class="st3" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1028-92" v:mID="1028" v:groupContext="shape" transform="translate(12.5905,-5.58214)">
+
+							<rect x="0" y="611.301" width="2.79789" height="0.699473" class="st6" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1029-94" v:mID="1029" v:groupContext="shape" transform="translate(16.8092,-5.6096)">
+
+							<rect x="0" y="611.301" width="11.1697" height="0.699473" class="st8" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1030-96" v:mID="1030" v:groupContext="shape" transform="translate(0,-14.0446)">
+
+							<rect x="0" y="611.301" width="2.79789" height="0.699473" class="st8" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1031-98" v:mID="1031" v:groupContext="shape" transform="translate(0,-1.37604)">
+
+							<rect x="0" y="611.301" width="8.41553" height="0.699473" class="st3" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1032-100" v:mID="1032" v:groupContext="shape" transform="translate(4.19684,-9.79262)">
+
+							<rect x="0" y="611.301" width="11.2025" height="0.699473" class="st7" />
+						</g>
+					</g>
+				</g>
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group1033-102" transform="translate(50.9211,-27.2099)" v:mID="1033" v:groupContext="group">
+
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1034-103" v:mID="1034" v:groupContext="shape">
+
+					<path d="M23.42 574.5 L0 574.5 L0 612 L28.16 612 L28.16 579.24 L23.42 574.5 Z" class="st3" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group1035-105" transform="translate(2.34685,-2.32367)" v:mID="1035" v:groupContext="group">
+
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1036-106" v:mID="1036" v:groupContext="shape" transform="translate(14.888,-7.92061)">
+
+						<rect x="0" y="611.413" width="5.06025" height="0.586712" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1037-108" v:mID="1037" v:groupContext="shape" transform="translate(2.34685,-22.0018)">
+
+						<rect x="0" y="611.413" width="9.31406" height="0.586712" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1038-110" v:mID="1038" v:groupContext="shape" transform="translate(11.6609,-8.21397)">
+
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1039-111" v:mID="1039" v:groupContext="shape" transform="translate(7.04055,-18.7749)">
+
+						<rect x="0" y="604.959" width="9.3874" height="7.04055" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1040-113" v:mID="1040" v:groupContext="shape" transform="translate(7.04055,-1.13687E-13)">
+
+						<rect x="0" y="607.306" width="9.3874" height="4.6937" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1041-115" v:mID="1041" v:groupContext="shape" transform="translate(7.04055,-7.04055)">
+
+						<rect x="0" y="609.653" width="9.3874" height="2.34685" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1042-117" v:mID="1042" v:groupContext="shape" transform="translate(7.04055,-28.1623)">
+
+						<path d="M0 609.65 L4.69 607.31 L9.39 609.65 L4.69 612 L0 609.65 Z" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1043-119" v:mID="1043" v:groupContext="shape" transform="translate(7.04055,-11.7342)">
+
+						<path d="M0 609.65 L4.69 607.31 L9.39 609.65 L4.69 612 L0 609.65 Z" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1044-121" v:mID="1044" v:groupContext="shape" transform="translate(11.3675,-2.34685)">
+
+						<rect x="0" y="583.911" width="0.586712" height="28.0889" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1045-123" v:mID="1045" v:groupContext="shape" transform="translate(10.1941,-30.2158)">
+
+						<rect x="0" y="611.413" width="2.93356" height="0.586712" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1046-125" v:mID="1046" v:groupContext="shape" transform="translate(9.3874,-13.7878)">
+
+						<rect x="0" y="611.413" width="4.6937" height="0.586712" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group1047-127" transform="translate(8.80068,-1.46678)" v:mID="1047" v:groupContext="group">
+
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1048-128" v:mID="1048" v:groupContext="shape" transform="translate(0,-1.17342)">
+
+							<rect x="0" y="611.413" width="2.34685" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1049-130" v:mID="1049" v:groupContext="shape" transform="translate(3.52027,-1.17342)">
+
+							<rect x="0" y="611.413" width="1.17342" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1050-132" v:mID="1050" v:groupContext="shape">
+
+							<rect x="0" y="611.413" width="5.86712" height="0.586712" class="st4" />
+						</g>
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group1051-134" transform="translate(8.14063,-20.2416)" v:mID="1051" v:groupContext="group">
+
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1052-135" v:mID="1052" v:groupContext="shape" transform="translate(0,-1.17342)">
+
+							<rect x="0" y="611.413" width="7.04055" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1053-137" v:mID="1053" v:groupContext="shape">
+
+							<rect x="0" y="611.413" width="2.34685" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1054-139" v:mID="1054" v:groupContext="shape" transform="translate(3.52027,0)">
+
+							<rect x="0" y="611.413" width="1.17342" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1055-141" v:mID="1055" v:groupContext="shape" transform="translate(0,-2.34685)">
+
+							<rect x="0" y="611.413" width="3.52027" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1056-143" v:mID="1056" v:groupContext="shape" transform="translate(4.6937,-2.34685)">
+
+							<rect x="0" y="611.413" width="2.34685" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1057-145" v:mID="1057" v:groupContext="shape" transform="translate(-3.44724E-14,-3.52027)">
+
+							<rect x="0" y="611.413" width="5.86712" height="0.586712" class="st4" />
+						</g>
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1058-147" v:mID="1058" v:groupContext="shape" transform="translate(8.14063,-7.92061)">
+
+						<rect x="0" y="611.413" width="3.52027" height="0.586712" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1059-149" v:mID="1059" v:groupContext="shape" transform="translate(12.8343,-7.92061)">
+
+						<rect x="0" y="611.413" width="2.34685" height="0.586712" class="st4" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1060-151" v:mID="1060" v:groupContext="shape" transform="translate(18.7748,-7.04055)">
+
+						<rect x="0" y="609.653" width="4.6937" height="2.34685" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1061-153" v:mID="1061" v:groupContext="shape" transform="translate(0,-19.9483)">
+
+						<rect x="0" y="607.306" width="4.6937" height="4.6937" class="st2" />
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-group1062-155" transform="translate(1.17342,-21.4151)" v:mID="1062" v:groupContext="group">
+
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1063-156" v:mID="1063" v:groupContext="shape" transform="translate(0,-1.17342)">
+
+							<rect x="0" y="611.413" width="2.34685" height="0.586712" class="st4" />
+						</g>
+						<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1064-158" v:mID="1064" v:groupContext="shape">
+
+							<rect x="0" y="611.413" width="1.17342" height="0.586712" class="st4" />
+						</g>
+					</g>
+					<g id="cfxi-microsoft-azure-stencils-enterprise-integration-logic-apps-code-view-1-shape1065-160" v:mID="1065" v:groupContext="shape" transform="translate(19.8749,-7.92061)">
+
+						<rect x="0" y="611.413" width="2.34685" height="0.586712" class="st4" />
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+</svg>

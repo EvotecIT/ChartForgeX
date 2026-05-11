@@ -14,8 +14,10 @@ public sealed partial class PngChartRenderer {
         var definition = chart.Options.TileMapDefinition ?? throw new InvalidOperationException("Tile maps require a tile-map definition.");
         var data = MapValues(chart, series);
         var t = chart.Options.Theme;
-        var bottomReserve = chart.Options.ShowMapScaleLegend ? 52 : 20;
-        var plot = new ChartRect(basePlot.Left + 10, basePlot.Top + 10, Math.Max(1, basePlot.Width - 20), Math.Max(1, basePlot.Height - bottomReserve));
+        var rightLegend = chart.Options.ShowMapScaleLegend && chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right;
+        var bottomReserve = chart.Options.ShowMapScaleLegend && !rightLegend ? (ChartHeatmapSurface.MapMidpointLabel(chart) == null ? 52 : 68) : 20;
+        var rightReserve = rightLegend ? 172 : 0;
+        var plot = new ChartRect(basePlot.Left + 10, basePlot.Top + 10, Math.Max(1, basePlot.Width - 20 - rightReserve), Math.Max(1, basePlot.Height - bottomReserve));
         var maxColumn = 0;
         var maxRow = 0;
         maxColumn = definition.ColumnCount - 1;
@@ -31,23 +33,27 @@ public sealed partial class PngChartRenderer {
         foreach (var entry in data.Values) { if (entry.Value < min) min = entry.Value; if (entry.Value > max) max = entry.Value; }
         if (double.IsInfinity(min)) { min = 0; max = 1; }
         if (Math.Abs(max - min) < 0.000001) max = min + 1;
+        var regionStroke = chart.Options.MapRegionStrokeColor ?? t.CardBackground;
+        var regionStrokeWidth = Math.Max(0, chart.Options.MapRegionStrokeWidth);
         var hasMissing = false;
         foreach (var tile in definition.Regions) {
             if (!data.ContainsKey(tile.Code)) { hasMissing = true; break; }
         }
 
-        DrawTileMapPngSurface(c, chart, x0, y0, width, height, tileSize);
+        if (chart.Options.ShowMapSurface) DrawTileMapPngSurface(c, chart, x0, y0, width, height, tileSize);
         foreach (var tile in definition.Regions) {
             var hasValue = data.TryGetValue(tile.Code, out var entry);
             var value = hasValue ? entry.Value : 0;
-            var color = hasValue ? ChartHeatmapSurface.Color(chart, entry.Color ?? series.Color ?? t.Palette[0], value, min, max) : ChartHeatmapSurface.MapNoDataColor(chart);
+            var color = hasValue ? ChartHeatmapSurface.MapColor(chart, entry.Color, series.Color ?? t.Palette[0], value, min, max) : ChartHeatmapSurface.MapNoDataColor(chart);
             var x = x0 + tile.Column * (tileSize + gap);
             var y = y0 + tile.Row * (tileSize + gap);
             var points = HexTilePoints(x, y, tileSize);
             c.FillPolygon(points, color);
-            for (var i = 0; i < points.Count; i++) {
-                var next = points[(i + 1) % points.Count];
-                c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, t.CardBackground, Math.Max(1, tileSize * 0.035));
+            if (regionStrokeWidth > 0) {
+                for (var i = 0; i < points.Count; i++) {
+                    var next = points[(i + 1) % points.Count];
+                    c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, regionStroke, regionStrokeWidth);
+                }
             }
             if (chart.Options.ShowMapLabels) {
                 var fontSize = Math.Min(PngTickFontSize(chart), tileSize * 0.32);
@@ -55,10 +61,12 @@ public sealed partial class PngChartRenderer {
             }
         }
 
-        if (chart.Options.ShowMapScaleLegend) {
+        if (chart.Options.ShowMapScaleLegend && !rightLegend) {
             var scaleSize = Math.Max(8, Math.Min(13, tileSize * 0.32));
             var scaleY = Clamp(y0 + height + 22, basePlot.Top, basePlot.Bottom - scaleSize - 6);
             DrawTileMapPngScale(c, chart, series, min, max, hasMissing, x0 + width, scaleY, tileSize, plot);
+        } else if (rightLegend) {
+            DrawRegionMapPngRightScale(c, chart, series, min, max, hasMissing, Math.Min(basePlot.Right - 124, plot.Right + 52), y0 + Math.Max(28, height * 0.18), new ChartRect(x0, y0, width, height));
         }
     }
 
@@ -78,13 +86,19 @@ public sealed partial class PngChartRenderer {
         var x = right - width;
         var fontSize = PngTickFontSize(chart);
         if (hasMissing) DrawMapPngNoDataScale(c, chart, x, y, size, fontSize, plot);
-        c.DrawText(x - EstimatePngTextWidth("Less", fontSize) - 8, y + size / 2 - fontSize / 2, "Less", t.MutedText, fontSize);
+        var lowLabel = ChartHeatmapSurface.MapLowLabel(chart);
+        c.DrawText(x - EstimatePngTextWidth(lowLabel, fontSize) - 8, y + size / 2 - fontSize / 2, lowLabel, t.MutedText, fontSize);
         for (var i = 0; i < 5; i++) {
-            var value = min + (max - min) * (i / 4.0);
-            var color = ChartHeatmapSurface.Color(chart, series.Color ?? t.Palette[0], value, min, max);
+            var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
+            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
             c.FillRoundedRect(x + i * (size + gap), y, size, size, Math.Min(3, size * 0.22), color);
         }
-        c.DrawText(x + width + 8, y + size / 2 - fontSize / 2, "More", t.MutedText, fontSize);
+        var highLabel = ChartHeatmapSurface.MapHighLabel(chart);
+        c.DrawText(x + width + 8, y + size / 2 - fontSize / 2, highLabel, t.MutedText, fontSize);
+        var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
+        if (midpointLabel != null) {
+            c.DrawText(x + 2 * (size + gap) + size / 2 - EstimatePngTextWidth(midpointLabel, fontSize) / 2, y + size + 2, midpointLabel, t.MutedText, fontSize);
+        }
     }
 
     private static void DrawMapPngNoDataScale(RgbaCanvas c, Chart chart, double valueScaleX, double y, double size, double fontSize, ChartRect plot) {

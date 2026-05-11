@@ -1,6 +1,9 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
@@ -25,6 +28,7 @@ public sealed class SvgVisualGridRenderer {
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
+            .Attribute("id", id)
             .Attribute("width", layout.Width)
             .Attribute("height", layout.Height)
             .Attribute("viewBox", "0 0 " + layout.Width.ToString(CultureInfo.InvariantCulture) + " " + layout.Height.ToString(CultureInfo.InvariantCulture))
@@ -41,11 +45,16 @@ public sealed class SvgVisualGridRenderer {
             .StartElement("desc").Attribute("id", id + "-desc").Text("Static visual grid containing charts and visual blocks.").EndElement()
             .Line();
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
-        if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", background.ToCss()).EndEmptyElement().Line();
+        writer.StartElement("defs").EndStartElement().Line();
+        SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
+        SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualGridSurface", background);
+        writer.EndElement().Line();
+        if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", "url(#" + id + "-visualGridSurface)").EndEmptyElement().Line();
         if (grid.FrameVisible) {
             var inset = Math.Max(8, grid.Padding * 0.5);
             writer.StartElement("rect")
                 .Attribute("data-cfx-role", "visual-grid-frame")
+                .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
                 .Attribute("x", inset)
                 .Attribute("y", inset)
                 .Attribute("width", Math.Max(1, layout.Width - inset * 2))
@@ -56,19 +65,22 @@ public sealed class SvgVisualGridRenderer {
                 .Attribute("stroke-width", 1.4)
                 .EndEmptyElement()
                 .Line();
-            writer.StartElement("rect")
-                .Attribute("data-cfx-role", "visual-grid-frame-highlight")
-                .Attribute("x", inset + 1.5)
-                .Attribute("y", inset + 1.5)
-                .Attribute("width", Math.Max(1, layout.Width - inset * 2 - 3))
-                .Attribute("height", Math.Max(1, layout.Height - inset * 2 - 3))
-                .Attribute("rx", Math.Max(theme.CornerRadius - 1.5, 24))
-                .Attribute("fill", "none")
-                .Attribute("stroke", "#fff")
-                .Attribute("stroke-opacity", 0.42)
-                .Attribute("stroke-width", 1)
-                .EndEmptyElement()
-                .Line();
+            if (background.A > 0) {
+                writer.StartElement("rect")
+                    .Attribute("data-cfx-role", "visual-grid-frame-highlight")
+                    .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
+                    .Attribute("x", inset + ChartVisualPrimitives.CardInnerHighlightInset)
+                    .Attribute("y", inset + ChartVisualPrimitives.CardInnerHighlightInset)
+                    .Attribute("width", Math.Max(1, layout.Width - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
+                    .Attribute("height", Math.Max(1, layout.Height - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
+                    .Attribute("rx", Math.Max(theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset, 24))
+                    .Attribute("fill", "none")
+                    .Attribute("stroke", "#fff")
+                    .Attribute("stroke-opacity", ChartVisualPrimitives.CardInnerHighlightOpacity)
+                    .Attribute("stroke-width", 1)
+                    .EndEmptyElement()
+                    .Line();
+            }
         }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
@@ -79,12 +91,34 @@ public sealed class SvgVisualGridRenderer {
         for (var i = 0; i < layout.Cells.Count; i++) {
             var cell = layout.Cells[i];
             var childScope = id + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
-            var childSvg = cell.Item.Chart != null ? _chartRenderer.Render(cell.Item.Chart, childScope) : _blockRenderer.Render(cell.Item.Block!, childScope);
+            var childSvg = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, childScope) : RenderChildBlock(cell.Item.Block!, childScope);
             writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualGridPanelFit.Stretch)).Line();
         }
 
         writer.EndElement().Line();
         return writer.Build();
+    }
+
+    private string RenderChildChart(Chart chart, string childScope) {
+        var transparentBackground = chart.Options.TransparentBackground;
+        try {
+            chart.Options.TransparentBackground = true;
+            return _chartRenderer.Render(chart, childScope);
+        }
+        finally {
+            chart.Options.TransparentBackground = transparentBackground;
+        }
+    }
+
+    private string RenderChildBlock(IVisualBlock block, string childScope) {
+        var transparentBackground = block.Options.TransparentBackground;
+        try {
+            block.Options.TransparentBackground = true;
+            return _blockRenderer.Render(block, childScope);
+        }
+        finally {
+            block.Options.TransparentBackground = transparentBackground;
+        }
     }
 
     private static string PositionChildSvg(string svg, double x, double y, double width, double height, bool stretch) {

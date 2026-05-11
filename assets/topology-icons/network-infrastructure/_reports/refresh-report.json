@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-10T14:24:53.2791430Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "network-infrastructure",
+  "iconCount": 14,
+  "previewSize": 128,
+  "previewPngFiles": 14,
+  "previewFailures": 0,
+  "issues": []
+}

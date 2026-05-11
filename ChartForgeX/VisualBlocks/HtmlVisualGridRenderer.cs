@@ -2,7 +2,10 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using ChartForgeX.Core;
 using ChartForgeX.Html;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
@@ -38,11 +41,11 @@ public sealed class HtmlVisualGridRenderer {
         for (var i = 0; i < grid.Items.Count; i++) {
             var item = grid.Items[i];
             var columnSpan = Math.Min(item.ColumnSpan, columns);
-            var childSvg = item.Chart != null ? _chartRenderer.Render(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : _blockRenderer.Render(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture));
+            var childSvg = item.Chart != null ? RenderChildChart(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : RenderChildBlock(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture));
             writer.StartElement("article")
                 .Attribute("class", "chartforgex-visual-grid-panel")
                 .Attribute("aria-label", ItemTitle(item))
-                .Attribute("style", PanelSpanStyle(columnSpan, item.RowSpan))
+                .Attribute("style", PanelSpanStyle(columnSpan, item.RowSpan, grid.PanelSize.HasValue))
                 .EndStartElement()
                 .RawTrusted(PrepareChildSvg(childSvg, grid.PanelSize.HasValue && grid.PanelFit == VisualGridPanelFit.Stretch))
                 .EndElement();
@@ -52,12 +55,34 @@ public sealed class HtmlVisualGridRenderer {
         return writer.Build();
     }
 
+    private string RenderChildChart(Chart chart, string childScope) {
+        var transparentBackground = chart.Options.TransparentBackground;
+        try {
+            chart.Options.TransparentBackground = true;
+            return _chartRenderer.Render(chart, childScope);
+        }
+        finally {
+            chart.Options.TransparentBackground = transparentBackground;
+        }
+    }
+
+    private string RenderChildBlock(IVisualBlock block, string childScope) {
+        var transparentBackground = block.Options.TransparentBackground;
+        try {
+            block.Options.TransparentBackground = true;
+            return _blockRenderer.Render(block, childScope);
+        }
+        finally {
+            block.Options.TransparentBackground = transparentBackground;
+        }
+    }
+
     /// <summary>Renders a visual grid as a complete HTML document.</summary>
     public string RenderPage(VisualGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
-        var background = theme.Background.A == 0 ? theme.CardBackground.ToCss() : theme.Background.ToCss();
+        var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var title = grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
@@ -72,8 +97,8 @@ public sealed class HtmlVisualGridRenderer {
         return writer.Build();
     }
 
-    private static string BuildCss(string background, string text, string mutedText, string border, string fontFamily, double titleFontSize, double subtitleFontSize) {
-        return "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid.has-frame{border:1px solid " + border + ";border-radius:30px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.42)}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),var(--cfx-visual-grid-panel-width,minmax(0,1fr)));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%}.chartforgex-visual-grid.has-fixed-panels.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}";
+    private static string BuildCss(ChartColor background, string text, string mutedText, string border, string fontFamily, double titleFontSize, double subtitleFontSize) {
+        return HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "0") + ".chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid.has-frame{border:1px solid " + border + ";border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.42)}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,var(--cfx-visual-grid-panel-width)));justify-content:center}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%}.chartforgex-visual-grid.has-fixed-panels.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body,.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0!important}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
     }
 
     private static string ItemTitle(VisualGridItem item) {
@@ -95,14 +120,29 @@ public sealed class HtmlVisualGridRenderer {
         sb.Append(";--cfx-visual-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
         sb.Append(";--cfx-visual-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
         sb.Append(";--cfx-visual-grid-panel-width:").Append(layout.PanelWidth.ToString(CultureInfo.InvariantCulture)).Append("px");
-        sb.Append(";--cfx-visual-grid-panel-height:").Append(layout.PanelHeight.ToString(CultureInfo.InvariantCulture)).Append("px");
+        sb.Append(";--cfx-visual-grid-panel-height:");
+        if (!grid.PanelSize.HasValue && grid.AdaptiveRowHeights) sb.Append("auto");
+        else sb.Append(layout.PanelHeight.ToString(CultureInfo.InvariantCulture)).Append("px");
 
         return sb.ToString();
     }
 
-    private static string? PanelSpanStyle(int columnSpan, int rowSpan) {
+    private static string? PanelSpanStyle(int columnSpan, int rowSpan, bool hasFixedPanelSize) {
         if (columnSpan == 1 && rowSpan == 1) return null;
-        return "grid-column:span " + columnSpan.ToString(CultureInfo.InvariantCulture) + ";grid-row:span " + rowSpan.ToString(CultureInfo.InvariantCulture);
+        var sb = new StringBuilder();
+        sb.Append("grid-column:span ");
+        sb.Append(columnSpan.ToString(CultureInfo.InvariantCulture));
+        sb.Append(";grid-row:span ");
+        sb.Append(rowSpan.ToString(CultureInfo.InvariantCulture));
+        if (hasFixedPanelSize && rowSpan > 1) {
+            sb.Append(";min-height:calc((var(--cfx-visual-grid-panel-height) * ");
+            sb.Append(rowSpan.ToString(CultureInfo.InvariantCulture));
+            sb.Append(") + (var(--cfx-visual-grid-gap) * ");
+            sb.Append((rowSpan - 1).ToString(CultureInfo.InvariantCulture));
+            sb.Append("))");
+        }
+
+        return sb.ToString();
     }
 
     private static string PrepareChildSvg(string svg, bool stretch) {

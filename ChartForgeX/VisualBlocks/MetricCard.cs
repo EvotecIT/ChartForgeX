@@ -11,8 +11,10 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     private readonly List<MetricCardDetail> _details = new();
     private readonly List<double> _miniBars = new();
     private readonly List<double> _miniSparkline = new();
+    private readonly List<double> _secondaryMiniSparkline = new();
     private string _label = string.Empty;
     private string _value = string.Empty;
+    private string _unit = string.Empty;
     private string _caption = string.Empty;
     private string _trend = string.Empty;
     private string _symbol = string.Empty;
@@ -27,12 +29,18 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     private VisualIcon _icon;
     private VisualStatus _status;
     private MetricCardBadgePlacement _badgePlacement;
+    private MetricCardMicroVisualPlacement _microVisualPlacement;
+    private MetricCardSparklineStyle _miniSparklineStyle;
+    private MetricCardMicroVisualSurface _microVisualSurface;
 
     /// <summary>Gets compact bar values rendered inside the metric card.</summary>
     public IReadOnlyList<double> MiniBars => _miniBars;
 
     /// <summary>Gets compact sparkline values rendered inside the metric card.</summary>
     public IReadOnlyList<double> MiniSparkline => _miniSparkline;
+
+    /// <summary>Gets optional secondary sparkline values rendered beside the primary sparkline.</summary>
+    public IReadOnlyList<double> SecondaryMiniSparkline => _secondaryMiniSparkline;
 
     /// <summary>Gets compact supporting detail rows rendered inside the card.</summary>
     public IReadOnlyList<MetricCardDetail> Details => _details;
@@ -42,6 +50,9 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
 
     /// <summary>Gets or sets the metric value.</summary>
     public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets an optional metric unit rendered beside the value.</summary>
+    public string Unit { get => _unit; set => _unit = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets optional supporting text.</summary>
     public string Caption { get => _caption; set => _caption = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -118,6 +129,18 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     /// <summary>Gets or sets the optional fill color under the mini sparkline.</summary>
     public ChartColor? MiniSparklineFillColor { get; set; }
 
+    /// <summary>Gets or sets the optional stroke color for the secondary mini sparkline.</summary>
+    public ChartColor? SecondaryMiniSparklineColor { get; set; }
+
+    /// <summary>Gets or sets the mini sparkline presentation style.</summary>
+    public MetricCardSparklineStyle MiniSparklineStyle {
+        get => _miniSparklineStyle;
+        set {
+            VisualBlockGuards.EnumDefined(value, nameof(value));
+            _miniSparklineStyle = value;
+        }
+    }
+
     /// <summary>Gets or sets an optional built-in icon rendered as a badge.</summary>
     public VisualIcon Icon {
         get => _icon;
@@ -145,6 +168,24 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         }
     }
 
+    /// <summary>Gets or sets where compact mini charts are rendered inside the metric card.</summary>
+    public MetricCardMicroVisualPlacement MicroVisualPlacement {
+        get => _microVisualPlacement;
+        set {
+            VisualBlockGuards.EnumDefined(value, nameof(value));
+            _microVisualPlacement = value;
+        }
+    }
+
+    /// <summary>Gets or sets the optional surface treatment for the mini visual.</summary>
+    public MetricCardMicroVisualSurface MicroVisualSurface {
+        get => _microVisualSurface;
+        set {
+            VisualBlockGuards.EnumDefined(value, nameof(value));
+            _microVisualSurface = value;
+        }
+    }
+
     /// <summary>Gets a concise accessibility label.</summary>
     public override string AccessibleName => Label.Length == 0 ? base.AccessibleName : Label;
 
@@ -152,11 +193,15 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     public static MetricCard Create() => new();
 
     /// <summary>Sets the primary metric label and value.</summary>
-    public MetricCard WithMetric(string label, object? value, string? format = null) {
+    public MetricCard WithMetric(string label, object? value, string? format = null, string? unit = null) {
         Label = label ?? throw new ArgumentNullException(nameof(label));
         Value = ChartTableCell.FromValue(value, format).Text;
+        Unit = unit ?? string.Empty;
         return this;
     }
+
+    /// <summary>Sets an optional metric unit rendered beside the value.</summary>
+    public MetricCard WithUnit(string unit) { Unit = unit ?? throw new ArgumentNullException(nameof(unit)); return this; }
 
     /// <summary>Sets optional supporting text.</summary>
     public MetricCard WithCaption(string caption) { Caption = caption ?? throw new ArgumentNullException(nameof(caption)); return this; }
@@ -232,6 +277,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         }
 
         if (_miniSparkline.Count < 2) throw new ArgumentException("Metric card mini sparklines require at least two values.", nameof(values));
+        if (_secondaryMiniSparkline.Count > 0 && _secondaryMiniSparkline.Count != _miniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
         MiniSparklineMinimum = minimum;
         MiniSparklineMaximum = maximum;
         MiniSparklineColor = color;
@@ -243,10 +289,12 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     /// <summary>Clears compact sparkline values from the metric card.</summary>
     public MetricCard WithoutMiniSparkline() {
         _miniSparkline.Clear();
+        _secondaryMiniSparkline.Clear();
         MiniSparklineMinimum = null;
         MiniSparklineMaximum = null;
         MiniSparklineColor = null;
         MiniSparklineFillColor = null;
+        SecondaryMiniSparklineColor = null;
         return this;
     }
 
@@ -259,6 +307,39 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     /// <summary>Sets the badge placement when an icon or symbol is configured.</summary>
     public MetricCard WithBadgePlacement(MetricCardBadgePlacement placement) {
         BadgePlacement = placement;
+        return this;
+    }
+
+    /// <summary>Sets where compact mini charts are rendered inside the metric card.</summary>
+    public MetricCard WithMicroVisualPlacement(MetricCardMicroVisualPlacement placement) {
+        MicroVisualPlacement = placement;
+        return this;
+    }
+
+    /// <summary>Sets the mini sparkline presentation style.</summary>
+    public MetricCard WithMiniSparklineStyle(MetricCardSparklineStyle style) {
+        MiniSparklineStyle = style;
+        return this;
+    }
+
+    /// <summary>Replaces optional secondary sparkline values rendered with the primary sparkline.</summary>
+    public MetricCard WithSecondaryMiniSparkline(IEnumerable<double> values, ChartColor? color = null) {
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        _secondaryMiniSparkline.Clear();
+        foreach (var value in values) {
+            if (!IsFinite(value)) throw new ArgumentOutOfRangeException(nameof(values), value, "Secondary mini sparkline values must be finite.");
+            _secondaryMiniSparkline.Add(value);
+        }
+
+        if (_secondaryMiniSparkline.Count < 2) throw new ArgumentException("Metric card secondary mini sparklines require at least two values.", nameof(values));
+        if (_miniSparkline.Count > 0 && _secondaryMiniSparkline.Count != _miniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
+        SecondaryMiniSparklineColor = color;
+        return this;
+    }
+
+    /// <summary>Sets the optional surface treatment for compact mini visuals.</summary>
+    public MetricCard WithMicroVisualSurface(MetricCardMicroVisualSurface surface) {
+        MicroVisualSurface = surface;
         return this;
     }
 

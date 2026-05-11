@@ -16,13 +16,21 @@ public sealed class PngChartGridRenderer {
     /// </summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <returns>A PNG image.</returns>
-    public byte[] Render(ChartGrid grid) {
+    public byte[] Render(ChartGrid grid) => PngWriter.WriteRgba(RenderImage(grid));
+
+    internal RgbaImage RenderImage(ChartGrid grid) => RenderCanvas(grid).ToImage();
+
+    internal RgbaCanvas RenderCanvas(ChartGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var layout = ChartGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         var output = new RgbaCanvas(layout.Width, layout.Height, 1, null, grid.PngOutputScale);
         output.Clear(background);
+        if (background.A == 255) {
+            var inset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
+            output.FillRoundedRectVerticalGradient(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
+        }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
@@ -36,7 +44,7 @@ public sealed class PngChartGridRenderer {
             output.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, chartCanvas.OutputWidth, chartCanvas.OutputHeight, chartCanvas.ToOutputPixels());
         }
 
-        return PngWriter.WriteRgba(output.OutputWidth, output.OutputHeight, output.ToOutputPixels());
+        return output;
     }
 
     private static double StyleFontSize(ChartTextStyle style, double fallback) => style.FontSize ?? fallback;
@@ -66,4 +74,5 @@ public sealed class PngChartGridRenderer {
 
         return value.Substring(0, low) + suffix;
     }
+
 }

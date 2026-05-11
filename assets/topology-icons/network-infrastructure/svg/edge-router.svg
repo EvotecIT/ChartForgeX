@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" preserveAspectRatio="xMidYMid meet">
+<g>
+<defs>
+<linearGradient id="edge-router-shell" x1="18" y1="33" x2="78" y2="69" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F8FAFC"/><stop offset="0.55" stop-color="#CBD5E1"/><stop offset="1" stop-color="#64748B"/></linearGradient>
+<linearGradient id="edge-router-top" x1="25" y1="24" x2="70" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#94A3B8"/></linearGradient>
+<filter id="edge-router-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.25"/></filter>
+</defs>
+<ellipse cx="48" cy="62" rx="33" ry="10" fill="#0F172A" opacity="0.18"/>
+<path d="M19 47 C24 36 36 31 48 31 C60 31 72 36 77 47 L72 64 C66 70 30 70 24 64 Z" fill="url(#edge-router-shell)" filter="url(#edge-router-shadow)"/>
+<path d="M26 46 C32 39 40 36 48 36 C56 36 64 39 70 46" fill="none" stroke="url(#edge-router-top)" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
+<circle cx="32" cy="57" r="2.2" fill="#22C55E"/>
+<circle cx="39" cy="57" r="2.2" fill="#38BDF8"/>
+<rect x="46" y="53" width="8" height="6" rx="1.2" fill="#1E293B"/>
+<rect x="58" y="53" width="8" height="6" rx="1.2" fill="#1E293B"/>
+<path d="M21 34 L13 24 M75 34 L83 24" stroke="#475569" stroke-width="4" stroke-linecap="round"/><path d="M48 25 V14" stroke="#475569" stroke-width="4" stroke-linecap="round"/><path d="M27 24 C33 18 40 15 48 15 C56 15 63 18 69 24" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+<text x="48" y="81" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#0F172A">EDGE</text>
+</g>
+</svg>

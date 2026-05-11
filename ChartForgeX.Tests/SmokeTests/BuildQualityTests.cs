@@ -46,6 +46,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("$Comparison.dimensionMatches -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when SVG/PNG dimensions drift apart.");
         Assert(script.Contains("$Comparison.healthySvgs -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when SVG health drops.");
         Assert(script.Contains("$Comparison.healthyPngs -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when PNG health drops.");
+        Assert(script.Contains("$Comparison.healthyHtmls -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when standalone HTML health drops.");
         Assert(script.Contains("$Comparison.warnings -ne 0", StringComparison.Ordinal), "Build script should fail when generated SVG/PNG comparison warnings are present.");
         Assert(script.Contains("visual-baseline.json", StringComparison.Ordinal), "Build script should verify generated visuals against the checked-in baseline.");
         Assert(script.Contains("[switch] $UpdateVisualBaseline", StringComparison.Ordinal), "Build script should offer an intentional visual-baseline refresh switch.");

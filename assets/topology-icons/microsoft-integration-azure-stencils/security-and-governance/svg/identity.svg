@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 841.89 595.276" preserveAspectRatio="xMidYMid meet">
+<style type="text/css" xmlns="http://www.w3.org/2000/svg">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:none;stroke-linecap:butt;stroke-width:0.75}
+		.st2 {fill:#e5e5e5;stroke:none;stroke-linecap:butt;stroke-width:0.75}
+		.st3 {fill:#2bc7f4;stroke:none;stroke-linecap:butt;stroke-width:0.75}
+		.st4 {fill:none;stroke:#556a8a;stroke-linecap:butt;stroke-width:1.5}
+		.st5 {stroke:#556a8a;stroke-linecap:butt;stroke-width:1.5}
+		.st6 {fill:none}
+		.st7 {fill:none;stroke:none;stroke-linecap:butt;stroke-width:0.75}
+		.st8 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" xmlns="http://www.w3.org/2000/svg">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26" />
+		</v:userDefs>
+
+
+		<v:layer v:name="Connector" v:index="0" />
+		<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-group1041-1" transform="translate(18,-529.276)" v:mID="1041" v:groupContext="group">
+
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1042-2" v:mID="1042" v:groupContext="shape" transform="translate(7.5,-0.75)">
+
+				<path d="M0 593.78 A1.50003 1.50003 -180 0 0 1.5 595.28 L30.75 595.28 A1.50003 1.50003 -180 0 0 32.25 593.78 L32.25         550.28 A1.50003 1.50003 -180 0 0 30.75 548.78 L1.5 548.78 A1.50003 1.50003 -180 0 0 0 550.28 L0 593.78         Z" class="st1" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1043-4" v:mID="1043" v:groupContext="shape" transform="translate(7.5,-0.75)">
+
+				<path d="M32.25 587.03 L32.25 593.78 A1.5 1.5 0 0 1 30.75 595.28 L1.5 595.28 A1.5 1.5 0 0 1 0 593.78 L0 587.03 L32.25         587.03 Z" class="st2" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1044-6" v:mID="1044" v:groupContext="shape" transform="translate(7.5,-42)">
+
+				<path d="M32.25 591.53 L32.25 595.28 L0 595.28 L0 591.53 A1.5 1.5 0 0 1 1.5 590.03 L30.75 590.03 A1.5 1.5 0 0 1 32.25         591.53 Z" class="st3" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1045-8" v:mID="1045" v:groupContext="shape" transform="translate(7.5,-0.75)">
+
+				<path d="M0 593.78 A1.50003 1.50003 -180 0 0 1.5 595.28 L30.75 595.28 A1.50003 1.50003 -180 0 0 32.25 593.78 L32.25         550.28 A1.50003 1.50003 -180 0 0 30.75 548.78 L1.5 548.78 A1.50003 1.50003 -180 0 0 0 550.28 L0 593.78         Z" class="st4" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1046-10" v:mID="1046" v:groupContext="shape" transform="translate(7.5,-42)">
+
+				<path d="M0 595.28 L32.25 595.28" class="st5" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1047-13" v:mID="1047" v:groupContext="shape" transform="translate(7.5,-9)">
+
+				<path d="M0 595.28 L32.25 595.28" class="st5" />
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-group1048-16" transform="translate(14.25,-15.75)" v:mID="1048" v:groupContext="group">
+
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1049-17" v:mID="1049" v:groupContext="shape" transform="translate(3.375,-9)">
+
+					<ellipse cx="6" cy="589.276" rx="6" ry="6" class="st4" />
+				</g>
+				<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1050-19" v:mID="1050" v:groupContext="shape">
+
+					<path d="M0 595.28 A9.195 9.195 0 0 1 9.37 586.28 A9.195 9.195 0 0 1 18.75 595.28 L0 595.28 Z" class="st6" />
+					<path d="M0 595.28 A9.195 9.195 0 0 1 9.37 586.28 A9.195 9.195 0 0 1 18.75 595.28" class="st5" />
+				</g>
+			</g>
+			<g id="cfxi-microsoft-azure-stencils-security-and-governance-identity-shape1051-22" v:mID="1051" v:groupContext="shape">
+
+				<rect x="0" y="547.276" width="48" height="48" class="st7" />
+			</g>
+		</g>
+	</g>
+</svg>

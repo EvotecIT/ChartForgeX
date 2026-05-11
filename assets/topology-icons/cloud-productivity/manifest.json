@@ -1,0 +1,382 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "cloud-productivity",
+  "label": "Cloud Productivity Icons",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "cloud", "productivity", "identity", "collaboration", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Generic cloud productivity, identity, security, and collaboration topology roles. This is not a vendor-branded pack.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-10",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "productivity-suite",
+      "label": "Productivity Suite",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "SaaS",
+      "color": "#2563EB",
+      "category": "Cloud",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/productivity-suite.svg",
+        "previewPath": "previews/productivity-suite.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "productivity-suite", "saas", "cloud" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "tenant",
+      "label": "Tenant",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "TEN",
+      "color": "#7C3AED",
+      "category": "Identity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/tenant.svg",
+        "previewPath": "previews/tenant.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenant", "directory", "identity" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "cloud-identity",
+      "label": "Cloud Identity",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "ID",
+      "color": "#2563EB",
+      "category": "Identity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/cloud-identity.svg",
+        "previewPath": "previews/cloud-identity.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity", "directory", "cloud" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "conditional-access",
+      "label": "Conditional Access",
+      "nodeKind": "Gateway",
+      "shape": "Certificate",
+      "symbol": "CA",
+      "color": "#D97706",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/conditional-access.svg",
+        "previewPath": "previews/conditional-access.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "conditional-access", "policy", "security" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "mail-service",
+      "label": "Mail Service",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "MAIL",
+      "color": "#2563EB",
+      "category": "Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mail-service.svg",
+        "previewPath": "previews/mail-service.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "mail", "messaging", "service" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "content-sites",
+      "label": "Content Sites",
+      "nodeKind": "Service",
+      "shape": "Application",
+      "symbol": "SITE",
+      "color": "#0F766E",
+      "category": "Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/content-sites.svg",
+        "previewPath": "previews/content-sites.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "sites", "content", "collaboration" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "team-collaboration",
+      "label": "Team Collaboration",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "TEAM",
+      "color": "#7C3AED",
+      "category": "Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/team-collaboration.svg",
+        "previewPath": "previews/team-collaboration.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "team", "chat", "meetings" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "cloud-drive",
+      "label": "Cloud Drive",
+      "nodeKind": "Storage",
+      "shape": "Cloud",
+      "symbol": "DRV",
+      "color": "#0891B2",
+      "category": "Storage",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/cloud-drive.svg",
+        "previewPath": "previews/cloud-drive.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "files", "storage", "cloud-drive" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "data-governance",
+      "label": "Data Governance",
+      "nodeKind": "Service",
+      "shape": "Certificate",
+      "symbol": "GOV",
+      "color": "#7C3AED",
+      "category": "Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/data-governance.svg",
+        "previewPath": "previews/data-governance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance", "compliance", "data" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "threat-protection",
+      "label": "Threat Protection",
+      "nodeKind": "Service",
+      "shape": "Certificate",
+      "symbol": "TP",
+      "color": "#16A34A",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/threat-protection.svg",
+        "previewPath": "previews/threat-protection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security", "endpoint", "protection" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "device-management",
+      "label": "Device Management",
+      "nodeKind": "Service",
+      "shape": "Service",
+      "symbol": "MDM",
+      "color": "#2563EB",
+      "category": "Endpoint",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/device-management.svg",
+        "previewPath": "previews/device-management.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "mdm", "endpoint", "device-management" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "low-code-platform",
+      "label": "Low-Code Platform",
+      "nodeKind": "Application",
+      "shape": "Application",
+      "symbol": "APP",
+      "color": "#7C3AED",
+      "category": "Application",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/low-code-platform.svg",
+        "previewPath": "previews/low-code-platform.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "low-code", "automation", "apps" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "cloud-subscription",
+      "label": "Cloud Subscription",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "SUB",
+      "color": "#2563EB",
+      "category": "Cloud",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/cloud-subscription.svg",
+        "previewPath": "previews/cloud-subscription.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "subscription", "cloud", "namespace" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "resource-group",
+      "label": "Resource Group",
+      "nodeKind": "Group",
+      "shape": "Network",
+      "symbol": "RG",
+      "color": "#2563EB",
+      "category": "Cloud",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/resource-group.svg",
+        "previewPath": "previews/resource-group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "resource-group", "cloud", "group" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "secret-vault",
+      "label": "Secret Vault",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "KV",
+      "color": "#D97706",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/secret-vault.svg",
+        "previewPath": "previews/secret-vault.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "secret", "certificate", "vault" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "private-endpoint",
+      "label": "Private Endpoint",
+      "nodeKind": "Endpoint",
+      "shape": "NetworkSegment",
+      "symbol": "PE",
+      "color": "#0891B2",
+      "category": "Network",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/private-endpoint.svg",
+        "previewPath": "previews/private-endpoint.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "private-endpoint", "network", "connectivity" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "private-circuit",
+      "label": "Private Circuit",
+      "nodeKind": "Gateway",
+      "shape": "Router",
+      "symbol": "WAN",
+      "color": "#0891B2",
+      "category": "Network",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/private-circuit.svg",
+        "previewPath": "previews/private-circuit.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "private-circuit", "circuit", "network" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    },
+    {
+      "id": "security-analytics",
+      "label": "Security Analytics",
+      "nodeKind": "Database",
+      "shape": "Database",
+      "symbol": "SIEM",
+      "color": "#2563EB",
+      "category": "Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/security-analytics.svg",
+        "previewPath": "previews/security-analytics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-analytics", "siem", "logs" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-10"
+      }
+    }
+  ]
+}

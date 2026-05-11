@@ -1,0 +1,137 @@
+{
+  "sourceUrl": "https://github.com/sandroasp/Microsoft-Integration-and-Azure-Stencils-Pack-for-Visio",
+  "sourceRevision": "d332d1457fc8d43d972815eab59d0a2da3087c45",
+  "license": "MIT",
+  "generatedAtUtc": "2026-05-09T22:08:46.9886840Z",
+  "generatePng": true,
+  "previewSize": 128,
+  "packs": [
+    {
+      "category": "AI and Machine Learning",
+      "packId": "microsoft-azure-stencils-ai-and-machine-learning",
+      "sourceSvgFiles": 124,
+      "importedIcons": 124,
+      "skippedFiles": 0,
+      "svgFiles": 124,
+      "previewPngFiles": 124,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    },
+    {
+      "category": "Apps and Systems",
+      "packId": "microsoft-azure-stencils-apps-and-systems",
+      "sourceSvgFiles": 9,
+      "importedIcons": 9,
+      "skippedFiles": 0,
+      "svgFiles": 9,
+      "previewPngFiles": 9,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    },
+    {
+      "category": "Azure",
+      "packId": "microsoft-azure-stencils-azure",
+      "sourceSvgFiles": 585,
+      "importedIcons": 585,
+      "skippedFiles": 0,
+      "svgFiles": 585,
+      "previewPngFiles": 585,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    },
+    {
+      "category": "Databases and Analytics",
+      "packId": "microsoft-azure-stencils-databases-and-analytics",
+      "sourceSvgFiles": 73,
+      "importedIcons": 73,
+      "skippedFiles": 0,
+      "svgFiles": 73,
+      "previewPngFiles": 73,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    },
+    {
+      "category": "Enterprise Integration",
+      "packId": "microsoft-azure-stencils-enterprise-integration",
+      "sourceSvgFiles": 72,
+      "importedIcons": 72,
+      "skippedFiles": 0,
+      "svgFiles": 72,
+      "previewPngFiles": 72,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    },
+    {
+      "category": "IoT",
+      "packId": "microsoft-azure-stencils-iot",
+      "sourceSvgFiles": 34,
+      "importedIcons": 34,
+      "skippedFiles": 0,
+      "svgFiles": 34,
+      "previewPngFiles": 34,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    },
+    {
+      "category": "Office 365",
+      "packId": "microsoft-azure-stencils-office-365",
+      "sourceSvgFiles": 65,
+      "importedIcons": 62,
+      "skippedFiles": 3,
+      "svgFiles": 62,
+      "previewPngFiles": 62,
+      "previewFailures": 0,
+      "issues": [
+        "SVG/Access.svg: SVG DTD entity declarations are not supported.",
+        "SVG/Forms.svg: SVG DTD entity declarations are not supported.",
+        "SVG/Publisher.svg: SVG DTD entity declarations are not supported."
+      ]
+    },
+    {
+      "category": "Others",
+      "packId": "microsoft-azure-stencils-others",
+      "sourceSvgFiles": 99,
+      "importedIcons": 95,
+      "skippedFiles": 4,
+      "svgFiles": 95,
+      "previewPngFiles": 95,
+      "previewFailures": 0,
+      "issues": [
+        "SVG/Developer/azure-artifacts.svg: SVG artwork contains unsafe content.",
+        "SVG/Developer/azure-pipelines.svg: SVG artwork contains unsafe content.",
+        "SVG/Developer/azure-repos.svg: SVG artwork contains unsafe content.",
+        "SVG/Developer/azure-test-plans.svg: SVG artwork contains unsafe content."
+      ]
+    },
+    {
+      "category": "Power Platform",
+      "packId": "microsoft-azure-stencils-power-platform",
+      "sourceSvgFiles": 22,
+      "importedIcons": 22,
+      "skippedFiles": 0,
+      "svgFiles": 22,
+      "previewPngFiles": 22,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    },
+    {
+      "category": "Security and Governance",
+      "packId": "microsoft-azure-stencils-security-and-governance",
+      "sourceSvgFiles": 153,
+      "importedIcons": 153,
+      "skippedFiles": 0,
+      "svgFiles": 153,
+      "previewPngFiles": 153,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    }
+  ]
+}

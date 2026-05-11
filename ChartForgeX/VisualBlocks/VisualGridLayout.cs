@@ -32,7 +32,9 @@ internal sealed class VisualGridLayout {
         foreach (var item in grid.Items) {
             if (grid.PanelSize.HasValue) break;
             var size = ItemSize(item);
-            panelWidth = Math.Max(panelWidth, size.Width);
+            var columnSpan = Math.Min(item.ColumnSpan, columns);
+            var itemPanelWidth = grid.AdaptiveRowHeights ? (int)Math.Ceiling((size.Width - (columnSpan - 1) * grid.Gap) / (double)columnSpan) : size.Width;
+            panelWidth = Math.Max(panelWidth, itemPanelWidth);
             panelHeight = Math.Max(panelHeight, size.Height);
         }
 
@@ -40,21 +42,55 @@ internal sealed class VisualGridLayout {
         var headerHeight = grid.Title.Length == 0 && grid.Subtitle.Length == 0 ? 0 : Math.Max(76, (int)Math.Ceiling(theme.TitleFontSize + (grid.Subtitle.Length == 0 ? 0 : theme.SubtitleFontSize) + 37));
         var width = grid.Padding * 2 + columns * panelWidth + (columns - 1) * grid.Gap;
         var occupied = new List<bool[]>();
-        var cells = new List<VisualGridCell>(grid.Items.Count);
+        var placements = new List<VisualGridPlacement>(grid.Items.Count);
+        var rowHeights = new List<int>();
         foreach (var item in grid.Items) {
             var columnSpan = Math.Min(item.ColumnSpan, columns);
             var rowSpan = item.RowSpan;
             var placement = FindPlacement(occupied, columns, columnSpan, rowSpan);
             MarkOccupied(occupied, columns, placement.Row, placement.Column, columnSpan, rowSpan);
+            var defaultRowHeight = !grid.PanelSize.HasValue && grid.AdaptiveRowHeights ? 1 : panelHeight;
+            while (rowHeights.Count < placement.Row + rowSpan) rowHeights.Add(defaultRowHeight);
+            if (!grid.PanelSize.HasValue && grid.AdaptiveRowHeights) {
+                var size = ItemSize(item);
+                var naturalRowHeight = Math.Max(1, (int)Math.Ceiling((size.Height - (rowSpan - 1) * grid.Gap) / (double)rowSpan));
+                for (var row = placement.Row; row < placement.Row + rowSpan; row++) rowHeights[row] = Math.Max(rowHeights[row], naturalRowHeight);
+            }
+
+            placements.Add(new VisualGridPlacement(item, placement.Row, placement.Column, columnSpan, rowSpan));
+        }
+
+        if (!grid.PanelSize.HasValue && grid.AdaptiveRowHeights) {
+            for (var row = 0; row < rowHeights.Count; row++) {
+                var occupiedInRow = false;
+                for (var column = 0; column < columns; column++) if (occupied[row][column]) { occupiedInRow = true; break; }
+                if (!occupiedInRow) rowHeights[row] = 0;
+            }
+        }
+
+        var rowOffsets = new List<int>(rowHeights.Count);
+        var cursorY = grid.Padding + headerHeight;
+        for (var row = 0; row < rowHeights.Count; row++) {
+            rowOffsets.Add(cursorY);
+            cursorY += rowHeights[row] + grid.Gap;
+        }
+
+        var cells = new List<VisualGridCell>(grid.Items.Count);
+        foreach (var placement in placements) {
+            var item = placement.Item;
+            var columnSpan = placement.ColumnSpan;
+            var rowSpan = placement.RowSpan;
             var panelX = grid.Padding + placement.Column * (panelWidth + grid.Gap);
-            var panelY = grid.Padding + headerHeight + placement.Row * (panelHeight + grid.Gap);
+            var panelY = rowOffsets[placement.Row];
             var spannedWidth = columnSpan * panelWidth + (columnSpan - 1) * grid.Gap;
-            var spannedHeight = rowSpan * panelHeight + (rowSpan - 1) * grid.Gap;
+            var spannedHeight = SpannedRowHeight(rowHeights, placement.Row, rowSpan, grid.Gap);
             cells.Add(FitCell(item, panelX, panelY, spannedWidth, spannedHeight, grid.PanelSize.HasValue, grid.PanelFit));
         }
 
-        var rows = occupied.Count;
-        var height = grid.Padding * 2 + headerHeight + rows * panelHeight + Math.Max(0, rows - 1) * grid.Gap;
+        var rows = rowHeights.Count;
+        var contentHeight = 0;
+        for (var row = 0; row < rows; row++) contentHeight += rowHeights[row];
+        var height = grid.Padding * 2 + headerHeight + contentHeight + Math.Max(0, rows - 1) * grid.Gap;
         return new VisualGridLayout(width, height, headerHeight, panelWidth, panelHeight, cells);
     }
 
@@ -100,6 +136,28 @@ internal sealed class VisualGridLayout {
         while (occupied.Count < row + rowSpan) occupied.Add(new bool[columns]);
         for (var r = row; r < row + rowSpan; r++) for (var c = column; c < column + columnSpan; c++) occupied[r][c] = true;
     }
+
+    private static int SpannedRowHeight(IReadOnlyList<int> rowHeights, int row, int rowSpan, int gap) {
+        var height = 0;
+        for (var i = row; i < row + rowSpan; i++) height += rowHeights[i];
+        return height + Math.Max(0, rowSpan - 1) * gap;
+    }
+}
+
+internal sealed class VisualGridPlacement {
+    public VisualGridPlacement(VisualGridItem item, int row, int column, int columnSpan, int rowSpan) {
+        Item = item;
+        Row = row;
+        Column = column;
+        ColumnSpan = columnSpan;
+        RowSpan = rowSpan;
+    }
+
+    public VisualGridItem Item { get; }
+    public int Row { get; }
+    public int Column { get; }
+    public int ColumnSpan { get; }
+    public int RowSpan { get; }
 }
 
 internal sealed class VisualGridCell {

@@ -15,17 +15,24 @@ internal static class TopologyExamples {
     }
 
     private static void WriteAll(string target) {
+        var iconCatalog = BuildDemoIconCatalog();
         var demos = new[] {
             ("site-topology", BuildSiteTopologyChart()),
             ("replication-mesh", BuildReplicationMeshChart()),
             ("subnets-site-links", BuildSubnetsSiteLinksChart()),
             ("geographic-topology", BuildGeographicTopologyChart()),
             ("dc-connectivity", BuildDcConnectivityChart()),
-            ("service-dependency", BuildServiceDependencyChart())
+            ("service-dependency", BuildServiceDependencyChart()),
+            ("icon-palette", iconCatalog.ToPaletteChart(new TopologyIconPaletteOptions {
+                Title = "Topology Icon Palette",
+                Subtitle = "Built-in stencil models plus sample artwork-backed vendor icons.",
+                PacksPerRow = 3,
+                ColumnsPerPack = 4
+            }))
         };
 
         foreach (var demo in demos) {
-            var options = demo.Item1 == "service-dependency" ? new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto } : null;
+            var options = DemoRenderOptions(demo.Item1, iconCatalog);
             demo.Item2.SaveSvg(Path.Combine(target, demo.Item1 + ".svg"), options);
             demo.Item2.SaveHtml(Path.Combine(target, demo.Item1 + ".html"), options);
             demo.Item2.SavePng(Path.Combine(target, demo.Item1 + ".png"), options);
@@ -54,7 +61,54 @@ internal static class TopologyExamples {
         });
 
         TopologyVisualExamples.Write(target);
-        File.WriteAllText(Path.Combine(target, "index.html"), BuildIndex(demos), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(target, "icon-stencil-browser.html"), iconCatalog.ToStencilBrowserHtmlPage(new TopologyIconStencilBrowserOptions {
+            Title = "Topology Stencil Browser",
+            Subtitle = "Search and choose built-in, directory, cloud, people, and sample vendor icons from one reusable catalog.",
+            PacksPerRow = 3,
+            ColumnsPerPack = 4
+        }), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(target, "index.html"), BuildIndex(demos, iconCatalog), Encoding.UTF8);
+    }
+
+    private static TopologyRenderOptions? DemoRenderOptions(string name, TopologyIconCatalog iconCatalog) {
+        if (name == "service-dependency") return new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto };
+        if (name == "icon-palette") {
+            return new TopologyRenderOptions {
+                IconCatalog = iconCatalog,
+                IncludeLegend = false,
+                EnableHtmlInteractions = true
+            };
+        }
+
+        return null;
+    }
+
+    private static TopologyIconCatalog BuildDemoIconCatalog() {
+        return TopologyIconCatalog.Default()
+            .AddPack(new TopologyIconPack("azure-example", "Azure Example Icons", vendor: "Microsoft", version: "sample")
+                .WithMetadata("licensing", "Sample artwork; hosts can replace these with approved official vendor assets.")
+                .WithTags("azure", "cloud", "vendor", "sample")
+                .AddIcon(new TopologyIconDefinition("azure-example", "data-factory", "Data Factory", TopologyNodeKind.Process, TopologyIconShape.Application) {
+                    Symbol = "ADF",
+                    Color = "#0078D4",
+                    Category = "Azure",
+                    DisplayMode = TopologyNodeDisplayMode.Tile,
+                    Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"6\" width=\"13\" height=\"32\" rx=\"2\" fill=\"#50E6FF\"/><path d=\"M20 17 H28 M20 31 H28\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"13.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"29\" r=\"2.6\" fill=\"#FFFFFF\"/>", "0 0 48 48")
+                }.WithTags("data-factory", "pipeline", "etl"))
+                .AddIcon(new TopologyIconDefinition("azure-example", "key-vault", "Key Vault", TopologyNodeKind.Certificate, TopologyIconShape.Certificate) {
+                    Symbol = "KV",
+                    Color = "#0078D4",
+                    Category = "Security",
+                    DisplayMode = TopologyNodeDisplayMode.Tile,
+                    Artwork = TopologyIconArtwork.InlineSvg("<circle cx=\"24\" cy=\"16\" r=\"9\" fill=\"#50E6FF\"/><rect x=\"13\" y=\"21\" width=\"22\" height=\"18\" rx=\"3\" fill=\"#0078D4\"/><path d=\"M20 21 v-5 a4 4 0 0 1 8 0 v5\" fill=\"none\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"24\" cy=\"30\" r=\"3\" fill=\"#FFFFFF\"/><path d=\"M24 33 v4\" stroke=\"#FFFFFF\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>", "0 0 48 48")
+                }.WithTags("key-vault", "secret", "certificate"))
+                .AddIcon(new TopologyIconDefinition("azure-example", "resource-group", "Resource Group", TopologyNodeKind.Group, TopologyIconShape.Network) {
+                    Symbol = "RG",
+                    Color = "#0078D4",
+                    Category = "Azure",
+                    DisplayMode = TopologyNodeDisplayMode.Tile,
+                    Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#50E6FF\"/><rect x=\"17\" y=\"27\" width=\"14\" height=\"13\" rx=\"2\" fill=\"#7FBA00\"/><path d=\"M20 14.5 H28 M24 21 V27\" stroke=\"#243A5E\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>", "0 0 48 48")
+                }.WithTags("resource-group", "group", "azure")));
     }
 
     private static void WriteView(TopologyChart chart, string pathWithoutExtension, TopologyView view) {
@@ -68,7 +122,7 @@ internal static class TopologyExamples {
         chart.SavePng(pathWithoutExtension + ".png", options);
     }
 
-    private static string BuildIndex((string Name, TopologyChart Chart)[] demos) {
+    private static string BuildIndex((string Name, TopologyChart Chart)[] demos, TopologyIconCatalog iconCatalog) {
         var sb = new StringBuilder();
         sb.AppendLine("<!doctype html>");
         sb.AppendLine("<html lang=\"en\">");
@@ -80,10 +134,11 @@ internal static class TopologyExamples {
         sb.AppendLine("</head>");
         sb.AppendLine("<body>");
         sb.AppendLine("<h1>ChartForgeX Topology Demos</h1>");
+        sb.AppendLine("<nav class=\"demo\" aria-label=\"Topology extras\"><h2>Topology extras</h2><p><a href=\"icon-stencil-browser.html\">Open stencil browser</a> · <a href=\"visual-coverage.html\">Open visual coverage gallery</a></p></nav>");
         foreach (var demo in demos) {
             sb.AppendLine("<section class=\"demo\">");
             sb.AppendLine("<h2>" + Escape(demo.Chart.Title ?? demo.Name) + "</h2>");
-            var options = demo.Name == "service-dependency" ? new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto } : null;
+            var options = DemoRenderOptions(demo.Name, iconCatalog);
             sb.AppendLine(demo.Chart.ToSvg(options));
             sb.AppendLine("</section>");
         }

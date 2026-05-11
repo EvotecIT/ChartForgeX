@@ -19,6 +19,19 @@ public sealed partial class Chart {
         return AddTileMapCore(name, definition, regions, color);
     }
 
+    /// <summary>
+    /// Adds a tile-map heatmap from a reusable tile-map definition.
+    /// </summary>
+    /// <param name="name">The series name.</param>
+    /// <param name="definition">The tile-map geometry definition.</param>
+    /// <param name="regions">The region values to render. Each tile is colored independently from its own value.</param>
+    /// <param name="scale">An optional map color scale used to color the tiles.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddTileHeatmap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartMapColorScale? scale = null) {
+        if (scale != null) Options.MapColorScale = scale;
+        return AddTileMap(name, definition, regions);
+    }
+
     private Chart AddTileMapCore(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color) {
         if (regions == null) throw new ArgumentNullException(nameof(regions));
         var byRegion = new SortedDictionary<string, RegionAggregate>(StringComparer.OrdinalIgnoreCase);
