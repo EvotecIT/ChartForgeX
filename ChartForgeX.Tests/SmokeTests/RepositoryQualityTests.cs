@@ -192,6 +192,7 @@ internal static partial class SmokeTests {
         var libraryProject = Path.Combine(FindRepositoryRoot(), "ChartForgeX", "ChartForgeX.csproj");
         Assert(HasXmlProperty(libraryProject, "PackageId", "ChartForgeX"), "PackageId should remain stable.");
         Assert(HasXmlProperty(libraryProject, "PackageReadmeFile", "README.md"), "Package should include the README.");
+        Assert(HasXmlProperty(libraryProject, "PackageLicenseExpression", "MIT"), "Core package should declare the repository license.");
         Assert(HasXmlProperty(libraryProject, "PackageProjectUrl", "https://github.com/EvotecIT/ChartForgeX"), "Package should expose the project URL.");
         Assert(HasXmlProperty(libraryProject, "RepositoryUrl", "https://github.com/EvotecIT/ChartForgeX"), "Package should expose the repository URL.");
         Assert(HasXmlProperty(libraryProject, "RepositoryType", "git"), "Package repository type should be git.");
@@ -202,9 +203,20 @@ internal static partial class SmokeTests {
         var releaseNotes = GetXmlValue(libraryProject, "PackageReleaseNotes");
         Assert(releaseNotes.Contains("SVG", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("PNG", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("validation", StringComparison.OrdinalIgnoreCase), "Package release notes should summarize renderer coverage and validation work.");
         Assert(releaseNotes.Contains("brand kits", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("pictorial", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("word cloud", StringComparison.OrdinalIgnoreCase), "Package release notes should summarize the current chart and styling surface.");
-        Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CHANGELOG.md")), "Repository should include a changelog.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
-        Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "RELEASING.md")), "Repository should include release guidance.");
+        Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");
+        Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "AGENTS.md")), "Repository should include agent guidance.");
+        Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "LICENSE")), "Repository should include a root license file.");
+        Assert(!File.Exists(Path.Combine(FindRepositoryRoot(), "CHANGELOG.md")), "GitHub Releases should be the release-note source of truth instead of a second repository changelog.");
+        Assert(!File.Exists(Path.Combine(FindRepositoryRoot(), "docs", "dashboard-pattern-expansion-plan.md")), "Completed dashboard implementation plans should be folded into TODO or focused docs instead of staying as stale plan files.");
+        Assert(!Directory.Exists(Path.Combine(FindRepositoryRoot(), "experiments")), "Release branches should not ship loose experiment folders; keep durable decisions in docs or TODO.");
+        foreach (var packageProject in new[] {
+            libraryProject,
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.csproj"),
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj")
+        }) {
+            Assert(HasXmlProperty(packageProject, "PackageLicenseExpression", "MIT"), "Package should declare the MIT license: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));
+        }
         var tags = GetXmlValue(libraryProject, "PackageTags");
         foreach (var tag in new[] { "charts", "svg", "reports", "zero-dependency" }) {
             Assert(tags.Contains(tag, StringComparison.OrdinalIgnoreCase), "Package tags should include " + tag + ".");
@@ -213,6 +225,11 @@ internal static partial class SmokeTests {
 
     private static void ReadmeDocumentsChartCatalog() {
         var readme = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "README.md"));
+        Assert(readme.Contains("## Visual Tour", StringComparison.Ordinal), "README should include rendered visuals near the top of the page.");
+        Assert(readme.Contains("Website/static/examples/generated/dashboard-chart-portfolio-grid.svg", StringComparison.Ordinal), "README should show a dashboard visual preview.");
+        Assert(readme.Contains("Website/static/examples/generated/control-coverage-heatmap-dark.svg", StringComparison.Ordinal) && readme.Contains("Website/static/examples/generated/control-coverage-heatmap-dark.png", StringComparison.Ordinal), "README should link both SVG and PNG output for at least one generated visual.");
+        Assert(readme.Contains("Website/static/examples/generated/visual-geographic-topology-map.svg", StringComparison.Ordinal), "README should show a topology visual preview.");
+        Assert(readme.Contains("## Generated Examples", StringComparison.Ordinal) && readme.Contains("svg-png-comparison.html", StringComparison.Ordinal) && readme.Contains("C# sidecar snippets", StringComparison.Ordinal), "README should explain how generated examples expose SVG, PNG, HTML, and C# source snippets.");
         Assert(readme.Contains("## Chart catalog", StringComparison.Ordinal), "README should include a chart catalog.");
         Assert(readme.Contains("validates chart data before rendering", StringComparison.Ordinal), "README should document render-time validation behavior.");
         Assert(readme.Contains("cyclic Sankey flows", StringComparison.Ordinal), "README should document Sankey cycle rejection.");
@@ -235,6 +252,9 @@ internal static partial class SmokeTests {
         Assert(readme.Contains("ChartBrandKit", StringComparison.Ordinal) && readme.Contains("WithBrandKit", StringComparison.Ordinal), "README should document reusable brand kits.");
         Assert(readme.Contains("ChartBrandKit.Executive()", StringComparison.Ordinal) && readme.Contains("PeopleInfographic()", StringComparison.Ordinal) && readme.Contains("Accessible()", StringComparison.Ordinal), "README should document brand kit presets.");
         Assert(readme.Contains("Report intent", StringComparison.Ordinal) && readme.Contains("Theme starting point", StringComparison.Ordinal) && readme.Contains("Brand kit starting point", StringComparison.Ordinal), "README should help users choose between themes and brand kits.");
+        Assert(readme.Contains("## Release Maturity", StringComparison.Ordinal) && readme.Contains("No chart type is marked for removal", StringComparison.Ordinal), "README should carry the first-release chart catalog decision without requiring a separate decision-record document.");
+        Assert(readme.Contains("## Supported Outputs", StringComparison.Ordinal) && readme.Contains("SaveImage", StringComparison.Ordinal) && readme.Contains("SaveRasterImage", StringComparison.Ordinal) && readme.Contains("RasterImageOptions", StringComparison.Ordinal), "README should document the export API behavior contract directly.");
+        Assert(readme.Contains("GitHub Releases", StringComparison.Ordinal) && readme.Contains("NuGet", StringComparison.Ordinal), "README should explain where release notes belong.");
         Assert(readme.Contains("WithPanelSpan", StringComparison.Ordinal) && readme.Contains("columnSpan", StringComparison.Ordinal), "README should document grid panel spans.");
         Assert(readme.Contains("ChartColor.FromHex", StringComparison.Ordinal) && readme.Contains("ChartPalettes.FromHex", StringComparison.Ordinal), "README should document pasted hex color customization.");
         Assert(readme.Contains("WithSurfaceColors", StringComparison.Ordinal) && readme.Contains("WithSemanticColors", StringComparison.Ordinal) && readme.Contains("WithSurfaceStyle", StringComparison.Ordinal), "README should document theme color and surface customization helpers.");
@@ -297,6 +317,9 @@ internal static partial class SmokeTests {
             "AddTileMap",
             "ChartMapCatalog",
             "ChartMapCatalogEntry",
+            "ChartMapCatalogEntryKind",
+            "EmbeddedEntries",
+            "ExternalEntries",
             "Load",
             "FromAssetDirectory",
             "ChartMapDefinition",

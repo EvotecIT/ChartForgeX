@@ -71,6 +71,7 @@ public static partial class GalleryWriter {
         var directory = Path.GetDirectoryName(htmlFile) ?? string.Empty;
         var svgExists = File.Exists(Path.Combine(directory, baseName + ".svg"));
         var pngExists = File.Exists(Path.Combine(directory, baseName + ".png"));
+        var csharpExists = File.Exists(Path.Combine(directory, baseName + ".csharp.txt"));
         var title = ReadTitle(htmlFile);
         sb.AppendLine("<article class=\"card\">");
         if (svgExists) {
@@ -85,6 +86,7 @@ public static partial class GalleryWriter {
         sb.AppendLine("<a href=\"" + EscapeHtml(fileName) + "\">HTML</a>");
         if (svgExists) sb.AppendLine("<a href=\"" + EscapeHtml(baseName) + ".svg\">SVG</a>");
         if (pngExists) sb.AppendLine("<a href=\"" + EscapeHtml(baseName) + ".png\">PNG</a>");
+        if (csharpExists) sb.AppendLine("<a href=\"" + EscapeHtml(baseName) + ".csharp.txt\">C#</a>");
         sb.AppendLine("</div>");
         sb.AppendLine("</div>");
         sb.AppendLine("</article>");

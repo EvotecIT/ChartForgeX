@@ -71,6 +71,67 @@ chart.SaveSvg("dashboard-premium-trend-style.svg");
 chart.SavePng("dashboard-premium-trend-style.png");
 chart.SaveHtml("dashboard-premium-trend-style.html");
 """);
+
+        WriteCSharp(output, "control-coverage-heatmap-dark", """
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+static IEnumerable<ChartPoint> Points(params double[] values) {
+    for (var index = 0; index < values.Length; index++) {
+        yield return new ChartPoint(index + 1, values[index]);
+    }
+}
+
+var heatmap = Chart.Create()
+    .WithTitle("Control Coverage Matrix")
+    .WithSubtitle("Heatmap rows for comparing domain groups across security controls")
+    .WithXAxis("Control")
+    .WithYAxis("Domain group")
+    .WithTheme(ChartTheme.ReportDark())
+    .WithSize(980, 560)
+    .WithLegend(false)
+    .WithDataLabels()
+    .WithHeatmapScale(ChartHeatmapScale.Semantic)
+    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT", "CT")
+    .AddHeatmapRow("Primary domains", Points(96, 88, 74, 63, 58, 92))
+    .AddHeatmapRow("Parked domains", Points(74, 62, 51, 42, 38, 66))
+    .AddHeatmapRow("Regional domains", Points(82, 77, 68, 54, 49, 80))
+    .AddHeatmapRow("Acquired domains", Points(58, 43, 36, 28, 25, 52));
+
+heatmap.SaveSvg("control-coverage-heatmap-dark.svg");
+heatmap.SavePng("control-coverage-heatmap-dark.png");
+heatmap.SaveHtml("control-coverage-heatmap-dark.html");
+""");
+
+        WriteCSharp(output, "travel-dotted-map-dark", """
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+var travelMap = Chart.Create()
+    .WithTitle("Travel Map")
+    .WithSubtitle("Dotted world layer with highlighted longitude and latitude points")
+    .WithTheme(ChartTheme.ReportDark())
+    .WithSize(980, 560)
+    .WithLegend(false)
+    .WithDataLabels()
+    .AddDottedMap("Visited", new[] {
+        new ChartMapPoint("Indonesia", 113.9213, -0.7893, ChartColor.FromRgb(34, 197, 94)),
+        new ChartMapPoint("Spain", -3.7038, 40.4168, ChartColor.FromRgb(34, 197, 94)),
+        new ChartMapPoint("United States", -98.5795, 39.8283, ChartColor.FromRgb(34, 197, 94)),
+        new ChartMapPoint("Norway", 8.4689, 60.4720, ChartColor.FromRgb(59, 130, 246))
+    })
+    .AddMapRouteBetweenPoints("United States to Spain", "United States", "Spain", ChartColor.FromRgb(34, 197, 94))
+    .AddMapRouteBetweenPoints("Spain to Indonesia", "Spain", "Indonesia", ChartColor.FromRgb(59, 130, 246));
+
+travelMap.SaveSvg("travel-dotted-map-dark.svg");
+travelMap.SavePng("travel-dotted-map-dark.png");
+travelMap.SaveHtml("travel-dotted-map-dark.html");
+""");
     }
 
     private static void WriteCSharp(string output, string name, string code) =>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
@@ -324,6 +325,9 @@ internal static partial class SmokeTests {
     private static void MapCatalogsExposeBuiltInDefinitionsById() {
         Assert(ChartMapCatalog.All().Count >= 1, "Map catalogs should expose built-in geography definitions.");
         Assert(ChartMapCatalog.Entries().Count > ChartMapCatalog.All().Count, "Map catalogs should expose known external geography entries separately from embedded map definitions.");
+        Assert(ChartMapCatalog.EmbeddedEntries().All(entry => entry.Kind == ChartMapCatalogEntryKind.Embedded && entry.IsEmbedded && !entry.IsExternal), "Embedded map catalog entries should advertise that they ship with the core package.");
+        Assert(ChartMapCatalog.ExternalEntries().All(entry => entry.Kind == ChartMapCatalogEntryKind.External && entry.IsExternal && !entry.IsEmbedded), "External map catalog entries should advertise that callers must provide the GeoJSON assets.");
+        Assert(ChartMapCatalog.EmbeddedEntries().Count + ChartMapCatalog.ExternalEntries().Count == ChartMapCatalog.Entries().Count, "Combined map catalog entries should remain the union of embedded and external entries.");
         Assert(ChartTileMapCatalog.All().Count >= 1, "Tile-map catalogs should expose built-in tile definitions.");
         Assert(ChartMapCatalog.Get("us-states").Id == "us-states", "Map catalogs should resolve built-in definitions by ID.");
         Assert(ChartMapCatalog.Load("us-states").Id == "us-states", "Unified map catalog loading should return embedded definitions without an asset directory.");

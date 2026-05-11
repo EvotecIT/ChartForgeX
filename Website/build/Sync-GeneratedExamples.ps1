@@ -32,7 +32,7 @@ if (-not $source) {
 }
 
 New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
-Get-ChildItem -LiteralPath $source.Path -File -Include '*.svg', '*.png', '*.html' -Recurse |
+Get-ChildItem -LiteralPath $source.Path -File -Include '*.svg', '*.png', '*.html', '*.csharp.txt', '*.powershell.txt' -Recurse |
     Copy-Item -Destination $DestinationRoot -Force
 
 $existingByImage = @{}

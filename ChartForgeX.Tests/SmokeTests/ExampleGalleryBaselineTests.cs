@@ -14,6 +14,7 @@ internal static partial class SmokeTests {
             File.WriteAllText(Path.Combine(output, "alpha.html"), chart.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha.svg"), chart.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha.png"), chart.ToPng());
+            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "chart.SaveSvg(\"alpha.svg\");");
             File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":2,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
 
             GalleryWriter.Write(output);
@@ -24,6 +25,10 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"clean\": false", StringComparison.Ordinal), "Gallery manifest should flag the visual baseline as not clean.");
             var dashboard = File.ReadAllText(Path.Combine(output, "quality-dashboard.html"));
             Assert(dashboard.Contains("Baseline warnings", StringComparison.Ordinal) && dashboard.Contains("<div class=\"value\">1</div>", StringComparison.Ordinal), "Quality dashboard should surface high-DPI visual-baseline warnings.");
+            var index = File.ReadAllText(Path.Combine(output, "index.html"));
+            var catalog = File.ReadAllText(Path.Combine(output, "catalog.html"));
+            Assert(index.Contains("alpha.csharp.txt", StringComparison.Ordinal), "Generated gallery cards should link C# sidecar snippets when available.");
+            Assert(catalog.Contains("alpha.csharp.txt", StringComparison.Ordinal), "Grouped catalog cards should link C# sidecar snippets when available.");
         } finally {
             Directory.Delete(output, true);
         }

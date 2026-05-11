@@ -1,14 +1,47 @@
-# ChartForgeX
+# ChartForgeX - Dependency-Free Chart Rendering for .NET
 
-Dependency-free chart rendering for .NET reports, dashboards, documentation, and static HTML output.
+ChartForgeX renders polished charts, visual blocks, topology diagrams, and static report visuals from .NET without adding a browser charting runtime to generated output.
 
-The goal is not to clone ScottPlot. The goal is to provide a beautiful, embeddable, no-JavaScript charting layer that HtmlForgeX, DomainDetective, TestimoX, GPOZaurr, ADEssentials, and OfficeIMO-style outputs can reuse.
+## NuGet Package
 
-## Targets
+[![nuget downloads](https://img.shields.io/nuget/dt/ChartForgeX?label=nuget%20downloads)](https://www.nuget.org/packages/ChartForgeX)
+[![nuget version](https://img.shields.io/nuget/v/ChartForgeX)](https://www.nuget.org/packages/ChartForgeX)
 
-ChartForgeX builds for `net472`, `netstandard2.0`, `net8.0`, and `net10.0`.
+## Project Information
 
-The library has no runtime package dependencies. The `net472` target uses `Microsoft.NETFramework.ReferenceAssemblies.net472` only as a private build-time reference so the project can compile on non-Windows machines.
+[![top language](https://img.shields.io/github/languages/top/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
+[![license](https://img.shields.io/github/license/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
+[![quality](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml/badge.svg)](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml)
+
+## Author & Social
+
+[![Twitter follow](https://img.shields.io/twitter/follow/PrzemyslawKlys.svg?label=Twitter%20%40PrzemyslawKlys&style=social)](https://twitter.com/PrzemyslawKlys)
+[![Blog](https://img.shields.io/badge/Blog-evotec.xyz-2A6496.svg)](https://evotec.xyz/hub)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-pklys-0077B5.svg?logo=LinkedIn)](https://www.linkedin.com/in/pklys)
+[![Threads](https://img.shields.io/badge/Threads-@PrzemyslawKlys-000000.svg?logo=Threads&logoColor=White)](https://www.threads.net/@przemyslaw.klys)
+[![Discord](https://img.shields.io/discord/508328927853281280?style=flat-square&label=discord%20chat)](https://evo.yt/discord)
+
+## What It's For
+
+ChartForgeX is for generated reports, documentation, email, static websites, dashboards, wallpapers, Office-style generators, and other hosts that need deterministic visuals without a JavaScript chart dependency.
+
+The core package renders SVG, static HTML, PNG, BMP, PPM, and baseline TIFF. Static HTML is script-free by default. Optional interactions are split into separate adapter packages so a static report can stay static, while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
+
+## Visual Tour
+
+The examples are generated from `ChartForgeX.Examples` and checked into the project site so reviewers can inspect the visual output without running a browser chart runtime. The dedicated examples page keeps SVG, PNG, HTML, and C# snippets together; the repository gallery keeps the wider catalog grouped by chart family.
+
+| Dashboard grid | Heatmap | Topology |
+| --- | --- | --- |
+| [![Dashboard chart portfolio](Website/static/examples/generated/dashboard-chart-portfolio-grid.svg)](Website/static/examples/generated/dashboard-chart-portfolio-grid.svg) | [![Control coverage heatmap](Website/static/examples/generated/control-coverage-heatmap-dark.svg)](Website/static/examples/generated/control-coverage-heatmap-dark.svg) | [![Geographic topology map](Website/static/examples/generated/visual-geographic-topology-map.svg)](Website/static/examples/generated/visual-geographic-topology-map.svg) |
+| [SVG](Website/static/examples/generated/dashboard-chart-portfolio-grid.svg) | [HTML](Website/static/examples/generated/control-coverage-heatmap-dark.html) / [SVG](Website/static/examples/generated/control-coverage-heatmap-dark.svg) / [PNG](Website/static/examples/generated/control-coverage-heatmap-dark.png) | [SVG](Website/static/examples/generated/visual-geographic-topology-map.svg) |
+
+## Generated Examples
+
+- Run `dotnet run --project .\ChartForgeX.Examples\ChartForgeX.Examples.csproj -c Release` to refresh `ChartForgeX.Examples/bin/Release/net8.0/output/`.
+- Open `index.html` for the full generated gallery, `catalog.html` for grouped chart families, and `svg-png-comparison.html` for side-by-side SVG/PNG review.
+- Generated cards link HTML, SVG, PNG, and C# sidecar snippets when the example has a checked source sample.
+- The dedicated site uses `Website/data/showcase.json` and `Website/static/examples/promoted-cases.json` to keep promoted visuals source-linked and easy to copy.
 
 ## Install
 
@@ -16,107 +49,46 @@ The library has no runtime package dependencies. The `net472` target uses `Micro
 dotnet add package ChartForgeX
 ```
 
-For local development from this repository, reference `ChartForgeX/ChartForgeX.csproj` directly for static rendering, add `ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj` when testing the optional HTML adapter, and run the quality loop before publishing packages.
+ChartForgeX targets `net472`, `netstandard2.0`, `net8.0`, and `net10.0`. The core package has no runtime package dependencies. The `net472` target uses `Microsoft.NETFramework.ReferenceAssemblies.net472` as a private build-time reference only.
 
-Contribution and release notes live in `CONTRIBUTING.md`, `RELEASING.md`, and `CHANGELOG.md`.
-The dependency-free rendering quality direction is documented in `docs/dependency-free-quality-roadmap.md`. Topology handoff notes live in `docs/topology-next-plan.md`, and non-chart visual block direction lives in `docs/visual-blocks.md`.
+Optional interaction support is split into separate packages:
 
-## Release readiness handoff
+| Package | Purpose |
+| --- | --- |
+| `ChartForgeX` | Static SVG, HTML, PNG, BMP, PPM, and TIFF rendering. |
+| `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
+| `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
 
-The current API is intended to be reusable by PowerBGInfo, ImagePlayground, HtmlForgeX, TestimoX, Office/Word/email generators, and other static-output hosts. Keep new work generic: no region-specific assumptions, no product-specific data collection, no `System.Drawing`, no JavaScript in the core static path, and no chart-shaped APIs for non-chart content.
+## Supported Outputs
 
-Already in place:
+| API shape | Purpose |
+| --- | --- |
+| `ToSvg`, `ToHtmlFragment`, `ToHtmlPage`, `ToPng` | Return the main report-grade formats directly. |
+| `SaveSvg`, `SaveHtml`, `SavePng` | Save the main formats explicitly. |
+| `ToBmp`, `ToPpm`, `ToTiff`, `ToRasterImage` | Return opaque flattened raster formats from the shared raster buffer. |
+| `WriteBmp`, `WritePpm`, `WriteTiff`, `WriteRasterImage` | Stream opaque raster formats without forcing a final byte-array allocation. |
+| `SaveBmp`, `SavePpm`, `SaveTiff`, `SaveRasterImage` | Save opaque raster formats explicitly or by raster extension. |
+| `SaveImage`, `Save` | Infer the output format from the file extension. |
 
-- Static SVG/HTML/PNG chart rendering with dependency-free core packages and opt-in HTML interactivity adapters.
-- Dotted maps, reusable region maps, tile maps, and topology geographic projection through `ChartMapViewport` and data-driven map definitions.
-- Product-neutral topology diagrams with groups, nodes, edges, deterministic layouts, route diagnostics, selected states, metadata hooks, SVG/PNG output, and static HTML by default.
-- Neutral visual blocks for exact facts and compact report snippets: `ChartTable`, `ChartList`, `MetricCard`, and `VisualGrid`.
-- `SvgMarkupWriter`, `SvgDocument`, `SvgElement`, and path-data helpers for safer SVG emission across many renderers.
+`SaveImage` and `Save` infer `.svg`, `.html`, `.htm`, `.png`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` applies to opaque raster formats, where transparent pixels are flattened against a background color; PNG stays on the PNG renderer path and keeps chart/grid PNG options such as output scale.
 
-Still open before calling the library future-complete:
+## Release Maturity
 
-- Finish the remaining string/raw SVG cleanup outside topology. Topology body composition now stays in the SVG element tree, but grid embeds scoped child SVG as raw markup, and some map/chart renderers still use targeted `StringBuilder` paths.
-- Broaden visual blocks based on real consumers: richer table/list formatting, icons, status palettes, metric-card micro bars/sparklines, and infographic snippets without becoming a spreadsheet or arbitrary HTML renderer.
-- Keep dashboard shells in host projects. ChartForgeX should emit reusable visual fragments and data hooks; HtmlForgeX/TestimoX should own panels, filters, inspectors, tables, and collected product data.
-- Promote topology/geographic examples into formal visual baselines only after dense routing and geographic layout polish are stable enough for numeric baseline thresholds.
+The first release should be treated as a broad preview with a serious stability bar. The public surface is intended to be kept stable where it represents real charting concepts, and changed intentionally where a pre-release API would otherwise lock in awkward names or host-specific assumptions.
 
-## Quality gates
+| Area | Release stance |
+| --- | --- |
+| Core charts, themes, SVG, static HTML, PNG, validation, and package layout | Supported first-release API. Avoid breaking changes except for clear correctness or naming fixes. |
+| BMP, PPM, TIFF, raster helper APIs, and stream/file/byte-array export helpers | Supported utility API over the shared raster buffer. PNG remains the main raster target for report quality. |
+| Topology diagrams, deterministic layouts, icon catalogs, and geographic topology | Supported, with dense routing and geographic polish still tracked before numeric visual-baseline promotion. |
+| Visual blocks such as tables, metric cards, status cards, workload lists, activity timelines, and schedule strips | Supported report-fragment API, but advanced dashboard-card patterns should continue to be refined from real host usage. |
+| External GeoJSON/map catalogs and large vendor icon-pack workflows | Opt-in extension workflow. Keep these generic, provenance-aware, and outside the core runtime dependency path. |
 
-Warnings are treated as errors from day one, including XML documentation warnings for public APIs. The repository also includes a smoke test suite that verifies static SVG/HTML/PNG rendering behavior, keeps source files under the architecture line budget, rejects `NoWarn`, protects the core package from runtime package dependencies, and guards generated markup against scripts or external resources.
+No chart type is marked for removal in this release pass. Active follow-up work belongs in `TODO.md` until it becomes durable reference documentation.
 
-Run the smoke suite directly with:
+Release notes should be published through GitHub Releases. Keep NuGet `PackageReleaseNotes` short and package-focused, and avoid maintaining a second long-form changelog in the repository.
 
-```powershell
-dotnet test .\ChartForgeX.Tests\ChartForgeX.Tests.csproj -c Release
-```
-
-Run the full local quality loop with:
-
-```powershell
-./Build.ps1
-```
-
-That restores, builds, runs smoke tests through `dotnet test`, regenerates example chart outputs and the static example gallery, packs `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html` into `artifacts/packages/Release`, creates matching `.snupkg` symbol packages, verifies package contents and dependency invariants, and installs the freshly packed HTML interactivity adapter into a clean temporary console app. The generated demo entry points are `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/catalog.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/quality-dashboard.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/svg-png-comparison.html`, `ChartForgeX.Examples/bin/Release/net8.0/output/domain-security-interactive.html`, and `ChartForgeX.Examples/bin/Release/net8.0/output/executive-interactive-dashboard.html`. The catalog includes map/geography, theme, brand-kit, palette-swatch, pictorial-symbol, pictorial-Isotype, point-color customization, word-cloud-control, and interactive demo pages so visual choices can be reviewed in HTML, SVG, PNG, and opt-in self-contained HTML interactivity.
-
-External catalog map demos that depend on large local GeoJSON assets can be generated with `dotnet run --project ChartForgeX.Examples/ChartForgeX.Examples.csproj -c Release -- --include-external-map-examples`. They stay out of the default quality loop so local ignored datasets do not change CI output shape.
-
-## Website pilot
-
-`Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The
-central Evotec project hub remains the registry page, while this site is meant
-for the richer gallery and demo experience at `https://chartforgex.evotec.xyz/`.
-Because the site lives under the Evotec domain family, its chrome should stay
-aligned with the main website while the chart visuals remain generated by
-ChartForgeX itself.
-
-Promoted website examples should be reproducible cases, not just screenshots:
-show the rendered preview, link the HTML/SVG/PNG artifacts, and point to the
-source file or builder method that generates the same output.
-
-Build the examples first with `./Build.ps1`, then build the site from
-`Website/` with:
-
-```powershell
-.\build.ps1 -Dev
-.\build.ps1 -Ci
-```
-
-The GitHub Actions workflow is configured for private repositories and requires a self-hosted Linux x64 runner with the labels `self-hosted`, `Linux`, and `X64`.
-
-## Design principles
-
-- Zero runtime dependencies in the core package.
-- SVG-first rendering for beautiful static HTML reports.
-- PNG export with real alpha transparency.
-- One chart model, multiple renderers.
-- JavaScript-free by default.
-- Public chart, option, theme, and primitive APIs fail fast on invalid values.
-- Optional interactive renderers live in adapter packages without changing static renderer behavior.
-- Themes are first-class, especially polished dark/light report modes.
-
-Use `WithOverlay()` when a chart is meant to sit on top of another image, wallpaper, or report canvas. The preset keeps PNG/SVG backgrounds transparent and suppresses report chrome such as cards, plot panels, axes, grid, and legends while leaving the data marks visible.
-
-## Current package layout
-
-```text
-ChartForgeX
-├── ChartForgeX                 # library
-│   ├── Core                    # chart model, series, options
-│   ├── Primitives              # colors, points, rects, padding
-│   ├── Themes                  # light/dark themes
-│   ├── Svg                     # beautiful SVG renderer
-│   ├── Html                    # standalone page and HTML fragment renderer
-│   ├── Raster                  # minimal PNG renderer and PNG writer
-│   ├── Topology                # product-neutral topology model and renderers
-│   └── VisualBlocks            # tables, lists, metric cards, mixed visual grids
-├── ChartForgeX.Interactivity    # host-neutral interaction contracts
-├── ChartForgeX.Interactivity.Html # self-contained HTML/SVG adapter
-├── ChartForgeX.Examples         # sample console app
-├── docs
-└── Build.ps1
-```
-
-## Example
+## Quick Start
 
 ```csharp
 using ChartForgeX;
@@ -131,13 +103,10 @@ var chart = Chart.Create()
     .WithYAxis("Checks")
     .WithTheme(ChartTheme.ReportDark())
     .WithSize(1180, 640)
-    .WithTransparentBackground(true)
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Next")
-    .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230, 1260))
-    .AddSmoothLine("Warnings", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36))
-    .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18, 15, 13, 10), ChartColor.FromRgb(248, 113, 113))
-    .AddHorizontalLine(100, "warning target", ChartColor.FromRgb(251, 191, 36))
-    .AddVerticalBand(6, 7, "weekend", ChartColor.FromRgb(96, 165, 250), 0.10);
+    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230))
+    .AddSmoothLine("Warnings", Points(120, 138, 132, 110, 98, 86, 72), ChartColor.FromRgb(251, 191, 36))
+    .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18, 15, 13), ChartColor.FromRgb(248, 113, 113));
 
 chart.SaveSvg("chart.svg");
 chart.SaveHtml("chart.html");
@@ -147,27 +116,26 @@ chart.SavePpm("chart.ppm");
 chart.SaveTiff("chart.tiff");
 
 static IEnumerable<ChartPoint> Points(params double[] y) {
-    for (var i = 0; i < y.Length; i++) yield return new ChartPoint(i + 1, y[i]);
+    for (var i = 0; i < y.Length; i++) {
+        yield return new ChartPoint(i + 1, y[i]);
+    }
 }
 ```
 
-Small-multiple reports can compose several charts into one static, responsive HTML page:
+## Composition
+
+Use `ChartGrid` for chart-only small multiples, comparison grids, and mosaic reports. `Add(chart, columnSpan, rowSpan)` and `WithPanelSpan(index, columnSpan, rowSpan)` let a report mix hero panels with smaller supporting charts without creating a chart type just for layout.
 
 ```csharp
 var report = ChartGrid.Create()
     .WithTitle("Control Scorecards")
-    .WithSubtitle("Dependency-free small multiples for generated reports")
     .WithTheme(ChartTheme.ReportLight())
     .WithColumns(2)
-    .WithPadding(32)
     .WithPanelSize(520, 320)
-    .WithPanelFit(ChartGridPanelFit.Contain)
     .Add(gaugeChart, columnSpan: 2)
     .Add(trendChart)
     .Add(coverageChart)
-    .Add(findingsChart)
-    .WithPanelSpan(2, columnSpan: 2)
-    .WithSharedAxes();
+    .WithPanelSpan(2, columnSpan: 2);
 
 report.SaveHtml("scorecards.html");
 report.SaveSvg("scorecards.svg");
@@ -177,17 +145,13 @@ report.SavePpm("scorecards.ppm");
 report.SaveTiff("scorecards.tiff");
 ```
 
-Use `Add(chart, columnSpan, rowSpan)` or `WithPanelSpan(index, columnSpan, rowSpan)` when a report needs a hero panel, wide trend, or tall narrative chart without creating a new chart type just for layout.
-
-`ChartGrid` is intentionally chart-only. Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series. That keeps PowerBGInfo, ImagePlayground, email, Word, and desktop wallpaper scenarios free to compose exact-fact blocks beside charts without locking non-chart content into a chart-series contract.
+Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series.
 
 ```csharp
-using ChartForgeX;
 using ChartForgeX.VisualBlocks;
 
 var drives = ChartTable.Create()
-    .WithTheme(ChartTheme.TransparentOverlayDark())
-    .WithTransparentBackground()
+    .WithTitle("Drive Summary")
     .AddColumn("Drive")
     .AddColumn("Used", VisualTextAlignment.Right, format: "0%")
     .AddColumn("Free", VisualTextAlignment.Right)
@@ -197,1394 +161,195 @@ var drives = ChartTable.Create()
     .WithStatusColumn("Status")
     .WithDenseMode();
 
-var card = MetricCard.Create()
-    .WithMetric("Patch compliance", 0.94, "P0")
-    .WithTrend("+4 pp")
-    .AddDetail("Ready", "84%", VisualStatus.Positive)
-    .AddDetail("Risk", "6%", VisualStatus.Warning)
-    .WithSymbol("OK")
-    .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-    .WithStatus(VisualStatus.Positive)
-    .WithAction("View details", url: "#patch-compliance")
-    .WithMiniBars(new[] { 82d, 86d, 88d, 91d, 94d }, maximum: 100);
-
-var latency = MetricCard.Create()
-    .WithMetric("Latency", "18 ms")
-    .WithTrend("-12 ms")
-    .WithStatus(VisualStatus.Info)
-    .WithAction("Open samples", url: "#latency")
-    .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
-
-var snapshot = VisualGrid.Create()
-    .WithTitle("System Snapshot")
-    .WithColumns(2)
-    .Add(chart)
-    .Add(drives)
-    .Add(card)
-    .Add(latency);
-
-snapshot.SaveSvg("snapshot.svg");
-snapshot.SaveHtml("snapshot.html");
-snapshot.SavePng("snapshot.png");
-snapshot.SaveBmp("snapshot.bmp");
-snapshot.SavePpm("snapshot.ppm");
-snapshot.SaveTiff("snapshot.tiff");
-```
-
-For PowerBGInfo-style KPI rows, `VisualGrid.CreateMetricStrip(...)` applies the standard compact card-section sizing:
-
-```csharp
-var endpoint = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
-    MetricCard.Create().WithMetric("CPU Load", "38%").WithSymbol("CPU").WithBadgePlacement(MetricCardBadgePlacement.TopLeft).WithAction("View details", url: "#cpu-load").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
-    MetricCard.Create().WithMetric("Memory Used", "71%").WithAction("View details").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
+var snapshot = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
+    MetricCard.Create().WithMetric("CPU Load", "38%").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
+    MetricCard.Create().WithMetric("Memory Used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
 });
 ```
 
-Metric-card mini bars and sparklines share internal geometry/styling primitives across SVG and PNG renderers. That keeps future line/bar polish reusable instead of making the card visuals a separate second implementation.
+## Topology Diagrams
 
-ChartForgeX validates chart data before rendering so invalid report payloads fail close to the caller instead of producing partial markup or malformed PNGs. Public APIs reject non-finite numbers, invalid enum values, empty required data sets, malformed specialized series, negative proportional values, cyclic Sankey flows, and tree data with multiple roots or parents. HTML fragments and grids scope child SVG IDs per render, so repeated or identical charts can be safely embedded on the same page. When embedding raw SVG strings yourself, pass a stable scope such as `chart.ToSvg("panel-a")` or `grid.ToSvg("report-a")` to keep element IDs unique without giving up deterministic output.
-
-For a single chart, `WithXAxisBounds(minimum, maximum)` and `WithYAxisBounds(minimum, maximum)` pin cartesian axes explicitly. `WithAutomaticXAxisBounds()` and `WithAutomaticYAxisBounds()` return them to data-driven scaling.
-
-Use `WithXAxisVisible(false)` or `WithYAxisVisible(false)` when an infographic-style chart should keep one axis worth of labels while removing the other axis line, ticks, and title. Use `WithAxisLines(false)` when tick labels and titles should remain but the axis rules and zero-lines should disappear. For example, horizontal scorecards often keep category labels on the left and hide the numeric value axis plus the remaining axis rule.
-
-Dashboard-style visuals can be composed without inventing a new chart type. Use `WithDashboardCartesianStyle()` when line, area, or mixed cartesian charts should share dashed vertical guide lines and lighter dashboard chrome. Use `WithDashboardPanelStyle()` when the chart should stand alone as a premium card with SVG/PNG shadow depth from theme tokens. Use `WithDashboardBarStyle()` or `WithDashboardBarPanelStyle()` when bars should also use the segmented treatment: square translucent bar segments, rounded value caps, layered cap shadows, subtle cap highlights, and the same dashboard guide lines.
-
-```csharp
-var profiles = Chart.Create()
-    .WithHeader(false)
-    .WithTransparentBackground(false)
-    .WithTheme(ChartTheme.DashboardLight())
-    .WithDashboardBarPanelStyle()
-    .WithStackedBars()
-    .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-    .WithFocusedXAxisCategory(4, paletteIndex: 3)
-    .AddBar("Applied", Points(20, 25, 31, 37, 20, 31, 20))
-    .AddBar("Screened", Points(30, 21, 12, 18, 18, 27, 21))
-    .AddBar("Saved", Points(39, 25, 20, 25, 11, 20, 35))
-    .AddBar("Outreach", Points(21, 24, 18, 41, 21, 15, 25));
-```
-
-The preset is still just shared styling, so it works with stacked columns, horizontal bars, and range bars. Use `WithBarStyle(ChartBarStyle.SegmentedCapsule)` when only the mark treatment is needed, or compose `ChartBarVisualStyle.DashboardCapsule()` and `ChartGridLineStyle.DashboardVerticalGuides()` directly when a report family needs tuned opacity, cap thickness, cap inset, radius, cap shadow, or guide-line values.
-
-The same treatment applies to horizontal bars by combining `WithDashboardBarPanelStyle()`, `WithStackedHorizontalBars()`, and the same `DashboardLight()` palette. Line and area series also share the premium stroke primitives across SVG and PNG: ambient halo, readable stroke halo, foreground line, and subtle highlight sheen. Tune those tokens with `WithLineVisualStyle(ChartLineVisualStyle.Premium().WithAmbientHalo(0.06, 12).WithHalo(0.18, 6).WithHighlight(0.18))`, or use `ChartLineVisualStyle.Classic()` when a plainer report line is preferred. Card depth stays themeable too: `WithShadowOpacity(...)` and `WithShadowColor(...)` are honored by both SVG and PNG renderers.
-
-Topology diagrams live in `ChartForgeX.Topology` because they are diagram models, not dashboard pages or data collectors. `TopologyChart` owns reusable groups, nodes, edges, deterministic layout hints, validation, SVG rendering, PNG rendering, and a tiny HTML wrapper that embeds the SVG in a neutral `<div>`. Complete topology HTML pages are static and script-free by default. Set `EnableHtmlInteractions = true` to add lightweight pointer/focus hover, click selection, keyboard selection, and host events. Interactive pages dispatch `cfx-topology-hover`, `cfx-topology-hover-clear`, `cfx-topology-select`, `cfx-topology-clear`, and `cfx-topology-navigate` with selected ids, kind/status, metadata, metrics, route diagnostics, geographic route-arc diagnostics, endpoint context, and related node/edge/group ids; hosts can also dispatch `cfx-topology-set-selection` or `cfx-topology-clear-selection` to control state. Arrow keys cycle focus through related topology elements. With interactions enabled, set `EnableHtmlViewportControls = true` to add opt-in zoom/pan/reset controls with `cfx-topology-viewport` host events and host-driven `cfx-topology-set-viewport` / `cfx-topology-reset-viewport` support. Set `EnableHtmlExportControls = true` to add opt-in SVG/PNG export buttons with `cfx-topology-export` host events. Set `EnableHtmlSynchronizedState = true` with `HtmlSyncGroupName` to mirror selection clears and viewport state across topology wrappers on the same page. HtmlForgeX can later host the rendered SVG in cards, filters, tabs, and inspector panels, while TestimoX or another product can map its own collected data into the model.
+`ChartForgeX.Topology` is for reusable deterministic diagrams. It owns the product-neutral model, validation, layout helpers, SVG rendering, PNG rendering, and static HTML wrapper. Host projects own dashboard shells, data collection, filters, inspectors, and product-specific calculations.
 
 ```csharp
 using ChartForgeX.Topology;
 
 var topology = TopologyChart.Create()
-    .WithId("site-topology")
-    .WithTitle("Site Topology")
-    .WithLayout(TopologyLayoutMode.Manual)
+    .WithId("service-map")
+    .WithTitle("Service Dependency Map")
+    .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
     .WithLegend(TopologyLegend.Default()
-        .AddNodeKind("Hub site", TopologyNodeKind.Hub, symbol: "H")
-        .AddNodeKind("Branch site", TopologyNodeKind.Branch, symbol: "B")
-        .AddEdgeKind("Site link", TopologyEdgeKind.Link))
-    .AddGroup("EMEA", "EMEA", 40, 90, 320, 220, TopologyHealthStatus.Warning, "56 sites")
-    .AddNode("emea-hub", "EMEA Hub", 120, 160, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "EMEA", href: "/topology/sites/emea-hub", tooltip: "EMEA hub site", symbol: "H")
-    .AddNode("branch-de", "DE Branch", 120, 250, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, "EMEA", symbol: "B")
-    .AddEdge("emea-de", "emea-hub", "branch-de", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Forward)
-    .WithEdgePorts("emea-de", TopologyEdgePort.Bottom, TopologyEdgePort.Top);
+        .AddNodeKind("Service", TopologyNodeKind.Service, symbol: "API")
+        .AddNodeKind("Database", TopologyNodeKind.Database, symbol: "SQL")
+        .AddEdgeKind("Dependency", TopologyEdgeKind.Dependency))
+    .AddNode("api", "API", 0, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, symbol: "API")
+    .AddNode("database", "Database", 0, 0, TopologyNodeKind.Database, TopologyHealthStatus.Warning, symbol: "SQL")
+    .AddEdge("api-database", "api", "database", "32 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward);
 
-topology.SaveSvg("site-topology.svg");
-topology.SaveHtml("site-topology.html");
-topology.SavePng("site-topology.png");
-topology.SaveBmp("site-topology.bmp");
-topology.SavePpm("site-topology.ppm");
-topology.SaveTiff("site-topology.tiff");
+topology.SaveSvg("service-map.svg");
+topology.SaveHtml("service-map.html");
+topology.SavePng("service-map.png");
+topology.SaveBmp("service-map.bmp");
+topology.SavePpm("service-map.ppm");
+topology.SaveTiff("service-map.tiff");
 ```
 
-Use groups for regions or clusters, nodes for assets or logical objects, and edges for connections or dependencies. Labels, secondary labels, tertiary labels, `Href`, `Tooltip`, `Metrics`, and `Metadata` are preserved as escaped SVG text, native `<title>` tooltips, link attributes, and `data-*` hooks so host applications can attach inspectors, filters, or selection panels. Edges can use explicit source/target ports, route lanes, `TopologyEdgeRouting.ObstacleAvoidingOrthogonal`, and `.WithEdgeLineStyle("edge-id", TopologyEdgeLineStyle.Dashed)`, which is useful for screenshot-style site-link maps, replication paths, and selected-object connectivity spokes where links need to enter a card from a specific side, route around dense node cards, or show relationship type separately from health. Route labels can stack primary, secondary, and tertiary text directly from edge labels or from `EdgeLabelMetricKey`, `EdgeSecondaryLabelMetricKey`, and `EdgeTertiaryLabelMetricKey`; `.WithEdgeMetricLabels("lag", "queue", "transport")` applies the metric label stack in one call, which keeps transport, cost/bandwidth, latency, queue, and last-success details host-selectable without rebuilding the chart. Nodes can use chart-wide display modes, per-node overrides such as `.WithNodeDisplay("branch-cluster", TopologyNodeDisplayMode.Dot, "+12")`, or kind-wide overrides such as `.WithNodesDisplay(TopologyNodeKind.Server, TopologyNodeDisplayMode.Card)` when a mixed diagram needs site tiles plus wider server or bridgehead cards. `TopologyNodeDisplayMode.Tile` renders compact site tiles with centered glyphs and labels below the tile, `IncludeTileSubtitles` adds a small subtitle chip when subnet, role, or site metadata needs to stay visible, and `CardSubtitleMode = TopologyCardSubtitleMode.Chip` renders card subtitles as status-like chips for server or bridgehead cards. Groups can use `.WithGroupSymbol("region-id", "region")` for small header marks, `.WithGroupColor("region-id", "#8B5CF6")` for region identity color, and `.WithGroupLayout("site-id", TopologyGroupLayoutPolicy.PairRows)` for dense grouped panel policy; SVG exposes both requested and applied group policies. Use `.WithMapViewport(...)`, `.WithNodeCoordinates(...)`, and `.WithGroupCoordinates(...)` with `TopologyLayoutMode.Geographic` when a topology should project sites or regions from real longitude/latitude coordinates; SVG/PNG include a land-dot background, regional boundaries where available, graticules, coordinate/geo-visibility hooks, quadratic map-arc links for curved geographic routes, and optional `IncludeGeographicCallouts` group summaries with selected-state, leader lines, health counts, and `data-callout-*` hooks. Nodes can use `.WithNodeColor("node-id", "#2563EB")` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes. Render options can mark selected groups, nodes, and edges with `.WithSelectedGroup(...)`, `.WithSelectedNode(...)`, and `.WithSelectedEdge(...)`; SVG emits `data-cfx-selected` and selected CSS classes while PNG gets matching selected outlines, which lets a host render selected-site or selected-path states without filtering the topology. Edges can use `.WithEdgeMuted("edge-id")` for quiet internal hierarchy lines. Disable `IncludeEdgeLabelBackplates` when latency labels should sit directly on route lines. V1 layout modes are deterministic: `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`; force-directed or physics layouts are intentionally out of scope for static report output. `Layered` can flow top-to-bottom or left-to-right with `TopologyLayoutDirection`; `DenseGrouped` packs region/site panels with hub/branch, grid, pair-row, mini-mesh, or collapsed-dot policies for dense dashboard maps, and assigns outside-facing ports plus stable lanes to repeated inter-group links unless the caller already supplied them. SVG edge wrappers expose inferred edge layout defaults through `data-edge-layout-inference`.
-
-Use `TopologyView` when the same topology model needs multiple static perspectives, such as a regional card, a selected replication path, or a critical-links export:
-
-```csharp
-var emeaSvg = topology.ToSvg(new TopologyRenderOptions {
-    View = new TopologyView {
-        Id = "emea",
-        Title = "EMEA Topology",
-        GroupIds = { "EMEA" }
-    }
-});
-```
-
-Generated numeric x-axis ticks can be formatted independently from y-axis values and data labels. The same formatter is used by numeric timeline and Gantt summaries:
-
-```csharp
-var timeline = Chart.Create()
-    .WithXAxisBounds(0, 4)
-    .WithXAxisValueFormatter(value => "D+" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
-    .AddLine("Incidents", new[] {
-        new ChartPoint(0, 12),
-        new ChartPoint(2, 18),
-        new ChartPoint(4, 16)
-    });
-```
-
-Data labels can be controlled globally or per series:
-
-```csharp
-var labels = Chart.Create()
-    .WithDataLabels()
-    .AddBar("Visible", Points(42))
-    .AddLine("Hidden", Points(84));
-
-labels.Series[1].WithDataLabels(false);
-```
-
-Series can also be styled after data is added:
-
-```csharp
-labels.Series[0]
-    .WithColor(ChartColor.FromHex("#EC4899"))
-    .WithPointColor(0, "#14B8A6")
-    .WithStrokeWidth(4)
-    .WithSmooth();
-
-labels.Series[0].UseThemeColor();
-```
-
-Bar-line combo charts add a bar series first and render the line on top:
-
-```csharp
-var combo = Chart.Create()
-    .WithYAxis("Volume")
-    .WithSecondaryYAxis("Pass rate", value => value.ToString("0") + "%")
-    .WithSecondaryYAxisBounds(0, 100)
-    .WithXLabels("Mon", "Tue", "Wed")
-    .AddBarLineCombo(
-        "Volume",
-        Points(4200, 6400, 5800),
-        "Pass rate",
-        Points(88, 93, 91),
-        smoothLine: true,
-        lineAxis: ChartAxisSide.Secondary);
-```
-
-Column/area and scatter/line helpers are available for common mixed-report panels:
-
-```csharp
-var forecast = Chart.Create()
-    .WithXLabels("Q1", "Q2", "Q3")
-    .AddColumnAreaCombo("Actual", Points(42, 64, 58), "Projected", Points(46, 68, 62));
-
-var observed = Chart.Create()
-    .AddScatterLineCombo("Observed", Points(12, 18, 17), "Target", Points(14, 16, 20));
-```
+Supported topology layout modes are `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`. Geographic topology uses `ChartMapViewport` with typed coordinates, route arcs, region hulls, and optional callouts while keeping the model reusable across infrastructure, cloud, tenant, inventory, and domain-specific hosts.
 
 ## Chart catalog
 
-| Chart type | API | Good for |
-| --- | --- | --- |
-| Line | `AddLine`, `AddSmoothLine` | Trends, time series, thresholds |
-| Step line | `AddStepLine` | State changes, threshold-like movement |
-| Area | `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea` | Filled trends, step-filled states, stacked contribution bands, and cumulative-looking report areas |
-| Scatter | `AddScatter`, `AddTrendLine` | Independent point distributions and fitted trend lines |
-| Point callout | `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole` | Highlighted markers with custom point labels for tooltips, selected states, and dashboard annotations |
-| Statistical overlays | `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand` | Computed mean, median, and sigma report annotations |
-| Slope | `AddSlope` | Before/after endpoint comparisons |
-| Combo | `AddBarLineCombo`, `AddColumnLineCombo`, `AddBarAreaCombo`, `AddColumnAreaCombo`, `AddScatterLineCombo`, `UseSecondaryYAxis` | Shared-axis or secondary-axis mixed charts for volume, targets, forecasts, and observed-vs-trend panels |
-| Bar | `AddBar` | Category comparison, grouped and stacked bars |
-| Fill patterns | `WithFillPattern`, `WithPointFillPattern`, `UseSolidFill` | Dashboard-grade hatch textures for bars, horizontal bars, and range bars in SVG/PNG |
-| Histogram | `AddHistogram` | Raw numeric distributions |
-| Lollipop | `AddLollipop` | Light-weight category comparison |
-| Bubble | `AddBubble` | X/Y points with a third size value |
-| Error bar | `AddErrorBar` | Point estimates with lower and upper bounds |
-| Candlestick / OHLC | `AddCandlestick`, `AddOhlc` | Open/high/low/close windows |
-| Range band | `AddRangeBand` | Forecast, tolerance, and confidence envelopes |
-| Range area | `AddRangeArea` | Smoothed prediction intervals with emphasized upper and lower bounds |
-| Dumbbell | `AddDumbbell` | Before/after or paired-value comparisons |
-| Pareto | `AddPareto` | Sorted contributions plus cumulative percentage |
-| Range bar | `AddRangeBar` | Min/max or observed interval values |
-| Box plot | `AddBoxPlot` | Quartiles, median, whiskers, raw sample summaries |
-| Horizontal bar | `AddHorizontalBar`, `WithStackedHorizontalBars` | Long category names and stacked composition across long categories |
-| Heatmap | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `ChartHeatmapRow.CreateMasked` | Matrix values, masked cells, and coverage grids |
-| Hexbin heatmap | `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `ChartHeatmapRow`, `ChartHeatmapRow.CreateMasked` | Full or ragged honeycomb matrices for attendance, utilization, customer density, and dense dashboard overviews |
-| Calendar heatmap | `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` | Contribution-style day grids for activity, uptime, and habit tracking |
-| Dotted map | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints` | Travel-map and operations-map views with generated land-dot layers, focused regional viewports, highlighted points, and connector routes |
-| Topology | `TopologyChart`, `TopologyNode`, `TopologyEdge`, `TopologyGroup`, `TopologySvgRenderer` | Deterministic SVG-first topology diagrams for grouped regions, dependencies, site links, replication paths, subnets, and service maps |
-| Region map / heatmap | `AddRegionMap`, `AddRegionHeatmap`, `AddMapBaseLayer`, `AddMapBoundaryLayer`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapDefinition.FromGeoJson`, `ChartMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `WithMapColorScale` | Reusable geographic choropleth maps where every country, state, district, NUTS region, or custom polygon can be colored independently from data and composed with cartographic context layers |
-| Tile map / heatmap | `AddTileMap`, `AddTileHeatmap`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithMapColorScale` | Dependency-free regional choropleth tile maps where every tile can be colored independently from data |
-| Gauge | `AddGauge` | Single score or KPI |
-| Circle | `AddCircle`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale` | Compact single-value progress KPIs with tunable ring sizing |
-| Radial bar | `AddRadialBar`, `WithRadialBarCenterLabel`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` | Circular progress rings for multiple KPI percentages with tunable radius and stroke weight |
-| Layered radial | `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap` | Independently styled radial arc layers for target rings, progress overlays, split gauges, and segmented dashboard indicators |
-| Bullet | `AddBullet` | Value, target, and qualitative ranges |
-| Waterfall | `AddWaterfall` | Cumulative positive and negative changes |
-| Radar | `AddRadar` | Multi-axis profile comparison |
-| Polar area | `AddPolarArea` | Equal-angle radial contribution comparison |
-| Funnel | `AddFunnel` | Stage drop-off |
-| Treemap | `AddTreemap` | Part-to-whole composition across many labeled items |
-| Pictorial | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath` | Icon-row charts for playful scorecards and audience-friendly comparisons. Built-in shapes include `Circle`, `Square`, `Diamond`, `Triangle`, `Star`, `Heart`, `Shield`, `Check`, `Person`, and `PersonDress` |
-| Progress bar | `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` | Slider-style or clean horizontal progress rows for infographic controls, survey shares, and compact percent scorecards |
-| Word cloud | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity` | Weighted term clouds for themes, tags, and narrative summaries |
-| Timeline | `AddTimelineItem`, `AddTimelineRange` | Date or numeric ranges |
-| Gantt | `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` | Project schedules with progress, dependencies, milestones, and current-date markers |
-| Sankey | `AddSankey`, `ChartSankeyLink` | Weighted flows between stages, systems, or outcomes |
-| Tree | `AddTree`, `ChartTreeLink` | Hierarchies, ownership maps, and control structures |
-| Sunburst | `AddSunburst`, `ChartTreeLink` | Radial partition charts for nested part-to-whole hierarchies |
-| Pie and donut | `AddPie`, `AddDonut`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio` | Proportional breakdowns with optional custom center text and tunable donut ring thickness |
+The catalog is broad enough for generated reports, dashboards, operational summaries, and static documentation:
+
+| Family | APIs |
+| --- | --- |
+| Cartesian lines and areas | `AddLine`, `AddSmoothLine`, `AddStepLine`, `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea`, `AddScatter`, `AddTrendLine`, `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole`, `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand`, `AddSlope` |
+| Combo charts | `AddBarLineCombo`, `AddColumnLineCombo`, `AddBarAreaCombo`, `AddColumnAreaCombo`, `AddScatterLineCombo` |
+| Bars and distributions | `AddBar`, `AddHistogram`, `AddLollipop`, `AddBubble`, `AddErrorBar`, `AddCandlestick`, `AddOhlc`, `AddRangeBand`, `AddRangeArea`, `AddDumbbell`, `AddPareto`, `AddRangeBar`, `AddBoxPlot`, `AddHorizontalBar`, `WithStackedHorizontalBars` |
+| Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` |
+| Maps | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints`, `AddRegionMap`, `AddTileMap`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `ChartMapCatalogEntryKind`, `EmbeddedEntries`, `ExternalEntries`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapRegion`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `AddMapBaseLayer`, `AddMapBoundaryLayer` |
+| KPI and radial visuals | `AddGauge`, `AddCircle`, `AddRadialBar`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolarArea` |
+| Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `ChartSankeyLink`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
+| Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
+| Text, labels, and legends | `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `ChartTextStyle`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
+| Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
+| Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
+
+## Renderer Contracts
+
+- ChartForgeX validates chart data before rendering so invalid payloads fail near the caller instead of producing partial markup or malformed PNGs.
+- Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
+- Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely.
+- Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
+- Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
+- Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.
+- Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
+- Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 
 ## Customization cookbook
 
-Use a built-in theme first, then tweak only the tokens that matter for the report audience:
+Use themes when you want a complete visual baseline:
 
 ```csharp
 var chart = Chart.Create()
-    .WithTitle("Adoption Pulse")
     .WithTheme(ChartTheme.Aurora())
+    .WithSurfaceStyle(ChartSurfaceStyle.Glass)
     .WithPalette(ChartPalettes.Vivid)
-    .AddSmoothLine("Active users", Points(42, 58, 71, 86));
+    .AddSmoothLine("Warnings", points);
 ```
 
-When the same colors and type should carry across a report, package them as a brand kit:
-
-```csharp
-var brand = ChartBrandKit.Create()
-    .WithPalette("#0EA5E9", "#EC4899", "#14B8A6")
-    .WithFontFamily(ChartFontStacks.Geometric)
-    .WithTextColors(ChartColor.FromHex("#111827"), ChartColor.FromHex("#4B5563"))
-    .WithGuideColors(ChartColor.FromHex("#CBD5E1"), ChartColor.FromHex("#64748B"))
-    .WithSemanticColors(ChartColor.FromHex("#059669"), ChartColor.FromHex("#F59E0B"), ChartColor.FromHex("#DC2626"))
-    .WithSurfaceStyle(ChartSurfaceStyle.Framed);
-
-var brandedChart = Chart.Create()
-    .WithBrandKit(brand)
-    .AddBar("Launch", Points(42, 58, 71));
-
-var brandedGrid = ChartGrid.Create()
-    .WithBrandKit(brand)
-    .Add(brandedChart);
-```
-
-`ChartBrandKit` works with `WithBrandKit(...)` on charts and grids, and can also be applied directly to a `ChartTheme`. Presets such as `ChartBrandKit.Executive()`, `Product()`, `PeopleInfographic()`, `Editorial()`, and `Accessible()` provide polished starting points.
-
-For publication, executive, or customer-facing output, tune typography and surface shape in one callback:
-
-```csharp
-var editorial = Chart.Create()
-    .WithTheme(theme => theme
-        .WithFontFamily(ChartFontStacks.Serif)
-        .WithSurfaceColors(ChartColor.Transparent, ChartColor.White, ChartColor.FromRgb(250, 246, 238), ChartColor.FromRgba(120, 113, 108, 72), ChartColor.FromRgba(168, 162, 158, 58))
-        .WithTextColors(ChartColor.FromRgb(28, 25, 23), ChartColor.FromRgb(87, 83, 78))
-        .WithGuideColors(ChartColor.FromRgba(168, 162, 158, 74), ChartColor.FromRgba(68, 64, 60, 140))
-        .WithSemanticColors(ChartColor.FromRgb(22, 101, 52), ChartColor.FromRgb(180, 83, 9), ChartColor.FromRgb(185, 28, 28))
-        .WithTypography(title: 30, subtitle: 14, axisTitle: 12, tickLabel: 11, legend: 12, dataLabel: 11)
-        .WithCornerRadius(card: 8, plot: 6)
-        .WithStrokeWidth(2.8)
-        .WithMarkerRadius(3.5)
-        .WithShadowOpacity(0.08)
-        .WithSurfaceStyle(ChartSurfaceStyle.Framed))
-    .WithXLabels("Q1", "Q2", "Q3", "Q4")
-    .AddBar("Revenue", Points(120, 148, 173, 210));
-```
-
-Surface presets are available when the chart needs a different container treatment without hand-tuning radii and shadows:
-
-```csharp
-var embedded = Chart.Create()
-    .WithTheme(theme => theme.WithSurfaceStyle(ChartSurfaceStyle.Bare))
-    .AddSmoothLine("Signals", Points(42, 58, 71, 86));
-
-var glassy = Chart.Create()
-    .WithTheme(theme => theme
-        .WithSurfaceStyle(ChartSurfaceStyle.Glass)
-        .WithPalette(ChartPalettes.Pastel))
-    .AddArea("Adoption", Points(18, 32, 49, 66));
-```
-
-Surface styles include `Default`, `Flat`, `Framed`, `Floating`, `Glass`, `Bare`, and `Compact`.
-
-For multi-panel reports, configure the grid heading/background separately from the child charts:
-
-```csharp
-var grid = ChartGrid.Create()
-    .WithTitle("Theme Review")
-    .WithTheme(theme => theme
-        .WithFontFamily(ChartFontStacks.Geometric)
-        .WithTypography(title: 28, subtitle: 13, axisTitle: 12, tickLabel: 11, legend: 12, dataLabel: 11))
-    .Add(chartA)
-    .Add(chartB);
-```
-
-Choose a visual system by audience first, then adjust palette or surface details only where the report needs it:
-
-| Report intent | Theme starting point | Brand kit starting point |
-| --- | --- | --- |
-| Executive summary, board deck, customer PDF | `ChartTheme.ReportLight()` or `ChartTheme.Minimal()` | `ChartBrandKit.Executive()` |
-| Operational KPI dashboard | `ChartTheme.DashboardLight()` | `ChartBrandKit.Product()` |
-| SaaS metrics dashboard | `ChartTheme.SaasDashboardLight()` | `ChartBrandKit.Product()` |
-| Restaurant operations dashboard | `ChartTheme.RestaurantDashboardLight()` | `ChartBrandKit.Product()` |
-| Product dashboard, launch review, adoption story | `ChartTheme.Aurora()` | `ChartBrandKit.Product()` |
-| Demographic infographic, survey poster, people dashboard | `ChartTheme.PeopleInfographic()` | `ChartBrandKit.PeopleInfographic()` |
-| Publication, narrative report, static document | `ChartTheme.Editorial()` | `ChartBrandKit.Editorial()` |
-| Accessibility-first categorical comparison | `ChartTheme.Colorblind()` | `ChartBrandKit.Accessible()` |
-| Playful scorecard, education, pictorial view | `ChartTheme.Candy()` | `ChartBrandKit.Product()` with pictorial shapes |
-| Dense operations or command-center view | `ChartTheme.Terminal()` | `ChartBrandKit.Accessible()` with `ChartSurfaceStyle.Compact` |
-| Transparent charts over imagery or wallpapers | `ChartTheme.TransparentOverlayDark()` | `ChartBrandKit.Accessible()` with `ChartSurfaceStyle.Glass` |
-
-Themes are complete visual presets for one chart. Brand kits are reusable brand tokens that can be layered onto charts, grids, or themes.
-
-Reusable palette presets are available through `ChartPalettes.Report`, `Colorblind`, `Vivid`, `Pastel`, `PeopleInfographic`, `Editorial`, `Jewel`, `Terminal`, and `CommandCenter`. Each property returns a fresh array, so callers can safely modify a local copy before passing it to `WithPalette(...)`.
-
-Named dependency-free color tokens are available through `ChartColors`, including the stable CSS/System.Drawing web color names (`AliceBlue`, `CornflowerBlue`, `DarkSlateGray`, `RebeccaPurple`, `WhiteSmoke`, and the `Grey` aliases) plus common report and overlay tokens such as `Slate950`, `Slate200`, `Blue400`, `Cyan400`, `Teal400`, `Emerald400`, `Orange400`, `Red400`, and `Violet400`. `ChartColor.Parse(...)` accepts names or hex, and `ChartColor` also has `WithAlpha(...)`, `WithOpacity(...)`, and `ToHexRgba()` helpers for transparent chart surfaces:
-
-```csharp
-var overlay = Chart.Create()
-    .WithTheme(ChartTheme.TransparentOverlayDark())
-    .WithPalette(ChartPalettes.CommandCenter)
-    .AddDonut("Disk C", Points(72, 28), ChartColors.Red400);
-
-var panel = ChartColors.Slate950.WithAlpha(172);
-var named = ChartColor.Parse("RebeccaPurple");
-```
-
-You can also paste colors directly from a design tool:
+Use brand kits when a whole report family needs consistent typography, palette, surfaces, and semantic colors:
 
 ```csharp
 var branded = Chart.Create()
-    .WithPalette("#0EA5E9", "#EC4899", "#14B8A6", "#F59E0B")
-    .AddBar("Launch", Points(42, 58, 71));
-
-var brandedTheme = ChartTheme.Light()
-    .WithPalette("#1E40AF", "#BE123C", "#059669");
-```
-
-Use `ChartColor.FromHex(...)` and `ChartPalettes.FromHex(...)` for `#RGB`, `#RGBA`, `#RRGGBB`, and `#RRGGBBAA` notation.
-
-SVG and HTML use `ChartTheme.FontFamily` and CSS font stacks. PNG can use a specific `.ttf` or `.ttc` file with `WithPngFont(...)`; otherwise it auto-detects a platform font and then falls back to the built-in tiny chart font.
-
-PNG output uses a dependency-free rasterizer. When a platform TrueType font can be loaded, PNG text is rendered from real font outlines; otherwise ChartForgeX falls back to its built-in tiny chart font. You can prefer a specific `.ttf` file or `.ttc` collection for report consistency:
-
-```csharp
-chart.WithPngFont("/Library/Fonts/Arial.ttf")
-     .SavePng("chart.png");
-```
-
-For TrueType collections, pass the optional zero-based face index when you need a specific face:
-
-```csharp
-chart.WithPngFont("/System/Library/Fonts/HelveticaNeue.ttc", collectionIndex: 0)
-     .SavePng("chart.png");
-```
-
-You can also select by family, subfamily, full, or PostScript face name:
-
-```csharp
-chart.WithPngFont("/System/Library/Fonts/HelveticaNeue.ttc", faceName: "Helvetica Neue")
-     .SavePng("chart.png");
-```
-
-PNG edges are supersampled by default. You can raise or lower the internal supersampling scale when you need to trade render time for raster edge quality:
-
-```csharp
-chart.WithPngSupersampling(4)
-     .SavePng("chart.png");
-```
-
-Supersampling preserves the requested chart dimensions. For high-DPI assets, use a PNG output scale; the chart keeps the same logical layout but emits more pixels:
-
-```csharp
-chart.WithPngOutputScale(2)
-     .SavePng("chart@2x.png");
-```
-
-Named presets are available when you want the export density to read like an intentional quality choice:
-
-```csharp
-chart.WithPngOutputScale(ChartPngOutputScale.Retina)       // 2x
-     .SavePng("chart@2x.png");
-
-chart.WithPngOutputScale(ChartPngOutputScale.Print)        // 4x
-     .SavePng("chart@4x.png");
-```
-
-The same output scale is available for composed grid PNG exports:
-
-```csharp
-report.WithPngOutputScale(ChartPngOutputScale.Retina)
-      .SavePng("scorecards@2x.png");
-```
-
-SVG and HTML still use the theme `FontFamily` CSS stack. The PNG font path is optional and falls back automatically when the file is missing or unsupported.
-
-BMP, PPM, and TIFF export use the same dependency-free raster pipeline as PNG, then write simple opaque pixel formats: uncompressed 24-bit BMP, binary P6 PPM, and baseline uncompressed RGB TIFF. Because these formats do not preserve transparency in this mode, transparent pixels are flattened against white by default, or against a caller-supplied background:
-
-```csharp
-chart.SaveBmp("chart.bmp", new RasterImageOptions {
-    Background = ChartColors.White
-});
-
-chart.SavePpm("chart.ppm", new RasterImageOptions {
-    Background = ChartColors.White
-});
-
-chart.SaveTiff("chart.tiff", new RasterImageOptions {
-    Background = ChartColors.White
-});
-
-var bytes = chart.ToRasterImage(RasterImageFormat.Bmp);
-var contentType = RasterImageFormat.Bmp.GetMimeType();
-var extension = RasterImageFormat.Bmp.GetFileExtension();
-var extensionAliases = RasterImageFormat.Tiff.GetFileExtensions();
-var supportedFormats = RasterImageFormatExtensions.GetSupportedFormats();
-var inferredFormat = RasterImageFormatExtensions.FromFileExtension("chart.tif");
-var parsedBareExtension = RasterImageFormatExtensions.FromFileExtension("bmp");
-if (RasterImageFormatExtensions.TryFromFileExtension("chart.bmp", out var parsedFormat)) {
-    chart.SaveRasterImage("chart" + parsedFormat.GetFileExtension(), parsedFormat);
-}
-
-using var stream = System.IO.File.Create("chart.bmp");
-chart.WriteBmp(stream);
-chart.SaveRasterImage("chart.tiff");
-
-chart.SaveImage("chart.svg");
-chart.SaveImage("chart.html");
-chart.SaveImage("chart.png");
-chart.SaveImage("chart.bmp");
-chart.Save("chart.tiff");
-```
-
-Use `GetPngFontInfo()` when you want to verify which font source PNG rendering will use:
-
-```csharp
-var font = chart.GetPngFontInfo();
-Console.WriteLine($"{font.Source}: {font.ResolvedFaceName}");
-```
-
-Date/time x-values can be used without manual numeric conversion:
-
-```csharp
-var dates = new[] {
-    new DateTime(2026, 1, 1),
-    new DateTime(2026, 1, 2),
-    new DateTime(2026, 1, 3)
-};
-
-var dated = Chart.Create()
-    .WithTitle("Daily Trend")
-    .WithXDateLabels(dates, "MMM dd")
-    .AddSmoothLine("Checks", dates.Select((date, index) => new ChartPoint(date, 100 + index * 20)));
-```
-
-Compact sparklines are available for dashboard cards and table cells:
-
-```csharp
-var sparkline = Chart.Create()
-    .WithSize(360, 90)
-    .WithSparkline()
-    .AddSmoothArea("Warnings", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36));
-```
-
-Use point callouts when a dashboard needs a selected-state marker with text that differs from the numeric axis formatter:
-
-```csharp
-var mrr = Chart.Create()
-    .WithTitle("Monthly Recurring Revenue")
-    .WithValueFormatter(value => "$" + (value / 1000d).ToString("0") + "K")
-    .AddSmoothArea("Actual", Points(103400, 106500, 114000, 119000), ChartColor.FromRgb(53, 106, 244))
-    .AddPointCallout("$119,000 MRR", 4, 119000, ChartColor.FromRgb(53, 106, 244))
-    .AddVerticalLine(4, "Oct 22");
-```
-
-Point callouts render as a marker plus a custom data label, expose `data-cfx-role="point-callout"` in SVG, and opt out of the series legend by default. Use `WithPointLabel` on a normal series point when the custom label should stay tied to an existing series, or `WithLegendEntry(false)` and `WithSemanticRole(...)` when helper series should remain visual-only but still expose stable host metadata.
-
-Dense report axes can be kept readable with automatic x-axis label thinning:
-
-```csharp
-var monthly = Chart.Create()
-    .WithTitle("Monthly Security Posture")
-    .WithXAxisLabelDensity(ChartLabelDensity.Auto)
-    .WithXLabels("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-    .AddSmoothLine("Primary domain checks", Points(82, 84, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96));
-```
-
-Step line charts are available for state changes and threshold-like report series:
-
-```csharp
-var stateChanges = Chart.Create()
-    .WithTitle("Policy State Changes")
-    .WithXLabels("Draft", "Review", "Approved", "Published")
-    .AddStepLine("Controls", Points(12, 18, 18, 26));
-```
-
-Step-area charts fill discrete state changes when the magnitude matters:
-
-```csharp
-var stepArea = Chart.Create()
-    .WithTitle("Policy Backlog")
-    .WithXLabels("Draft", "Review", "Approved", "Published")
-    .AddStepArea("Open controls", Points(12, 18, 18, 26));
-```
-
-Long category labels can be rotated when every label matters:
-
-```csharp
-var regional = Chart.Create()
-    .WithTitle("Certificate Transparency by Region")
-    .WithXAxisLabelDensity(ChartLabelDensity.All)
-    .WithXAxisLabelAngle(-35)
-    .WithXLabels("North America", "Western Europe", "Central Europe", "Asia Pacific", "Latin America", "Middle East")
-    .AddBar("Logged certificates", Points(1200000, 2350000, 1840000, 3120000, 980000, 760000));
-```
-
-Multiple bar series render as grouped category bars:
-
-```csharp
-var grouped = Chart.Create()
-    .WithTitle("Security Findings by Severity")
-    .WithXLabels("Critical", "High", "Medium", "Low", "Informational")
-    .AddBar("Current run", Points(8, 32, 84, 126, 210))
-    .AddBar("Previous run", Points(12, 41, 97, 118, 188));
-```
-
-Histograms can bin raw values directly:
-
-```csharp
-var latencyDistribution = Chart.Create()
-    .WithTitle("Endpoint Latency Distribution")
-    .WithXAxis("Latency")
-    .WithYAxis("Samples")
-    .AddHistogram("P95 samples", new[] { 28d, 31d, 36d, 42d, 47d, 58d, 64d, 72d }, binCount: 4);
-```
-
-Lollipop charts provide bar-like comparison with lighter visual weight:
-
-```csharp
-var posture = Chart.Create()
-    .WithTitle("Control Readiness")
-    .WithDataLabels()
-    .WithXLabels("SPF", "DMARC", "DNSSEC")
-    .AddLollipop("Coverage", Points(96, 88, 74));
-```
-
-Bubble charts encode x, y, and marker size in one report panel:
-
-```csharp
-var exposure = Chart.Create()
-    .WithTitle("Exposure Clusters")
-    .WithXAxis("Reachability")
-    .WithYAxis("Exploitability")
-    .AddBubble("Assets", new[] {
-        new ChartBubble(1, 24, 8),
-        new ChartBubble(2, 42, 18),
-        new ChartBubble(3, 31, 42)
-    });
-```
-
-Trend lines can be computed from scatter or other cartesian points:
-
-```csharp
-var observations = Points(12, 19, 24, 33, 41);
-var trend = Chart.Create()
-    .WithTitle("Observed Remediation Trend")
-    .AddScatter("Observed", observations)
-    .AddTrendLine("Trend", observations);
-```
-
-Statistical overlays compute report annotations from source points:
-
-```csharp
-var observed = Points(12, 19, 24, 33, 41);
-var stats = Chart.Create()
-    .AddLine("Observed", observed)
-    .AddMeanLine("mean", observed)
-    .AddMedianLine("median", observed)
-    .AddStandardDeviationBand("1 sigma", observed);
-```
-
-Error bars show uncertainty around point estimates:
-
-```csharp
-var confidence = Chart.Create()
-    .WithTitle("Detection Confidence")
-    .WithXAxis("Run")
-    .WithYAxis("Score")
-    .AddErrorBar("Confidence", new[] {
-        new ChartErrorBar(1, 42, 35, 51),
-        new ChartErrorBar(2, 58, 49, 66),
-        new ChartErrorBar(3, 63, 54, 78)
-    });
-```
-
-Candlestick charts show open, high, low, and close windows:
-
-```csharp
-var candles = Chart.Create()
-    .WithTitle("Signal Windows")
-    .WithXAxis("Window")
-    .WithYAxis("Score")
-    .AddCandlestick("Window", new[] {
-        new ChartCandlestick(1, 42, 51, 35, 48),
-        new ChartCandlestick(2, 58, 66, 49, 54),
-        new ChartCandlestick(3, 63, 78, 54, 72)
-    });
-```
-
-OHLC charts use the same `ChartCandlestick` values with compact open and close ticks:
-
-```csharp
-var ohlc = Chart.Create()
-    .WithTitle("Signal Windows")
-    .WithXAxis("Window")
-    .WithYAxis("Score")
-    .AddOhlc("Window", new[] {
-        new ChartCandlestick(1, 42, 51, 35, 48),
-        new ChartCandlestick(2, 58, 66, 49, 54),
-        new ChartCandlestick(3, 63, 78, 54, 72)
-    });
-```
-
-Range-band charts draw forecast, tolerance, or confidence envelopes:
-
-```csharp
-var forecast = Chart.Create()
-    .WithTitle("Forecast Envelope")
-    .WithXAxis("Run")
-    .WithYAxis("Expected Range")
-    .AddRangeBand("Expected", new[] {
-        new ChartRangeBand(1, 32, 44),
-        new ChartRangeBand(2, 38, 58),
-        new ChartRangeBand(3, 51, 72)
-    });
-```
-
-Range-area charts are interval envelopes with stronger area emphasis and optional smoothing:
-
-```csharp
-var interval = Chart.Create()
-    .WithTitle("Forecast Interval")
-    .WithXAxis("Run")
-    .WithYAxis("Expected Range")
-    .AddRangeArea("Prediction interval", new[] {
-        new ChartRangeBand(1, 32, 44),
-        new ChartRangeBand(2, 38, 58),
-        new ChartRangeBand(3, 51, 72)
-    });
-```
-
-Dumbbell charts compare paired values across categories:
-
-```csharp
-var remediation = Chart.Create()
-    .WithTitle("Remediation Lift")
-    .WithXLabels("SPF", "DMARC", "DNSSEC")
-    .AddDumbbell("Before/after", new[] {
-        new ChartDumbbell(1, 32, 44),
-        new ChartDumbbell(2, 38, 58),
-        new ChartDumbbell(3, 51, 72)
-    });
-```
-
-Pareto charts sort raw category values and add a cumulative percentage line:
-
-```csharp
-var pareto = Chart.Create()
-    .WithTitle("Findings Pareto")
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .AddPareto("Findings", new[] {
-        new ChartParetoItem("Critical", 50),
-        new ChartParetoItem("Medium", 30),
-        new ChartParetoItem("Low", 20)
-    });
-```
-
-Range bars show interval values such as min/max observations:
-
-```csharp
-var latencyRanges = Chart.Create()
-    .WithTitle("Endpoint Latency Ranges")
-    .WithXLabels("DNS", "TCP", "TLS")
-    .AddRangeBar("Observed", new[] {
-        new ChartInterval(1, 20, 42),
-        new ChartInterval(2, 44, 88),
-        new ChartInterval(3, 96, 142)
-    });
-```
-
-Box plots summarize distributions with whiskers, quartiles, and medians:
-
-```csharp
-var latencySpread = Chart.Create()
-    .WithTitle("Endpoint Latency Spread")
-    .WithXLabels("DNS", "TCP")
-    .AddBoxPlot("Latency", new[] {
-        new ChartBoxPlot(1, 18, 24, 31, 38, 48),
-        new ChartBoxPlot(2, 42, 56, 64, 82, 104)
-    });
-```
-
-Box plots can also compute the five-number summary from raw samples:
-
-```csharp
-var rawLatency = Chart.Create()
-    .WithTitle("Raw Latency Spread")
-    .AddBoxPlot("Latency", 1, new[] { 18d, 24d, 31d, 38d, 48d });
-```
-
-Horizontal bars are available for long report categories:
-
-```csharp
-var coverage = Chart.Create()
-    .WithTitle("Domain Control Coverage")
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF alignment", "DMARC policy enforcement", "DNSSEC coverage")
-    .AddHorizontalBar("Coverage", Points(96, 88, 74));
-```
-
-Multiple horizontal bar series can be stacked for composition reports:
-
-```csharp
-var composition = Chart.Create()
-    .WithStackedHorizontalBars()
-    .WithStackTotals()
-    .WithXLabels("Mail authentication", "Transport security")
-    .AddHorizontalBar("Complete", Points(40, 55))
-    .AddHorizontalBar("Partial", Points(15, 20))
-    .AddHorizontalBar("Missing", Points(5, 10));
+    .WithBrandKit(ChartBrandKit.Executive())
+    .WithTheme(theme => theme
+        .WithSurfaceColors("#0F172A", "#111827", "#1F2937")
+        .WithSemanticColors(success: "#22C55E", warning: "#F59E0B", danger: "#EF4444"));
 ```
 
-Heatmaps are available for compact report matrices. Each heatmap series is one row; point `X` chooses the column and point `Y` is the cell value:
+Use pasted colors when matching an existing design system:
 
 ```csharp
-var matrix = Chart.Create()
-    .WithTitle("Control Coverage Matrix")
-    .WithDataLabels()
-    .WithHeatmapScale(ChartHeatmapScale.Semantic)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF", "DMARC", "DNSSEC")
-    .AddHeatmapRow("Primary domains", Points(96, 88, 74))
-    .AddHeatmapRow("Parked domains", Points(74, 62, 51));
+var palette = ChartPalettes.FromHex("#2563EB", "#14B8A6", "#F59E0B", "#EF4444");
+var color = ChartColor.FromHex("#2563EB");
 ```
 
-Use `WithHeatmapScaleLegend(false)` and `WithHeatmapColumnLabels(false)` for compact scorecard-style heatmaps when row labels and data labels already explain the scale. Heatmap and hexbin heatmap SVG containers expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max` so downstream hover, selection, export, and visual QA tooling can inspect either matrix shape consistently.
+Use fluent series styling for a single emphasized series:
 
-Hexbin heatmaps use the same row and column data contract but render each cell as a honeycomb tile. They work well for attendance, utilization, and schedule-density panels where the visual rhythm matters:
-
-```csharp
-var attendance = Chart.Create()
-    .WithTitle("Attendance Overview")
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .AddHexbinHeatmapRows(new[] {
-        ChartHeatmapRow.Create("09:00", 68, 82, 91, 94, 89),
-        ChartHeatmapRow.Create("11:00", 74, 88, 96, 98, 93)
-    });
-```
-
-Calendar heatmaps render date-indexed values as contribution-style day grids. Duplicate dates are summed so callers can pass event-level data without pre-aggregation:
-
-```csharp
-var journey = Chart.Create()
-    .WithTitle("Consistency Journey")
-    .AddCalendarHeatmap("Commits", new[] {
-        new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1),
-        new ChartCalendarHeatmapItem(new DateTime(2026, 1, 6), 4),
-        new ChartCalendarHeatmapItem(new DateTime(2026, 2, 12), 7)
-    });
-```
-
-Calendar heatmap SVG output marks padded or missing days with `data-cfx-empty="true"` and `data-cfx-status="empty"` so consumers can distinguish no data from an explicit zero value. Calendar heatmap cells also expose `data-cfx-week-index` and `data-cfx-weekday-index` for downstream hover, selection, or export workflows. Calendar heatmap containers expose `data-cfx-label`, `data-cfx-start-date`, `data-cfx-end-date`, and filled/empty day counts; when missing days are present, the scale includes a separate no-data swatch before the real low-to-high value ramp.
-
-Dotted maps render a dependency-free dotted world land layer with highlighted longitude/latitude points:
-
-```csharp
-var travel = Chart.Create()
-    .WithTitle("Travel Map")
-    .WithMapViewport(ChartMapViewport.Europe())
-    .AddDottedMap("Visited", new[] {
-        new ChartMapPoint("Spain", -3.7038, 40.4168),
-        new ChartMapPoint("Poland", 21.0122, 52.2297),
-        new ChartMapPoint("Norway", 10.7522, 59.9139)
-    })
-    .AddMapRouteBetweenPoints("Spain to Poland", "Spain", "Poland");
-```
-
-Pass a non-negative value to `ChartMapPoint` when the same map should read as a market, country, or city revenue map. Weighted points scale their marker radius and expose both raw and formatted values in SVG metadata and hover titles:
-
-```csharp
-var markets = Chart.Create()
-    .WithTitle("Revenue by European Market")
-    .WithMapViewport(ChartMapViewport.Europe())
-    .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
-    .AddDottedMap("Revenue", new[] {
-        new ChartMapPoint("United Kingdom", -1.1743, 52.3555, 188),
-        new ChartMapPoint("Poland", 19.1451, 51.9194, 142),
-        new ChartMapPoint("Germany", 10.4515, 51.1657, 214)
-    })
-    .AddMapRouteBetweenPoints("United Kingdom to Poland", "United Kingdom", "Poland");
-```
-
-Use `ChartMapViewport.World()`, `Europe()`, `NorthAmerica()`, `SouthAmerica()`, `Africa()`, `Asia()`, `Oceania()`, `Poland()`, or `new ChartMapViewport(...)` to focus the dotted layer on a continent, country, or custom bounding box. Route and connector lines render on dotted maps when both endpoints are inside the selected viewport. Prefer `AddMapRouteBetweenPoints` or `AddMapConnectorBetweenPoints` when the line should target existing rendered markers; use coordinate-based `AddMapRoute` and `AddMapConnector` for arbitrary longitude/latitude overlays.
-
-Region maps separate the map definition from the visual treatment. Built-in geographies are resolved by catalog ID, and custom definitions can be created from SVG path data with `ChartMapDefinition` and `ChartMapRegion`. Each `ChartMapRegion` is one polygon or compound polygon, and each matching `ChartRegionMapItem` supplies that region's value:
-
-```csharp
-var regions = Chart.Create()
-    .WithTitle("Revenue by region")
-    .WithMapLabels(false)
-    .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), new[] {
-        new ChartRegionMapItem("California", 95),
-        new ChartRegionMapItem("New York", 82),
-        new ChartRegionMapItem("TX", 74),
-        new ChartRegionMapItem("FL", 61)
-    });
-```
-
-Use `AddRegionHeatmap(...)` or `WithMapColorScale(...)` when a choropleth needs a real color ramp rather than the default single-color intensity scale. The geometry can be countries, states, NUTS regions, counties, sales districts, or any custom SVG map. Diverging scales support explicit value ranges, midpoint labels, and no-data colors, which is useful for median-centered maps such as industrial births per resident:
-
-```csharp
-var scale = ChartMapColorScale
-    .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 3.2)
-    .WithValueRange(0, 10)
-    .WithLabels("0", "3.2 median", ">10")
-    .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
-
-var births = Chart.Create()
-    .WithTitle("Where Industrial Firms Are Being Born")
-    .WithSubtitle("Births per 10,000 residents")
-    .WithMapLabels(false)
-    .AddRegionHeatmap("Births", ChartMapCatalog.Get("us-states"), new[] {
-        new ChartRegionMapItem("CA", 8.6),
-        new ChartRegionMapItem("TX", 10.8),
-        new ChartRegionMapItem("MI", 1.7)
-    }, scale);
-```
-
-GeoJSON feature collections can be imported directly when the boundary source already exists as polygons. Common region-code fields such as `NUTS_ID`, `id`, `code`, `ISO_A2`, and `GEOID` are searched by default, with region names taken from fields such as `NUTS_NAME`, `NAME_LATN`, or `name`:
-
-```csharp
-var nuts3 = ChartMapCatalog.Load(
-    "eu-nuts3-2021",
-    "maps",
-    options => options
-        .WithCoordinateBounds(-12, 42, 34, 72)
-        .IncludeFeaturePropertyValues("CNTR_CODE", "AT", "BE", "BG", "CZ", "DE", "DK", "EE", "EL", "ES", "FI", "FR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "NL", "PL", "PT", "RO", "SE", "SI", "SK"));
-
-var countries = ChartMapCatalog.Load(
-    "eu-nuts0-2021",
-    "maps",
-    options => options.WithCoordinateBounds(-12, 42, 34, 72));
-
-var map = Chart.Create()
-    .WithTitle("Where Industrial Firms Are Being Born Across EU Regions")
-    .WithSubtitle("Industrial enterprise births per 10,000 residents")
-    .WithCard(false)
-    .WithPlotBackground(false)
-    .WithMapSurface(false)
-    .WithMapLabels(false)
-    .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 160), 0.42)
-    .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-    .WithRegionMapCoordinateBounds(-12, 42, 34, 72)
-    .AddMapBaseLayer(countries, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#D4D4D8"))
-    .AddRegionHeatmap("Births", nuts3, new[] {
-        new ChartRegionMapItem("PL911", 4.8),
-        new ChartRegionMapItem("DE300", 2.1),
-        new ChartRegionMapItem("FR101", 6.9)
-    }, scale)
-    .AddMapBoundaryLayer(countries, ChartColor.FromHex("#111827"), 1.2);
-```
-
-Known external map catalogs expose metadata and import defaults without embedding every large boundary file in the core package. This keeps common maps discoverable while letting applications host the actual GeoJSON assets in their own repo, CDN, or package:
-
-```csharp
-foreach (var entry in ChartMapCatalog.Entries()) {
-    Console.WriteLine($"{entry.Id}: join data by {entry.JoinKey}");
-}
-
-var nuts3 = ChartMapCatalog.FromGeoJsonFile(
-    "eu-nuts3-2021",
-    "maps/nuts3-20m-2021.geojson");
-
-var sameNuts3 = ChartMapCatalog.FromAssetDirectory(
-    "eu-nuts3-2021",
-    "maps");
-
-var polandNuts3 = ChartMapCatalog.Load(
-    "eu-nuts3-2021",
-    "maps",
-    options => options.IncludeFeaturePropertyValues("CNTR_CODE", "PL"));
-
-var usStates = ChartMapCatalog.Load("us-states");
-var worldCountries = ChartMapCatalog.Load("world-admin0-natural-earth-50m", "maps");
-```
-
-The catalog ID, such as `eu-nuts3-2021`, is the stable semantic identity: it selects the import defaults, source metadata, level, join key, and standard file name. The path only answers where the application stores that asset. Use `FromAssetDirectory(...)` when the directory follows the catalog file names, or `FromGeoJsonFile(...)` when the file has a custom location or name.
-
-Built-in entries such as `us-states` are embedded. Larger entries such as `eu-nuts3-2021`, `us-counties-2024`, `world-admin0-natural-earth-50m`, and `global-adm1-geoboundaries` are cataloged with source, level, join-key, and recommended file-name metadata so they can be hosted externally and loaded with the same chart API.
-
-Tile maps use the same data model with a reusable grid definition. Built-in tile maps are also resolved by catalog ID, and custom equal-area layouts can be created with `ChartTileMapDefinition` and `ChartTileMapRegion`:
-
-```csharp
-var tiles = Chart.Create()
-    .WithTitle("Revenue by region")
-    .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] {
-        new ChartRegionMapItem("California", 95),
-        new ChartRegionMapItem("New York", 82),
-        new ChartRegionMapItem("TX", 74),
-        new ChartRegionMapItem("FL", 61)
-    });
-```
-
-Map definitions can expose aliases such as short codes, full names, or common alternate names, normalizing all rendered metadata to canonical region codes.
-Use `WithRegionMapCoordinateBounds(minLon, maxLon, minLat, maxLat)` to frame equirectangular GeoJSON maps independently from the data geometry, or `WithRegionMapBounds(...)` when custom map definitions use their own coordinate system.
-Geographic region labels render only when a region has enough room for the code. Use `WithMapLabels(false)` or `WithMapScaleLegend(false)` when a map is embedded in a compact card and hover/focus titles can carry the region identity.
-Map SVG containers expose summary metadata such as `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, `data-cfx-point-count`, `data-cfx-visible-point-count`, `data-cfx-valued-point-count`, `data-cfx-viewport`, region coverage counts, and `data-cfx-min-value`/`data-cfx-max-value` for value-colored maps, while highlighted points, connectors, and regions remain keyboard-focusable or hover-descriptive and include native hover titles.
-
-Gauges are available for single-value dashboard summaries:
-
-```csharp
-var score = Chart.Create()
-    .WithTitle("Security Posture Score")
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .AddGauge("Overall domain readiness", 87, 0, 100);
-```
-
-Bullet charts are available when a report needs value-versus-target rows with qualitative bands:
-
-```csharp
-var targets = Chart.Create()
-    .WithTitle("Control Targets")
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d })
-    .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d });
-```
-
-Circle charts show compact single-value progress KPIs:
-
-```csharp
-var ready = Chart.Create()
-    .WithTitle("Policy Readiness")
-    .WithCircleRadiusScale(1.12)
-    .WithCircleStrokeScale(1.25)
-    .AddCircle("Ready", 87, 0, 100);
-```
-
-Radial bars use the same scale approach for denser or airier multi-ring KPI panels:
-
-```csharp
-var coverage = Chart.Create()
-    .WithTitle("Coverage Rings")
-    .WithRadialBarRadiusScale(1.08)
-    .WithRadialBarStrokeScale(1.18)
-    .AddRadialBar("Average coverage", Points(92, 74, 88, 96));
-```
-
-Layered radial charts are for custom radial compositions where every arc needs its own radius, stroke, value scale, angle range, cap, or separators:
-
-```csharp
-var calories = Chart.Create()
-    .WithTitle("Layered Radial Progress")
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " kcal")
-    .AddLayeredRadial("Calories left", new[] {
-        new ChartRadialLayer("Available area", 100, 0, 100, ChartColor.FromHex("#F1F2F6"))
-            .WithGeometry(1, 0.18)
-            .WithLineCap(ChartRadialLayerCap.Butt),
-        new ChartRadialLayer("Target ring", 100, 0, 100, ChartColor.FromHex("#FFCD62"))
-            .WithGeometry(0.93, 0.035)
-            .WithLineCap(ChartRadialLayerCap.Butt),
-        new ChartRadialLayer("Current", 1240, 0, 2700, ChartColor.FromHex("#FF9F4A"))
-            .WithGeometry(0.93, 0.14)
-    });
-```
-
-Waterfall charts are available for explaining cumulative change:
-
-```csharp
-var impact = Chart.Create()
-    .WithTitle("Remediation Impact")
-    .WithDataLabels()
-    .WithXLabels("Opened", "Resolved", "Suppressed", "Accepted")
-    .AddWaterfall("Finding delta", Points(24, -68, -18, -9));
-```
-
-Radar charts are available for posture and scorecard comparisons:
-
-```csharp
-var posture = Chart.Create()
-    .WithTitle("Security Posture Radar")
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
-    .AddRadar("Current posture", Points(92, 74, 88, 96, 81, 84))
-    .AddRadar("Target posture", Points(96, 90, 94, 98, 92, 90));
-```
-
-Polar area charts use equal-angle radial segments whose radius is scaled by value:
-
-```csharp
-var polar = Chart.Create()
-    .WithTitle("Control Contribution")
-    .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT")
-    .AddPolarArea("Control share", Points(92, 74, 88, 96));
-```
-
-Funnel charts are available for staged report flows:
-
-```csharp
-var funnel = Chart.Create()
-    .WithTitle("Domain Remediation Funnel")
-    .WithXLabels("Discovered", "Verified", "Prioritized", "Remediated")
-    .AddFunnel("Domains", Points(420, 318, 174, 96));
-```
-
-Timeline charts render date or numeric ranges:
-
-```csharp
-var remediation = Chart.Create()
-    .WithTitle("Domain Remediation Timeline")
-    .WithDataLabels()
-    .AddTimelineItem("Certificate renewal", new DateTime(2026, 1, 4), new DateTime(2026, 2, 10))
-    .AddTimelineItem("DMARC enforcement", new DateTime(2026, 1, 18), new DateTime(2026, 3, 5));
-```
-
-Gantt charts add schedule progress, dependencies, milestones, and current-date markers:
-
-```csharp
-var plan = Chart.Create()
-    .WithTitle("Domain Remediation Gantt")
-    .WithDataLabels()
-    .WithGanttToday(new DateTime(2026, 2, 18))
-    .AddGanttTask("Inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 1, 24), 0.9)
-    .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.62, dependsOn: 0)
-    .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 6), dependsOn: 1);
-```
-
-Sankey charts show weighted movement between named stages:
-
-```csharp
-var flow = Chart.Create()
-    .WithTitle("Finding Flow")
-    .WithDataLabels()
-    .AddSankey("Findings", new[] {
-        new ChartSankeyLink("Discovered", "Validated", 70),
-        new ChartSankeyLink("Validated", "Remediated", 44),
-        new ChartSankeyLink("Validated", "Monitoring", 26)
-    });
-```
-
-Tree charts render parent-child hierarchy maps:
-
-```csharp
-var hierarchy = Chart.Create()
-    .WithTitle("Control Hierarchy")
-    .AddTree("Controls", new[] {
-        new ChartTreeLink("Security posture", "Mail authentication"),
-        new ChartTreeLink("Security posture", "Certificate lifecycle"),
-        new ChartTreeLink("Mail authentication", "SPF"),
-        new ChartTreeLink("Mail authentication", "DKIM")
-    });
-```
-
-Sunburst charts use the same parent-child link model to show nested composition as radial partition rings:
-
-```csharp
-var partition = Chart.Create()
-    .WithTitle("Control Coverage Partition")
-    .WithTheme(ChartTheme.Aurora())
-    .AddSunburst("Controls", new[] {
-        new ChartTreeLink("Security posture", "Mail authentication", 42),
-        new ChartTreeLink("Security posture", "Certificate lifecycle", 28),
-        new ChartTreeLink("Mail authentication", "SPF", 16),
-        new ChartTreeLink("Mail authentication", "DKIM", 14)
-    });
-```
-
-Pictorial charts turn values into repeated built-in symbols:
-
-```csharp
-var audience = Chart.Create()
-    .WithTitle("Audience Mix")
-    .WithTheme(ChartTheme.Candy())
-    .WithPictorialColumns(10)
-    .WithPictorialMaximum(100)
-    .WithPictorialValuePerSymbol(10)
-    .WithPictorialValues(false)
-    .WithPictorialSymbolScale(1.15)
-    .WithPictorialEmptyOpacity(0.12)
-    .WithPictorialSvgPath("M12 2 L15 9 L22 9 L17 14 L19 22 L12 17 L5 22 L7 14 L2 9 L9 9 Z", ChartPictorialShape.Star)
-    .AddPictorial("Segments", new[] {
-        new ChartPictorialItem("New users", 84, ChartColor.FromRgb(14, 165, 233)),
-        new ChartPictorialItem("Returning users", 62, ChartColor.FromRgb(236, 72, 153)),
-        new ChartPictorialItem("Advocates", 29, ChartColor.FromRgb(20, 184, 166))
-    }, ChartPictorialShape.Person);
-```
-
-Use `WithPictorialColumns(5)` for rating-style rows, `10` for percentage-style scorecards, or a denser count when a report needs finer-grained comparison. Add `WithPictorialMaximum(5)` for fixed five-star scales or `WithPictorialMaximum(100)` for true percentage rows; omit it when each chart should scale to the largest item. Fractional values render as partial symbol fills in SVG, HTML, and PNG. Use `WithPictorialValuePerSymbol(...)` when one icon should represent an absolute unit such as one person, 5,000 residents, or 10%; values larger than one configured row wrap into additional symbol rows automatically. Use `WithPictorialValues(false)` for clean Isotype-style rows where the repeated symbols carry the number. `WithPictorialSymbolScale(...)` makes symbols feel denser or airier, and `WithPictorialEmptyOpacity(...)` tunes how strongly unfilled symbols remain visible. Each `ChartPictorialItem` can carry its own color.
-
-Use `WithPictorialSvgPath` to bring a custom filled SVG path into SVG and HTML output. PNG output remains dependency-free by using the fallback `ChartPictorialShape` supplied to the method. Use `WithPictorialShape(...)` after `AddPictorial(...)` to switch an existing chart back to one of the built-in symbols; it clears any custom SVG path.
-
-Progress bars render slider-style infographic rows:
-
 ```csharp
-var preference = Chart.Create()
-    .WithTitle("Preference Sliders")
-    .WithTheme(ChartTheme.PeopleInfographic())
-    .WithProgressBarThickness(0.28)
-    .WithProgressTrackOpacity(0.20)
-    .WithValueFormatter(value => value.ToString("0") + "%")
-    .AddProgressBars("Preference", new[] {
-        new ChartProgressItem("Male", 40, ChartColor.FromHex("#06B6D4")),
-        new ChartProgressItem("Female", 60, ChartColor.FromHex("#DB2777"))
-    });
+chart.Series[0]
+    .WithStrokeWidth(4)
+    .UseThemeColor();
 ```
 
-Use `WithProgressMaximum(...)` when rows compare against something other than 100, `WithProgressValues(false)` when the slider handle is enough, `WithProgressHandles(false)` for clean completion bars, and `WithProgressBarThickness(...)` / `WithProgressTrackOpacity(...)` to tune dense KPI rows without introducing a separate chart type.
+| Report intent | Theme starting point | Brand kit starting point |
+| --- | --- | --- |
+| Executive report | `ChartTheme.ReportLight()` | `ChartBrandKit.Executive()` |
+| Operational dashboard | `ChartTheme.DashboardLight()` | `ChartBrandKit.Accessible()` |
+| SaaS-style dashboard | `ChartTheme.SaasDashboardLight()` | `ChartBrandKit.Product()` |
+| People or editorial summary | `ChartTheme.Aurora()` | `ChartBrandKit.PeopleInfographic()` |
+| Accessibility-first report | `ChartTheme.Colorblind()` | `ChartBrandKit.Accessible()` |
 
-Word clouds place weighted terms deterministically, so static reports stay reproducible:
+## Output and Safety
 
-```csharp
-var topics = Chart.Create()
-    .WithTitle("Support Themes")
-    .WithTheme(ChartTheme.Editorial())
-    .WithWordCloudFontRange(14, 52)
-    .WithWordCloudAngles(-18, 0, 12)
-    .WithWordCloudMaximumTerms(24)
-    .WithWordCloudDensity(0.9)
-    .AddWordCloud("Themes", new[] {
-        new ChartWordCloudItem("Automation", 100, ChartColor.FromRgb(30, 64, 175)),
-        new ChartWordCloudItem("Reports", 82, ChartColor.FromRgb(190, 18, 60)),
-        new ChartWordCloudItem("Charts", 64),
-        new ChartWordCloudItem("DNS", 48)
-    });
-```
-
-Use `WithWordCloudFontRange` to make the weight contrast calmer or louder, `WithWordCloudAngles` to choose a restrained editorial layout or a more playful rotated pattern, `WithWordCloudMaximumTerms` to curate noisy text sources, and `WithWordCloudDensity` from `0.5` to `2.0` to move from spacious editorial layouts to denser poster-style clouds. Optional `ChartWordCloudItem` colors emphasize selected terms.
-
-They can also be stacked when the report needs category totals:
-
-```csharp
-var stacked = Chart.Create()
-    .WithTitle("Domain Findings Composition")
-    .WithStackedBars()
-    .WithStackTotals()
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
-    .AddBar("Passed", Points(180, 220, 245, 260, 280))
-    .AddBar("Warnings", Points(42, 38, 32, 28, 24))
-    .AddBar("Failed", Points(12, 10, 8, 6, 5));
-```
-
-Report-specific units can be applied with a custom value formatter:
-
-```csharp
-var latency = Chart.Create()
-    .WithTitle("Endpoint Latency")
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
-    .WithXLabels("DNS", "TCP", "TLS", "HTTP", "Render")
-    .AddSmoothLine("P95", Points(28, 64, 118, 146, 182));
-```
-
-SVG layout reserves extra plot space when formatted y-axis labels are long, so currency and unit-heavy labels do not spill into the card margin.
-
-Typography defaults to a native system font stack for crisp SVG output. Reports can override it per chart:
-
-```csharp
-chart.WithFontFamily("-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif");
-```
-
-ChartForgeX also includes expressive, dependency-free style presets for different audiences:
-
-```csharp
-var boardDeck = Chart.Create()
-    .WithTheme(ChartTheme.Editorial())
-    .AddSmoothLine("Revenue", Points(120, 148, 173, 210));
-
-var productPulse = Chart.Create()
-    .WithTheme(ChartTheme.Aurora())
-    .WithPalette(ChartPalettes.Vivid)
-    .AddBar("Adoption", Points(42, 58, 71, 86));
-```
-
-Built-in themes include `ReportLight()`, `ReportDark()`, `Colorblind()`, `Aurora()`, `Editorial()`, `Candy()`, `Terminal()`, `Minimal()`, `DashboardLight()`, `SaasDashboardLight()`, and `RestaurantDashboardLight()`. Font helpers such as `ChartFontStacks.Serif`, `ChartFontStacks.Geometric`, `ChartFontStacks.Rounded`, and `ChartFontStacks.Mono` keep SVG/HTML typography readable without bundling external assets:
-
-```csharp
-chart.WithTheme(theme => theme
-        .WithFontFamily(ChartFontStacks.Geometric)
-        .WithTypography(title: 30, subtitle: 14, axisTitle: 12, tickLabel: 11, legend: 12, dataLabel: 11)
-        .WithCornerRadius(card: 20, plot: 14)
-        .WithStrokeWidth(3.4)
-        .WithSurfaceStyle(ChartSurfaceStyle.Floating));
-```
-
-Place legends where the chart has room with `WithLegendPosition(...)`. `ChartLegendPosition` supports `Bottom`, `Top`, `Left`, `Right`, `TopLeft`, `TopRight`, `BottomLeft`, and `BottomRight`; renderers reserve the matching lane so long labels truncate inside the chart instead of touching plot borders. Use `WithPointLegend()` for single-series charts where individual point colors need their own legend keys.
-
-Use role-based text styles when a report needs more visual personality without forking chart types. `ChartTextRole` and `ChartTextStyle` power the generic `WithTextStyle(...)` API plus convenience helpers such as `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, and `WithDataLabelStyle`:
+- SVG is the highest-fidelity static target.
+- HTML wraps inline SVG into static self-contained pages or fragments.
+- PNG uses ChartForgeX's dependency-free raster path and supports real alpha transparency.
+- BMP, PPM, and TIFF are opaque utility exports over the same raster buffer.
+- JavaScript belongs in opt-in adapter packages, not in the default static renderer.
+- Public APIs fail fast on invalid sizes, ranges, enum values, and specialized series payloads.
 
-```csharp
-chart
-    .WithTitleStyle(style => style
-        .WithColor("#be123c")
-        .WithFontFamily("Georgia, 'Times New Roman', serif")
-        .WithWeight("900")
-        .WithItalic()
-        .WithUnderline())
-    .WithTickLabelStyle(style => style.WithColor("#2563eb").WithItalic())
-    .WithLegendStyle(style => style.WithColor("#15803d").WithUnderline())
-    .WithDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800"));
-```
-
-SVG and HTML honor color, font family, weight, italic, underline, and role font size. PNG keeps its dependency-free text renderer but honors role color, role font size, and underline where the raster text path supports it.
-Use `chart.Series[index].WithPointColor(pointIndex, "#14B8A6")` when one bar, horizontal bar, scatter marker, line marker, lollipop mark, bubble, error-bar mark, range-bar interval, dumbbell comparison, box-plot summary, candlestick/OHLC window, slope endpoint, pie/donut slice, polar-area segment, funnel segment, treemap tile, pictorial item, progress row, or word-cloud term needs its own color while the rest of the series keeps the normal palette. Pie/donut legends and outside callout leaders follow the same point color. Zero-value pie, donut, and polar-area points do not draw visible slices or segments, but point indexes remain stable for labels, colors, offsets, legends, and exported SVG metadata; zero-value funnel stages render as explicit stages.
-Use `chart.Series[index].WithFillPattern(ChartFillPattern.DiagonalBackward)` when filled dashboard marks need subtle texture. `WithPointFillPattern(pointIndex, ...)` overrides one bar, horizontal bar, or range-bar interval, and `UseSolidFill()` clears the series texture. SVG emits `data-cfx-fill-pattern` metadata while PNG renders the same hatch overlay.
-Use `chart.Series[index].WithDataLabelStyle(...)` when one series should call attention to its labels without changing every label in the chart. These overrides apply to cartesian labels and specialized labels such as pie slices, heatmap cells, radar points, and waterfall deltas. Use `WithPointDataLabelStyle(pointIndex, ...)` when a single bar, point, slice, cell, or delta needs its own callout styling.
-Use `WithDataLabelPlacement(ChartDataLabelPlacement.Center)` at the chart level, or `chart.Series[index].WithDataLabelPlacement(...)` for one series, when labels should sit inside, outside, above, below, left, or right of capable cartesian and specialized marks. Bubbles, error bars, range bands, range areas, range bars, dumbbells, box plots, candlesticks, and OHLC charts honor the same placement model for their intrinsic labels in SVG and PNG. Outside pie/donut labels use side-aware lanes with connector lines, and side heatmap labels include connector ticks in SVG and PNG exports. Tune those connectors with `WithDataLabelConnectorColor(...)`, `WithDataLabelConnectorOpacity(...)`, `WithDataLabelConnectorStrokeWidth(...)`, and `WithDataLabelConnectorStyle(ChartDataLabelConnectorStyle.Curve)` for straight, elbow, or curved leaders. When no explicit connector color is set, pie and donut callout leaders use the matching slice color. Use `WithPieSliceLabelContent(...)` when pie/donut data labels should show percentage, value, category, category plus percentage, or category plus value. Use `WithPieSliceLabelFormatter(slice => slice.Label + ": " + slice.FormattedPercent)` for fully custom pie/donut callout text. Use `WithPieOutsideLabelDistance(...)` to move outside pie/donut labels closer to or farther from the ring, and `chart.Series[index].WithPointSliceOffset(pointIndex, ratio)` to pull out one pie or donut slice for emphasis.
-
-`ChartGrid` also supports `WithTitleStyle(...)` and `WithSubtitleStyle(...)` for styled report headers in SVG, PNG, and static HTML grid exports.
-
-Pie and donut charts use the same model and x-axis labels for slice names:
+## Website Pilot
 
-```csharp
-var donut = Chart.Create()
-    .WithTitle("Domain Check Result Mix")
-    .WithDonutCenterText("94%", "Passed")
-    .WithDonutInnerRadiusRatio(0.68)
-    .WithXLabels("Passed", "Warnings", "Failed")
-    .AddDonut("Checks", Points(1260, 68, 10));
-```
+`Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The central Evotec project hub remains the registry page, while the dedicated site is meant for the richer gallery and demo experience at `https://chartforgex.evotec.xyz/`.
 
-## HtmlForgeX integration model
+Build the examples first with `./Build.ps1`, then build the site from `Website/`:
 
-HtmlForgeX should not depend on ApexCharts or Chart.js for static reports. Instead, it can consume ChartForgeX objects directly:
-
-```csharp
-var chartHtml = chart.ToHtmlFragment();
+```powershell
+.\build.ps1 -Dev
+.\build.ps1 -Ci
 ```
-
-That gives HtmlForgeX:
 
-- inline SVG charts;
-- no external CDN;
-- no JavaScript requirement;
-- no runtime chart library payload;
-- easy email/report/document embedding;
-- deterministic output for screenshots and PDFs.
+Promoted website examples should be reproducible cases, not screenshots: show the rendered preview, link the HTML/SVG/PNG artifacts, and point to the source file or builder method that generates the same output.
 
-For interactive dashboards, keep the static renderer untouched and opt into host-specific interactivity:
+## Repository Map
 
 ```text
-ChartForgeX.Interactivity
-ChartForgeX.Interactivity.Html
+ChartForgeX
+|-- ChartForgeX                    # core chart model and static renderers
+|   |-- Core                       # chart model, series, options
+|   |-- Primitives                 # colors, points, rects, padding
+|   |-- Rendering                  # shared rendering math and polish helpers
+|   |-- Svg                        # SVG renderer
+|   |-- Html                       # static HTML renderer
+|   |-- Raster                     # PNG/BMP/PPM/TIFF renderer and encoders
+|   |-- Topology                   # product-neutral topology model/renderers
+|   `-- VisualBlocks               # tables, lists, metric cards, visual grids
+|-- ChartForgeX.Interactivity       # host-neutral interaction contracts
+|-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction adapter
+|-- ChartForgeX.Examples            # generated gallery and smoke examples
+|-- ChartForgeX.Tests               # smoke and repository quality tests
+|-- Website                         # dedicated PowerForge.Web pilot site
+|-- docs                            # focused reference notes
+|-- AGENTS.md                       # contributor/agent expectations
+|-- CONTRIBUTING.md                 # development and release workflow
+|-- TODO.md                         # centralized active work ledger
+`-- Build.ps1                      # local quality and packaging gate
 ```
 
-`ChartForgeX.Interactivity` holds host-neutral contracts for tooltips, selection, legend toggles, keyboard navigation, zoom, pan, brush ranges, synchronized charts, and export commands. `ChartForgeX.Interactivity.Html` is the first adapter and emits self-contained HTML/SVG with small vanilla JavaScript for report-friendly tooltips, click/keyboard selection, legend toggles, zoom buttons, wheel zoom, pan mode, brush-region selection events, same-page chart group synchronization, inline SVG/PNG download, and reset controls:
+## Development
 
-```csharp
-using ChartForgeX.Interactivity;
-using ChartForgeX.Interactivity.Html;
+Run the full local quality loop before publishing a pull request:
 
-chart.SaveInteractiveHtml("interactive-report.html", options => {
-    options.Interaction.GroupName = "executive-dashboard";
-    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
-});
-
-new[] { scoreChart, trendChart, findingsChart }.SaveInteractiveHtmlDashboard("interactive-dashboard.html", options => {
-    options.Columns = 2;
-    options.Interaction.GroupName = "executive-dashboard";
-    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
-});
+```powershell
+./Build.ps1 -Configuration Release
 ```
 
-Host pages can listen for `cfxviewport`, `cfxselect`, `cfxseries`, `cfxbrush`, `cfxexport`, `cfxreset`, and `cfxsync` on each `.cfx-interactive-chart` element to connect ChartForgeX dashboards to filters, details panes, topology inspectors, or external report controls.
+For a faster code/test loop:
 
-Other adapters such as Blazor, WinForms, WPF, MAUI, or Web Components can consume the same interaction contracts without changing the core SVG/HTML/PNG renderers.
+```powershell
+dotnet test .\ChartForgeX.sln -c Release
+```
 
-## Why not Chart.js / ApexCharts?
+Generated example output is written under `ChartForgeX.Examples/bin/Release/net8.0/output/`. The most useful review pages are:
 
-Chart.js and ApexCharts are good interactive web libraries, but for generated HTML reports they create several problems:
+- `index.html`
+- `catalog.html`
+- `quality-dashboard.html`
+- `svg-png-comparison.html`
+- `domain-security-interactive.html`
+- `executive-interactive-dashboard.html`
 
-- JavaScript dependency;
-- CDN/local asset handling;
-- harder offline mode;
-- harder email embedding;
-- harder deterministic rendering;
-- heavier reports;
-- more moving parts for SharePoint/static hosting.
+Refresh visual baselines only after reviewing the generated gallery:
 
-ChartForgeX should replace them for static report visuals. Keep JavaScript charting only where interaction is genuinely required.
+```powershell
+./Build.ps1 -Configuration Release -UpdateVisualBaseline
+```
 
-## PNG/JPG approach
+## Documentation
 
-PNG is supported as a dependency-free raster output. The current PNG renderer is intentionally simple, but it now shares the important report-layout rules: title/subtitle headers, scaled cartesian legends, rounded theme surfaces and borders, explicit x-axis label density, edge-aware tick labels, long formatted y-axis label space, axis titles, supersampled edges, compressed output, and alpha transparency. SVG remains the source of truth for beauty, typography, gradients, annotation labels, and report-grade visual polish.
-
-JPG is not included. JPG has no transparency and is a poor fit for charts with sharp lines/text. If needed later, expose it as optional export by flattening PNG/SVG onto a solid background.
-
-## Roadmap
-
-### v0.1
-
-- Line chart
-- Step line chart
-- Area chart
-- Stacked area chart
-- Scatter chart
-- Slope chart
-- Bar chart
-- Histogram chart
-- Lollipop chart
-- Bubble chart
-- Error-bar chart
-- Candlestick chart
-- OHLC chart
-- Range-band chart
-- Dumbbell chart
-- Pareto chart helper
-- Range bar chart
-- Box plot chart
-- Horizontal bar chart
-- Pie and donut charts
-- Static line and band annotations
-- SVG renderer
-- HTML renderer
-- Minimal PNG renderer
-- Light/dark themes
-- Report theme presets and visual styling tokens
-- Automatic x-axis label density for crowded reports
-- Rotated x-axis labels for long categories
-- Wrapped and positionable SVG/PNG legends
-- Grouped SVG bar rendering for multiple bar series
-- Stacked bar rendering for category totals
-- Horizontal bar rendering for long categories
-- Step line, histogram, lollipop, range bar, range band, dumbbell, and slope charts
-- Bubble charts, trend lines, statistical overlays, and error bars
-- Box plots, Pareto charts, candlestick charts, and OHLC charts
-- Heatmap matrices
-- Gauge charts
-- Bullet charts
-- Waterfall charts
-- Radar charts
-- Polar area charts
-- Funnel charts
-- Treemap charts
-- Pictorial charts
-- Word clouds
-- Timeline charts
-- Gantt charts
-- Sankey charts
-- Tree charts
-- Sunburst partition charts
-- Sparklines
-- Date/time axes
-- Data labels
-
-### v0.2
-
-- Responsive HTML containers
-
-### v0.3
-
-- Multiple Y axes
-- Annotation lines/ranges
-- Better PNG antialiasing
-- Embedded vector font or compact Hershey-style text
-
-### v1.0
-
-- Stable public API
-- HtmlForgeX integration package
-- OfficeIMO embedding helpers
-- Report theme presets
-- Snapshot tests
-- Benchmarks
+- [Architecture notes](docs/architecture.md)
+- [Topology reference](docs/topology.md)
+- [Visual blocks reference](docs/visual-blocks.md)
+- [Contributing and release workflow](CONTRIBUTING.md)
+- [Centralized TODO](TODO.md)

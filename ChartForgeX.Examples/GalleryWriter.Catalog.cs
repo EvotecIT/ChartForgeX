@@ -213,6 +213,7 @@ public static partial class GalleryWriter {
         var directory = Path.GetDirectoryName(card.FilePath) ?? string.Empty;
         var svgExists = File.Exists(Path.Combine(directory, card.BaseName + ".svg"));
         var pngExists = File.Exists(Path.Combine(directory, card.BaseName + ".png"));
+        var csharpExists = File.Exists(Path.Combine(directory, card.BaseName + ".csharp.txt"));
         sb.AppendLine("<article class=\"card\">");
         if (svgExists) {
             var previewStyle = CatalogPreviewStyle(Path.Combine(directory, card.BaseName + ".svg"));
@@ -226,6 +227,7 @@ public static partial class GalleryWriter {
         sb.AppendLine("<a href=\"" + EscapeHtml(card.FileName) + "\">HTML</a>");
         if (svgExists) sb.AppendLine("<a href=\"" + EscapeHtml(card.BaseName) + ".svg\">SVG</a>");
         if (pngExists) sb.AppendLine("<a href=\"" + EscapeHtml(card.BaseName) + ".png\">PNG</a>");
+        if (csharpExists) sb.AppendLine("<a href=\"" + EscapeHtml(card.BaseName) + ".csharp.txt\">C#</a>");
         sb.AppendLine("</div>");
         sb.AppendLine("</div>");
         sb.AppendLine("</article>");
