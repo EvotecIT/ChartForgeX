@@ -27,8 +27,8 @@ internal static partial class SmokeTests {
             Assert(dashboard.Contains("Baseline warnings", StringComparison.Ordinal) && dashboard.Contains("<div class=\"value\">1</div>", StringComparison.Ordinal), "Quality dashboard should surface high-DPI visual-baseline warnings.");
             var index = File.ReadAllText(Path.Combine(output, "index.html"));
             var catalog = File.ReadAllText(Path.Combine(output, "catalog.html"));
-            Assert(index.Contains("alpha.csharp.txt", StringComparison.Ordinal), "Generated gallery cards should link C# sidecar snippets when available.");
-            Assert(catalog.Contains("alpha.csharp.txt", StringComparison.Ordinal), "Grouped catalog cards should link C# sidecar snippets when available.");
+            Assert(index.Contains("alpha.csharp.txt", StringComparison.Ordinal), "Generated gallery cards should link C# snippets when available.");
+            Assert(catalog.Contains("alpha.csharp.txt", StringComparison.Ordinal), "Grouped catalog cards should link C# snippets when available.");
         } finally {
             Directory.Delete(output, true);
         }

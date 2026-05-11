@@ -11,37 +11,21 @@ public static partial class ChartExtensions {
     /// <param name="chart">The chart to render.</param>
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void SaveImage(this Chart chart, string path, RasterImageOptions? rasterOptions = null) {
-        if (TrySaveCommonImage(path, () => chart.SaveSvg(path), () => chart.SaveHtml(path), () => chart.SavePng(path))) return;
+    public static void Save(this Chart chart, string path, RasterImageOptions? rasterOptions = null) {
+        if (TrySaveCommonOutput(path, () => chart.SaveSvg(path), () => chart.SaveHtml(path), () => chart.SavePng(path))) return;
         chart.SaveRasterImage(path, rasterOptions);
     }
 
     /// <summary>
-    /// Saves a chart using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
-    /// </summary>
-    /// <param name="chart">The chart to render.</param>
-    /// <param name="path">The output file path.</param>
-    /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void Save(this Chart chart, string path, RasterImageOptions? rasterOptions = null) => chart.SaveImage(path, rasterOptions);
-
-    /// <summary>
     /// Saves a chart grid using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
     /// </summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void SaveImage(this ChartGrid grid, string path, RasterImageOptions? rasterOptions = null) {
-        if (TrySaveCommonImage(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path), () => grid.SavePng(path))) return;
+    public static void Save(this ChartGrid grid, string path, RasterImageOptions? rasterOptions = null) {
+        if (TrySaveCommonOutput(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path), () => grid.SavePng(path))) return;
         grid.SaveRasterImage(path, rasterOptions);
     }
-
-    /// <summary>
-    /// Saves a chart grid using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
-    /// </summary>
-    /// <param name="grid">The chart grid to render.</param>
-    /// <param name="path">The output file path.</param>
-    /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void Save(this ChartGrid grid, string path, RasterImageOptions? rasterOptions = null) => grid.SaveImage(path, rasterOptions);
 
     /// <summary>
     /// Saves a visual block using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
@@ -49,39 +33,23 @@ public static partial class ChartExtensions {
     /// <param name="block">The visual block to render.</param>
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void SaveImage(this IVisualBlock block, string path, RasterImageOptions? rasterOptions = null) {
-        if (TrySaveCommonImage(path, () => block.SaveSvg(path), () => block.SaveHtml(path), () => block.SavePng(path))) return;
+    public static void Save(this IVisualBlock block, string path, RasterImageOptions? rasterOptions = null) {
+        if (TrySaveCommonOutput(path, () => block.SaveSvg(path), () => block.SaveHtml(path), () => block.SavePng(path))) return;
         block.SaveRasterImage(path, rasterOptions);
     }
 
     /// <summary>
-    /// Saves a visual block using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
-    /// </summary>
-    /// <param name="block">The visual block to render.</param>
-    /// <param name="path">The output file path.</param>
-    /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void Save(this IVisualBlock block, string path, RasterImageOptions? rasterOptions = null) => block.SaveImage(path, rasterOptions);
-
-    /// <summary>
     /// Saves a visual grid using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
     /// </summary>
     /// <param name="grid">The visual grid to render.</param>
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void SaveImage(this VisualGrid grid, string path, RasterImageOptions? rasterOptions = null) {
-        if (TrySaveCommonImage(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path), () => grid.SavePng(path))) return;
+    public static void Save(this VisualGrid grid, string path, RasterImageOptions? rasterOptions = null) {
+        if (TrySaveCommonOutput(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path), () => grid.SavePng(path))) return;
         grid.SaveRasterImage(path, rasterOptions);
     }
 
-    /// <summary>
-    /// Saves a visual grid using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
-    /// </summary>
-    /// <param name="grid">The visual grid to render.</param>
-    /// <param name="path">The output file path.</param>
-    /// <param name="rasterOptions">Optional raster export options for opaque raster formats.</param>
-    public static void Save(this VisualGrid grid, string path, RasterImageOptions? rasterOptions = null) => grid.SaveImage(path, rasterOptions);
-
-    private static bool TrySaveCommonImage(string path, Action saveSvg, Action saveHtml, Action savePng) {
+    private static bool TrySaveCommonOutput(string path, Action saveSvg, Action saveHtml, Action savePng) {
         var extension = GetExportExtension(path);
         switch (extension) {
             case ".svg":

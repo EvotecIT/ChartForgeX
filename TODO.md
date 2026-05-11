@@ -38,7 +38,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 ## Release Readiness
 
 - Keep the first-release public surface stable where it represents real charting concepts; make pre-release breaking changes only for clearer naming, stronger typing, dependency boundaries, or product-neutral API design.
-- Keep extension-inferred export behavior documented in README; new output formats should update `SaveImage`/`Save`, raster metadata helpers, and smoke tests together.
+- Keep extension-inferred export behavior documented in README; new output formats should update `Save`, raster metadata helpers, and smoke tests together.
 - Keep map catalog discovery split between embedded entries and known external entries so hosts can tell package-shipped geometry from user-supplied GeoJSON assets.
 - Use GitHub Releases as the release-note source of truth; keep package release notes short enough for NuGet and do not maintain a second long-form repository changelog.
 - Keep package license metadata aligned across `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html`.
