@@ -1,0 +1,46 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://chartforgex.evotec.xyz/examples/",
+      "service-desc": [
+        {
+          "href": "https://chartforgex.evotec.xyz/examples/promoted-cases.json",
+          "type": "application/json",
+          "title": "ChartForgeX promoted example cases"
+        },
+        {
+          "href": "https://chartforgex.evotec.xyz/schemas/promoted-cases.schema.json",
+          "type": "application/schema+json",
+          "title": "Promoted example case schema"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://chartforgex.evotec.xyz/examples/",
+          "type": "text/html",
+          "title": "ChartForgeX examples"
+        }
+      ]
+    },
+    {
+      "anchor": "https://chartforgex.evotec.xyz/docs/",
+      "service-doc": [
+        {
+          "href": "https://chartforgex.evotec.xyz/docs/",
+          "type": "text/html",
+          "title": "ChartForgeX documentation"
+        }
+      ]
+    },
+    {
+      "anchor": "https://github.com/EvotecIT/ChartForgeX",
+      "service-doc": [
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX",
+          "type": "text/html",
+          "title": "ChartForgeX source repository"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "chartforgex-example-reproduction",
+      "type": "skill-md",
+      "description": "Use ChartForgeX promoted cases to reproduce chart, map, dashboard, and topology visuals from source.",
+      "url": "/.well-known/agent-skills/chartforgex-example-reproduction/SKILL.md"
+    }
+  ]
+}
