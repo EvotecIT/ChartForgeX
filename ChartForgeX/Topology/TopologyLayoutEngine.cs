@@ -431,12 +431,18 @@ internal static partial class TopologyLayoutEngine {
         ApplyDenseGroupEdgeDefaults(chart);
         if (chart.LayoutDirection == TopologyLayoutDirection.RightToLeft) {
             MirrorLayoutHorizontally(chart, pad, chart.Viewport.Width - pad);
-            RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
+            var restoredGroups = RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
+            ShiftManualWaypointsForRestoredGroups(chart, restoredGroups);
+            ResetDenseInferenceForRestoredGroups(chart, restoredGroups);
+            ApplyDenseGroupEdgeDefaults(chart);
         }
 
         if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) {
             MirrorLayoutVertically(chart, pad + titleOffset, chart.Viewport.Height - pad - legendOffset);
-            RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
+            var restoredGroups = RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
+            ShiftManualWaypointsForRestoredGroups(chart, restoredGroups);
+            ResetDenseInferenceForRestoredGroups(chart, restoredGroups);
+            ApplyDenseGroupEdgeDefaults(chart);
         }
     }
 
@@ -665,14 +671,6 @@ internal static partial class TopologyLayoutEngine {
         }
     }
 
-    private static string DenseGroupPairKey(TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
-        var sourceGroupId = nodes[edge.SourceNodeId].GroupId ?? string.Empty;
-        var targetGroupId = nodes[edge.TargetNodeId].GroupId ?? string.Empty;
-        return string.Compare(sourceGroupId, targetGroupId, StringComparison.Ordinal) <= 0
-            ? sourceGroupId + "\u001F" + targetGroupId
-            : targetGroupId + "\u001F" + sourceGroupId;
-    }
-
     private static int GetLayer(TopologyNode node) {
         if (node.Metadata.TryGetValue("layer", out var value) && int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var layer)) return layer;
         return node.Kind switch {
@@ -727,7 +725,8 @@ internal static partial class TopologyLayoutEngine {
             IconId = group.IconId,
             Color = group.Color,
             LayoutPolicy = group.LayoutPolicy,
-            AppliedLayoutPolicy = group.AppliedLayoutPolicy
+            AppliedLayoutPolicy = group.AppliedLayoutPolicy,
+            HasPositionOverride = group.HasPositionOverride
         };
         foreach (var item in group.Metadata) copy.Metadata[item.Key] = item.Value;
         return copy;

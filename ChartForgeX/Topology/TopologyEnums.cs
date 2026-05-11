@@ -7,21 +7,21 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public enum TopologyLayoutMode {
     /// <summary>Use coordinates supplied on groups and nodes.</summary>
-    Manual,
+    Manual = 0,
     /// <summary>Place groups in a deterministic grid and place unpositioned nodes inside their groups.</summary>
-    GroupGrid,
+    GroupGrid = 1,
     /// <summary>Place a hub near the center and branch nodes around it.</summary>
-    HubAndSpoke,
+    HubAndSpoke = 2,
     /// <summary>Place nodes by metadata layer in a deterministic layered flow.</summary>
-    Layered,
+    Layered = 3,
     /// <summary>Place nodes in a deterministic matrix.</summary>
-    Matrix,
+    Matrix = 4,
     /// <summary>Place groups in dense deterministic panels and pack each group's hub/branch nodes inside the panel.</summary>
-    DenseGrouped,
-    /// <summary>Place connected nodes with a deterministic force-directed simulation using repulsion, link attraction, and group gravity.</summary>
-    ForceDirected,
+    DenseGrouped = 5,
     /// <summary>Project nodes and groups from longitude/latitude coordinates into the topology viewport.</summary>
-    Geographic
+    Geographic = 6,
+    /// <summary>Place connected nodes with a deterministic force-directed simulation using repulsion, link attraction, and group gravity.</summary>
+    ForceDirected = 7
 }
 
 /// <summary>

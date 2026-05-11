@@ -189,7 +189,7 @@ public static partial class TopologyChartExtensions {
         ValidateNonNegative(width, nameof(width), "Topology group widths");
         ValidateNonNegative(height, nameof(height), "Topology group heights");
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
-        chart.Groups.Add(new TopologyGroup { Id = groupId, Label = groupLabel, X = x, Y = y, Width = width, Height = height, Status = status, Subtitle = subtitle, Href = href, Tooltip = tooltip, CssClass = cssClass, Symbol = symbol, IconId = OptionalText(iconId), Color = color });
+        chart.Groups.Add(new TopologyGroup { Id = groupId, Label = groupLabel, X = x, Y = y, Width = width, Height = height, Status = status, Subtitle = subtitle, Href = href, Tooltip = tooltip, CssClass = cssClass, Symbol = symbol, IconId = OptionalText(iconId), Color = color, HasPositionOverride = HasCoordinateOverride(x) || HasCoordinateOverride(y) });
         return chart;
     }
 
@@ -778,7 +778,6 @@ public static partial class TopologyChartExtensions {
     }
 
     private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
-
     private static void ValidateFinite(double value, string parameterName, string displayName) {
         if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, displayName + " must be finite numbers.");
     }
@@ -792,6 +791,8 @@ public static partial class TopologyChartExtensions {
         ValidateFinite(value, parameterName, displayName);
         if (value < 0) throw new ArgumentOutOfRangeException(parameterName, value, displayName + " must be zero or greater.");
     }
+
+    private static bool HasCoordinateOverride(double value) => Math.Abs(value) >= 0.0001;
 
     private static void ValidateEnum(Type enumType, object value, string parameterName, string displayName) {
         if (!Enum.IsDefined(enumType, value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + displayName.ToLowerInvariant() + ".");

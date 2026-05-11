@@ -231,7 +231,7 @@ public static class TopologyHierarchyExtensions {
             if (string.IsNullOrWhiteSpace(item.ParentId) || !visibleIds.Contains(item.ParentId!)) continue;
             chart.AddEdge(EdgeId(options.EdgeIdPrefix, item.ParentId!, item.Id), item.ParentId!, item.Id, kind: options.EdgeKind, status: options.EdgeStatus, direction: options.EdgeDirection, routing: options.EdgeRouting);
             var edge = chart.Edges[chart.Edges.Count - 1];
-            ApplyHierarchyPorts(edge, options.LayoutDirection);
+            ApplyHierarchyPorts(edge, options.LayoutDirection, options.ApplyLayeredLayout);
             edge.Metadata["hierarchy.relationship"] = "parent-child";
         }
 
@@ -302,14 +302,20 @@ public static class TopologyHierarchyExtensions {
         if (ids.Add(item.ParentId!)) AddAncestors(item.ParentId!, byId, ids);
     }
 
-    private static void ApplyHierarchyPorts(TopologyEdge edge, TopologyLayoutDirection direction) {
+    private static void ApplyHierarchyPorts(TopologyEdge edge, TopologyLayoutDirection direction, bool preMirror) {
         switch (direction) {
             case TopologyLayoutDirection.LeftToRight:
-            case TopologyLayoutDirection.RightToLeft:
                 edge.SourcePort = TopologyEdgePort.Right;
                 edge.TargetPort = TopologyEdgePort.Left;
                 break;
+            case TopologyLayoutDirection.RightToLeft:
+                edge.SourcePort = preMirror ? TopologyEdgePort.Right : TopologyEdgePort.Left;
+                edge.TargetPort = preMirror ? TopologyEdgePort.Left : TopologyEdgePort.Right;
+                break;
             case TopologyLayoutDirection.BottomToTop:
+                edge.SourcePort = preMirror ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
+                edge.TargetPort = preMirror ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
+                break;
             default:
                 edge.SourcePort = TopologyEdgePort.Bottom;
                 edge.TargetPort = TopologyEdgePort.Top;

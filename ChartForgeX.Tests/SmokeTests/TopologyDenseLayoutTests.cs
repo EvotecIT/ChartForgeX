@@ -184,6 +184,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .WithLayout(TopologyLayoutMode.ForceDirected)
             .AddGroup("origin", "Origin", 0, 0, 160, 120, TopologyHealthStatus.Healthy)
+            .WithGroupPosition("origin", 0, 0)
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("origin-node", "Origin", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "origin")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "auto")
@@ -195,6 +196,27 @@ internal static partial class SmokeTests {
         Assert(origin.Metadata["layout.force.anchor.strategy"] == "explicit", "Force-directed groups pinned at zero origin should still be treated as explicit anchors.");
         Assert(Math.Abs(double.Parse(origin.Metadata["layout.force.anchor.x"], CultureInfo.InvariantCulture) - 80) < 0.001, "Zero-origin force anchors should preserve the caller-provided X coordinate.");
         Assert(Math.Abs(double.Parse(origin.Metadata["layout.force.anchor.y"], CultureInfo.InvariantCulture) - 60) < 0.001, "Zero-origin force anchors should preserve the caller-provided Y coordinate.");
+    }
+
+    private static void TopologyForceDirectedLayoutKeepsSizeOnlyGroupsAutoAnchored() {
+        var chart = TopologyChart.Create()
+            .WithId("force-size-only-auto-anchor")
+            .WithViewport(640, 360, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddGroup("left", "Left", 0, 0, 160, 120, TopologyHealthStatus.Healthy)
+            .AddGroup("right", "Right", 0, 0, 160, 120, TopologyHealthStatus.Warning)
+            .AddAutoNode("left-node", "Left", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "left")
+            .AddAutoNode("right-node", "Right", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "right")
+            .AddEdge("left-right", "left-node", "right-node", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional);
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var left = prepared.Groups.Single(group => group.Id == "left");
+        var right = prepared.Groups.Single(group => group.Id == "right");
+
+        Assert(left.Metadata["layout.force.anchor.strategy"] == "weighted-row", "Force-directed groups with only size overrides should still use automatic weighted anchors.");
+        Assert(right.Metadata["layout.force.anchor.strategy"] == "weighted-row", "Force-directed size-only groups should not be treated as explicit origin anchors.");
+        Assert(Math.Abs(double.Parse(left.Metadata["layout.force.anchor.x"], CultureInfo.InvariantCulture) - double.Parse(right.Metadata["layout.force.anchor.x"], CultureInfo.InvariantCulture)) > 50, "Force-directed size-only groups should be spread by auto anchoring.");
     }
 
     private static void TopologyForceDirectedLayoutKeepsWeightedAnchorsInsideNarrowViewport() {
@@ -442,6 +464,29 @@ internal static partial class SmokeTests {
         Assert(rightEdge.TargetPort == TopologyEdgePort.Right, "Right-to-left single-child hierarchy routes should enter children from the right after mirroring.");
     }
 
+    private static void TopologyHierarchyWithoutLayeredLayoutUsesFinalDirectionPorts() {
+        var items = new List<TopologyHierarchyItem> {
+            new("root", "Root") { Kind = TopologyNodeKind.Team },
+            new("child", "Child", "root") { Kind = TopologyNodeKind.Person }
+        };
+        var bottomToTop = TopologyChart.Create()
+            .AddHierarchy(items, new TopologyHierarchyOptions { ApplyLayeredLayout = false, LayoutDirection = TopologyLayoutDirection.BottomToTop });
+        var rightToLeft = TopologyChart.Create()
+            .AddHierarchy(items, new TopologyHierarchyOptions { ApplyLayeredLayout = false, LayoutDirection = TopologyLayoutDirection.RightToLeft });
+        var bottomEdge = bottomToTop.Edges.Single();
+        var rightEdge = rightToLeft.Edges.Single();
+
+        Assert(bottomEdge.SourcePort == TopologyEdgePort.Top && bottomEdge.TargetPort == TopologyEdgePort.Bottom, "Non-layered bottom-to-top hierarchy edges should use final bottom-to-top ports without relying on mirroring.");
+        Assert(rightEdge.SourcePort == TopologyEdgePort.Left && rightEdge.TargetPort == TopologyEdgePort.Right, "Non-layered right-to-left hierarchy edges should use final right-to-left ports without relying on mirroring.");
+    }
+
+    private static void TopologyLayoutModeNumericValuesRemainCompatible() {
+        Assert((int)TopologyLayoutMode.Manual == 0, "Topology layout mode numeric values should remain stable for persisted payloads.");
+        Assert((int)TopologyLayoutMode.DenseGrouped == 5, "DenseGrouped layout mode numeric value should remain stable.");
+        Assert((int)TopologyLayoutMode.Geographic == 6, "Geographic layout mode numeric value should remain stable after adding force-directed layout.");
+        Assert((int)TopologyLayoutMode.ForceDirected == 7, "New topology layout modes should append numeric values.");
+    }
+
     private static void TopologyDenseGroupedLayoutSupportsRightToLeftFlow() {
         var chart = TopologyChart.Create()
             .WithId("dense-right-left")
@@ -497,6 +542,47 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(bttPinned.X - 90) < 0.001 && Math.Abs(bttPinned.Y - 120) < 0.001, "Bottom-to-top dense grouped layouts should preserve caller-pinned group coordinates.");
         Assert(NodeInsideGroup(rightToLeft.Nodes.Single(node => node.Id == "pinned-node"), rtlPinned), "Right-to-left dense grouped layouts should translate pinned group nodes back with the group.");
         Assert(NodeInsideGroup(bottomToTop.Nodes.Single(node => node.Id == "pinned-node"), bttPinned), "Bottom-to-top dense grouped layouts should translate pinned group nodes back with the group.");
+    }
+
+    private static void TopologyDenseReverseLayoutsKeepSizeOnlyGroupsAutoPacked() {
+        var prepared = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("dense-size-only-rtl")
+            .WithViewport(760, 420, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .AddGroup("left", "Left", 0, 0, 180, 150, TopologyHealthStatus.Healthy)
+            .AddGroup("right", "Right", 0, 0, 180, 150, TopologyHealthStatus.Warning)
+            .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
+            .AddAutoNode("right-node", "Right", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "right")
+            .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
+        var left = prepared.Groups.Single(group => group.Id == "left");
+        var right = prepared.Groups.Single(group => group.Id == "right");
+
+        Assert(Math.Abs(left.X - right.X) > 100, "Right-to-left dense grouped layouts should still auto-pack groups that only override size.");
+        Assert(NodeInsideGroup(prepared.Nodes.Single(node => node.Id == "left-node"), left), "Size-only dense group nodes should remain inside their auto-packed group.");
+        Assert(NodeInsideGroup(prepared.Nodes.Single(node => node.Id == "right-node"), right), "Size-only dense group nodes should remain inside their auto-packed group.");
+    }
+
+    private static void TopologyDenseReverseLayoutsRefreshRestoredEdgeGeometry() {
+        var prepared = TopologyLayoutEngine.Prepare(TopologyChart.Create()
+            .WithId("dense-restored-manual-route")
+            .WithViewport(760, 420, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .AddGroup("pinned", "Pinned", 80, 90, 180, 150, TopologyHealthStatus.Healthy)
+            .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
+            .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
+            .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
+            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
+            .WithEdgeWaypoints("link", new ChartForgeX.Primitives.ChartPoint(260, 180)), options: new TopologyRenderOptions { IncludeLegend = false });
+        var edge = prepared.Edges.Single(item => item.Id == "link");
+        var pinned = prepared.Groups.Single(group => group.Id == "pinned");
+        var auto = prepared.Groups.Single(group => group.Id == "auto");
+        var dx = auto.X + auto.Width / 2 - (pinned.X + pinned.Width / 2);
+
+        Assert(edge.Waypoints.Single().X < 260, "Manual dense waypoints should be translated when pinned groups are restored after mirroring.");
+        Assert(edge.SourcePort == (dx >= 0 ? TopologyEdgePort.Right : TopologyEdgePort.Left), "Dense edge source port inference should match final restored group geometry.");
+        Assert(edge.TargetPort == (dx >= 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right), "Dense edge target port inference should match final restored group geometry.");
     }
 
     private static void TopologyMirroringInvertsRouteLanes() {

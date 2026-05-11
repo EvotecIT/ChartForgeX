@@ -231,6 +231,8 @@ public sealed class TopologyGroup {
         }
     }
 
+    internal bool HasPositionOverride { get; set; }
+
     /// <summary>Gets arbitrary metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 }
