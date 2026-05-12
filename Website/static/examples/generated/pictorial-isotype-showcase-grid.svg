@@ -1,15 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="934" height="412" viewBox="0 0 934 412" role="img" aria-labelledby="cfx-grid-66418df2-title cfx-grid-66418df2-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-grid-66418df2" width="934" height="412" viewBox="0 0 934 412" role="img" aria-labelledby="cfx-grid-66418df2-title cfx-grid-66418df2-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
 <title id="cfx-grid-66418df2-title">Pictorial Isotype Showcase</title>
 <desc id="cfx-grid-66418df2-desc">Static chart grid containing 2 charts.</desc>
-<rect width="100%" height="100%" fill="#FFFFFF"/>
+<defs>
+<style>#cfx-grid-66418df2 .cfx-guide-stroke,#cfx-grid-66418df2 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-grid-66418df2 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-grid-66418df2-gridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+</defs>
+<rect width="100%" height="100%" fill="url(#cfx-grid-66418df2-gridSurface)"/>
 <text data-cfx-role="grid-title" x="28" y="43.5" fill="#0F172A" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="25" font-weight="800">Pictorial Isotype Showcase</text>
 <text data-cfx-role="grid-subtitle" x="30" y="65.5" fill="#64748B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="12.5" font-weight="400">One-icon-per-unit rows and population-scale icon rows inspired by classic Isotype charts</text>
 <svg xmlns="http://www.w3.org/2000/svg" width="430" height="280" viewBox="0 0 430 280" role="img" aria-labelledby="cfxfa37be20-title cfxfa37be20-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="28" y="104" data-cfx-role="grid-panel">
 <title id="cfxfa37be20-title">Audience Groups</title>
 <desc id="cfxfa37be20-desc">Audience Groups with 1 data series: Groups.</desc>
 <defs>
-<style>#cfxfa37be20 text{font-synthesis:none} #cfxfa37be20 .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxfa37be20 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxfa37be20 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxfa37be20 .cfx-interactive-region:hover,#cfxfa37be20 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfxfa37be20 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxfa37be20 .cfx-crisp-stroke,#cfxfa37be20 .cfx-guide-stroke,#cfxfa37be20 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxfa37be20 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxfa37be20 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxfa37be20 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxfa37be20 .cfx-interactive-region:hover,#cfxfa37be20 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfxfa37be20 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxfa37be20 .cfx-crisp-stroke,#cfxfa37be20 .cfx-guide-stroke,#cfxfa37be20 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxfa37be20 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxfa37be20 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxfa37be20 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxfa37be20 .cfx-interactive-region:hover,#cfxfa37be20 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfxfa37be20-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0"/></filter>
+<linearGradient id="cfxfa37be20-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxfa37be20-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
 <clipPath id="cfxfa37be20-plotClip"><rect x="76" y="112" width="318" height="74.5" rx="4"/></clipPath>
 <linearGradient id="cfxfa37be20-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfxfa37be20-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
@@ -26,10 +32,12 @@
 <linearGradient id="cfxfa37be20-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="1"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfxfa37be20">
-<rect data-cfx-role="card-surface" x="14" y="14" width="402" height="252" rx="6" fill="#FFFFFF" filter="url(#cfxfa37be20-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="402" height="252" rx="6" fill="url(#cfxfa37be20-cardSurface)" filter="url(#cfxfa37be20-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="401" height="251" rx="5.5" fill="none" stroke="rgba(15,23,42,0.133)"/>
-<rect x="76" y="112" width="318" height="74.5" rx="4" fill="#FFFFFF"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="399" height="249" rx="4.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76" y="112" width="318" height="74.5" rx="4" fill="url(#cfxfa37be20-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="317" height="73.5" rx="3.5" fill="none" stroke="rgba(15,23,42,0.11)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="316" height="72.5" rx="3" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="25" font-weight="750">Audience Groups</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="12.5" font-weight="400">Each person icon represents one respondent</text>
 <g data-cfx-role="pictorial-chart" data-cfx-shape="Person" data-cfx-custom-symbol="false" data-cfx-png-fallback-shape="Circle" data-cfx-columns="25" data-cfx-maximum="24" data-cfx-value-per-symbol="1" data-cfx-show-values="false" data-cfx-symbol-scale="1" data-cfx-empty-opacity="0.22">
@@ -277,8 +285,10 @@
 <title id="cfx29163354-title">Population of Barrie</title>
 <desc id="cfx29163354-desc">Population of Barrie with 1 data series: Population.</desc>
 <defs>
-<style>#cfx29163354 text{font-synthesis:none} #cfx29163354 .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx29163354 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx29163354 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx29163354 .cfx-interactive-region:hover,#cfx29163354 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfx29163354 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx29163354 .cfx-crisp-stroke,#cfx29163354 .cfx-guide-stroke,#cfx29163354 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx29163354 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx29163354 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx29163354 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx29163354 .cfx-interactive-region:hover,#cfx29163354 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx29163354 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx29163354 .cfx-crisp-stroke,#cfx29163354 .cfx-guide-stroke,#cfx29163354 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx29163354 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx29163354 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx29163354 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx29163354 .cfx-interactive-region:hover,#cfx29163354 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfx29163354-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.035"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.08"/></filter>
+<linearGradient id="cfx29163354-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFDF8" stop-opacity="1"/><stop offset="100%" stop-color="#F7F4F0" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx29163354-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FBF8F1" stop-opacity="1"/><stop offset="100%" stop-color="#F2EEE7" stop-opacity="1"/></linearGradient>
 <clipPath id="cfx29163354-plotClip"><rect x="76" y="112" width="318" height="74.5" rx="6"/></clipPath>
 <linearGradient id="cfx29163354-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1E40AF" stop-opacity="0.32"/><stop offset="100%" stop-color="#1E40AF" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfx29163354-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3957B9" stop-opacity="1"/><stop offset="100%" stop-color="#1C3CA4" stop-opacity="0.94"/></linearGradient>
@@ -297,10 +307,12 @@
 <linearGradient id="cfx29163354-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#334155" stop-opacity="1"/><stop offset="100%" stop-color="#334155" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfx29163354">
-<rect data-cfx-role="card-surface" x="14" y="14" width="402" height="252" rx="8" fill="#FFFCF7" filter="url(#cfx29163354-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="402" height="252" rx="8" fill="url(#cfx29163354-cardSurface)" filter="url(#cfx29163354-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="401" height="251" rx="7.5" fill="none" stroke="rgba(120,113,108,0.282)"/>
-<rect x="76" y="112" width="318" height="74.5" rx="6" fill="#FAF6EE"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="399" height="249" rx="6.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76" y="112" width="318" height="74.5" rx="6" fill="url(#cfx29163354-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="317" height="73.5" rx="5.5" fill="none" stroke="rgba(168,162,158,0.227)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="316" height="72.5" rx="5" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#1C1917" font-family="Charter, Georgia, Cambria, 'Times New Roman', serif" font-size="25" font-weight="750">Population of Barrie</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#57534E" font-family="Charter, Georgia, Cambria, 'Times New Roman', serif" font-size="12.5" font-weight="400">Each person icon represents 5,000 residents</text>
 <g data-cfx-role="pictorial-chart" data-cfx-shape="Person" data-cfx-custom-symbol="false" data-cfx-png-fallback-shape="Circle" data-cfx-columns="26" data-cfx-maximum="128400" data-cfx-value-per-symbol="5000" data-cfx-show-values="false" data-cfx-symbol-scale="1" data-cfx-empty-opacity="0.22">

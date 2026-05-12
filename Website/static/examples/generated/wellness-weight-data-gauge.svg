@@ -1,9 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" role="img" aria-labelledby="cfx-visual-fb783587-title cfx-visual-fb783587-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-fb783587" width="560" height="420" viewBox="0 0 560 420" role="img" aria-labelledby="cfx-visual-fb783587-title cfx-visual-fb783587-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
 <title id="cfx-visual-fb783587-title">Current Weight</title>
 <desc id="cfx-visual-fb783587-desc">Static ChartForgeX visual block.</desc>
-<rect width="100%" height="100%" fill="#F5F6F8"/>
-<rect data-cfx-role="visual-card" x="0.5" y="0.5" width="559" height="419" rx="29.5" fill="#FFFFFF" stroke="#F1F2F6"/>
-<rect data-cfx-role="visual-card-highlight" x="1.5" y="1.5" width="557" height="417" rx="28.5" fill="none" stroke="#fff" stroke-opacity="0.36"/>
+<defs>
+<style>#cfx-visual-fb783587 .cfx-guide-stroke,#cfx-visual-fb783587 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-fb783587 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-fb783587-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F7F8F9" stop-opacity="1"/><stop offset="100%" stop-color="#EDEEF1" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-fb783587-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-fb783587-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-fb783587-visualCardClip"><rect x="0" y="0" width="560" height="420" rx="30"/></clipPath>
+</defs>
+<rect width="100%" height="100%" fill="url(#cfx-visual-fb783587-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="559" height="419" rx="29.5" fill="url(#cfx-visual-fb783587-visualCard)" stroke="#F1F2F6"/>
+<rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="557" height="417" rx="28.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="visual-title" x="22" y="43" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="28" font-weight="800">Weight Data</text>
 <text data-cfx-role="visual-subtitle" x="22" y="67.5" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Goal progress as reusable radial metric layers.</text>
 <g data-cfx-role="radial-metric-card" data-cfx-label="Current Weight">

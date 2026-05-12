@@ -2,8 +2,10 @@
 <title id="cfx406f3829-title">Order Status</title>
 <desc id="cfx406f3829-desc">Order Status with 3 data series: Earnings, Preparing, Served.</desc>
 <defs>
-<style>#cfx406f3829 text{font-synthesis:none} #cfx406f3829 .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx406f3829 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx406f3829 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx406f3829 .cfx-interactive-region:hover,#cfx406f3829 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfx406f3829 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx406f3829 .cfx-crisp-stroke,#cfx406f3829 .cfx-guide-stroke,#cfx406f3829 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx406f3829 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx406f3829 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx406f3829 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx406f3829 .cfx-interactive-region:hover,#cfx406f3829 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx406f3829 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx406f3829 .cfx-crisp-stroke,#cfx406f3829 .cfx-guide-stroke,#cfx406f3829 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx406f3829 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx406f3829 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx406f3829 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx406f3829 .cfx-interactive-region:hover,#cfx406f3829 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfx406f3829-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.022"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.05"/></filter>
+<linearGradient id="cfx406f3829-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FCFCFB" stop-opacity="1"/><stop offset="100%" stop-color="#F3F3F3" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx406f3829-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F7F7F5" stop-opacity="1"/><stop offset="100%" stop-color="#EDEDEC" stop-opacity="1"/></linearGradient>
 <clipPath id="cfx406f3829-plotClip"><rect x="28" y="142" width="364" height="104" rx="14"/></clipPath>
 <linearGradient id="cfx406f3829-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#C46A23" stop-opacity="0.32"/><stop offset="100%" stop-color="#C46A23" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfx406f3829-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#CB7C3D" stop-opacity="1"/><stop offset="100%" stop-color="#B86421" stop-opacity="0.94"/></linearGradient>
@@ -27,17 +29,18 @@
 <linearGradient id="cfx406f3829-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#545454" stop-opacity="1"/><stop offset="100%" stop-color="#545454" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfx406f3829">
-<rect data-cfx-role="card-surface" x="14" y="14" width="392" height="272" rx="24" fill="#FBFBFA" filter="url(#cfx406f3829-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="392" height="272" rx="24" fill="url(#cfx406f3829-cardSurface)" filter="url(#cfx406f3829-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="391" height="271" rx="23.5" fill="none" stroke="rgba(207,207,202,0.275)"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="389" height="269" rx="22.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#161616" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="750">Order Status</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#777776" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="400">New Orders: 120</text>
-<line x1="28" y1="142" x2="28" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
-<line x1="100.8" y1="142" x2="100.8" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
-<line x1="173.6" y1="142" x2="173.6" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
-<line x1="246.4" y1="142" x2="246.4" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
-<line x1="319.2" y1="142" x2="319.2" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
-<line x1="392" y1="142" x2="392" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
-<line x1="28" y1="220" x2="392" y2="220" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.28"/>
+<line class="cfx-guide-stroke" x1="28.5" y1="142" x2="28.5" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="100.5" y1="142" x2="100.5" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="173.5" y1="142" x2="173.5" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="246.5" y1="142" x2="246.5" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="319.5" y1="142" x2="319.5" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="392.5" y1="142" x2="392.5" y2="246" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="28" y1="220.5" x2="392" y2="220.5" stroke="rgba(222,222,218,0.541)" stroke-width="1" opacity="0.28"/>
 <g clip-path="url(#cfx406f3829-plotClip)">
 <rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="0" data-cfx-category="1" data-cfx-value="48" data-cfx-base="0" data-cfx-color="#C46A23" x="28" y="205" width="174.72" height="30" rx="3" fill="url(#cfx406f3829-seriesFill0)" opacity="0.94"/>
 <rect data-cfx-role="horizontal-bar-pattern" data-cfx-series="0" data-cfx-point="0" data-cfx-fill-pattern="DiagonalBackward" x="28" y="205" width="174.72" height="30" rx="3" fill="url(#cfx406f3829-fillPattern0)" pointer-events="none"/>

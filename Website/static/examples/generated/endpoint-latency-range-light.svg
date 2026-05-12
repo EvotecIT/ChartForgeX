@@ -2,8 +2,10 @@
 <title id="cfxc01fb15a-title">Endpoint Latency Ranges</title>
 <desc id="cfxc01fb15a-desc">Endpoint Latency Ranges with 1 data series: Observed.</desc>
 <defs>
-<style>#cfxc01fb15a text{font-synthesis:none} #cfxc01fb15a .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxc01fb15a .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxc01fb15a .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxc01fb15a .cfx-interactive-region:hover,#cfxc01fb15a .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfxc01fb15a text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxc01fb15a .cfx-crisp-stroke,#cfxc01fb15a .cfx-guide-stroke,#cfxc01fb15a .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxc01fb15a .cfx-guide-stroke{shape-rendering:crispEdges} #cfxc01fb15a .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxc01fb15a .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxc01fb15a .cfx-interactive-region:hover,#cfxc01fb15a .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfxc01fb15a text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxc01fb15a .cfx-crisp-stroke,#cfxc01fb15a .cfx-guide-stroke,#cfxc01fb15a .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxc01fb15a .cfx-guide-stroke{shape-rendering:crispEdges} #cfxc01fb15a .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxc01fb15a .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxc01fb15a .cfx-interactive-region:hover,#cfxc01fb15a .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfxc01fb15a-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxc01fb15a-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxc01fb15a-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
 <clipPath id="cfxc01fb15a-plotClip"><rect x="85.92" y="112" width="638.08" height="236.5" rx="8"/></clipPath>
 <linearGradient id="cfxc01fb15a-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.32"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfxc01fb15a-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
@@ -17,39 +19,41 @@
 <linearGradient id="cfxc01fb15a-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfxc01fb15a">
-<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="#FFFFFF" filter="url(#cfxc01fb15a-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="url(#cfxc01fb15a-cardSurface)" filter="url(#cfxc01fb15a-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="731" height="431" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
-<rect x="85.92" y="112" width="638.08" height="236.5" rx="8" fill="#F8FAFC"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="729" height="429" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="85.92" y="112" width="638.08" height="236.5" rx="8" fill="url(#cfxc01fb15a-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="86.42" y="112.5" width="637.08" height="235.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="86.92" y="113" width="636.08" height="234.5" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Endpoint Latency Ranges</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Range bars show observed min/max values</text>
-<line x1="85.92" y1="348.5" x2="724" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="348.5" x2="724" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="73.92" y="352.5" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">0 ms</text>
-<line x1="85.92" y1="309.083" x2="724" y2="309.083" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="309.5" x2="724" y2="309.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="73.92" y="313.083" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">50 ms</text>
-<line x1="85.92" y1="269.667" x2="724" y2="269.667" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="269.5" x2="724" y2="269.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="73.92" y="273.667" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">100 ms</text>
-<line x1="85.92" y1="230.25" x2="724" y2="230.25" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="230.5" x2="724" y2="230.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="73.92" y="234.25" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">150 ms</text>
-<line x1="85.92" y1="190.833" x2="724" y2="190.833" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="190.5" x2="724" y2="190.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="73.92" y="194.833" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">200 ms</text>
-<line x1="85.92" y1="151.417" x2="724" y2="151.417" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="151.5" x2="724" y2="151.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="73.92" y="155.417" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">250 ms</text>
-<line x1="85.92" y1="112" x2="724" y2="112" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="112.5" x2="724" y2="112.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="73.92" y="116" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">300 ms</text>
-<line x1="149.728" y1="112" x2="149.728" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="149.5" y1="112" x2="149.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="149.728" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">DNS</text>
-<line x1="277.344" y1="112" x2="277.344" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="277.5" y1="112" x2="277.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="277.344" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">TCP</text>
-<line x1="404.96" y1="112" x2="404.96" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="404.5" y1="112" x2="404.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="404.96" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">TLS</text>
-<line x1="532.576" y1="112" x2="532.576" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="532.5" y1="112" x2="532.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="532.576" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">HTTP</text>
-<line x1="660.192" y1="112" x2="660.192" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="660.5" y1="112" x2="660.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="660.192" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Render</text>
-<line x1="85.92" y1="348.5" x2="724" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<line class="cfx-guide-stroke" x1="85.92" y1="348.5" x2="724" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
 <text x="404.96" y="392.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Probe</text>
-<line x1="85.92" y1="112" x2="85.92" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<line class="cfx-guide-stroke" x1="85.5" y1="112" x2="85.5" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
 <text transform="translate(26 230.25) rotate(-90)" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Response time</text>
 <g clip-path="url(#cfxc01fb15a-plotClip)">
 <rect data-cfx-role="range-bar" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-start="18" data-cfx-end="42" role="img" aria-label="18 ms-42 ms" x="135.728" y="315.39" width="28" height="18.92" rx="7" fill="#0EA5E9" opacity="0.88"/>

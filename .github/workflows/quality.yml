@@ -31,6 +31,103 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Install Native AOT prerequisites
+        shell: bash
+        run: |
+          install_with_sudo() {
+            if command -v sudo >/dev/null 2>&1; then
+              sudo "$@"
+            else
+              "$@"
+            fi
+          }
+
+          dotnet nuget locals all --clear >/dev/null 2>&1 || true
+
+          has_native_aot_compiler() {
+            command -v clang >/dev/null 2>&1 || command -v gcc >/dev/null 2>&1
+          }
+
+          has_native_aot_headers() {
+            if command -v dpkg-query >/dev/null 2>&1; then
+              dpkg-query -W -f='${Status}' zlib1g-dev 2>/dev/null | grep -q "install ok installed"
+            elif command -v rpm >/dev/null 2>&1; then
+              rpm -q zlib-devel zlib-ng-devel zlib-ng-compat-devel >/dev/null 2>&1
+            elif command -v apk >/dev/null 2>&1; then
+              apk info -e zlib-dev >/dev/null 2>&1 && apk info -e musl-dev >/dev/null 2>&1
+            else
+              false
+            fi
+          }
+
+          if has_native_aot_compiler && has_native_aot_headers; then
+            exit 0
+          fi
+
+          if command -v apt-get >/dev/null 2>&1; then
+            apt_packages=()
+            if ! has_native_aot_compiler; then
+              apt_packages+=(gcc)
+            fi
+            if ! dpkg-query -W -f='${Status}' zlib1g-dev 2>/dev/null | grep -q "install ok installed"; then
+              apt_packages+=(zlib1g-dev)
+            fi
+
+            if [ ${#apt_packages[@]} -eq 0 ]; then
+              exit 0
+            fi
+
+            install_with_sudo apt-get clean
+            if ! find /var/lib/apt/lists -type f -name '*_Packages*' 2>/dev/null | grep -q .; then
+              install_with_sudo apt-get update -o Acquire::Languages=none
+            fi
+            install_with_sudo apt-get install -y --no-install-recommends "${apt_packages[@]}"
+            install_with_sudo apt-get clean
+          elif command -v dnf >/dev/null 2>&1; then
+            dnf_packages=()
+            if ! has_native_aot_compiler; then
+              dnf_packages+=(gcc)
+            fi
+            for package in zlib-devel zlib-ng-devel zlib-ng-compat-devel; do
+              if ! rpm -q "$package" >/dev/null 2>&1; then
+                dnf_packages+=("$package")
+              fi
+            done
+
+            if [ ${#dnf_packages[@]} -gt 0 ]; then
+              install_with_sudo dnf install -y "${dnf_packages[@]}"
+            fi
+          elif command -v yum >/dev/null 2>&1; then
+            yum_packages=()
+            if ! has_native_aot_compiler; then
+              yum_packages+=(gcc)
+            fi
+            for package in zlib-devel zlib-ng-devel zlib-ng-compat-devel; do
+              if ! rpm -q "$package" >/dev/null 2>&1; then
+                yum_packages+=("$package")
+              fi
+            done
+
+            if [ ${#yum_packages[@]} -gt 0 ]; then
+              install_with_sudo yum install -y "${yum_packages[@]}"
+            fi
+          elif command -v apk >/dev/null 2>&1; then
+            apk_packages=()
+            if ! has_native_aot_compiler || ! apk info -e musl-dev >/dev/null 2>&1; then
+              apk_packages+=(build-base)
+            fi
+            if ! apk info -e zlib-dev >/dev/null 2>&1; then
+              apk_packages+=(zlib-dev)
+            fi
+
+            if [ ${#apk_packages[@]} -gt 0 ]; then
+              install_with_sudo apk add --no-cache "${apk_packages[@]}"
+            fi
+          else
+            echo "No supported package manager found. Install clang or gcc plus zlib development headers for Native AOT."
+            exit 1
+          fi
+
       - name: Run quality loop
         shell: pwsh
         run: ./Build.ps1 -Configuration Release

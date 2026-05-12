@@ -28,32 +28,36 @@
   "items": [
     {
       "category": "charts",
-      "title": "Domain security checks",
-      "body": "Stacked smooth area with target line and weekend band.",
+      "title": "Annotation Edge Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/annotation-edge-dark.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "Audience pictorial",
+      "body": "Pictorial infographic with the Candy theme.",
       "tags": [
-        "SmoothArea",
-        "ReportDark"
+        "Pictorial",
+        "Candy"
       ],
-      "image": "/examples/generated/domain-security-dark.svg"
+      "image": "/examples/generated/audience-pictorial-candy.svg"
+    },
+    {
+      "category": "themes",
+      "title": "Brand kit showcase",
+      "body": "Executive, Product, Editorial, Accessible kits.",
+      "tags": [
+        "BrandKit"
+      ],
+      "image": "/examples/generated/brand-kit-showcase-grid.svg"
     },
     {
       "category": "charts",
-      "title": "Certificate transparency volume",
-      "body": "Bar+line combo with secondary y-axis.",
-      "tags": [
-        "BarLineCombo",
-        "ReportLight"
-      ],
-      "image": "/examples/generated/ct-volume-light.svg"
-    },
-    {
-      "category": "charts",
-      "title": "Domain control composition",
-      "body": "Stacked horizontal bars with totals and labels.",
-      "tags": [
-        "StackedHorizontal"
-      ],
-      "image": "/examples/generated/domain-control-horizontal-light.svg"
+      "title": "Control Contribution Polar Area Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/control-contribution-polar-area-light.svg"
     },
     {
       "category": "charts",
@@ -66,57 +70,351 @@
     },
     {
       "category": "charts",
-      "title": "Security findings grouped",
-      "body": "Grouped bar comparison across two report runs.",
-      "tags": [
-        "GroupedBar"
-      ],
-      "image": "/examples/generated/security-findings-grouped-light.svg"
+      "title": "Control Coverage Radialbar Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/control-coverage-radialbar-dark.svg"
     },
     {
       "category": "charts",
-      "title": "Findings composition treemap",
-      "body": "Treemap proportions by category.",
-      "tags": [
-        "Treemap"
-      ],
-      "image": "/examples/generated/findings-composition-treemap-light.svg"
+      "title": "Control Hierarchy Tree Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/control-hierarchy-tree-light.svg"
     },
     {
       "category": "charts",
-      "title": "Finding flow Sankey",
-      "body": "Weighted paths from discovery to remediation.",
+      "title": "Control Improvement Slope Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/control-improvement-slope-light.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "Sunburst aurora",
+      "body": "Sunburst control partition with the Aurora theme.",
       "tags": [
-        "Sankey"
+        "Sunburst",
+        "Aurora"
       ],
-      "image": "/examples/generated/finding-flow-sankey-light.svg"
+      "image": "/examples/generated/control-partition-sunburst-aurora.svg"
     },
     {
       "category": "charts",
-      "title": "Remediation impact waterfall",
-      "body": "Delta bars showing changes during cleanup.",
+      "title": "Control Readiness Lollipop Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/control-readiness-lollipop-dark.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Control scorecards",
+      "body": "Gauge, bullet, radar and polar combined.",
       "tags": [
-        "Waterfall"
+        "ChartGrid",
+        "SmallMultiples"
       ],
-      "image": "/examples/generated/remediation-impact-waterfall-dark.svg"
+      "image": "/examples/generated/control-scorecards-grid.svg"
     },
     {
       "category": "charts",
-      "title": "Security posture radar",
-      "body": "Radial comparison across control areas.",
-      "tags": [
-        "Radar"
-      ],
-      "image": "/examples/generated/security-posture-radar-dark.svg"
+      "title": "Control Targets Bullet Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/control-targets-bullet-dark.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Ct Regional Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/ct-regional-light.svg"
     },
     {
       "category": "charts",
-      "title": "Security posture gauge",
-      "body": "Single-value gauge for executive summaries.",
+      "title": "Certificate transparency volume",
+      "body": "Bar+line combo with secondary y-axis.",
       "tags": [
-        "Gauge"
+        "BarLineCombo",
+        "ReportLight"
       ],
-      "image": "/examples/generated/security-posture-gauge-dark.svg"
+      "image": "/examples/generated/ct-volume-light.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Appointment Operations Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-appointment-operations-grid.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Dashboard Attendance Hexbin Heatmap",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-attendance-hexbin-heatmap.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Chart portfolio",
+      "body": "Hand-picked tour of the chart catalog.",
+      "tags": [
+        "Portfolio"
+      ],
+      "image": "/examples/generated/dashboard-chart-portfolio-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Device Progress Bars",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-device-progress-bars.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Hr Operations Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-hr-operations-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Hr Overview Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-hr-overview-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Kpi Bar Sparkline",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-kpi-bar-sparkline.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Mrr Driver Bars",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-mrr-driver-bars.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Mrr Trend Card",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-mrr-trend-card.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Payment Analytics Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-payment-analytics-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Premium Trend Style",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-premium-trend-style.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Project Activity Sparkline",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-project-activity-sparkline.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Project Progress Card",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-project-progress-card.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Project Schedule Timeline",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-project-schedule-timeline.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Project Task Composition Card",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-project-task-composition-card.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Project Track Card",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-project-track-card.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Restaurant Customers Hexbin",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-restaurant-customers-hexbin.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Restaurant Occupation Bars",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-restaurant-occupation-bars.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Restaurant Order Status",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-restaurant-order-status.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Restaurant overview",
+      "body": "Mixed-canvas restaurant operations grid.",
+      "tags": [
+        "Dashboard",
+        "VisualGrid"
+      ],
+      "image": "/examples/generated/dashboard-restaurant-overview-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Restaurant Reports Range Strip",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-restaurant-reports-range-strip.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Restaurant Weekly Summary",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-restaurant-weekly-summary.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "SaaS MRR drivers",
+      "body": "Monthly recurring revenue grid with drivers.",
+      "tags": [
+        "Dashboard",
+        "Bars"
+      ],
+      "image": "/examples/generated/dashboard-saas-mrr-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Segmented Column Style",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-segmented-column-style.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Segmented Horizontal Style",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-segmented-horizontal-style.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Shipment Activity Panel",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-shipment-activity-panel.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Ticketing Analytics Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-ticketing-analytics-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Ticketing Guest Funnel",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-ticketing-guest-funnel.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Ticketing Package Mix",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-ticketing-package-mix.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Ticketing Promoter Attribution",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-ticketing-promoter-attribution.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Ticketing Revenue Trend",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-ticketing-revenue-trend.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Data Label Placement Showcase Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/data-label-placement-showcase-grid.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Data Label Readability Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/data-label-readability-dark.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Dc Connectivity",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dc-connectivity.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Detection Confidence Errorbar Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/detection-confidence-errorbar-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Developer Consistency Calendar Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/developer-consistency-calendar-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Domain control composition",
+      "body": "Stacked horizontal bars with totals and labels.",
+      "tags": [
+        "StackedHorizontal"
+      ],
+      "image": "/examples/generated/domain-control-horizontal-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Domain Findings Stacked Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/domain-findings-stacked-dark.svg"
     },
     {
       "category": "charts",
@@ -137,91 +435,102 @@
       "image": "/examples/generated/domain-remediation-gantt-light.svg"
     },
     {
-      "category": "dashboards",
-      "title": "Control scorecards",
-      "body": "Gauge, bullet, radar and polar combined.",
-      "tags": [
-        "ChartGrid",
-        "SmallMultiples"
-      ],
-      "image": "/examples/generated/control-scorecards-grid.svg"
+      "category": "charts",
+      "title": "Domain Remediation Timeline Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/domain-remediation-timeline-light.svg"
     },
     {
-      "category": "dashboards",
-      "title": "Wellness dashboard",
-      "body": "Calorie intake dashboard with daily targets.",
+      "category": "charts",
+      "title": "Domain security checks",
+      "body": "Stacked smooth area with target line and weekend band.",
       "tags": [
-        "Dashboard"
+        "SmoothArea",
+        "ReportDark"
       ],
-      "image": "/examples/generated/wellness-calories-intake-dashboard.svg"
+      "image": "/examples/generated/domain-security-dark.svg"
     },
     {
-      "category": "dashboards",
-      "title": "Restaurant overview",
-      "body": "Mixed-canvas restaurant operations grid.",
-      "tags": [
-        "Dashboard",
-        "VisualGrid"
-      ],
-      "image": "/examples/generated/dashboard-restaurant-overview-grid.svg"
+      "category": "charts",
+      "title": "Domain Signal Mix Stacked Area Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/domain-signal-mix-stacked-area-dark.svg"
     },
     {
-      "category": "dashboards",
-      "title": "SaaS MRR drivers",
-      "body": "Monthly recurring revenue grid with drivers.",
-      "tags": [
-        "Dashboard",
-        "Bars"
-      ],
-      "image": "/examples/generated/dashboard-saas-mrr-grid.svg"
+      "category": "charts",
+      "title": "Endpoint Latency Boxplot Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/endpoint-latency-boxplot-dark.svg"
     },
     {
-      "category": "dashboards",
-      "title": "Chart portfolio",
-      "body": "Hand-picked tour of the chart catalog.",
-      "tags": [
-        "Portfolio"
-      ],
-      "image": "/examples/generated/dashboard-chart-portfolio-grid.svg"
+      "category": "charts",
+      "title": "Endpoint Latency Histogram Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/endpoint-latency-histogram-light.svg"
     },
     {
-      "category": "dashboards",
-      "title": "PowerBGInfo snapshot",
-      "body": "Endpoint snapshot rendered for live wallpapers.",
-      "tags": [
-        "Wallpaper",
-        "Overlay"
-      ],
-      "image": "/examples/generated/powerbginfo-endpoint-snapshot.svg"
+      "category": "charts",
+      "title": "Endpoint Latency Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/endpoint-latency-light.svg"
     },
     {
-      "category": "topology",
-      "title": "Site topology",
-      "body": "Regional sites with hubs, branches, and bridgeheads.",
-      "tags": [
-        "Topology"
-      ],
-      "image": "/examples/generated/site-topology.svg"
+      "category": "charts",
+      "title": "Endpoint Latency Range Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/endpoint-latency-range-light.svg"
     },
     {
-      "category": "topology",
-      "title": "Replication mesh",
-      "body": "Deterministic replication paths across DCs.",
-      "tags": [
-        "Topology",
-        "AD"
-      ],
-      "image": "/examples/generated/replication-mesh.svg"
+      "category": "charts",
+      "title": "Exposure Clusters Bubble Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/exposure-clusters-bubble-light.svg"
     },
     {
-      "category": "topology",
-      "title": "Service dependency",
-      "body": "API neighbors and critical-path filter view.",
+      "category": "charts",
+      "title": "Finding flow Sankey",
+      "body": "Weighted paths from discovery to remediation.",
       "tags": [
-        "Topology",
-        "Service"
+        "Sankey"
       ],
-      "image": "/examples/generated/service-dependency.svg"
+      "image": "/examples/generated/finding-flow-sankey-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Findings composition treemap",
+      "body": "Treemap proportions by category.",
+      "tags": [
+        "Treemap"
+      ],
+      "image": "/examples/generated/findings-composition-treemap-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Findings Pareto Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/findings-pareto-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Forecast Envelope Rangeband Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/forecast-envelope-rangeband-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Forecast Interval Rangearea Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/forecast-interval-rangearea-light.svg"
     },
     {
       "category": "topology",
@@ -234,14 +543,242 @@
       "image": "/examples/generated/geographic-topology.svg"
     },
     {
+      "category": "themes",
+      "title": "Icon Palette",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/icon-palette.svg"
+    },
+    {
       "category": "maps",
-      "title": "Travel dotted world",
-      "body": "World layer with route connectors between points.",
+      "title": "Industrial Births Region Map Us States Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/industrial-births-region-map-us-states-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "License Cost Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/license-cost-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Map Africa Route Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/map-africa-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Map Asia Route Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/map-asia-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Map Europe Route Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/map-europe-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Map North America Route Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/map-north-america-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Map Oceania Route Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/map-oceania-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Poland route viewport",
+      "body": "Bounded viewport with route connectors.",
       "tags": [
         "Map",
-        "Dotted"
+        "Bounds"
       ],
-      "image": "/examples/generated/travel-dotted-map-dark.svg"
+      "image": "/examples/generated/map-poland-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Map South America Route Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/map-south-america-route-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Map Viewport Showcase Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/map-viewport-showcase-grid.svg"
+    },
+    {
+      "category": "maps",
+      "title": "World viewport showcase",
+      "body": "Same map at world / Europe / Poland / custom bounds.",
+      "tags": [
+        "Map",
+        "Viewports"
+      ],
+      "image": "/examples/generated/map-world-route-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Monthly Posture Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/monthly-posture-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Observed Remediation Trend Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/observed-remediation-trend-light.svg"
+    },
+    {
+      "category": "themes",
+      "title": "Palette swatch",
+      "body": "Reusable palette swatch grid.",
+      "tags": [
+        "Palette"
+      ],
+      "image": "/examples/generated/palette-swatch-showcase-grid.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "People infographic",
+      "body": "People-shaped figures sized by share.",
+      "tags": [
+        "Pictorial"
+      ],
+      "image": "/examples/generated/people-infographic-showcase-grid.svg"
+    },
+    {
+      "category": "infographics",
+      "title": "Pictorial isotype",
+      "body": "Isotype-style symbols showcase.",
+      "tags": [
+        "Pictorial",
+        "Isotype"
+      ],
+      "image": "/examples/generated/pictorial-isotype-showcase-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Pictorial Symbol Showcase Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/pictorial-symbol-showcase-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Point Color Customization Showcase Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/point-color-customization-showcase-grid.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Policy Backlog Step Area Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/policy-backlog-step-area-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Policy Readiness Circle Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/policy-readiness-circle-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Policy State Step Line Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/policy-state-step-line-dark.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "PowerBGInfo snapshot",
+      "body": "Endpoint snapshot rendered for live wallpapers.",
+      "tags": [
+        "Wallpaper",
+        "Overlay"
+      ],
+      "image": "/examples/generated/powerbginfo-endpoint-snapshot.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Remediation impact waterfall",
+      "body": "Delta bars showing changes during cleanup.",
+      "tags": [
+        "Waterfall"
+      ],
+      "image": "/examples/generated/remediation-impact-waterfall-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Remediation Lift Dumbbell Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/remediation-lift-dumbbell-light.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Replication Mesh Critical View",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/replication-mesh-critical-view.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Replication Mesh Dc View",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/replication-mesh-dc-view.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Replication Mesh Offenders View",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/replication-mesh-offenders-view.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Replication mesh",
+      "body": "Deterministic replication paths across DCs.",
+      "tags": [
+        "Topology",
+        "AD"
+      ],
+      "image": "/examples/generated/replication-mesh.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Report Summary Metric Strip",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/report-summary-metric-strip.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Result Mix Donut",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/result-mix-donut.svg"
     },
     {
       "category": "maps",
@@ -274,43 +811,106 @@
       "image": "/examples/generated/revenue-tile-map-us-states-light.svg"
     },
     {
-      "category": "maps",
-      "title": "Poland route viewport",
-      "body": "Bounded viewport with route connectors.",
+      "category": "charts",
+      "title": "Security findings grouped",
+      "body": "Grouped bar comparison across two report runs.",
       "tags": [
-        "Map",
-        "Bounds"
+        "GroupedBar"
       ],
-      "image": "/examples/generated/map-poland-route-light.svg"
+      "image": "/examples/generated/security-findings-grouped-light.svg"
     },
     {
-      "category": "maps",
-      "title": "World viewport showcase",
-      "body": "Same map at world / Europe / Poland / custom bounds.",
+      "category": "charts",
+      "title": "Security posture gauge",
+      "body": "Single-value gauge for executive summaries.",
       "tags": [
-        "Map",
-        "Viewports"
+        "Gauge"
       ],
-      "image": "/examples/generated/map-world-route-light.svg"
+      "image": "/examples/generated/security-posture-gauge-dark.svg"
     },
     {
-      "category": "infographics",
-      "title": "Audience pictorial",
-      "body": "Pictorial infographic with the Candy theme.",
+      "category": "charts",
+      "title": "Security posture radar",
+      "body": "Radial comparison across control areas.",
       "tags": [
-        "Pictorial",
-        "Candy"
+        "Radar"
       ],
-      "image": "/examples/generated/audience-pictorial-candy.svg"
+      "image": "/examples/generated/security-posture-radar-dark.svg"
     },
     {
-      "category": "infographics",
-      "title": "People infographic",
-      "body": "People-shaped figures sized by share.",
+      "category": "topology",
+      "title": "Service Dependency Api Neighbors View",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/service-dependency-api-neighbors-view.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Service Dependency Compact View",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/service-dependency-compact-view.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Service Dependency Critical Dependencies View",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/service-dependency-critical-dependencies-view.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Service dependency",
+      "body": "API neighbors and critical-path filter view.",
       "tags": [
-        "Pictorial"
+        "Topology",
+        "Service"
       ],
-      "image": "/examples/generated/people-infographic-showcase-grid.svg"
+      "image": "/examples/generated/service-dependency.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Shared Axis Coverage Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/shared-axis-coverage-grid.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Signal Windows Candlestick Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/signal-windows-candlestick-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Signal Windows Ohlc Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/signal-windows-ohlc-dark.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Site Topology Emea View",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/site-topology-emea-view.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Site topology",
+      "body": "Regional sites with hubs, branches, and bridgeheads.",
+      "tags": [
+        "Topology"
+      ],
+      "image": "/examples/generated/site-topology.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Subnets Site Links",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/subnets-site-links.svg"
     },
     {
       "category": "infographics",
@@ -323,24 +923,14 @@
       "image": "/examples/generated/support-themes-word-cloud-editorial.svg"
     },
     {
-      "category": "infographics",
-      "title": "Pictorial isotype",
-      "body": "Isotype-style symbols showcase.",
+      "category": "themes",
+      "title": "Editorial text style",
+      "body": "Editorial typography with serif treatment.",
       "tags": [
-        "Pictorial",
-        "Isotype"
+        "Editorial",
+        "Type"
       ],
-      "image": "/examples/generated/pictorial-isotype-showcase-grid.svg"
-    },
-    {
-      "category": "infographics",
-      "title": "Sunburst aurora",
-      "body": "Sunburst control partition with the Aurora theme.",
-      "tags": [
-        "Sunburst",
-        "Aurora"
-      ],
-      "image": "/examples/generated/control-partition-sunburst-aurora.svg"
+      "image": "/examples/generated/text-style-showcase-editorial.svg"
     },
     {
       "category": "themes",
@@ -353,32 +943,219 @@
       "image": "/examples/generated/theme-font-showcase-grid.svg"
     },
     {
-      "category": "themes",
-      "title": "Brand kit showcase",
-      "body": "Executive, Product, Editorial, Accessible kits.",
-      "tags": [
-        "BrandKit"
-      ],
-      "image": "/examples/generated/brand-kit-showcase-grid.svg"
+      "category": "dashboards",
+      "title": "Transparent Report Summary Metric Strip",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/transparent-report-summary-metric-strip.svg"
     },
     {
-      "category": "themes",
-      "title": "Palette swatch",
-      "body": "Reusable palette swatch grid.",
+      "category": "maps",
+      "title": "Travel dotted world",
+      "body": "World layer with route connectors between points.",
       "tags": [
-        "Palette"
+        "Map",
+        "Dotted"
       ],
-      "image": "/examples/generated/palette-swatch-showcase-grid.svg"
+      "image": "/examples/generated/travel-dotted-map-dark.svg"
     },
     {
-      "category": "themes",
-      "title": "Editorial text style",
-      "body": "Editorial typography with serif treatment.",
+      "category": "topology",
+      "title": "Visual Ad Sites Hierarchy",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-ad-sites-hierarchy.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Dc Connectivity Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-dc-connectivity-map.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Directory Health Replication",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-directory-health-replication.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Directory Level Window",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-directory-level-window.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Visual Geographic Region Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-geographic-region-map.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Geographic Topology Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-geographic-topology-map.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Nested User Hierarchy Bottom Top",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-nested-user-hierarchy-bottom-top.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Nested User Hierarchy Left Right",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-nested-user-hierarchy-left-right.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Nested User Hierarchy Right Left",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-nested-user-hierarchy-right-left.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Nested User Hierarchy",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-nested-user-hierarchy.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Replication Health Hub",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-replication-health-hub.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Replication Mesh Explorer",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-replication-mesh-explorer.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Reusable Regional Topology",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-reusable-regional-topology.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Service Dependency Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-service-dependency-map.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Site Distribution Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-site-distribution-map.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Subnets Site Links Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-subnets-site-links-map.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Team Hierarchy Builder",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-team-hierarchy-builder.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Topology Explorer",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-topology-explorer.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Visual Wan Latency Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-wan-latency-map.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Warnings Sparkline",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/warnings-sparkline.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Wellness dashboard",
+      "body": "Calorie intake dashboard with daily targets.",
       "tags": [
-        "Editorial",
-        "Type"
+        "Dashboard"
       ],
-      "image": "/examples/generated/text-style-showcase-editorial.svg"
+      "image": "/examples/generated/wellness-calories-intake-dashboard.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Wellness Layered Radial Progress",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/wellness-layered-radial-progress.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Wellness Weekly Progress Dashboard",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/wellness-weekly-progress-dashboard.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Wellness Weight Data Gauge",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/wellness-weight-data-gauge.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Word Cloud Control Showcase Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/word-cloud-control-showcase-grid.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Zero Value Donut Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/zero-value-donut-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Zero Value Funnel Stage Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/zero-value-funnel-stage-light.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Zero Value Polar Area Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/zero-value-polar-area-light.svg"
     }
   ]
 }

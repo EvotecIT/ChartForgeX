@@ -166,14 +166,21 @@ public sealed class ChartMapGeoJsonOptions {
         return this;
     }
 
-    internal string FindCode(GeoJsonFeature feature, int index) {
+    internal string FindCode(GeoJsonFeature feature, int index, ISet<string>? usedCodes = null) {
         foreach (var name in _codePropertyNames) {
             var value = feature.PropertyString(name);
             if (!string.IsNullOrWhiteSpace(value)) return value!.Trim();
         }
 
         if (!string.IsNullOrWhiteSpace(feature.Id)) return feature.Id!.Trim();
-        return _generatedCodePrefix + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var suffix = index;
+        var code = _generatedCodePrefix + suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        while (usedCodes != null && usedCodes.Contains(code)) {
+            suffix++;
+            code = _generatedCodePrefix + suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        return code;
     }
 
     internal string FindName(GeoJsonFeature feature, string code) {

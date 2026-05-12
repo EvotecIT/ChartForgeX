@@ -64,7 +64,7 @@
   },
   "EditLinks": {
     "Enabled": true,
-    "Template": "https://github.com/EvotecIT/ChartForgeX/edit/master/{path}",
+    "Template": "https://github.com/EvotecIT/ChartForgeX/edit/main/{path}",
     "PathBase": "Website"
   },
   "AssetRegistry": {

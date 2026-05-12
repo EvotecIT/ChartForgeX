@@ -300,8 +300,8 @@ public sealed partial class TopologySvgRenderer {
         sb.Append("#" + id + " ." + prefix + "__link{cursor:pointer}");
         sb.Append("#" + id + " ." + prefix + "__edge,#" + id + " ." + prefix + "__edge-halo{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}");
         sb.Append("#" + id + " ." + prefix + "__node-card,#" + id + " ." + prefix + "__group-card{vector-effect:non-scaling-stroke}");
-        sb.Append("#" + id + " ." + prefix + "--highlighted{filter:url(#" + id + "-shadow)}");
-        sb.Append("#" + id + " ." + prefix + "--selected{filter:url(#" + id + "-selected-shadow)}");
+        sb.Append("#" + id + " ." + prefix + "--highlighted:not(." + prefix + "__edge-wrap):not(." + prefix + "__edge-label){filter:url(#" + id + "-shadow)}");
+        sb.Append("#" + id + " ." + prefix + "--selected:not(." + prefix + "__edge-wrap):not(." + prefix + "__edge-label){filter:url(#" + id + "-selected-shadow)}");
         return sb.ToString();
     }
 

@@ -63,13 +63,15 @@ internal sealed class GeoJsonValue {
 
     public double AsNumber(string context) {
         if (_value is double value) return value;
+        if (_value is GeoJsonNumber number) return number.Value;
         throw new ArgumentException("Expected JSON number for " + context + ".");
     }
 
     public string? AsOptionalString() {
         if (_value == null) return null;
         if (_value is string value) return value;
-        if (_value is double number) return number.ToString("0.###############", CultureInfo.InvariantCulture);
+        if (_value is GeoJsonNumber geoJsonNumber) return geoJsonNumber.ToLookupString();
+        if (_value is double numericValue) return numericValue.ToString("0.###############", CultureInfo.InvariantCulture);
         if (_value is bool flag) return flag ? "true" : "false";
         return null;
     }
@@ -79,9 +81,21 @@ internal sealed class GeoJsonValue {
     public static GeoJsonValue Object(Dictionary<string, GeoJsonValue> values) => new(values);
     public static GeoJsonValue Array(List<GeoJsonValue> values) => new(values);
     public static GeoJsonValue String(string value) => new(value);
-    public static GeoJsonValue Number(double value) => new(value);
+    public static GeoJsonValue Number(double value, string? text = null) => new(text == null ? value : new GeoJsonNumber(value, text));
     public static GeoJsonValue Bool(bool value) => new(value);
     public static GeoJsonValue Null() => new(null);
+}
+
+internal sealed class GeoJsonNumber {
+    public GeoJsonNumber(double value, string losslessIntegerText) {
+        Value = value;
+        LosslessIntegerText = losslessIntegerText;
+    }
+
+    public double Value { get; }
+    public string LosslessIntegerText { get; }
+
+    public string ToLookupString() => LosslessIntegerText;
 }
 
 internal static class GeoJsonValueExtensions {
@@ -106,20 +120,20 @@ internal sealed class GeoJsonReader {
     }
 
     public GeoJsonValue Parse() {
-        var value = ReadValue();
+        var value = ReadValue(preserveNumberText: false);
         SkipWhiteSpace();
         if (_position != _json.Length) throw Error("Unexpected trailing JSON content.");
         return value;
     }
 
-    private GeoJsonValue ReadValue() {
+    private GeoJsonValue ReadValue(bool preserveNumberText) {
         SkipWhiteSpace();
         if (_position >= _json.Length) throw Error("Unexpected end of JSON.");
         var c = _json[_position];
         if (c == '{') return ReadObject();
-        if (c == '[') return ReadArray();
+        if (c == '[') return ReadArray(preserveNumberText);
         if (c == '"') return GeoJsonValue.String(ReadString());
-        if (c == '-' || char.IsDigit(c)) return ReadNumber();
+        if (c == '-' || char.IsDigit(c)) return ReadNumber(preserveNumberText);
         if (Match("true")) return GeoJsonValue.Bool(true);
         if (Match("false")) return GeoJsonValue.Bool(false);
         if (Match("null")) return GeoJsonValue.Null();
@@ -136,7 +150,7 @@ internal sealed class GeoJsonReader {
             var key = ReadString();
             SkipWhiteSpace();
             Expect(':');
-            values[key] = ReadValue();
+            values[key] = ReadValue(!string.Equals(key, "coordinates", StringComparison.OrdinalIgnoreCase));
             SkipWhiteSpace();
             if (TryRead('}')) break;
             Expect(',');
@@ -145,13 +159,13 @@ internal sealed class GeoJsonReader {
         return GeoJsonValue.Object(values);
     }
 
-    private GeoJsonValue ReadArray() {
+    private GeoJsonValue ReadArray(bool preserveNumberText) {
         Expect('[');
         var values = new List<GeoJsonValue>();
         SkipWhiteSpace();
         if (TryRead(']')) return GeoJsonValue.Array(values);
         while (true) {
-            values.Add(ReadValue());
+            values.Add(ReadValue(preserveNumberText));
             SkipWhiteSpace();
             if (TryRead(']')) break;
             Expect(',');
@@ -160,7 +174,7 @@ internal sealed class GeoJsonReader {
         return GeoJsonValue.Array(values);
     }
 
-    private GeoJsonValue ReadNumber() {
+    private GeoJsonValue ReadNumber(bool preserveText) {
         var start = _position;
         if (_json[_position] == '-') _position++;
         ReadDigits();
@@ -177,7 +191,12 @@ internal sealed class GeoJsonReader {
 
         var text = _json.Substring(start, _position - start);
         if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)) throw Error("Invalid JSON number.");
-        return GeoJsonValue.Number(value);
+        return GeoJsonValue.Number(value, preserveText && ShouldPreserveNumberText(text, value) ? text : null);
+    }
+
+    private static bool ShouldPreserveNumberText(string text, double value) {
+        if (text.IndexOf('.') >= 0 || text.IndexOf('e') >= 0 || text.IndexOf('E') >= 0) return false;
+        return !string.Equals(value.ToString("0", CultureInfo.InvariantCulture), text, StringComparison.Ordinal);
     }
 
     private void ReadDigits() {

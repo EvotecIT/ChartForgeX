@@ -2,8 +2,10 @@
 <title id="cfx282b82a2-title">Attendance Overview</title>
 <desc id="cfx282b82a2-desc">Attendance Overview with 7 data series: 07:00, 09:00, 11:00, 13:00, 15:00, 17:00, 19:00.</desc>
 <defs>
-<style>#cfx282b82a2 text{font-synthesis:none} #cfx282b82a2 .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx282b82a2 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx282b82a2 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx282b82a2 .cfx-interactive-region:hover,#cfx282b82a2 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfx282b82a2 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx282b82a2 .cfx-crisp-stroke,#cfx282b82a2 .cfx-guide-stroke,#cfx282b82a2 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx282b82a2 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx282b82a2 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx282b82a2 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx282b82a2 .cfx-interactive-region:hover,#cfx282b82a2 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx282b82a2 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx282b82a2 .cfx-crisp-stroke,#cfx282b82a2 .cfx-guide-stroke,#cfx282b82a2 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx282b82a2 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx282b82a2 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx282b82a2 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx282b82a2 .cfx-interactive-region:hover,#cfx282b82a2 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfx282b82a2-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.022"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.05"/></filter>
+<linearGradient id="cfx282b82a2-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx282b82a2-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F8F9FC" stop-opacity="1"/><stop offset="100%" stop-color="#EEF0F4" stop-opacity="1"/></linearGradient>
 <clipPath id="cfx282b82a2-plotClip"><rect x="76" y="112" width="648" height="334" rx="14"/></clipPath>
 <linearGradient id="cfx282b82a2-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DDFB20" stop-opacity="0.32"/><stop offset="100%" stop-color="#DDFB20" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfx282b82a2-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E1FB3B" stop-opacity="1"/><stop offset="100%" stop-color="#D0EC1E" stop-opacity="0.94"/></linearGradient>
@@ -26,10 +28,12 @@
 <linearGradient id="cfx282b82a2-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#667085" stop-opacity="1"/><stop offset="100%" stop-color="#667085" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfx282b82a2">
-<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="492" rx="24" fill="#FFFFFF" filter="url(#cfx282b82a2-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="492" rx="24" fill="url(#cfx282b82a2-cardSurface)" filter="url(#cfx282b82a2-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="731" height="491" rx="23.5" fill="none" stroke="#DDE3D1"/>
-<rect x="76" y="112" width="648" height="334" rx="14" fill="#F6F8FB"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="729" height="489" rx="22.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76" y="112" width="648" height="334" rx="14" fill="url(#cfx282b82a2-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="647" height="333" rx="13.5" fill="none" stroke="#DDE3D1"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="646" height="332" rx="13" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#1D2430" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="750">Attendance Overview</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="400">Hexbin heatmap rows for day/time utilization</text>
 <g data-cfx-role="hexbin-heatmap" data-cfx-row-count="7" data-cfx-column-count="7" data-cfx-min="38" data-cfx-max="98">

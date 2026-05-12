@@ -2,8 +2,10 @@
 <title id="cfx55e5303b-title">Reports</title>
 <desc id="cfx55e5303b-desc">Reports with 1 data series: Earnings and bills.</desc>
 <defs>
-<style>#cfx55e5303b text{font-synthesis:none} #cfx55e5303b .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx55e5303b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx55e5303b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx55e5303b .cfx-interactive-region:hover,#cfx55e5303b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfx55e5303b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx55e5303b .cfx-crisp-stroke,#cfx55e5303b .cfx-guide-stroke,#cfx55e5303b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx55e5303b .cfx-guide-stroke{shape-rendering:crispEdges} #cfx55e5303b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx55e5303b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx55e5303b .cfx-interactive-region:hover,#cfx55e5303b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx55e5303b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx55e5303b .cfx-crisp-stroke,#cfx55e5303b .cfx-guide-stroke,#cfx55e5303b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx55e5303b .cfx-guide-stroke{shape-rendering:crispEdges} #cfx55e5303b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx55e5303b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx55e5303b .cfx-interactive-region:hover,#cfx55e5303b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfx55e5303b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.022"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.05"/></filter>
+<linearGradient id="cfx55e5303b-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FCFCFB" stop-opacity="1"/><stop offset="100%" stop-color="#F3F3F3" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx55e5303b-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F7F7F5" stop-opacity="1"/><stop offset="100%" stop-color="#EDEDEC" stop-opacity="1"/></linearGradient>
 <clipPath id="cfx55e5303b-plotClip"><rect x="34" y="116" width="792" height="168" rx="14"/></clipPath>
 <linearGradient id="cfx55e5303b-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#CFCFCA" stop-opacity="0.32"/><stop offset="100%" stop-color="#CFCFCA" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfx55e5303b-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#D5D5D0" stop-opacity="1"/><stop offset="100%" stop-color="#C3C3BE" stop-opacity="0.94"/></linearGradient>
@@ -22,8 +24,9 @@
 <linearGradient id="cfx55e5303b-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#545454" stop-opacity="1"/><stop offset="100%" stop-color="#545454" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfx55e5303b">
-<rect data-cfx-role="card-surface" x="14" y="14" width="832" height="292" rx="24" fill="#FBFBFA" filter="url(#cfx55e5303b-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="832" height="292" rx="24" fill="url(#cfx55e5303b-cardSurface)" filter="url(#cfx55e5303b-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="831" height="291" rx="23.5" fill="none" stroke="rgba(207,207,202,0.275)"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="829" height="289" rx="22.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#161616" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="750">Reports</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#777776" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="400">Earnings $48,620   Bills $6,820</text>
 <g clip-path="url(#cfx55e5303b-plotClip)">

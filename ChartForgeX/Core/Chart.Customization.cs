@@ -171,6 +171,10 @@ public sealed partial class Chart {
     /// <param name="bounds">The source coordinate bounds to render.</param>
     /// <returns>The current chart.</returns>
     public Chart WithRegionMapBounds(ChartRect bounds) {
+        ChartGuards.Finite(bounds.Left, nameof(bounds));
+        ChartGuards.Finite(bounds.Top, nameof(bounds));
+        ChartGuards.Finite(bounds.Width, nameof(bounds));
+        ChartGuards.Finite(bounds.Height, nameof(bounds));
         if (bounds.Width <= 0 || bounds.Height <= 0) throw new ArgumentOutOfRangeException(nameof(bounds), "Region map bounds must have positive width and height.");
         Options.RegionMapBounds = bounds;
         return this;

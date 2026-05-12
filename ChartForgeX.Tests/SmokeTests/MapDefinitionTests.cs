@@ -217,6 +217,8 @@ internal static partial class SmokeTests {
         Assert(!tileSvg.Contains("data-cfx-role=\"tile-map-surface\"", StringComparison.Ordinal), "Report-style tile maps should be able to suppress the map surface.");
         Assert(region.ToPng().Length > 64, "Report-style region heatmaps should render PNG output.");
         Assert(tile.ToPng().Length > 64, "Report-style tile heatmaps should render PNG output.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapBounds(new ChartRect(double.NaN, 0, 10, 10)), "Region map bounds should reject non-finite left values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapBounds(new ChartRect(0, 0, double.PositiveInfinity, 10)), "Region map bounds should reject non-finite dimensions.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapCoordinateBounds(35, -12, 34, 72), "Region map coordinate bounds should reject inverted longitudes.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapCoordinateBounds(-12, 35, 72, 34), "Region map coordinate bounds should reject inverted latitudes.");
     }

@@ -1,5 +1,6 @@
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using System.Linq;
 
 namespace ChartForgeX.Tests;
 
@@ -99,5 +100,83 @@ internal static partial class SmokeTests {
         Assert(CountNearColor(zeroStrokeRegionPixels, 0, 0, 0, 0) == 0, "PNG region maps should not draw outlines when map region stroke width is zero.");
         Assert(CountNearColor(strokedTilePixels, 0, 0, 0, 0) > 0, "PNG tile maps should draw configured non-zero region strokes.");
         Assert(CountNearColor(zeroStrokeTilePixels, 0, 0, 0, 0) == 0, "PNG tile maps should not draw outlines when map region stroke width is zero.");
+    }
+
+    private static void GeoJsonMapDefinitionsPreserveNumericIdentifierText() {
+        const string geoJson = """
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": { "GEOID": 9007199254740993, "NAME": "Large numeric ID" },
+              "geometry": { "type": "Polygon", "coordinates": [[[0,0],[1,0],[1,1],[0,1],[0,0]]] }
+            }
+          ]
+        }
+        """;
+
+        var definition = ChartMapDefinition.FromGeoJson("numeric-id", "Numeric ID", geoJson, new ChartMapGeoJsonOptions {
+            CodePropertyNames = new[] { "GEOID" },
+            NamePropertyNames = new[] { "NAME" }
+        });
+
+        Assert(definition.TryResolveRegion("9007199254740993", out var code) && code == "9007199254740993", "GeoJSON map definitions should preserve large numeric identifier text without double rounding.");
+    }
+
+    private static void GeoJsonMapDefinitionsNormalizeNumericIdentifierText() {
+        const string geoJson = """
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": { "GEOID": 1.0, "NAME": "Decimal ID" },
+              "geometry": { "type": "Polygon", "coordinates": [[[0,0],[1,0],[1,1],[0,1],[0,0]]] }
+            },
+            {
+              "type": "Feature",
+              "properties": { "GEOID": 1e3, "NAME": "Exponent ID" },
+              "geometry": { "type": "Polygon", "coordinates": [[[2,0],[3,0],[3,1],[2,1],[2,0]]] }
+            }
+          ]
+        }
+        """;
+
+        var definition = ChartMapDefinition.FromGeoJson("numeric-normalized-id", "Numeric Normalized ID", geoJson, new ChartMapGeoJsonOptions {
+            CodePropertyNames = new[] { "GEOID" },
+            NamePropertyNames = new[] { "NAME" }
+        });
+
+        Assert(definition.TryResolveRegion("1", out var code) && code == "1", "GeoJSON map definitions should normalize decimal numeric identifier text for region lookup compatibility.");
+        Assert(definition.TryResolveRegion("1000", out code) && code == "1000", "GeoJSON map definitions should normalize exponent numeric identifier text for region lookup compatibility.");
+        Assert(!definition.TryResolveRegion("1.0", out _), "GeoJSON map definitions should not require callers to use raw decimal token text for region lookups.");
+        Assert(!definition.TryResolveRegion("1e3", out _), "GeoJSON map definitions should not require callers to use raw exponent token text for region lookups.");
+    }
+
+    private static void GeoJsonMapDefinitionsAvoidGeneratedCodeCollisions() {
+        const string geoJson = """
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": { "NUTS_ID": "R1", "NUTS_NAME": "Explicit" },
+              "geometry": { "type": "Polygon", "coordinates": [[[0,0],[1,0],[1,1],[0,1],[0,0]]] }
+            },
+            {
+              "type": "Feature",
+              "properties": { "NUTS_NAME": "Generated" },
+              "geometry": { "type": "Polygon", "coordinates": [[[2,0],[3,0],[3,1],[2,1],[2,0]]] }
+            }
+          ]
+        }
+        """;
+
+        var definition = ChartMapDefinition.FromGeoJson("generated-codes", "Generated Codes", geoJson);
+
+        Assert(definition.Regions.Count == 2, "GeoJSON map definitions should keep features whose generated fallback code would collide with explicit codes.");
+        Assert(definition.TryResolveRegion("R1", out var explicitCode) && explicitCode == "R1", "GeoJSON map definitions should keep explicit region codes.");
+        Assert(definition.Regions.Any(region => region.Code == "R2"), "GeoJSON map definitions should advance generated fallback codes until they are unique.");
     }
 }

@@ -25,6 +25,62 @@ function Get-Category {
     return 'charts'
 }
 
+function Write-Utf8NoBom {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Path,
+        [Parameter(Mandatory = $true)]
+        [string] $Text
+    )
+
+    $encoding = [System.Text.UTF8Encoding]::new($false)
+    $normalized = $Text -replace "`r`n", "`n"
+    if (-not $normalized.EndsWith("`n")) {
+        $normalized += "`n"
+    }
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $directory = [System.IO.Path]::GetDirectoryName($fullPath)
+    if (-not [string]::IsNullOrWhiteSpace($directory) -and -not (Test-Path -LiteralPath $directory)) {
+        New-Item -ItemType Directory -Force -Path $directory | Out-Null
+    }
+
+    [System.IO.File]::WriteAllText($fullPath, $normalized, $encoding)
+}
+
+function Read-Utf8Text {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Path
+    )
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $text = [System.IO.File]::ReadAllText($fullPath, [System.Text.Encoding]::UTF8)
+    if ($text.Length -gt 0 -and $text[0] -eq [char]0xFEFF) {
+        return $text.Substring(1)
+    }
+
+    return $text
+}
+
+function Normalize-GeneratedTextArtifacts {
+    param([string] $Root)
+
+    $textExtensions = @('.svg', '.html', '.json', '.txt', '.css', '.js')
+    foreach ($file in Get-ChildItem -LiteralPath $Root -File -Recurse) {
+        if ($textExtensions -notcontains $file.Extension.ToLowerInvariant()) {
+            continue
+        }
+
+        $text = [System.IO.File]::ReadAllText($file.FullName, [System.Text.Encoding]::UTF8)
+        if ($text.Length -gt 0 -and $text[0] -eq [char]0xFEFF) {
+            $text = $text.Substring(1)
+        }
+
+        Write-Utf8NoBom -Path $file.FullName -Text $text
+    }
+}
+
 $source = Resolve-Path -LiteralPath $SourceRoot -ErrorAction SilentlyContinue
 if (-not $source) {
     Write-Warning "Example output folder not found: $SourceRoot"
@@ -34,10 +90,11 @@ if (-not $source) {
 New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
 Get-ChildItem -LiteralPath $source.Path -File -Include '*.svg', '*.png', '*.html', '*.csharp.txt', '*.powershell.txt' -Recurse |
     Copy-Item -Destination $DestinationRoot -Force
+Normalize-GeneratedTextArtifacts -Root $DestinationRoot
 
 $existingByImage = @{}
 if (Test-Path -LiteralPath $GalleryPath) {
-    $existing = Get-Content -LiteralPath $GalleryPath -Raw | ConvertFrom-Json
+    $existing = Read-Utf8Text -Path $GalleryPath | ConvertFrom-Json
     foreach ($item in @($existing.items)) {
         if ($item.image) {
             $existingByImage[$item.image] = $item
@@ -74,6 +131,8 @@ $categories = @(
 [pscustomobject]@{
     categories = $categories
     items = @($items)
-} | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $GalleryPath -Encoding UTF8
+} | ConvertTo-Json -Depth 8 | ForEach-Object {
+    Write-Utf8NoBom -Path $GalleryPath -Text $_
+}
 
 Write-Host "Synced $(@($items).Count) gallery item(s) from $($source.Path)"

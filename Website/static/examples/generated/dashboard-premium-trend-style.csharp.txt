@@ -1,0 +1,32 @@
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+static IEnumerable<ChartPoint> Points(params double[] values) {
+    for (var index = 0; index < values.Length; index++) {
+        yield return new ChartPoint(index + 1, values[index]);
+    }
+}
+
+var chart = Chart.Create()
+    .WithHeader(false)
+    .WithTransparentBackground(false)
+    .WithTheme(ChartTheme.SaasDashboardLight()
+        .WithPalette(new[] { ChartColor.FromHex("#2563EB"), ChartColor.FromHex("#14B8A6") })
+        .WithGuideColors(ChartColor.FromHex("#D7DEE8"), ChartColor.FromHex("#94A3B8"))
+        .WithMarkerRadius(3.2)
+        .WithTextColors(ChartColor.FromHex("#64748B"), ChartColor.FromHex("#8792A5")))
+    .WithDashboardPanelStyle()
+    .WithLegend(false)
+    .WithPadding(36, 30, 26, 58)
+    .WithSize(840, 360)
+    .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    .WithYAxisBounds(0, 100)
+    .WithHighlightedXAxisLabel(4, paletteIndex: 0)
+    .AddSmoothArea("Saved", Points(24, 36, 48, 58, 46, 68, 76))
+    .AddSmoothLine("Outreach", Points(18, 28, 36, 48, 40, 58, 66));
+
+chart.SaveSvg("dashboard-premium-trend-style.svg");
+chart.SavePng("dashboard-premium-trend-style.png");
+chart.SaveHtml("dashboard-premium-trend-style.html");

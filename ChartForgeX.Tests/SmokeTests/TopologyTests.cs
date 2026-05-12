@@ -629,6 +629,8 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains(">142 ms<", StringComparison.Ordinal), "Metric-driven edge labels should replace the default edge label.");
         Assert(svg.Contains("cfx-topology--highlighted", StringComparison.Ordinal), "Topology render options should mark highlighted offenders.");
         Assert(svg.Contains("cfx-topology--dimmed", StringComparison.Ordinal), "Topology render options should dim non-highlighted elements.");
+        Assert(svg.Contains(".cfx-topology--highlighted:not(.cfx-topology__edge-wrap):not(.cfx-topology__edge-label)", StringComparison.Ordinal), "Topology selected/highlight shadows should not turn routes into oversized shadow blobs.");
+        Assert(svg.Contains(".cfx-topology--selected:not(.cfx-topology__edge-wrap):not(.cfx-topology__edge-label)", StringComparison.Ordinal), "Topology selected shadows should stay off edge wrappers and labels.");
         Assert(svg.Contains("data-node-id=\"tr-branch\" data-node-kind=\"Branch\" data-node-display-mode=\"Card\" data-cfx-status=\"Critical\" data-cfx-selected=\"true\"", StringComparison.Ordinal), "Topology render options should mark selected nodes without filtering the chart.");
         Assert(svg.Contains("data-edge-id=\"emea-tr\"", StringComparison.Ordinal) && svg.Contains("data-cfx-selected=\"true\"", StringComparison.Ordinal), "Topology render options should mark selected edges without filtering the chart.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeGroups = false, IncludeNodeLabels = false, EdgeLabelMetricKey = "queue", HighlightStatuses = { TopologyHealthStatus.Critical } }).Length > 64, "Topology PNG should support dashboard perspective options.");

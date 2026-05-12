@@ -22,6 +22,15 @@ internal static partial class SmokeTests {
         Assert(script.Contains("[switch] $SkipAot", StringComparison.Ordinal), "Build script should allow intentional Native AOT smoke skips for local triage.");
         Assert(script.Contains("ChartForgeX.AotSmoke", StringComparison.Ordinal), "Build script should publish and run the Native AOT smoke app.");
         Assert(script.Contains("Get-NativeAotRuntimeIdentifier", StringComparison.Ordinal), "Build script should resolve the current OS runtime identifier for Native AOT validation.");
+        Assert(script.Contains("CHARTFORGEX_NATIVE_AOT_RID", StringComparison.Ordinal), "Build script should allow explicit Native AOT RID override for unusual validation hosts.");
+        Assert(script.Contains("RuntimeInformation]::ProcessArchitecture", StringComparison.Ordinal), "Build script should choose Native AOT RID from process architecture so emulated shells do not request unsupported cross-AOT publishes.");
+        Assert(script.Contains("linux-musl", StringComparison.Ordinal), "Build script should publish a musl Native AOT RID on musl-based Linux hosts.");
+        Assert(script.Contains("Get-Command ldd -CommandType Application", StringComparison.Ordinal), "Build script should resolve ldd from PATH instead of a hard-coded Linux path.");
+        Assert(script.Contains("$PSNativeCommandUseErrorActionPreference = $false", StringComparison.Ordinal), "Build script should prevent non-zero ldd probe exit codes from terminating Native AOT RID detection.");
+        Assert(script.Contains("$PSNativeCommandUseErrorActionPreference = $previousNativeErrorActionPreference", StringComparison.Ordinal), "Build script should restore native command error handling after probing ldd.");
+        Assert(script.Contains("$lddReportsMusl", StringComparison.Ordinal) && script.Contains("$lddReportsGlibc", StringComparison.Ordinal), "Build script should use ldd output as the authoritative libc probe.");
+        Assert(!script.Contains("ld-musl-", StringComparison.Ordinal), "Build script should not infer the active libc from loader files that may belong to cross-toolchains.");
+        Assert(script.Contains("if ($lddReportsMusl -and -not $lddReportsGlibc)", StringComparison.Ordinal), "Build script should select a musl RID only when ldd identifies musl without glibc.");
         Assert(script.Contains("Invoke-NativeSmokeExecutable", StringComparison.Ordinal), "Build script should execute the compiled Native AOT smoke binary.");
         Assert(script.Contains("globalPackagesFolder", StringComparison.Ordinal), "Build script should isolate the package consumer cache so same-version local packages are retested.");
         Assert(script.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal), "Build script should time-limit all dotnet validation commands.");
@@ -67,6 +76,26 @@ internal static partial class SmokeTests {
         Assert(script.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Build script should verify topology visual coverage manifest generation.");
         Assert(script.Contains("visual-geographic-topology-map", StringComparison.Ordinal), "Build script should verify topology-native geographic visual coverage.");
         Assert(script.Contains("data-route-curve=\"geographic\"", StringComparison.Ordinal), "Build script should verify geographic topology route-arc metadata.");
+
+        var qualityWorkflow = File.ReadAllText(Path.Combine(FindRepositoryRoot(), ".github", "workflows", "quality.yml"));
+        Assert(qualityWorkflow.Contains("Install Native AOT prerequisites", StringComparison.Ordinal), "Quality workflow should install Native AOT prerequisites before running the release gate.");
+        Assert(qualityWorkflow.Contains("dotnet nuget locals all --clear", StringComparison.Ordinal), "Quality workflow should clear reusable NuGet cache space before package provisioning on self-hosted runners.");
+        Assert(qualityWorkflow.Contains("has_native_aot_compiler", StringComparison.Ordinal), "Quality workflow should name the compiler probe generically because the self-hosted release gate can use clang or gcc.");
+        Assert(qualityWorkflow.Contains("command -v apt-get", StringComparison.Ordinal) && qualityWorkflow.Contains("command -v dnf", StringComparison.Ordinal) && qualityWorkflow.Contains("command -v yum", StringComparison.Ordinal) && qualityWorkflow.Contains("command -v apk", StringComparison.Ordinal), "Quality workflow should support common Linux package managers on generic self-hosted Linux runners.");
+        Assert(qualityWorkflow.Contains("apt-get clean", StringComparison.Ordinal) && qualityWorkflow.Contains("find /var/lib/apt/lists", StringComparison.Ordinal) && qualityWorkflow.Contains("Acquire::Languages=none", StringComparison.Ordinal), "Quality workflow should avoid refetching apt metadata when provisioning Native AOT prerequisites on space-constrained runners.");
+        Assert(qualityWorkflow.Contains("rpm -q zlib-devel zlib-ng-devel zlib-ng-compat-devel", StringComparison.Ordinal), "Quality workflow should verify Fedora/RHEL Native AOT zlib compatibility headers before short-circuiting setup.");
+        Assert(qualityWorkflow.Contains("apk info -e zlib-dev", StringComparison.Ordinal) && qualityWorkflow.Contains("apk info -e musl-dev", StringComparison.Ordinal), "Quality workflow should require Alpine musl headers before short-circuiting Native AOT setup.");
+        Assert(qualityWorkflow.Contains("apt_packages+=(gcc)", StringComparison.Ordinal) && qualityWorkflow.Contains("apt_packages+=(zlib1g-dev)", StringComparison.Ordinal), "Quality workflow should only install missing Ubuntu Native AOT prerequisites on space-constrained self-hosted runners.");
+        Assert(qualityWorkflow.Contains("dnf_packages+=(gcc)", StringComparison.Ordinal) && qualityWorkflow.Contains("dnf install -y \"${dnf_packages[@]}\"", StringComparison.Ordinal), "Quality workflow should install only missing Fedora Native AOT prerequisites.");
+        Assert(qualityWorkflow.Contains("yum_packages+=(gcc)", StringComparison.Ordinal) && qualityWorkflow.Contains("yum install -y \"${yum_packages[@]}\"", StringComparison.Ordinal), "Quality workflow should install only missing RHEL Native AOT prerequisites.");
+        Assert(qualityWorkflow.Contains("apk_packages+=(build-base)", StringComparison.Ordinal) && qualityWorkflow.Contains("apk_packages+=(zlib-dev)", StringComparison.Ordinal), "Quality workflow should install only missing Alpine Native AOT prerequisites.");
+
+        var exampleSyncScript = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Website", "build", "Sync-GeneratedExamples.ps1"));
+        Assert(exampleSyncScript.Contains("function Write-Utf8NoBom", StringComparison.Ordinal), "Example sync script should centralize generated text writing.");
+        Assert(exampleSyncScript.Contains("function Read-Utf8Text", StringComparison.Ordinal), "Example sync script should centralize UTF-8 reads for Windows PowerShell 5.1 round-tripping.");
+        Assert(exampleSyncScript.Contains("[System.IO.Path]::GetFullPath($Path)", StringComparison.Ordinal), "Example sync writer should support new output files without requiring Resolve-Path.");
+        Assert(exampleSyncScript.Contains("New-Item -ItemType Directory -Force -Path $directory", StringComparison.Ordinal), "Example sync writer should create missing output directories for custom gallery paths.");
+        Assert(exampleSyncScript.Contains("Read-Utf8Text -Path $GalleryPath | ConvertFrom-Json", StringComparison.Ordinal), "Example sync script should read existing gallery metadata as UTF-8 before rewriting it without a BOM.");
     }
 
     private static void VisualBaselineIsStructuredAndActionable() {

@@ -352,20 +352,56 @@ function Invoke-DotNetCommand {
 }
 
 function Get-NativeAotRuntimeIdentifier {
+    if ($env:CHARTFORGEX_NATIVE_AOT_RID) {
+        return $env:CHARTFORGEX_NATIVE_AOT_RID
+    }
+
     $architecture = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+    $architectureRid = switch ($architecture) {
+        ([System.Runtime.InteropServices.Architecture]::X64) { 'x64' }
+        ([System.Runtime.InteropServices.Architecture]::Arm64) { 'arm64' }
+        default {
+            throw "Native AOT smoke validation does not support $architecture process architecture."
+        }
+    }
+
     if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
-        if ($architecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { return 'win-arm64' }
-        return 'win-x64'
+        return "win-$architectureRid"
     }
 
     if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Linux)) {
-        if ($architecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { return 'linux-arm64' }
-        return 'linux-x64'
+        $linuxFlavor = 'linux'
+        $lddCommand = Get-Command ldd -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+        $lddOutput = ''
+        if ($lddCommand) {
+            $restoreNativeErrorActionPreference = $false
+            $previousNativeErrorActionPreference = $null
+            if (Test-Path -LiteralPath Variable:\PSNativeCommandUseErrorActionPreference) {
+                $restoreNativeErrorActionPreference = $true
+                $previousNativeErrorActionPreference = $PSNativeCommandUseErrorActionPreference
+                $PSNativeCommandUseErrorActionPreference = $false
+            }
+
+            try {
+                $lddOutput = & $lddCommand.Source --version 2>&1 | Out-String
+            } finally {
+                if ($restoreNativeErrorActionPreference) {
+                    $PSNativeCommandUseErrorActionPreference = $previousNativeErrorActionPreference
+                }
+            }
+        }
+
+        $lddReportsMusl = $lddOutput -match 'musl'
+        $lddReportsGlibc = $lddOutput -match 'GNU libc|glibc|Free Software Foundation'
+        if ($lddReportsMusl -and -not $lddReportsGlibc) {
+            $linuxFlavor = 'linux-musl'
+        }
+
+        return "$linuxFlavor-$architectureRid"
     }
 
     if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)) {
-        if ($architecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { return 'osx-arm64' }
-        return 'osx-x64'
+        return "osx-$architectureRid"
     }
 
     throw "Native AOT smoke validation does not know the runtime identifier for $([System.Runtime.InteropServices.RuntimeInformation]::OSDescription) / $architecture."

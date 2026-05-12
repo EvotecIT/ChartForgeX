@@ -2,8 +2,10 @@
 <title id="cfx503d29ed-title">ChartForgeX chart</title>
 <desc id="cfx503d29ed-desc">Chart with 4 data series: Applied, Screened, Saved, Outreach.</desc>
 <defs>
-<style>#cfx503d29ed text{font-synthesis:none} #cfx503d29ed .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx503d29ed .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx503d29ed .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx503d29ed .cfx-interactive-region:hover,#cfx503d29ed .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfx503d29ed text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx503d29ed .cfx-crisp-stroke,#cfx503d29ed .cfx-guide-stroke,#cfx503d29ed .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx503d29ed .cfx-guide-stroke{shape-rendering:crispEdges} #cfx503d29ed .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx503d29ed .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx503d29ed .cfx-interactive-region:hover,#cfx503d29ed .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx503d29ed text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx503d29ed .cfx-crisp-stroke,#cfx503d29ed .cfx-guide-stroke,#cfx503d29ed .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx503d29ed .cfx-guide-stroke{shape-rendering:crispEdges} #cfx503d29ed .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx503d29ed .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx503d29ed .cfx-interactive-region:hover,#cfx503d29ed .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfx503d29ed-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.022"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.05"/></filter>
+<linearGradient id="cfx503d29ed-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx503d29ed-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F8F9FC" stop-opacity="1"/><stop offset="100%" stop-color="#EEF0F4" stop-opacity="1"/></linearGradient>
 <clipPath id="cfx503d29ed-plotClip"><rect x="79.92" y="26" width="816.08" height="380" rx="14"/></clipPath>
 <linearGradient id="cfx503d29ed-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DDFB20" stop-opacity="0.32"/><stop offset="100%" stop-color="#DDFB20" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfx503d29ed-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E1FB3B" stop-opacity="1"/><stop offset="100%" stop-color="#D0EC1E" stop-opacity="0.94"/></linearGradient>
@@ -21,8 +23,9 @@
 </defs>
 <g id="cfx503d29ed">
 <rect width="100%" height="100%" fill="#F2F5EC"/>
-<rect data-cfx-role="card-surface" x="14" y="14" width="892" height="432" rx="24" fill="#FFFFFF" filter="url(#cfx503d29ed-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="892" height="432" rx="24" fill="url(#cfx503d29ed-cardSurface)" filter="url(#cfx503d29ed-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="891" height="431" rx="23.5" fill="none" stroke="#DDE3D1"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="889" height="429" rx="22.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
 <text x="67.92" y="410" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">0</text>
 <text x="67.92" y="346.667" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">20</text>
 <text x="67.92" y="283.333" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">40</text>
@@ -30,19 +33,19 @@
 <text x="67.92" y="156.667" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">80</text>
 <text x="67.92" y="93.333" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">100</text>
 <text x="67.92" y="30" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">120</text>
-<line x1="138.211" y1="26" x2="138.211" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="138.5" y1="26" x2="138.5" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="138.211" y="427" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">Sunday</text>
-<line x1="254.794" y1="26" x2="254.794" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="254.5" y1="26" x2="254.5" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="254.794" y="427" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">Monday</text>
-<line x1="371.377" y1="26" x2="371.377" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="371.5" y1="26" x2="371.5" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="371.377" y="427" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">Tuesday</text>
-<line x1="487.96" y1="26" x2="487.96" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="487.5" y1="26" x2="487.5" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="487.96" y="427" text-anchor="middle" fill="#FF3B4F" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">Wednesday</text>
-<line x1="604.543" y1="26" x2="604.543" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="604.5" y1="26" x2="604.5" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="604.543" y="427" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">Thursday</text>
-<line x1="721.126" y1="26" x2="721.126" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="721.5" y1="26" x2="721.5" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="721.126" y="427" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">Friday</text>
-<line x1="837.709" y1="26" x2="837.709" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="837.5" y1="26" x2="837.5" y2="406" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="837.709" y="427" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">Saturday</text>
 <g clip-path="url(#cfx503d29ed-plotClip)">
 <rect data-cfx-role="bar" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-y="20" data-cfx-base="0" x="104.402" y="342.667" width="67.618" height="63.333" rx="0" fill="#DDFB20" opacity="0.22"/><line data-cfx-role="bar-cap-shadow-soft" data-cfx-series="0" data-cfx-point="0" x1="106.602" y1="351.167" x2="169.82" y2="351.167" stroke="#DDFB20" stroke-width="13" stroke-linecap="round" stroke-opacity="0.072"/><line data-cfx-role="bar-cap-shadow" data-cfx-series="0" data-cfx-point="0" x1="106.602" y1="348.167" x2="169.82" y2="348.167" stroke="#DDFB20" stroke-width="7" stroke-linecap="round" stroke-opacity="0.2"/><line data-cfx-role="bar-cap" data-cfx-series="0" data-cfx-point="0" x1="106.602" y1="346.167" x2="169.82" y2="346.167" stroke="#DDFB20" stroke-width="7" stroke-linecap="round" stroke-opacity="0.96"/><line data-cfx-role="bar-cap-highlight" data-cfx-series="0" data-cfx-point="0" x1="108.142" y1="344.907" x2="168.28" y2="344.907" stroke="#fff" stroke-width="1.68" stroke-linecap="round" stroke-opacity="0.26"/>

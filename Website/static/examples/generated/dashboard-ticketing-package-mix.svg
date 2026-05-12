@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="300" viewBox="0 0 520 300" role="img" aria-labelledby="cfx3ecb1563-title cfx3ecb1563-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+<title id="cfx3ecb1563-title">Package Selling</title>
+<desc id="cfx3ecb1563-desc">Package Selling with 1 data series: Packages.</desc>
+<defs>
+<style>#cfx3ecb1563 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx3ecb1563 .cfx-crisp-stroke,#cfx3ecb1563 .cfx-guide-stroke,#cfx3ecb1563 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx3ecb1563 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx3ecb1563 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx3ecb1563 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx3ecb1563 .cfx-interactive-region:hover,#cfx3ecb1563 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx3ecb1563 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx3ecb1563 .cfx-crisp-stroke,#cfx3ecb1563 .cfx-guide-stroke,#cfx3ecb1563 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx3ecb1563 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx3ecb1563 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx3ecb1563 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx3ecb1563 .cfx-interactive-region:hover,#cfx3ecb1563 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx3ecb1563-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.02"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.045"/></filter>
+<linearGradient id="cfx3ecb1563-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx3ecb1563-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx3ecb1563-plotClip"><rect x="76" y="112" width="408" height="114" rx="8"/></clipPath>
+<linearGradient id="cfx3ecb1563-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#24B8A9" stop-opacity="0.32"/><stop offset="100%" stop-color="#24B8A9" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx3ecb1563-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3EC1B3" stop-opacity="1"/><stop offset="100%" stop-color="#22AD9F" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx3ecb1563-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3EC1B3" stop-opacity="1"/><stop offset="100%" stop-color="#22AD9F" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx3ecb1563-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#988AE9" stop-opacity="1"/><stop offset="100%" stop-color="#8273D8" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx3ecb1563-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6C783" stop-opacity="1"/><stop offset="100%" stop-color="#E6B46B" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx3ecb1563-seriesFill0-point3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4A6B9" stop-opacity="1"/><stop offset="100%" stop-color="#E491A4" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx3ecb1563-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#24B8A9" stop-opacity="1"/><stop offset="100%" stop-color="#24B8A9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx3ecb1563-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8A7AE6" stop-opacity="1"/><stop offset="100%" stop-color="#8A7AE6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx3ecb1563-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F5BF72" stop-opacity="1"/><stop offset="100%" stop-color="#F5BF72" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx3ecb1563-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F39AAF" stop-opacity="1"/><stop offset="100%" stop-color="#F39AAF" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx3ecb1563-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#67D6CC" stop-opacity="1"/><stop offset="100%" stop-color="#67D6CC" stop-opacity="0.78"/></linearGradient>
+</defs>
+<g id="cfx3ecb1563">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="272" rx="18" fill="url(#cfx3ecb1563-cardSurface)" filter="url(#cfx3ecb1563-softShadow)"/>
+<rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="271" rx="17.5" fill="none" stroke="#ECF3F2"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="269" rx="16.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76" y="112" width="408" height="114" rx="8" fill="url(#cfx3ecb1563-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="407" height="113" rx="7.5" fill="none" stroke="#D8E7E5"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="406" height="112" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<text data-cfx-role="chart-title" x="40" y="52" fill="#16191D" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="22" font-weight="750">Package Selling</text>
+<text data-cfx-role="chart-subtitle" x="40" y="79" fill="#656D76" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="11.5" font-weight="400">Arrival-date packages and pick-and-choose inventory</text>
+<g data-cfx-role="progress-bar-chart" data-cfx-maximum="100" data-cfx-show-values="true" data-cfx-show-handles="false" data-cfx-bar-thickness-ratio="0.38" data-cfx-track-opacity="0.28">
+<text data-cfx-role="progress-label" data-cfx-point="0" x="165.92" y="130.667" text-anchor="end" fill="#656D76" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="11" font-weight="700">Sunburn Pass</text>
+<rect data-cfx-role="progress-track" data-cfx-point="0" x="185.92" y="121.3" width="229.04" height="11.4" rx="5.7" fill="rgba(221,227,209,0.278)"/>
+<rect data-cfx-role="progress-fill" data-cfx-point="0" data-cfx-value="92" data-cfx-ratio="0.92" x="185.92" y="121.3" width="210.717" height="11.4" rx="5.7" fill="#24B8A9"/>
+<text data-cfx-role="progress-value" data-cfx-point="0" x="426.96" y="130.5" fill="#16191D" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="10.5" font-weight="800">92%</text>
+<text data-cfx-role="progress-label" data-cfx-point="1" x="165.92" y="160.667" text-anchor="end" fill="#656D76" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="11" font-weight="700">Beach Team</text>
+<rect data-cfx-role="progress-track" data-cfx-point="1" x="185.92" y="151.3" width="229.04" height="11.4" rx="5.7" fill="rgba(221,227,209,0.278)"/>
+<rect data-cfx-role="progress-fill" data-cfx-point="1" data-cfx-value="76" data-cfx-ratio="0.76" x="185.92" y="151.3" width="174.07" height="11.4" rx="5.7" fill="#8A7AE6"/>
+<text data-cfx-role="progress-value" data-cfx-point="1" x="426.96" y="160.5" fill="#16191D" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="10.5" font-weight="800">76%</text>
+<text data-cfx-role="progress-label" data-cfx-point="2" x="165.92" y="190.667" text-anchor="end" fill="#656D76" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="11" font-weight="700">VIP Guest</text>
+<rect data-cfx-role="progress-track" data-cfx-point="2" x="185.92" y="181.3" width="229.04" height="11.4" rx="5.7" fill="rgba(221,227,209,0.278)"/>
+<rect data-cfx-role="progress-fill" data-cfx-point="2" data-cfx-value="58" data-cfx-ratio="0.58" x="185.92" y="181.3" width="132.843" height="11.4" rx="5.7" fill="#F5BF72"/>
+<text data-cfx-role="progress-value" data-cfx-point="2" x="426.96" y="190.5" fill="#16191D" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="10.5" font-weight="800">58%</text>
+<text data-cfx-role="progress-label" data-cfx-point="3" x="165.92" y="220.667" text-anchor="end" fill="#656D76" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="11" font-weight="700">Free Guest</text>
+<rect data-cfx-role="progress-track" data-cfx-point="3" x="185.92" y="211.3" width="229.04" height="11.4" rx="5.7" fill="rgba(221,227,209,0.278)"/>
+<rect data-cfx-role="progress-fill" data-cfx-point="3" data-cfx-value="34" data-cfx-ratio="0.34" x="185.92" y="211.3" width="77.874" height="11.4" rx="5.7" fill="#F39AAF"/>
+<text data-cfx-role="progress-value" data-cfx-point="3" x="426.96" y="220.5" fill="#16191D" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="10.5" font-weight="800">34%</text>
+</g>
+</g>
+</svg>

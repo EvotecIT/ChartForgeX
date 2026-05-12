@@ -25,6 +25,7 @@ public static class ChartMapGeoJson {
         var root = GeoJsonValue.Parse(geoJson).AsObject("GeoJSON root");
         var features = ReadFeatures(root);
         var regions = new List<ChartMapRegion>();
+        var usedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var bounds = EmptyBounds();
         var index = 1;
         foreach (var feature in features) {
@@ -36,7 +37,8 @@ public static class ChartMapGeoJson {
 
             if (!options.IncludesCoordinateBounds(coordinates.MinLongitude, coordinates.MaxLongitude, coordinates.MinLatitude, coordinates.MaxLatitude)) continue;
             Include(ref bounds, featureBounds);
-            var code = options.FindCode(feature, index);
+            var code = options.FindCode(feature, index, usedCodes);
+            usedCodes.Add(code);
             var regionName = options.FindName(feature, code);
             regions.Add(new ChartMapRegion(code, regionName, path, label, options.FindAliases(feature, code, regionName)));
             index++;

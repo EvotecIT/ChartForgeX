@@ -12,7 +12,7 @@
       "source": {
         "path": "ChartForgeX.Examples/DashboardPortfolioExamples.cs",
         "entry": "DashboardPortfolioExamples.Write(output, pngOutputScale)",
-        "url": "https://github.com/EvotecIT/ChartForgeX/blob/master/ChartForgeX.Examples/DashboardPortfolioExamples.cs#L73-L75"
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/DashboardPortfolioExamples.cs#L73-L75"
       },
       "build": {
         "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release",
@@ -31,7 +31,7 @@
       "source": {
         "path": "ChartForgeX.Examples/Program.cs",
         "entry": "SaveChart(heatmap, \"control-coverage-heatmap-dark\")",
-        "url": "https://github.com/EvotecIT/ChartForgeX/blob/master/ChartForgeX.Examples/Program.cs#L116-L130"
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Program.cs#L116-L130"
       },
       "build": {
         "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release",
@@ -52,7 +52,7 @@
       "source": {
         "path": "ChartForgeX.Examples/MapExamples.cs",
         "entry": "CreateEuropeRevenueDottedMap()",
-        "url": "https://github.com/EvotecIT/ChartForgeX/blob/master/ChartForgeX.Examples/MapExamples.cs#L10"
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/MapExamples.cs#L10"
       },
       "build": {
         "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release",
@@ -71,7 +71,7 @@
       "source": {
         "path": "ChartForgeX.Examples/TopologyVisualExamples.cs",
         "entry": "BuildGeographicTopologyMap()",
-        "url": "https://github.com/EvotecIT/ChartForgeX/blob/master/ChartForgeX.Examples/TopologyVisualExamples.cs#L40"
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/TopologyVisualExamples.cs#L40"
       },
       "build": {
         "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release -- --topology-only",

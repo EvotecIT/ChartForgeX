@@ -2,8 +2,10 @@
 <title id="cfxc24a6d1b-title">Remediation Lift</title>
 <desc id="cfxc24a6d1b-desc">Remediation Lift with 1 data series: Before/after.</desc>
 <defs>
-<style>#cfxc24a6d1b text{font-synthesis:none} #cfxc24a6d1b .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxc24a6d1b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxc24a6d1b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxc24a6d1b .cfx-interactive-region:hover,#cfxc24a6d1b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfxc24a6d1b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxc24a6d1b .cfx-crisp-stroke,#cfxc24a6d1b .cfx-guide-stroke,#cfxc24a6d1b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxc24a6d1b .cfx-guide-stroke{shape-rendering:crispEdges} #cfxc24a6d1b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxc24a6d1b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxc24a6d1b .cfx-interactive-region:hover,#cfxc24a6d1b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfxc24a6d1b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxc24a6d1b .cfx-crisp-stroke,#cfxc24a6d1b .cfx-guide-stroke,#cfxc24a6d1b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxc24a6d1b .cfx-guide-stroke{shape-rendering:crispEdges} #cfxc24a6d1b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxc24a6d1b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxc24a6d1b .cfx-interactive-region:hover,#cfxc24a6d1b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfxc24a6d1b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxc24a6d1b-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxc24a6d1b-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
 <clipPath id="cfxc24a6d1b-plotClip"><rect x="76.68" y="112" width="647.32" height="236.5" rx="8"/></clipPath>
 <linearGradient id="cfxc24a6d1b-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfxc24a6d1b-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
@@ -17,37 +19,39 @@
 <linearGradient id="cfxc24a6d1b-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfxc24a6d1b">
-<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="#FFFFFF" filter="url(#cfxc24a6d1b-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="url(#cfxc24a6d1b-cardSurface)" filter="url(#cfxc24a6d1b-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="731" height="431" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
-<rect x="76.68" y="112" width="647.32" height="236.5" rx="8" fill="#F8FAFC"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="729" height="429" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76.68" y="112" width="647.32" height="236.5" rx="8" fill="url(#cfxc24a6d1b-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="77.18" y="112.5" width="646.32" height="235.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77.68" y="113" width="645.32" height="234.5" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Remediation Lift</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Dumbbells compare before and after values</text>
-<line x1="76.68" y1="348.5" x2="724" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="76.68" y1="348.5" x2="724" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="64.68" y="352.5" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">0%</text>
-<line x1="76.68" y1="301.2" x2="724" y2="301.2" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="76.68" y1="301.5" x2="724" y2="301.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="64.68" y="305.2" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">20%</text>
-<line x1="76.68" y1="253.9" x2="724" y2="253.9" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="76.68" y1="253.5" x2="724" y2="253.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="64.68" y="257.9" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">40%</text>
-<line x1="76.68" y1="206.6" x2="724" y2="206.6" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="76.68" y1="206.5" x2="724" y2="206.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="64.68" y="210.6" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">60%</text>
-<line x1="76.68" y1="159.3" x2="724" y2="159.3" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="76.68" y1="159.5" x2="724" y2="159.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="64.68" y="163.3" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">80%</text>
-<line x1="76.68" y1="112" x2="724" y2="112" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<line class="cfx-guide-stroke" x1="76.68" y1="112.5" x2="724" y2="112.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
 <text x="64.68" y="116" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">100%</text>
-<line x1="141.412" y1="112" x2="141.412" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="141.5" y1="112" x2="141.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="141.412" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">SPF</text>
-<line x1="270.876" y1="112" x2="270.876" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="270.5" y1="112" x2="270.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="270.876" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">DMARC</text>
-<line x1="400.34" y1="112" x2="400.34" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="400.5" y1="112" x2="400.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="400.34" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">DNSSEC</text>
-<line x1="529.804" y1="112" x2="529.804" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="529.5" y1="112" x2="529.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="529.804" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">MTA-STS</text>
-<line x1="659.268" y1="112" x2="659.268" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<line class="cfx-guide-stroke" x1="659.5" y1="112" x2="659.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
 <text x="659.268" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">TLS-RPT</text>
-<line x1="76.68" y1="348.5" x2="724" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<line class="cfx-guide-stroke" x1="76.68" y1="348.5" x2="724" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
 <text x="400.34" y="392.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Control</text>
-<line x1="76.68" y1="112" x2="76.68" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<line class="cfx-guide-stroke" x1="76.5" y1="112" x2="76.5" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
 <text transform="translate(26 230.25) rotate(-90)" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Coverage</text>
 <g clip-path="url(#cfxc24a6d1b-plotClip)">
 <g data-cfx-role="dumbbell" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-start="32" data-cfx-end="44" data-cfx-delta="12" role="img" aria-label="32%-44%">

@@ -2,8 +2,10 @@
 <title id="cfx09715cf3-title">MRR Drivers</title>
 <desc id="cfx09715cf3-desc">MRR Drivers with 4 data series: Growth, Growth buffer, Drag, Drag buffer.</desc>
 <defs>
-<style>#cfx09715cf3 text{font-synthesis:none} #cfx09715cf3 .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx09715cf3 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx09715cf3 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx09715cf3 .cfx-interactive-region:hover,#cfx09715cf3 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfx09715cf3 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx09715cf3 .cfx-crisp-stroke,#cfx09715cf3 .cfx-guide-stroke,#cfx09715cf3 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx09715cf3 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx09715cf3 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx09715cf3 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx09715cf3 .cfx-interactive-region:hover,#cfx09715cf3 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx09715cf3 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx09715cf3 .cfx-crisp-stroke,#cfx09715cf3 .cfx-guide-stroke,#cfx09715cf3 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx09715cf3 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx09715cf3 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx09715cf3 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx09715cf3 .cfx-interactive-region:hover,#cfx09715cf3 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfx09715cf3-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.04"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.09"/></filter>
+<linearGradient id="cfx09715cf3-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FDFDFE" stop-opacity="1"/><stop offset="100%" stop-color="#F4F5F7" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx09715cf3-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F8F9FD" stop-opacity="1"/><stop offset="100%" stop-color="#EEF0F5" stop-opacity="1"/></linearGradient>
 <clipPath id="cfx09715cf3-plotClip"><rect x="161.04" y="112" width="722.96" height="274" rx="12"/></clipPath>
 <linearGradient id="cfx09715cf3-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#27C26A" stop-opacity="0.32"/><stop offset="100%" stop-color="#27C26A" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfx09715cf3-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#41C97C" stop-opacity="1"/><stop offset="100%" stop-color="#25B664" stop-opacity="0.94"/></linearGradient>
@@ -25,31 +27,33 @@
 <linearGradient id="cfx09715cf3-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FF3B4F" stop-opacity="1"/><stop offset="100%" stop-color="#FF3B4F" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfx09715cf3">
-<rect data-cfx-role="card-surface" x="14" y="14" width="892" height="452" rx="24" fill="#FCFDFE" filter="url(#cfx09715cf3-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="892" height="452" rx="24" fill="url(#cfx09715cf3-cardSurface)" filter="url(#cfx09715cf3-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="891" height="451" rx="23.5" fill="none" stroke="rgba(199,210,226,0.18)"/>
-<rect x="161.04" y="112" width="722.96" height="274" rx="12" fill="#F6F8FC"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="889" height="449" rx="22.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="161.04" y="112" width="722.96" height="274" rx="12" fill="url(#cfx09715cf3-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="161.54" y="112.5" width="721.96" height="273" rx="11.5" fill="none" stroke="rgba(210,218,232,0.204)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="162.04" y="113" width="720.96" height="272" rx="11" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#1D2430" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="750">MRR Drivers</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="400">Net +$8.0k this month</text>
-<line x1="161.04" y1="112" x2="161.04" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="161.5" y1="112" x2="161.5" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
 <text x="169.04" y="407" text-anchor="start" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">-10</text>
-<line x1="305.632" y1="112" x2="305.632" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="305.5" y1="112" x2="305.5" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
 <text x="305.632" y="407" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">-5</text>
-<line x1="450.224" y1="112" x2="450.224" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="450.5" y1="112" x2="450.5" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
 <text x="450.224" y="407" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">0</text>
-<line x1="594.816" y1="112" x2="594.816" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="594.5" y1="112" x2="594.5" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
 <text x="594.816" y="407" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">5</text>
-<line x1="739.408" y1="112" x2="739.408" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="739.5" y1="112" x2="739.5" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
 <text x="739.408" y="407" text-anchor="middle" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">10</text>
-<line x1="884" y1="112" x2="884" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
+<line class="cfx-guide-stroke" x1="884.5" y1="112" x2="884.5" y2="386" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.72"/>
 <text x="876" y="407" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">15</text>
-<line x1="161.04" y1="351.75" x2="884" y2="351.75" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
+<line class="cfx-guide-stroke" x1="161.04" y1="351.5" x2="884" y2="351.5" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
 <text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="149.04" y="355.75" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="600">Churn</text>
-<line x1="161.04" y1="283.25" x2="884" y2="283.25" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
+<line class="cfx-guide-stroke" x1="161.04" y1="283.5" x2="884" y2="283.5" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
 <text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="149.04" y="287.25" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="600">Contraction</text>
-<line x1="161.04" y1="214.75" x2="884" y2="214.75" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
+<line class="cfx-guide-stroke" x1="161.04" y1="214.5" x2="884" y2="214.5" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
 <text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="149.04" y="218.75" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="600">Expansion</text>
-<line x1="161.04" y1="146.25" x2="884" y2="146.25" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
+<line class="cfx-guide-stroke" x1="161.04" y1="146.5" x2="884" y2="146.5" stroke="rgba(214,222,234,0.557)" stroke-width="1" opacity="0.28"/>
 <text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="149.04" y="150.25" text-anchor="end" fill="#8B93A3" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="600">New Business</text>
 <g clip-path="url(#cfx09715cf3-plotClip)">
 <rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="0" data-cfx-category="1" data-cfx-value="0" data-cfx-base="0" data-cfx-color="#27C26A" x="450.224" y="336.75" width="0" height="30" rx="3" fill="url(#cfx09715cf3-seriesFill0)" opacity="0.94"/>

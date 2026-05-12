@@ -2,8 +2,10 @@
 <title id="cfxeeaf483b-title">Control Coverage Rings</title>
 <desc id="cfxeeaf483b-desc">Control Coverage Rings with 1 data series: Average coverage.</desc>
 <defs>
-<style>#cfxeeaf483b text{font-synthesis:none} #cfxeeaf483b .cfx-crisp-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxeeaf483b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxeeaf483b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxeeaf483b .cfx-interactive-region:hover,#cfxeeaf483b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfxeeaf483b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxeeaf483b .cfx-crisp-stroke,#cfxeeaf483b .cfx-guide-stroke,#cfxeeaf483b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxeeaf483b .cfx-guide-stroke{shape-rendering:crispEdges} #cfxeeaf483b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxeeaf483b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxeeaf483b .cfx-interactive-region:hover,#cfxeeaf483b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfxeeaf483b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxeeaf483b .cfx-crisp-stroke,#cfxeeaf483b .cfx-guide-stroke,#cfxeeaf483b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxeeaf483b .cfx-guide-stroke{shape-rendering:crispEdges} #cfxeeaf483b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxeeaf483b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxeeaf483b .cfx-interactive-region:hover,#cfxeeaf483b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfxeeaf483b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.097"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.22"/></filter>
+<linearGradient id="cfxeeaf483b-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxeeaf483b-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
 <clipPath id="cfxeeaf483b-plotClip"><rect x="76" y="112" width="648" height="254.5" rx="8"/></clipPath>
 <linearGradient id="cfxeeaf483b-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#60A5FA" stop-opacity="0.32"/><stop offset="100%" stop-color="#60A5FA" stop-opacity="0.02"/></linearGradient>
 <linearGradient id="cfxeeaf483b-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#73B0FB" stop-opacity="1"/><stop offset="100%" stop-color="#5A9BEB" stop-opacity="0.94"/></linearGradient>
@@ -17,10 +19,12 @@
 <linearGradient id="cfxeeaf483b-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2DD4BF" stop-opacity="1"/><stop offset="100%" stop-color="#2DD4BF" stop-opacity="0.78"/></linearGradient>
 </defs>
 <g id="cfxeeaf483b">
-<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="#101827" filter="url(#cfxeeaf483b-softShadow)"/>
+<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="url(#cfxeeaf483b-cardSurface)" filter="url(#cfxeeaf483b-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="731" height="431" rx="11.5" fill="none" stroke="rgba(148,163,184,0.133)"/>
-<rect x="76" y="112" width="648" height="254.5" rx="8" fill="#080D18"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="729" height="429" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76" y="112" width="648" height="254.5" rx="8" fill="url(#cfxeeaf483b-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="647" height="253.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.11)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="646" height="252.5" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Control Coverage Rings</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Radial bars compare core security control completion</text>
 <g data-cfx-role="radial-bar-chart" data-cfx-radius-scale="1" data-cfx-stroke-scale="1">
