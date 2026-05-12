@@ -285,7 +285,15 @@ internal static partial class SmokeTests {
             "backup",
             "network-security",
             "cloud-productivity",
-            "network-infrastructure"
+            "network-infrastructure",
+            "chartforgex-geo-incidents-world-events",
+            "chartforgex-charts-analytics",
+            "chartforgex-topology-network",
+            "chartforgex-security-risk-certificates",
+            "chartforgex-data-ownership-intelligence",
+            "chartforgex-people-org-workflow",
+            "chartforgex-identity-directory",
+            "chartforgex-microsoft-365-collaboration"
         };
         var catalog = new TopologyIconCatalog();
         foreach (var packId in packIds) {
@@ -319,6 +327,14 @@ internal static partial class SmokeTests {
         Assert(catalog.Resolve("network-infrastructure:rack-switch") != null, "Curated network infrastructure pack should include rack switch artwork.");
         Assert(catalog.Resolve("network-infrastructure:edge-router") != null, "Curated network infrastructure pack should include router artwork.");
         Assert(catalog.Resolve("network-infrastructure:patch-panel") != null, "Curated network infrastructure pack should include patch panel artwork.");
+        Assert(catalog.Resolve("chartforgex-geo-incidents-world-events:critical-incident") != null, "Curated geo incidents pack should include critical incident artwork.");
+        Assert(catalog.Resolve("chartforgex-charts-analytics:donut-chart") != null, "Curated charts analytics pack should include donut chart artwork.");
+        Assert(catalog.Resolve("chartforgex-topology-network:kubernetes-cluster") != null, "Curated topology network pack should include Kubernetes cluster artwork.");
+        Assert(catalog.Resolve("chartforgex-security-risk-certificates:certificate-chain") != null, "Curated security risk pack should include certificate chain artwork.");
+        Assert(catalog.Resolve("chartforgex-data-ownership-intelligence:business-owner") != null, "Curated data ownership pack should include business owner artwork.");
+        Assert(catalog.Resolve("chartforgex-people-org-workflow:approval") != null, "Curated people workflow pack should include approval artwork.");
+        Assert(catalog.Resolve("chartforgex-identity-directory:conditional-access") != null, "Curated identity directory pack should include Conditional Access artwork.");
+        Assert(catalog.Resolve("chartforgex-microsoft-365-collaboration:exchange-mailbox") != null, "Curated Microsoft 365 collaboration pack should include Exchange mailbox artwork.");
 
         var palette = catalog.ToPaletteChart(new TopologyIconPaletteOptions {
             Id = "curated-pack-palette",

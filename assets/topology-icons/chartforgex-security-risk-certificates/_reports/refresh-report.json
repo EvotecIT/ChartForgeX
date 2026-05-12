@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-12T09:14:23.2818987Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "chartforgex-security-risk-certificates",
+  "iconCount": 61,
+  "previewSize": 128,
+  "previewPngFiles": 61,
+  "previewFailures": 0,
+  "issues": []
+}

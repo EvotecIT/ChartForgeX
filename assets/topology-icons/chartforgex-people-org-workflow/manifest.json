@@ -1,0 +1,1443 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-people-org-workflow",
+  "label": "ChartForgeX People, Org & Workflow",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "people", "organization", "workflow", "hr", "approvals", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "People, organization, approval, process, collaboration, and HR workflow symbols for org charts and operational diagrams.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "person",
+      "label": "Person",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "PERS",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/person.svg",
+        "previewPath": "previews/person.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "person", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "manager",
+      "label": "Manager",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "MANA",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/manager.svg",
+        "previewPath": "previews/manager.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "manager", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "employee",
+      "label": "Employee",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "EMPL",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/employee.svg",
+        "previewPath": "previews/employee.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "employee", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "team",
+      "label": "Team",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "TEAM",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/team.svg",
+        "previewPath": "previews/team.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "team", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "leadership",
+      "label": "Leadership",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "LEAD",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/leadership.svg",
+        "previewPath": "previews/leadership.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "leadership", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "contractor",
+      "label": "Contractor",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "CONT",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/contractor.svg",
+        "previewPath": "previews/contractor.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "contractor", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "guest",
+      "label": "Guest",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "GUES",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/guest.svg",
+        "previewPath": "previews/guest.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "guest", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "role",
+      "label": "Role",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ROLE",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/role.svg",
+        "previewPath": "previews/role.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "role", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "responsibility",
+      "label": "Responsibility",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RESP",
+      "color": "#2563EB",
+      "category": "People & Roles",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/responsibility.svg",
+        "previewPath": "previews/responsibility.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "people-roles", "responsibility", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "department",
+      "label": "Department",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "DEPA",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/department.svg",
+        "previewPath": "previews/department.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "department", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "organization",
+      "label": "Organization",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "ORGA",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/organization.svg",
+        "previewPath": "previews/organization.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "organization", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "reporting-line",
+      "label": "Reporting Line",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "RL",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/reporting-line.svg",
+        "previewPath": "previews/reporting-line.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "reporting-line", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "matrix-team",
+      "label": "Matrix Team",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "MT",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/matrix-team.svg",
+        "previewPath": "previews/matrix-team.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "matrix-team", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "group-membership",
+      "label": "Group Membership",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "GM",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/group-membership.svg",
+        "previewPath": "previews/group-membership.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "group-membership", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "cost-center",
+      "label": "Cost Center",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "CC",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/cost-center.svg",
+        "previewPath": "previews/cost-center.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "cost-center", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "location",
+      "label": "Location",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "LOCA",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/location.svg",
+        "previewPath": "previews/location.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "location", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "business-unit",
+      "label": "Business Unit",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "BU",
+      "color": "#2563EB",
+      "category": "Organization & Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/business-unit.svg",
+        "previewPath": "previews/business-unit.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "organization-structure", "business-unit", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "hiring",
+      "label": "Hiring",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "HIRI",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/hiring.svg",
+        "previewPath": "previews/hiring.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "hiring", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "onboarding",
+      "label": "Onboarding",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ONBO",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/onboarding.svg",
+        "previewPath": "previews/onboarding.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "onboarding", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "offboarding",
+      "label": "Offboarding",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "OFFB",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/offboarding.svg",
+        "previewPath": "previews/offboarding.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "offboarding", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "leave",
+      "label": "Leave",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "LEAV",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/leave.svg",
+        "previewPath": "previews/leave.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "leave", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "presence",
+      "label": "Presence",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PRES",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/presence.svg",
+        "previewPath": "previews/presence.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "presence", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "availability",
+      "label": "Availability",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AVAI",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/availability.svg",
+        "previewPath": "previews/availability.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "availability", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CALE",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/calendar.svg",
+        "previewPath": "previews/calendar.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "calendar", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "skills",
+      "label": "Skills",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SKIL",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/skills.svg",
+        "previewPath": "previews/skills.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "skills", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "training",
+      "label": "Training",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TRAI",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/training.svg",
+        "previewPath": "previews/training.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "training", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "evaluation",
+      "label": "Evaluation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EVAL",
+      "color": "#2563EB",
+      "category": "Lifecycle & People Operations",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/evaluation.svg",
+        "previewPath": "previews/evaluation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "lifecycle-people-operations", "evaluation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "goal",
+      "label": "Goal",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "GOAL",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/goal.svg",
+        "previewPath": "previews/goal.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "goal", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "kpi",
+      "label": "KPI",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "KPI",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/kpi.svg",
+        "previewPath": "previews/kpi.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "kpi", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "evaluation-2",
+      "label": "Evaluation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EVAL",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/evaluation-2.svg",
+        "previewPath": "previews/evaluation-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "evaluation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "skills-2",
+      "label": "Skills",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SKIL",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/skills-2.svg",
+        "previewPath": "previews/skills-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "skills", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "training-2",
+      "label": "Training",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TRAI",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/training-2.svg",
+        "previewPath": "previews/training-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "training", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DASH",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dashboard.svg",
+        "previewPath": "previews/dashboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "dashboard", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "progress",
+      "label": "Progress",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PROG",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/progress.svg",
+        "previewPath": "previews/progress.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "progress", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "scorecard",
+      "label": "Scorecard",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SCOR",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/scorecard.svg",
+        "previewPath": "previews/scorecard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "scorecard", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "feedback",
+      "label": "Feedback",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FEED",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/feedback.svg",
+        "previewPath": "previews/feedback.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "feedback", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "recognition",
+      "label": "Recognition",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RECO",
+      "color": "#2563EB",
+      "category": "Goals & Performance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/recognition.svg",
+        "previewPath": "previews/recognition.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "goals-performance", "recognition", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "approval",
+      "label": "Approval",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "APPR",
+      "color": "#F97316",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/approval.svg",
+        "previewPath": "previews/approval.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "approval", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "rejection",
+      "label": "Rejection",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "REJE",
+      "color": "#EF4444",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/rejection.svg",
+        "previewPath": "previews/rejection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "rejection", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "escalation",
+      "label": "Escalation",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "ESCA",
+      "color": "#F97316",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/escalation.svg",
+        "previewPath": "previews/escalation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "escalation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "handover",
+      "label": "Handover",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "HAND",
+      "color": "#F97316",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/handover.svg",
+        "previewPath": "previews/handover.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "handover", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "decision",
+      "label": "Decision",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "DECI",
+      "color": "#F97316",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/decision.svg",
+        "previewPath": "previews/decision.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "decision", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "branch",
+      "label": "Branch",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "BRAN",
+      "color": "#F97316",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/branch.svg",
+        "previewPath": "previews/branch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "branch", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "checklist",
+      "label": "Checklist",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "CHEC",
+      "color": "#F97316",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/checklist.svg",
+        "previewPath": "previews/checklist.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "checklist", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "task",
+      "label": "Task",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "TASK",
+      "color": "#F97316",
+      "category": "Approvals & Decisions",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/task.svg",
+        "previewPath": "previews/task.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "approvals-decisions", "task", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "workflow",
+      "label": "Workflow",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "WORK",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/workflow.svg",
+        "previewPath": "previews/workflow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "workflow", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "process",
+      "label": "Process",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "PROC",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/process.svg",
+        "previewPath": "previews/process.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "process", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "decision-2",
+      "label": "Decision",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "DECI",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/decision-2.svg",
+        "previewPath": "previews/decision-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "decision", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "branch-2",
+      "label": "Branch",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "BRAN",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/branch-2.svg",
+        "previewPath": "previews/branch-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "branch", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "checklist-2",
+      "label": "Checklist",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "CHEC",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/checklist-2.svg",
+        "previewPath": "previews/checklist-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "checklist", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "task-2",
+      "label": "Task",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "TASK",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/task-2.svg",
+        "previewPath": "previews/task-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "task", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "assignment",
+      "label": "Assignment",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "ASSI",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/assignment.svg",
+        "previewPath": "previews/assignment.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "assignment", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ticket",
+      "label": "Ticket",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "TICK",
+      "color": "#2563EB",
+      "category": "Workflow & Processes",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ticket.svg",
+        "previewPath": "previews/ticket.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflow-processes", "ticket", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "communication",
+      "label": "Communication",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "COMM",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/communication.svg",
+        "previewPath": "previews/communication.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "communication", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "meeting",
+      "label": "Meeting",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "MEET",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/meeting.svg",
+        "previewPath": "previews/meeting.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "meeting", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "collaboration",
+      "label": "Collaboration",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "COLL",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/collaboration.svg",
+        "previewPath": "previews/collaboration.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "collaboration", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "contact-card",
+      "label": "Contact Card",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "CC",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/contact-card.svg",
+        "previewPath": "previews/contact-card.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "contact-card", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "announcement",
+      "label": "Announcement",
+      "nodeKind": "Namespace",
+      "shape": "Certificate",
+      "symbol": "ANNO",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/announcement.svg",
+        "previewPath": "previews/announcement.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "announcement", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "broadcast",
+      "label": "Broadcast",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "BROA",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/broadcast.svg",
+        "previewPath": "previews/broadcast.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "broadcast", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "comment",
+      "label": "Comment",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "COMM",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/comment.svg",
+        "previewPath": "previews/comment.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "comment", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "mention",
+      "label": "Mention",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "MENT",
+      "color": "#2563EB",
+      "category": "Communication & Collaboration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mention.svg",
+        "previewPath": "previews/mention.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "communication-collaboration", "mention", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "employee-profile",
+      "label": "Employee Profile",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "EP",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/employee-profile.svg",
+        "previewPath": "previews/employee-profile.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "employee-profile", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "directory",
+      "label": "Directory",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DIRE",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/directory.svg",
+        "previewPath": "previews/directory.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "directory", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "org-chart",
+      "label": "Org Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "OC",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/org-chart.svg",
+        "previewPath": "previews/org-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "org-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "headcount",
+      "label": "Headcount",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "HEAD",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/headcount.svg",
+        "previewPath": "previews/headcount.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "headcount", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "bench",
+      "label": "Bench",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "BENC",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/bench.svg",
+        "previewPath": "previews/bench.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "bench", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "compensation",
+      "label": "Compensation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "COMP",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/compensation.svg",
+        "previewPath": "previews/compensation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "compensation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "benefits",
+      "label": "Benefits",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "BENE",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/benefits.svg",
+        "previewPath": "previews/benefits.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "benefits", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "documents",
+      "label": "Documents",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DOCU",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/documents.svg",
+        "previewPath": "previews/documents.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "documents", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "policy",
+      "label": "Policy",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "POLI",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/policy.svg",
+        "previewPath": "previews/policy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "policy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "survey",
+      "label": "Survey",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SURV",
+      "color": "#2563EB",
+      "category": "HR & People Data",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/survey.svg",
+        "previewPath": "previews/survey.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "hr-people-data", "survey", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

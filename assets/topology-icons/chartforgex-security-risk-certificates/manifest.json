@@ -1,0 +1,1243 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-security-risk-certificates",
+  "label": "ChartForgeX Security, Risk & Certificates",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "security", "risk", "certificates", "compliance", "evidence", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Security posture, risk, certificate, trust, compliance, evidence, and incident-response symbols.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "shield",
+      "label": "Shield",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SHIE",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/shield.svg",
+        "previewPath": "previews/shield.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "shield", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "secure",
+      "label": "Secure",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SECU",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/secure.svg",
+        "previewPath": "previews/secure.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "secure", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "lock",
+      "label": "Lock",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "LOCK",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/lock.svg",
+        "previewPath": "previews/lock.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "lock", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "unlock",
+      "label": "Unlock",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "UNLO",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/unlock.svg",
+        "previewPath": "previews/unlock.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "unlock", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "key",
+      "label": "Key",
+      "nodeKind": "Namespace",
+      "shape": "Certificate",
+      "symbol": "KEY",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/key.svg",
+        "previewPath": "previews/key.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "key", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "secret",
+      "label": "Secret",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SECR",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/secret.svg",
+        "previewPath": "previews/secret.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "secret", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "policy",
+      "label": "Policy",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "POLI",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/policy.svg",
+        "previewPath": "previews/policy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "policy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "isolation",
+      "label": "Isolation",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "ISOL",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/isolation.svg",
+        "previewPath": "previews/isolation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "isolation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "safe",
+      "label": "Safe",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SAFE",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/safe.svg",
+        "previewPath": "previews/safe.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "safe", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "secure-channel",
+      "label": "Secure Channel",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SC",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/secure-channel.svg",
+        "previewPath": "previews/secure-channel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "secure-channel", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "encryption",
+      "label": "Encryption",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "ENCR",
+      "color": "#F97316",
+      "category": "Identity & Access Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/encryption.svg",
+        "previewPath": "previews/encryption.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "identity-access-foundation", "encryption", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "certificate",
+      "label": "Certificate",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CERT",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/certificate.svg",
+        "previewPath": "previews/certificate.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "certificate", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "certificate-chain",
+      "label": "Certificate Chain",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CC",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/certificate-chain.svg",
+        "previewPath": "previews/certificate-chain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "certificate-chain", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "trust-chain",
+      "label": "Trust Chain",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "TC",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/trust-chain.svg",
+        "previewPath": "previews/trust-chain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "trust-chain", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ca",
+      "label": "CA",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CA",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ca.svg",
+        "previewPath": "previews/ca.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "ca", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "root-ca",
+      "label": "Root CA",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "RC",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/root-ca.svg",
+        "previewPath": "previews/root-ca.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "root-ca", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "intermediate-ca",
+      "label": "Intermediate CA",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "IC",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/intermediate-ca.svg",
+        "previewPath": "previews/intermediate-ca.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "intermediate-ca", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "tls",
+      "label": "TLS",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "TLS",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/tls.svg",
+        "previewPath": "previews/tls.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "tls", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "fingerprint",
+      "label": "Fingerprint",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "FING",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/fingerprint.svg",
+        "previewPath": "previews/fingerprint.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "fingerprint", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "signature",
+      "label": "Signature",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SIGN",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/signature.svg",
+        "previewPath": "previews/signature.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "signature", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "expiry",
+      "label": "Expiry",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "EXPI",
+      "color": "#F97316",
+      "category": "Certificates & Trust",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/expiry.svg",
+        "previewPath": "previews/expiry.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-trust", "expiry", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "alert-triangle",
+      "label": "Alert Triangle",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AT",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/alert-triangle.svg",
+        "previewPath": "previews/alert-triangle.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "alert-triangle", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "critical-finding",
+      "label": "Critical Finding",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CF",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/critical-finding.svg",
+        "previewPath": "previews/critical-finding.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "critical-finding", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "warning",
+      "label": "Warning",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "WARN",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/warning.svg",
+        "previewPath": "previews/warning.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "warning", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "incident",
+      "label": "Incident",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "INCI",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/incident.svg",
+        "previewPath": "previews/incident.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "incident", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "investigation",
+      "label": "Investigation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "INVE",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/investigation.svg",
+        "previewPath": "previews/investigation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "investigation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "watchlist",
+      "label": "Watchlist",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "WATC",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/watchlist.svg",
+        "previewPath": "previews/watchlist.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "watchlist", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "severity-badge",
+      "label": "Severity Badge",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SB",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/severity-badge.svg",
+        "previewPath": "previews/severity-badge.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "severity-badge", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "risk-score",
+      "label": "Risk Score",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RS",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/risk-score.svg",
+        "previewPath": "previews/risk-score.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "risk-score", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "threat",
+      "label": "Threat",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "THRE",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/threat.svg",
+        "previewPath": "previews/threat.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "threat", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "malware",
+      "label": "Malware",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "MALW",
+      "color": "#EF4444",
+      "category": "Findings, Alerts & Incidents",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/malware.svg",
+        "previewPath": "previews/malware.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "findings-alerts-incidents", "malware", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "vulnerability",
+      "label": "Vulnerability",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "VULN",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/vulnerability.svg",
+        "previewPath": "previews/vulnerability.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "vulnerability", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "exposure",
+      "label": "Exposure",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EXPO",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/exposure.svg",
+        "previewPath": "previews/exposure.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "exposure", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "risk-score-2",
+      "label": "Risk Score",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RS",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/risk-score-2.svg",
+        "previewPath": "previews/risk-score-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "risk-score", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "threat-2",
+      "label": "Threat",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "THRE",
+      "color": "#EF4444",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/threat-2.svg",
+        "previewPath": "previews/threat-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "threat", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "defender",
+      "label": "Defender",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DEFE",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/defender.svg",
+        "previewPath": "previews/defender.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "defender", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "isolation-2",
+      "label": "Isolation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ISOL",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/isolation-2.svg",
+        "previewPath": "previews/isolation-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "isolation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "secure-channel-2",
+      "label": "Secure Channel",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SC",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/secure-channel-2.svg",
+        "previewPath": "previews/secure-channel-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "secure-channel", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "encryption-2",
+      "label": "Encryption",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ENCR",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/encryption-2.svg",
+        "previewPath": "previews/encryption-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "encryption", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "policy-2",
+      "label": "Policy",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "POLI",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/policy-2.svg",
+        "previewPath": "previews/policy-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "policy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "safe-2",
+      "label": "Safe",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SAFE",
+      "color": "#F97316",
+      "category": "Risk & Exposure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/safe-2.svg",
+        "previewPath": "previews/safe-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "risk-exposure", "safe", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "revocation",
+      "label": "Revocation",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "REVO",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/revocation.svg",
+        "previewPath": "previews/revocation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "revocation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "crl",
+      "label": "CRL",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CRL",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/crl.svg",
+        "previewPath": "previews/crl.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "crl", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ocsp",
+      "label": "OCSP",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "OCSP",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ocsp.svg",
+        "previewPath": "previews/ocsp.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "ocsp", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "expiry-2",
+      "label": "Expiry",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "EXPI",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/expiry-2.svg",
+        "previewPath": "previews/expiry-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "expiry", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "trust-chain-2",
+      "label": "Trust Chain",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "TC",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/trust-chain-2.svg",
+        "previewPath": "previews/trust-chain-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "trust-chain", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "fingerprint-2",
+      "label": "Fingerprint",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "FING",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/fingerprint-2.svg",
+        "previewPath": "previews/fingerprint-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "fingerprint", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "signature-2",
+      "label": "Signature",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SIGN",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/signature-2.svg",
+        "previewPath": "previews/signature-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "signature", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "trust-chain-3",
+      "label": "Trust Chain",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "TC",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/trust-chain-3.svg",
+        "previewPath": "previews/trust-chain-3.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "trust-chain", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ca-2",
+      "label": "CA",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CA",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ca-2.svg",
+        "previewPath": "previews/ca-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "ca", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "root-ca-2",
+      "label": "Root CA",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "RC",
+      "color": "#F97316",
+      "category": "Certificate Lifecycle & Status",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/root-ca-2.svg",
+        "previewPath": "previews/root-ca-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificate-lifecycle-status", "root-ca", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "compliance",
+      "label": "Compliance",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "COMP",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/compliance.svg",
+        "previewPath": "previews/compliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "compliance", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "audit",
+      "label": "Audit",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AUDI",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/audit.svg",
+        "previewPath": "previews/audit.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "audit", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "evidence-file",
+      "label": "Evidence File",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EF",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/evidence-file.svg",
+        "previewPath": "previews/evidence-file.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "evidence-file", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "evidence-bundle",
+      "label": "Evidence Bundle",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EB",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/evidence-bundle.svg",
+        "previewPath": "previews/evidence-bundle.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "evidence-bundle", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "forensics",
+      "label": "Forensics",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FORE",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/forensics.svg",
+        "previewPath": "previews/forensics.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "forensics", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "siem",
+      "label": "SIEM",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SIEM",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/siem.svg",
+        "previewPath": "previews/siem.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "siem", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "timeline",
+      "label": "Timeline",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TIME",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/timeline.svg",
+        "previewPath": "previews/timeline.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "timeline", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ioc",
+      "label": "IOC",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "IOC",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ioc.svg",
+        "previewPath": "previews/ioc.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "ioc", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "geo-alert",
+      "label": "Geo Alert",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "GA",
+      "color": "#EF4444",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/geo-alert.svg",
+        "previewPath": "previews/geo-alert.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "geo-alert", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "investigation-2",
+      "label": "Investigation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "INVE",
+      "color": "#F97316",
+      "category": "Compliance, Evidence & Forensics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/investigation-2.svg",
+        "previewPath": "previews/investigation-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-evidence-forensics", "investigation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

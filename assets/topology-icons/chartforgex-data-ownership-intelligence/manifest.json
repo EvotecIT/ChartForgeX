@@ -1,0 +1,1623 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-data-ownership-intelligence",
+  "label": "ChartForgeX Data, Ownership & Intelligence",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "data", "ownership", "intelligence", "governance", "correlation", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Dataset, ownership, entity, correlation, reporting, integration, and governance icons for intelligence-driven evidence maps.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "database",
+      "label": "Database",
+      "nodeKind": "Namespace",
+      "shape": "Database",
+      "symbol": "DATA",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/database.svg",
+        "previewPath": "previews/database.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "database", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dataset",
+      "label": "Dataset",
+      "nodeKind": "Namespace",
+      "shape": "Database",
+      "symbol": "DATA",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dataset.svg",
+        "previewPath": "previews/dataset.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "dataset", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "table",
+      "label": "Table",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "TABL",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/table.svg",
+        "previewPath": "previews/table.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "table", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "record",
+      "label": "Record",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "RECO",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/record.svg",
+        "previewPath": "previews/record.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "record", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "column",
+      "label": "Column",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "COLU",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/column.svg",
+        "previewPath": "previews/column.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "column", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "field",
+      "label": "Field",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "FIEL",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/field.svg",
+        "previewPath": "previews/field.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "field", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "raw-data",
+      "label": "Raw Data",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "RD",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/raw-data.svg",
+        "previewPath": "previews/raw-data.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "raw-data", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "document",
+      "label": "Document",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "DOCU",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/document.svg",
+        "previewPath": "previews/document.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "document", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "source",
+      "label": "Source",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SOUR",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/source.svg",
+        "previewPath": "previews/source.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "source", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "profile-card",
+      "label": "Profile Card",
+      "nodeKind": "Namespace",
+      "shape": "Certificate",
+      "symbol": "PC",
+      "color": "#16A34A",
+      "category": "Data Foundation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/profile-card.svg",
+        "previewPath": "previews/profile-card.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "data-foundation", "profile-card", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ip-address",
+      "label": "IP Address",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "IA",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ip-address.svg",
+        "previewPath": "previews/ip-address.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "ip-address", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "domain",
+      "label": "Domain",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "DOMA",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/domain.svg",
+        "previewPath": "previews/domain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "domain", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "mx-record",
+      "label": "MX Record",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "MR",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mx-record.svg",
+        "previewPath": "previews/mx-record.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "mx-record", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dns-record",
+      "label": "DNS Record",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "DR",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dns-record.svg",
+        "previewPath": "previews/dns-record.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "dns-record", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "host",
+      "label": "Host",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "HOST",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/host.svg",
+        "previewPath": "previews/host.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "host", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "asn",
+      "label": "ASN",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "ASN",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/asn.svg",
+        "previewPath": "previews/asn.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "asn", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "whois",
+      "label": "WHOIS",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "WHOI",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/whois.svg",
+        "previewPath": "previews/whois.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "whois", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "registrar",
+      "label": "Registrar",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "REGI",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/registrar.svg",
+        "previewPath": "previews/registrar.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "registrar", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dns",
+      "label": "DNS",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "DNS",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dns.svg",
+        "previewPath": "previews/dns.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "dns", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "reputation",
+      "label": "Reputation",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "REPU",
+      "color": "#16A34A",
+      "category": "Network & Internet Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/reputation.svg",
+        "previewPath": "previews/reputation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-internet-intelligence", "reputation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "owner",
+      "label": "Owner",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "OWNE",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/owner.svg",
+        "previewPath": "previews/owner.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "owner", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "organization",
+      "label": "Organization",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "ORGA",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/organization.svg",
+        "previewPath": "previews/organization.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "organization", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "CONT",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/contact.svg",
+        "previewPath": "previews/contact.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "contact", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "business-owner",
+      "label": "Business Owner",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "BO",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/business-owner.svg",
+        "previewPath": "previews/business-owner.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "business-owner", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "technical-owner",
+      "label": "Technical Owner",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "TO",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/technical-owner.svg",
+        "previewPath": "previews/technical-owner.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "technical-owner", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "asset",
+      "label": "Asset",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "ASSE",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/asset.svg",
+        "previewPath": "previews/asset.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "asset", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "entity",
+      "label": "Entity",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "ENTI",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/entity.svg",
+        "previewPath": "previews/entity.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "entity", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "linked-entity",
+      "label": "Linked Entity",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "LE",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/linked-entity.svg",
+        "previewPath": "previews/linked-entity.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "linked-entity", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "cluster",
+      "label": "Cluster",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "CLUS",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/cluster.svg",
+        "previewPath": "previews/cluster.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "cluster", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "relation",
+      "label": "Relation",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "RELA",
+      "color": "#16A34A",
+      "category": "Ownership & Entities",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/relation.svg",
+        "previewPath": "previews/relation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "ownership-entities", "relation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "correlation",
+      "label": "Correlation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "CORR",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/correlation.svg",
+        "previewPath": "previews/correlation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "correlation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "match",
+      "label": "Match",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "MATC",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/match.svg",
+        "previewPath": "previews/match.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "match", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "confidence",
+      "label": "Confidence",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "CONF",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/confidence.svg",
+        "previewPath": "previews/confidence.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "confidence", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "evidence",
+      "label": "Evidence",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EVID",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/evidence.svg",
+        "previewPath": "previews/evidence.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "evidence", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "enrichment",
+      "label": "Enrichment",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ENRI",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/enrichment.svg",
+        "previewPath": "previews/enrichment.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "enrichment", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "reputation-2",
+      "label": "Reputation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "REPU",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/reputation-2.svg",
+        "previewPath": "previews/reputation-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "reputation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "finding",
+      "label": "Finding",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FIND",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/finding.svg",
+        "previewPath": "previews/finding.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "finding", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "domain-insight",
+      "label": "Domain Insight",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "DI",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/domain-insight.svg",
+        "previewPath": "previews/domain-insight.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "domain-insight", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "risk-score",
+      "label": "Risk Score",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RS",
+      "color": "#F97316",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/risk-score.svg",
+        "previewPath": "previews/risk-score.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "risk-score", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "signal",
+      "label": "Signal",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SIGN",
+      "color": "#16A34A",
+      "category": "Intelligence & Correlation",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/signal.svg",
+        "previewPath": "previews/signal.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "intelligence-correlation", "signal", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "timeline",
+      "label": "Timeline",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "TIME",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/timeline.svg",
+        "previewPath": "previews/timeline.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "timeline", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "search",
+      "label": "Search",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "SEAR",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/search.svg",
+        "previewPath": "previews/search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "search", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "drilldown",
+      "label": "Drilldown",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "DRIL",
+      "color": "#EF4444",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/drilldown.svg",
+        "previewPath": "previews/drilldown.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "drilldown", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "compare",
+      "label": "Compare",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "COMP",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/compare.svg",
+        "previewPath": "previews/compare.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "compare", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "saved-view",
+      "label": "Saved View",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "SV",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/saved-view.svg",
+        "previewPath": "previews/saved-view.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "saved-view", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "filter",
+      "label": "Filter",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "FILT",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/filter.svg",
+        "previewPath": "previews/filter.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "filter", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "pivot",
+      "label": "Pivot",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "PIVO",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/pivot.svg",
+        "previewPath": "previews/pivot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "pivot", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "group",
+      "label": "Group",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "GROU",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/group.svg",
+        "previewPath": "previews/group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "group", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sort",
+      "label": "Sort",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "SORT",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sort.svg",
+        "previewPath": "previews/sort.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "sort", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "tags",
+      "label": "Tags",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "TAGS",
+      "color": "#16A34A",
+      "category": "Workflows & Analysis",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/tags.svg",
+        "previewPath": "previews/tags.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "workflows-analysis", "tags", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "report",
+      "label": "Report",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "REPO",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/report.svg",
+        "previewPath": "previews/report.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "report", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "export-bundle",
+      "label": "Export Bundle",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "EB",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/export-bundle.svg",
+        "previewPath": "previews/export-bundle.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "export-bundle", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "evidence-bundle",
+      "label": "Evidence Bundle",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "EB",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/evidence-bundle.svg",
+        "previewPath": "previews/evidence-bundle.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "evidence-bundle", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "share",
+      "label": "Share",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SHAR",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/share.svg",
+        "previewPath": "previews/share.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "share", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "print",
+      "label": "Print",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "PRIN",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/print.svg",
+        "previewPath": "previews/print.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "print", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "DASH",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dashboard.svg",
+        "previewPath": "previews/dashboard.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "dashboard", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "chart",
+      "label": "Chart",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "CHAR",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/chart.svg",
+        "previewPath": "previews/chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "summary",
+      "label": "Summary",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SUMM",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/summary.svg",
+        "previewPath": "previews/summary.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "summary", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "alert",
+      "label": "Alert",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "ALER",
+      "color": "#EF4444",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/alert.svg",
+        "previewPath": "previews/alert.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "alert", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "notification",
+      "label": "Notification",
+      "nodeKind": "Namespace",
+      "shape": "Certificate",
+      "symbol": "NOTI",
+      "color": "#16A34A",
+      "category": "Outputs & Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/notification.svg",
+        "previewPath": "previews/notification.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "outputs-reporting", "notification", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "api",
+      "label": "API",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "API",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/api.svg",
+        "previewPath": "previews/api.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "api", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "connector",
+      "label": "Connector",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "CONN",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/connector.svg",
+        "previewPath": "previews/connector.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "connector", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "webhook",
+      "label": "Webhook",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "WEBH",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/webhook.svg",
+        "previewPath": "previews/webhook.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "webhook", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "import",
+      "label": "Import",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "IMPO",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/import.svg",
+        "previewPath": "previews/import.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "import", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "export",
+      "label": "Export",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "EXPO",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/export.svg",
+        "previewPath": "previews/export.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "export", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sync",
+      "label": "Sync",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "SYNC",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sync.svg",
+        "previewPath": "previews/sync.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "sync", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "pipeline",
+      "label": "Pipeline",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "PIPE",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/pipeline.svg",
+        "previewPath": "previews/pipeline.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "pipeline", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "job",
+      "label": "Job",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "JOB",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/job.svg",
+        "previewPath": "previews/job.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "job", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "schedule",
+      "label": "Schedule",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "SCHE",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/schedule.svg",
+        "previewPath": "previews/schedule.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "schedule", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "queue",
+      "label": "Queue",
+      "nodeKind": "Database",
+      "shape": "Badge",
+      "symbol": "QUEU",
+      "color": "#16A34A",
+      "category": "Integrations & Connectivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/queue.svg",
+        "previewPath": "previews/queue.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "integrations-connectivity", "queue", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "access",
+      "label": "Access",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ACCE",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/access.svg",
+        "previewPath": "previews/access.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "access", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "role",
+      "label": "Role",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ROLE",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/role.svg",
+        "previewPath": "previews/role.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "role", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "permission",
+      "label": "Permission",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PERM",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/permission.svg",
+        "previewPath": "previews/permission.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "permission", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "lock",
+      "label": "Lock",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "LOCK",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/lock.svg",
+        "previewPath": "previews/lock.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "lock", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "audit-log",
+      "label": "Audit Log",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AL",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/audit-log.svg",
+        "previewPath": "previews/audit-log.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "audit-log", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "data-lineage",
+      "label": "Data Lineage",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DL",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/data-lineage.svg",
+        "previewPath": "previews/data-lineage.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "data-lineage", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "provenance",
+      "label": "Provenance",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PROV",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/provenance.svg",
+        "previewPath": "previews/provenance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "provenance", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "retention",
+      "label": "Retention",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RETE",
+      "color": "#F97316",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/retention.svg",
+        "previewPath": "previews/retention.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "retention", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "privacy",
+      "label": "Privacy",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PRIV",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/privacy.svg",
+        "previewPath": "previews/privacy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "privacy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "compliance",
+      "label": "Compliance",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "COMP",
+      "color": "#16A34A",
+      "category": "Security & Governance",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/compliance.svg",
+        "previewPath": "previews/compliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-governance", "compliance", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

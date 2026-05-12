@@ -1,0 +1,923 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-geo-incidents-world-events",
+  "label": "ChartForgeX Geo, Incidents & World Events",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "geo", "incidents", "world-events", "maps", "monitoring", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Generic geography, routing, natural hazard, incident response, monitoring, sensor, and logistics symbols for maps and situational-awareness charts.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "globe",
+      "label": "Globe",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "GLOB",
+      "color": "#EF4444",
+      "category": "Global & Places",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/globe.svg",
+        "previewPath": "previews/globe.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "global-places", "globe", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "world-map",
+      "label": "World Map",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "WM",
+      "color": "#EF4444",
+      "category": "Global & Places",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/world-map.svg",
+        "previewPath": "previews/world-map.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "global-places", "world-map", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "region",
+      "label": "Region",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "REGI",
+      "color": "#EF4444",
+      "category": "Global & Places",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/region.svg",
+        "previewPath": "previews/region.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "global-places", "region", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "country",
+      "label": "Country",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "COUN",
+      "color": "#EF4444",
+      "category": "Global & Places",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/country.svg",
+        "previewPath": "previews/country.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "global-places", "country", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "city",
+      "label": "City",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "CITY",
+      "color": "#EF4444",
+      "category": "Global & Places",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/city.svg",
+        "previewPath": "previews/city.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "global-places", "city", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "geo-pin",
+      "label": "Geo Pin",
+      "nodeKind": "Namespace",
+      "shape": "Site",
+      "symbol": "GP",
+      "color": "#EF4444",
+      "category": "Location & Routing",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/geo-pin.svg",
+        "previewPath": "previews/geo-pin.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "location-routing", "geo-pin", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "location-cluster",
+      "label": "Location Cluster",
+      "nodeKind": "Namespace",
+      "shape": "Site",
+      "symbol": "LC",
+      "color": "#EF4444",
+      "category": "Location & Routing",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/location-cluster.svg",
+        "previewPath": "previews/location-cluster.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "location-routing", "location-cluster", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "route",
+      "label": "Route",
+      "nodeKind": "Namespace",
+      "shape": "Router",
+      "symbol": "ROUT",
+      "color": "#EF4444",
+      "category": "Location & Routing",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/route.svg",
+        "previewPath": "previews/route.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "location-routing", "route", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "air-route",
+      "label": "Air Route",
+      "nodeKind": "Namespace",
+      "shape": "Router",
+      "symbol": "AR",
+      "color": "#EF4444",
+      "category": "Location & Routing",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/air-route.svg",
+        "previewPath": "previews/air-route.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "location-routing", "air-route", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sea-route",
+      "label": "Sea Route",
+      "nodeKind": "Namespace",
+      "shape": "Router",
+      "symbol": "SR",
+      "color": "#EF4444",
+      "category": "Location & Routing",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sea-route.svg",
+        "previewPath": "previews/sea-route.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "location-routing", "sea-route", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "earthquake",
+      "label": "Earthquake",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EART",
+      "color": "#EF4444",
+      "category": "Natural Hazards",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/earthquake.svg",
+        "previewPath": "previews/earthquake.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "natural-hazards", "earthquake", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "storm",
+      "label": "Storm",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "STOR",
+      "color": "#EF4444",
+      "category": "Natural Hazards",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/storm.svg",
+        "previewPath": "previews/storm.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "natural-hazards", "storm", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "flood",
+      "label": "Flood",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FLOO",
+      "color": "#EF4444",
+      "category": "Natural Hazards",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/flood.svg",
+        "previewPath": "previews/flood.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "natural-hazards", "flood", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "fire",
+      "label": "Fire",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FIRE",
+      "color": "#EF4444",
+      "category": "Natural Hazards",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/fire.svg",
+        "previewPath": "previews/fire.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "natural-hazards", "fire", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "volcano",
+      "label": "Volcano",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "VOLC",
+      "color": "#EF4444",
+      "category": "Natural Hazards",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/volcano.svg",
+        "previewPath": "previews/volcano.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "natural-hazards", "volcano", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "heat",
+      "label": "Heat",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "HEAT",
+      "color": "#EF4444",
+      "category": "Natural Hazards",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/heat.svg",
+        "previewPath": "previews/heat.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "natural-hazards", "heat", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "power-outage",
+      "label": "Power Outage",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "PO",
+      "color": "#EF4444",
+      "category": "Incidents & Alerts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-outage.svg",
+        "previewPath": "previews/power-outage.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "incidents-alerts", "power-outage", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "warning",
+      "label": "Warning",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "WARN",
+      "color": "#EF4444",
+      "category": "Incidents & Alerts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/warning.svg",
+        "previewPath": "previews/warning.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "incidents-alerts", "warning", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "critical-incident",
+      "label": "Critical Incident",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CI",
+      "color": "#EF4444",
+      "category": "Incidents & Alerts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/critical-incident.svg",
+        "previewPath": "previews/critical-incident.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "incidents-alerts", "critical-incident", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "siren",
+      "label": "Siren",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SIRE",
+      "color": "#EF4444",
+      "category": "Incidents & Alerts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/siren.svg",
+        "previewPath": "previews/siren.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "incidents-alerts", "siren", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "shelter",
+      "label": "Shelter",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "SHEL",
+      "color": "#EF4444",
+      "category": "Response & Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/shelter.svg",
+        "previewPath": "previews/shelter.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "response-services", "shelter", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "medical",
+      "label": "Medical",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "MEDI",
+      "color": "#EF4444",
+      "category": "Response & Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/medical.svg",
+        "previewPath": "previews/medical.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "response-services", "medical", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "police",
+      "label": "Police",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "POLI",
+      "color": "#EF4444",
+      "category": "Response & Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/police.svg",
+        "previewPath": "previews/police.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "response-services", "police", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "transport",
+      "label": "Transport",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "TRAN",
+      "color": "#EF4444",
+      "category": "Response & Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/transport.svg",
+        "previewPath": "previews/transport.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "response-services", "transport", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "airport",
+      "label": "Airport",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "AIRP",
+      "color": "#EF4444",
+      "category": "Response & Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/airport.svg",
+        "previewPath": "previews/airport.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "response-services", "airport", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "port",
+      "label": "Port",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "PORT",
+      "color": "#EF4444",
+      "category": "Response & Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/port.svg",
+        "previewPath": "previews/port.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "response-services", "port", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "border",
+      "label": "Border",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "BORD",
+      "color": "#EF4444",
+      "category": "Boundaries & Conflict",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/border.svg",
+        "previewPath": "previews/border.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "boundaries-conflict", "border", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "conflict-zone",
+      "label": "Conflict Zone",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "CZ",
+      "color": "#EF4444",
+      "category": "Boundaries & Conflict",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/conflict-zone.svg",
+        "previewPath": "previews/conflict-zone.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "boundaries-conflict", "conflict-zone", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "alert-feed",
+      "label": "Alert Feed",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AF",
+      "color": "#EF4444",
+      "category": "Feeds & Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/alert-feed.svg",
+        "previewPath": "previews/alert-feed.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "feeds-intelligence", "alert-feed", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "timeline",
+      "label": "Timeline",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TIME",
+      "color": "#EF4444",
+      "category": "Feeds & Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/timeline.svg",
+        "previewPath": "previews/timeline.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "feeds-intelligence", "timeline", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "news",
+      "label": "News",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "NEWS",
+      "color": "#EF4444",
+      "category": "Feeds & Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/news.svg",
+        "previewPath": "previews/news.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "feeds-intelligence", "news", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "social-signal",
+      "label": "Social Signal",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SS",
+      "color": "#EF4444",
+      "category": "Feeds & Intelligence",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/social-signal.svg",
+        "previewPath": "previews/social-signal.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "feeds-intelligence", "social-signal", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sensor",
+      "label": "Sensor",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SENS",
+      "color": "#EF4444",
+      "category": "Monitoring & Sensors",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sensor.svg",
+        "previewPath": "previews/sensor.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "monitoring-sensors", "sensor", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "satellite",
+      "label": "Satellite",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SATE",
+      "color": "#EF4444",
+      "category": "Monitoring & Sensors",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/satellite.svg",
+        "previewPath": "previews/satellite.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "monitoring-sensors", "satellite", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "radar",
+      "label": "Radar",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RADA",
+      "color": "#EF4444",
+      "category": "Monitoring & Sensors",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/radar.svg",
+        "previewPath": "previews/radar.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "monitoring-sensors", "radar", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "weather",
+      "label": "Weather",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "WEAT",
+      "color": "#EF4444",
+      "category": "Monitoring & Sensors",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/weather.svg",
+        "previewPath": "previews/weather.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "monitoring-sensors", "weather", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "map-layer",
+      "label": "Map Layer",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ML",
+      "color": "#EF4444",
+      "category": "Maps & Visualization",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/map-layer.svg",
+        "previewPath": "previews/map-layer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "maps-visualization", "map-layer", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "legend",
+      "label": "Legend",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "LEGE",
+      "color": "#EF4444",
+      "category": "Maps & Visualization",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/legend.svg",
+        "previewPath": "previews/legend.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "maps-visualization", "legend", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "heatmap",
+      "label": "Heatmap",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "HEAT",
+      "color": "#EF4444",
+      "category": "Maps & Visualization",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/heatmap.svg",
+        "previewPath": "previews/heatmap.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "maps-visualization", "heatmap", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "population",
+      "label": "Population",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "POPU",
+      "color": "#EF4444",
+      "category": "Maps & Visualization",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/population.svg",
+        "previewPath": "previews/population.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "maps-visualization", "population", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "risk-zone",
+      "label": "Risk Zone",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RZ",
+      "color": "#EF4444",
+      "category": "Maps & Visualization",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/risk-zone.svg",
+        "previewPath": "previews/risk-zone.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "maps-visualization", "risk-zone", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "evacuation",
+      "label": "Evacuation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EVAC",
+      "color": "#EF4444",
+      "category": "Operations & Logistics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/evacuation.svg",
+        "previewPath": "previews/evacuation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "operations-logistics", "evacuation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "supply-chain",
+      "label": "Supply Chain",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SC",
+      "color": "#EF4444",
+      "category": "Operations & Logistics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/supply-chain.svg",
+        "previewPath": "previews/supply-chain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "operations-logistics", "supply-chain", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "datacenter-region",
+      "label": "Datacenter Region",
+      "nodeKind": "Namespace",
+      "shape": "Server",
+      "symbol": "DR",
+      "color": "#EF4444",
+      "category": "Operations & Logistics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/datacenter-region.svg",
+        "previewPath": "previews/datacenter-region.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "operations-logistics", "datacenter-region", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "office-location",
+      "label": "Office Location",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "OL",
+      "color": "#EF4444",
+      "category": "Operations & Logistics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/office-location.svg",
+        "previewPath": "previews/office-location.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "operations-logistics", "office-location", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

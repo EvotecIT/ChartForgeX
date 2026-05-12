@@ -1,0 +1,783 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-topology-network",
+  "label": "ChartForgeX Topology & Network",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "topology", "network", "connectivity", "infrastructure", "original-artwork" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Product-neutral topology, network device, connectivity, link, datacenter, and edge infrastructure symbols.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "node",
+      "label": "Node",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "NODE",
+      "color": "#2563EB",
+      "category": "Core Topology",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/node.svg",
+        "previewPath": "previews/node.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-topology", "node", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "edge",
+      "label": "Edge",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "EDGE",
+      "color": "#2563EB",
+      "category": "Core Topology",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/edge.svg",
+        "previewPath": "previews/edge.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-topology", "edge", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "hub",
+      "label": "Hub",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "HUB",
+      "color": "#2563EB",
+      "category": "Core Topology",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/hub.svg",
+        "previewPath": "previews/hub.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-topology", "hub", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "branch",
+      "label": "Branch",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "BRAN",
+      "color": "#2563EB",
+      "category": "Core Topology",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/branch.svg",
+        "previewPath": "previews/branch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-topology", "branch", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "router",
+      "label": "Router",
+      "nodeKind": "Namespace",
+      "shape": "Router",
+      "symbol": "ROUT",
+      "color": "#2563EB",
+      "category": "Core Topology",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/router.svg",
+        "previewPath": "previews/router.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-topology", "router", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "switch",
+      "label": "Switch",
+      "nodeKind": "Server",
+      "shape": "NetworkSwitch",
+      "symbol": "SWIT",
+      "color": "#2563EB",
+      "category": "Network Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/switch.svg",
+        "previewPath": "previews/switch.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-devices", "switch", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "firewall",
+      "label": "Firewall",
+      "nodeKind": "Server",
+      "shape": "Firewall",
+      "symbol": "FIRE",
+      "color": "#EF4444",
+      "category": "Network Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/firewall.svg",
+        "previewPath": "previews/firewall.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-devices", "firewall", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "load-balancer",
+      "label": "Load Balancer",
+      "nodeKind": "Server",
+      "shape": "LoadBalancer",
+      "symbol": "LB",
+      "color": "#2563EB",
+      "category": "Network Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/load-balancer.svg",
+        "previewPath": "previews/load-balancer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-devices", "load-balancer", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "gateway",
+      "label": "Gateway",
+      "nodeKind": "Server",
+      "shape": "Desktop",
+      "symbol": "GATE",
+      "color": "#2563EB",
+      "category": "Network Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/gateway.svg",
+        "previewPath": "previews/gateway.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-devices", "gateway", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "vpn",
+      "label": "VPN",
+      "nodeKind": "Server",
+      "shape": "Desktop",
+      "symbol": "VPN",
+      "color": "#2563EB",
+      "category": "Network Devices",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/vpn.svg",
+        "previewPath": "previews/vpn.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-devices", "vpn", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "internet",
+      "label": "Internet",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "INTE",
+      "color": "#2563EB",
+      "category": "Connectivity & Internet",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/internet.svg",
+        "previewPath": "previews/internet.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "connectivity-internet", "internet", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "cloud",
+      "label": "Cloud",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "CLOU",
+      "color": "#2563EB",
+      "category": "Connectivity & Internet",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/cloud.svg",
+        "previewPath": "previews/cloud.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "connectivity-internet", "cloud", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "region",
+      "label": "Region",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "REGI",
+      "color": "#2563EB",
+      "category": "Connectivity & Internet",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/region.svg",
+        "previewPath": "previews/region.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "connectivity-internet", "region", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "site",
+      "label": "Site",
+      "nodeKind": "Location",
+      "shape": "Cloud",
+      "symbol": "SITE",
+      "color": "#2563EB",
+      "category": "Connectivity & Internet",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/site.svg",
+        "previewPath": "previews/site.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "connectivity-internet", "site", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "subnet",
+      "label": "Subnet",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "SUBN",
+      "color": "#2563EB",
+      "category": "Connectivity & Internet",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/subnet.svg",
+        "previewPath": "previews/subnet.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "connectivity-internet", "subnet", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "site-link",
+      "label": "Site Link",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "SL",
+      "color": "#2563EB",
+      "category": "Links & Circuits",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/site-link.svg",
+        "previewPath": "previews/site-link.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "links-circuits", "site-link", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "mpls",
+      "label": "MPLS",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "MPLS",
+      "color": "#2563EB",
+      "category": "Links & Circuits",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mpls.svg",
+        "previewPath": "previews/mpls.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "links-circuits", "mpls", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "wan",
+      "label": "WAN",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "WAN",
+      "color": "#2563EB",
+      "category": "Links & Circuits",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/wan.svg",
+        "previewPath": "previews/wan.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "links-circuits", "wan", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "lan",
+      "label": "LAN",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "LAN",
+      "color": "#2563EB",
+      "category": "Links & Circuits",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/lan.svg",
+        "previewPath": "previews/lan.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "links-circuits", "lan", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "peering",
+      "label": "Peering",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "PEER",
+      "color": "#2563EB",
+      "category": "Links & Circuits",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/peering.svg",
+        "previewPath": "previews/peering.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "links-circuits", "peering", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "vlan",
+      "label": "VLAN",
+      "nodeKind": "Network",
+      "shape": "Certificate",
+      "symbol": "VLAN",
+      "color": "#2563EB",
+      "category": "Network Services & Logical",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/vlan.svg",
+        "previewPath": "previews/vlan.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-services-logical", "vlan", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "route",
+      "label": "Route",
+      "nodeKind": "Namespace",
+      "shape": "Router",
+      "symbol": "ROUT",
+      "color": "#2563EB",
+      "category": "Network Services & Logical",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/route.svg",
+        "previewPath": "previews/route.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-services-logical", "route", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "circuit",
+      "label": "Circuit",
+      "nodeKind": "Network",
+      "shape": "Certificate",
+      "symbol": "CIRC",
+      "color": "#2563EB",
+      "category": "Network Services & Logical",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/circuit.svg",
+        "previewPath": "previews/circuit.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-services-logical", "circuit", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dns-resolver",
+      "label": "DNS Resolver",
+      "nodeKind": "Network",
+      "shape": "Certificate",
+      "symbol": "DR",
+      "color": "#2563EB",
+      "category": "Network Services & Logical",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dns-resolver.svg",
+        "previewPath": "previews/dns-resolver.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-services-logical", "dns-resolver", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "web-service",
+      "label": "Web Service",
+      "nodeKind": "Network",
+      "shape": "Certificate",
+      "symbol": "WS",
+      "color": "#2563EB",
+      "category": "Network Services & Logical",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/web-service.svg",
+        "previewPath": "previews/web-service.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-services-logical", "web-service", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "database-service",
+      "label": "Database Service",
+      "nodeKind": "Database",
+      "shape": "Database",
+      "symbol": "DS",
+      "color": "#2563EB",
+      "category": "Network Services & Logical",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/database-service.svg",
+        "previewPath": "previews/database-service.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-services-logical", "database-service", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "monitoring-probe",
+      "label": "Monitoring Probe",
+      "nodeKind": "Network",
+      "shape": "Certificate",
+      "symbol": "MP",
+      "color": "#2563EB",
+      "category": "Network Services & Logical",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/monitoring-probe.svg",
+        "previewPath": "previews/monitoring-probe.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "network-services-logical", "monitoring-probe", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "datacenter",
+      "label": "Datacenter",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "DATA",
+      "color": "#2563EB",
+      "category": "Infrastructure & Datacenter",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/datacenter.svg",
+        "previewPath": "previews/datacenter.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-datacenter", "datacenter", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "server-rack",
+      "label": "Server Rack",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "SR",
+      "color": "#2563EB",
+      "category": "Infrastructure & Datacenter",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/server-rack.svg",
+        "previewPath": "previews/server-rack.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-datacenter", "server-rack", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "vm-host",
+      "label": "VM Host",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "VH",
+      "color": "#2563EB",
+      "category": "Infrastructure & Datacenter",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/vm-host.svg",
+        "previewPath": "previews/vm-host.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-datacenter", "vm-host", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "storage",
+      "label": "Storage",
+      "nodeKind": "Database",
+      "shape": "Database",
+      "symbol": "STOR",
+      "color": "#2563EB",
+      "category": "Infrastructure & Datacenter",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/storage.svg",
+        "previewPath": "previews/storage.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-datacenter", "storage", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "kubernetes-cluster",
+      "label": "Kubernetes Cluster",
+      "nodeKind": "Server",
+      "shape": "Server",
+      "symbol": "KC",
+      "color": "#2563EB",
+      "category": "Infrastructure & Datacenter",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/kubernetes-cluster.svg",
+        "previewPath": "previews/kubernetes-cluster.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-datacenter", "kubernetes-cluster", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "container-node",
+      "label": "Container Node",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "CN",
+      "color": "#2563EB",
+      "category": "Infrastructure & Datacenter",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/container-node.svg",
+        "previewPath": "previews/container-node.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-datacenter", "container-node", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "satellite-link",
+      "label": "Satellite Link",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "SL",
+      "color": "#2563EB",
+      "category": "Specialized & Edge",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/satellite-link.svg",
+        "previewPath": "previews/satellite-link.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "specialized-edge", "satellite-link", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "edge-device",
+      "label": "Edge Device",
+      "nodeKind": "Server",
+      "shape": "Desktop",
+      "symbol": "ED",
+      "color": "#2563EB",
+      "category": "Specialized & Edge",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/edge-device.svg",
+        "previewPath": "previews/edge-device.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "specialized-edge", "edge-device", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "branch-office",
+      "label": "Branch Office",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "BO",
+      "color": "#2563EB",
+      "category": "Specialized & Edge",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/branch-office.svg",
+        "previewPath": "previews/branch-office.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "specialized-edge", "branch-office", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "globe",
+      "label": "Globe",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "GLOB",
+      "color": "#2563EB",
+      "category": "Specialized & Edge",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/globe.svg",
+        "previewPath": "previews/globe.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "specialized-edge", "globe", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "geo-pin",
+      "label": "Geo Pin",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "GP",
+      "color": "#2563EB",
+      "category": "Specialized & Edge",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/geo-pin.svg",
+        "previewPath": "previews/geo-pin.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "specialized-edge", "geo-pin", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

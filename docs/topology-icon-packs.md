@@ -71,6 +71,14 @@ dotnet run --project .\ChartForgeX.Tools.IconImport\ChartForgeX.Tools.IconImport
 - `network-security` covers generic network security roles such as firewall, switch, access point, security manager, log analyzer, VPN, SD-WAN, authenticator, MFA token, WAF, mail security, endpoint detection, sandbox, SIEM, cloud security, and security fabric.
 - `cloud-productivity` covers generic cloud productivity roles such as tenant, cloud identity, conditional access, mail service, content sites, team collaboration, cloud drive, governance, threat protection, device management, low-code platform, subscription, resource group, secret vault, private endpoint, private circuit, and security analytics.
 - `network-infrastructure` covers device-like physical infrastructure roles such as rack switch, core switch, layer 3 switch, PoE switch, edge router, branch router, wireless AP, mesh AP, firewall appliance, load balancer appliance, VPN gateway, patch panel, fiber uplink, and SFP transceiver.
+- `chartforgex-geo-incidents-world-events` covers map, route, hazard, incident, response, intelligence-feed, monitoring, and logistics roles for situational-awareness charts.
+- `chartforgex-charts-analytics` covers visualization, analytics, KPI, dashboard, report, threshold, anomaly, comparison, and drilldown roles.
+- `chartforgex-topology-network` covers generic topology, connectivity, link, datacenter, service, and edge infrastructure roles.
+- `chartforgex-security-risk-certificates` covers identity, access, certificate, trust, finding, incident, exposure, compliance, evidence, and forensics roles.
+- `chartforgex-data-ownership-intelligence` covers datasets, internet intelligence, ownership, entities, correlation, evidence, reporting, integration, and governance roles.
+- `chartforgex-people-org-workflow` covers people, roles, org structure, lifecycle, goals, approvals, workflow, collaboration, and HR data roles.
+- `chartforgex-identity-directory` covers directory structures, principals, sites, directory services, access, authentication, certificates, and protocol-flow roles.
+- `chartforgex-microsoft-365-collaboration` covers generic Microsoft 365-style tenant, messaging, productivity, compliance, integration, and lifecycle-governance roles without vendor logos.
 
 Each curated pack keeps `manifest.json`, `svg/*.svg`, generated `previews/*.png`, `SOURCE.md`, `LICENSE`, and `_reports/refresh-report.json` beside each other. Vendor or product names should only be used for truly branded or imported packs with explicit provenance and license notes; generic first-party artwork should stay under neutral pack ids.
 

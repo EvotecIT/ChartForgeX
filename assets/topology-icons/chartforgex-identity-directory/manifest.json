@@ -1,0 +1,783 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-identity-directory",
+  "label": "ChartForgeX Identity & Directory",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "identity", "directory", "active-directory", "entra", "authentication", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Identity-model, directory-structure, authentication, access, certificate, and protocol-flow symbols for enterprise directory diagrams.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "domain",
+      "label": "Domain",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "DOMA",
+      "color": "#2563EB",
+      "category": "Directory Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/domain.svg",
+        "previewPath": "previews/domain.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-structure", "domain", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "forest",
+      "label": "Forest",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "FORE",
+      "color": "#2563EB",
+      "category": "Directory Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/forest.svg",
+        "previewPath": "previews/forest.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-structure", "forest", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "tree",
+      "label": "Tree",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TREE",
+      "color": "#2563EB",
+      "category": "Directory Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/tree.svg",
+        "previewPath": "previews/tree.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-structure", "tree", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ou",
+      "label": "OU",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "OU",
+      "color": "#2563EB",
+      "category": "Directory Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ou.svg",
+        "previewPath": "previews/ou.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-structure", "ou", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "container",
+      "label": "Container",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "CONT",
+      "color": "#2563EB",
+      "category": "Directory Structure",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/container.svg",
+        "previewPath": "previews/container.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-structure", "container", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "group",
+      "label": "Group",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "GROU",
+      "color": "#2563EB",
+      "category": "Principals & Accounts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/group.svg",
+        "previewPath": "previews/group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "principals-accounts", "group", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "user",
+      "label": "User",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "USER",
+      "color": "#2563EB",
+      "category": "Principals & Accounts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/user.svg",
+        "previewPath": "previews/user.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "principals-accounts", "user", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "service-account",
+      "label": "Service Account",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "SA",
+      "color": "#2563EB",
+      "category": "Principals & Accounts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/service-account.svg",
+        "previewPath": "previews/service-account.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "principals-accounts", "service-account", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "gmsa",
+      "label": "gMSA",
+      "nodeKind": "Namespace",
+      "shape": "Badge",
+      "symbol": "GMSA",
+      "color": "#2563EB",
+      "category": "Principals & Accounts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/gmsa.svg",
+        "previewPath": "previews/gmsa.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "principals-accounts", "gmsa", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "computer",
+      "label": "Computer",
+      "nodeKind": "Namespace",
+      "shape": "Desktop",
+      "symbol": "COMP",
+      "color": "#2563EB",
+      "category": "Principals & Accounts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/computer.svg",
+        "previewPath": "previews/computer.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "principals-accounts", "computer", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "device",
+      "label": "Device",
+      "nodeKind": "Namespace",
+      "shape": "Desktop",
+      "symbol": "DEVI",
+      "color": "#2563EB",
+      "category": "Principals & Accounts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/device.svg",
+        "previewPath": "previews/device.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "principals-accounts", "device", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "domain-controller",
+      "label": "Domain Controller",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "DC",
+      "color": "#2563EB",
+      "category": "Infrastructure & Sites",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/domain-controller.svg",
+        "previewPath": "previews/domain-controller.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-sites", "domain-controller", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "site",
+      "label": "Site",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "SITE",
+      "color": "#2563EB",
+      "category": "Infrastructure & Sites",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/site.svg",
+        "previewPath": "previews/site.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-sites", "site", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "subnet",
+      "label": "Subnet",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "SUBN",
+      "color": "#2563EB",
+      "category": "Infrastructure & Sites",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/subnet.svg",
+        "previewPath": "previews/subnet.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-sites", "subnet", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "trust",
+      "label": "Trust",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "TRUS",
+      "color": "#2563EB",
+      "category": "Infrastructure & Sites",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/trust.svg",
+        "previewPath": "previews/trust.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-sites", "trust", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "gpo",
+      "label": "GPO",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "GPO",
+      "color": "#2563EB",
+      "category": "Infrastructure & Sites",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/gpo.svg",
+        "previewPath": "previews/gpo.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "infrastructure-sites", "gpo", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ldap",
+      "label": "LDAP",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "LDAP",
+      "color": "#2563EB",
+      "category": "Directory Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ldap.svg",
+        "previewPath": "previews/ldap.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-services", "ldap", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "kerberos",
+      "label": "Kerberos",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "KERB",
+      "color": "#2563EB",
+      "category": "Directory Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/kerberos.svg",
+        "previewPath": "previews/kerberos.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-services", "kerberos", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dns",
+      "label": "DNS",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "DNS",
+      "color": "#2563EB",
+      "category": "Directory Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dns.svg",
+        "previewPath": "previews/dns.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-services", "dns", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "replication",
+      "label": "Replication",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "REPL",
+      "color": "#2563EB",
+      "category": "Directory Services",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/replication.svg",
+        "previewPath": "previews/replication.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "directory-services", "replication", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "password-policy",
+      "label": "Password Policy",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PP",
+      "color": "#2563EB",
+      "category": "Security & Access",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/password-policy.svg",
+        "previewPath": "previews/password-policy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-access", "password-policy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "mfa",
+      "label": "MFA",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "MFA",
+      "color": "#16A34A",
+      "category": "Security & Access",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mfa.svg",
+        "previewPath": "previews/mfa.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-access", "mfa", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "rbac-role",
+      "label": "RBAC Role",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RR",
+      "color": "#2563EB",
+      "category": "Security & Access",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/rbac-role.svg",
+        "previewPath": "previews/rbac-role.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-access", "rbac-role", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "access-review",
+      "label": "Access Review",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AR",
+      "color": "#2563EB",
+      "category": "Security & Access",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/access-review.svg",
+        "previewPath": "previews/access-review.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-access", "access-review", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dynamic-group",
+      "label": "Dynamic Group",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "DG",
+      "color": "#2563EB",
+      "category": "Security & Access",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dynamic-group.svg",
+        "previewPath": "previews/dynamic-group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-access", "dynamic-group", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "pim",
+      "label": "PIM",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PIM",
+      "color": "#2563EB",
+      "category": "Security & Access",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/pim.svg",
+        "previewPath": "previews/pim.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "security-access", "pim", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "conditional-access",
+      "label": "Conditional Access",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CA",
+      "color": "#2563EB",
+      "category": "Access & Authentication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/conditional-access.svg",
+        "previewPath": "previews/conditional-access.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "access-authentication", "conditional-access", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sign-in",
+      "label": "Sign-in",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SI",
+      "color": "#2563EB",
+      "category": "Access & Authentication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sign-in.svg",
+        "previewPath": "previews/sign-in.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "access-authentication", "sign-in", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "join",
+      "label": "Join",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "JOIN",
+      "color": "#2563EB",
+      "category": "Access & Authentication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/join.svg",
+        "previewPath": "previews/join.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "access-authentication", "join", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sync",
+      "label": "Sync",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SYNC",
+      "color": "#2563EB",
+      "category": "Access & Authentication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sync.svg",
+        "previewPath": "previews/sync.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "access-authentication", "sync", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "federation",
+      "label": "Federation",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "FEDE",
+      "color": "#2563EB",
+      "category": "Access & Authentication",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/federation.svg",
+        "previewPath": "previews/federation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "access-authentication", "federation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "certificate",
+      "label": "Certificate",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CERT",
+      "color": "#2563EB",
+      "category": "Certificates & Keys",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/certificate.svg",
+        "previewPath": "previews/certificate.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-keys", "certificate", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "key",
+      "label": "Key",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "KEY",
+      "color": "#2563EB",
+      "category": "Certificates & Keys",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/key.svg",
+        "previewPath": "previews/key.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-keys", "key", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "secure-channel",
+      "label": "Secure Channel",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SC",
+      "color": "#16A34A",
+      "category": "Certificates & Keys",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/secure-channel.svg",
+        "previewPath": "previews/secure-channel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "certificates-keys", "secure-channel", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "authentication-flow",
+      "label": "Authentication Flow",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "AF",
+      "color": "#2563EB",
+      "category": "Core Protocols & Flows",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/authentication-flow.svg",
+        "previewPath": "previews/authentication-flow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-protocols-flows", "authentication-flow", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "authorization-flow",
+      "label": "Authorization Flow",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "AF",
+      "color": "#2563EB",
+      "category": "Core Protocols & Flows",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/authorization-flow.svg",
+        "previewPath": "previews/authorization-flow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-protocols-flows", "authorization-flow", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "membership-flow",
+      "label": "Membership Flow",
+      "nodeKind": "Team",
+      "shape": "Badge",
+      "symbol": "MF",
+      "color": "#2563EB",
+      "category": "Core Protocols & Flows",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/membership-flow.svg",
+        "previewPath": "previews/membership-flow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-protocols-flows", "membership-flow", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "replication-flow",
+      "label": "Replication Flow",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "RF",
+      "color": "#2563EB",
+      "category": "Core Protocols & Flows",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/replication-flow.svg",
+        "previewPath": "previews/replication-flow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "core-protocols-flows", "replication-flow", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

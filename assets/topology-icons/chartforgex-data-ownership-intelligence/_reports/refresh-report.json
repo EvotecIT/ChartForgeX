@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-12T09:15:25.9739378Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "chartforgex-data-ownership-intelligence",
+  "iconCount": 80,
+  "previewSize": 128,
+  "previewPngFiles": 80,
+  "previewFailures": 0,
+  "issues": []
+}
