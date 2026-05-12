@@ -231,11 +231,53 @@ internal static partial class SmokeTests {
     }
 
     private static void ReadmeDocumentsChartCatalog() {
-        var readme = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "README.md"));
+        var root = FindRepositoryRoot();
+        var readme = File.ReadAllText(Path.Combine(root, "README.md"));
         Assert(readme.Contains("## Visual Tour", StringComparison.Ordinal), "README should include rendered visuals near the top of the page.");
-        Assert(readme.Contains("Website/static/examples/generated/dashboard-chart-portfolio-grid.svg", StringComparison.Ordinal), "README should show a dashboard visual preview.");
-        Assert(readme.Contains("Website/static/examples/generated/control-coverage-heatmap-dark.svg", StringComparison.Ordinal) && readme.Contains("Website/static/examples/generated/control-coverage-heatmap-dark.png", StringComparison.Ordinal), "README should link both SVG and PNG output for at least one generated visual.");
-        Assert(readme.Contains("Website/static/examples/generated/visual-geographic-topology-map.svg", StringComparison.Ordinal), "README should show a topology visual preview.");
+        foreach (var asset in new[] {
+            "dashboard-chart-portfolio-grid.html",
+            "control-coverage-heatmap-dark.html",
+            "visual-geographic-topology-map.html",
+            "report-summary-metric-strip.html",
+            "revenue-europe-country-map-light.html",
+            "domain-security-dark.html",
+            "domain-security-interactive.html"
+        }) {
+            var localPath = Path.Combine(root, "Website", "static", "examples", "generated", asset);
+            Assert(readme.Contains(asset, StringComparison.Ordinal), "README visual tour should advertise generated example asset: " + asset);
+            Assert(File.Exists(localPath), "README visual tour asset should exist locally: " + Path.GetRelativePath(root, localPath));
+        }
+        Assert(!readme.Contains("](Website/static/examples/generated/", StringComparison.Ordinal), "README visual tour should not use repository-relative generated asset links because the packaged README is rendered outside the repo checkout.");
+        foreach (var asset in new[] {
+            "dashboard-chart-portfolio-grid.png",
+            "dashboard-chart-portfolio-grid.svg",
+            "control-coverage-heatmap-dark.csharp.txt",
+            "control-coverage-heatmap-dark.png",
+            "control-coverage-heatmap-dark.svg",
+            "visual-geographic-topology-map.png",
+            "visual-geographic-topology-map.svg",
+            "report-summary-metric-strip.png",
+            "report-summary-metric-strip.svg",
+            "revenue-europe-country-map-light.png",
+            "revenue-europe-country-map-light.svg",
+            "domain-security-dark.png"
+        }) {
+            var previewUrl = "https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/" + asset;
+            var localPath = Path.Combine(root, "Website", "static", "examples", "generated", asset);
+            Assert(readme.Contains(previewUrl, StringComparison.Ordinal), "README visual tour should use absolute package-safe renderable asset URL: " + previewUrl);
+            Assert(File.Exists(localPath), "README visual tour asset should exist locally: " + Path.GetRelativePath(root, localPath));
+        }
+        foreach (var preview in new[] {
+            "dashboard-chart-portfolio-grid.png",
+            "control-coverage-heatmap-dark.png",
+            "visual-geographic-topology-map.png",
+            "report-summary-metric-strip.png",
+            "revenue-europe-country-map-light.png",
+            "domain-security-dark.png"
+        }) {
+            var previewUrl = "https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/" + preview;
+            Assert(readme.Contains("](" + previewUrl + ")", StringComparison.Ordinal), "README visual tour preview tiles should open renderable PNG output: " + previewUrl);
+        }
         Assert(readme.Contains("## Examples", StringComparison.Ordinal) && readme.Contains("svg-png-comparison.html", StringComparison.Ordinal) && readme.Contains("C# snippets", StringComparison.Ordinal), "README should explain how generated examples expose SVG, PNG, HTML, and C# source snippets.");
         Assert(readme.Contains("## Chart catalog", StringComparison.Ordinal), "README should include a chart catalog.");
         Assert(readme.Contains("validates chart data before rendering", StringComparison.Ordinal), "README should document render-time validation behavior.");
