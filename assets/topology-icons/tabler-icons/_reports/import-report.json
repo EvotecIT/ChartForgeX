@@ -1,0 +1,22 @@
+{
+  "sourceUrl": "https://github.com/tabler/tabler-icons",
+  "sourceRevision": "3.44.0",
+  "license": "MIT",
+  "generatedAtUtc": "2026-05-12T13:36:28.0963266Z",
+  "generatePng": false,
+  "previewSize": 128,
+  "packs": [
+    {
+      "category": "tabler-icons-outline",
+      "packId": "tabler-icons-outline",
+      "sourceSvgFiles": 5093,
+      "importedIcons": 5093,
+      "skippedFiles": 0,
+      "svgFiles": 5093,
+      "previewPngFiles": 0,
+      "previewFailures": 0,
+      "issues": [
+      ]
+    }
+  ]
+}

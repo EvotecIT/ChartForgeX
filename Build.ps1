@@ -600,10 +600,23 @@ try {
   <packageSources>
     <clear />
     <add key="local-chartforgex" value="$packageRoot" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
+  <packageSourceMapping>
+    <packageSource key="local-chartforgex">
+      <package pattern="ChartForgeX" />
+      <package pattern="ChartForgeX.*" />
+    </packageSource>
+    <packageSource key="nuget.org">
+      <package pattern="Microsoft.*" />
+      <package pattern="NETStandard.Library*" />
+      <package pattern="runtime.*" />
+      <package pattern="System.*" />
+    </packageSource>
+  </packageSourceMapping>
 </configuration>
 "@ | Set-Content -Path (Join-Path $consumerRoot 'NuGet.config') -Encoding UTF8
-                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion, '--source', $packageRoot) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                 @"
 using ChartForgeX;
 using ChartForgeX.Core;

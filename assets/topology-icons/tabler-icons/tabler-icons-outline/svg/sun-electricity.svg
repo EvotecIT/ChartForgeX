@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
+<path stroke="none" d="M0 0h24v24H0z" fill="none" xmlns="http://www.w3.org/2000/svg" />
+  <path d="M8 12a4 4 0 0 0 4 4m0 -8a4 4 0 0 0 -4 4" xmlns="http://www.w3.org/2000/svg" />
+  <path d="M3 12h1" xmlns="http://www.w3.org/2000/svg" />
+  <path d="M12 3v1" xmlns="http://www.w3.org/2000/svg" />
+  <path d="M12 20v1" xmlns="http://www.w3.org/2000/svg" />
+  <path d="M5.6 5.6l.7 .7" xmlns="http://www.w3.org/2000/svg" />
+  <path d="M6.3 17.7l-.7 .7" xmlns="http://www.w3.org/2000/svg" />
+  <path d="M20 7l-3 5h4l-3 5" xmlns="http://www.w3.org/2000/svg" />
+</svg>

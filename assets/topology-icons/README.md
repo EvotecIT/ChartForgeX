@@ -18,6 +18,10 @@ Current curated packs:
 - `chartforgex-identity-directory` - 38 first-party icons for directory structures, principals, infrastructure, directory services, access, authentication, certificates, and protocol flows
 - `chartforgex-microsoft-365-collaboration` - 72 first-party generic Microsoft 365-style icons for tenants, messaging, collaboration, productivity, compliance, integrations, and lifecycle governance
 
+Imported vendor packs:
+
+- `tabler-icons/tabler-icons-outline` - 5,093 sanitized Tabler Icons outline SVGs imported from `@tabler/icons` 3.44.0 under the MIT license. This pack is kept separate from first-party ChartForgeX artwork so consumers can use Tabler immediately while native ChartForgeX packs continue to improve deliberately.
+
 After editing `svg/*.svg`, refresh the derived PNG previews and validation report with:
 
 ```powershell

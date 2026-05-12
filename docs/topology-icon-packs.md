@@ -82,6 +82,8 @@ dotnet run --project .\ChartForgeX.Tools.IconImport\ChartForgeX.Tools.IconImport
 
 Each curated pack keeps `manifest.json`, `svg/*.svg`, generated `previews/*.png`, `SOURCE.md`, `LICENSE`, and `_reports/refresh-report.json` beside each other. Vendor or product names should only be used for truly branded or imported packs with explicit provenance and license notes; generic first-party artwork should stay under neutral pack ids.
 
+Imported vendor packs are kept under their own provenance folder beside first-party packs. `assets/topology-icons/tabler-icons/tabler-icons-outline` contains 5,093 MIT-licensed Tabler Icons outline SVGs imported from `@tabler/icons` 3.44.0, with `SOURCE.md`, `LICENSE`, and `_reports/import-report.json` kept next to the manifest.
+
 ## Import Tool
 
 `ChartForgeX.Tools.IconImport` converts a folder tree of SVG files into ChartForgeX-compatible packs. It is tooling only; SkiaSharp and Svg.Skia are not runtime dependencies of `ChartForgeX`.
