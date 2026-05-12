@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-12T09:16:35.9541891Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "chartforgex-people-org-workflow",
+  "iconCount": 71,
+  "previewSize": 128,
+  "previewPngFiles": 71,
+  "previewFailures": 0,
+  "issues": []
+}

@@ -1,0 +1,1463 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-microsoft-365-collaboration",
+  "label": "ChartForgeX Microsoft 365 & Collaboration",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "microsoft-365", "collaboration", "productivity", "cloud", "governance", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Generic Microsoft 365-style tenant, collaboration, messaging, productivity, compliance, cloud-administration, and lifecycle symbols without vendor logos.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "tenant",
+      "label": "Tenant",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "TENA",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/tenant.svg",
+        "previewPath": "previews/tenant.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "tenant", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "organization",
+      "label": "Organization",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "ORGA",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/organization.svg",
+        "previewPath": "previews/organization.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "organization", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "admin-center",
+      "label": "Admin Center",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "AC",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/admin-center.svg",
+        "previewPath": "previews/admin-center.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "admin-center", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "entra-id",
+      "label": "Entra ID",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "EI",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/entra-id.svg",
+        "previewPath": "previews/entra-id.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "entra-id", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "license",
+      "label": "License",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "LICE",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/license.svg",
+        "previewPath": "previews/license.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "license", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "subscription",
+      "label": "Subscription",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "SUBS",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/subscription.svg",
+        "previewPath": "previews/subscription.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "subscription", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "guest-user",
+      "label": "Guest User",
+      "nodeKind": "Person",
+      "shape": "Person",
+      "symbol": "GU",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/guest-user.svg",
+        "previewPath": "previews/guest-user.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "guest-user", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "b2b",
+      "label": "B2B",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "B2B",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/b2b.svg",
+        "previewPath": "previews/b2b.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "b2b", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sync",
+      "label": "Sync",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "SYNC",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sync.svg",
+        "previewPath": "previews/sync.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "sync", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "hybrid",
+      "label": "Hybrid",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "HYBR",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/hybrid.svg",
+        "previewPath": "previews/hybrid.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "hybrid", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "intune-device",
+      "label": "Intune Device",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "ID",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/intune-device.svg",
+        "previewPath": "previews/intune-device.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "intune-device", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "automation-flow",
+      "label": "Automation Flow",
+      "nodeKind": "Namespace",
+      "shape": "Domain",
+      "symbol": "AF",
+      "color": "#2563EB",
+      "category": "Tenants & Administration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/automation-flow.svg",
+        "previewPath": "previews/automation-flow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "tenants-administration", "automation-flow", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "exchange-mailbox",
+      "label": "Exchange Mailbox",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EM",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/exchange-mailbox.svg",
+        "previewPath": "previews/exchange-mailbox.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "exchange-mailbox", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "shared-mailbox",
+      "label": "Shared Mailbox",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SM",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/shared-mailbox.svg",
+        "previewPath": "previews/shared-mailbox.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "shared-mailbox", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "distribution-list",
+      "label": "Distribution List",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "DL",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/distribution-list.svg",
+        "previewPath": "previews/distribution-list.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "distribution-list", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "mail-flow",
+      "label": "Mail Flow",
+      "nodeKind": "Process",
+      "shape": "Badge",
+      "symbol": "MF",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mail-flow.svg",
+        "previewPath": "previews/mail-flow.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "mail-flow", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CALE",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/calendar.svg",
+        "previewPath": "previews/calendar.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "calendar", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "meeting-room",
+      "label": "Meeting Room",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "MR",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/meeting-room.svg",
+        "previewPath": "previews/meeting-room.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "meeting-room", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "teams-chat",
+      "label": "Teams Chat",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "TC",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/teams-chat.svg",
+        "previewPath": "previews/teams-chat.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "teams-chat", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "teams-channel",
+      "label": "Teams Channel",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "TC",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/teams-channel.svg",
+        "previewPath": "previews/teams-channel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "teams-channel", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "teams-meeting",
+      "label": "Teams Meeting",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "TM",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/teams-meeting.svg",
+        "previewPath": "previews/teams-meeting.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "teams-meeting", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sensitivity-label",
+      "label": "Sensitivity Label",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SL",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sensitivity-label.svg",
+        "previewPath": "previews/sensitivity-label.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "sensitivity-label", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "retention-policy",
+      "label": "Retention Policy",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RP",
+      "color": "#F97316",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/retention-policy.svg",
+        "previewPath": "previews/retention-policy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "retention-policy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "mailbox-search",
+      "label": "Mailbox Search",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "MS",
+      "color": "#2563EB",
+      "category": "Email & Messaging",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/mailbox-search.svg",
+        "previewPath": "previews/mailbox-search.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "email-messaging", "mailbox-search", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sharepoint-site",
+      "label": "SharePoint Site",
+      "nodeKind": "Location",
+      "shape": "Site",
+      "symbol": "SS",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sharepoint-site.svg",
+        "previewPath": "previews/sharepoint-site.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "sharepoint-site", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "document-library",
+      "label": "Document Library",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DL",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/document-library.svg",
+        "previewPath": "previews/document-library.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "document-library", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "onedrive",
+      "label": "OneDrive",
+      "nodeKind": "Cloud",
+      "shape": "Cloud",
+      "symbol": "ONED",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/onedrive.svg",
+        "previewPath": "previews/onedrive.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "onedrive", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "planner",
+      "label": "Planner",
+      "nodeKind": "Network",
+      "shape": "Badge",
+      "symbol": "PLAN",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/planner.svg",
+        "previewPath": "previews/planner.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "planner", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "forms",
+      "label": "Forms",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FORM",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/forms.svg",
+        "previewPath": "previews/forms.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "forms", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "bookings",
+      "label": "Bookings",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "BOOK",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/bookings.svg",
+        "previewPath": "previews/bookings.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "bookings", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "stream",
+      "label": "Stream",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "STRE",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/stream.svg",
+        "previewPath": "previews/stream.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "stream", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "viva",
+      "label": "Viva",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "VIVA",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/viva.svg",
+        "previewPath": "previews/viva.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "viva", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "power-app",
+      "label": "Power App",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PA",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-app.svg",
+        "previewPath": "previews/power-app.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "power-app", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "connector",
+      "label": "Connector",
+      "nodeKind": "Service",
+      "shape": "Badge",
+      "symbol": "CONN",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/connector.svg",
+        "previewPath": "previews/connector.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "connector", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "power-automate",
+      "label": "Power Automate",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PA",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/power-automate.svg",
+        "previewPath": "previews/power-automate.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "power-automate", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "meeting-notes",
+      "label": "Meeting Notes",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "MN",
+      "color": "#2563EB",
+      "category": "Collaboration & Productivity",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/meeting-notes.svg",
+        "previewPath": "previews/meeting-notes.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "collaboration-productivity", "meeting-notes", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "compliance",
+      "label": "Compliance",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "COMP",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/compliance.svg",
+        "previewPath": "previews/compliance.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "compliance", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dlp",
+      "label": "DLP",
+      "nodeKind": "Generic",
+      "shape": "Firewall",
+      "symbol": "DLP",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dlp.svg",
+        "previewPath": "previews/dlp.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "dlp", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "ediscovery",
+      "label": "eDiscovery",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "EDIS",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/ediscovery.svg",
+        "previewPath": "previews/ediscovery.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "ediscovery", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "classification",
+      "label": "Classification",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CLAS",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/classification.svg",
+        "previewPath": "previews/classification.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "classification", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "defender-alert",
+      "label": "Defender Alert",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DA",
+      "color": "#EF4444",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/defender-alert.svg",
+        "previewPath": "previews/defender-alert.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "defender-alert", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sensitivity-label-2",
+      "label": "Sensitivity Label",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SL",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sensitivity-label-2.svg",
+        "previewPath": "previews/sensitivity-label-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "sensitivity-label", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "retention-policy-2",
+      "label": "Retention Policy",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RP",
+      "color": "#F97316",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/retention-policy-2.svg",
+        "previewPath": "previews/retention-policy-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "retention-policy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "audit-log",
+      "label": "Audit Log",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AL",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/audit-log.svg",
+        "previewPath": "previews/audit-log.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "audit-log", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "access-review",
+      "label": "Access Review",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AR",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/access-review.svg",
+        "previewPath": "previews/access-review.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "access-review", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "insider-risk",
+      "label": "Insider Risk",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "IR",
+      "color": "#F97316",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/insider-risk.svg",
+        "previewPath": "previews/insider-risk.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "insider-risk", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "threat-investigation",
+      "label": "Threat Investigation",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TI",
+      "color": "#EF4444",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/threat-investigation.svg",
+        "previewPath": "previews/threat-investigation.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "threat-investigation", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "secure-score",
+      "label": "Secure Score",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SS",
+      "color": "#16A34A",
+      "category": "Compliance & Security",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/secure-score.svg",
+        "previewPath": "previews/secure-score.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "compliance-security", "secure-score", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "connector-2",
+      "label": "Connector",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "CONN",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/connector-2.svg",
+        "previewPath": "previews/connector-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "connector", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "api",
+      "label": "API",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "API",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/api.svg",
+        "previewPath": "previews/api.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "api", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "webhook",
+      "label": "Webhook",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "WEBH",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/webhook.svg",
+        "previewPath": "previews/webhook.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "webhook", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "service-bus",
+      "label": "Service Bus",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "SB",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/service-bus.svg",
+        "previewPath": "previews/service-bus.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "service-bus", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "logic-app",
+      "label": "Logic App",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "LA",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/logic-app.svg",
+        "previewPath": "previews/logic-app.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "logic-app", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "event-grid",
+      "label": "Event Grid",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "EG",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/event-grid.svg",
+        "previewPath": "previews/event-grid.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "event-grid", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "hybrid-connection",
+      "label": "Hybrid Connection",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "HC",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/hybrid-connection.svg",
+        "previewPath": "previews/hybrid-connection.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "hybrid-connection", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sync-2",
+      "label": "Sync",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "SYNC",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sync-2.svg",
+        "previewPath": "previews/sync-2.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "sync", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "data-gateway",
+      "label": "Data Gateway",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "DG",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/data-gateway.svg",
+        "previewPath": "previews/data-gateway.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "data-gateway", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "app-registration",
+      "label": "App Registration",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "AR",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/app-registration.svg",
+        "previewPath": "previews/app-registration.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "app-registration", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "managed-identity",
+      "label": "Managed Identity",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "MI",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/managed-identity.svg",
+        "previewPath": "previews/managed-identity.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "managed-identity", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "key-vault",
+      "label": "Key Vault",
+      "nodeKind": "Namespace",
+      "shape": "Cloud",
+      "symbol": "KV",
+      "color": "#2563EB",
+      "category": "Cloud & Integration",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/key-vault.svg",
+        "previewPath": "previews/key-vault.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "cloud-integration", "key-vault", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "policy",
+      "label": "Policy",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "POLI",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/policy.svg",
+        "previewPath": "previews/policy.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "policy", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "role",
+      "label": "Role",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ROLE",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/role.svg",
+        "previewPath": "previews/role.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "role", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "permission",
+      "label": "Permission",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PERM",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/permission.svg",
+        "previewPath": "previews/permission.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "permission", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "access-group",
+      "label": "Access Group",
+      "nodeKind": "Team",
+      "shape": "Team",
+      "symbol": "AG",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/access-group.svg",
+        "previewPath": "previews/access-group.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "access-group", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "change-log",
+      "label": "Change Log",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "CL",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/change-log.svg",
+        "previewPath": "previews/change-log.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "change-log", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "health",
+      "label": "Health",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "HEAL",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/health.svg",
+        "previewPath": "previews/health.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "health", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "lifecycle",
+      "label": "Lifecycle",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "LIFE",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/lifecycle.svg",
+        "previewPath": "previews/lifecycle.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "lifecycle", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "onboarding",
+      "label": "Onboarding",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ONBO",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/onboarding.svg",
+        "previewPath": "previews/onboarding.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "onboarding", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "offboarding",
+      "label": "Offboarding",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "OFFB",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/offboarding.svg",
+        "previewPath": "previews/offboarding.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "offboarding", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "renewal",
+      "label": "Renewal",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RENE",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/renewal.svg",
+        "previewPath": "previews/renewal.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "renewal", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "archive",
+      "label": "Archive",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ARCH",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/archive.svg",
+        "previewPath": "previews/archive.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "archive", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "disposal",
+      "label": "Disposal",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DISP",
+      "color": "#2563EB",
+      "category": "Governance & Lifecycle",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/disposal.svg",
+        "previewPath": "previews/disposal.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "governance-lifecycle", "disposal", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

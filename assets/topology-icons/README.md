@@ -9,6 +9,14 @@ Current curated packs:
 - `network-security` - 16 original ChartForgeX diagram icons for firewall, switching, wireless, management, analytics, VPN, SD-WAN, identity, WAF, mail, endpoint, sandbox, SIEM, cloud, and fabric roles
 - `cloud-productivity` - 18 original ChartForgeX diagram icons for cloud productivity, tenant, identity, security, messaging, collaboration, storage, governance, endpoint, low-code, subscription, networking, and SIEM roles
 - `network-infrastructure` - 14 original ChartForgeX device-like icons for rack switches, core switches, L3 switches, PoE switches, routers, wireless APs, firewall appliances, load balancers, VPN gateways, patch panels, fiber uplinks, and SFP transceivers
+- `chartforgex-geo-incidents-world-events` - 45 first-party icons for maps, routes, hazards, incidents, response services, intelligence feeds, monitoring, and logistics
+- `chartforgex-charts-analytics` - 38 first-party icons for charts, analytics, KPI badges, dashboards, reporting, thresholds, anomalies, and drilldowns
+- `chartforgex-topology-network` - 38 first-party icons for generic topology, network devices, connectivity, links, services, datacenters, and edge infrastructure
+- `chartforgex-security-risk-certificates` - 61 first-party icons for identity, access, certificates, trust, findings, incidents, risk, compliance, evidence, and forensics
+- `chartforgex-data-ownership-intelligence` - 80 first-party icons for datasets, ownership, entities, correlation, evidence, reporting, integrations, and governance
+- `chartforgex-people-org-workflow` - 71 first-party icons for people, roles, organization structure, lifecycle operations, goals, approvals, workflows, collaboration, and HR data
+- `chartforgex-identity-directory` - 38 first-party icons for directory structures, principals, infrastructure, directory services, access, authentication, certificates, and protocol flows
+- `chartforgex-microsoft-365-collaboration` - 72 first-party generic Microsoft 365-style icons for tenants, messaging, collaboration, productivity, compliance, integrations, and lifecycle governance
 
 After editing `svg/*.svg`, refresh the derived PNG previews and validation report with:
 

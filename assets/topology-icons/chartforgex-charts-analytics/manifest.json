@@ -1,0 +1,783 @@
+{
+  "schema": "chartforgex.topology.iconPack",
+  "version": 1,
+  "id": "chartforgex-charts-analytics",
+  "label": "ChartForgeX Charts & Analytics",
+  "vendor": "ChartForgeX",
+  "packVersion": "2026.05-original",
+  "builtIn": false,
+  "tags": [ "charts", "analytics", "dashboards", "reporting", "original-artwork", "topology" ],
+  "metadata": {
+    "artwork.origin": "original-chartforgex",
+    "artwork.workflow": "svg-authored",
+    "mockup.source": "ChartForgeX icon pack mockups supplied 2026-05-12",
+    "previews.refreshedBy": "ChartForgeX.Tools.IconImport --refresh-pack",
+    "scope.note": "Data visualization, dashboard, reporting, KPI, and analytical workflow icons for chart palettes and report builders.",
+    "source.license": "ChartForgeX repository license",
+    "source.licensePath": "LICENSE",
+    "source.revision": "curated-2026-05-12",
+    "source.url": "https://github.com/EvotecIT/ChartForgeX"
+  },
+  "icons": [
+    {
+      "id": "line-chart",
+      "label": "Line Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "LC",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/line-chart.svg",
+        "previewPath": "previews/line-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "line-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "area-chart",
+      "label": "Area Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AC",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/area-chart.svg",
+        "previewPath": "previews/area-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "area-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "bar-chart",
+      "label": "Bar Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "BC",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/bar-chart.svg",
+        "previewPath": "previews/bar-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "bar-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "stacked-bar",
+      "label": "Stacked Bar",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SB",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/stacked-bar.svg",
+        "previewPath": "previews/stacked-bar.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "stacked-bar", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "horizontal-bar",
+      "label": "Horizontal Bar",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "HB",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/horizontal-bar.svg",
+        "previewPath": "previews/horizontal-bar.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "horizontal-bar", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "pie-chart",
+      "label": "Pie Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "PC",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/pie-chart.svg",
+        "previewPath": "previews/pie-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "pie-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "donut-chart",
+      "label": "Donut Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "DC",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/donut-chart.svg",
+        "previewPath": "previews/donut-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "donut-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "gauge",
+      "label": "Gauge",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "GAUG",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/gauge.svg",
+        "previewPath": "previews/gauge.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "gauge", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "kpi-badge",
+      "label": "KPI Badge",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "KB",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/kpi-badge.svg",
+        "previewPath": "previews/kpi-badge.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "kpi-badge", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sparkline",
+      "label": "Sparkline",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "SPAR",
+      "color": "#2563EB",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sparkline.svg",
+        "previewPath": "previews/sparkline.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "sparkline", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "heatmap",
+      "label": "Heatmap",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "HEAT",
+      "color": "#F97316",
+      "category": "Charts",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/heatmap.svg",
+        "previewPath": "previews/heatmap.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "charts", "heatmap", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "scatter-plot",
+      "label": "Scatter Plot",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SP",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/scatter-plot.svg",
+        "previewPath": "previews/scatter-plot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "scatter-plot", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "bubble-chart",
+      "label": "Bubble Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "BC",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/bubble-chart.svg",
+        "previewPath": "previews/bubble-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "bubble-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "histogram",
+      "label": "Histogram",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "HIST",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/histogram.svg",
+        "previewPath": "previews/histogram.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "histogram", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "timeline",
+      "label": "Timeline",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TIME",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/timeline.svg",
+        "previewPath": "previews/timeline.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "timeline", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "candlestick",
+      "label": "Candlestick",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "CAND",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/candlestick.svg",
+        "previewPath": "previews/candlestick.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "candlestick", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "funnel",
+      "label": "Funnel",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FUNN",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/funnel.svg",
+        "previewPath": "previews/funnel.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "funnel", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "sankey",
+      "label": "Sankey",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "SANK",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/sankey.svg",
+        "previewPath": "previews/sankey.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "sankey", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "treemap",
+      "label": "Treemap",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TREE",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/treemap.svg",
+        "previewPath": "previews/treemap.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "treemap", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "radar-chart",
+      "label": "Radar Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "RC",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/radar-chart.svg",
+        "previewPath": "previews/radar-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "radar-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "waterfall",
+      "label": "Waterfall",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "WATE",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/waterfall.svg",
+        "previewPath": "previews/waterfall.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "waterfall", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "box-plot",
+      "label": "Box Plot",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "BP",
+      "color": "#2563EB",
+      "category": "Analytics",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/box-plot.svg",
+        "previewPath": "previews/box-plot.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "analytics", "box-plot", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "correlation-matrix",
+      "label": "Correlation Matrix",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "CM",
+      "color": "#2563EB",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/correlation-matrix.svg",
+        "previewPath": "previews/correlation-matrix.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "correlation-matrix", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "trend-up",
+      "label": "Trend Up",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TU",
+      "color": "#2563EB",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/trend-up.svg",
+        "previewPath": "previews/trend-up.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "trend-up", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "trend-down",
+      "label": "Trend Down",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "TD",
+      "color": "#EF4444",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/trend-down.svg",
+        "previewPath": "previews/trend-down.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "trend-down", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "threshold",
+      "label": "Threshold",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "THRE",
+      "color": "#2563EB",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/threshold.svg",
+        "previewPath": "previews/threshold.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "threshold", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "benchmark",
+      "label": "Benchmark",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "BENC",
+      "color": "#2563EB",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/benchmark.svg",
+        "previewPath": "previews/benchmark.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "benchmark", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "forecast",
+      "label": "Forecast",
+      "nodeKind": "Certificate",
+      "shape": "Certificate",
+      "symbol": "FORE",
+      "color": "#2563EB",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/forecast.svg",
+        "previewPath": "previews/forecast.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "forecast", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "anomaly",
+      "label": "Anomaly",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "ANOM",
+      "color": "#2563EB",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/anomaly.svg",
+        "previewPath": "previews/anomaly.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "anomaly", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "alert-threshold",
+      "label": "Alert Threshold",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "AT",
+      "color": "#EF4444",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/alert-threshold.svg",
+        "previewPath": "previews/alert-threshold.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "alert-threshold", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "filtered-chart",
+      "label": "Filtered Chart",
+      "nodeKind": "Generic",
+      "shape": "Badge",
+      "symbol": "FC",
+      "color": "#2563EB",
+      "category": "Signals",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/filtered-chart.svg",
+        "previewPath": "previews/filtered-chart.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "signals", "filtered-chart", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "dashboard-card",
+      "label": "Dashboard Card",
+      "nodeKind": "Location",
+      "shape": "Certificate",
+      "symbol": "DC",
+      "color": "#2563EB",
+      "category": "Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/dashboard-card.svg",
+        "previewPath": "previews/dashboard-card.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "reporting", "dashboard-card", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "table",
+      "label": "Table",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "TABL",
+      "color": "#2563EB",
+      "category": "Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/table.svg",
+        "previewPath": "previews/table.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "reporting", "table", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "pivot-table",
+      "label": "Pivot Table",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "PT",
+      "color": "#2563EB",
+      "category": "Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/pivot-table.svg",
+        "previewPath": "previews/pivot-table.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "reporting", "pivot-table", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "report",
+      "label": "Report",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "REPO",
+      "color": "#2563EB",
+      "category": "Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/report.svg",
+        "previewPath": "previews/report.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "reporting", "report", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "insight",
+      "label": "Insight",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "INSI",
+      "color": "#2563EB",
+      "category": "Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/insight.svg",
+        "previewPath": "previews/insight.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "reporting", "insight", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "compare",
+      "label": "Compare",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "COMP",
+      "color": "#2563EB",
+      "category": "Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/compare.svg",
+        "previewPath": "previews/compare.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "reporting", "compare", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    },
+    {
+      "id": "drilldown",
+      "label": "Drilldown",
+      "nodeKind": "Location",
+      "shape": "Badge",
+      "symbol": "DRIL",
+      "color": "#EF4444",
+      "category": "Reporting",
+      "displayMode": "Tile",
+      "artwork": {
+        "svgViewBox": "0 0 96 96",
+        "svgPath": "svg/drilldown.svg",
+        "previewPath": "previews/drilldown.png",
+        "preserveAspectRatio": "xMidYMid meet"
+      },
+      "tags": [ "reporting", "drilldown", "chartforgex", "original-artwork" ],
+      "metadata": {
+        "source.revision": "curated-2026-05-12"
+      }
+    }
+  ]
+}

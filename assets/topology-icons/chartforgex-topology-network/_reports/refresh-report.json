@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-12T10:04:59.9397689Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "chartforgex-topology-network",
+  "iconCount": 38,
+  "previewSize": 128,
+  "previewPngFiles": 38,
+  "previewFailures": 0,
+  "issues": []
+}

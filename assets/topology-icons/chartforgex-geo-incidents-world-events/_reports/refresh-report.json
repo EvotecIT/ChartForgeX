@@ -1,0 +1,11 @@
+{
+  "refreshedAtUtc": "2026-05-12T09:10:37.3567190Z",
+  "workflow": "svg-authored",
+  "tool": "ChartForgeX.Tools.IconImport --refresh-pack",
+  "packId": "chartforgex-geo-incidents-world-events",
+  "iconCount": 45,
+  "previewSize": 128,
+  "previewPngFiles": 45,
+  "previewFailures": 0,
+  "issues": []
+}
