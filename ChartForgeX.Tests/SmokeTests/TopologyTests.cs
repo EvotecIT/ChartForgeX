@@ -58,7 +58,7 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-legend-kind=\"node\"", StringComparison.Ordinal), "Topology legend should render explicit node-kind items.");
         Assert(svg.Contains("data-legend-kind=\"edge\"", StringComparison.Ordinal), "Topology legend should render explicit edge-kind items.");
-        Assert(svg.Contains("height=\"110\"", StringComparison.Ordinal), "Topology legend should grow when caller-added legend items need another row.");
+        Assert(svg.Contains("height=\"136\"", StringComparison.Ordinal), "Topology legend should grow when caller-added legend items need another row.");
         Assert(chart.ToPng().Length > 64, "Topology PNG legend should render caller-added legend items.");
     }
 

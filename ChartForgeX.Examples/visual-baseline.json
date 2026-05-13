@@ -1716,15 +1716,15 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 785,
+      "height": 811,
       "svg": {
-        "minVisualNodes": 104,
+        "minVisualNodes": 106,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 463150,
+        "minVisiblePixels": 478490,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1732,15 +1732,15 @@
     {
       "name": "visual-evidence-timeline-relationship",
       "width": 980,
-      "height": 586,
+      "height": 598,
       "svg": {
-        "minVisualNodes": 55,
+        "minVisualNodes": 56,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 287140,
+        "minVisiblePixels": 293020,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1748,15 +1748,15 @@
     {
       "name": "visual-impact-dependency-overview",
       "width": 1120,
-      "height": 792,
+      "height": 811,
       "svg": {
-        "minVisualNodes": 81,
+        "minVisualNodes": 82,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 443520,
+        "minVisiblePixels": 454160,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1764,7 +1764,7 @@
     {
       "name": "visual-mini-correlation-map",
       "width": 920,
-      "height": 462,
+      "height": 474,
       "svg": {
         "minVisualNodes": 53,
         "maxClippedTextNodes": 0,
@@ -1772,23 +1772,23 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 212520,
-        "minDistinctColors": 1669,
+        "minVisiblePixels": 218040,
+        "minDistinctColors": 1671,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-ownership-evidence-bundle",
       "width": 1120,
-      "height": 692,
+      "height": 711,
       "svg": {
-        "minVisualNodes": 83,
+        "minVisualNodes": 84,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 387520,
+        "minVisiblePixels": 398160,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }

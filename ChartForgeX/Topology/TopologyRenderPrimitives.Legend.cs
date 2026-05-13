@@ -4,12 +4,12 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
     public const int LegendColumns = 4;
-    public const double LegendMaxWidth = 700;
-    public const double LegendItemColumnWidth = 158;
-    public const double LegendItemRowHeight = 24;
-    public const double LegendFirstItemOffsetY = 46;
-    public const double LegendBottomPadding = 16;
-    public const double LegendHorizontalPadding = 36;
+    public const double LegendMaxWidth = 860;
+    public const double LegendItemColumnWidth = 190;
+    public const double LegendItemRowHeight = 31;
+    public const double LegendFirstItemOffsetY = 54;
+    public const double LegendBottomPadding = 20;
+    public const double LegendHorizontalPadding = 48;
 
     public static double LegendWidth(TopologyLegend? legend, TopologyViewport viewport) => legend == null ? 0 : Math.Min(LegendMaxWidth, Math.Max(1, viewport.Width - viewport.Padding * 2));
 
