@@ -249,6 +249,8 @@ public enum TopologyLegendMode {
     AutoWhenMissing,
     /// <summary>Infer a legend from the chart data.</summary>
     Auto,
+    /// <summary>Preserve explicit legend items while filling missing marker details from inferred chart data.</summary>
+    Enrich,
     /// <summary>Merge inferred legend items with explicitly provided legend items.</summary>
     Merge
 }

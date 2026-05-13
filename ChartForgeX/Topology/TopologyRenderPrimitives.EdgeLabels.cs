@@ -44,7 +44,7 @@ internal static partial class TopologyRenderPrimitives {
             var routeClearance = avoidOwnRoute ? AutomaticRouteClearanceOffset(points, labelPoint, width, height, lineCount, chart.Viewport, chart.Legend) : new ChartPoint(0, 0);
             var baseX = labelPoint.X + edge.LabelOffsetX + (Math.Abs(edge.LabelOffsetX) < 0.000001 ? routeClearance.X : 0);
             var baseY = labelPoint.Y + edge.LabelOffsetY + (Math.Abs(edge.LabelOffsetY) < 0.000001 ? routeClearance.Y : 0);
-            var center = PlaceLabel(edge, baseX, baseY, width, height, chart.Viewport, chart.Legend, obstacles, placed, edgeSegments, edgeRenderOrders, currentOrder, avoidOwnRoute, IsMonitoringDashboardStyle(options), preferredGroup);
+            var center = PlaceLabel(edge, baseX, baseY, width, height, chart.Viewport, chart.Legend, options, obstacles, placed, edgeSegments, edgeRenderOrders, currentOrder, avoidOwnRoute, IsMonitoringDashboardStyle(options), preferredGroup);
             var box = LabelBox.FromCenter(center.X, center.Y, width, height);
             placed.Add(box);
             layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, center.X, center.Y, width, height));
@@ -65,13 +65,13 @@ internal static partial class TopologyRenderPrimitives {
             Math.Max(node.Y + node.Height + padding, labelY + 15 + padding));
     }
 
-    private static ChartPoint PlaceLabel(TopologyEdge edge, double baseX, double baseY, double width, double height, TopologyViewport viewport, TopologyLegend? legend, IReadOnlyList<LabelBox> nodeBoxes, IReadOnlyList<LabelBox> placedLabels, IReadOnlyList<EdgeSegment> edgeSegments, IReadOnlyDictionary<TopologyEdge, int> edgeRenderOrders, int currentRenderOrder, bool avoidOwnRoute, bool monitoringStyle, LabelBox? preferredGroup) {
+    private static ChartPoint PlaceLabel(TopologyEdge edge, double baseX, double baseY, double width, double height, TopologyViewport viewport, TopologyLegend? legend, TopologyRenderOptions options, IReadOnlyList<LabelBox> nodeBoxes, IReadOnlyList<LabelBox> placedLabels, IReadOnlyList<EdgeSegment> edgeSegments, IReadOnlyDictionary<TopologyEdge, int> edgeRenderOrders, int currentRenderOrder, bool avoidOwnRoute, bool monitoringStyle, LabelBox? preferredGroup) {
         var candidates = LabelCandidates(baseX, baseY, avoidOwnRoute);
         ChartPoint? best = null;
         var bestScore = double.MaxValue;
         var placedPadding = monitoringStyle ? 8 : 0;
         foreach (var candidate in candidates) {
-            var clamped = ClampLabel(candidate, width, height, viewport, legend);
+            var clamped = ClampLabel(candidate, width, height, viewport, legend, options);
             var box = LabelBox.FromCenter(clamped.X, clamped.Y, width, height);
             var score = OverlapScore(box, nodeBoxes) * 4 +
                 OverlapScore(box, placedLabels, placedPadding) * (monitoringStyle ? 10 : 2) +
@@ -85,7 +85,7 @@ internal static partial class TopologyRenderPrimitives {
             }
         }
 
-        return best ?? ClampLabel(new ChartPoint(baseX, baseY), width, height, viewport, legend);
+        return best ?? ClampLabel(new ChartPoint(baseX, baseY), width, height, viewport, legend, options);
     }
 
     private static List<EdgeSegment> EdgeSegments(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
@@ -200,11 +200,12 @@ internal static partial class TopologyRenderPrimitives {
         foreach (var offset in offsets) yield return new ChartPoint(x + offset.X, y + offset.Y);
     }
 
-    private static ChartPoint ClampLabel(ChartPoint point, double width, double height, TopologyViewport viewport, TopologyLegend? legend) {
+    private static ChartPoint ClampLabel(ChartPoint point, double width, double height, TopologyViewport viewport, TopologyLegend? legend, TopologyRenderOptions options) {
+        var panelPadding = options.CanvasSurfaceStyle == TopologyCanvasSurfaceStyle.Plain ? 0 : 18;
         var minX = viewport.Padding + width / 2;
         var maxX = Math.Max(minX, viewport.Width - viewport.Padding - width / 2);
         var minY = viewport.Padding + height / 2;
-        var maxY = Math.Max(minY, viewport.Height - viewport.Padding - LegendReservedHeight(legend) - height / 2);
+        var maxY = Math.Max(minY, viewport.Height - viewport.Padding - LegendReservedHeight(legend) - panelPadding - height / 2);
         return new ChartPoint(Math.Min(maxX, Math.Max(minX, point.X)), Math.Min(maxY, Math.Max(minY, point.Y)));
     }
 

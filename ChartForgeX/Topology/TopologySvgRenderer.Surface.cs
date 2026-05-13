@@ -60,14 +60,15 @@ public sealed partial class TopologySvgRenderer {
             marker
                 .Attribute("id", id)
                 .Attribute("viewBox", "0 0 10 10")
-                .Attribute("refX", options.ArrowMarkerStyle == TopologyArrowMarkerStyle.Circle ? 6 : 8)
+                .Attribute("refX", options.ArrowMarkerStyle == TopologyArrowMarkerStyle.Circle ? 6 : 7.4)
                 .Attribute("refY", 5)
-                .Attribute("markerWidth", IsMonitoringDashboardStyle(options) ? 5.5 : 7)
-                .Attribute("markerHeight", IsMonitoringDashboardStyle(options) ? 5.5 : 7)
-                .Attribute("orient", "auto-start-reverse");
+                .Attribute("markerWidth", IsMonitoringDashboardStyle(options) ? 7.5 : 8)
+                .Attribute("markerHeight", IsMonitoringDashboardStyle(options) ? 7.5 : 8)
+                .Attribute("orient", "auto-start-reverse")
+                .Attribute("overflow", "visible");
             switch (options.ArrowMarkerStyle) {
                 case TopologyArrowMarkerStyle.Chevron:
-                    marker.Element("path", path => path.Attribute("d", "M 2 1 L 8 5 L 2 9").Attribute("fill", "none").Attribute("stroke", color).Attribute("stroke-width", 2.1).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round"));
+                    marker.Element("path", path => path.Attribute("d", "M 2.2 1.6 L 7.4 5 L 2.2 8.4").Attribute("fill", "none").Attribute("stroke", color).Attribute("stroke-width", 1.85).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round"));
                     break;
                 case TopologyArrowMarkerStyle.Diamond:
                     marker.Element("path", path => path.Attribute("d", "M 1 5 L 5 1 L 9 5 L 5 9 z").Attribute("fill", color));

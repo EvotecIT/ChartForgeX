@@ -45,6 +45,7 @@ public sealed class TopologyLegend {
         return mode switch {
             TopologyLegendMode.Auto => Infer(chart),
             TopologyLegendMode.AutoWhenMissing => chart.Legend ?? Infer(chart),
+            TopologyLegendMode.Enrich => Enrich(chart.Legend, Infer(chart)),
             TopologyLegendMode.Merge => Merge(chart.Legend, Infer(chart)),
             _ => chart.Legend
         };
@@ -130,6 +131,17 @@ public sealed class TopologyLegend {
         }
 
         return merged;
+    }
+
+    private static TopologyLegend Enrich(TopologyLegend? explicitLegend, TopologyLegend inferredLegend) {
+        if (explicitLegend == null) return inferredLegend;
+        var enriched = Clone(explicitLegend);
+        foreach (var item in inferredLegend.Items) {
+            var existing = enriched.Items.FirstOrDefault(candidate => SameLegendItem(candidate, item));
+            if (existing != null) FillMissingDetails(existing, item);
+        }
+
+        return enriched;
     }
 
     private static TopologyLegend Clone(TopologyLegend legend) {

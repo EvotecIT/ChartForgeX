@@ -76,6 +76,11 @@ internal static partial class SmokeTests {
         Assert(legend.Contains("stroke=\"#7C3AED\"", StringComparison.Ordinal), "Topology merged legends should enrich explicit edge items with inferred colors.");
         Assert(legend.Contains("stroke-dasharray=\"8 5\"", StringComparison.Ordinal), "Topology merged legends should enrich explicit edge items with inferred line styles.");
         Assert(CountOccurrences(legend, ">Certificates<") == 1, "Topology merged legends should not duplicate enriched explicit node items.");
+        var focusedSvg = chart.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Enrich });
+        var focusedLegend = focusedSvg.Substring(focusedSvg.IndexOf("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal));
+        Assert(focusedLegend.Contains("data-legend-icon-id=\"common:certificate\"", StringComparison.Ordinal), "Topology enriched legends should fill explicit marker details.");
+        Assert(focusedLegend.Contains("stroke=\"#7C3AED\"", StringComparison.Ordinal), "Topology enriched legends should fill explicit edge details.");
+        Assert(!focusedLegend.Contains(">Person<", StringComparison.Ordinal), "Topology enriched legends should not add unrelated inferred items to focused legends.");
         Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Merge }).Length > 64, "Enriched merged topology legends should render as PNG.");
     }
 }
