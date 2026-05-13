@@ -197,6 +197,7 @@ internal static partial class SmokeTests {
         ("Topology legend grows for domain specific items", TopologyLegendGrowsForDomainSpecificItems),
         ("Topology relationship overview supports multiline labels", TopologyRelationshipOverviewSupportsMultilineLabels),
         ("Topology icon catalogs resolve built-in and vendor icons", TopologyIconCatalogsResolveBuiltinAndVendorIcons),
+        ("Topology nodes can apply icons by kind", TopologyNodesCanApplyIconsByKind),
         ("Topology icon catalogs render palette charts", TopologyIconCatalogsRenderPaletteCharts),
         ("Topology icon artwork renders vendor SVG assets", TopologyIconArtworkRendersVendorSvgAssets),
         ("Topology icon stencil browser renders searchable picker", TopologyIconStencilBrowserRendersSearchablePicker),

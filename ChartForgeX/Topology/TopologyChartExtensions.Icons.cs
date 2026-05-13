@@ -25,6 +25,26 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
+    /// Applies a reusable icon definition to all nodes of a kind.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="kind">The node kind to update.</param>
+    /// <param name="iconId">The icon id, for example <c>common:certificate</c>.</param>
+    /// <param name="catalog">Optional icon catalog. When omitted, built-in packs are used.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithNodesOfKindIcon(this TopologyChart chart, TopologyNodeKind kind, string iconId, TopologyIconCatalog? catalog = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
+        var icon = ResolveIcon(iconId, catalog);
+        foreach (var node in chart.Nodes) {
+            if (node.Kind != kind) continue;
+            ApplyIcon(node, icon);
+        }
+
+        return chart;
+    }
+
+    /// <summary>
     /// Adds an auto-placed node from a reusable icon definition.
     /// </summary>
     public static TopologyChart AddAutoIconNode(this TopologyChart chart, string id, string label, string iconId, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? cssClass = null, TopologyIconCatalog? catalog = null) {
