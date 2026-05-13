@@ -12,12 +12,19 @@ permissions:
 
 jobs:
   build-test-pack:
-    name: Build, test, examples, pack
-    runs-on:
-      - self-hosted
-      - Linux
-      - X64
-    timeout-minutes: 20
+    name: Build, test, examples, pack (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            runner: ubuntu-latest
+          - name: Windows
+            runner: windows-latest
+          - name: macOS
+            runner: macos-latest
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
@@ -32,6 +39,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Install Native AOT prerequisites
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           install_with_sudo() {
@@ -135,7 +143,7 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@v6
         with:
-          name: chartforgex-packages
+          name: chartforgex-packages-${{ matrix.runner }}
           path: |
             artifacts/packages/Release/*.nupkg
             artifacts/packages/Release/*.snupkg
@@ -144,6 +152,6 @@ jobs:
       - name: Upload example gallery
         uses: actions/upload-artifact@v6
         with:
-          name: chartforgex-example-gallery
+          name: chartforgex-example-gallery-${{ matrix.runner }}
           path: ChartForgeX.Examples/bin/Release/net8.0/output
           if-no-files-found: error

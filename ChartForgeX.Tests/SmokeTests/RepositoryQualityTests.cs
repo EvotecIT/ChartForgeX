@@ -463,7 +463,7 @@ internal static partial class SmokeTests {
         }
     }
 
-    private static void GitHubActionsUsePrivateRunners() {
+    private static void GitHubActionsUsePublicRunnerMatrix() {
         var workflowRoot = Path.Combine(FindRepositoryRoot(), ".github", "workflows");
         Assert(Directory.Exists(workflowRoot), "Repository should include GitHub Actions workflows.");
         var workflows = Directory.EnumerateFiles(workflowRoot, "*.yml", SearchOption.TopDirectoryOnly)
@@ -472,12 +472,13 @@ internal static partial class SmokeTests {
         Assert(workflows.Length > 0, "Repository should include at least one GitHub Actions workflow.");
         foreach (var workflow in workflows) {
             var text = File.ReadAllText(workflow);
-            Assert(text.Contains("self-hosted", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should use self-hosted private runners: " + Path.GetFileName(workflow));
-            Assert(text.Contains("Linux", StringComparison.OrdinalIgnoreCase) && text.Contains("X64", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should require labels available on the self-hosted Linux runners: " + Path.GetFileName(workflow));
+            Assert(!text.Contains("self-hosted", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should use public hosted runners now that the repository is public: " + Path.GetFileName(workflow));
+            Assert(ContainsAny(text, "ubuntu-latest") && ContainsAny(text, "windows-latest") && ContainsAny(text, "macos-latest"), "GitHub Actions workflows should cover public Linux, Windows, and macOS runners: " + Path.GetFileName(workflow));
             Assert(text.Contains("actions/setup-dotnet", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should install the expected .NET SDK: " + Path.GetFileName(workflow));
             Assert(text.Contains("actions/upload-artifact", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should preserve packages and gallery output: " + Path.GetFileName(workflow));
             Assert(text.Contains("artifacts/packages/Release", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should upload packages from Build.ps1 artifact output: " + Path.GetFileName(workflow));
-            Assert(!ContainsAny(text, "ubuntu-latest", "windows-latest", "macos-latest"), "GitHub Actions workflows should not use public hosted runner labels: " + Path.GetFileName(workflow));
+            Assert(text.Contains("if: runner.os == 'Linux'", StringComparison.Ordinal), "GitHub Actions workflows should keep Linux package provisioning off Windows and macOS runners: " + Path.GetFileName(workflow));
+            Assert(text.Contains("chartforgex-packages-${{ matrix.runner }}", StringComparison.Ordinal) && text.Contains("chartforgex-example-gallery-${{ matrix.runner }}", StringComparison.Ordinal), "GitHub Actions matrix jobs should upload OS-specific artifact names: " + Path.GetFileName(workflow));
         }
     }
 }
