@@ -175,6 +175,42 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 
 `Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` applies to opaque raster formats; PNG keeps its dedicated renderer path and PNG output-scale options.
 
+## Simple Definitions
+
+`ChartForgeX.Simple` is the supported lightweight construction layer for script, UI, and host libraries that should not own chart DTOs. It only carries deferred chart definitions; enums, themes, rendering options, point helpers, bubble helpers, and output still come from the core ChartForgeX API. The result is a native `ChartForgeX.Core.Chart`, so callers can keep customizing or rendering it with the normal fluent API.
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Simple;
+
+var chart = Charts.Build(
+    new ChartDefinition[] {
+        new ChartLine("CPU", new double[] { 35, 42, 58, 61 }, ChartColor.FromHex("#22C55E"), smooth: true)
+    },
+    width: 420,
+    height: 260,
+    showGrid: true,
+    options: new ChartRenderOptions {
+        UseOverlay = true,
+        ShowLegend = true
+    });
+
+chart.SavePng("cpu-overlay.png");
+chart.SaveSvg("cpu-overlay.svg");
+```
+
+`UseOverlay` applies ChartForgeX transparent composition defaults: transparent background, no card, no plot fill, and quiet axes/grid. Explicit options still win, so callers can turn legends, axes, or data labels back on for wallpaper, report, and image-composition scenarios.
+
+When a host does not need deferred definitions, use core helpers directly:
+
+```csharp
+var direct = Chart.Create()
+    .AddSmoothLine("CPU", ChartPoints.FromValues(35, 42, 58, 61))
+    .AddBubble("Latency", ChartBubbles.FromXYSize(new[] { 1d, 2d }, new[] { 48d, 63d }, new[] { 8d, 14d }));
+```
+
 ## Project Status
 
 ChartForgeX is pre-1.0, but the current public surface is intended to be useful and stable where it models real charting, topology, visual block, rendering, and package concepts. Active follow-up work belongs in `TODO.md`; release notes belong in GitHub Releases and short NuGet package notes.

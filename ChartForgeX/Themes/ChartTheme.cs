@@ -200,6 +200,40 @@ public sealed partial class ChartTheme {
     }
 
     /// <summary>
+    /// Creates an independent copy of this theme.
+    /// </summary>
+    /// <returns>A copied chart theme.</returns>
+    public ChartTheme Clone() => new() {
+        Background = Background,
+        CardBackground = CardBackground,
+        PlotBackground = PlotBackground,
+        CardBorder = CardBorder,
+        PlotBorder = PlotBorder,
+        Text = Text,
+        MutedText = MutedText,
+        Grid = Grid,
+        Axis = Axis,
+        Positive = Positive,
+        Warning = Warning,
+        Negative = Negative,
+        Palette = Palette,
+        UseCard = UseCard,
+        CornerRadius = CornerRadius,
+        PlotCornerRadius = PlotCornerRadius,
+        StrokeWidth = StrokeWidth,
+        ShadowOpacity = ShadowOpacity,
+        ShadowColor = ShadowColor,
+        TitleFontSize = TitleFontSize,
+        SubtitleFontSize = SubtitleFontSize,
+        AxisTitleFontSize = AxisTitleFontSize,
+        TickLabelFontSize = TickLabelFontSize,
+        LegendFontSize = LegendFontSize,
+        DataLabelFontSize = DataLabelFontSize,
+        MarkerRadius = MarkerRadius,
+        FontFamily = FontFamily
+    };
+
+    /// <summary>
     /// Applies a default series palette.
     /// </summary>
     /// <param name="colors">The palette colors.</param>
