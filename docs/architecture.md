@@ -32,6 +32,7 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Keep static rendering in `ChartForgeX`; it must remain deterministic and script-free.
 - Keep host-neutral interaction contracts in `ChartForgeX.Interactivity`.
 - Keep host-specific adapters in sibling packages such as `ChartForgeX.Interactivity.Html`.
+- Keep reusable scenario, step playback, and deep-link state concepts in `ChartForgeX.Interactivity`; chart families such as topology should map their own domain ids into those contracts instead of moving domain models into adapters.
 - Add browser or desktop behavior only through an adapter package, never by making the core HTML renderer require JavaScript.
 - Pack adapters separately and validate them from a clean consumer app so package dependency drift is caught before release.
 - Keep at least one generated example page for each adapter so interaction work remains visible in the local gallery.

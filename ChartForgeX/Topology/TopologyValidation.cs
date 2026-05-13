@@ -62,13 +62,23 @@ public sealed class TopologyChartValidator {
     /// </summary>
     /// <param name="chart">The chart to validate.</param>
     /// <returns>Structured validation output.</returns>
-    public TopologyValidationResult Validate(TopologyChart chart) {
+    public TopologyValidationResult Validate(TopologyChart chart) => Validate(chart, true);
+
+    internal TopologyValidationResult Validate(TopologyChart chart, bool validateScenarioReferences) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var result = new TopologyValidationResult();
         ValidateViewport(chart, result);
         ValidateGroups(chart, result);
         ValidateNodes(chart, result);
         ValidateEdges(chart, result);
+        ValidateScenarios(chart, result, validateScenarioReferences);
+        return result;
+    }
+
+    internal TopologyValidationResult ValidateScenarioReferences(TopologyChart chart) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        var result = new TopologyValidationResult();
+        ValidateScenarios(chart, result, validateScenarioReferences: true);
         return result;
     }
 
@@ -126,6 +136,48 @@ public sealed class TopologyChartValidator {
                 Add(result, "missing-edge-target", "Edge '" + edge.Id + "' references missing target node '" + edge.TargetNodeId + "'.", edge.Id);
             }
         }
+    }
+
+    private static void ValidateScenarios(TopologyChart chart, TopologyValidationResult result, bool validateScenarioReferences) {
+        var nodeIds = new HashSet<string>(chart.Nodes.Where(node => !string.IsNullOrWhiteSpace(node.Id)).Select(node => node.Id), StringComparer.Ordinal);
+        var edgeIds = new HashSet<string>(chart.Edges.Where(edge => !string.IsNullOrWhiteSpace(edge.Id)).Select(edge => edge.Id), StringComparer.Ordinal);
+        foreach (var scenario in chart.Scenarios) {
+            if (string.IsNullOrWhiteSpace(scenario.Id)) Add(result, "scenario-id-empty", "Scenario id is required.", null);
+            else if (!IsScenarioToken(scenario.Id)) Add(result, "scenario-id-token", "Scenario id '" + scenario.Id + "' may contain only letters, digits, dots, underscores, and hyphens.", scenario.Id);
+            if (string.IsNullOrWhiteSpace(scenario.Label)) Add(result, "scenario-label-empty", "Scenario label is required.", scenario.Id);
+            if (scenario.Steps.Count == 0) Add(result, "scenario-empty", "Scenario '" + scenario.Id + "' must reference at least one node or edge.", scenario.Id);
+            foreach (var step in scenario.Steps) {
+                if (string.IsNullOrWhiteSpace(step.Id)) {
+                    Add(result, "scenario-step-id-empty", "Scenario '" + scenario.Id + "' contains an empty step id.", scenario.Id);
+                    continue;
+                }
+
+                if (!Enum.IsDefined(typeof(TopologyScenarioStepKind), step.Kind)) {
+                    Add(result, "scenario-step-kind", "Scenario '" + scenario.Id + "' contains an undefined step kind.", scenario.Id);
+                    continue;
+                }
+
+                if (!validateScenarioReferences) continue;
+                if (step.Kind == TopologyScenarioStepKind.Node && !nodeIds.Contains(step.Id)) {
+                    Add(result, "missing-scenario-node", "Scenario '" + scenario.Id + "' references missing node '" + step.Id + "'.", scenario.Id);
+                } else if (step.Kind == TopologyScenarioStepKind.Edge && !edgeIds.Contains(step.Id)) {
+                    Add(result, "missing-scenario-edge", "Scenario '" + scenario.Id + "' references missing edge '" + step.Id + "'.", scenario.Id);
+                }
+            }
+        }
+
+        foreach (var duplicate in chart.Scenarios.Where(scenario => !string.IsNullOrWhiteSpace(scenario.Id)).GroupBy(scenario => scenario.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
+            Add(result, "duplicate-scenario-id", "Duplicate scenario id '" + duplicate.Key + "'.", duplicate.Key);
+        }
+    }
+
+    private static bool IsScenarioToken(string value) {
+        foreach (var ch in value.Trim()) {
+            if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.') continue;
+            return false;
+        }
+
+        return true;
     }
 
     private static bool IsPositive(double value) => IsFinite(value) && value > 0;

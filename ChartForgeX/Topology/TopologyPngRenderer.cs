@@ -27,8 +27,12 @@ public sealed partial class TopologyPngRenderer {
         if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
         var requestedWidth = (int)Math.Ceiling(chart.Viewport.Width);
         var requestedHeight = (int)Math.Ceiling(chart.Viewport.Height);
+        var validator = new TopologyChartValidator();
+        var sourceValidation = validator.ValidateScenarioReferences(chart);
+        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
+
         var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
-        var validation = new TopologyChartValidator().Validate(prepared);
+        var validation = validator.Validate(prepared, validateScenarioReferences: false);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
         var width = (int)Math.Ceiling(prepared.Viewport.Width);

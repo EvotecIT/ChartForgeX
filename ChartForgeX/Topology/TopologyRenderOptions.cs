@@ -93,8 +93,20 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether interactive HTML pages should synchronize selection and viewport state with wrappers in the same sync group.</summary>
     public bool EnableHtmlSynchronizedState { get; set; }
 
+    /// <summary>Gets or sets whether interactive HTML pages should render scenario picker controls when scenarios are present.</summary>
+    public bool EnableHtmlScenarioControls { get; set; } = true;
+
+    /// <summary>Gets or sets whether interactive HTML pages should render a compact scenario detail panel when scenarios are present.</summary>
+    public bool EnableHtmlScenarioPanel { get; set; } = true;
+
+    /// <summary>Gets or sets whether interactive HTML pages should read and update scenario state from the page query string.</summary>
+    public bool EnableHtmlScenarioUrlState { get; set; }
+
     /// <summary>Gets or sets the optional HTML synchronization group name used by topology wrappers on the same page.</summary>
     public string? HtmlSyncGroupName { get; set; }
+
+    /// <summary>Gets or sets the optional scenario id to activate when an interactive HTML page loads.</summary>
+    public string? ActiveScenarioId { get; set; }
 
     /// <summary>Gets or sets whether geographic topology layouts should render map callout summaries for coordinated groups.</summary>
     public bool IncludeGeographicCallouts { get; set; }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity;
 using ChartForgeX.Html;
 
 namespace ChartForgeX.Interactivity.Html;
@@ -60,6 +61,31 @@ public sealed class HtmlInteractiveDashboardRenderer {
         childOptions.Interaction.ChartId = chartId;
         childOptions.Interaction.GroupName = groupName;
         childOptions.Interaction.Features = options.Interaction.Features;
+        childOptions.Interaction.ActiveScenarioId = options.Interaction.ActiveScenarioId;
+        childOptions.Interaction.EnableDeepLinkState = options.Interaction.EnableDeepLinkState;
+        foreach (var scenario in options.Interaction.Scenarios) childOptions.Interaction.Scenarios.Add(CloneScenario(scenario));
         return childOptions;
+    }
+
+    private static ChartInteractionScenario CloneScenario(ChartInteractionScenario scenario) {
+        var clone = new ChartInteractionScenario {
+            Id = scenario.Id,
+            Label = scenario.Label,
+            Description = scenario.Description,
+            Color = scenario.Color
+        };
+        foreach (var item in scenario.Metadata) clone.Metadata[item.Key] = item.Value;
+        foreach (var step in scenario.Steps) {
+            var stepClone = new ChartInteractionScenarioStep {
+                TargetKind = step.TargetKind,
+                TargetId = step.TargetId,
+                Label = step.Label,
+                Description = step.Description
+            };
+            foreach (var item in step.Metadata) stepClone.Metadata[item.Key] = item.Value;
+            clone.Steps.Add(stepClone);
+        }
+
+        return clone;
     }
 }

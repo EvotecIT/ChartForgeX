@@ -154,6 +154,19 @@ public static partial class GalleryWriter {
             "service-dependency-api-neighbors-view",
             "service-dependency-critical-dependencies-view"),
         new(
+            "Topology Interactive Demos",
+            "Topology-first HTML demos for route scenarios, step playback, scoped deep links, and host dashboard events.",
+            "topology-demo",
+            "visual-replication-mesh-explorer"),
+        new(
+            "Relationship Diagrams",
+            "Topology-rendered relationship maps that stay in SVG/PNG comparison baselines for release visual review.",
+            "visual-entity-relationship-overview",
+            "visual-evidence-timeline-relationship",
+            "visual-impact-dependency-overview",
+            "visual-mini-correlation-map",
+            "visual-ownership-evidence-bundle"),
+        new(
             "Topology Visual Showcase",
             "Reusable directory, team, region, replication, service, coverage, and WAN topology examples that demonstrate ChartForgeX as a diagram engine.",
             "visual-ad-sites-hierarchy",
@@ -168,7 +181,6 @@ public static partial class GalleryWriter {
             "visual-nested-user-hierarchy-left-right",
             "visual-nested-user-hierarchy-right-left",
             "visual-replication-health-hub",
-            "visual-replication-mesh-explorer",
             "visual-reusable-regional-topology",
             "visual-service-dependency-map",
             "visual-site-distribution-map",

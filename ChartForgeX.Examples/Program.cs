@@ -16,7 +16,6 @@ void SaveChart(Chart chart, string name) {
     chart.SaveHtml(Path.Combine(output, name + ".html"));
     chart.SavePng(Path.Combine(output, name + ".png"));
 }
-
 void SaveGrid(ChartGrid grid, string name) {
     grid.WithPngOutputScale(DemoPngOutputScale);
     grid.SaveSvg(Path.Combine(output, name + ".svg"));
@@ -46,6 +45,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
     options.Interaction.ChartId = "domain-security-interactive";
     options.Interaction.GroupName = "example-gallery";
     options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+    ExampleInteractiveScenarios.ConfigureDomainSecurity(options.Interaction);
 });
 
 var bars = Chart.Create()

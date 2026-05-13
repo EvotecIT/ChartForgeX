@@ -703,6 +703,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var group in chart.Groups) copy.Groups.Add(Clone(group));
         foreach (var node in chart.Nodes) copy.Nodes.Add(Clone(node));
         foreach (var edge in chart.Edges) copy.Edges.Add(Clone(edge));
+        foreach (var scenario in chart.Scenarios) copy.Scenarios.Add(TopologyScenarioCloner.Clone(scenario));
         return copy;
     }
 
@@ -793,4 +794,5 @@ internal static partial class TopologyLayoutEngine {
         copy.Waypoints.AddRange(edge.Waypoints);
         return copy;
     }
+
 }

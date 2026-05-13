@@ -172,6 +172,65 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Activates an existing topology scenario for static highlighting and initial interactive HTML state.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="scenarioId">The scenario id.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithActiveScenario(this TopologyRenderOptions options, string scenarioId) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.ActiveScenarioId = RequiredScenarioToken(scenarioId, nameof(scenarioId));
+        return options;
+    }
+
+    /// <summary>
+    /// Clears the active topology scenario.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithoutActiveScenario(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.ActiveScenarioId = null;
+        return options;
+    }
+
+    /// <summary>
+    /// Enables or disables topology scenario picker controls in interactive HTML output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render scenario picker controls.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlScenarioControls(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlScenarioControls = enabled;
+        return options;
+    }
+
+    /// <summary>
+    /// Enables or disables the compact topology scenario detail panel in interactive HTML output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render the scenario detail panel.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlScenarioPanel(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlScenarioPanel = enabled;
+        return options;
+    }
+
+    /// <summary>
+    /// Enables or disables query-string scenario state in interactive HTML output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should read and update scenario state from the page query string.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlScenarioUrlState(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlScenarioUrlState = enabled;
+        return options;
+    }
+
+    /// <summary>
     /// Marks a topology group as selected without filtering or dimming the chart.
     /// </summary>
     /// <param name="options">The render options.</param>
@@ -212,5 +271,17 @@ public static class TopologyRenderOptionsExtensions {
 
     private static void AddHighlightStatus(TopologyRenderOptions options, TopologyHealthStatus status) {
         if (!options.HighlightStatuses.Contains(status)) options.HighlightStatuses.Add(status);
+    }
+
+    private static string RequiredScenarioToken(string? value, string parameterName) {
+        if (value == null) throw new ArgumentNullException(parameterName);
+        var trimmed = value.Trim();
+        if (trimmed.Length == 0) throw new ArgumentException("Active scenario id cannot be empty.", parameterName);
+        foreach (var ch in trimmed) {
+            if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.') continue;
+            throw new ArgumentException("Active scenario id may contain only letters, digits, dots, underscores, and hyphens.", parameterName);
+        }
+
+        return trimmed;
     }
 }

@@ -182,6 +182,14 @@ internal static partial class SmokeTests {
         Assert(program.Contains("SaveInteractiveHtml", StringComparison.Ordinal), "Example generation should include a visible interactive HTML adapter demo.");
         Assert(program.Contains("SaveInteractiveHtmlDashboard", StringComparison.Ordinal), "Example generation should include a visible synchronized dashboard adapter demo.");
         Assert(program.Contains("ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts", StringComparison.Ordinal), "Interactive example should exercise the competitive review toolbar features.");
+        var scenarios = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "ExampleInteractiveScenarios.cs"));
+        Assert(program.Contains("ExampleInteractiveScenarios.ConfigureDomainSecurity", StringComparison.Ordinal) && scenarios.Contains(".AddScenario(\"healthy-trend\"", StringComparison.Ordinal) && scenarios.Contains(".WithDeepLinkState()", StringComparison.Ordinal), "Interactive example should visibly exercise reusable scenario and deep-link controls.");
+        var topologyExamples = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "TopologyExamples.cs"));
+        Assert(topologyExamples.Contains("Scenario Route Explorer", StringComparison.Ordinal) && topologyExamples.Contains("visual-replication-mesh-explorer.html?scenario=client-request-europe&amp;scenarioStep=4", StringComparison.Ordinal), "Topology examples should surface the scenario route explorer as an easy deep-linkable demo.");
+        Assert(topologyExamples.Contains("topology-demo.html", StringComparison.Ordinal), "Topology examples should copy their focused demo index into the root generated artifact set.");
+        var catalog = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "GalleryWriter.Catalog.cs"));
+        Assert(catalog.Contains("Topology Interactive Demos", StringComparison.Ordinal), "Catalog should separate topology-first interactive demos from regular chart interactivity examples.");
+        Assert(CountOccurrences(catalog, "\"visual-replication-mesh-explorer\"") == 1, "Scenario topology demo should live in one catalog family instead of being duplicated across topology visual groups.");
     }
 
     private static void GeneratedExamplesStayAssignedToCatalogFamilies() {
@@ -267,6 +275,7 @@ internal static partial class SmokeTests {
             "dashboard-saas-mrr-grid.html",
             "control-scorecards-grid.html",
             "visual-replication-mesh-explorer.html",
+            "topology-demo.html",
             "theme-font-showcase-grid.html",
             "catalog.html",
             "svg-png-comparison.html",
@@ -296,6 +305,8 @@ internal static partial class SmokeTests {
             Assert(readme.Contains("Website/static/examples/generated/" + asset, StringComparison.Ordinal), "README visual tour should use repository-relative generated asset link: " + asset);
             Assert(File.Exists(localPath), "README visual tour asset should exist locally: " + Path.GetRelativePath(root, localPath));
         }
+        var topologyDemo = File.ReadAllText(Path.Combine(root, "Website", "static", "examples", "generated", "visual-replication-mesh-explorer.html"));
+        Assert(topologyDemo.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal) && topologyDemo.Contains("data-cfx-topology-scenario=\"client-request-europe\"", StringComparison.Ordinal), "Checked-in topology scenario preview should be generated from the interactive topology demo, not the static fallback.");
         Assert(nugetReadme.Contains("## Visual Tour", StringComparison.Ordinal), "NuGet README should include rendered visuals near the top of the package page.");
         Assert(!nugetReadme.Contains("](Website/static/examples/generated/", StringComparison.Ordinal), "NuGet README should not use repository-relative generated asset links because it is rendered outside the repo checkout.");
         foreach (var preview in new[] {

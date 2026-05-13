@@ -17,7 +17,11 @@ internal static partial class TopologyVisualExamples {
         var tileOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
         var tileSubtitleOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
         var routeOptions = new TopologyRenderOptions { IncludeIconLabels = true, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
-        var meshOptions = new TopologyRenderOptions { IncludeIconLabels = true, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle();
+        var meshOptions = new TopologyRenderOptions { IncludeIconLabels = true, LegendMode = TopologyLegendMode.Merge }
+            .WithMonitoringDashboardStyle()
+            .WithActiveScenario("client-request-europe")
+            .WithHtmlScenarioUrlState();
+        meshOptions.EnableHtmlInteractions = true;
         var replicationHealthOptions = new TopologyRenderOptions { IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Explicit }
             .WithMonitoringDashboardStyle()
             .WithNeutralGroupSurfaces();
@@ -49,7 +53,7 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-impact-dependency-overview", BuildImpactDependencyOverview(), "Impact Dependency Overview", "Dependency and blast-radius topology with upstream services, owned applications, downstream consumers, risk links, and reusable relationship-label plates.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).WithSelectedNode("platform").WithSelectedEdge("platform-finding"));
         SaveTopology(target, artifacts, "visual-ownership-evidence-bundle", BuildOwnershipEvidenceBundle(), "Ownership Evidence Bundle", "Ownership and evidence topology for selected assets, showing owner teams, certificates, DNS, IP evidence, findings, and exported evidence bundles.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).WithSelectedNode("asset").WithSelectedEdge("asset-finding"));
         SaveTopology(target, artifacts, "visual-reusable-regional-topology", BuildReusableRegionalTopology(), "Reusable Regional Topology", "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy.", tileSubtitleOptions);
-        SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, and offender highlighting support.", meshOptions);
+        SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, scenario switching, and offender highlighting support.", meshOptions);
         SaveTopology(target, artifacts, "visual-subnets-site-links-map", BuildSubnetsSiteLinksMap(), "Subnets and Site Links Map", "Subnet-to-site mapping topology with overlapping/orphan subnet states, bridgehead mapping, site links, and route labels.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-dc-connectivity-map", BuildDcConnectivityMap(), "Domain Controller Connectivity", "Selected-object connectivity topology for domain controllers, connection objects, service checks, and partner health.");
         SaveTopology(target, artifacts, "visual-ad-sites-hierarchy", BuildAdSitesHierarchy(), "AD Sites Hierarchy", "Hierarchy-style site map with hubs, branches, bridgeheads, primary and backup links.", tileSubtitleOptions);
@@ -315,6 +319,28 @@ internal static partial class TopologyVisualExamples {
             edge.Metrics["lag"] = edge.Label ?? string.Empty;
             edge.Metrics["queue"] = edge.SecondaryLabel ?? string.Empty;
         }
+
+        chart
+            .AddScenario("client-request-europe", "Europe request", scenario => scenario
+                .WithColor("#2563EB")
+                .WithDescription("Nominal client request from Frankfurt through London to New York.")
+                .WithMetadata("request.type", "client")
+                .WithMetadata("origin.region", "EMEA")
+                .AddNodeStep("fra-dc1", "Origin")
+                .AddEdgeStep("fra-lon", "Route", configure: step => step.WithMetadata("transport", "WAN"))
+                .AddNodeStep("lon-dc2", "Policy")
+                .AddEdgeStep("lon-nyc", "Directory", configure: step => step.WithMetadata("transport", "Directory replication"))
+                .AddNodeStep("nyc-dc1", "Lookup"))
+            .AddScenario("apac-failover", "APAC failover", scenario => scenario
+                .WithColor("#EF4444")
+                .WithDescription("Critical APAC failover path through Singapore and San Francisco.")
+                .WithMetadata("request.type", "failover")
+                .WithMetadata("origin.region", "APAC")
+                .AddNodeStep("fra-dc2", "Origin")
+                .AddEdgeStep("fra-sin", "Degraded", configure: step => step.WithMetadata("risk", "critical"))
+                .AddNodeStep("sin-dc1", "Fallback")
+                .AddEdgeStep("sin-sfo", "Recovery", configure: step => step.WithMetadata("risk", "recovery"))
+                .AddNodeStep("sfo-dc2", "Target"));
 
         return chart;
     }

@@ -64,6 +64,9 @@ public sealed class TopologyChart {
     /// <summary>Gets the topology edges.</summary>
     public List<TopologyEdge> Edges { get; } = new();
 
+    /// <summary>Gets reusable scenario overlays that describe paths through the topology.</summary>
+    public List<TopologyScenario> Scenarios { get; } = new();
+
     /// <summary>Gets or sets an optional legend.</summary>
     public TopologyLegend? Legend { get; set; }
 

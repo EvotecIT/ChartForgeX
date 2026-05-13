@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ChartForgeX.Interactivity;
 
@@ -8,6 +9,7 @@ namespace ChartForgeX.Interactivity;
 public sealed class ChartInteractionOptions {
     private string? _chartId;
     private string? _groupName;
+    private string? _activeScenarioId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartInteractionOptions"/> class.
@@ -31,6 +33,24 @@ public sealed class ChartInteractionOptions {
         get => _groupName;
         set => _groupName = NormalizeOptionalToken(value, nameof(value));
     }
+
+    /// <summary>
+    /// Gets interaction scenarios that host adapters may expose as alternate chart paths, flows, or analytical states.
+    /// </summary>
+    public List<ChartInteractionScenario> Scenarios { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the initial active scenario id.
+    /// </summary>
+    public string? ActiveScenarioId {
+        get => _activeScenarioId;
+        set => _activeScenarioId = ChartInteractionText.OptionalToken(value, nameof(value), "Active scenario ids");
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether adapters may synchronize interaction state with URL or host deep links.
+    /// </summary>
+    public bool EnableDeepLinkState { get; set; }
 
     /// <summary>
     /// Gets or sets the enabled interaction feature flags.
@@ -71,9 +91,6 @@ public sealed class ChartInteractionOptions {
     }
 
     private static string? NormalizeOptionalToken(string? value, string parameterName) {
-        if (value == null) return null;
-        var trimmed = value.Trim();
-        if (trimmed.Length == 0) throw new ArgumentException("Interaction identifiers must not be empty.", parameterName);
-        return trimmed;
+        return ChartInteractionText.OptionalText(value, parameterName, "Interaction identifiers");
     }
 }

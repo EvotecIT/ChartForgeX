@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
 
@@ -44,23 +47,184 @@ public sealed class HtmlInteractiveChartRenderer {
         if (options == null) throw new ArgumentNullException(nameof(options));
         var scope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
         var chartId = options.Interaction.ChartId ?? scope;
+        var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
             .Attribute("data-cfx-chart-id", chartId)
             .Attribute("data-cfx-interaction-features", options.Interaction.Features.ToString())
             .Attribute("data-cfx-interaction-group", options.Interaction.GroupName)
+            .Attribute("data-cfx-scenario-count", options.Interaction.Scenarios.Count)
+            .Attribute("data-cfx-active-scenario", options.Interaction.ActiveScenarioId)
+            .Attribute("data-cfx-deep-link-state", scenarioControls && options.Interaction.EnableDeepLinkState)
             .EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-toolbar").EndStartElement()
             .RawTrusted(BuildToolbar(options))
-            .EndElement().Line()
-            .StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
+            .EndElement().Line();
+        if (scenarioControls) {
+            writer.RawTrusted(BuildScenarioControls(options));
+            writer.RawTrusted(BuildScenarioPanel(options));
+        }
+
+        writer.StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
             .RawTrusted(chart.ToSvg(scope)).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement();
         return writer.Build();
+    }
+
+    private static string BuildScenarioControls(HtmlChartInteractionOptions options) {
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("div").Attribute("class", "cfx-scenarios").Attribute("aria-label", "Chart scenarios").EndStartElement();
+        AppendScenarioButton(writer, string.Empty, "All", "Show all scenarios", string.IsNullOrWhiteSpace(options.Interaction.ActiveScenarioId), null, null, null, null);
+        foreach (var scenario in options.Interaction.Scenarios) {
+            var active = string.Equals(options.Interaction.ActiveScenarioId, scenario.Id, StringComparison.Ordinal);
+            var title = string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description!;
+            AppendScenarioButton(writer, scenario.Id, scenario.Label, title, active, scenario.Color, scenario.Description, ScenarioStepsJson(scenario), ScenarioMetadataJson(scenario.Metadata));
+        }
+
+        writer.EndElement().Line();
+        return writer.Build();
+    }
+
+    private static string BuildScenarioPanel(HtmlChartInteractionOptions options) {
+        var scenario = ActiveScenario(options);
+        var stepPlayback = options.Interaction.HasFeature(ChartInteractionFeatures.StepPlayback);
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("section")
+            .Attribute("class", "cfx-scenario-panel")
+            .Attribute("data-cfx-scenario-panel", "true")
+            .Attribute("data-cfx-panel-active-scenario", scenario?.Id)
+            .Attribute("aria-live", "polite")
+            .Attribute("style", scenario == null || string.IsNullOrWhiteSpace(scenario.Color) ? null : "--cfx-scenario-color:" + scenario.Color!.Trim())
+            .EndStartElement().Line()
+            .StartElement("div").Attribute("class", "cfx-scenario-panel__summary").EndStartElement()
+            .StartElement("div").Attribute("class", "cfx-scenario-panel__title").Attribute("data-cfx-scenario-panel-title", "true").EndStartElement().Text(scenario?.Label ?? "All").EndElement()
+            .StartElement("div").Attribute("class", "cfx-scenario-panel__meta").Attribute("data-cfx-scenario-panel-meta", "true").EndStartElement().Text(ScenarioSummary(scenario)).EndElement()
+            .EndElement().Line();
+        if (stepPlayback) {
+            writer.StartElement("div").Attribute("class", "cfx-scenario-panel__controls").Attribute("data-cfx-scenario-step-controls", "true").EndStartElement();
+            AppendToolbarButton(writer, "Prev", ("data-cfx-scenario-step-control", "previous"), ("title", "Previous step"));
+            AppendToolbarButton(writer, "Play", ("data-cfx-scenario-step-control", "play"), ("aria-pressed", "false"), ("title", "Play scenario"));
+            AppendToolbarButton(writer, "Next", ("data-cfx-scenario-step-control", "next"), ("title", "Next step"));
+            AppendToolbarButton(writer, "Clear", ("data-cfx-scenario-step-control", "reset"), ("title", "Clear step"));
+            if (options.Interaction.EnableDeepLinkState) AppendToolbarButton(writer, "Link", ("data-cfx-scenario-step-control", "link"), ("title", "Copy scenario link"));
+            writer.EndElement().Line();
+        }
+
+        writer.StartElement("ol").Attribute("class", "cfx-scenario-panel__steps").Attribute("data-cfx-scenario-panel-steps", "true").EndStartElement();
+        if (stepPlayback && scenario != null) {
+            var activeScenario = scenario;
+            for (var i = 0; i < activeScenario.Steps.Count; i++) WriteScenarioStep(writer, activeScenario.Steps[i], i);
+        }
+
+        writer.EndElement().Line().EndElement().Line();
+        return writer.Build();
+    }
+
+    private static void AppendScenarioButton(HtmlMarkupWriter writer, string id, string label, string title, bool active, string? color, string? description, string? stepsJson, string? metadataJson) {
+        writer.StartElement("button")
+            .Attribute("class", "cfx-scenario")
+            .Attribute("type", "button")
+            .Attribute("data-cfx-scenario", id)
+            .Attribute("data-cfx-scenario-color", color)
+            .Attribute("data-cfx-scenario-label", label)
+            .Attribute("data-cfx-scenario-description", description)
+            .Attribute("data-cfx-scenario-steps", stepsJson)
+            .Attribute("data-cfx-scenario-metadata", metadataJson)
+            .Attribute("aria-pressed", active)
+            .Attribute("title", title)
+            .Attribute("style", string.IsNullOrWhiteSpace(color) ? null : "--cfx-scenario-color:" + color!.Trim())
+            .EndStartElement()
+            .Text(label)
+            .EndElement();
+    }
+
+    private static void WriteScenarioStep(HtmlMarkupWriter writer, ChartInteractionScenarioStep step, int index) {
+        writer.StartElement("li")
+            .Attribute("data-cfx-scenario-step-index", index + 1)
+            .Attribute("data-cfx-scenario-target-kind", step.TargetKind)
+            .Attribute("data-cfx-scenario-target-id", step.TargetId)
+            .Attribute("role", "button")
+            .Attribute("tabindex", "0")
+            .EndStartElement()
+            .Text(string.IsNullOrWhiteSpace(step.Label) ? step.TargetId : step.Label!)
+            .EndElement();
+    }
+
+    private static ChartInteractionScenario? ActiveScenario(HtmlChartInteractionOptions options) {
+        if (string.IsNullOrWhiteSpace(options.Interaction.ActiveScenarioId)) return null;
+        foreach (var scenario in options.Interaction.Scenarios) {
+            if (string.Equals(scenario.Id, options.Interaction.ActiveScenarioId, StringComparison.Ordinal)) return scenario;
+        }
+
+        return null;
+    }
+
+    private static string ScenarioSummary(ChartInteractionScenario? scenario) {
+        if (scenario == null) return "All chart data visible";
+        if (!string.IsNullOrWhiteSpace(scenario.Description)) return scenario.Description!;
+        return scenario.Steps.Count.ToString("0", CultureInfo.InvariantCulture) + " steps";
+    }
+
+    private static string ScenarioStepsJson(ChartInteractionScenario scenario) {
+        var items = new List<string>();
+        for (var i = 0; i < scenario.Steps.Count; i++) {
+            var step = scenario.Steps[i];
+            items.Add("{\"index\":" + i.ToString(CultureInfo.InvariantCulture) +
+                ",\"targetKind\":\"" + JsonEscape(step.TargetKind) +
+                "\",\"targetId\":\"" + JsonEscape(step.TargetId) +
+                "\",\"label\":\"" + JsonEscape(step.Label) +
+                "\",\"description\":\"" + JsonEscape(step.Description) +
+                "\",\"metadata\":" + ScenarioMetadataJson(step.Metadata) + "}");
+        }
+
+        return "[" + string.Join(",", items.ToArray()) + "]";
+    }
+
+    private static string ScenarioMetadataJson(Dictionary<string, string> metadata) {
+        if (metadata.Count == 0) return "{}";
+        var items = new List<string>();
+        foreach (var item in metadata.OrderBy(item => item.Key, StringComparer.Ordinal)) items.Add("\"" + JsonEscape(item.Key) + "\":\"" + JsonEscape(item.Value) + "\"");
+        return "{" + string.Join(",", items.ToArray()) + "}";
+    }
+
+    private static string JsonEscape(string? value) {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        var builder = new System.Text.StringBuilder(value!.Length);
+        foreach (var ch in value) {
+            switch (ch) {
+                case '\\':
+                    builder.Append("\\\\");
+                    break;
+                case '"':
+                    builder.Append("\\\"");
+                    break;
+                case '\b':
+                    builder.Append("\\b");
+                    break;
+                case '\f':
+                    builder.Append("\\f");
+                    break;
+                case '\n':
+                    builder.Append("\\n");
+                    break;
+                case '\r':
+                    builder.Append("\\r");
+                    break;
+                case '\t':
+                    builder.Append("\\t");
+                    break;
+                default:
+                    if (char.IsControl(ch)) builder.Append("\\u").Append(((int)ch).ToString("x4", CultureInfo.InvariantCulture));
+                    else builder.Append(ch);
+                    break;
+            }
+        }
+
+        return builder.ToString();
     }
 
     private static string BuildToolbar(HtmlChartInteractionOptions options) {

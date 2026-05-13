@@ -61,7 +61,15 @@ body {
   margin: 0 0 10px;
 }
 
-.cfx-tool {
+.cfx-scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cfx-tool,
+.cfx-scenario {
   border: 1px solid #334155;
   border-radius: 6px;
   background: #111827;
@@ -73,11 +81,100 @@ body {
   padding: 6px 9px;
 }
 
+.cfx-scenario {
+  border-color: color-mix(in srgb, var(--cfx-scenario-color, #64748b) 45%, #334155);
+}
+
+.cfx-scenario::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: var(--cfx-scenario-color, #64748b);
+}
+
 .cfx-tool:hover,
 .cfx-tool:focus-visible,
-.cfx-tool[aria-pressed="true"] {
+.cfx-tool[aria-pressed="true"],
+.cfx-scenario:hover,
+.cfx-scenario:focus-visible,
+.cfx-scenario[aria-pressed="true"] {
   border-color: #38bdf8;
   color: #7dd3fc;
+}
+
+.cfx-scenario-panel {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, .78);
+  color: #e5e7eb;
+}
+
+.cfx-scenario-panel__summary {
+  display: grid;
+  gap: 2px;
+}
+
+.cfx-scenario-panel__title {
+  color: var(--cfx-scenario-color, #f8fafc);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cfx-scenario-panel__meta {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.cfx-scenario-panel__controls,
+.cfx-scenario-panel__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.cfx-scenario-panel__steps {
+  list-style: none;
+}
+
+.cfx-scenario-panel__steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 6px;
+  background: rgba(2, 6, 23, .52);
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cfx-scenario-panel__steps li::before {
+  content: attr(data-cfx-scenario-step-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--cfx-scenario-color, #2563eb);
+  color: #fff;
+  font-size: 10px;
+}
+
+.cfx-scenario-panel__steps li[aria-current="step"] {
+  border-color: var(--cfx-scenario-color, #38bdf8);
+  color: #f8fafc;
 }
 
 .cfx-tooltip {
@@ -137,6 +234,24 @@ body {
 
 .cfx-interactive-chart .cfx-series-muted {
   opacity: .18 !important;
+}
+
+.cfx-interactive-chart .cfx-scenario-muted {
+  opacity: .24 !important;
+}
+
+.cfx-interactive-chart .cfx-scenario-active {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 70%, transparent));
+}
+
+.cfx-interactive-chart .cfx-scenario-step-active {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 80%, transparent));
+}
+
+.cfx-interactive-chart .cfx-scenario-step-muted {
+  opacity: .38 !important;
 }
 
 @media (max-width: 900px) {

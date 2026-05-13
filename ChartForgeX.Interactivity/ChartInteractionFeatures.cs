@@ -58,6 +58,21 @@ public enum ChartInteractionFeatures {
     Export = 256,
 
     /// <summary>
+    /// Allows an adapter to switch between named scenarios, flows, or alternate analytical paths.
+    /// </summary>
+    Scenarios = 512,
+
+    /// <summary>
+    /// Allows an adapter to step through ordered route, scenario, or annotation states.
+    /// </summary>
+    StepPlayback = 1024,
+
+    /// <summary>
+    /// Allows an adapter to publish or consume links that restore interactive chart state.
+    /// </summary>
+    DeepLinks = 2048,
+
+    /// <summary>
     /// Enables the first report-friendly interaction set for generated dashboards.
     /// </summary>
     ReportReview = Tooltips | Selection | LegendToggles | KeyboardNavigation

@@ -34,8 +34,12 @@ public sealed partial class TopologySvgRenderer {
         if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
         var requestedWidth = chart.Viewport.Width;
         var requestedHeight = chart.Viewport.Height;
+        var validator = new TopologyChartValidator();
+        var sourceValidation = validator.ValidateScenarioReferences(chart);
+        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
+
         var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
-        var validation = new TopologyChartValidator().Validate(prepared);
+        var validation = validator.Validate(prepared, validateScenarioReferences: false);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
         var theme = prepared.Theme ?? TopologyTheme.Light();
@@ -72,6 +76,10 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-layout-direction", prepared.LayoutDirection.ToString())
                 .Attribute("data-visual-style", options.VisualStyle.ToString())
                 .Attribute("data-fit-content-to-viewport", options.FitContentToViewport)
+                .Attribute("data-cfx-scenario-count", prepared.Scenarios.Count)
+                .Attribute("data-cfx-scenario-ids", TopologyScenarioJson.ScenarioIds(prepared))
+                .Attribute("data-cfx-scenarios", TopologyScenarioJson.Summaries(prepared))
+                .Attribute("data-cfx-active-scenario", highlight.ActiveScenarioId)
                 .Attribute("data-map-background-style", options.MapBackgroundStyle.ToString())
                 .Attribute("data-node-display-mode", options.NodeDisplayMode.ToString())
                 .Attribute("data-cfx-projection", prepared.LayoutMode == TopologyLayoutMode.Geographic ? TopologyMapProjection.ProjectionName : null)
@@ -559,6 +567,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-label-offset-x", edge.LabelOffsetX)
                     .Attribute("data-label-offset-y", edge.LabelOffsetY)
                     .Attribute("data-waypoint-count", edge.Waypoints.Count);
+                AddScenarioDataAttributes(group, chart, TopologyScenarioStepKind.Edge, edge.Id);
                 if (isGeographicCurve) {
                     group
                         .Attribute("data-route-control-x", curveControl.X)

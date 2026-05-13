@@ -177,8 +177,16 @@ if (-not $source) {
 }
 
 New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
-Get-ChildItem -LiteralPath $source.Path -File -Include '*.svg', '*.png', '*.html', '*.csharp.txt', '*.powershell.txt' -Recurse |
-    Copy-Item -Destination $DestinationRoot -Force
+foreach ($file in Get-ChildItem -LiteralPath $source.Path -File -Include '*.svg', '*.png', '*.html', '*.csharp.txt', '*.powershell.txt' -Recurse) {
+    $relativePath = [System.IO.Path]::GetRelativePath($source.Path, $file.FullName)
+    $targetName = $file.Name
+    if ($relativePath -match '[\\/]' -and $file.Name -ieq 'index.html') {
+        $parent = Split-Path -Parent $relativePath
+        $targetName = ($parent -replace '[\\/]+', '-') + '.html'
+    }
+
+    Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $DestinationRoot $targetName) -Force
+}
 Normalize-GeneratedTextArtifacts -Root $DestinationRoot
 
 $existingByImage = @{}

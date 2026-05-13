@@ -328,7 +328,6 @@ internal static partial class SmokeTests {
         chart.Nodes.Add(new TopologyNode { Id = "n", Label = "Node", GroupId = "missing", X = 40, Y = 80, Width = 120, Height = 64 });
         chart.Nodes.Add(new TopologyNode { Id = "n", Label = "Duplicate", X = 220, Y = 80, Width = 120, Height = 64 });
         chart.Edges.Add(new TopologyEdge { Id = "e", SourceNodeId = "n", TargetNodeId = "missing", Label = "bad" });
-
         var result = new TopologyChartValidator().Validate(chart);
         Assert(!result.IsValid, "Invalid topology charts should report validation errors.");
         Assert(result.Errors.Any(error => error.Code == "duplicate-node-id"), "Topology validator should detect duplicate node ids.");
@@ -379,7 +378,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddEdge(" ", "a", "b"), "Topology edges should reject empty ids close to the caller.");
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddEdge("e", " ", "b"), "Topology edges should reject empty source node ids close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddEdge("e", "a", "b", kind: (TopologyEdgeKind)999), "Topology edges should reject undefined kind values close to the caller.");
-
         var chart = TopologyChart.Create()
             .AddGroup("g", "Group", 0, 0, 120, 90)
             .AddNode("a", "A", 20, 20)

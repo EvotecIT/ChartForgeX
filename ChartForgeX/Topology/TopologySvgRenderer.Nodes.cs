@@ -43,6 +43,7 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("data-node-icon-shape", iconDefinition.Shape.ToString());
                     if (iconDefinition.Artwork != null) element.Attribute("data-node-icon-artwork", ArtworkKind(iconDefinition.Artwork));
                 }
+                AddScenarioDataAttributes(element, chart, TopologyScenarioStepKind.Node, node.Id);
                 AddTopologyDataAttributes(element, "data-cfx-meta-", node.Metadata, options.IncludeDataAttributes);
                 AddTopologyDataAttributes(element, "data-cfx-metric-", node.Metrics, options.IncludeDataAttributes);
                 if (highlight.IsActive && !highlighted) element.Attribute("opacity", highlight.DimmedOpacity);
