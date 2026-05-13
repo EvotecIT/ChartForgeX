@@ -61,12 +61,11 @@ public sealed class TopologyLegend {
             legend.AddStatus(status.ToString(), status);
         }
 
-        foreach (var item in chart.Nodes
-            .Select(node => new { node.Kind, Symbol = string.IsNullOrWhiteSpace(node.Symbol) ? null : node.Symbol!.Trim() })
-            .Distinct()
-            .OrderBy(item => item.Kind.ToString())
-            .ThenBy(item => item.Symbol)) {
-            legend.AddNodeKind(NodeLegendLabel(item.Kind, item.Symbol), item.Kind, symbol: item.Symbol);
+        foreach (var group in chart.Nodes
+            .GroupBy(node => new { node.Kind, Symbol = string.IsNullOrWhiteSpace(node.Symbol) ? null : node.Symbol!.Trim() })
+            .OrderBy(group => group.Key.Kind.ToString())
+            .ThenBy(group => group.Key.Symbol)) {
+            legend.AddNodeKind(NodeLegendLabel(group.Key.Kind, group.Key.Symbol), group.Key.Kind, SharedNodeColor(group), group.Key.Symbol);
         }
 
         foreach (var group in chart.Edges.GroupBy(edge => edge.Kind).OrderBy(group => group.Key.ToString())) {
@@ -162,6 +161,24 @@ public sealed class TopologyLegend {
         foreach (var edge in edges) {
             if (string.IsNullOrWhiteSpace(edge.Color)) return null;
             var candidate = edge.Color!.Trim();
+            if (!hasColor) {
+                color = candidate;
+                hasColor = true;
+                continue;
+            }
+
+            if (!string.Equals(color, candidate, StringComparison.OrdinalIgnoreCase)) return null;
+        }
+
+        return hasColor ? color : null;
+    }
+
+    private static string? SharedNodeColor(IEnumerable<TopologyNode> nodes) {
+        string? color = null;
+        var hasColor = false;
+        foreach (var node in nodes) {
+            if (string.IsNullOrWhiteSpace(node.Color)) return null;
+            var candidate = node.Color!.Trim();
             if (!hasColor) {
                 color = candidate;
                 hasColor = true;

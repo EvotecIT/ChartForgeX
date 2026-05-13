@@ -4,6 +4,27 @@ using ChartForgeX.Topology;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static void TopologyNodesCanBeStyledByKindAndReflectedInLegends() {
+        var chart = TopologyChart.Create()
+            .WithId("styled-node-kind-map")
+            .WithViewport(560, 340, 24)
+            .AddNode("cert-a", "Certificate A", 90, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy, symbol: "TLS")
+            .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "TLS")
+            .AddNode("risk", "Risk", 300, 220, TopologyNodeKind.Process, TopologyHealthStatus.Critical, symbol: "!")
+            .AddEdge("cert-risk", "cert-a", "risk", "flags", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, TopologyDirection.Forward)
+            .WithNodesOfKind(TopologyNodeKind.Certificate, color: "#2563EB", backgroundColor: "#EFF6FF");
+
+        var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
+        Assert(svg.Contains("data-node-color=\"#2563EB\"", StringComparison.Ordinal), "Bulk node-kind styling should apply reusable node accent colors.");
+        Assert(svg.Contains("data-node-background-color=\"#EFF6FF\"", StringComparison.Ordinal), "Bulk node-kind styling should apply reusable node backgrounds.");
+        var legendStart = svg.IndexOf("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal);
+        Assert(legendStart >= 0, "Topology auto legend should render for styled node kinds.");
+        var legend = svg.Substring(legendStart);
+        Assert(legend.Contains(">TLS Certificate<", StringComparison.Ordinal), "Topology auto legend should include the styled node symbol and kind.");
+        Assert(legend.Contains("stroke=\"#2563EB\"", StringComparison.Ordinal), "Topology auto legend should reuse a shared node-kind accent color.");
+        Assert(chart.ToPng(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto }).Length > 64, "Styled node-kind legends should render as PNG.");
+    }
+
     private static void TopologyInferredLegendsUseSharedEdgeKindStyling() {
         var chart = TopologyChart.Create()
             .WithId("styled-relationship-map")
