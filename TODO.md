@@ -9,6 +9,11 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
 - Add a performance harness only when it becomes part of CI or a documented release review gate.
 
+## Chart Catalog
+
+- Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
+- When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
+
 ## Topology
 
 - Add denser replication and site-link fixtures that prove routes do not cross node cards in common real-world layouts.

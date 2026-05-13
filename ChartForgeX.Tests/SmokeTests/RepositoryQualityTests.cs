@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -183,6 +184,31 @@ internal static partial class SmokeTests {
         Assert(program.Contains("ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts", StringComparison.Ordinal), "Interactive example should exercise the competitive review toolbar features.");
     }
 
+    private static void GeneratedExamplesStayAssignedToCatalogFamilies() {
+        var root = FindRepositoryRoot();
+        var generatedPath = Path.Combine(root, "Website", "static", "examples", "generated");
+        var shellPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            "catalog",
+            "index",
+            "quality-dashboard",
+            "svg-png-comparison"
+        };
+        var generated = Directory.EnumerateFiles(generatedPath, "*.html")
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(file => !string.IsNullOrWhiteSpace(file) && !shellPages.Contains(file!))
+            .Select(file => file!)
+            .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var catalogSource = File.ReadAllText(Path.Combine(root, "ChartForgeX.Examples", "GalleryWriter.Catalog.cs"));
+        var assigned = System.Text.RegularExpressions.Regex.Matches(catalogSource, "\"([a-z0-9][a-z0-9\\-]+)\"")
+            .Select(match => match.Groups[1].Value)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missing = generated
+            .Where(file => !assigned.Contains(file))
+            .ToArray();
+        Assert(missing.Length == 0, "Generated examples should be assigned to named catalog families: " + string.Join(", ", missing));
+    }
+
     private static void EuropeRevenueMapRoutesTargetRenderedMarkers() {
         var maps = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "MapExamples.cs"));
         Assert(!maps.Contains("London to Warsaw", StringComparison.Ordinal) && !maps.Contains("Madrid to Berlin", StringComparison.Ordinal), "Europe revenue map routes should not use capital-city coordinates when the rendered markers are country market points.");
@@ -205,8 +231,8 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "IncludeSymbols", "true"), "Package should include symbol package generation.");
         Assert(HasXmlProperty(libraryProject, "SymbolPackageFormat", "snupkg"), "Package symbols should use snupkg format.");
         var releaseNotes = GetXmlValue(libraryProject, "PackageReleaseNotes");
-        Assert(releaseNotes.Contains("SVG", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("PNG", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("validation", StringComparison.OrdinalIgnoreCase), "Package release notes should summarize renderer coverage and validation work.");
-        Assert(releaseNotes.Contains("brand kits", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("pictorial", StringComparison.OrdinalIgnoreCase) && releaseNotes.Contains("word cloud", StringComparison.OrdinalIgnoreCase), "Package release notes should summarize the current chart and styling surface.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "SVG", "PNG", "validation"), "Package release notes should summarize renderer coverage and validation work.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "brand kit", "pictorial", "word cloud"), "Package release notes should summarize the current chart and styling surface.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "AGENTS.md")), "Repository should include agent guidance.");
@@ -480,5 +506,30 @@ internal static partial class SmokeTests {
             Assert(text.Contains("if: runner.os == 'Linux'", StringComparison.Ordinal), "GitHub Actions workflows should keep Linux package provisioning off Windows and macOS runners: " + Path.GetFileName(workflow));
             Assert(text.Contains("chartforgex-packages-${{ matrix.runner }}", StringComparison.Ordinal) && text.Contains("chartforgex-example-gallery-${{ matrix.runner }}", StringComparison.Ordinal), "GitHub Actions matrix jobs should upload OS-specific artifact names: " + Path.GetFileName(workflow));
         }
+    }
+
+    private static bool ContainsMetadataConcepts(string value, params string[] concepts) {
+        var normalizedValue = NormalizeMetadataText(value);
+        foreach (var concept in concepts) {
+            if (!normalizedValue.Contains(NormalizeMetadataText(concept), StringComparison.Ordinal)) return false;
+        }
+
+        return true;
+    }
+
+    private static string NormalizeMetadataText(string value) {
+        var normalized = new System.Text.StringBuilder(value.Length);
+        var previousWasSpace = true;
+        foreach (var character in value) {
+            if (char.IsLetterOrDigit(character)) {
+                normalized.Append(char.ToLowerInvariant(character));
+                previousWasSpace = false;
+            } else if (!previousWasSpace) {
+                normalized.Append(' ');
+                previousWasSpace = true;
+            }
+        }
+
+        return normalized.ToString().TrimEnd();
     }
 }

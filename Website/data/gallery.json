@@ -56,7 +56,10 @@
       "category": "charts",
       "title": "Control Contribution Polar Area Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Area",
+        "PolarArea"
+      ],
       "image": "/examples/generated/control-contribution-polar-area-light.svg"
     },
     {
@@ -103,7 +106,9 @@
       "category": "charts",
       "title": "Control Readiness Lollipop Dark",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bar"
+      ],
       "image": "/examples/generated/control-readiness-lollipop-dark.svg"
     },
     {
@@ -136,6 +141,7 @@
       "body": "Bar+line combo with secondary y-axis.",
       "tags": [
         "BarLineCombo",
+        "Combo",
         "ReportLight"
       ],
       "image": "/examples/generated/ct-volume-light.svg"
@@ -151,7 +157,9 @@
       "category": "maps",
       "title": "Dashboard Attendance Hexbin Heatmap",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Heatmap"
+      ],
       "image": "/examples/generated/dashboard-attendance-hexbin-heatmap.svg"
     },
     {
@@ -167,7 +175,9 @@
       "category": "dashboards",
       "title": "Dashboard Device Progress Bars",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bar"
+      ],
       "image": "/examples/generated/dashboard-device-progress-bars.svg"
     },
     {
@@ -188,21 +198,28 @@
       "category": "dashboards",
       "title": "Dashboard Kpi Bar Sparkline",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line",
+        "Bar"
+      ],
       "image": "/examples/generated/dashboard-kpi-bar-sparkline.svg"
     },
     {
       "category": "dashboards",
       "title": "Dashboard Mrr Driver Bars",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bar"
+      ],
       "image": "/examples/generated/dashboard-mrr-driver-bars.svg"
     },
     {
       "category": "dashboards",
       "title": "Dashboard Mrr Trend Card",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line"
+      ],
       "image": "/examples/generated/dashboard-mrr-trend-card.svg"
     },
     {
@@ -216,14 +233,18 @@
       "category": "dashboards",
       "title": "Dashboard Premium Trend Style",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line"
+      ],
       "image": "/examples/generated/dashboard-premium-trend-style.svg"
     },
     {
       "category": "dashboards",
       "title": "Dashboard Project Activity Sparkline",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line"
+      ],
       "image": "/examples/generated/dashboard-project-activity-sparkline.svg"
     },
     {
@@ -237,7 +258,10 @@
       "category": "dashboards",
       "title": "Dashboard Project Schedule Timeline",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Timeline",
+        "Gantt"
+      ],
       "image": "/examples/generated/dashboard-project-schedule-timeline.svg"
     },
     {
@@ -265,7 +289,9 @@
       "category": "dashboards",
       "title": "Dashboard Restaurant Occupation Bars",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bar"
+      ],
       "image": "/examples/generated/dashboard-restaurant-occupation-bars.svg"
     },
     {
@@ -313,7 +339,9 @@
       "category": "dashboards",
       "title": "Dashboard Segmented Column Style",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bar"
+      ],
       "image": "/examples/generated/dashboard-segmented-column-style.svg"
     },
     {
@@ -341,7 +369,9 @@
       "category": "dashboards",
       "title": "Dashboard Ticketing Guest Funnel",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Funnel"
+      ],
       "image": "/examples/generated/dashboard-ticketing-guest-funnel.svg"
     },
     {
@@ -362,7 +392,9 @@
       "category": "dashboards",
       "title": "Dashboard Ticketing Revenue Trend",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line"
+      ],
       "image": "/examples/generated/dashboard-ticketing-revenue-trend.svg"
     },
     {
@@ -397,7 +429,9 @@
       "category": "charts",
       "title": "Developer Consistency Calendar Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "CalendarHeatmap"
+      ],
       "image": "/examples/generated/developer-consistency-calendar-light.svg"
     },
     {
@@ -413,7 +447,9 @@
       "category": "charts",
       "title": "Domain Findings Stacked Dark",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bar"
+      ],
       "image": "/examples/generated/domain-findings-stacked-dark.svg"
     },
     {
@@ -438,7 +474,9 @@
       "category": "charts",
       "title": "Domain Remediation Timeline Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Timeline"
+      ],
       "image": "/examples/generated/domain-remediation-timeline-light.svg"
     },
     {
@@ -455,21 +493,27 @@
       "category": "charts",
       "title": "Domain Signal Mix Stacked Area Dark",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Area"
+      ],
       "image": "/examples/generated/domain-signal-mix-stacked-area-dark.svg"
     },
     {
       "category": "charts",
       "title": "Endpoint Latency Boxplot Dark",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "BoxPlot"
+      ],
       "image": "/examples/generated/endpoint-latency-boxplot-dark.svg"
     },
     {
       "category": "charts",
       "title": "Endpoint Latency Histogram Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Histogram"
+      ],
       "image": "/examples/generated/endpoint-latency-histogram-light.svg"
     },
     {
@@ -490,7 +534,9 @@
       "category": "charts",
       "title": "Exposure Clusters Bubble Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bubble"
+      ],
       "image": "/examples/generated/exposure-clusters-bubble-light.svg"
     },
     {
@@ -515,7 +561,9 @@
       "category": "charts",
       "title": "Findings Pareto Dark",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Bar"
+      ],
       "image": "/examples/generated/findings-pareto-dark.svg"
     },
     {
@@ -529,7 +577,9 @@
       "category": "charts",
       "title": "Forecast Interval Rangearea Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Area"
+      ],
       "image": "/examples/generated/forecast-interval-rangearea-light.svg"
     },
     {
@@ -538,7 +588,8 @@
       "body": "Topology projected onto a real geographic viewport.",
       "tags": [
         "Topology",
-        "Geo"
+        "Geo",
+        "Map"
       ],
       "image": "/examples/generated/geographic-topology.svg"
     },
@@ -553,7 +604,9 @@
       "category": "maps",
       "title": "Industrial Births Region Map Us States Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/industrial-births-region-map-us-states-light.svg"
     },
     {
@@ -567,35 +620,45 @@
       "category": "maps",
       "title": "Map Africa Route Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/map-africa-route-light.svg"
     },
     {
       "category": "maps",
       "title": "Map Asia Route Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/map-asia-route-light.svg"
     },
     {
       "category": "maps",
       "title": "Map Europe Route Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/map-europe-route-light.svg"
     },
     {
       "category": "maps",
       "title": "Map North America Route Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/map-north-america-route-light.svg"
     },
     {
       "category": "maps",
       "title": "Map Oceania Route Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/map-oceania-route-light.svg"
     },
     {
@@ -612,14 +675,18 @@
       "category": "maps",
       "title": "Map South America Route Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/map-south-america-route-light.svg"
     },
     {
       "category": "maps",
       "title": "Map Viewport Showcase Grid",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/map-viewport-showcase-grid.svg"
     },
     {
@@ -643,7 +710,10 @@
       "category": "charts",
       "title": "Observed Remediation Trend Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line",
+        "Scatter"
+      ],
       "image": "/examples/generated/observed-remediation-trend-light.svg"
     },
     {
@@ -678,7 +748,9 @@
       "category": "dashboards",
       "title": "Pictorial Symbol Showcase Grid",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Pictorial"
+      ],
       "image": "/examples/generated/pictorial-symbol-showcase-grid.svg"
     },
     {
@@ -692,7 +764,9 @@
       "category": "charts",
       "title": "Policy Backlog Step Area Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Area"
+      ],
       "image": "/examples/generated/policy-backlog-step-area-light.svg"
     },
     {
@@ -706,7 +780,9 @@
       "category": "charts",
       "title": "Policy State Step Line Dark",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line"
+      ],
       "image": "/examples/generated/policy-state-step-line-dark.svg"
     },
     {
@@ -777,8 +853,19 @@
       "category": "charts",
       "title": "Result Mix Donut",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Donut"
+      ],
       "image": "/examples/generated/result-mix-donut.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Result Mix Pie Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Pie"
+      ],
+      "image": "/examples/generated/result-mix-pie-light.svg"
     },
     {
       "category": "maps",
@@ -879,14 +966,18 @@
       "category": "charts",
       "title": "Signal Windows Candlestick Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Candlestick"
+      ],
       "image": "/examples/generated/signal-windows-candlestick-light.svg"
     },
     {
       "category": "charts",
       "title": "Signal Windows Ohlc Dark",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "OHLC"
+      ],
       "image": "/examples/generated/signal-windows-ohlc-dark.svg"
     },
     {
@@ -970,7 +1061,9 @@
       "category": "topology",
       "title": "Visual Dc Connectivity Map",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/visual-dc-connectivity-map.svg"
     },
     {
@@ -991,14 +1084,18 @@
       "category": "maps",
       "title": "Visual Geographic Region Map",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/visual-geographic-region-map.svg"
     },
     {
       "category": "topology",
       "title": "Visual Geographic Topology Map",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/visual-geographic-topology-map.svg"
     },
     {
@@ -1054,21 +1151,27 @@
       "category": "topology",
       "title": "Visual Service Dependency Map",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/visual-service-dependency-map.svg"
     },
     {
       "category": "topology",
       "title": "Visual Site Distribution Map",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/visual-site-distribution-map.svg"
     },
     {
       "category": "topology",
       "title": "Visual Subnets Site Links Map",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/visual-subnets-site-links-map.svg"
     },
     {
@@ -1089,14 +1192,18 @@
       "category": "maps",
       "title": "Visual Wan Latency Map",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Map"
+      ],
       "image": "/examples/generated/visual-wan-latency-map.svg"
     },
     {
       "category": "charts",
       "title": "Warnings Sparkline",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Line"
+      ],
       "image": "/examples/generated/warnings-sparkline.svg"
     },
     {
@@ -1126,35 +1233,46 @@
       "category": "charts",
       "title": "Wellness Weight Data Gauge",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Gauge"
+      ],
       "image": "/examples/generated/wellness-weight-data-gauge.svg"
     },
     {
       "category": "dashboards",
       "title": "Word Cloud Control Showcase Grid",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "WordCloud"
+      ],
       "image": "/examples/generated/word-cloud-control-showcase-grid.svg"
     },
     {
       "category": "charts",
       "title": "Zero Value Donut Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Donut"
+      ],
       "image": "/examples/generated/zero-value-donut-light.svg"
     },
     {
       "category": "charts",
       "title": "Zero Value Funnel Stage Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Funnel"
+      ],
       "image": "/examples/generated/zero-value-funnel-stage-light.svg"
     },
     {
       "category": "charts",
       "title": "Zero Value Polar Area Light",
       "body": "Generated ChartForgeX visual output.",
-      "tags": [],
+      "tags": [
+        "Area",
+        "PolarArea"
+      ],
       "image": "/examples/generated/zero-value-polar-area-light.svg"
     }
   ]

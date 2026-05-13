@@ -8,10 +8,20 @@ internal static class TopologyExamples {
         var target = Path.Combine(output, "topology-demo");
         Directory.CreateDirectory(target);
         WriteAll(target);
+        CopyGeneratedArtifactsToRoot(target, output);
 
         var artifacts = Path.Combine(FindRepositoryRoot(), "artifacts", "topology-demo");
         Directory.CreateDirectory(artifacts);
         WriteAll(artifacts);
+    }
+
+    private static void CopyGeneratedArtifactsToRoot(string source, string output) {
+        foreach (var file in Directory.EnumerateFiles(source, "*.*", SearchOption.TopDirectoryOnly)) {
+            if (string.Equals(Path.GetFileName(file), "index.html", StringComparison.OrdinalIgnoreCase)) continue;
+            var extension = Path.GetExtension(file);
+            if (extension is not ".html" and not ".svg" and not ".png" and not ".txt") continue;
+            File.Copy(file, Path.Combine(output, Path.GetFileName(file)), overwrite: true);
+        }
     }
 
     private static void WriteAll(string target) {

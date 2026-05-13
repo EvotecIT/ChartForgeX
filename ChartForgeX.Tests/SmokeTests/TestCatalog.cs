@@ -12,6 +12,7 @@ internal static partial class SmokeTests {
         ("SVG fitted text polish stays shared across specialized charts", SvgFittedTextPolishStaysSharedAcrossSpecializedCharts),
         ("Color readability math stays shared across SVG and PNG", ColorReadabilityMathStaysSharedAcrossSvgAndPng),
         ("Example app clears generated output before writing", ExampleAppClearsGeneratedOutputBeforeWriting),
+        ("Generated examples stay assigned to catalog families", GeneratedExamplesStayAssignedToCatalogFamilies),
         ("SVG markup writer streams escaped elements", SvgMarkupWriterStreamsEscapedElements),
         ("HTML markup writer streams escaped elements", HtmlMarkupWriterStreamsEscapedElements),
         ("SVG AST builds editable ordered markup", SvgAstBuildsEditableOrderedMarkup),
