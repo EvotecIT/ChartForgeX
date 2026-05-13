@@ -14,6 +14,11 @@ public sealed partial class TopologySvgRenderer {
             var next = points[i + 1];
             var inLength = Distance(previous, corner);
             var outLength = Distance(corner, next);
+            if (inLength <= 0.0001 || outLength <= 0.0001) {
+                path.LineTo(corner);
+                continue;
+            }
+
             var bend = Math.Min(radius, Math.Min(inLength, outLength) / 2);
             if (bend <= 0.5 || !IsOrthogonalCorner(previous, corner, next)) {
                 path.LineTo(corner);

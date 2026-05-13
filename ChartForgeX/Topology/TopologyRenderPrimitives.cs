@@ -36,9 +36,9 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static string EdgeColor(TopologyEdge edge, TopologyTheme theme, TopologyRenderOptions options) {
+        if (edge.IsMuted) return IsMonitoringDashboardStyle(options) ? "#CBD5E1" : theme.Border;
         if (!string.IsNullOrWhiteSpace(edge.Color)) return edge.Color!.Trim();
-        if (!edge.IsMuted) return theme.StatusColor(edge.Status);
-        return IsMonitoringDashboardStyle(options) ? "#CBD5E1" : theme.Border;
+        return theme.StatusColor(edge.Status);
     }
 
     public static bool ShouldRenderGeographicRouteHalo(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyRenderOptions options) {

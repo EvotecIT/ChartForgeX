@@ -31,6 +31,15 @@ internal static partial class SmokeTests {
         Assert(legend.Contains("data-legend-icon-shape=\"Certificate\"", StringComparison.Ordinal), "Topology auto legends should render the inferred icon shape.");
         Assert(legend.Contains(">TLS Certificate<", StringComparison.Ordinal), "Topology auto legends should keep the inferred icon symbol in the node-kind label.");
         Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false }).Length > 64, "Bulk node-kind icons should render as PNG.");
+
+        var generic = TopologyChart.Create()
+            .WithId("kind-icon-preserve-kind")
+            .WithViewport(260, 180, 24)
+            .WithLegend(null)
+            .AddNode("generic-owner", "Owner", 70, 80, TopologyNodeKind.Generic, TopologyHealthStatus.Healthy)
+            .WithNodesOfKindIcon(TopologyNodeKind.Generic, "people:owner", catalog);
+        Assert(generic.Nodes[0].Kind == TopologyNodeKind.Generic, "Bulk node-kind icon styling should preserve the matched node kind instead of reclassifying by icon catalog metadata.");
+        Assert(generic.Nodes[0].IconId == "people:owner", "Bulk node-kind icon styling should still apply the requested icon id.");
     }
 
     private static void TopologyNodesCanApplyCombinedKindStyle() {

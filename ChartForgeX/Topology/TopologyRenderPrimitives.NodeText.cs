@@ -41,6 +41,22 @@ internal static partial class TopologyRenderPrimitives {
         return best.Length == 0 ? value : best;
     }
 
+    public static string NodeTextFitProbe(string value, double maxWidth, double fontSize, bool bold, int maxLines, TopologyRenderOptions options) {
+        if (string.IsNullOrWhiteSpace(value)) return value;
+        if (!options.WrapNodeLabels || value.IndexOfAny(new[] { '\r', '\n' }) >= 0) return NodeTextFitProbe(value, options);
+        var lines = NodeTextLines(value, maxWidth, fontSize, bold, maxLines, options);
+        var best = string.Empty;
+        var bestWidth = -1.0;
+        foreach (var line in lines) {
+            var width = EstimateTextWidth(line, fontSize, bold);
+            if (width <= bestWidth) continue;
+            best = line;
+            bestWidth = width;
+        }
+
+        return best.Length == 0 ? value : best;
+    }
+
     private static IEnumerable<string> SplitExplicitLines(string value, bool allowMultiline) {
         if (!allowMultiline) {
             yield return value.Replace("\r", " ").Replace("\n", " ");

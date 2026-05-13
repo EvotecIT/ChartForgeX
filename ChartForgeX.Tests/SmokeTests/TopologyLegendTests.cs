@@ -58,7 +58,8 @@ internal static partial class SmokeTests {
             .WithViewport(560, 340, 24)
             .WithLegend(TopologyLegend.Create("Focused Legend")
                 .AddNodeKind("Certificates", TopologyNodeKind.Certificate)
-                .AddEdgeKind("Ownership path", TopologyEdgeKind.Ownership))
+                .AddEdgeKind("Ownership path", TopologyEdgeKind.Ownership)
+                .AddEdgeKind("Observed path", TopologyEdgeKind.Mapping))
             .AddNode("cert-a", "Certificate A", 90, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy)
             .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning)
             .AddNode("owner", "Owner", 300, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
@@ -83,6 +84,7 @@ internal static partial class SmokeTests {
         var focusedLegend = focusedSvg.Substring(focusedSvg.IndexOf("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal));
         Assert(focusedLegend.Contains("data-legend-icon-id=\"common:certificate\"", StringComparison.Ordinal), "Topology enriched legends should fill explicit marker details.");
         Assert(focusedLegend.Contains("stroke=\"#7C3AED\"", StringComparison.Ordinal), "Topology enriched legends should fill explicit edge details.");
+        Assert(focusedLegend.Contains(">Observed path<", StringComparison.Ordinal) && focusedLegend.Contains("stroke-dasharray=\"8 5\"", StringComparison.Ordinal), "Topology edge-kind legend entries with default Auto line style should render as dashed observed links.");
         Assert(!focusedLegend.Contains(">Person<", StringComparison.Ordinal), "Topology enriched legends should not add unrelated inferred items to focused legends.");
         Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Merge }).Length > 64, "Enriched merged topology legends should render as PNG.");
     }

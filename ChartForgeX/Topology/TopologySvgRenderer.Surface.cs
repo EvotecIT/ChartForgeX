@@ -5,7 +5,7 @@ namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
     private static void AddCanvasSurface(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
-        if (options.CanvasSurfaceStyle == TopologyCanvasSurfaceStyle.Plain) return;
+        if (!ShouldRenderCanvasSurface(chart, options)) return;
         var x = chart.Viewport.Padding;
         var y = options.IncludeTitle && (!string.IsNullOrWhiteSpace(chart.Title) || !string.IsNullOrWhiteSpace(chart.Subtitle)) ? chart.Viewport.Padding + 62 : chart.Viewport.Padding;
         var width = chart.Viewport.Width - chart.Viewport.Padding * 2;

@@ -372,7 +372,7 @@ public sealed partial class TopologyPngRenderer {
                 var textRightPadding = 10;
                 var textWidth = Math.Max(24, node.Width - (textX - node.X) - textRightPadding);
                 var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? NodeLabelMaxLength * Math.Max(1, options.MaxNodeLabelLines) : NodeTitleMaxLength(displayMode));
-                titleSize = FitFontSize(NodeTextFitProbe(titleValue, options), textWidth, titleSize, 10, true);
+                titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options), textWidth, titleSize, 10, true);
                 var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options);
                 DrawTextLines(canvas, textX, titleY, titleLines, Color(theme.Foreground), titleSize, true, displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 13);
                 if (displayMode != TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle)) {

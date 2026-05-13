@@ -290,6 +290,7 @@ internal static partial class SmokeTests {
         ("Topology monitoring dot nodes render compact symbols", TopologyMonitoringDotNodesRenderCompactSymbols),
         ("Topology icon label fitting uses rendered plate width", TopologyIconLabelFittingUsesRenderedPlateWidth),
         ("Topology icon labels stack below icon badges", TopologyIconLabelsStackBelowIconBadges),
+        ("Topology rounded routes tolerate duplicate waypoints", TopologyRoundedRoutesTolerateDuplicateWaypoints),
         ("Topology hidden nodes work as reusable edge anchors", TopologyHiddenNodesWorkAsReusableEdgeAnchors),
         ("Topology shared ports spread fan routes", TopologySharedPortsSpreadFanRoutes),
         ("Topology port spreading preserves orthogonal endpoint legs", TopologyPortSpreadingPreservesOrthogonalEndpointLegs),

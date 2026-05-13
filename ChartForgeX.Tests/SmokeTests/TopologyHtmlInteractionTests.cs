@@ -13,6 +13,11 @@ internal static partial class SmokeTests {
         Assert(defaultHtml.Contains("overflow:visible", StringComparison.Ordinal), "Topology HTML pages should keep exported topology strokes and labels visible.");
         Assert(defaultHtml.Contains("@media print", StringComparison.Ordinal) && defaultHtml.Contains("background:transparent", StringComparison.Ordinal), "Topology HTML pages should include print-friendly framing.");
 
+        var cssBackgroundChart = CreateSampleTopologyChart()
+            .WithTheme(theme => theme.Background = "rgb(245, 247, 250)");
+        var cssBackgroundHtml = cssBackgroundChart.ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false });
+        Assert(cssBackgroundHtml.Contains("background:rgb(245, 247, 250)", StringComparison.Ordinal), "Topology HTML pages should preserve caller-provided CSS background values.");
+
         var html = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true });
         Assert(html.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Topology HTML pages should mark interactive wrappers.");
         Assert(html.Contains("cfx-topology-select", StringComparison.Ordinal), "Topology HTML pages should dispatch host-friendly selection events.");

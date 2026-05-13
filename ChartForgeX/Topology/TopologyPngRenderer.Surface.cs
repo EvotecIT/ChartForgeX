@@ -7,7 +7,7 @@ namespace ChartForgeX.Topology;
 
 public sealed partial class TopologyPngRenderer {
     private static void DrawCanvasSurface(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options) {
-        if (options.CanvasSurfaceStyle == TopologyCanvasSurfaceStyle.Plain) return;
+        if (!ShouldRenderCanvasSurface(chart, options)) return;
         var x = chart.Viewport.Padding;
         var y = options.IncludeTitle && (!string.IsNullOrWhiteSpace(chart.Title) || !string.IsNullOrWhiteSpace(chart.Subtitle)) ? chart.Viewport.Padding + 62 : chart.Viewport.Padding;
         var width = chart.Viewport.Width - chart.Viewport.Padding * 2;

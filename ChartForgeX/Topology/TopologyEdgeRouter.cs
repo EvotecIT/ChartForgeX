@@ -132,13 +132,19 @@ internal static class TopologyEdgeRouter {
         var targetCenterX = CenterX(target);
         var targetCenterY = CenterY(target);
         if (Math.Abs(sourceCenterX - targetCenterX) <= tolerance && Math.Abs(sourceCenterY - targetCenterY) > Math.Max(source.Height, target.Height)) {
-            var sharedX = Clamp((sourceCenterX + targetCenterX) / 2, Math.Max(source.X + 10, target.X + 10), Math.Min(source.X + source.Width - 10, target.X + target.Width - 10));
+            var minX = Math.Max(source.X + 10, target.X + 10);
+            var maxX = Math.Min(source.X + source.Width - 10, target.X + target.Width - 10);
+            if (minX > maxX) return null;
+            var sharedX = Clamp((sourceCenterX + targetCenterX) / 2, minX, maxX);
             if (targetCenterY >= sourceCenterY) return new List<ChartPoint> { new(sharedX, source.Y + source.Height + 7), new(sharedX, target.Y - 7) };
             return new List<ChartPoint> { new(sharedX, source.Y - 7), new(sharedX, target.Y + target.Height + 7) };
         }
 
         if (Math.Abs(sourceCenterY - targetCenterY) <= tolerance && Math.Abs(sourceCenterX - targetCenterX) > Math.Max(source.Width, target.Width)) {
-            var sharedY = Clamp((sourceCenterY + targetCenterY) / 2, Math.Max(source.Y + 10, target.Y + 10), Math.Min(source.Y + source.Height - 10, target.Y + target.Height - 10));
+            var minY = Math.Max(source.Y + 10, target.Y + 10);
+            var maxY = Math.Min(source.Y + source.Height - 10, target.Y + target.Height - 10);
+            if (minY > maxY) return null;
+            var sharedY = Clamp((sourceCenterY + targetCenterY) / 2, minY, maxY);
             if (targetCenterX >= sourceCenterX) return new List<ChartPoint> { new(source.X + source.Width + 7, sharedY), new(target.X - 7, sharedY) };
             return new List<ChartPoint> { new(source.X - 7, sharedY), new(target.X + target.Width + 7, sharedY) };
         }

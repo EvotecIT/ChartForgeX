@@ -79,7 +79,7 @@ public static partial class TopologyChartExtensions {
             if (node.Kind != kind) continue;
             if (color != null) node.Color = color;
             if (backgroundColor != null) node.BackgroundColor = backgroundColor;
-            if (icon != null) ApplyIcon(node, icon);
+            if (icon != null) ApplyIcon(node, icon, updateKind: true);
         }
 
         return chart;

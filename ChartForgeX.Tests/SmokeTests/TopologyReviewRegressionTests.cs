@@ -39,6 +39,21 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng(options).Length > 64, "Stacked icon labels and badges should render as PNG.");
     }
 
+    private static void TopologyRoundedRoutesTolerateDuplicateWaypoints() {
+        var chart = TopologyChart.Create()
+            .WithId("duplicate-waypoint-routes")
+            .WithViewport(560, 300, 20)
+            .WithLegend(null)
+            .AddNode("left", "Left", 40, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddNode("right", "Right", 360, 40, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
+            .AddEdge("left-right", "left", "right", "via route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .WithEdgeWaypoints("left-right", new ChartPoint(200, 180), new ChartPoint(200, 180), new ChartPoint(300, 180));
+
+        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
+
+        Assert(!svg.Contains("NaN", StringComparison.Ordinal) && !svg.Contains("Infinity", StringComparison.Ordinal), "Rounded topology routes should tolerate duplicate consecutive waypoints.");
+    }
+
     private static void TopologyEdgeLabelsTolerateDuplicateEdgeIds() {
         var chart = TopologyChart.Create()
             .WithId("duplicate-edge-labels")

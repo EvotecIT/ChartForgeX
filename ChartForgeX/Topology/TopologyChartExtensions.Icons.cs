@@ -17,7 +17,7 @@ public static partial class TopologyChartExtensions {
         var icon = ResolveIcon(iconId, catalog);
         foreach (var node in chart.Nodes) {
             if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
-            ApplyIcon(node, icon);
+            ApplyIcon(node, icon, updateKind: true);
             return chart;
         }
 
@@ -38,7 +38,7 @@ public static partial class TopologyChartExtensions {
         var icon = ResolveIcon(iconId, catalog);
         foreach (var node in chart.Nodes) {
             if (node.Kind != kind) continue;
-            ApplyIcon(node, icon);
+            ApplyIcon(node, icon, updateKind: false);
         }
 
         return chart;
@@ -93,9 +93,9 @@ public static partial class TopologyChartExtensions {
         return icon;
     }
 
-    private static void ApplyIcon(TopologyNode node, TopologyIconDefinition icon) {
+    private static void ApplyIcon(TopologyNode node, TopologyIconDefinition icon, bool updateKind) {
         node.IconId = icon.QualifiedId;
-        node.Kind = icon.NodeKind;
+        if (updateKind) node.Kind = icon.NodeKind;
         if (string.IsNullOrWhiteSpace(node.Symbol)) node.Symbol = icon.Symbol;
         if (string.IsNullOrWhiteSpace(node.Color)) node.Color = icon.Color;
         if (!node.DisplayMode.HasValue && icon.DisplayMode.HasValue) node.DisplayMode = icon.DisplayMode.Value;
