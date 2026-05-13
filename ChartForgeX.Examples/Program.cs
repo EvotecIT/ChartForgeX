@@ -418,6 +418,7 @@ var donut = Chart.Create()
 
 SaveChart(donut, "result-mix-donut");
 
+SaveChart(Chart.Create().WithTitle("Domain Check Result Pie").WithSubtitle("Pie slices expose value and percentage metadata for static reports").WithTheme(ChartTheme.ReportLight()).WithSize(820, 460).WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithXLabels("Passed", "Warnings", "Failed").AddPie("Checks", Points(1260, 68, 10)), "result-mix-pie-light");
 var zeroValueDonut = Chart.Create().WithTitle("Zero-Value Donut").WithSubtitle("Zero slices stay out of the ring without shifting colors or labels").WithTheme(ChartTheme.ReportLight()).WithSize(820, 460).WithXLabels("No findings", "Reviewed", "Escalated").AddDonut("Review mix", Points(0, 82, 18));
 zeroValueDonut.Series[0].WithPointColor(1, ChartColor.FromRgb(15, 118, 110)).WithPointSliceOffset(1, 0.08);
 SaveChart(zeroValueDonut, "zero-value-donut-light");

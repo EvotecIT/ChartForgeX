@@ -1474,6 +1474,22 @@
       }
     },
     {
+      "name": "result-mix-pie-light",
+      "width": 820,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 695869,
+        "minDistinctColors": 1828,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "revenue-europe-country-map-light",
       "width": 980,
       "height": 560,
@@ -1517,7 +1533,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 912589,
-        "minDistinctColors": 1953,
+        "minDistinctColors": 1965,
         "maxEdgeInkPixels": 0
       }
     },

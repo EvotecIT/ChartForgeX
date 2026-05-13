@@ -24,6 +24,7 @@ public static partial class GalleryWriter {
             "domain-findings-stacked-dark",
             "domain-control-horizontal-light",
             "result-mix-donut",
+            "result-mix-pie-light",
             "zero-value-donut-light",
             "zero-value-polar-area-light",
             "zero-value-funnel-stage-light",
@@ -86,7 +87,12 @@ public static partial class GalleryWriter {
             "dashboard-ticketing-analytics-grid",
             "dashboard-hr-overview-grid",
             "dashboard-saas-mrr-grid",
+            "dashboard-premium-trend-style",
+            "dashboard-segmented-column-style",
+            "dashboard-segmented-horizontal-style",
+            "report-summary-metric-strip",
             "transparent-report-summary-metric-strip",
+            "powerbginfo-endpoint-snapshot",
             "dashboard-restaurant-reports-range-strip",
             "dashboard-restaurant-order-status",
             "dashboard-restaurant-customers-hexbin",
@@ -111,13 +117,70 @@ public static partial class GalleryWriter {
             "travel-dotted-map-dark",
             "map-viewport-showcase-grid",
             "revenue-europe-country-map-light",
-            "revenue-us-state-geo-map-light",
-            "revenue-us-state-tile-map-light",
+            "revenue-region-map-us-states-light",
+            "revenue-tile-map-us-states-light",
+            "map-world-route-light",
+            "map-europe-route-light",
+            "map-north-america-route-light",
+            "map-south-america-route-light",
+            "map-africa-route-light",
+            "map-asia-route-light",
+            "map-oceania-route-light",
+            "map-poland-route-light",
             "eu-industrial-births-nuts3-light",
             "industrial-births-region-map-us-states-light",
             "industrial-births-poland-nuts3-light",
             "industrial-births-france-nuts3-light",
             "industrial-births-germany-nuts3-light"),
+        new(
+            "Topology Diagrams",
+            "Product-neutral topology maps for sites, replication, connectivity, geography, subnets, services, and reusable icon catalogs.",
+            "site-topology",
+            "replication-mesh",
+            "dc-connectivity",
+            "geographic-topology",
+            "subnets-site-links",
+            "service-dependency",
+            "icon-palette",
+            "icon-stencil-browser"),
+        new(
+            "Topology Focus Views",
+            "Focused topology variants for regional drilldowns, critical views, domain-controller filters, offenders, compact service maps, and dependency neighborhoods.",
+            "site-topology-emea-view",
+            "replication-mesh-critical-view",
+            "replication-mesh-dc-view",
+            "replication-mesh-offenders-view",
+            "service-dependency-compact-view",
+            "service-dependency-api-neighbors-view",
+            "service-dependency-critical-dependencies-view"),
+        new(
+            "Topology Visual Showcase",
+            "Reusable directory, team, region, replication, service, coverage, and WAN topology examples that demonstrate ChartForgeX as a diagram engine.",
+            "visual-ad-sites-hierarchy",
+            "visual-coverage",
+            "visual-dc-connectivity-map",
+            "visual-directory-health-replication",
+            "visual-directory-level-window",
+            "visual-geographic-region-map",
+            "visual-geographic-topology-map",
+            "visual-nested-user-hierarchy",
+            "visual-nested-user-hierarchy-bottom-top",
+            "visual-nested-user-hierarchy-left-right",
+            "visual-nested-user-hierarchy-right-left",
+            "visual-replication-health-hub",
+            "visual-replication-mesh-explorer",
+            "visual-reusable-regional-topology",
+            "visual-service-dependency-map",
+            "visual-site-distribution-map",
+            "visual-subnets-site-links-map",
+            "visual-team-hierarchy-builder",
+            "visual-topology-explorer",
+            "visual-wan-latency-map"),
+        new(
+            "Interactive HTML Adapter",
+            "Host-side HTML adapter demos for interactive chart review and synchronized dashboard exploration.",
+            "domain-security-interactive",
+            "executive-interactive-dashboard"),
         new(
             "Visual Systems",
             "Themes, brand kits, palettes, fonts, and pictorial symbol picker outputs.",
@@ -260,6 +323,14 @@ public static partial class GalleryWriter {
         while (end < value.Length && (char.IsDigit(value[end]) || value[end] == '.' || value[end] == '-' || value[end] == '+')) end++;
         if (end == 0) return 0;
         return double.TryParse(value.Substring(0, end), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : 0;
+    }
+
+    private static bool IsTopologyCatalogExample(string fileName) {
+        foreach (var group in CatalogGroups) {
+            if (group.Name.StartsWith("Topology ", StringComparison.OrdinalIgnoreCase) && group.Contains(fileName)) return true;
+        }
+
+        return false;
     }
 
     private readonly struct CatalogGroup {

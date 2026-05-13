@@ -18,11 +18,100 @@ function Get-Category {
     param([string] $Slug)
 
     if ($Slug -match 'topology|replication|dependency|connectivity|site') { return 'topology' }
-    if ($Slug -match 'map|regional|region|travel|geo') { return 'maps' }
+    if ($Slug -match '(^|-)map($|-)|travel|geo|viewport|nuts|states') { return 'maps' }
     if ($Slug -match 'dashboard|grid|scorecard|summary|kpi') { return 'dashboards' }
     if ($Slug -match 'theme|palette|style|font') { return 'themes' }
     if ($Slug -match 'pictorial|word-cloud|people|infographic') { return 'infographics' }
     return 'charts'
+}
+
+function Get-InferredTags {
+    param([string] $Slug)
+
+    $rules = [ordered]@{
+        '(^|-)line($|-)|trend|sparkline|step-line' = 'Line'
+        'area|stacked-area' = 'Area'
+        '(^|-)bar($|-)|bars|stacked-bar|stacked-column|column|lollipop|pareto' = 'Bar'
+        'combo' = 'Combo'
+        'scatter|observed-remediation-trend' = 'Scatter'
+        'bubble|clusters' = 'Bubble'
+        'heatmap|matrix' = 'Heatmap'
+        'calendar' = 'CalendarHeatmap'
+        'histogram' = 'Histogram'
+        'boxplot|box-plot' = 'BoxPlot'
+        'candlestick' = 'Candlestick'
+        'ohlc' = 'OHLC'
+        'gauge' = 'Gauge'
+        'radar' = 'Radar'
+        'polar-area' = 'PolarArea'
+        'pie' = 'Pie'
+        'donut' = 'Donut'
+        'treemap' = 'Treemap'
+        'funnel' = 'Funnel'
+        'waterfall' = 'Waterfall'
+        'sankey' = 'Sankey'
+        '(^|-)map($|-)|geo|travel|viewport|nuts|states' = 'Map'
+        'timeline' = 'Timeline'
+        'gantt|schedule' = 'Gantt'
+        'word-cloud' = 'WordCloud'
+        'pictorial|isotype' = 'Pictorial'
+    }
+
+    $tags = [System.Collections.Generic.List[string]]::new()
+    foreach ($entry in $rules.GetEnumerator()) {
+        if ($Slug -match $entry.Key -and -not $tags.Contains($entry.Value)) {
+            $tags.Add($entry.Value)
+        }
+    }
+
+    if ($tags.Count -eq 0) {
+        return ,@()
+    }
+
+    return ,$tags.ToArray()
+}
+
+function Merge-Tags {
+    param(
+        [string] $Slug,
+        [object[]] $ExistingTags,
+        [object[]] $InferredTags
+    )
+
+    $merged = [System.Collections.Generic.List[string]]::new()
+    foreach ($tag in @($ExistingTags) + @($InferredTags)) {
+        if ($null -eq $tag) {
+            continue
+        }
+
+        $text = [string] $tag
+        if ([string]::IsNullOrWhiteSpace($text) -or $merged.Contains($text)) {
+            continue
+        }
+
+        if ($text -eq 'Map' -and $Slug -notmatch '(^|-)map($|-)|geo|travel|viewport|nuts|states') {
+            continue
+        }
+
+        if ($text -eq 'Bar' -and $Slug -match 'errorbar|radialbar|stacked-area') {
+            continue
+        }
+
+        if ($text -eq 'Line' -and $Slug -match 'timeline') {
+            continue
+        }
+
+        $merged.Add($text)
+        if ($text -like '*Combo*' -and -not $merged.Contains('Combo')) {
+            $merged.Add('Combo')
+        }
+    }
+
+    if ($merged.Count -eq 0) {
+        return ,@()
+    }
+
+    return ,$merged.ToArray()
 }
 
 function Write-Utf8NoBom {
@@ -105,8 +194,17 @@ if (Test-Path -LiteralPath $GalleryPath) {
 $items = foreach ($svg in Get-ChildItem -LiteralPath $DestinationRoot -File -Filter '*.svg' | Sort-Object Name) {
     $slug = [IO.Path]::GetFileNameWithoutExtension($svg.Name)
     $image = "/examples/generated/$($svg.Name)"
+    $inferredTags = Get-InferredTags -Slug $slug
     if ($existingByImage.ContainsKey($image)) {
-        $existingByImage[$image]
+        $item = $existingByImage[$image]
+        $mergedTags = Merge-Tags -Slug $slug -ExistingTags @($item.tags) -InferredTags $inferredTags
+        if ($item.PSObject.Properties.Name -contains 'tags') {
+            $item.tags = $mergedTags
+        } else {
+            $item | Add-Member -MemberType NoteProperty -Name tags -Value $mergedTags
+        }
+
+        $item
         continue
     }
 
@@ -114,7 +212,7 @@ $items = foreach ($svg in Get-ChildItem -LiteralPath $DestinationRoot -File -Fil
         category = Get-Category -Slug $slug
         title = ConvertTo-Title -Slug $slug
         body = 'Generated ChartForgeX visual output.'
-        tags = @()
+        tags = Merge-Tags -Slug $slug -ExistingTags @() -InferredTags $inferredTags
         image = $image
     }
 }

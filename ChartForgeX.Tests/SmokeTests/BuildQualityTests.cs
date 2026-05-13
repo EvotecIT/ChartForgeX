@@ -96,6 +96,9 @@ internal static partial class SmokeTests {
         Assert(exampleSyncScript.Contains("[System.IO.Path]::GetFullPath($Path)", StringComparison.Ordinal), "Example sync writer should support new output files without requiring Resolve-Path.");
         Assert(exampleSyncScript.Contains("New-Item -ItemType Directory -Force -Path $directory", StringComparison.Ordinal), "Example sync writer should create missing output directories for custom gallery paths.");
         Assert(exampleSyncScript.Contains("Read-Utf8Text -Path $GalleryPath | ConvertFrom-Json", StringComparison.Ordinal), "Example sync script should read existing gallery metadata as UTF-8 before rewriting it without a BOM.");
+        Assert(exampleSyncScript.Contains("'(^|-)line($|-)|trend|sparkline|step-line' = 'Line'", StringComparison.Ordinal), "Example sync script should not infer Line from timeline slugs.");
+        Assert(!exampleSyncScript.Contains("'line|trend|sparkline|step-line' = 'Line'", StringComparison.Ordinal), "Example sync script should boundary-scope Line tag inference.");
+        Assert(!exampleSyncScript.Contains("regional|region|travel", StringComparison.Ordinal), "Example sync script should not infer Map tags from generic regional wording.");
     }
 
     private static void VisualBaselineIsStructuredAndActionable() {

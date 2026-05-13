@@ -105,6 +105,7 @@ public static partial class GalleryWriter {
             .Where(file => !IsConflictCopyFile(file))
             .Select(Path.GetFileNameWithoutExtension)
             .Where(name => !string.IsNullOrWhiteSpace(name) && File.Exists(Path.Combine(output, name + ".png")))
+            .Where(name => !IsTopologyCatalogExample(name!))
             .Select(name => name!)
             .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
             .Select(name => ReadComparisonAsset(output, name))

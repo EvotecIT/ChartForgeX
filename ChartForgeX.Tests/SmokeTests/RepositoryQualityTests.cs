@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -181,6 +182,31 @@ internal static partial class SmokeTests {
         Assert(program.Contains("SaveInteractiveHtml", StringComparison.Ordinal), "Example generation should include a visible interactive HTML adapter demo.");
         Assert(program.Contains("SaveInteractiveHtmlDashboard", StringComparison.Ordinal), "Example generation should include a visible synchronized dashboard adapter demo.");
         Assert(program.Contains("ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts", StringComparison.Ordinal), "Interactive example should exercise the competitive review toolbar features.");
+    }
+
+    private static void GeneratedExamplesStayAssignedToCatalogFamilies() {
+        var root = FindRepositoryRoot();
+        var generatedPath = Path.Combine(root, "Website", "static", "examples", "generated");
+        var shellPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            "catalog",
+            "index",
+            "quality-dashboard",
+            "svg-png-comparison"
+        };
+        var generated = Directory.EnumerateFiles(generatedPath, "*.html")
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(file => !string.IsNullOrWhiteSpace(file) && !shellPages.Contains(file!))
+            .Select(file => file!)
+            .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var catalogSource = File.ReadAllText(Path.Combine(root, "ChartForgeX.Examples", "GalleryWriter.Catalog.cs"));
+        var assigned = System.Text.RegularExpressions.Regex.Matches(catalogSource, "\"([a-z0-9][a-z0-9\\-]+)\"")
+            .Select(match => match.Groups[1].Value)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missing = generated
+            .Where(file => !assigned.Contains(file))
+            .ToArray();
+        Assert(missing.Length == 0, "Generated examples should be assigned to named catalog families: " + string.Join(", ", missing));
     }
 
     private static void EuropeRevenueMapRoutesTargetRenderedMarkers() {
