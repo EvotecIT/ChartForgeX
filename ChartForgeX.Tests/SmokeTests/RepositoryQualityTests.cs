@@ -273,7 +273,9 @@ internal static partial class SmokeTests {
             "quality-dashboard.html"
         }) {
             var localPath = Path.Combine(root, "Website", "static", "examples", "generated", asset);
+            var previewUrl = "https://preview.evotec.xyz/?url=https://github.com/EvotecIT/ChartForgeX/blob/main/Website/static/examples/generated/" + asset;
             Assert(readme.Contains(asset, StringComparison.Ordinal), "README visual tour should advertise generated example asset: " + asset);
+            Assert(readme.Contains(previewUrl, StringComparison.Ordinal), "README generated HTML links should open through the Evotec preview service: " + asset);
             Assert(File.Exists(localPath), "README visual tour asset should exist locally: " + Path.GetRelativePath(root, localPath));
         }
         foreach (var asset in new[] {
@@ -304,6 +306,15 @@ internal static partial class SmokeTests {
         }) {
             var previewUrl = "https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/" + preview;
             Assert(nugetReadme.Contains(previewUrl, StringComparison.Ordinal), "NuGet README visual tour should use absolute package-safe renderable asset URL: " + previewUrl);
+        }
+        foreach (var asset in new[] {
+            "dashboard-restaurant-overview-grid.html",
+            "visual-geographic-topology-map.html",
+            "dashboard-saas-mrr-grid.html",
+            "control-scorecards-grid.html"
+        }) {
+            var previewUrl = "https://preview.evotec.xyz/?url=https://github.com/EvotecIT/ChartForgeX/blob/main/Website/static/examples/generated/" + asset;
+            Assert(nugetReadme.Contains(previewUrl, StringComparison.Ordinal), "NuGet README generated HTML links should open through the Evotec preview service: " + asset);
         }
         Assert(readme.Contains("## Examples", StringComparison.Ordinal) && readme.Contains("svg-png-comparison.html", StringComparison.Ordinal) && readme.Contains("C# snippets", StringComparison.Ordinal), "README should explain how generated examples expose SVG, PNG, HTML, and C# source snippets.");
         Assert(readme.Contains("## Chart catalog", StringComparison.Ordinal), "README should include a chart catalog.");
