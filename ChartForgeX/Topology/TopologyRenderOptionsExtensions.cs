@@ -124,7 +124,7 @@ public static class TopologyRenderOptionsExtensions {
         options.MaxNodeSubtitleLines = 2;
         options.IncludeEdgeLabels = true;
         options.IncludeDirectionMarkers = true;
-        options.IncludeEdgeLabelBackplates = false;
+        options.IncludeEdgeLabelBackplates = true;
         options.IncludeStatusBadges = true;
         options.LegendMode = TopologyLegendMode.AutoWhenMissing;
         return options;

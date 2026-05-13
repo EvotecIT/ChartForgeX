@@ -237,8 +237,9 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("data-cfx-role", "topology-node-dot-symbol")
             .Attribute("data-node-id", node.Id)
             .Attribute("x", cx)
-            .Attribute("y", cy + 2.4)
+            .Attribute("y", cy)
             .Attribute("text-anchor", "middle")
+            .Attribute("dominant-baseline", "central")
             .Attribute("fill", "#FFFFFF")
             .Attribute("font-size", 5.8)
             .Attribute("font-weight", "800")
@@ -386,8 +387,9 @@ public sealed partial class TopologySvgRenderer {
             if (!AddInfrastructureGlyph(icon, node, cx, cy, color, options)) {
                 icon.Element("text", text => text
                     .Attribute("x", cx)
-                    .Attribute("y", cy + 4)
+                    .Attribute("y", cy)
                     .Attribute("text-anchor", "middle")
+                    .Attribute("dominant-baseline", "central")
                     .Attribute("fill", color)
                     .Attribute("font-size", 9)
                     .Attribute("font-weight", "800")

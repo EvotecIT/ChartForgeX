@@ -38,6 +38,7 @@ public sealed partial class TopologySvgRenderer {
             var row = i / LegendColumns;
             var itemX = x + 18 + col * LegendItemColumnWidth;
             var itemY = y + LegendFirstItemOffsetY + row * LegendItemRowHeight;
+            var markerCenterY = itemY - 5;
             var color = item.Color ?? (item.Status.HasValue ? theme.StatusColor(item.Status.Value) : theme.Accent);
             layer.Element("g", group => {
                 group
@@ -47,16 +48,16 @@ public sealed partial class TopologySvgRenderer {
                 if (item.Kind == TopologyLegendItemKind.Edge) {
                     group.Element("line", line => line
                         .Attribute("x1", itemX)
-                        .Attribute("y1", itemY - 4)
+                        .Attribute("y1", markerCenterY)
                         .Attribute("x2", itemX + 24)
-                        .Attribute("y2", itemY - 4)
+                        .Attribute("y2", markerCenterY)
                         .Attribute("stroke", color)
                         .Attribute("stroke-width", 2)
                         .Attribute("stroke-dasharray", EdgeDash(item.LineStyle)));
                 } else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
                     group.Element("rect", rect => rect
                         .Attribute("x", itemX)
-                        .Attribute("y", itemY - 13)
+                        .Attribute("y", markerCenterY - 8)
                         .Attribute("width", 16)
                         .Attribute("height", 16)
                         .Attribute("rx", 4)
@@ -64,8 +65,9 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("stroke", color));
                     group.Element("text", text => text
                         .Attribute("x", itemX + 8)
-                        .Attribute("y", itemY - 2)
+                        .Attribute("y", markerCenterY)
                         .Attribute("text-anchor", "middle")
+                        .Attribute("dominant-baseline", "central")
                         .Attribute("fill", color)
                         .Attribute("font-size", 7)
                         .Attribute("font-weight", "800")
@@ -73,14 +75,15 @@ public sealed partial class TopologySvgRenderer {
                 } else {
                     group.Element("circle", circle => circle
                         .Attribute("cx", itemX + 8)
-                        .Attribute("cy", itemY - 5)
+                        .Attribute("cy", markerCenterY)
                         .Attribute("r", 6)
                         .Attribute("fill", color));
                 }
 
                 group.Element("text", text => text
                     .Attribute("x", itemX + 32)
-                    .Attribute("y", itemY)
+                    .Attribute("y", markerCenterY)
+                    .Attribute("dominant-baseline", "central")
                     .Attribute("fill", theme.MutedForeground)
                     .Attribute("font-size", 11)
                     .Text(item.Label));

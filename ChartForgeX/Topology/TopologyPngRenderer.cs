@@ -454,7 +454,7 @@ public sealed partial class TopologyPngRenderer {
             return;
         }
 
-        DrawCentered(canvas, cx, cy - 4, TrimTo(symbol, 2), ChartColor.White, 5.8, true);
+        DrawCenteredMiddle(canvas, cx, cy, TrimTo(symbol, 2), ChartColor.White, 5.8, true);
     }
 
     private static void DrawNodeIcon(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor status, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
@@ -469,7 +469,7 @@ public sealed partial class TopologyPngRenderer {
 
         canvas.FillRoundedRect(cx - size / 2, cy - size / 2, size, size, 6, Color(StatusFill(theme.StatusColor(node.Status), theme.Background)));
         canvas.StrokeRoundedRect(cx - size / 2, cy - size / 2, size, size, 6, status, 1);
-        if (!DrawInfrastructureGlyph(canvas, node, cx, cy, status, options)) DrawCentered(canvas, cx, cy - 6, NodeGlyph(node, options), status, displayMode == TopologyNodeDisplayMode.Pill ? 7.5 : 8.5, true);
+        if (!DrawInfrastructureGlyph(canvas, node, cx, cy, status, options)) DrawCenteredMiddle(canvas, cx, cy, NodeGlyph(node, options), status, displayMode == TopologyNodeDisplayMode.Pill ? 7.5 : 8.5, true);
     }
 
     private static bool DrawInfrastructureGlyph(RgbaCanvas canvas, TopologyNode node, double cx, double cy, ChartColor color, TopologyRenderOptions options) {
@@ -637,7 +637,7 @@ public sealed partial class TopologyPngRenderer {
                 canvas.DrawLine(cx - 3.8, cy, cx - 1, cy + 3, ChartColor.White, 1.8);
                 canvas.DrawLine(cx - 1, cy + 3, cx + 4.4, cy - 3.6, ChartColor.White, 1.8);
             } else {
-                DrawCentered(canvas, cx, cy - 5, StatusGlyph(node.Status), ChartColor.White, 8, true);
+                DrawCenteredMiddle(canvas, cx, cy, StatusGlyph(node.Status), ChartColor.White, 8, true);
             }
         }
     }
@@ -657,18 +657,19 @@ public sealed partial class TopologyPngRenderer {
             var row = i / LegendColumns;
             var itemX = x + 18 + col * LegendItemColumnWidth;
             var itemY = y + LegendFirstItemOffsetY + row * LegendItemRowHeight;
+            var markerCenterY = itemY - 5;
             var color = Color(item.Color ?? (item.Status.HasValue ? theme.StatusColor(item.Status.Value) : theme.Accent));
             if (item.Kind == TopologyLegendItemKind.Edge) {
                 var dash = EdgePngDash(item.LineStyle);
-                if (dash.Dashed) canvas.DrawDashedLine(itemX, itemY - 4, itemX + 24, itemY - 4, color, 2, dash.Dash, dash.Gap);
-                else canvas.DrawLine(itemX, itemY - 4, itemX + 24, itemY - 4, color, 2);
+                if (dash.Dashed) canvas.DrawDashedLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2, dash.Dash, dash.Gap);
+                else canvas.DrawLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2);
             }
             else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
-                canvas.FillRoundedRect(itemX, itemY - 13, 16, 16, 4, Color(StatusFill(item.Color ?? theme.Accent, theme.Background)));
-                canvas.StrokeRoundedRect(itemX, itemY - 13, 16, 16, 4, color, 1);
-                DrawCentered(canvas, itemX + 8, itemY - 11, TrimTo(item.Symbol!.Trim(), 4), color, 6.5, true);
-            } else canvas.DrawCircle(itemX + 8, itemY - 5, 6, color);
-            canvas.DrawText(itemX + 32, itemY - 14, item.Label, Color(theme.MutedForeground), 11);
+                canvas.FillRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, Color(StatusFill(item.Color ?? theme.Accent, theme.Background)));
+                canvas.StrokeRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, color, 1);
+                DrawCenteredMiddle(canvas, itemX + 8, markerCenterY, TrimTo(item.Symbol!.Trim(), 4), color, 6.5, true);
+            } else canvas.DrawCircle(itemX + 8, markerCenterY, 6, color);
+            DrawTextMiddle(canvas, itemX + 32, markerCenterY, item.Label, Color(theme.MutedForeground), 11, false);
         }
     }
 
@@ -676,6 +677,17 @@ public sealed partial class TopologyPngRenderer {
         var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
         if (emphasized) canvas.DrawTextEmphasized(centerX - width / 2, y, text, color, fontSize);
         else canvas.DrawText(centerX - width / 2, y, text, color, fontSize);
+    }
+
+    private static void DrawCenteredMiddle(RgbaCanvas canvas, double centerX, double centerY, string text, ChartColor color, double fontSize, bool emphasized) {
+        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
+        DrawTextMiddle(canvas, centerX - width / 2, centerY, text, color, fontSize, emphasized);
+    }
+
+    private static void DrawTextMiddle(RgbaCanvas canvas, double x, double centerY, string text, ChartColor color, double fontSize, bool emphasized) {
+        var y = centerY - RgbaCanvas.MeasureTextHeight(fontSize, null) / 2;
+        if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
+        else canvas.DrawText(x, y, text, color, fontSize);
     }
 
     private static void DrawTextLines(RgbaCanvas canvas, double x, double y, IReadOnlyList<string> lines, ChartColor color, double fontSize, bool emphasized, double lineHeight) {

@@ -9,6 +9,7 @@ internal static partial class SmokeTests {
             .WithId("relationship-overview")
             .WithViewport(620, 280, 20)
             .WithLegend(TopologyLegend.Create("Links")
+                .AddNodeKind("Certificate", TopologyNodeKind.Certificate, "#2563EB", "TLS")
                 .AddEdgeKind("Verified", TopologyEdgeKind.CertificateChain, "#16A34A", TopologyEdgeLineStyle.Solid)
                 .AddEdgeKind("Risk", TopologyEdgeKind.Mapping, "#EF4444", TopologyEdgeLineStyle.Dotted))
             .AddNode("domain", "ad.evotec.xyz\nPrimary Domain", 240, 96, TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "Confidence 92%\n24 linked records", width: 168, height: 86, symbol: "D", iconId: "chartforgex-identity-directory:domain")
@@ -30,6 +31,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview topology should support explicit relationship colors independent from health status.");
         Assert(svg.Contains("stroke=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview edge colors should be used by the route renderer.");
         Assert(svg.Contains(">Links<", StringComparison.Ordinal), "Relationship overview topology should preserve caller-shaped legends.");
+        Assert(svg.Contains("dominant-baseline=\"central\"", StringComparison.Ordinal), "Topology legend and fallback glyph symbols should use centered text baselines.");
         Assert(svg.Contains("stroke-dasharray=\"2 5\"", StringComparison.Ordinal), "Relationship overview legends should render caller-specified dotted line styles.");
         Assert(!svg.Contains("data-legend-kind=\"status\"", StringComparison.Ordinal), "Relationship overview legends should not auto-merge every inferred status when the caller supplied a focused legend.");
         Assert(svg.Contains("data-node-icon-id=\"chartforgex-identity-directory:certificate\"", StringComparison.Ordinal), "Relationship overview topology should keep reusable icon ids in SVG metadata.");
