@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using ChartForgeX.Html;
+using ChartForgeX.Primitives;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -42,7 +43,7 @@ public sealed class TopologyHtmlRenderer {
             .Attribute("data-cfx-export-controls", enableExportControls)
             .Attribute("data-cfx-sync-enabled", enableSync)
             .Attribute("data-cfx-sync-group", syncGroup)
-            .Attribute("style", "width:100%;max-width:" + chart.Viewport.Width.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box")
+            .Attribute("style", "width:100%;max-width:" + chart.Viewport.Width.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible")
             .EndStartElement();
         writer.StartElement("div").Attribute("class", viewportClass).EndStartElement();
         if (enableViewportControls || enableExportControls) {
@@ -83,7 +84,7 @@ public sealed class TopologyHtmlRenderer {
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), EscapeAttr(theme.Background)));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(chart, options)).Line();
@@ -106,7 +107,8 @@ public sealed class TopologyHtmlRenderer {
     }
 
     private static string StyleSheet(string cssPrefix, string fontFamily, string background) {
-        var stylesheet = "body{margin:0;min-height:100vh;background:" + background + ";font-family:" + fontFamily + ";padding:24px;box-sizing:border-box}.cfx-topology-wrapper{margin:0 auto}.cfx-topology-viewport{position:relative}.cfx-topology-wrapper svg{max-width:100%;height:auto;display:block}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport{overflow:hidden;touch-action:none}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] svg{transform:translate(var(--cfx-topology-pan-x,0),var(--cfx-topology-pan-y,0)) scale(var(--cfx-topology-zoom,1));transform-origin:center center;transition:transform .12s ease;will-change:transform}.cfx-topology-controls{position:absolute;z-index:5;top:12px;left:12px;display:grid;gap:6px}.cfx-topology-controls button{min-width:34px;height:34px;border:1px solid rgba(37,99,235,.28);border-radius:6px;background:rgba(255,255,255,.92);color:#1e3a8a;cursor:pointer;font:700 12px/1 " + fontFamily + ";box-shadow:0 8px 18px rgba(15,23,42,.1)}.cfx-topology-controls button:hover,.cfx-topology-controls button:focus-visible,.cfx-topology-controls button[aria-pressed='true']{border-color:#2563eb;color:#0f172a;background:#eff6ff}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport{cursor:grab}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport:active{cursor:grabbing}.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge'],.cfx-topology-wrapper [data-cfx-role='topology-group']{cursor:pointer}.cfx-topology-wrapper .cfx-topology-html-selected{filter:drop-shadow(0 10px 18px rgba(37,99,235,.22))}.cfx-topology-wrapper .cfx-topology-html-muted{opacity:.32}.cfx-topology-wrapper .cfx-topology-html-related{opacity:1}.cfx-topology-wrapper .cfx-topology-html-hovered{filter:drop-shadow(0 8px 16px rgba(15,23,42,.16))}.cfx-topology-wrapper .cfx-topology-html-hover-muted{opacity:.42}.cfx-topology-wrapper .cfx-topology-html-hover-related{opacity:1}";
+        var backgroundColor = ChartColor.TryParse(background, out var parsed) ? parsed : ChartColor.Parse("#FFFFFF");
+        var stylesheet = HtmlSurfacePolish.ReportBodyCss(backgroundColor, fontFamily, "24px") + ".cfx-topology-wrapper{margin:0 auto;overflow:visible}.cfx-topology-viewport{position:relative}.cfx-topology-wrapper svg{max-width:100%;height:auto;display:block;overflow:visible}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport{overflow:hidden;touch-action:none}.cfx-topology-wrapper[data-cfx-viewport-controls='true'] svg{transform:translate(var(--cfx-topology-pan-x,0),var(--cfx-topology-pan-y,0)) scale(var(--cfx-topology-zoom,1));transform-origin:center center;transition:transform .12s ease;will-change:transform}.cfx-topology-controls{position:absolute;z-index:5;top:12px;left:12px;display:grid;gap:6px}.cfx-topology-controls button{min-width:34px;height:34px;border:1px solid rgba(37,99,235,.28);border-radius:6px;background:rgba(255,255,255,.92);color:#1e3a8a;cursor:pointer;font:700 12px/1 " + fontFamily + ";box-shadow:0 8px 18px rgba(15,23,42,.1)}.cfx-topology-controls button:hover,.cfx-topology-controls button:focus-visible,.cfx-topology-controls button[aria-pressed='true']{border-color:#2563eb;color:#0f172a;background:#eff6ff}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport{cursor:grab}.cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport:active{cursor:grabbing}.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge'],.cfx-topology-wrapper [data-cfx-role='topology-group']{cursor:pointer}.cfx-topology-wrapper .cfx-topology-html-selected{filter:drop-shadow(0 10px 18px rgba(37,99,235,.22))}.cfx-topology-wrapper .cfx-topology-html-muted{opacity:.32}.cfx-topology-wrapper .cfx-topology-html-related{opacity:1}.cfx-topology-wrapper .cfx-topology-html-hovered{filter:drop-shadow(0 8px 16px rgba(15,23,42,.16))}.cfx-topology-wrapper .cfx-topology-html-hover-muted{opacity:.42}.cfx-topology-wrapper .cfx-topology-html-hover-related{opacity:1}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".cfx-topology-wrapper{width:100%;max-width:none}.cfx-topology-wrapper svg{width:100%;height:auto}");
         return stylesheet
             .Replace(".cfx-topology-wrapper", "." + cssPrefix + "-wrapper")
             .Replace(".cfx-topology-viewport", "." + cssPrefix + "-viewport")

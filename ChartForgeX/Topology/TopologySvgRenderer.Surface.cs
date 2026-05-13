@@ -40,7 +40,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("y2", bottom - 10)
                 .Attribute("stroke", theme.Border)
                 .Attribute("stroke-opacity", 0.28)
-                .Attribute("stroke-width", 0.7));
+                .Attribute("stroke-width", 0.75));
         }
 
         for (var gy = y + spacing; gy < bottom - 2; gy += spacing) {
@@ -51,7 +51,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("y2", gy)
                 .Attribute("stroke", theme.Border)
                 .Attribute("stroke-opacity", 0.22)
-                .Attribute("stroke-width", 0.7));
+                .Attribute("stroke-width", 0.75));
         }
     }
 

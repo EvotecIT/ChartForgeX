@@ -76,7 +76,7 @@ public sealed partial class TopologySvgRenderer {
                             .Attribute("text-anchor", "middle")
                             .Attribute("dominant-baseline", "central")
                             .Attribute("fill", color)
-                            .Attribute("font-size", 7)
+                            .Attribute("font-size", 8)
                             .Attribute("font-weight", "800")
                             .Text(NodeGlyph(legendNode, options)));
                     }

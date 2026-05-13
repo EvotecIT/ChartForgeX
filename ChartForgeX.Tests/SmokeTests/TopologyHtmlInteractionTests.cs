@@ -8,6 +8,10 @@ internal static partial class SmokeTests {
         var defaultHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false });
         Assert(defaultHtml.Contains("data-cfx-interactive=\"false\"", StringComparison.Ordinal), "Topology HTML pages should be static by default.");
         Assert(!defaultHtml.Contains("cfx-topology-select", StringComparison.Ordinal), "Default topology HTML pages should omit the interaction script.");
+        Assert(defaultHtml.Contains("linear-gradient(180deg", StringComparison.Ordinal), "Topology HTML pages should use the shared polished page surface.");
+        Assert(defaultHtml.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal) && defaultHtml.Contains("text-rendering:geometricPrecision", StringComparison.Ordinal), "Topology HTML pages should use the shared text polish.");
+        Assert(defaultHtml.Contains("overflow:visible", StringComparison.Ordinal), "Topology HTML pages should keep exported topology strokes and labels visible.");
+        Assert(defaultHtml.Contains("@media print", StringComparison.Ordinal) && defaultHtml.Contains("background:transparent", StringComparison.Ordinal), "Topology HTML pages should include print-friendly framing.");
 
         var html = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true });
         Assert(html.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Topology HTML pages should mark interactive wrappers.");

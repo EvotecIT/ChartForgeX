@@ -155,7 +155,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("rx", 7.5)
                     .Attribute("fill", theme.Background)
                     .Attribute("stroke", theme.Border)
-                    .Attribute("stroke-width", 0.7));
+                    .Attribute("stroke-width", 0.75));
                 body.Element("text", text => text
                     .Attribute("x", CenterX(node))
                     .Attribute("y", labelY + 11)

@@ -32,4 +32,28 @@ internal static partial class SmokeTests {
         Assert(legend.Contains(">TLS Certificate<", StringComparison.Ordinal), "Topology auto legends should keep the inferred icon symbol in the node-kind label.");
         Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false }).Length > 64, "Bulk node-kind icons should render as PNG.");
     }
+
+    private static void TopologyNodesCanApplyCombinedKindStyle() {
+        var catalog = TopologyIconCatalog.Default();
+        var chart = TopologyChart.Create()
+            .WithId("combined-kind-style")
+            .WithViewport(520, 300, 24)
+            .AddNode("owner-a", "Owner A", 72, 120, TopologyNodeKind.Generic, TopologyHealthStatus.Healthy)
+            .AddNode("owner-b", "Owner B", 250, 120, TopologyNodeKind.Generic, TopologyHealthStatus.Warning)
+            .WithNodesOfKindStyle(TopologyNodeKind.Generic, color: "#7C3AED", backgroundColor: "#F5F3FF", iconId: "people:owner", catalog: catalog);
+
+        Assert(chart.Nodes[0].Kind == TopologyNodeKind.Person, "Combined node-kind styling should apply the icon's generic node kind after matching the original kind.");
+        Assert(chart.Nodes[0].Color == "#7C3AED", "Combined node-kind styling should keep caller accent colors ahead of icon fallback colors.");
+        Assert(chart.Nodes[0].BackgroundColor == "#F5F3FF", "Combined node-kind styling should apply caller node backgrounds.");
+        Assert(chart.Nodes[0].IconId == "people:owner", "Combined node-kind styling should apply reusable icon ids.");
+        Assert(chart.Nodes[0].Symbol == "OWN", "Combined node-kind styling should fill missing symbols from the icon.");
+        var svg = chart.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Auto });
+        Assert(svg.Contains("data-node-kind=\"Person\"", StringComparison.Ordinal), "Combined node-kind styling should expose the icon node kind in SVG metadata.");
+        Assert(svg.Contains("data-node-color=\"#7C3AED\"", StringComparison.Ordinal), "Combined node-kind styling should expose caller accent colors in SVG metadata.");
+        Assert(svg.Contains("data-node-background-color=\"#F5F3FF\"", StringComparison.Ordinal), "Combined node-kind styling should expose caller backgrounds in SVG metadata.");
+        var legend = svg.Substring(svg.IndexOf("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal));
+        Assert(legend.Contains("data-legend-icon-id=\"people:owner\"", StringComparison.Ordinal), "Combined node-kind styling should flow into auto legend icon markers.");
+        Assert(legend.Contains("fill=\"#F5F3FF\"", StringComparison.Ordinal), "Combined node-kind styling should flow into auto legend backgrounds.");
+        Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Auto }).Length > 64, "Combined node-kind styling should render as PNG.");
+    }
 }
