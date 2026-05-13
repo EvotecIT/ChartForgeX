@@ -156,7 +156,7 @@ internal static class TopologyLayoutNormalizer {
         }
 
         var neededWidth = bounds.Right + chart.Viewport.Padding + surfaceInset;
-        var neededHeight = bounds.Bottom + chart.Viewport.Padding + surfaceInset + LegendReservedHeight(chart.Legend);
+        var neededHeight = bounds.Bottom + chart.Viewport.Padding + surfaceInset + LegendReservedHeight(chart.Legend, chart.Viewport);
         if (neededWidth > chart.Viewport.Width) chart.Viewport.Width = Math.Ceiling(neededWidth);
         if (neededHeight > chart.Viewport.Height) chart.Viewport.Height = Math.Ceiling(neededHeight);
     }

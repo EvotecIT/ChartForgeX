@@ -8,12 +8,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
-    public const int LegendColumns = 4;
-    public const double LegendMaxWidth = 560;
-    public const double LegendItemColumnWidth = 132;
-    public const double LegendItemRowHeight = 24;
-    public const double LegendFirstItemOffsetY = 46;
-    public const double LegendBottomPadding = 16;
     public const int NodeLabelMaxLength = 18;
 
     public static bool IsMonitoringDashboardStyle(TopologyRenderOptions options) => options.VisualStyle == TopologyVisualStyle.MonitoringDashboard;
@@ -81,13 +75,6 @@ internal static partial class TopologyRenderPrimitives {
         if (char.IsDigit(sb[0])) sb.Insert(0, "cfx-");
         return sb.ToString();
     }
-
-    public static double LegendHeight(TopologyLegend legend) {
-        var rows = Math.Max(1, (int)Math.Ceiling(legend.Items.Count / (double)LegendColumns));
-        return LegendFirstItemOffsetY + (rows - 1) * LegendItemRowHeight + LegendBottomPadding;
-    }
-
-    public static double LegendReservedHeight(TopologyLegend? legend) => legend == null ? 0 : LegendHeight(legend) + 24;
 
     public static string LegendKindToken(TopologyLegendItemKind kind) {
         return kind == TopologyLegendItemKind.Edge ? "edge" : kind == TopologyLegendItemKind.Node ? "node" : "status";

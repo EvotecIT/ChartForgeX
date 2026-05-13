@@ -9,7 +9,7 @@ public sealed partial class TopologySvgRenderer {
         var x = chart.Viewport.Padding;
         var y = options.IncludeTitle && (!string.IsNullOrWhiteSpace(chart.Title) || !string.IsNullOrWhiteSpace(chart.Subtitle)) ? chart.Viewport.Padding + 62 : chart.Viewport.Padding;
         var width = chart.Viewport.Width - chart.Viewport.Padding * 2;
-        var height = chart.Viewport.Height - y - chart.Viewport.Padding - LegendReservedHeight(chart.Legend);
+        var height = chart.Viewport.Height - y - chart.Viewport.Padding - LegendReservedHeight(chart.Legend, chart.Viewport);
         if (width <= 0 || height <= 0) return;
         var layer = new SvgElement("g")
             .Class(prefix + "__canvas-surface")

@@ -645,17 +645,19 @@ public sealed partial class TopologyPngRenderer {
     private static void DrawLegend(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options) {
         var legend = chart.Legend!;
         var x = chart.Viewport.Padding;
-        var height = LegendHeight(legend);
+        var width = LegendWidth(legend, chart.Viewport);
+        var columns = LegendColumnCount(legend, width);
+        var columnWidth = LegendColumnWidth(width, columns);
+        var height = LegendHeight(legend, width);
         var y = chart.Viewport.Height - chart.Viewport.Padding - height;
-        var width = Math.Min(LegendMaxWidth, chart.Viewport.Width - chart.Viewport.Padding * 2);
         canvas.FillRoundedRect(x, y, width, height, 12, Color(theme.Card));
         canvas.StrokeRoundedRect(x, y, width, height, 12, Color(theme.Border), 1);
         if (!string.IsNullOrWhiteSpace(legend.Title)) canvas.DrawTextEmphasized(x + 16, y + 11, legend.Title!, Color(theme.Foreground), 12);
         for (var i = 0; i < legend.Items.Count; i++) {
             var item = legend.Items[i];
-            var col = i % LegendColumns;
-            var row = i / LegendColumns;
-            var itemX = x + 18 + col * LegendItemColumnWidth;
+            var col = i % columns;
+            var row = i / columns;
+            var itemX = x + 18 + col * columnWidth;
             var itemY = y + LegendFirstItemOffsetY + row * LegendItemRowHeight;
             var markerCenterY = itemY - 5;
             var color = Color(item.Color ?? (item.Status.HasValue ? theme.StatusColor(item.Status.Value) : theme.Accent));

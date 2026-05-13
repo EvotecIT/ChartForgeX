@@ -11,7 +11,7 @@ public sealed partial class TopologyPngRenderer {
         var x = chart.Viewport.Padding;
         var y = options.IncludeTitle && (!string.IsNullOrWhiteSpace(chart.Title) || !string.IsNullOrWhiteSpace(chart.Subtitle)) ? chart.Viewport.Padding + 62 : chart.Viewport.Padding;
         var width = chart.Viewport.Width - chart.Viewport.Padding * 2;
-        var height = chart.Viewport.Height - y - chart.Viewport.Padding - LegendReservedHeight(chart.Legend);
+        var height = chart.Viewport.Height - y - chart.Viewport.Padding - LegendReservedHeight(chart.Legend, chart.Viewport);
         if (width <= 0 || height <= 0) return;
         canvas.FillRoundedRect(x + 2, y + 5, width, height, 12, ChartColor.FromRgba(15, 23, 42, 12));
         canvas.FillRoundedRect(x, y, width, height, IsMonitoringDashboardStyle(options) ? 12 : 14, Color(theme.Card));

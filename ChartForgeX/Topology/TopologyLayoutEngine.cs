@@ -183,7 +183,7 @@ internal static partial class TopologyLayoutEngine {
 
         var pad = Math.Max(16, chart.Viewport.Padding);
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 64;
-        var legendOffset = LegendReservedHeight(chart.Legend);
+        var legendOffset = LegendReservedHeight(chart.Legend, chart.Viewport);
         var columns = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(chart.Groups.Count)));
         var rows = (int)Math.Ceiling(chart.Groups.Count / (double)columns);
         var cellW = (chart.Viewport.Width - pad * 2 - (columns - 1) * 28) / columns;
@@ -242,12 +242,12 @@ internal static partial class TopologyLayoutEngine {
         }
 
         ApplyLayeredTopToBottom(chart, layers, pad, top);
-        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) MirrorLayoutVertically(chart, top, chart.Viewport.Height - pad - LegendReservedHeight(chart.Legend));
+        if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) MirrorLayoutVertically(chart, top, chart.Viewport.Height - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
     }
 
     private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top) {
         var availableW = Math.Max(140, chart.Viewport.Width - pad * 2);
-        var availableH = Math.Max(100, chart.Viewport.Height - top - pad - LegendReservedHeight(chart.Legend));
+        var availableH = Math.Max(100, chart.Viewport.Height - top - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
         var prepared = layers.Select(group => {
             var maxWidth = group.Nodes.Select(node => node.Width).DefaultIfEmpty(120).Max();
             var maxHeight = group.Nodes.Select(node => node.Height).DefaultIfEmpty(60).Max();
@@ -288,7 +288,7 @@ internal static partial class TopologyLayoutEngine {
 
     private static void ApplyLayeredLeftToRight(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top) {
         var availableW = Math.Max(120, chart.Viewport.Width - pad * 2);
-        var availableH = Math.Max(100, chart.Viewport.Height - top - pad - LegendReservedHeight(chart.Legend));
+        var availableH = Math.Max(100, chart.Viewport.Height - top - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
         var prepared = layers.Select(group => {
             var maxWidth = group.Nodes.Select(node => node.Width).DefaultIfEmpty(120).Max();
             var maxHeight = group.Nodes.Select(node => node.Height).DefaultIfEmpty(60).Max();
@@ -381,7 +381,7 @@ internal static partial class TopologyLayoutEngine {
         var explicitGroupPositions = ExplicitGroupPositions(chart.Groups);
         var pad = Math.Max(24, chart.Viewport.Padding);
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72;
-        var legendOffset = LegendReservedHeight(chart.Legend);
+        var legendOffset = LegendReservedHeight(chart.Legend, chart.Viewport);
         const double gap = 24;
         var columns = DenseGroupColumns(chart);
         var rows = (int)Math.Ceiling(chart.Groups.Count / (double)columns);
@@ -481,7 +481,7 @@ internal static partial class TopologyLayoutEngine {
         if (fallback.Count == 0) return;
         var columns = Math.Max(1, Math.Min(4, fallback.Count));
         var cellW = map.Width / columns;
-        var y = Math.Min(map.Bottom + 18, chart.Viewport.Height - chart.Viewport.Padding - TopologyRenderPrimitives.LegendReservedHeight(chart.Legend) - 52);
+        var y = Math.Min(map.Bottom + 18, chart.Viewport.Height - chart.Viewport.Padding - TopologyRenderPrimitives.LegendReservedHeight(chart.Legend, chart.Viewport) - 52);
         for (var i = 0; i < fallback.Count; i++) {
             var node = fallback[i];
             var col = i % columns;

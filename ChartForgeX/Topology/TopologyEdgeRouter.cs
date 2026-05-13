@@ -209,7 +209,7 @@ internal static class TopologyEdgeRouter {
     private static IEnumerable<RouteCorridor> RouteYCandidates(TopologyChart chart, TopologyNode source, TopologyNode target, IReadOnlyList<RouteBox> obstacles, double routeLane) {
         const double margin = 18;
         var min = chart.Viewport.Padding + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 72);
-        var max = chart.Viewport.Height - chart.Viewport.Padding - LegendReservedHeight(chart.Legend);
+        var max = chart.Viewport.Height - chart.Viewport.Padding - LegendReservedHeight(chart.Legend, chart.Viewport);
         yield return new RouteCorridor("horizontal-mid", Clamp((CenterY(source) + CenterY(target)) / 2 + routeLane, min, max));
         yield return new RouteCorridor("horizontal-viewport-top", Clamp(min + margin, min, max));
         yield return new RouteCorridor("horizontal-viewport-bottom", Clamp(max - margin, min, max));

@@ -20,6 +20,9 @@ internal static partial class SmokeTests {
         var legendStart = svg.IndexOf("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal);
         Assert(legendStart >= 0, "Topology auto legend should render for styled node kinds.");
         var legend = svg.Substring(legendStart);
+        Assert(TopologyRenderPrimitives.LegendColumnCount(TopologyLegend.Infer(chart), 512) == 3, "Topology legends should reduce column count when the available width would crowd markers and labels.");
+        Assert(legend.Contains("data-legend-column-width=\"", StringComparison.Ordinal), "Topology SVG legends should expose chosen column spacing for host diagnostics.");
+        Assert(legend.Contains("width=\"22\" height=\"22\"", StringComparison.Ordinal), "Topology legend node markers should use the shared card-icon footprint.");
         Assert(legend.Contains(">TLS Certificate<", StringComparison.Ordinal), "Topology auto legend should include the styled node symbol and kind.");
         Assert(legend.Contains("stroke=\"#2563EB\"", StringComparison.Ordinal), "Topology auto legend should reuse a shared node-kind accent color.");
         Assert(legend.Contains("fill=\"#EFF6FF\"", StringComparison.Ordinal), "Topology auto legend should reuse a shared node-kind background color.");

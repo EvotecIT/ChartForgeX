@@ -46,7 +46,7 @@ internal static partial class TopologyLayoutEngine {
 
         var pad = Math.Max(24, chart.Viewport.Padding);
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72;
-        var legendOffset = LegendReservedHeight(chart.Legend);
+        var legendOffset = LegendReservedHeight(chart.Legend, chart.Viewport);
         var left = pad;
         var right = Math.Max(left + 80, chart.Viewport.Width - pad);
         var top = pad + titleOffset;

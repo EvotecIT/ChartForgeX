@@ -25,7 +25,7 @@ internal static class TopologyMapProjection {
     public static ChartRect MapRect(TopologyChart chart) {
         var pad = Math.Max(24, chart.Viewport.Padding);
         var top = pad + (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72);
-        var legendOffset = TopologyRenderPrimitives.LegendReservedHeight(chart.Legend);
+        var legendOffset = TopologyRenderPrimitives.LegendReservedHeight(chart.Legend, chart.Viewport);
         var plot = new ChartRect(
             pad + 8,
             top + 8,

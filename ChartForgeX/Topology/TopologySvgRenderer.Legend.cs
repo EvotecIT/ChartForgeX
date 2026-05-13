@@ -8,12 +8,16 @@ public sealed partial class TopologySvgRenderer {
     private static void AddLegend(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
         var legend = chart.Legend!;
         var x = chart.Viewport.Padding;
-        var height = LegendHeight(legend);
+        var width = LegendWidth(legend, chart.Viewport);
+        var columns = LegendColumnCount(legend, width);
+        var columnWidth = LegendColumnWidth(width, columns);
+        var height = LegendHeight(legend, width);
         var y = chart.Viewport.Height - chart.Viewport.Padding - height;
-        var width = Math.Min(LegendMaxWidth, chart.Viewport.Width - chart.Viewport.Padding * 2);
         var layer = new SvgElement("g")
             .Class(prefix + "__legend")
-            .Attribute("data-cfx-role", "topology-legend");
+            .Attribute("data-cfx-role", "topology-legend")
+            .Attribute("data-legend-columns", columns)
+            .Attribute("data-legend-column-width", columnWidth);
         layer.Element("rect", rect => rect
             .Attribute("x", x)
             .Attribute("y", y)
@@ -34,9 +38,9 @@ public sealed partial class TopologySvgRenderer {
 
         for (var i = 0; i < legend.Items.Count; i++) {
             var item = legend.Items[i];
-            var col = i % LegendColumns;
-            var row = i / LegendColumns;
-            var itemX = x + 18 + col * LegendItemColumnWidth;
+            var col = i % columns;
+            var row = i / columns;
+            var itemX = x + 18 + col * columnWidth;
             var itemY = y + LegendFirstItemOffsetY + row * LegendItemRowHeight;
             var markerCenterY = itemY - 5;
             var color = item.Color ?? (item.Status.HasValue ? theme.StatusColor(item.Status.Value) : theme.Accent);

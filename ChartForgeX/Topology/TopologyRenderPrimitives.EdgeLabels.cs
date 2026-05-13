@@ -137,7 +137,7 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         var topSpace = labelPoint.Y - viewport.Padding - height / 2;
-        var bottomSpace = viewport.Height - viewport.Padding - LegendReservedHeight(legend) - (labelPoint.Y + height / 2);
+        var bottomSpace = viewport.Height - viewport.Padding - LegendReservedHeight(legend, viewport) - (labelPoint.Y + height / 2);
         return new ChartPoint(0, bottomSpace >= topSpace ? verticalClearance : -verticalClearance);
     }
 
@@ -205,7 +205,7 @@ internal static partial class TopologyRenderPrimitives {
         var minX = viewport.Padding + width / 2;
         var maxX = Math.Max(minX, viewport.Width - viewport.Padding - width / 2);
         var minY = viewport.Padding + height / 2;
-        var maxY = Math.Max(minY, viewport.Height - viewport.Padding - LegendReservedHeight(legend) - panelPadding - height / 2);
+        var maxY = Math.Max(minY, viewport.Height - viewport.Padding - LegendReservedHeight(legend, viewport) - panelPadding - height / 2);
         return new ChartPoint(Math.Min(maxX, Math.Max(minX, point.X)), Math.Min(maxY, Math.Max(minY, point.Y)));
     }
 
