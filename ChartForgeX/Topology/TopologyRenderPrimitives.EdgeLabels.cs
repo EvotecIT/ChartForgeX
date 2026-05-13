@@ -129,7 +129,7 @@ internal static partial class TopologyRenderPrimitives {
         var dx = segment.End.X - segment.Start.X;
         var dy = segment.End.Y - segment.Start.Y;
         var horizontalClearance = lineCount <= 1 ? 26 : 46;
-        var verticalClearance = lineCount <= 1 ? 24 : 42;
+        var verticalClearance = lineCount <= 1 ? 24 : 54;
         if (Math.Abs(dy) > Math.Abs(dx)) {
             var leftSpace = labelPoint.X - viewport.Padding - width / 2;
             var rightSpace = viewport.Width - viewport.Padding - (labelPoint.X + width / 2);

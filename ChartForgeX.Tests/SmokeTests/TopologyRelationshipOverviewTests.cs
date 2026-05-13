@@ -17,12 +17,18 @@ internal static partial class SmokeTests {
             .AddEdge("cert-domain", "cert", "domain", "Certificate", TopologyEdgeKind.CertificateChain, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "SAN match")
             .AddEdge("domain-finding", "domain", "finding", "Observed", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "3 sources")
             .WithEdgeLineStyle("cert-domain", TopologyEdgeLineStyle.Dashed)
-            .WithEdgeLineStyle("domain-finding", TopologyEdgeLineStyle.Dotted);
+            .WithEdgeLineStyle("domain-finding", TopologyEdgeLineStyle.Dotted)
+            .WithEdgeColor("domain-finding", "#DC2626");
 
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).WithSelectedNode("domain");
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-canvas-surface-style=\"PanelGrid\"", StringComparison.Ordinal), "Relationship overview topology should render a dashboard-style canvas surface.");
+        Assert(svg.Contains("data-node-surface-style=\"AccentBand\"", StringComparison.Ordinal), "Relationship overview topology should render premium tinted node surfaces.");
+        Assert(svg.Contains("data-cfx-role=\"topology-node-accent-band\"", StringComparison.Ordinal), "Relationship overview topology should render node accent bands.");
+        Assert(svg.Contains(" Q ", StringComparison.Ordinal), "Relationship overview topology should round orthogonal edge bends.");
         Assert(svg.Contains("M 2 1 L 8 5 L 2 9", StringComparison.Ordinal), "Relationship overview topology should use the chevron marker style.");
+        Assert(svg.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview topology should support explicit relationship colors independent from health status.");
+        Assert(svg.Contains("stroke=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview edge colors should be used by the route renderer.");
         Assert(svg.Contains(">Links<", StringComparison.Ordinal), "Relationship overview topology should preserve caller-shaped legends.");
         Assert(svg.Contains("stroke-dasharray=\"2 5\"", StringComparison.Ordinal), "Relationship overview legends should render caller-specified dotted line styles.");
         Assert(!svg.Contains("data-legend-kind=\"status\"", StringComparison.Ordinal), "Relationship overview legends should not auto-merge every inferred status when the caller supplied a focused legend.");

@@ -13,9 +13,12 @@ internal static partial class TopologyVisualExamples {
                 .AddNodeKind("Certificate", TopologyNodeKind.Certificate, "#2563EB", "TLS")
                 .AddNodeKind("DNS / MX", TopologyNodeKind.Network, "#8B5CF6", "DNS")
                 .AddNodeKind("Owner", TopologyNodeKind.Team, "#F97316", "ORG")
+                .AddEdgeKind("Certificate Chain", TopologyEdgeKind.CertificateChain, "#2563EB", TopologyEdgeLineStyle.Solid)
                 .AddEdgeKind("Verified Link", TopologyEdgeKind.Mapping, "#16A34A", TopologyEdgeLineStyle.Solid)
                 .AddEdgeKind("Observed Link", TopologyEdgeKind.Link, "#2563EB", TopologyEdgeLineStyle.Dashed)
-                .AddEdgeKind("Inferred Link", TopologyEdgeKind.Dependency, "#64748B", TopologyEdgeLineStyle.Dotted))
+                .AddEdgeKind("Ownership", TopologyEdgeKind.Ownership, "#F97316", TopologyEdgeLineStyle.Solid)
+                .AddEdgeKind("Inferred Link", TopologyEdgeKind.Dependency, "#64748B", TopologyEdgeLineStyle.Dotted)
+                .AddEdgeKind("Risk Link", TopologyEdgeKind.Dependency, "#EF4444", TopologyEdgeLineStyle.Dotted))
             .AddNode("domain", "ad.evotec.xyz\nPrimary Domain", 494, 246, TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "Confidence 92%\n24 linked records", width: 190, height: 94, symbol: "D", href: "/entities/ad.evotec.xyz", tooltip: "Selected primary entity", iconId: "chartforgex-identity-directory:domain", color: "#16A34A")
             .AddNode("certificate", "CN: ad.evotec.xyz\nLet's Encrypt R3", 454, 92, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy, subtitle: "Valid\n62 days left", width: 220, height: 92, symbol: "TLS", href: "/certificates/ad.evotec.xyz", iconId: "chartforgex-identity-directory:certificate", color: "#2563EB")
             .AddNode("dns", "DNS Records (18)\nA, AAAA, TXT, CNAME", 112, 108, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, subtitle: "authoritative\n4 sources", width: 214, height: 92, symbol: "DNS", href: "/dns/ad.evotec.xyz", iconId: "chartforgex-data-ownership-intelligence:records", color: "#8B5CF6")
@@ -45,6 +48,15 @@ internal static partial class TopologyVisualExamples {
             .WithEdgeLineStyle("domain-ip2", TopologyEdgeLineStyle.Dotted)
             .WithEdgeLineStyle("domain-finding", TopologyEdgeLineStyle.Dotted)
             .WithEdgeLineStyle("ip2-finding", TopologyEdgeLineStyle.Dotted)
+            .WithEdgeColor("cert-domain", "#2563EB")
+            .WithEdgeColor("dns-domain", "#16A34A")
+            .WithEdgeColor("domain-ip1", "#16A34A")
+            .WithEdgeColor("domain-ip2", "#16A34A")
+            .WithEdgeColor("ip1-asn", "#64748B")
+            .WithEdgeColor("domain-mx", "#2563EB")
+            .WithEdgeColor("domain-owner", "#F97316")
+            .WithEdgeColor("domain-finding", "#EF4444")
+            .WithEdgeColor("ip2-finding", "#2563EB")
             .WithEdgesOfKind(TopologyEdgeKind.Dependency, emphasis: TopologyEdgeEmphasis.Strong)
             .WithEdgesOfKind(TopologyEdgeKind.Link, emphasis: TopologyEdgeEmphasis.Subtle);
     }
@@ -71,7 +83,11 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("finding-domain", "domain", "finding", "Risk", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "selected")
             .WithEdgeLineStyle("ip-domain", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("domain-server", TopologyEdgeLineStyle.Dotted)
-            .WithEdgeLineStyle("finding-domain", TopologyEdgeLineStyle.Dashed);
+            .WithEdgeLineStyle("finding-domain", TopologyEdgeLineStyle.Dashed)
+            .WithEdgeColor("dns-domain", "#16A34A")
+            .WithEdgeColor("ip-domain", "#2563EB")
+            .WithEdgeColor("domain-server", "#94A3B8")
+            .WithEdgeColor("finding-domain", "#EF4444");
     }
 
     private static TopologyChart BuildEvidenceTimelineRelationship() {
@@ -96,6 +112,10 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("finding-entity", "event-finding", "entity", "finding", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "risk")
             .WithEdgeLineStyle("ip-entity", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("mx-entity", TopologyEdgeLineStyle.Dashed)
-            .WithEdgeLineStyle("finding-entity", TopologyEdgeLineStyle.Dotted);
+            .WithEdgeLineStyle("finding-entity", TopologyEdgeLineStyle.Dotted)
+            .WithEdgeColor("cert-entity", "#16A34A")
+            .WithEdgeColor("ip-entity", "#2563EB")
+            .WithEdgeColor("mx-entity", "#8B5CF6")
+            .WithEdgeColor("finding-entity", "#EF4444");
     }
 }

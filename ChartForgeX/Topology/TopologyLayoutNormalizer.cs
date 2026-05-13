@@ -145,8 +145,9 @@ internal static class TopologyLayoutNormalizer {
         var bounds = MeasureContent(chart, options);
         if (!bounds.HasContent) return;
 
-        var targetLeft = chart.Viewport.Padding;
-        var targetTop = chart.Viewport.Padding + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 72);
+        var surfaceInset = options.CanvasSurfaceStyle == TopologyCanvasSurfaceStyle.Plain ? 0 : 18;
+        var targetLeft = chart.Viewport.Padding + surfaceInset;
+        var targetTop = chart.Viewport.Padding + surfaceInset + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 72);
         var dx = bounds.Left < targetLeft ? targetLeft - bounds.Left : 0;
         var dy = bounds.Top < targetTop ? targetTop - bounds.Top : 0;
         if (Math.Abs(dx) > 0.0001 || Math.Abs(dy) > 0.0001) {
@@ -154,8 +155,8 @@ internal static class TopologyLayoutNormalizer {
             bounds = bounds.Shift(dx, dy);
         }
 
-        var neededWidth = bounds.Right + chart.Viewport.Padding;
-        var neededHeight = bounds.Bottom + chart.Viewport.Padding + LegendReservedHeight(chart.Legend);
+        var neededWidth = bounds.Right + chart.Viewport.Padding + surfaceInset;
+        var neededHeight = bounds.Bottom + chart.Viewport.Padding + surfaceInset + LegendReservedHeight(chart.Legend);
         if (neededWidth > chart.Viewport.Width) chart.Viewport.Width = Math.Ceiling(neededWidth);
         if (neededHeight > chart.Viewport.Height) chart.Viewport.Height = Math.Ceiling(neededHeight);
     }

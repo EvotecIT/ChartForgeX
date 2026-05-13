@@ -34,6 +34,7 @@ public sealed partial class TopologySvgRenderer {
                 if (!string.IsNullOrWhiteSpace(node.GroupId)) element.Attribute("data-group-id", node.GroupId!);
                 if (!string.IsNullOrWhiteSpace(node.Badge)) element.Attribute("data-node-badge", NodeBadge(node));
                 if (!string.IsNullOrWhiteSpace(node.Color)) element.Attribute("data-node-color", color);
+                if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) element.Attribute("data-node-background-color", node.BackgroundColor!.Trim());
                 if (!string.IsNullOrWhiteSpace(node.IconId)) element.Attribute("data-node-icon-id", node.IconId);
                 if (iconDefinition != null) {
                     element
@@ -119,10 +120,23 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", node.Width)
             .Attribute("height", node.Height)
             .Attribute("rx", radius)
-            .Attribute("fill", theme.Card)
+            .Attribute("fill", NodeFill(node, theme, color, options))
             .Attribute("stroke", color)
             .Attribute("stroke-width", selected ? 2.8 : 1.5)
+            .Attribute("data-node-surface-style", EffectiveNodeSurfaceStyle(options).ToString())
             .Attribute("filter", "url(#" + SanitizeId(chartId ?? "topology") + "-shadow)"));
+        if (UseNodeAccentBand(displayMode, options)) {
+            body.Element("rect", rect => rect
+                .Class(prefix + "__node-accent-band")
+                .Attribute("data-cfx-role", "topology-node-accent-band")
+                .Attribute("x", node.X)
+                .Attribute("y", node.Y + 8)
+                .Attribute("width", 4.5)
+                .Attribute("height", Math.Max(6, node.Height - 16))
+                .Attribute("rx", 2.25)
+                .Attribute("fill", color)
+                .Attribute("opacity", selected ? 0.95 : 0.82));
+        }
         DrawNodeIcon(body, node, prefix, theme, color, displayMode, options);
         if (!options.IncludeNodeLabels) return body;
         if (displayMode == TopologyNodeDisplayMode.Icon) {

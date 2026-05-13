@@ -753,7 +753,8 @@ internal static partial class TopologyLayoutEngine {
             Href = node.Href,
             Tooltip = node.Tooltip,
             CssClass = node.CssClass,
-            Color = node.Color
+            Color = node.Color,
+            BackgroundColor = node.BackgroundColor
         };
         foreach (var item in node.Metrics) copy.Metrics[item.Key] = item.Value;
         foreach (var item in node.Metadata) copy.Metadata[item.Key] = item.Value;
@@ -784,6 +785,7 @@ internal static partial class TopologyLayoutEngine {
             Href = edge.Href,
             Tooltip = edge.Tooltip,
             CssClass = edge.CssClass,
+            Color = edge.Color,
             IsMuted = edge.IsMuted
         };
         foreach (var item in edge.Metrics) copy.Metrics[item.Key] = item.Value;

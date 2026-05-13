@@ -367,6 +367,9 @@ public sealed class TopologyNode {
     /// <summary>Gets or sets an optional node accent color. When set, this colors the node shell independently from health status.</summary>
     public string? Color { get; set; }
 
+    /// <summary>Gets or sets an optional node surface fill color. When unset, render options choose the card background.</summary>
+    public string? BackgroundColor { get; set; }
+
     /// <summary>Gets node metrics for host adapters.</summary>
     public Dictionary<string, string> Metrics { get; } = new();
 
@@ -533,6 +536,9 @@ public sealed class TopologyEdge {
 
     /// <summary>Gets or sets optional caller-provided CSS class tokens for SVG/HTML hosts.</summary>
     public string? CssClass { get; set; }
+
+    /// <summary>Gets or sets an optional edge color independent from health status.</summary>
+    public string? Color { get; set; }
 
     /// <summary>Gets or sets whether the edge should render as a quiet structural relationship instead of a status route.</summary>
     public bool IsMuted { get; set; }

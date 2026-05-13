@@ -1,0 +1,62 @@
+using System;
+
+namespace ChartForgeX.Topology;
+
+public static partial class TopologyChartExtensions {
+    /// <summary>
+    /// Sets an optional node accent color independent from the node health status.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="nodeId">The node id.</param>
+    /// <param name="color">The node accent color.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithNodeColor(this TopologyChart chart, string nodeId, string? color) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
+        foreach (var node in chart.Nodes) {
+            if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
+            node.Color = color;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology node '" + nodeId + "' was not found.", nameof(nodeId));
+    }
+
+    /// <summary>
+    /// Sets an optional node surface fill color independent from the node accent color.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="nodeId">The node id.</param>
+    /// <param name="backgroundColor">The node surface fill color.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithNodeBackground(this TopologyChart chart, string nodeId, string? backgroundColor) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
+        foreach (var node in chart.Nodes) {
+            if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
+            node.BackgroundColor = backgroundColor;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology node '" + nodeId + "' was not found.", nameof(nodeId));
+    }
+
+    /// <summary>
+    /// Sets an explicit edge color independent from health status.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="edgeId">The edge id.</param>
+    /// <param name="color">The edge color.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithEdgeColor(this TopologyChart chart, string edgeId, string? color) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
+        foreach (var edge in chart.Edges) {
+            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
+            edge.Color = color;
+            return chart;
+        }
+
+        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
+    }
+}

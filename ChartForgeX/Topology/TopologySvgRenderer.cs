@@ -528,6 +528,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-cfx-status", edge.Status.ToString())
                     .Attribute("data-cfx-selected", selected)
                     .Attribute("data-edge-muted", edge.IsMuted)
+                    .Attribute("data-edge-color", string.IsNullOrWhiteSpace(edge.Color) ? null : color)
                     .Attribute("data-edge-line-style", edge.LineStyle.ToString())
                     .Attribute("data-edge-emphasis", edge.Emphasis.ToString())
                     .Attribute("data-edge-render-order", renderOrder)
@@ -569,7 +570,7 @@ public sealed partial class TopologySvgRenderer {
                 edgeGroup.Element("path", path => path
                     .Class(prefix + "__edge-halo")
                     .Attribute("data-cfx-role", geographicHalo ? "topology-geographic-route-halo" : "topology-edge-route-halo")
-                    .Attribute("d", EdgePath(chart, edge, nodes, points))
+                    .Attribute("d", EdgePath(chart, edge, nodes, points, options))
                     .Attribute("fill", "none")
                     .Attribute("stroke", theme.Background)
                     .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options) + (geographicHalo ? 4.2 : 3.4))
@@ -581,7 +582,7 @@ public sealed partial class TopologySvgRenderer {
             edgeGroup.Element("path", path => {
                 path
                     .Class(prefix + "__edge")
-                    .Attribute("d", EdgePath(chart, edge, nodes, points))
+                    .Attribute("d", EdgePath(chart, edge, nodes, points, options))
                     .Attribute("fill", "none")
                     .Attribute("stroke", color)
                     .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options))
@@ -635,7 +636,7 @@ public sealed partial class TopologySvgRenderer {
                 }
 
                 AddEdgeLabelClearance(group, chart, layout, cx, cy, theme, options);
-                AddEdgeLabelLines(group, layout, cx, cy, edge.IsMuted ? theme.MutedForeground : theme.StatusColor(edge.Status), theme.MutedForeground, theme, options);
+                AddEdgeLabelLines(group, layout, cx, cy, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme.MutedForeground, theme, options);
             });
         }
 
@@ -692,7 +693,7 @@ public sealed partial class TopologySvgRenderer {
         return false;
     }
 
-    private static string EdgePath(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, IReadOnlyList<ChartPoint> points) {
+    private static string EdgePath(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, IReadOnlyList<ChartPoint> points, TopologyRenderOptions options) {
         if (IsGeographicCurve(chart, edge, nodes) && points.Count >= 2) {
             var control = GeographicCurveControlPoint(chart, edge, nodes, points);
             return new SvgPathDataBuilder(64)
@@ -701,6 +702,7 @@ public sealed partial class TopologySvgRenderer {
                 .Build();
         }
 
+        if (ShouldRoundEdgeCorners(edge, points, options)) return RoundedEdgePath(points, options.EdgeCornerRadius);
         return EdgePath(points, edge.Routing);
     }
 

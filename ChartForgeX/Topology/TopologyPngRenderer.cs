@@ -261,6 +261,7 @@ public sealed partial class TopologyPngRenderer {
             var routePoints = IsGeographicCurve(chart, edge, nodes)
                 ? GeographicCurveSamplePoints(chart, edge, nodes, points)
                 : points;
+            if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
             if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) DrawEdgeRoute(canvas, routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4), false, 0, 0);
             DrawEdgeRoute(canvas, routePoints, color, width, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap);
@@ -287,7 +288,7 @@ public sealed partial class TopologyPngRenderer {
                 canvas.FillRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, Color(IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background));
                 canvas.StrokeRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, WithAlpha(Color(theme.Border), IsMonitoringDashboardStyle(options) ? (byte)184 : byte.MaxValue), 1);
             }
-            var baseColor = edge.IsMuted ? Color(theme.MutedForeground) : Color(theme.StatusColor(edge.Status));
+            var baseColor = edge.IsMuted ? Color(theme.MutedForeground) : Color(EdgeColor(edge, theme, options));
             var isHighlighted = highlight.IsEdgeHighlighted(edge);
             var color = isHighlighted ? baseColor : WithAlpha(baseColor, HighlightAlpha(255, false, highlight));
             var secondaryColor = isHighlighted ? Color(theme.MutedForeground) : WithAlpha(Color(theme.MutedForeground), HighlightAlpha(255, false, highlight));
@@ -342,8 +343,11 @@ public sealed partial class TopologyPngRenderer {
 
             var radiusRect = displayMode == TopologyNodeDisplayMode.Pill ? node.Height / 2 : displayMode is TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Tile ? 12 : 10;
             canvas.FillRoundedRect(node.X + 2, node.Y + 5, node.Width, node.Height, 10, ChartColor.FromRgba(15, 23, 42, 18));
-            canvas.FillRoundedRect(node.X, node.Y, node.Width, node.Height, radiusRect, Color(theme.Card));
+            canvas.FillRoundedRect(node.X, node.Y, node.Width, node.Height, radiusRect, Color(NodeFill(node, theme, NodeAccentColor(node, theme, options), options)));
             canvas.StrokeRoundedRect(node.X, node.Y, node.Width, node.Height, radiusRect, accent, isSelected ? 2.8 : 1.5);
+            if (UseNodeAccentBand(displayMode, options)) {
+                canvas.FillRoundedRect(node.X, node.Y + 8, 4.5, Math.Max(6, node.Height - 16), 2.25, WithAlpha(accent, isSelected ? (byte)242 : (byte)210));
+            }
             if (!isHighlighted && highlight.IsActive) canvas.FillRoundedRect(node.X, node.Y, node.Width, node.Height, radiusRect, WithAlpha(Color(theme.Background), 185));
             DrawNodeIcon(canvas, node, theme, accent, displayMode, options);
             if (options.IncludeNodeLabels && displayMode == TopologyNodeDisplayMode.Icon && options.IncludeIconLabels) {

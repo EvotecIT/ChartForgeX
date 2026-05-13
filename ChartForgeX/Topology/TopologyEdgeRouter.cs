@@ -49,7 +49,7 @@ internal static class TopologyEdgeRouter {
             .GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
             .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count))
-            .OrderBy(plan => RouteScore(plan))
+            .OrderBy(plan => RouteScore(plan, edge))
             .ThenBy(plan => RouteLength(plan.Points))
             .ThenBy(plan => RouteKey(plan.Points), StringComparer.Ordinal)
             .First();
@@ -70,12 +70,43 @@ internal static class TopologyEdgeRouter {
         return new TopologyRoutePlan(points, new TopologyRouteDiagnostics(strategy, corridor, Math.Max(0, points.Count - 1), obstacleHits, labelHits, routeOverlap, candidateCount, FallbackReason(strategy, obstacleHits, labelHits, routeOverlap)));
     }
 
-    private static double RouteScore(TopologyRoutePlan plan) {
+    private static double RouteScore(TopologyRoutePlan plan, TopologyEdge edge) {
         return plan.Diagnostics.ObstacleHits * 100000 +
             plan.Diagnostics.LabelObstacleHits * 30000 +
+            PortExitPenalty(plan.Points, edge) +
             plan.Diagnostics.RouteOverlapScore * 220 +
             Math.Max(0, plan.Points.Count - 2) * 80 +
             RouteLength(plan.Points);
+    }
+
+    private static double PortExitPenalty(IReadOnlyList<ChartPoint> points, TopologyEdge edge) {
+        var penalty = PortSegmentPenalty(edge.SourcePort, points, 0, 1, true);
+        penalty += PortSegmentPenalty(edge.TargetPort, points, points.Count - 1, points.Count - 2, false);
+        return penalty;
+    }
+
+    private static double PortSegmentPenalty(TopologyEdgePort port, IReadOnlyList<ChartPoint> points, int edgeIndex, int adjacentIndex, bool leaving) {
+        if (port == TopologyEdgePort.Auto || points.Count < 2) return 0;
+        var edge = points[edgeIndex];
+        var adjacent = points[adjacentIndex];
+        var dx = leaving ? adjacent.X - edge.X : edge.X - adjacent.X;
+        var dy = leaving ? adjacent.Y - edge.Y : edge.Y - adjacent.Y;
+        var compatible = leaving
+            ? port switch {
+                TopologyEdgePort.Left => dx < -0.0001 && Math.Abs(dy) < 0.0001,
+                TopologyEdgePort.Right => dx > 0.0001 && Math.Abs(dy) < 0.0001,
+                TopologyEdgePort.Top => dy < -0.0001 && Math.Abs(dx) < 0.0001,
+                TopologyEdgePort.Bottom => dy > 0.0001 && Math.Abs(dx) < 0.0001,
+                _ => true
+            }
+            : port switch {
+                TopologyEdgePort.Left => dx > 0.0001 && Math.Abs(dy) < 0.0001,
+                TopologyEdgePort.Right => dx < -0.0001 && Math.Abs(dy) < 0.0001,
+                TopologyEdgePort.Top => dy > 0.0001 && Math.Abs(dx) < 0.0001,
+                TopologyEdgePort.Bottom => dy < -0.0001 && Math.Abs(dx) < 0.0001,
+                _ => true
+            };
+        return compatible ? 0 : 25000;
     }
 
     private static string FallbackReason(string strategy, int obstacleHits, int labelHits, double routeOverlap) {

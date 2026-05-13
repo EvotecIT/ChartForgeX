@@ -236,8 +236,9 @@ public static partial class TopologyChartExtensions {
     /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
     /// <param name="color">The optional node accent color, independent from health status.</param>
     /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
+    /// <param name="backgroundColor">The optional node surface fill color.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null) {
+    public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null, string? backgroundColor = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var nodeId = RequiredText(id, nameof(id), "Topology node ids");
         var nodeLabel = RequiredText(label, nameof(label), "Topology node labels");
@@ -248,7 +249,7 @@ public static partial class TopologyChartExtensions {
         ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
         var nodeGroupId = string.IsNullOrWhiteSpace(groupId) ? null : groupId!.Trim();
-        chart.Nodes.Add(new TopologyNode { Id = nodeId, Label = nodeLabel, X = x, Y = y, Kind = kind, Symbol = symbol, IconId = OptionalText(iconId), Status = status, GroupId = nodeGroupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color });
+        chart.Nodes.Add(new TopologyNode { Id = nodeId, Label = nodeLabel, X = x, Y = y, Kind = kind, Symbol = symbol, IconId = OptionalText(iconId), Status = status, GroupId = nodeGroupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color, BackgroundColor = backgroundColor });
         return chart;
     }
 
@@ -308,25 +309,6 @@ public static partial class TopologyChartExtensions {
         foreach (var node in chart.Nodes) {
             if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
             node.Badge = badge;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology node '" + nodeId + "' was not found.", nameof(nodeId));
-    }
-
-    /// <summary>
-    /// Sets an optional node accent color independent from the node health status.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="nodeId">The node id.</param>
-    /// <param name="color">The node accent color.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodeColor(this TopologyChart chart, string nodeId, string? color) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
-        foreach (var node in chart.Nodes) {
-            if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
-            node.Color = color;
             return chart;
         }
 
@@ -452,8 +434,9 @@ public static partial class TopologyChartExtensions {
     /// <param name="tooltip">The optional tooltip.</param>
     /// <param name="cssClass">The optional caller-provided CSS class tokens.</param>
     /// <param name="tertiaryLabel">The optional tertiary label.</param>
+    /// <param name="color">The optional edge color independent from health status.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddEdge(this TopologyChart chart, string id, string sourceNodeId, string targetNodeId, string? label = null, TopologyEdgeKind kind = TopologyEdgeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, TopologyDirection direction = TopologyDirection.None, TopologyEdgeRouting routing = TopologyEdgeRouting.Orthogonal, string? secondaryLabel = null, string? href = null, string? tooltip = null, string? cssClass = null, string? tertiaryLabel = null) {
+    public static TopologyChart AddEdge(this TopologyChart chart, string id, string sourceNodeId, string targetNodeId, string? label = null, TopologyEdgeKind kind = TopologyEdgeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, TopologyDirection direction = TopologyDirection.None, TopologyEdgeRouting routing = TopologyEdgeRouting.Orthogonal, string? secondaryLabel = null, string? href = null, string? tooltip = null, string? cssClass = null, string? tertiaryLabel = null, string? color = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var edgeId = RequiredText(id, nameof(id), "Topology edge ids");
         var sourceId = RequiredText(sourceNodeId, nameof(sourceNodeId), "Topology edge source node ids");
@@ -462,7 +445,7 @@ public static partial class TopologyChartExtensions {
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
         ValidateEnum(typeof(TopologyDirection), direction, nameof(direction), "Topology directions");
         ValidateEnum(typeof(TopologyEdgeRouting), routing, nameof(routing), "Topology edge routing modes");
-        chart.Edges.Add(new TopologyEdge { Id = edgeId, SourceNodeId = sourceId, TargetNodeId = targetId, Label = label, Kind = kind, Status = status, Direction = direction, Routing = routing, SecondaryLabel = secondaryLabel, TertiaryLabel = tertiaryLabel, Href = href, Tooltip = tooltip, CssClass = cssClass });
+        chart.Edges.Add(new TopologyEdge { Id = edgeId, SourceNodeId = sourceId, TargetNodeId = targetId, Label = label, Kind = kind, Status = status, Direction = direction, Routing = routing, SecondaryLabel = secondaryLabel, TertiaryLabel = tertiaryLabel, Href = href, Tooltip = tooltip, CssClass = cssClass, Color = color });
         return chart;
     }
 

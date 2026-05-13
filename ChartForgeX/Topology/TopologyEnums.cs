@@ -142,6 +142,20 @@ public enum TopologyGroupSurfaceStyle {
 }
 
 /// <summary>
+/// Defines how card-like topology node surfaces should be filled.
+/// </summary>
+public enum TopologyNodeSurfaceStyle {
+    /// <summary>Choose the node surface from the active visual style.</summary>
+    Auto,
+    /// <summary>Render nodes as neutral cards with colored borders and icons.</summary>
+    Card,
+    /// <summary>Render nodes with a subtle identity or status tint.</summary>
+    Tinted,
+    /// <summary>Render nodes with a subtle tint plus a compact accent strip.</summary>
+    AccentBand
+}
+
+/// <summary>
 /// Defines how topology nodes should be presented.
 /// </summary>
 public enum TopologyNodeDisplayMode {
@@ -399,6 +413,16 @@ public enum TopologyArrowMarkerStyle {
     Diamond,
     /// <summary>Render compact circular endpoint markers.</summary>
     Circle
+}
+
+/// <summary>
+/// Defines how orthogonal edge bends should be drawn.
+/// </summary>
+public enum TopologyEdgeCornerStyle {
+    /// <summary>Render orthogonal paths with square technical bends.</summary>
+    Sharp,
+    /// <summary>Render orthogonal paths with rounded relationship-map bends.</summary>
+    Rounded
 }
 
 /// <summary>

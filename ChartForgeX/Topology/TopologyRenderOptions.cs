@@ -141,11 +141,20 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets the group card fill treatment.</summary>
     public TopologyGroupSurfaceStyle GroupSurfaceStyle { get; set; } = TopologyGroupSurfaceStyle.Auto;
 
+    /// <summary>Gets or sets the card-like node fill treatment.</summary>
+    public TopologyNodeSurfaceStyle NodeSurfaceStyle { get; set; } = TopologyNodeSurfaceStyle.Auto;
+
     /// <summary>Gets or sets how topology nodes should be presented.</summary>
     public TopologyNodeDisplayMode NodeDisplayMode { get; set; } = TopologyNodeDisplayMode.Card;
 
     /// <summary>Gets or sets the marker shape used for directed topology edges.</summary>
     public TopologyArrowMarkerStyle ArrowMarkerStyle { get; set; } = TopologyArrowMarkerStyle.Triangle;
+
+    /// <summary>Gets or sets how orthogonal edge bends should be drawn.</summary>
+    public TopologyEdgeCornerStyle EdgeCornerStyle { get; set; } = TopologyEdgeCornerStyle.Sharp;
+
+    /// <summary>Gets or sets the radius used when rendering rounded orthogonal edge bends.</summary>
+    public double EdgeCornerRadius { get; set; } = 12;
 
     /// <summary>Gets or sets an optional icon catalog used to resolve node and group icon ids. When unset, the built-in catalog is used.</summary>
     public TopologyIconCatalog? IconCatalog { get; set; }

@@ -114,6 +114,9 @@ public static class TopologyRenderOptionsExtensions {
         options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
         options.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.PanelGrid;
         options.ArrowMarkerStyle = TopologyArrowMarkerStyle.Chevron;
+        options.NodeSurfaceStyle = TopologyNodeSurfaceStyle.AccentBand;
+        options.EdgeCornerStyle = TopologyEdgeCornerStyle.Rounded;
+        options.EdgeCornerRadius = 14;
         options.CardSubtitleMode = TopologyCardSubtitleMode.Text;
         options.AllowMultilineNodeLabels = true;
         options.WrapNodeLabels = true;
