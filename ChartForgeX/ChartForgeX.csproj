@@ -19,13 +19,13 @@
     <PackageId>ChartForgeX</PackageId>
     <Version>0.1.0</Version>
     <Authors>Evotec</Authors>
-    <Description>Dependency-free SVG, HTML, PNG, BMP, PPM, and TIFF chart rendering for .NET reports and dashboards.</Description>
+    <Description>Dependency-free SVG, HTML, PNG, BMP, PPM, and TIFF rendering for .NET charts, visual blocks, report tables, metric cards, and topology diagrams.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Preview release of dependency-free SVG, HTML, PNG, BMP, PPM, and baseline TIFF chart rendering with shared raster buffers, stream/file/byte-array raster export helpers, static HTML grids and mosaic panel spans, expressive themes, dashboard presets, brand kits, font stacks, palette, role-based text, grid-header, per-series and point-level data-label styling, point callouts, per-series legend visibility, semantic series roles, pictorial symbol, pictorial Isotype, people-infographic, dashboard, and word-cloud control galleries, sunburst, pictorial, progress-bar, hexbin heatmap, reusable heatmap row models, and word cloud charts, wrapped/customizable pictorial symbols, custom donut center text/ring thickness, progress-bar, KPI ring, and legend placement controls, pasted hex palettes, shared SVG/PNG compact number formatting, scoped inline SVG IDs, and fail-fast validation for specialized chart data.</PackageReleaseNotes>
+    <PackageReleaseNotes>Preview release of dependency-free SVG, HTML, PNG, BMP, PPM, and baseline TIFF rendering for charts, visual blocks, report tables, metric cards, visual grids, and topology diagrams. Includes shared raster buffers, stream/file/byte-array raster export helpers, static HTML grids and mosaic panel spans, expressive themes, dashboard presets, brand kits, font stacks, palettes, role-based text, grid headers, per-series and point-level data-label styling, point callouts, per-series legend visibility, semantic series roles, pictorial symbols, Isotype and people-infographic galleries, dashboard and word-cloud galleries, sunburst, pictorial, progress-bar, hexbin heatmap, reusable heatmap row models, wrapped/customizable pictorial symbols, custom donut center text/ring thickness, KPI rings, legend placement controls, pasted hex palettes, shared SVG/PNG compact number formatting, scoped inline SVG IDs, Native AOT validation, and fail-fast validation for specialized chart/topology data.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>
-    <PackageTags>charts;svg;html;png;bmp;ppm;tiff;raster;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
+    <PackageTags>charts;visualization;visual-blocks;tables;lists;metric-cards;topology;diagrams;svg;html;png;bmp;ppm;tiff;raster;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
