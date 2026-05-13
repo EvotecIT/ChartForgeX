@@ -334,6 +334,8 @@ The example console app writes sample diagrams to `artifacts/topology-demo/` and
 - `visual-entity-relationship-overview.svg`
 - `visual-mini-correlation-map.svg`
 - `visual-evidence-timeline-relationship.svg`
+- `visual-impact-dependency-overview.svg`
+- `visual-ownership-evidence-bundle.svg`
 - `visual-geographic-topology-map.svg`
 - `service-dependency-api-neighbors-view.svg`
 - `service-dependency-critical-dependencies-view.svg`
