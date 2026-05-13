@@ -233,50 +233,51 @@ internal static partial class SmokeTests {
     private static void ReadmeDocumentsChartCatalog() {
         var root = FindRepositoryRoot();
         var readme = File.ReadAllText(Path.Combine(root, "README.md"));
+        var nugetReadme = File.ReadAllText(Path.Combine(root, "README.nuget.md"));
         Assert(readme.Contains("## Visual Tour", StringComparison.Ordinal), "README should include rendered visuals near the top of the page.");
         foreach (var asset in new[] {
-            "dashboard-chart-portfolio-grid.html",
-            "control-coverage-heatmap-dark.html",
+            "dashboard-restaurant-overview-grid.html",
             "visual-geographic-topology-map.html",
-            "report-summary-metric-strip.html",
-            "revenue-europe-country-map-light.html",
-            "domain-security-dark.html",
-            "domain-security-interactive.html"
+            "dashboard-saas-mrr-grid.html",
+            "control-scorecards-grid.html",
+            "visual-replication-mesh-explorer.html",
+            "theme-font-showcase-grid.html",
+            "catalog.html",
+            "svg-png-comparison.html",
+            "quality-dashboard.html"
         }) {
             var localPath = Path.Combine(root, "Website", "static", "examples", "generated", asset);
             Assert(readme.Contains(asset, StringComparison.Ordinal), "README visual tour should advertise generated example asset: " + asset);
             Assert(File.Exists(localPath), "README visual tour asset should exist locally: " + Path.GetRelativePath(root, localPath));
         }
-        Assert(!readme.Contains("](Website/static/examples/generated/", StringComparison.Ordinal), "README visual tour should not use repository-relative generated asset links because the packaged README is rendered outside the repo checkout.");
         foreach (var asset in new[] {
-            "dashboard-chart-portfolio-grid.png",
-            "dashboard-chart-portfolio-grid.svg",
-            "control-coverage-heatmap-dark.csharp.txt",
-            "control-coverage-heatmap-dark.png",
-            "control-coverage-heatmap-dark.svg",
+            "dashboard-restaurant-overview-grid.png",
+            "dashboard-restaurant-overview-grid.svg",
             "visual-geographic-topology-map.png",
             "visual-geographic-topology-map.svg",
-            "report-summary-metric-strip.png",
-            "report-summary-metric-strip.svg",
-            "revenue-europe-country-map-light.png",
-            "revenue-europe-country-map-light.svg",
-            "domain-security-dark.png"
+            "dashboard-saas-mrr-grid.png",
+            "dashboard-saas-mrr-grid.svg",
+            "control-scorecards-grid.png",
+            "control-scorecards-grid.svg",
+            "visual-replication-mesh-explorer.png",
+            "visual-replication-mesh-explorer.svg",
+            "theme-font-showcase-grid.png",
+            "theme-font-showcase-grid.svg"
         }) {
-            var previewUrl = "https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/" + asset;
             var localPath = Path.Combine(root, "Website", "static", "examples", "generated", asset);
-            Assert(readme.Contains(previewUrl, StringComparison.Ordinal), "README visual tour should use absolute package-safe renderable asset URL: " + previewUrl);
+            Assert(readme.Contains("Website/static/examples/generated/" + asset, StringComparison.Ordinal), "README visual tour should use repository-relative generated asset link: " + asset);
             Assert(File.Exists(localPath), "README visual tour asset should exist locally: " + Path.GetRelativePath(root, localPath));
         }
+        Assert(nugetReadme.Contains("## Visual Tour", StringComparison.Ordinal), "NuGet README should include rendered visuals near the top of the package page.");
+        Assert(!nugetReadme.Contains("](Website/static/examples/generated/", StringComparison.Ordinal), "NuGet README should not use repository-relative generated asset links because it is rendered outside the repo checkout.");
         foreach (var preview in new[] {
-            "dashboard-chart-portfolio-grid.png",
-            "control-coverage-heatmap-dark.png",
+            "dashboard-restaurant-overview-grid.png",
             "visual-geographic-topology-map.png",
-            "report-summary-metric-strip.png",
-            "revenue-europe-country-map-light.png",
-            "domain-security-dark.png"
+            "dashboard-saas-mrr-grid.png",
+            "control-scorecards-grid.png"
         }) {
             var previewUrl = "https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/" + preview;
-            Assert(readme.Contains("](" + previewUrl + ")", StringComparison.Ordinal), "README visual tour preview tiles should open renderable PNG output: " + previewUrl);
+            Assert(nugetReadme.Contains(previewUrl, StringComparison.Ordinal), "NuGet README visual tour should use absolute package-safe renderable asset URL: " + previewUrl);
         }
         Assert(readme.Contains("## Examples", StringComparison.Ordinal) && readme.Contains("svg-png-comparison.html", StringComparison.Ordinal) && readme.Contains("C# snippets", StringComparison.Ordinal), "README should explain how generated examples expose SVG, PNG, HTML, and C# source snippets.");
         Assert(readme.Contains("## Chart catalog", StringComparison.Ordinal), "README should include a chart catalog.");
