@@ -142,6 +142,7 @@ internal static partial class SmokeTests {
         ("Small multiple grids render static HTML", SmallMultipleGridRendersStaticHtml),
         ("Shared y-axis handles secondary-only charts", SharedYAxisHandlesSecondaryOnlyCharts),
         ("Shared axes ignore progress bars", SharedAxesIgnoreProgressBars),
+        ("Simple chart API renders common definitions", SimpleChartApiRendersCommonDefinitions),
         ("Chart grids support panel spans", ChartGridsSupportPanelSpans),
         ("Chart grid headers support text styles", ChartGridHeadersSupportTextStyles),
         ("Visual blocks render tables lists and metric cards", VisualBlocksRenderTablesListsAndMetricCards),
