@@ -636,8 +636,9 @@ public static partial class TopologyChartExtensions {
     /// <param name="lineStyle">Optional line style to apply.</param>
     /// <param name="emphasis">Optional visual emphasis to apply.</param>
     /// <param name="isMuted">Optional muted-state override to apply.</param>
+    /// <param name="color">Optional edge color to apply independent from health status.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgesOfKind(this TopologyChart chart, TopologyEdgeKind kind, TopologyEdgeLineStyle? lineStyle = null, TopologyEdgeEmphasis? emphasis = null, bool? isMuted = null) {
+    public static TopologyChart WithEdgesOfKind(this TopologyChart chart, TopologyEdgeKind kind, TopologyEdgeLineStyle? lineStyle = null, TopologyEdgeEmphasis? emphasis = null, bool? isMuted = null, string? color = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         ValidateEnum(typeof(TopologyEdgeKind), kind, nameof(kind), "Topology edge kinds");
         if (lineStyle.HasValue) ValidateEnum(typeof(TopologyEdgeLineStyle), lineStyle.Value, nameof(lineStyle), "Topology edge line styles");
@@ -647,6 +648,7 @@ public static partial class TopologyChartExtensions {
             if (lineStyle.HasValue) edge.LineStyle = lineStyle.Value;
             if (emphasis.HasValue) edge.Emphasis = emphasis.Value;
             if (isMuted.HasValue) edge.IsMuted = isMuted.Value;
+            if (color != null) edge.Color = color;
         }
 
         return chart;

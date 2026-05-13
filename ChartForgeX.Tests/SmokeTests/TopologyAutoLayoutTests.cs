@@ -293,14 +293,15 @@ internal static partial class SmokeTests {
             .AddNode("hub", "Hub", 60, 64, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 58, height: 46, symbol: "H")
             .AddNode("site", "Site", 230, 64, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, width: 58, height: 46, symbol: "S")
             .AddEdge("dependency", "hub", "site", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.None, TopologyEdgeRouting.Curved)
-            .WithEdgesOfKind(TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed, emphasis: TopologyEdgeEmphasis.Subtle);
+            .WithEdgesOfKind(TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed, emphasis: TopologyEdgeEmphasis.Subtle, color: "#64748B");
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
             .WithMonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-edge-line-style=\"Dashed\"", StringComparison.Ordinal), "Bulk edge-kind styling should apply reusable line style metadata.");
         Assert(svg.Contains("data-edge-emphasis=\"Subtle\"", StringComparison.Ordinal), "Bulk edge-kind styling should apply reusable edge emphasis metadata.");
-        Assert(svg.Contains("stroke=\"#F97316\"", StringComparison.Ordinal), "Bulk subtle edges should preserve status color.");
+        Assert(svg.Contains("data-edge-color=\"#64748B\"", StringComparison.Ordinal), "Bulk edge-kind styling should apply reusable relationship colors.");
+        Assert(svg.Contains("stroke=\"#64748B\"", StringComparison.Ordinal), "Bulk edge-kind colors should drive SVG route color.");
         Assert(chart.ToPng(options).Length > 64, "Bulk edge-kind styling should render as PNG.");
     }
 
