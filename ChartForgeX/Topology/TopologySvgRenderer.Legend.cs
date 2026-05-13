@@ -5,7 +5,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
-    private static void AddLegend(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme) {
+    private static void AddLegend(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
         var legend = chart.Legend!;
         var x = chart.Viewport.Padding;
         var height = LegendHeight(legend);
@@ -45,6 +45,7 @@ public sealed partial class TopologySvgRenderer {
                     .Class(prefix + "__legend-item")
                     .Attribute("data-cfx-role", "topology-legend-item")
                     .Attribute("data-legend-kind", LegendKindToken(item.Kind));
+                if (!string.IsNullOrWhiteSpace(item.IconId)) group.Attribute("data-legend-icon-id", item.IconId!.Trim());
                 if (item.Kind == TopologyLegendItemKind.Edge) {
                     group.Element("line", line => line
                         .Attribute("x1", itemX)
@@ -54,7 +55,7 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("stroke", color)
                         .Attribute("stroke-width", 2)
                         .Attribute("stroke-dasharray", EdgeDash(item.LineStyle)));
-                } else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
+                } else if (item.Kind == TopologyLegendItemKind.Node) {
                     var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(color, theme.Background) : item.BackgroundColor!.Trim();
                     group.Element("rect", rect => rect
                         .Attribute("x", itemX)
@@ -64,15 +65,21 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("rx", 4)
                         .Attribute("fill", fill)
                         .Attribute("stroke", color));
-                    group.Element("text", text => text
-                        .Attribute("x", itemX + 8)
-                        .Attribute("y", markerCenterY)
-                        .Attribute("text-anchor", "middle")
-                        .Attribute("dominant-baseline", "central")
-                        .Attribute("fill", color)
-                        .Attribute("font-size", 7)
-                        .Attribute("font-weight", "800")
-                        .Text(TrimTo(item.Symbol!.Trim(), 4)));
+                    var legendNode = LegendNode(item);
+                    var iconDefinition = ResolveNodeIcon(legendNode, options);
+                    if (iconDefinition != null) group.Attribute("data-legend-icon-shape", iconDefinition.Shape.ToString());
+                    var artwork = iconDefinition?.Artwork;
+                    if (!TryDrawIconArtwork(group, artwork, prefix, itemX + 8, markerCenterY, 14) && !AddInfrastructureGlyph(group, legendNode, itemX + 8, markerCenterY, color, options)) {
+                        group.Element("text", text => text
+                            .Attribute("x", itemX + 8)
+                            .Attribute("y", markerCenterY)
+                            .Attribute("text-anchor", "middle")
+                            .Attribute("dominant-baseline", "central")
+                            .Attribute("fill", color)
+                            .Attribute("font-size", 7)
+                            .Attribute("font-weight", "800")
+                            .Text(NodeGlyph(legendNode, options)));
+                    }
                 } else {
                     group.Element("circle", circle => circle
                         .Attribute("cx", itemX + 8)
@@ -92,5 +99,16 @@ public sealed partial class TopologySvgRenderer {
         }
 
         root.AddElement(layer);
+    }
+
+    private static TopologyNode LegendNode(TopologyLegendItem item) {
+        return new TopologyNode {
+            Id = "__legend",
+            Label = item.Label,
+            Kind = item.NodeKind ?? TopologyNodeKind.Generic,
+            Symbol = item.Symbol,
+            IconId = item.IconId,
+            Color = item.Color
+        };
     }
 }

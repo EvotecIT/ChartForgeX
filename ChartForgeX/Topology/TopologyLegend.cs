@@ -62,10 +62,11 @@ public sealed class TopologyLegend {
         }
 
         foreach (var group in chart.Nodes
-            .GroupBy(node => new { node.Kind, Symbol = string.IsNullOrWhiteSpace(node.Symbol) ? null : node.Symbol!.Trim() })
+            .GroupBy(node => new { node.Kind, Symbol = OptionalLegendText(node.Symbol), IconId = OptionalLegendText(node.IconId) })
             .OrderBy(group => group.Key.Kind.ToString())
-            .ThenBy(group => group.Key.Symbol)) {
-            legend.AddNodeKind(NodeLegendLabel(group.Key.Kind, group.Key.Symbol), group.Key.Kind, SharedNodeColor(group), group.Key.Symbol, SharedNodeBackgroundColor(group));
+            .ThenBy(group => group.Key.Symbol)
+            .ThenBy(group => group.Key.IconId)) {
+            legend.AddNodeKind(NodeLegendLabel(group.Key.Kind, group.Key.Symbol), group.Key.Kind, SharedNodeColor(group), group.Key.Symbol, SharedNodeBackgroundColor(group), group.Key.IconId);
         }
 
         foreach (var group in chart.Edges.GroupBy(edge => edge.Kind).OrderBy(group => group.Key.ToString())) {
@@ -95,9 +96,10 @@ public sealed class TopologyLegend {
     /// <param name="color">An optional color override.</param>
     /// <param name="symbol">An optional short symbol override.</param>
     /// <param name="backgroundColor">An optional node marker background color override.</param>
+    /// <param name="iconId">An optional topology icon id for the legend marker.</param>
     /// <returns>The current legend.</returns>
-    public TopologyLegend AddNodeKind(string label, TopologyNodeKind nodeKind, string? color = null, string? symbol = null, string? backgroundColor = null) {
-        Items.Add(new TopologyLegendItem { Label = label, NodeKind = nodeKind, Kind = TopologyLegendItemKind.Node, Color = color, Symbol = symbol, BackgroundColor = backgroundColor });
+    public TopologyLegend AddNodeKind(string label, TopologyNodeKind nodeKind, string? color = null, string? symbol = null, string? backgroundColor = null, string? iconId = null) {
+        Items.Add(new TopologyLegendItem { Label = label, NodeKind = nodeKind, Kind = TopologyLegendItemKind.Node, Color = color, Symbol = symbol, BackgroundColor = backgroundColor, IconId = iconId });
         return this;
     }
 
@@ -139,6 +141,7 @@ public sealed class TopologyLegend {
             NodeKind = item.NodeKind,
             EdgeKind = item.EdgeKind,
             Symbol = item.Symbol,
+            IconId = item.IconId,
             Color = item.Color,
             BackgroundColor = item.BackgroundColor,
             LineStyle = item.LineStyle
@@ -150,11 +153,16 @@ public sealed class TopologyLegend {
             && left.Status == right.Status
             && left.NodeKind == right.NodeKind
             && left.EdgeKind == right.EdgeKind
-            && string.Equals(left.Symbol, right.Symbol, System.StringComparison.Ordinal);
+            && string.Equals(left.Symbol, right.Symbol, System.StringComparison.Ordinal)
+            && string.Equals(left.IconId, right.IconId, System.StringComparison.Ordinal);
     }
 
     private static string NodeLegendLabel(TopologyNodeKind kind, string? symbol) {
         return string.IsNullOrWhiteSpace(symbol) ? kind.ToString() : symbol + " " + kind;
+    }
+
+    private static string? OptionalLegendText(string? value) {
+        return string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
     }
 
     private static string? SharedEdgeColor(IEnumerable<TopologyEdge> edges) {
@@ -248,6 +256,9 @@ public sealed class TopologyLegendItem {
 
     /// <summary>Gets or sets an optional short symbol shown for node legend items.</summary>
     public string? Symbol { get; set; }
+
+    /// <summary>Gets or sets an optional topology icon id shown for node legend items.</summary>
+    public string? IconId { get; set; }
 
     /// <summary>Gets or sets the optional color override.</summary>
     public string? Color { get; set; }

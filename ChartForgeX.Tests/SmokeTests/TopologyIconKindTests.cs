@@ -23,6 +23,13 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-node-icon-pack=\"common\"", StringComparison.Ordinal), "Bulk node-kind icon styling should expose icon pack metadata.");
         Assert(svg.Contains("data-node-icon-label=\"Certificate\"", StringComparison.Ordinal), "Bulk node-kind icon styling should expose icon label metadata.");
         Assert(svg.Contains("data-node-color=\"#1D4ED8\"", StringComparison.Ordinal), "Bulk node-kind icon styling should preserve explicit node colors.");
+        var legendSvg = chart.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Auto });
+        var legendStart = legendSvg.IndexOf("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal);
+        Assert(legendStart >= 0, "Topology auto legends should render for bulk icon-styled nodes.");
+        var legend = legendSvg.Substring(legendStart);
+        Assert(legend.Contains("data-legend-icon-id=\"common:certificate\"", StringComparison.Ordinal), "Topology auto legends should infer shared node-kind icon ids.");
+        Assert(legend.Contains("data-legend-icon-shape=\"Certificate\"", StringComparison.Ordinal), "Topology auto legends should render the inferred icon shape.");
+        Assert(legend.Contains(">TLS Certificate<", StringComparison.Ordinal), "Topology auto legends should keep the inferred icon symbol in the node-kind label.");
         Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false }).Length > 64, "Bulk node-kind icons should render as PNG.");
     }
 }

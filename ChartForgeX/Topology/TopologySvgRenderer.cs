@@ -102,7 +102,7 @@ public sealed partial class TopologySvgRenderer {
         AddNodes(root, chart, prefix, theme, options, highlight);
         if (options.IncludeStatusBadges) AddNodeStatuses(root, chart, prefix, theme, options, highlight);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicCallouts(root, chart, prefix, theme, options, highlight);
-        if (options.IncludeLegend && chart.Legend != null) AddLegend(root, chart, prefix, theme);
+        if (options.IncludeLegend && chart.Legend != null) AddLegend(root, chart, prefix, theme, options);
     }
 
     private static void AddGeographicFrame(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {

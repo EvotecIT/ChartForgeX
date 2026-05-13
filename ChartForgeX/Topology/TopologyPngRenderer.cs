@@ -47,7 +47,7 @@ public sealed partial class TopologyPngRenderer {
         DrawNodes(canvas, prepared, theme, options, highlight);
         if (options.IncludeStatusBadges) DrawStatusBadges(canvas, prepared, theme, options, highlight);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
-        if (options.IncludeLegend && prepared.Legend != null) DrawLegend(canvas, prepared, theme);
+        if (options.IncludeLegend && prepared.Legend != null) DrawLegend(canvas, prepared, theme, options);
         var pixels = canvas.ToOutputPixels();
         if (!options.FitContentToViewport) return new RgbaImage(canvas.OutputWidth, canvas.OutputHeight, pixels);
         var targetWidth = Math.Max(1, requestedWidth * Math.Max(1, options.PngOutputScale));
@@ -642,7 +642,7 @@ public sealed partial class TopologyPngRenderer {
         }
     }
 
-    private static void DrawLegend(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme) {
+    private static void DrawLegend(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options) {
         var legend = chart.Legend!;
         var x = chart.Viewport.Padding;
         var height = LegendHeight(legend);
@@ -664,14 +664,26 @@ public sealed partial class TopologyPngRenderer {
                 if (dash.Dashed) canvas.DrawDashedLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2, dash.Dash, dash.Gap);
                 else canvas.DrawLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2);
             }
-            else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
+            else if (item.Kind == TopologyLegendItemKind.Node) {
                 var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(item.Color ?? theme.Accent, theme.Background) : item.BackgroundColor!.Trim();
                 canvas.FillRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, Color(fill));
                 canvas.StrokeRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, color, 1);
-                DrawCenteredMiddle(canvas, itemX + 8, markerCenterY, TrimTo(item.Symbol!.Trim(), 4), color, 6.5, true);
+                var legendNode = LegendNode(item);
+                if (!DrawInfrastructureGlyph(canvas, legendNode, itemX + 8, markerCenterY, color, options)) DrawCenteredMiddle(canvas, itemX + 8, markerCenterY, NodeGlyph(legendNode, options), color, 6.5, true);
             } else canvas.DrawCircle(itemX + 8, markerCenterY, 6, color);
             DrawTextMiddle(canvas, itemX + 32, markerCenterY, item.Label, Color(theme.MutedForeground), 11, false);
         }
+    }
+
+    private static TopologyNode LegendNode(TopologyLegendItem item) {
+        return new TopologyNode {
+            Id = "__legend",
+            Label = item.Label,
+            Kind = item.NodeKind ?? TopologyNodeKind.Generic,
+            Symbol = item.Symbol,
+            IconId = item.IconId,
+            Color = item.Color
+        };
     }
 
     private static void DrawCentered(RgbaCanvas canvas, double centerX, double y, string text, ChartColor color, double fontSize, bool emphasized) {
