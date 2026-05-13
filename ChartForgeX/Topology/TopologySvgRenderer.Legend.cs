@@ -52,7 +52,7 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("y2", itemY - 4)
                         .Attribute("stroke", color)
                         .Attribute("stroke-width", 2)
-                        .Attribute("stroke-dasharray", "6 4"));
+                        .Attribute("stroke-dasharray", EdgeDash(item.LineStyle)));
                 } else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
                     group.Element("rect", rect => rect
                         .Attribute("x", itemX)

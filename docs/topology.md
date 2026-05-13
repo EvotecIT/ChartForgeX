@@ -296,7 +296,10 @@ For picker and stencil-browser shells, `GetPackSummaries(...)` and `GetVendorSum
 - Individual nodes can set `DisplayMode` or use `.WithNodeDisplay("node-id", TopologyNodeDisplayMode.Dot, badge: "+12")` so a single topology can mix full cards, compact markers, icons, and collapsed count badges.
 - Node kinds can use `.WithNodesDisplay(TopologyNodeKind.Server, TopologyNodeDisplayMode.Card)` so a host can keep branches as compact tiles while rendering servers, bridgeheads, databases, or selected assets as wider cards.
 - `IncludeTileSubtitles` adds compact subtitle chips below tile labels for subnet CIDRs, roles, queue labels, or site metadata when a dense map needs those details visible.
+- `AllowMultilineNodeLabels`, `WrapNodeLabels`, `MaxNodeLabelLines`, and `MaxNodeSubtitleLines` let entity cards render explicit line breaks or word-wrapped labels in SVG and PNG. This is useful for relationship overviews where a node needs a primary name plus issuer, owner, count, confidence, or evidence context without forcing the host to pre-render text.
 - `CardSubtitleMode = TopologyCardSubtitleMode.Chip` renders card and compact-card subtitles as status-like chips inside node cards for bridgeheads, servers, selected assets, or health labels.
+- `CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Panel` or `PanelGrid` adds the framed dashboard surface behind non-geographic topology content, so standalone SVG/PNG exports can match card-based relationship maps without requiring a host page background.
+- `TopologyViewPreset.RelationshipOverview` and `.WithRelationshipOverviewStyle()` compose the monitoring visual treatment, framed grid surface, card nodes, wrapped labels, chevron direction markers, status badges, selected-state hooks, and focused legends for entity relationship maps, dependency overviews, and evidence correlation diagrams.
 - `TopologyRenderOptions.IncludeEdgeLabelBackplates` can be disabled for route-label styling closer to network maps where latency labels sit directly on the route.
 - When monitoring-style edge label backplates are enabled, they render as lightweight visible plates in SVG and PNG. Multi-line monitoring labels reserve extra no-plate clearance from their own route and draw a subtle route mask behind stacked text. Masks are surface-aware, so a label inside a tinted group panel uses that group fill instead of painting a white patch over the panel. Label placement is priority-aware so selected/critical labels reserve readable lanes before subtle context labels.
 - Monitoring edge labels use wider fallback candidates and a larger reserved gap around labels already placed. This keeps dense replication metrics from stacking into unreadable clusters when several routes share the same natural midpoint.
@@ -305,6 +308,8 @@ For picker and stencil-browser shells, `GetPackSummaries(...)` and `GetVendorSum
 - Nodes can set `.WithNodeColor("node-id", "#2563EB")` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes.
 - Render options can set `.WithSelectedGroup("region-id")`, `.WithSelectedNode("node-id")`, and `.WithSelectedEdge("edge-id")` when a static export should show the currently selected site, region, or path without filtering or dimming other elements. SVG emits `data-cfx-selected` and selected classes; PNG renders matching selected outlines.
 - Edges can set `.WithEdgeLineStyle("edge-id", TopologyEdgeLineStyle.Dashed)` or `Dotted` when relationship type should control line style separately from health status.
+- Legend edge entries can use `AddEdgeKind(..., lineStyle: TopologyEdgeLineStyle.Dotted)` so "verified", "observed", and "inferred" legend keys match the actual route styles instead of always showing a generic dashed line.
+- `ArrowMarkerStyle` supports triangle, chevron, diamond, and circular endpoint markers for static SVG/PNG relationship maps where different arrow treatments better match a compact dashboard or evidence-flow view.
 - Edges can set `.WithEdgeEmphasis("edge-id", TopologyEdgeEmphasis.Subtle)` when they should preserve health color but recede behind primary paths in SVG and PNG output, such as replication fan fabric or backup route context. Use `.WithEdgeMuted("edge-id")` for quiet internal structure that should become neutral/gray, such as hub-to-branch hierarchy lines.
 - Edge kinds can be styled in one reusable pass with `.WithEdgesOfKind(TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed, emphasis: TopologyEdgeEmphasis.Subtle)`, which is useful for map spokes, dependency fabric, or any relationship class that should recede consistently across projects.
 - Edges can set `.WithEdgeLabelOffset("edge-id", x, y)` to tune label placement in dense panel-like diagrams while preserving route geometry and SVG/PNG parity.
@@ -324,6 +329,9 @@ The example console app writes sample diagrams to `artifacts/topology-demo/` and
 - `dc-connectivity.svg`
 - `service-dependency.svg`
 - `icon-palette.svg`
+- `visual-entity-relationship-overview.svg`
+- `visual-mini-correlation-map.svg`
+- `visual-evidence-timeline-relationship.svg`
 - `visual-geographic-topology-map.svg`
 - `service-dependency-api-neighbors-view.svg`
 - `service-dependency-critical-dependencies-view.svg`

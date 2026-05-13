@@ -58,6 +58,9 @@ public static class TopologyRenderOptionsExtensions {
                 options.IncludeDirectionMarkers = true;
                 options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
                 break;
+            case TopologyViewPreset.RelationshipOverview:
+                options.WithRelationshipOverviewStyle();
+                break;
         }
 
         return options;
@@ -89,6 +92,7 @@ public static class TopologyRenderOptionsExtensions {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.VisualStyle = TopologyVisualStyle.MonitoringDashboard;
         options.MapBackgroundStyle = TopologyMapBackgroundStyle.SoftSilhouette;
+        options.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Panel;
         options.IncludeGeographicRegionHulls = true;
         options.GeographicRegionHullPadding = 16;
         options.GeographicRegionHullMaxRadius = 82;
@@ -96,6 +100,30 @@ public static class TopologyRenderOptionsExtensions {
         options.IncludeGroupStatusDots = true;
         options.IncludeEdgeLabelBackplates = false;
         if (options.LegendMode != TopologyLegendMode.Explicit) options.LegendMode = TopologyLegendMode.Merge;
+        return options;
+    }
+
+    /// <summary>
+    /// Applies a reusable relationship-overview treatment for entity maps, dependency overviews, and evidence correlation diagrams.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithRelationshipOverviewStyle(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.WithMonitoringDashboardStyle();
+        options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+        options.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.PanelGrid;
+        options.ArrowMarkerStyle = TopologyArrowMarkerStyle.Chevron;
+        options.CardSubtitleMode = TopologyCardSubtitleMode.Text;
+        options.AllowMultilineNodeLabels = true;
+        options.WrapNodeLabels = true;
+        options.MaxNodeLabelLines = 2;
+        options.MaxNodeSubtitleLines = 2;
+        options.IncludeEdgeLabels = true;
+        options.IncludeDirectionMarkers = true;
+        options.IncludeEdgeLabelBackplates = false;
+        options.IncludeStatusBadges = true;
+        options.LegendMode = TopologyLegendMode.AutoWhenMissing;
         return options;
     }
 
@@ -118,6 +146,25 @@ public static class TopologyRenderOptionsExtensions {
     public static TopologyRenderOptions WithFitContentToViewport(this TopologyRenderOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.FitContentToViewport = true;
+        return options;
+    }
+
+    /// <summary>
+    /// Enables reusable multi-line node labels and optional word wrapping for dense relationship diagrams.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="wrap">Whether text should wrap at word boundaries when it exceeds the available width.</param>
+    /// <param name="maxLabelLines">The maximum title rows.</param>
+    /// <param name="maxSubtitleLines">The maximum subtitle rows.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithMultilineNodeLabels(this TopologyRenderOptions options, bool wrap = true, int maxLabelLines = 2, int maxSubtitleLines = 2) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (maxLabelLines < 1) throw new ArgumentOutOfRangeException(nameof(maxLabelLines), "Maximum node label lines must be at least 1.");
+        if (maxSubtitleLines < 1) throw new ArgumentOutOfRangeException(nameof(maxSubtitleLines), "Maximum node subtitle lines must be at least 1.");
+        options.AllowMultilineNodeLabels = true;
+        options.WrapNodeLabels = wrap;
+        options.MaxNodeLabelLines = maxLabelLines;
+        options.MaxNodeSubtitleLines = maxSubtitleLines;
         return options;
     }
 

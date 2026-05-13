@@ -195,6 +195,7 @@ internal static partial class SmokeTests {
         ("Topology SVG renderer uses SVG markup engine", TopologySvgRendererUsesSvgMarkupEngine),
         ("Topology default legend is product neutral", TopologyDefaultLegendIsProductNeutral),
         ("Topology legend grows for domain specific items", TopologyLegendGrowsForDomainSpecificItems),
+        ("Topology relationship overview supports multiline labels", TopologyRelationshipOverviewSupportsMultilineLabels),
         ("Topology icon catalogs resolve built-in and vendor icons", TopologyIconCatalogsResolveBuiltinAndVendorIcons),
         ("Topology icon catalogs render palette charts", TopologyIconCatalogsRenderPaletteCharts),
         ("Topology icon artwork renders vendor SVG assets", TopologyIconArtworkRendersVendorSvgAssets),

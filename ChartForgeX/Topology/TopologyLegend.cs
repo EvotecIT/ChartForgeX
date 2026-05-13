@@ -106,9 +106,10 @@ public sealed class TopologyLegend {
     /// <param name="label">The item label.</param>
     /// <param name="edgeKind">The represented edge kind.</param>
     /// <param name="color">An optional color override.</param>
+    /// <param name="lineStyle">An optional edge line style override.</param>
     /// <returns>The current legend.</returns>
-    public TopologyLegend AddEdgeKind(string label, TopologyEdgeKind edgeKind, string? color = null) {
-        Items.Add(new TopologyLegendItem { Label = label, EdgeKind = edgeKind, Kind = TopologyLegendItemKind.Edge, Color = color });
+    public TopologyLegend AddEdgeKind(string label, TopologyEdgeKind edgeKind, string? color = null, TopologyEdgeLineStyle lineStyle = TopologyEdgeLineStyle.Auto) {
+        Items.Add(new TopologyLegendItem { Label = label, EdgeKind = edgeKind, Kind = TopologyLegendItemKind.Edge, Color = color, LineStyle = lineStyle });
         return this;
     }
 
@@ -137,7 +138,8 @@ public sealed class TopologyLegend {
             NodeKind = item.NodeKind,
             EdgeKind = item.EdgeKind,
             Symbol = item.Symbol,
-            Color = item.Color
+            Color = item.Color,
+            LineStyle = item.LineStyle
         };
     }
 
@@ -178,4 +180,7 @@ public sealed class TopologyLegendItem {
 
     /// <summary>Gets or sets the optional color override.</summary>
     public string? Color { get; set; }
+
+    /// <summary>Gets or sets the optional line style used when rendering edge legend items.</summary>
+    public TopologyEdgeLineStyle LineStyle { get; set; } = TopologyEdgeLineStyle.Auto;
 }

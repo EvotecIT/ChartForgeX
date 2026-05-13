@@ -30,8 +30,22 @@ internal static partial class TopologyVisualExamples {
             .WithSelectedNode("anz")
             .WithSelectedEdge("apac-anz")
             .WithSelectedEdge("bh-apac");
+        var relationshipOverviewOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
+            .WithSelectedNode("domain")
+            .WithSelectedEdge("domain-finding");
+        var miniRelationshipOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
+            .WithSelectedNode("domain")
+            .WithSelectedEdge("finding-domain");
+        miniRelationshipOptions.ArrowMarkerStyle = TopologyArrowMarkerStyle.Diamond;
+        var evidenceTimelineOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
+            .WithSelectedNode("entity")
+            .WithSelectedEdge("finding-entity");
+        evidenceTimelineOptions.ArrowMarkerStyle = TopologyArrowMarkerStyle.Circle;
 
         SaveTopology(target, artifacts, "visual-topology-explorer", BuildTopologyExplorer(), "Topology Explorer", "Regional grouped topology with hubs, branches, bridgeheads, route ports, labels, links, tooltips, metadata hooks, SVG, HTML, and PNG.", topologyExplorerOptions);
+        SaveTopology(target, artifacts, "visual-entity-relationship-overview", BuildEntityRelationshipOverview(), "Entity Relationship Overview", "Screenshot-inspired relationship map with reusable icon ids, color accents, multiline cards, stacked edge labels, dotted/dashed/solid links, selected-state metadata, SVG, HTML, and PNG.", relationshipOverviewOptions);
+        SaveTopology(target, artifacts, "visual-mini-correlation-map", BuildMiniCorrelationMap(), "Mini Correlation Map", "Compact selected-asset relationship map for dashboard cards and drilldown panels with panel background, icon cards, and multiple arrow marker choices.", miniRelationshipOptions);
+        SaveTopology(target, artifacts, "visual-evidence-timeline-relationship", BuildEvidenceTimelineRelationship(), "Evidence Timeline Relationship", "Timeline-like evidence stream mapped to one selected entity using topology nodes, circular markers, typed links, and multiline event cards.", evidenceTimelineOptions);
         SaveTopology(target, artifacts, "visual-reusable-regional-topology", BuildReusableRegionalTopology(), "Reusable Regional Topology", "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, and offender highlighting support.", meshOptions);
         SaveTopology(target, artifacts, "visual-subnets-site-links-map", BuildSubnetsSiteLinksMap(), "Subnets and Site Links Map", "Subnet-to-site mapping topology with overlapping/orphan subnet states, bridgehead mapping, site links, and route labels.", tileSubtitleOptions);
@@ -681,6 +695,9 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("  \"baselineScope\": \"visual-capability-manifest\",");
         sb.AppendLine("  \"baselineCandidates\": [");
         sb.AppendLine("    \"visual-topology-explorer\",");
+        sb.AppendLine("    \"visual-entity-relationship-overview\",");
+        sb.AppendLine("    \"visual-mini-correlation-map\",");
+        sb.AppendLine("    \"visual-evidence-timeline-relationship\",");
         sb.AppendLine("    \"visual-replication-mesh-explorer\",");
         sb.AppendLine("    \"visual-subnets-site-links-map\",");
         sb.AppendLine("    \"visual-nested-user-hierarchy\",");

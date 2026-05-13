@@ -90,7 +90,9 @@ public enum TopologyViewPreset {
     /// <summary>Render a compact topology suitable for dense dashboard cards.</summary>
     Compact,
     /// <summary>Render a metric-driven topology where edge metric labels are emphasized.</summary>
-    MetricLabels
+    MetricLabels,
+    /// <summary>Render an entity relationship overview with premium monitoring-style cards, wrapped labels, icons, and annotated links.</summary>
+    RelationshipOverview
 }
 
 /// <summary>
@@ -113,6 +115,18 @@ public enum TopologyMapBackgroundStyle {
     DottedLand,
     /// <summary>Render filled land silhouettes and boundaries without the dotted land layer.</summary>
     SoftSilhouette
+}
+
+/// <summary>
+/// Defines the static drawing surface used behind non-geographic topology content.
+/// </summary>
+public enum TopologyCanvasSurfaceStyle {
+    /// <summary>Render only the chart background.</summary>
+    Plain,
+    /// <summary>Render a framed dashboard panel behind the topology content.</summary>
+    Panel,
+    /// <summary>Render a framed dashboard panel with subtle guide lines.</summary>
+    PanelGrid
 }
 
 /// <summary>
@@ -371,6 +385,20 @@ public enum TopologyEdgeEmphasis {
     Subtle,
     /// <summary>Render the edge with stronger prominence.</summary>
     Strong
+}
+
+/// <summary>
+/// Defines the marker shape used for directed topology edges.
+/// </summary>
+public enum TopologyArrowMarkerStyle {
+    /// <summary>Render classic triangular arrow markers.</summary>
+    Triangle,
+    /// <summary>Render open chevron arrow markers.</summary>
+    Chevron,
+    /// <summary>Render diamond arrow markers.</summary>
+    Diamond,
+    /// <summary>Render compact circular endpoint markers.</summary>
+    Circle
 }
 
 /// <summary>

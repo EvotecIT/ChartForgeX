@@ -37,6 +37,7 @@ public sealed partial class TopologyPngRenderer {
         var highlight = TopologyHighlightState.From(prepared, options);
         var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), null, Math.Max(1, options.PngOutputScale));
         canvas.Clear(Color(theme.Background));
+        if (prepared.LayoutMode != TopologyLayoutMode.Geographic) DrawCanvasSurface(canvas, prepared, theme, options);
         if (options.IncludeTitle) DrawHeader(canvas, prepared, theme);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicFrame(canvas, prepared, theme, options);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic && options.IncludeGeographicRegionHulls) DrawGeographicRegionHulls(canvas, prepared, theme, options);
@@ -264,8 +265,8 @@ public sealed partial class TopologyPngRenderer {
             if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) DrawEdgeRoute(canvas, routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4), false, 0, 0);
             DrawEdgeRoute(canvas, routePoints, color, width, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap);
 
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color);
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color);
+            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, options);
+            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color, options);
         }
     }
 
@@ -355,7 +356,7 @@ public sealed partial class TopologyPngRenderer {
                 DrawCentered(canvas, CenterX(node), plateY + 3, label, Color(theme.Foreground), 10.5, true);
             } else if (options.IncludeNodeLabels && displayMode != TopologyNodeDisplayMode.Icon) {
                 if (displayMode == TopologyNodeDisplayMode.Tile) {
-                    DrawCentered(canvas, CenterX(node), node.Y + node.Height + 4, TrimTo(node.Label, NodeTitleMaxLength(displayMode)), Color(theme.Foreground), 10.5, true);
+                    DrawCenteredLines(canvas, CenterX(node), node.Y + node.Height + 4, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 10.5, true, options.MaxNodeLabelLines, options), Color(theme.Foreground), 10.5, true, 13);
                     if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) DrawTileSubtitle(canvas, node, theme, accent, options);
                     DrawNodeBadge(canvas, node, theme, accent, displayMode);
                     continue;
@@ -366,12 +367,16 @@ public sealed partial class TopologyPngRenderer {
                 var titleSize = displayMode == TopologyNodeDisplayMode.Pill ? 11.5 : displayMode == TopologyNodeDisplayMode.CompactCard ? 11.5 : 12.5;
                 var textRightPadding = 10;
                 var textWidth = Math.Max(24, node.Width - (textX - node.X) - textRightPadding);
-                var titleValue = TrimTo(node.Label, NodeTitleMaxLength(displayMode));
-                titleSize = FitFontSize(titleValue, textWidth, titleSize, 10, true);
-                canvas.DrawTextEmphasized(textX, titleY, TrimToEstimatedWidth(titleValue, textWidth, titleSize, true), Color(theme.Foreground), titleSize);
+                var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? NodeLabelMaxLength * Math.Max(1, options.MaxNodeLabelLines) : NodeTitleMaxLength(displayMode));
+                titleSize = FitFontSize(NodeTextFitProbe(titleValue, options), textWidth, titleSize, 10, true);
+                var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options);
+                DrawTextLines(canvas, textX, titleY, titleLines, Color(theme.Foreground), titleSize, true, displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 13);
                 if (displayMode != TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle)) {
                     if (options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) DrawCardSubtitleChip(canvas, node, theme, accent, displayMode, options);
-                    else canvas.DrawText(textX, node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : 37), TrimToEstimatedWidth(TrimTo(node.Subtitle!, NodeLabelMaxLength), textWidth, 10.5, false), Color(theme.MutedForeground), 10.5);
+                    else {
+                        var subtitleY = Math.Max(node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : 37), titleY + titleLines.Count * (displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 13) + 3);
+                        DrawTextLines(canvas, textX, subtitleY, NodeTextLines(node.Subtitle!, textWidth, 10.5, false, options.MaxNodeSubtitleLines, options), Color(theme.MutedForeground), 10.5, false, 12);
+                    }
                 }
             }
 
@@ -407,8 +412,9 @@ public sealed partial class TopologyPngRenderer {
     private static void DrawTileSubtitle(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, TopologyRenderOptions options) {
         var subtitle = TrimTo(node.Subtitle!, 16);
         var width = Math.Min(Math.Max(46, RgbaCanvas.MeasureTextEmphasizedWidth(subtitle, 8.5, null) + 18), Math.Max(46, node.Width + 28));
+        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 10.5, true, options.MaxNodeLabelLines, options).Count;
         var x = CenterX(node) - width / 2;
-        var y = node.Y + node.Height + 14;
+        var y = node.Y + node.Height + 1 + labelLineCount * 13;
         canvas.FillRoundedRect(x, y, width, 17, 8.5, Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background)));
         canvas.StrokeRoundedRect(x, y, width, 17, 8.5, WithAlpha(accent, 115), 1);
         DrawCentered(canvas, CenterX(node), y + 3.8, subtitle, Color(theme.MutedForeground), 8.5, true);
@@ -648,7 +654,11 @@ public sealed partial class TopologyPngRenderer {
             var itemX = x + 18 + col * LegendItemColumnWidth;
             var itemY = y + LegendFirstItemOffsetY + row * LegendItemRowHeight;
             var color = Color(item.Color ?? (item.Status.HasValue ? theme.StatusColor(item.Status.Value) : theme.Accent));
-            if (item.Kind == TopologyLegendItemKind.Edge) canvas.DrawDashedLine(itemX, itemY - 4, itemX + 24, itemY - 4, color, 2, 6, 4);
+            if (item.Kind == TopologyLegendItemKind.Edge) {
+                var dash = EdgePngDash(item.LineStyle);
+                if (dash.Dashed) canvas.DrawDashedLine(itemX, itemY - 4, itemX + 24, itemY - 4, color, 2, dash.Dash, dash.Gap);
+                else canvas.DrawLine(itemX, itemY - 4, itemX + 24, itemY - 4, color, 2);
+            }
             else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
                 canvas.FillRoundedRect(itemX, itemY - 13, 16, 16, 4, Color(StatusFill(item.Color ?? theme.Accent, theme.Background)));
                 canvas.StrokeRoundedRect(itemX, itemY - 13, 16, 16, 4, color, 1);
@@ -658,20 +668,21 @@ public sealed partial class TopologyPngRenderer {
         }
     }
 
-    private static void DrawArrow(RgbaCanvas canvas, ChartPoint from, ChartPoint to, ChartColor color) {
-        var angle = Math.Atan2(to.Y - from.Y, to.X - from.X);
-        const double length = 10;
-        const double spread = 0.52;
-        var p1 = new ChartPoint(to.X, to.Y);
-        var p2 = new ChartPoint(to.X - Math.Cos(angle - spread) * length, to.Y - Math.Sin(angle - spread) * length);
-        var p3 = new ChartPoint(to.X - Math.Cos(angle + spread) * length, to.Y - Math.Sin(angle + spread) * length);
-        canvas.FillPolygon(new[] { p1, p2, p3 }, color);
-    }
-
     private static void DrawCentered(RgbaCanvas canvas, double centerX, double y, string text, ChartColor color, double fontSize, bool emphasized) {
         var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
         if (emphasized) canvas.DrawTextEmphasized(centerX - width / 2, y, text, color, fontSize);
         else canvas.DrawText(centerX - width / 2, y, text, color, fontSize);
+    }
+
+    private static void DrawTextLines(RgbaCanvas canvas, double x, double y, IReadOnlyList<string> lines, ChartColor color, double fontSize, bool emphasized, double lineHeight) {
+        for (var i = 0; i < lines.Count; i++) {
+            if (emphasized) canvas.DrawTextEmphasized(x, y + i * lineHeight, lines[i], color, fontSize);
+            else canvas.DrawText(x, y + i * lineHeight, lines[i], color, fontSize);
+        }
+    }
+
+    private static void DrawCenteredLines(RgbaCanvas canvas, double centerX, double y, IReadOnlyList<string> lines, ChartColor color, double fontSize, bool emphasized, double lineHeight) {
+        for (var i = 0; i < lines.Count; i++) DrawCentered(canvas, centerX, y + i * lineHeight, lines[i], color, fontSize, emphasized);
     }
 
     private static void DrawCenteredWithHalo(RgbaCanvas canvas, double centerX, double y, string text, ChartColor color, double fontSize, bool emphasized, ChartColor haloColor) {

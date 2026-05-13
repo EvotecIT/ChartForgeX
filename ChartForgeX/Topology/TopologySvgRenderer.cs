@@ -92,6 +92,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", "100%")
             .Attribute("height", "100%")
             .Attribute("fill", theme.Background));
+        if (chart.LayoutMode != TopologyLayoutMode.Geographic) AddCanvasSurface(root, chart, prefix, theme, options);
         if (options.IncludeTitle) AddHeader(root, chart, prefix, theme);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicFrame(root, chart, prefix, theme, options);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic && options.IncludeGeographicRegionHulls) AddGeographicRegionHulls(root, chart, prefix, theme, options);
@@ -274,19 +275,7 @@ public sealed partial class TopologySvgRenderer {
         AddDropShadowFilter(defs, id + "-selected-shadow", "#2563EB", IsMonitoringDashboardStyle(options) ? 0.13 : 0.18);
         foreach (var status in GetTopologyHealthStatuses()) {
             var color = theme.StatusColor(status);
-            defs.Element("marker", marker => {
-                marker
-                    .Attribute("id", id + "-arrow-" + StatusMarkerToken(status))
-                    .Attribute("viewBox", "0 0 10 10")
-                    .Attribute("refX", 8)
-                    .Attribute("refY", 5)
-                    .Attribute("markerWidth", IsMonitoringDashboardStyle(options) ? 5.5 : 7)
-                    .Attribute("markerHeight", IsMonitoringDashboardStyle(options) ? 5.5 : 7)
-                    .Attribute("orient", "auto-start-reverse");
-                marker.Element("path", path => path
-                    .Attribute("d", "M 0 0 L 10 5 L 0 10 z")
-                    .Attribute("fill", color));
-            });
+            AddArrowMarker(defs, id + "-arrow-" + StatusMarkerToken(status), color, options);
         }
 
         return defs;

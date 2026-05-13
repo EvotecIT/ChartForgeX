@@ -36,6 +36,18 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether tile nodes should render their subtitle as a compact chip below the tile label.</summary>
     public bool IncludeTileSubtitles { get; set; }
 
+    /// <summary>Gets or sets whether explicit line breaks in node labels and subtitles should be rendered as multiple SVG/PNG text rows.</summary>
+    public bool AllowMultilineNodeLabels { get; set; } = true;
+
+    /// <summary>Gets or sets whether node labels and subtitles can wrap at word boundaries when they exceed their available width.</summary>
+    public bool WrapNodeLabels { get; set; }
+
+    /// <summary>Gets or sets the maximum number of rendered title rows for card, compact-card, tile, and icon-label node text.</summary>
+    public int MaxNodeLabelLines { get; set; } = 2;
+
+    /// <summary>Gets or sets the maximum number of rendered subtitle rows for card and tile node text.</summary>
+    public int MaxNodeSubtitleLines { get; set; } = 2;
+
     /// <summary>Gets or sets how card and compact-card node subtitles should be rendered.</summary>
     public TopologyCardSubtitleMode CardSubtitleMode { get; set; } = TopologyCardSubtitleMode.Text;
 
@@ -123,11 +135,17 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets the geographic map background treatment.</summary>
     public TopologyMapBackgroundStyle MapBackgroundStyle { get; set; } = TopologyMapBackgroundStyle.Auto;
 
+    /// <summary>Gets or sets the dashboard-style canvas surface used behind non-geographic topology content.</summary>
+    public TopologyCanvasSurfaceStyle CanvasSurfaceStyle { get; set; } = TopologyCanvasSurfaceStyle.Plain;
+
     /// <summary>Gets or sets the group card fill treatment.</summary>
     public TopologyGroupSurfaceStyle GroupSurfaceStyle { get; set; } = TopologyGroupSurfaceStyle.Auto;
 
     /// <summary>Gets or sets how topology nodes should be presented.</summary>
     public TopologyNodeDisplayMode NodeDisplayMode { get; set; } = TopologyNodeDisplayMode.Card;
+
+    /// <summary>Gets or sets the marker shape used for directed topology edges.</summary>
+    public TopologyArrowMarkerStyle ArrowMarkerStyle { get; set; } = TopologyArrowMarkerStyle.Triangle;
 
     /// <summary>Gets or sets an optional icon catalog used to resolve node and group icon ids. When unset, the built-in catalog is used.</summary>
     public TopologyIconCatalog? IconCatalog { get; set; }
