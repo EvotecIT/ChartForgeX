@@ -22,6 +22,7 @@ internal static partial class SmokeTests {
         var legend = svg.Substring(legendStart);
         Assert(legend.Contains(">TLS Certificate<", StringComparison.Ordinal), "Topology auto legend should include the styled node symbol and kind.");
         Assert(legend.Contains("stroke=\"#2563EB\"", StringComparison.Ordinal), "Topology auto legend should reuse a shared node-kind accent color.");
+        Assert(legend.Contains("fill=\"#EFF6FF\"", StringComparison.Ordinal), "Topology auto legend should reuse a shared node-kind background color.");
         Assert(chart.ToPng(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto }).Length > 64, "Styled node-kind legends should render as PNG.");
     }
 

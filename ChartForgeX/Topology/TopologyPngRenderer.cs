@@ -665,7 +665,8 @@ public sealed partial class TopologyPngRenderer {
                 else canvas.DrawLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2);
             }
             else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
-                canvas.FillRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, Color(StatusFill(item.Color ?? theme.Accent, theme.Background)));
+                var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(item.Color ?? theme.Accent, theme.Background) : item.BackgroundColor!.Trim();
+                canvas.FillRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, Color(fill));
                 canvas.StrokeRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, color, 1);
                 DrawCenteredMiddle(canvas, itemX + 8, markerCenterY, TrimTo(item.Symbol!.Trim(), 4), color, 6.5, true);
             } else canvas.DrawCircle(itemX + 8, markerCenterY, 6, color);

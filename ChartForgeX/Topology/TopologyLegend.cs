@@ -65,7 +65,7 @@ public sealed class TopologyLegend {
             .GroupBy(node => new { node.Kind, Symbol = string.IsNullOrWhiteSpace(node.Symbol) ? null : node.Symbol!.Trim() })
             .OrderBy(group => group.Key.Kind.ToString())
             .ThenBy(group => group.Key.Symbol)) {
-            legend.AddNodeKind(NodeLegendLabel(group.Key.Kind, group.Key.Symbol), group.Key.Kind, SharedNodeColor(group), group.Key.Symbol);
+            legend.AddNodeKind(NodeLegendLabel(group.Key.Kind, group.Key.Symbol), group.Key.Kind, SharedNodeColor(group), group.Key.Symbol, SharedNodeBackgroundColor(group));
         }
 
         foreach (var group in chart.Edges.GroupBy(edge => edge.Kind).OrderBy(group => group.Key.ToString())) {
@@ -94,9 +94,10 @@ public sealed class TopologyLegend {
     /// <param name="nodeKind">The represented node kind.</param>
     /// <param name="color">An optional color override.</param>
     /// <param name="symbol">An optional short symbol override.</param>
+    /// <param name="backgroundColor">An optional node marker background color override.</param>
     /// <returns>The current legend.</returns>
-    public TopologyLegend AddNodeKind(string label, TopologyNodeKind nodeKind, string? color = null, string? symbol = null) {
-        Items.Add(new TopologyLegendItem { Label = label, NodeKind = nodeKind, Kind = TopologyLegendItemKind.Node, Color = color, Symbol = symbol });
+    public TopologyLegend AddNodeKind(string label, TopologyNodeKind nodeKind, string? color = null, string? symbol = null, string? backgroundColor = null) {
+        Items.Add(new TopologyLegendItem { Label = label, NodeKind = nodeKind, Kind = TopologyLegendItemKind.Node, Color = color, Symbol = symbol, BackgroundColor = backgroundColor });
         return this;
     }
 
@@ -139,6 +140,7 @@ public sealed class TopologyLegend {
             EdgeKind = item.EdgeKind,
             Symbol = item.Symbol,
             Color = item.Color,
+            BackgroundColor = item.BackgroundColor,
             LineStyle = item.LineStyle
         };
     }
@@ -191,6 +193,24 @@ public sealed class TopologyLegend {
         return hasColor ? color : null;
     }
 
+    private static string? SharedNodeBackgroundColor(IEnumerable<TopologyNode> nodes) {
+        string? color = null;
+        var hasColor = false;
+        foreach (var node in nodes) {
+            if (string.IsNullOrWhiteSpace(node.BackgroundColor)) return null;
+            var candidate = node.BackgroundColor!.Trim();
+            if (!hasColor) {
+                color = candidate;
+                hasColor = true;
+                continue;
+            }
+
+            if (!string.Equals(color, candidate, StringComparison.OrdinalIgnoreCase)) return null;
+        }
+
+        return hasColor ? color : null;
+    }
+
     private static TopologyEdgeLineStyle SharedEdgeLineStyle(IEnumerable<TopologyEdge> edges) {
         TopologyEdgeLineStyle? lineStyle = null;
         foreach (var edge in edges) {
@@ -231,6 +251,9 @@ public sealed class TopologyLegendItem {
 
     /// <summary>Gets or sets the optional color override.</summary>
     public string? Color { get; set; }
+
+    /// <summary>Gets or sets the optional node marker background color override.</summary>
+    public string? BackgroundColor { get; set; }
 
     /// <summary>Gets or sets the optional line style used when rendering edge legend items.</summary>
     public TopologyEdgeLineStyle LineStyle { get; set; } = TopologyEdgeLineStyle.Auto;

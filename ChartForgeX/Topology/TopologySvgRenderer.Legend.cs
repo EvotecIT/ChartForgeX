@@ -55,13 +55,14 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("stroke-width", 2)
                         .Attribute("stroke-dasharray", EdgeDash(item.LineStyle)));
                 } else if (item.Kind == TopologyLegendItemKind.Node && !string.IsNullOrWhiteSpace(item.Symbol)) {
+                    var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(color, theme.Background) : item.BackgroundColor!.Trim();
                     group.Element("rect", rect => rect
                         .Attribute("x", itemX)
                         .Attribute("y", markerCenterY - 8)
                         .Attribute("width", 16)
                         .Attribute("height", 16)
                         .Attribute("rx", 4)
-                        .Attribute("fill", StatusFill(color, theme.Background))
+                        .Attribute("fill", fill)
                         .Attribute("stroke", color));
                     group.Element("text", text => text
                         .Attribute("x", itemX + 8)
