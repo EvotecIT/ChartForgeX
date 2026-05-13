@@ -330,6 +330,7 @@ internal static partial class SmokeTests {
         ("Topology presets and node display modes render dense views", TopologyPresetsAndNodeDisplayModesRenderDenseViews),
         ("Topology nodes can override display mode and badges", TopologyNodesCanOverrideDisplayModeAndBadges),
         ("Topology inferred legends are generic and data driven", TopologyInferredLegendsAreGenericAndDataDriven),
+        ("Topology inferred legends use shared edge-kind styling", TopologyInferredLegendsUseSharedEdgeKindStyling),
         ("Dotted map trims point labels", DottedMapTrimsPointLabels),
         ("Dotted map world viewport suppresses polar points outside map band", DottedMapWorldViewportSuppressesPolarPointsOutsideMapBand),
         ("Dotted map data labels suppress polar points outside map band", DottedMapDataLabelsSuppressPolarPointsOutsideMapBand),

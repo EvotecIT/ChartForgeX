@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -68,8 +69,8 @@ public sealed class TopologyLegend {
             legend.AddNodeKind(NodeLegendLabel(item.Kind, item.Symbol), item.Kind, symbol: item.Symbol);
         }
 
-        foreach (var kind in chart.Edges.Select(edge => edge.Kind).Distinct().OrderBy(kind => kind.ToString())) {
-            legend.AddEdgeKind(kind.ToString(), kind);
+        foreach (var group in chart.Edges.GroupBy(edge => edge.Kind).OrderBy(group => group.Key.ToString())) {
+            legend.AddEdgeKind(group.Key.ToString(), group.Key, SharedEdgeColor(group), SharedEdgeLineStyle(group));
         }
 
         return legend;
@@ -153,6 +154,39 @@ public sealed class TopologyLegend {
 
     private static string NodeLegendLabel(TopologyNodeKind kind, string? symbol) {
         return string.IsNullOrWhiteSpace(symbol) ? kind.ToString() : symbol + " " + kind;
+    }
+
+    private static string? SharedEdgeColor(IEnumerable<TopologyEdge> edges) {
+        string? color = null;
+        var hasColor = false;
+        foreach (var edge in edges) {
+            if (string.IsNullOrWhiteSpace(edge.Color)) return null;
+            var candidate = edge.Color!.Trim();
+            if (!hasColor) {
+                color = candidate;
+                hasColor = true;
+                continue;
+            }
+
+            if (!string.Equals(color, candidate, StringComparison.OrdinalIgnoreCase)) return null;
+        }
+
+        return hasColor ? color : null;
+    }
+
+    private static TopologyEdgeLineStyle SharedEdgeLineStyle(IEnumerable<TopologyEdge> edges) {
+        TopologyEdgeLineStyle? lineStyle = null;
+        foreach (var edge in edges) {
+            if (edge.LineStyle == TopologyEdgeLineStyle.Auto) return TopologyEdgeLineStyle.Auto;
+            if (!lineStyle.HasValue) {
+                lineStyle = edge.LineStyle;
+                continue;
+            }
+
+            if (lineStyle.Value != edge.LineStyle) return TopologyEdgeLineStyle.Auto;
+        }
+
+        return lineStyle ?? TopologyEdgeLineStyle.Auto;
     }
 }
 
