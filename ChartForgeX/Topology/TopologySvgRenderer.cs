@@ -61,7 +61,7 @@ public sealed partial class TopologySvgRenderer {
         document.Root.Element("desc", desc => desc
             .Attribute("id", id + "-desc")
             .Text(BuildDescription(prepared)));
-        document.Root.AddElement(BuildDefs(id, prefix, theme, options));
+        document.Root.AddElement(BuildDefs(id, prefix, prepared, theme, options));
         document.Root.Element("g", root => {
             root
                 .Attribute("id", id)
@@ -265,7 +265,7 @@ public sealed partial class TopologySvgRenderer {
         return Math.Min(options.GeographicRegionHullMaxRadius, Math.Max(options.GeographicRegionHullMinRadius, radius));
     }
 
-    private static SvgElement BuildDefs(string id, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
+    private static SvgElement BuildDefs(string id, string prefix, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options) {
         var defs = new SvgElement("defs");
         if (options.IncludeCss) {
             defs.Element("style", style => style.Text(BuildCss(id, prefix, theme)));
@@ -273,9 +273,15 @@ public sealed partial class TopologySvgRenderer {
 
         AddDropShadowFilter(defs, id + "-shadow", "#0F172A", IsMonitoringDashboardStyle(options) ? 0.065 : 0.10);
         AddDropShadowFilter(defs, id + "-selected-shadow", "#2563EB", IsMonitoringDashboardStyle(options) ? 0.13 : 0.18);
+        var markerTokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var status in GetTopologyHealthStatuses()) {
             var color = theme.StatusColor(status);
-            AddArrowMarker(defs, id + "-arrow-" + StatusMarkerToken(status), color, options);
+            if (markerTokens.Add(ArrowMarkerToken(color))) AddArrowMarker(defs, ArrowMarkerId(id, color), color, options);
+        }
+
+        foreach (var edge in chart.Edges) {
+            var color = EdgeColor(edge, theme, options);
+            if (markerTokens.Add(ArrowMarkerToken(color))) AddArrowMarker(defs, ArrowMarkerId(id, color), color, options);
         }
 
         return defs;
@@ -588,8 +594,8 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options))
                     .Attribute("stroke-dasharray", dash)
                     .Attribute("opacity", EdgeOpacity(edge, options));
-                if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) path.Attribute("marker-start", "url(#" + svgId + "-arrow-" + StatusMarkerToken(edge.Status) + ")");
-                if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) path.Attribute("marker-end", "url(#" + svgId + "-arrow-" + StatusMarkerToken(edge.Status) + ")");
+                if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, color) + ")");
+                if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, color) + ")");
             });
         }
 

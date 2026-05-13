@@ -666,12 +666,12 @@ public sealed partial class TopologyPngRenderer {
             }
             else if (item.Kind == TopologyLegendItemKind.Node) {
                 var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(item.Color ?? theme.Accent, theme.Background) : item.BackgroundColor!.Trim();
-                canvas.FillRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, Color(fill));
-                canvas.StrokeRoundedRect(itemX, markerCenterY - 8, 16, 16, 4, color, 1);
+                canvas.FillRoundedRect(itemX, markerCenterY - 11, 22, 22, 6, Color(fill));
+                canvas.StrokeRoundedRect(itemX, markerCenterY - 11, 22, 22, 6, color, 1);
                 var legendNode = LegendNode(item);
-                if (!DrawInfrastructureGlyph(canvas, legendNode, itemX + 8, markerCenterY, color, options)) DrawCenteredMiddle(canvas, itemX + 8, markerCenterY, NodeGlyph(legendNode, options), color, 6.5, true);
+                if (!DrawInfrastructureGlyph(canvas, legendNode, itemX + 11, markerCenterY, color, options)) DrawCenteredMiddle(canvas, itemX + 11, markerCenterY, NodeGlyph(legendNode, options), color, 6.5, true);
             } else canvas.DrawCircle(itemX + 8, markerCenterY, 6, color);
-            DrawTextMiddle(canvas, itemX + 32, markerCenterY, item.Label, Color(theme.MutedForeground), 11, false);
+            DrawTextMiddle(canvas, itemX + (item.Kind == TopologyLegendItemKind.Node ? 38 : 32), markerCenterY, item.Label, Color(theme.MutedForeground), 11, false);
         }
     }
 

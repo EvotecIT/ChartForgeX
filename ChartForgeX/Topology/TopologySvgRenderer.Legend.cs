@@ -59,19 +59,19 @@ public sealed partial class TopologySvgRenderer {
                     var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(color, theme.Background) : item.BackgroundColor!.Trim();
                     group.Element("rect", rect => rect
                         .Attribute("x", itemX)
-                        .Attribute("y", markerCenterY - 8)
-                        .Attribute("width", 16)
-                        .Attribute("height", 16)
-                        .Attribute("rx", 4)
+                        .Attribute("y", markerCenterY - 11)
+                        .Attribute("width", 22)
+                        .Attribute("height", 22)
+                        .Attribute("rx", 6)
                         .Attribute("fill", fill)
                         .Attribute("stroke", color));
                     var legendNode = LegendNode(item);
                     var iconDefinition = ResolveNodeIcon(legendNode, options);
                     if (iconDefinition != null) group.Attribute("data-legend-icon-shape", iconDefinition.Shape.ToString());
                     var artwork = iconDefinition?.Artwork;
-                    if (!TryDrawIconArtwork(group, artwork, prefix, itemX + 8, markerCenterY, 14) && !AddInfrastructureGlyph(group, legendNode, itemX + 8, markerCenterY, color, options)) {
+                    if (!TryDrawIconArtwork(group, artwork, prefix, itemX + 11, markerCenterY, 18) && !AddInfrastructureGlyph(group, legendNode, itemX + 11, markerCenterY, color, options)) {
                         group.Element("text", text => text
-                            .Attribute("x", itemX + 8)
+                            .Attribute("x", itemX + 11)
                             .Attribute("y", markerCenterY)
                             .Attribute("text-anchor", "middle")
                             .Attribute("dominant-baseline", "central")
@@ -89,7 +89,7 @@ public sealed partial class TopologySvgRenderer {
                 }
 
                 group.Element("text", text => text
-                    .Attribute("x", itemX + 32)
+                    .Attribute("x", itemX + (item.Kind == TopologyLegendItemKind.Node ? 38 : 32))
                     .Attribute("y", markerCenterY)
                     .Attribute("dominant-baseline", "central")
                     .Attribute("fill", theme.MutedForeground)

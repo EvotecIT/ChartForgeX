@@ -82,4 +82,13 @@ public sealed partial class TopologySvgRenderer {
             }
         });
     }
+
+    private static string ArrowMarkerId(string svgId, string color) => svgId + "-arrow-" + ArrowMarkerToken(color);
+
+    private static string ArrowMarkerToken(string color) {
+        var value = string.IsNullOrWhiteSpace(color) ? "current" : color.Trim().ToLowerInvariant();
+        var sb = new System.Text.StringBuilder(value.Length);
+        foreach (var c in value) sb.Append(char.IsLetterOrDigit(c) ? c : '-');
+        return sb.ToString().Trim('-');
+    }
 }
