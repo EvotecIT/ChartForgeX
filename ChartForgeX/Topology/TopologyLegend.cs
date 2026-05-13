@@ -120,7 +120,12 @@ public sealed class TopologyLegend {
         if (explicitLegend == null) return inferredLegend;
         var merged = Clone(explicitLegend);
         foreach (var item in inferredLegend.Items) {
-            if (merged.Items.Any(existing => SameLegendItem(existing, item))) continue;
+            var existing = merged.Items.FirstOrDefault(candidate => SameLegendItem(candidate, item));
+            if (existing != null) {
+                FillMissingDetails(existing, item);
+                continue;
+            }
+
             merged.Items.Add(Clone(item));
         }
 
@@ -153,8 +158,22 @@ public sealed class TopologyLegend {
             && left.Status == right.Status
             && left.NodeKind == right.NodeKind
             && left.EdgeKind == right.EdgeKind
-            && string.Equals(left.Symbol, right.Symbol, System.StringComparison.Ordinal)
-            && string.Equals(left.IconId, right.IconId, System.StringComparison.Ordinal);
+            && CompatibleText(left.Symbol, right.Symbol)
+            && CompatibleText(left.IconId, right.IconId);
+    }
+
+    private static void FillMissingDetails(TopologyLegendItem target, TopologyLegendItem source) {
+        if (string.IsNullOrWhiteSpace(target.Symbol)) target.Symbol = source.Symbol;
+        if (string.IsNullOrWhiteSpace(target.IconId)) target.IconId = source.IconId;
+        if (string.IsNullOrWhiteSpace(target.Color)) target.Color = source.Color;
+        if (string.IsNullOrWhiteSpace(target.BackgroundColor)) target.BackgroundColor = source.BackgroundColor;
+        if (target.LineStyle == TopologyEdgeLineStyle.Auto && source.LineStyle != TopologyEdgeLineStyle.Auto) target.LineStyle = source.LineStyle;
+    }
+
+    private static bool CompatibleText(string? left, string? right) {
+        return string.IsNullOrWhiteSpace(left)
+            || string.IsNullOrWhiteSpace(right)
+            || string.Equals(left, right, StringComparison.Ordinal);
     }
 
     private static string NodeLegendLabel(TopologyNodeKind kind, string? symbol) {

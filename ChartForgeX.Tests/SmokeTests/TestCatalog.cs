@@ -334,6 +334,7 @@ internal static partial class SmokeTests {
         ("Topology inferred legends are generic and data driven", TopologyInferredLegendsAreGenericAndDataDriven),
         ("Topology nodes can be styled by kind and reflected in legends", TopologyNodesCanBeStyledByKindAndReflectedInLegends),
         ("Topology inferred legends use shared edge-kind styling", TopologyInferredLegendsUseSharedEdgeKindStyling),
+        ("Topology merged legends enrich explicit items", TopologyMergedLegendsEnrichExplicitItems),
         ("Dotted map trims point labels", DottedMapTrimsPointLabels),
         ("Dotted map world viewport suppresses polar points outside map band", DottedMapWorldViewportSuppressesPolarPointsOutsideMapBand),
         ("Dotted map data labels suppress polar points outside map band", DottedMapDataLabelsSuppressPolarPointsOutsideMapBand),

@@ -47,4 +47,35 @@ internal static partial class SmokeTests {
         Assert(legend.Contains("stroke-dasharray=\"2 5\"", StringComparison.Ordinal), "Topology auto legend should reuse a shared edge-kind line style.");
         Assert(chart.ToPng(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto }).Length > 64, "Styled inferred topology legends should render as PNG.");
     }
+
+    private static void TopologyMergedLegendsEnrichExplicitItems() {
+        var catalog = TopologyIconCatalog.Default();
+        var chart = TopologyChart.Create()
+            .WithId("merged-legend-style")
+            .WithViewport(560, 340, 24)
+            .WithLegend(TopologyLegend.Create("Focused Legend")
+                .AddNodeKind("Certificates", TopologyNodeKind.Certificate)
+                .AddEdgeKind("Ownership path", TopologyEdgeKind.Ownership))
+            .AddNode("cert-a", "Certificate A", 90, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy)
+            .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning)
+            .AddNode("owner", "Owner", 300, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
+            .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
+            .WithNodesOfKind(TopologyNodeKind.Certificate, color: "#2563EB", backgroundColor: "#EFF6FF")
+            .WithNodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog)
+            .WithEdgesOfKind(TopologyEdgeKind.Ownership, lineStyle: TopologyEdgeLineStyle.Dashed, color: "#7C3AED");
+
+        var svg = chart.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Merge });
+        var legendStart = svg.IndexOf("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal);
+        Assert(legendStart >= 0, "Topology merged legends should render.");
+        var legend = svg.Substring(legendStart);
+        Assert(legend.Contains(">Focused Legend<", StringComparison.Ordinal), "Topology merged legends should preserve explicit titles.");
+        Assert(legend.Contains(">Certificates<", StringComparison.Ordinal), "Topology merged legends should preserve explicit node labels.");
+        Assert(legend.Contains("data-legend-icon-id=\"common:certificate\"", StringComparison.Ordinal), "Topology merged legends should enrich explicit node items with inferred icons.");
+        Assert(legend.Contains("fill=\"#EFF6FF\"", StringComparison.Ordinal), "Topology merged legends should enrich explicit node items with inferred backgrounds.");
+        Assert(legend.Contains(">Ownership path<", StringComparison.Ordinal), "Topology merged legends should preserve explicit edge labels.");
+        Assert(legend.Contains("stroke=\"#7C3AED\"", StringComparison.Ordinal), "Topology merged legends should enrich explicit edge items with inferred colors.");
+        Assert(legend.Contains("stroke-dasharray=\"8 5\"", StringComparison.Ordinal), "Topology merged legends should enrich explicit edge items with inferred line styles.");
+        Assert(CountOccurrences(legend, ">Certificates<") == 1, "Topology merged legends should not duplicate enriched explicit node items.");
+        Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Merge }).Length > 64, "Enriched merged topology legends should render as PNG.");
+    }
 }
