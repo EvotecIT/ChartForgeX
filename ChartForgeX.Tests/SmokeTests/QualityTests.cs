@@ -671,6 +671,7 @@ internal static partial class SmokeTests {
             Assert(gallery.Contains("alpha.svg", StringComparison.Ordinal), "Gallery should link chart SVG output.");
             Assert(gallery.Contains("alpha.png", StringComparison.Ordinal), "Gallery should link chart PNG output.");
             Assert(gallery.Contains("catalog.html", StringComparison.Ordinal), "Gallery should link the grouped catalog page.");
+            Assert(gallery.Contains("topology-demo.html", StringComparison.Ordinal), "Gallery should link the topology demo landing page as a checked-in preview artifact.");
             Assert(gallery.Contains("quality-dashboard.html", StringComparison.Ordinal), "Gallery should link the artifact quality dashboard.");
             Assert(gallery.Contains("svg-png-comparison.html", StringComparison.Ordinal), "Gallery should link the SVG/PNG comparison page.");
             Assert(gallery.Contains("report.html", StringComparison.Ordinal), "Gallery should link HTML-only report output.");

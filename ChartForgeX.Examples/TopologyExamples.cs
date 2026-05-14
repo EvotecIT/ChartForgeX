@@ -17,10 +17,11 @@ internal static class TopologyExamples {
 
     private static void CopyGeneratedArtifactsToRoot(string source, string output) {
         foreach (var file in Directory.EnumerateFiles(source, "*.*", SearchOption.TopDirectoryOnly)) {
-            if (string.Equals(Path.GetFileName(file), "index.html", StringComparison.OrdinalIgnoreCase)) continue;
+            var fileName = Path.GetFileName(file);
             var extension = Path.GetExtension(file);
             if (extension is not ".html" and not ".svg" and not ".png" and not ".txt") continue;
-            File.Copy(file, Path.Combine(output, Path.GetFileName(file)), overwrite: true);
+            var targetName = string.Equals(fileName, "index.html", StringComparison.OrdinalIgnoreCase) ? "topology-demo.html" : fileName;
+            File.Copy(file, Path.Combine(output, targetName), overwrite: true);
         }
     }
 
@@ -140,11 +141,13 @@ internal static class TopologyExamples {
         sb.AppendLine("<meta charset=\"utf-8\">");
         sb.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
         sb.AppendLine("<title>ChartForgeX Topology Demos</title>");
-        sb.AppendLine("<style>body{margin:0;background:#f8fafc;color:#0f172a;font-family:Inter,Segoe UI,system-ui,sans-serif;padding:24px}.demo{margin:0 auto 24px;max-width:1240px;background:white;border:1px solid #dbe3ef;border-radius:12px;padding:16px;box-shadow:0 12px 28px rgba(15,23,42,.06)}h1{max-width:1240px;margin:0 auto 20px;font-size:24px}.demo h2{font-size:16px;margin:0 0 12px}.demo svg{width:100%;height:auto;display:block}</style>");
+        sb.AppendLine("<style>:root{--bg:#f8fafc;--panel:#fff;--line:#dbe3ef;--text:#0f172a;--muted:#475569;--accent:#2563eb}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,system-ui,sans-serif;padding:24px}h1{max-width:1240px;margin:0 auto 8px;font-size:26px;line-height:1.12}.lead{max-width:1240px;margin:0 auto 20px;color:var(--muted);font-size:14px}.demo{margin:0 auto 24px;max-width:1240px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;box-shadow:0 12px 28px rgba(15,23,42,.06)}.demo h2{font-size:16px;margin:0 0 12px}.demo p{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.42}.demo svg{width:100%;height:auto;display:block}.links{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}.links a{color:var(--accent);text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(37,99,235,.28);border-radius:6px;padding:7px 9px}.links a:hover{background:#eff6ff}.featured{padding:0;overflow:hidden}.featured-head{padding:16px;border-bottom:1px solid var(--line)}.featured-frame{width:100%;height:min(78vh,820px);border:0;display:block;background:white}@media(max-width:720px){body{padding:16px}.featured-frame{height:640px}}</style>");
         sb.AppendLine("</head>");
         sb.AppendLine("<body>");
         sb.AppendLine("<h1>ChartForgeX Topology Demos</h1>");
-        sb.AppendLine("<nav class=\"demo\" aria-label=\"Topology extras\"><h2>Topology extras</h2><p><a href=\"icon-stencil-browser.html\">Open stencil browser</a> · <a href=\"visual-coverage.html\">Open visual coverage gallery</a></p></nav>");
+        sb.AppendLine("<p class=\"lead\">Topology examples live separately from the regular chart gallery because they exercise richer diagram layouts, host metadata, views, and optional HTML interaction.</p>");
+        sb.AppendLine("<section class=\"demo featured\" aria-label=\"Featured topology interaction demo\"><div class=\"featured-head\"><h2>Scenario Route Explorer</h2><p>Interactive replication topology with scenario switching, ordered route steps, scoped URL state, and host-ready events.</p><div class=\"links\"><a href=\"visual-replication-mesh-explorer.html\">Open demo</a><a href=\"visual-replication-mesh-explorer.html?scenario=client-request-europe\">Europe request</a><a href=\"visual-replication-mesh-explorer.html?scenario=apac-failover\">APAC failover</a><a href=\"visual-replication-mesh-explorer.html?scenario=client-request-europe&amp;scenarioStep=4\">Europe step 4</a></div></div><iframe class=\"featured-frame\" loading=\"lazy\" src=\"visual-replication-mesh-explorer.html\" title=\"Replication Mesh Explorer interactive scenario demo\"></iframe></section>");
+        sb.AppendLine("<nav class=\"demo\" aria-label=\"Topology extras\"><h2>Topology extras</h2><p>Use the stencil browser and visual coverage gallery for topology breadth checks.</p><div class=\"links\"><a href=\"icon-stencil-browser.html\">Open stencil browser</a><a href=\"visual-coverage.html\">Open visual coverage gallery</a></div></nav>");
         foreach (var demo in demos) {
             sb.AppendLine("<section class=\"demo\">");
             sb.AppendLine("<h2>" + Escape(demo.Chart.Title ?? demo.Name) + "</h2>");

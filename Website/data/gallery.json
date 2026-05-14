@@ -1081,6 +1081,22 @@
       "image": "/examples/generated/visual-directory-level-window.svg"
     },
     {
+      "category": "charts",
+      "title": "Visual Entity Relationship Overview",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-entity-relationship-overview.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Evidence Timeline Relationship",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Timeline"
+      ],
+      "image": "/examples/generated/visual-evidence-timeline-relationship.svg"
+    },
+    {
       "category": "maps",
       "title": "Visual Geographic Region Map",
       "body": "Generated ChartForgeX visual output.",
@@ -1097,6 +1113,22 @@
         "Map"
       ],
       "image": "/examples/generated/visual-geographic-topology-map.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Impact Dependency Overview",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-impact-dependency-overview.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Visual Mini Correlation Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Map"
+      ],
+      "image": "/examples/generated/visual-mini-correlation-map.svg"
     },
     {
       "category": "charts",
@@ -1125,6 +1157,13 @@
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
       "image": "/examples/generated/visual-nested-user-hierarchy.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Ownership Evidence Bundle",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-ownership-evidence-bundle.svg"
     },
     {
       "category": "topology",

@@ -753,7 +753,7 @@ internal static partial class TopologyRenderPrimitives {
 }
 
 internal sealed class TopologyEdgeLabelLayout {
-    public TopologyEdgeLabelLayout(TopologyEdge edge, string label, string secondaryLabel, string tertiaryLabel, double centerX, double centerY, double width, double height) {
+    public TopologyEdgeLabelLayout(TopologyEdge edge, string label, string secondaryLabel, string tertiaryLabel, double centerX, double centerY, double width, double height, double anchorX, double anchorY) {
         Edge = edge;
         Label = label;
         SecondaryLabel = secondaryLabel;
@@ -762,6 +762,8 @@ internal sealed class TopologyEdgeLabelLayout {
         CenterY = centerY;
         Width = width;
         Height = height;
+        AnchorX = anchorX;
+        AnchorY = anchorY;
     }
 
     public TopologyEdge Edge { get; }
@@ -779,4 +781,8 @@ internal sealed class TopologyEdgeLabelLayout {
     public double Width { get; }
 
     public double Height { get; }
+
+    public double AnchorX { get; }
+
+    public double AnchorY { get; }
 }

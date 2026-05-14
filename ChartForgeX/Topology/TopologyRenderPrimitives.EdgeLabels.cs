@@ -45,12 +45,34 @@ internal static partial class TopologyRenderPrimitives {
             var baseX = labelPoint.X + edge.LabelOffsetX + (Math.Abs(edge.LabelOffsetX) < 0.000001 ? routeClearance.X : 0);
             var baseY = labelPoint.Y + edge.LabelOffsetY + (Math.Abs(edge.LabelOffsetY) < 0.000001 ? routeClearance.Y : 0);
             var center = PlaceLabel(edge, baseX, baseY, width, height, chart, options, obstacles, placed, edgeSegments, edgeRenderOrders, currentOrder, avoidOwnRoute, IsMonitoringDashboardStyle(options), preferredGroup);
+            var anchor = EdgeLabelAnchor(edge, nodes, labelPoint, center);
             var box = LabelBox.FromCenter(center.X, center.Y, width, height);
             placed.Add(box);
-            layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, center.X, center.Y, width, height));
+            layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, center.X, center.Y, width, height, anchor.X, anchor.Y));
         }
 
         return layouts;
+    }
+
+    private static ChartPoint EdgeLabelAnchor(TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, ChartPoint routeAnchor, ChartPoint labelCenter) {
+        if (!string.IsNullOrWhiteSpace(edge.LabelAnchorNodeId) && nodes.TryGetValue(edge.LabelAnchorNodeId!, out var anchorNode)) return EdgeLabelNodeBoundaryAnchor(anchorNode, labelCenter);
+        return edge.HasLabelAnchorOverride ? new ChartPoint(edge.LabelAnchorX, edge.LabelAnchorY) : routeAnchor;
+    }
+
+    private static ChartPoint EdgeLabelNodeBoundaryAnchor(TopologyNode node, ChartPoint labelCenter) {
+        var left = node.X;
+        var right = node.X + node.Width;
+        var top = node.Y;
+        var bottom = node.Y + node.Height;
+        var centerX = node.X + node.Width / 2;
+        var centerY = node.Y + node.Height / 2;
+        var dx = labelCenter.X - centerX;
+        var dy = labelCenter.Y - centerY;
+        if (Math.Abs(dx) < 0.000001 && Math.Abs(dy) < 0.000001) return new ChartPoint(centerX, centerY);
+        var tx = Math.Abs(dx) < 0.000001 ? double.PositiveInfinity : ((dx > 0 ? right : left) - centerX) / dx;
+        var ty = Math.Abs(dy) < 0.000001 ? double.PositiveInfinity : ((dy > 0 ? bottom : top) - centerY) / dy;
+        var t = Math.Min(tx, ty);
+        return new ChartPoint(centerX + dx * t, centerY + dy * t);
     }
 
     private static LabelBox EdgeLabelNodeObstacle(TopologyNode node, TopologyRenderOptions options, double padding) {
@@ -208,6 +230,25 @@ internal static partial class TopologyRenderPrimitives {
         var minY = viewport.Padding + height / 2;
         var maxY = Math.Max(minY, viewport.Height - viewport.Padding - LegendReservedHeight(chart.Legend, viewport) - panelPadding - height / 2);
         return new ChartPoint(Math.Min(maxX, Math.Max(minX, point.X)), Math.Min(maxY, Math.Max(minY, point.Y)));
+    }
+
+    public static bool ShouldDrawEdgeLabelLeader(TopologyEdgeLabelLayout layout, TopologyRenderOptions options) {
+        if (layout == null) throw new ArgumentNullException(nameof(layout));
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (!options.IncludeEdgeLabelLeaders || !options.IncludeEdgeLabels) return false;
+        var end = EdgeLabelLeaderEnd(layout);
+        return Distance(new ChartPoint(layout.AnchorX, layout.AnchorY), end) >= 18;
+    }
+
+    public static ChartPoint EdgeLabelLeaderEnd(TopologyEdgeLabelLayout layout) {
+        if (layout == null) throw new ArgumentNullException(nameof(layout));
+        var left = layout.CenterX - layout.Width / 2;
+        var right = layout.CenterX + layout.Width / 2;
+        var top = layout.CenterY - layout.Height / 2;
+        var bottom = layout.CenterY + layout.Height / 2;
+        return new ChartPoint(
+            Math.Min(right, Math.Max(left, layout.AnchorX)),
+            Math.Min(bottom, Math.Max(top, layout.AnchorY)));
     }
 
     private static double OverlapScore(LabelBox box, IReadOnlyList<LabelBox> others) {

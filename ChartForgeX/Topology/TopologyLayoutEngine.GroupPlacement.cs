@@ -49,7 +49,7 @@ internal static partial class TopologyLayoutEngine {
     private static void ShiftManualWaypointsForRestoredGroups(TopologyChart chart, IReadOnlyDictionary<string, PlacementDelta> restoredGroups) {
         if (restoredGroups.Count == 0) return;
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        foreach (var edge in chart.Edges.Where(edge => edge.Waypoints.Count > 0)) {
+        foreach (var edge in chart.Edges.Where(edge => edge.Waypoints.Count > 0 || edge.HasLabelAnchorOverride)) {
             var deltas = new List<PlacementDelta>(2);
             if (nodes.TryGetValue(edge.SourceNodeId, out var source) &&
                 !string.IsNullOrWhiteSpace(source.GroupId) &&
@@ -69,6 +69,11 @@ internal static partial class TopologyLayoutEngine {
             for (var i = 0; i < edge.Waypoints.Count; i++) {
                 var waypoint = edge.Waypoints[i];
                 edge.Waypoints[i] = new ChartPoint(waypoint.X + dx, waypoint.Y + dy);
+            }
+
+            if (edge.HasLabelAnchorOverride) {
+                edge.LabelAnchorX += dx;
+                edge.LabelAnchorY += dy;
             }
         }
     }

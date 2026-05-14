@@ -96,6 +96,16 @@ public enum TopologyViewPreset {
 }
 
 /// <summary>
+/// Defines what kind of topology element a scenario step references.
+/// </summary>
+public enum TopologyScenarioStepKind {
+    /// <summary>The step references a node.</summary>
+    Node,
+    /// <summary>The step references an edge.</summary>
+    Edge
+}
+
+/// <summary>
 /// Defines reusable topology visual treatments.
 /// </summary>
 public enum TopologyVisualStyle {

@@ -29,6 +29,26 @@ Use `TopologyView` to render a focused perspective from the same source model. A
 
 Views can also be composed from generic selectors instead of hardcoded ids. Use `NodeKinds`, `EdgeKinds`, and `HealthStatuses` to render product-neutral perspectives such as dependencies, connectivity, warning paths, or critical links. Use `TopologyView.AroundNode("api", depth: 1)` or `FocusNodeIds` with `NeighborDepth` to render a selected-node connectivity view; `IncludeIncomingEdges` and `IncludeOutgoingEdges` control traversal direction. Matching filtered edges keep their endpoints visible even when endpoint nodes have a different health status, which keeps views such as "critical links" readable.
 
+Use `TopologyScenario` when the full architecture should remain visible but a user needs to explore one route through it. Scenarios reference existing node and edge ids, so they reuse planned route geometry instead of drawing extra topology links. The topology validator reports missing scenario node or edge references before rendering. Static SVG carries a root scenario index through `data-cfx-scenario-ids` and `data-cfx-scenarios`, and element-level membership through `data-scenario-ids` and `data-scenario-step-indices`; edge steps also mark their source and target nodes so static consumers see the same route membership as interactive HTML. `ActiveScenarioId` or `.WithActiveScenario(...)` applies deterministic highlight/dim styling to SVG and PNG output, and interactive HTML uses the same id as its initial selected scenario. Interactive HTML can render scenario picker controls, activate one scenario at a time, dim unrelated nodes and edges, step through the ordered route, copy an opt-in deep link, and dispatch `cfx-topology-scenario` / `cfx-topology-scenario-clear` / `cfx-topology-scenario-step` events for host dashboards. Hosts can also dispatch `cfx-topology-set-scenario`, `cfx-topology-clear-scenario`, or `cfx-topology-set-scenario-step` on the wrapper. Scenario events include scenario `metadata`, ordered `steps`, step metadata, and resolved node and edge ids, so host dashboards can show route instructions without drawing another layer of lines.
+
+```csharp
+chart.AddScenario("client-request-europe", "Europe request", scenario => scenario
+    .WithColor("#2563EB")
+    .WithMetadata("request.type", "client")
+    .AddNodeStep("fra-dc1", "Origin")
+    .AddEdgeStep("fra-lon", "Route", configure: step => step.WithMetadata("transport", "WAN"))
+    .AddNodeStep("lon-dc2", "Policy")
+    .AddEdgeStep("lon-nyc", "Directory")
+    .AddNodeStep("nyc-dc1", "Lookup"));
+
+var options = new TopologyRenderOptions { EnableHtmlInteractions = true }
+    .WithActiveScenario("client-request-europe")
+    .WithHtmlScenarioControls()
+    .WithHtmlScenarioUrlState();
+
+var html = chart.ToHtmlPage(options);
+```
+
 `TopologyLegend.Default()` is intentionally product-neutral and only adds health-status entries. Add node-kind and edge-kind legend entries explicitly for the domain being rendered, for example service dependencies, transport links, replication paths, mappings, ownership, or team relationships. Legend entries can also use `symbol` overrides.
 
 Set `TopologyRenderOptions.LegendMode` to `Auto`, `AutoWhenMissing`, `Enrich`, or `Merge` when the renderer should infer legend items from the statuses, node kinds, node symbols, and edge kinds that are actually present in the chart. `Enrich` preserves a focused caller-supplied legend while filling compatible missing colors, backgrounds, icon ids, and line styles from rendered topology data.

@@ -34,8 +34,12 @@ public sealed partial class TopologySvgRenderer {
         if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
         var requestedWidth = chart.Viewport.Width;
         var requestedHeight = chart.Viewport.Height;
+        var validator = new TopologyChartValidator();
+        var sourceValidation = validator.ValidateScenarioReferences(chart);
+        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
+
         var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
-        var validation = new TopologyChartValidator().Validate(prepared);
+        var validation = validator.Validate(prepared, validateScenarioReferences: false);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
         var theme = prepared.Theme ?? TopologyTheme.Light();
@@ -72,6 +76,10 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-layout-direction", prepared.LayoutDirection.ToString())
                 .Attribute("data-visual-style", options.VisualStyle.ToString())
                 .Attribute("data-fit-content-to-viewport", options.FitContentToViewport)
+                .Attribute("data-cfx-scenario-count", prepared.Scenarios.Count)
+                .Attribute("data-cfx-scenario-ids", TopologyScenarioJson.ScenarioIds(prepared))
+                .Attribute("data-cfx-scenarios", TopologyScenarioJson.Summaries(prepared))
+                .Attribute("data-cfx-active-scenario", highlight.ActiveScenarioId)
                 .Attribute("data-map-background-style", options.MapBackgroundStyle.ToString())
                 .Attribute("data-node-display-mode", options.NodeDisplayMode.ToString())
                 .Attribute("data-cfx-projection", prepared.LayoutMode == TopologyLayoutMode.Geographic ? TopologyMapProjection.ProjectionName : null)
@@ -560,6 +568,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-label-offset-x", edge.LabelOffsetX)
                     .Attribute("data-label-offset-y", edge.LabelOffsetY)
                     .Attribute("data-waypoint-count", edge.Waypoints.Count);
+                AddScenarioDataAttributes(group, chart, TopologyScenarioStepKind.Edge, edge.Id);
                 if (isGeographicCurve) {
                     group
                         .Attribute("data-route-control-x", curveControl.X)
@@ -623,11 +632,17 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-label-y", cy)
                     .Attribute("data-label-width", layout.Width)
                     .Attribute("data-label-height", layout.Height)
+                    .Attribute("data-label-anchor-x", layout.AnchorX)
+                    .Attribute("data-label-anchor-y", layout.AnchorY)
+                    .Attribute("data-label-anchor-node-id", edge.LabelAnchorNodeId)
+                    .Attribute("data-label-anchor-override", edge.HasLabelAnchorOverride ? "true" : "false")
                     .Attribute("data-label-line-count", EdgeLabelLineCount(layout))
                     .Attribute("data-label-clearance", ShouldDrawEdgeLabelClearance(layout, options) ? "true" : "false")
+                    .Attribute("data-label-leader", ShouldDrawEdgeLabelLeader(layout, options) ? "true" : "false")
                     .Attribute("data-edge-label-render-order", renderOrder)
                     .Attribute("data-cfx-selected", selected);
                 if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
+                AddEdgeLabelLeader(group, layout, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme, options);
                 if (options.IncludeEdgeLabelBackplates) {
                     group.Element("rect", rect => rect
                         .Attribute("data-cfx-role", "topology-edge-label-backplate")

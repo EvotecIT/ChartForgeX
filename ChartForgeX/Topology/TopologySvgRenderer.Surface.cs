@@ -64,6 +64,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("refY", 5)
                 .Attribute("markerWidth", IsMonitoringDashboardStyle(options) ? 7.5 : 8)
                 .Attribute("markerHeight", IsMonitoringDashboardStyle(options) ? 7.5 : 8)
+                .Attribute("markerUnits", "userSpaceOnUse")
                 .Attribute("orient", "auto-start-reverse")
                 .Attribute("overflow", "visible");
             switch (options.ArrowMarkerStyle) {

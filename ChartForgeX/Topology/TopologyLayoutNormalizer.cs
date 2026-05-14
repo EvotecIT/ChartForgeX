@@ -249,6 +249,11 @@ internal static class TopologyLayoutNormalizer {
         }
 
         foreach (var edge in chart.Edges) {
+            if (edge.HasLabelAnchorOverride) {
+                edge.LabelAnchorX += dx;
+                edge.LabelAnchorY += dy;
+            }
+
             for (var i = 0; i < edge.Waypoints.Count; i++) {
                 var point = edge.Waypoints[i];
                 edge.Waypoints[i] = new ChartPoint(point.X + dx, point.Y + dy);
