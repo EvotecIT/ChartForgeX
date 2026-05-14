@@ -205,23 +205,24 @@ internal static class SvgRasterRenderer {
 
     private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
         if (contours.Count == 0 || style.Fill.IsNone) return;
+        var fillRule = FillRule(style.FillRule);
         if (style.Fill.IsReference && definitions.TryGetLinearGradient(style.Fill.ReferenceId, out var gradient)) {
             gradient.Endpoints(contours, matrix, out var start, out var end);
-            canvas.FillContoursLinearGradient(contours, start, end, gradient.Stops, gradient.SpreadMethod);
+            canvas.FillContoursLinearGradient(contours, start, end, gradient.Stops, gradient.SpreadMethod, fillRule);
             return;
         }
         if (style.Fill.IsReference && definitions.TryGetRadialGradient(style.Fill.ReferenceId, out var radialGradient)) {
             radialGradient.Axes(contours, matrix, out var center, out var radiusX, out var radiusY);
-            canvas.FillContoursRadialGradient(contours, center, radiusX, radiusY, radialGradient.Stops, radialGradient.SpreadMethod);
+            canvas.FillContoursRadialGradient(contours, center, radiusX, radiusY, radialGradient.Stops, radialGradient.SpreadMethod, fillRule);
             return;
         }
         if (style.Fill.IsReference && definitions.TryGetPattern(style.Fill.ReferenceId, out var pattern) && TryRenderPatternTile(contours, matrix, pattern, definitions, out var tile)) {
-            canvas.FillContoursPattern(contours, tile.OriginX, tile.OriginY, tile.Width, tile.Height, tile.Pixels);
+            canvas.FillContoursPattern(contours, tile.OriginX, tile.OriginY, tile.Width, tile.Height, tile.Pixels, fillRule);
             return;
         }
 
         var fill = style.FillColor();
-        if (fill.A != 0) canvas.FillCompoundPolygon(contours, fill);
+        if (fill.A != 0) canvas.FillContours(contours, fill, fillRule);
     }
 
     private static void Stroke(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, SvgRasterStyle style, double scale, SvgRasterDefinitions definitions) {
@@ -471,6 +472,9 @@ internal static class SvgRasterRenderer {
 
     private static RasterLineJoin LineJoin(string value) =>
         string.Equals(value, "round", StringComparison.OrdinalIgnoreCase) ? RasterLineJoin.Round : string.Equals(value, "bevel", StringComparison.OrdinalIgnoreCase) ? RasterLineJoin.Bevel : RasterLineJoin.Miter;
+
+    private static RasterFillRule FillRule(string value) =>
+        string.Equals(value, "evenodd", StringComparison.OrdinalIgnoreCase) ? RasterFillRule.EvenOdd : RasterFillRule.NonZero;
 
     private static IReadOnlyList<double>? ScaledDashArray(IReadOnlyList<double>? dashArray, double scale) {
         if (dashArray == null || dashArray.Count == 0) return null;

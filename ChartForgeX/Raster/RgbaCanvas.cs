@@ -117,7 +117,7 @@ internal sealed partial class RgbaCanvas {
             scaled.Add(scaledRing);
         }
 
-        FillContoursPixels(scaled, color);
+        FillContoursPixels(scaled, color, RasterFillRule.EvenOdd);
     }
 
     public void FillPolygonVerticalGradient(IReadOnlyList<ChartPoint> points, ChartColor topColor, ChartColor bottomColor) {
@@ -347,7 +347,7 @@ internal sealed partial class RgbaCanvas {
         return output;
     }
 
-    internal void FillContours(IReadOnlyList<List<ChartPoint>> contours, ChartColor color) {
+    internal void FillContours(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule = RasterFillRule.EvenOdd) {
         if (contours.Count == 0) return;
         var scaled = new List<List<ChartPoint>>(contours.Count);
         foreach (var contour in contours) {
@@ -357,7 +357,7 @@ internal sealed partial class RgbaCanvas {
             scaled.Add(points);
         }
 
-        FillContoursPixels(scaled, color);
+        FillContoursPixels(scaled, color, fillRule);
     }
 
     private void FillRectPixels(double x, double y, double width, double height, ChartColor color) {
@@ -585,44 +585,16 @@ internal sealed partial class RgbaCanvas {
         return cx * cx + cy * cy;
     }
 
-    private void FillContoursPixels(IReadOnlyList<List<ChartPoint>> contours, ChartColor color) {
+    private void FillContoursPixels(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule) {
         if (contours.Count == 0) return;
-        var minY = double.PositiveInfinity;
-        var maxY = double.NegativeInfinity;
-        foreach (var contour in contours) foreach (var point in contour) {
-            minY = Math.Min(minY, point.Y);
-            maxY = Math.Max(maxY, point.Y);
-        }
-
-        var yStart = Math.Max(0, (int)Math.Floor(minY));
-        var yEnd = Math.Min(_pixelHeight - 1, (int)Math.Ceiling(maxY));
-        var intersections = new List<double>();
-
-        for (var y = yStart; y <= yEnd; y++) {
-            var scanY = y + 0.5;
-            intersections.Clear();
-            foreach (var contour in contours) {
-                for (var i = 0; i < contour.Count; i++) {
-                    var a = contour[i];
-                    var b = contour[(i + 1) % contour.Count];
-                    if ((a.Y <= scanY && b.Y > scanY) || (b.Y <= scanY && a.Y > scanY)) {
-                        intersections.Add(a.X + (scanY - a.Y) * (b.X - a.X) / (b.Y - a.Y));
-                    }
-                }
+        ScanFillSpans(contours, fillRule, (y, _, left, right) => {
+            var xStart = Math.Max(0, (int)Math.Floor(left));
+            var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
+            for (var x = xStart; x <= xEnd; x++) {
+                var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
+                if (coverage > 0) BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
             }
-
-            intersections.Sort();
-            for (var i = 0; i + 1 < intersections.Count; i += 2) {
-                var left = intersections[i];
-                var right = intersections[i + 1];
-                var xStart = Math.Max(0, (int)Math.Floor(left));
-                var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
-                for (var x = xStart; x <= xEnd; x++) {
-                    var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
-                    if (coverage > 0) BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
-                }
-            }
-        }
+        });
     }
 
     private void FillRingSlicePixels(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double endAngle, ChartColor color) {

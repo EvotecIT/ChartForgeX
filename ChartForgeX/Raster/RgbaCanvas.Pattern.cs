@@ -5,7 +5,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
-    internal void FillContoursPattern(IReadOnlyList<List<ChartPoint>> contours, double originX, double originY, int tileWidth, int tileHeight, byte[] tilePixels) {
+    internal void FillContoursPattern(IReadOnlyList<List<ChartPoint>> contours, double originX, double originY, int tileWidth, int tileHeight, byte[] tilePixels, RasterFillRule fillRule = RasterFillRule.EvenOdd) {
         if (contours.Count == 0 || tileWidth <= 0 || tileHeight <= 0 || tilePixels.Length < tileWidth * tileHeight * 4) return;
         var scaledContours = new List<List<ChartPoint>>(contours.Count);
         foreach (var contour in contours) {
@@ -16,49 +16,21 @@ internal sealed partial class RgbaCanvas {
         }
 
         if (scaledContours.Count == 0) return;
-        FillContoursPatternPixels(scaledContours, originX * _scale, originY * _scale, tileWidth, tileHeight, tilePixels);
+        FillContoursPatternPixels(scaledContours, originX * _scale, originY * _scale, tileWidth, tileHeight, tilePixels, fillRule);
     }
 
-    private void FillContoursPatternPixels(IReadOnlyList<List<ChartPoint>> contours, double originX, double originY, int tileWidth, int tileHeight, byte[] tilePixels) {
-        var minY = double.PositiveInfinity;
-        var maxY = double.NegativeInfinity;
-        foreach (var contour in contours) foreach (var point in contour) {
-            minY = Math.Min(minY, point.Y);
-            maxY = Math.Max(maxY, point.Y);
-        }
-
-        var yStart = Math.Max(0, (int)Math.Floor(minY));
-        var yEnd = Math.Min(_pixelHeight - 1, (int)Math.Ceiling(maxY));
-        var intersections = new List<double>();
-
-        for (var y = yStart; y <= yEnd; y++) {
-            var scanY = y + 0.5;
-            intersections.Clear();
-            foreach (var contour in contours) {
-                for (var i = 0; i < contour.Count; i++) {
-                    var a = contour[i];
-                    var b = contour[(i + 1) % contour.Count];
-                    if ((a.Y <= scanY && b.Y > scanY) || (b.Y <= scanY && a.Y > scanY)) {
-                        intersections.Add(a.X + (scanY - a.Y) * (b.X - a.X) / (b.Y - a.Y));
-                    }
-                }
+    private void FillContoursPatternPixels(IReadOnlyList<List<ChartPoint>> contours, double originX, double originY, int tileWidth, int tileHeight, byte[] tilePixels, RasterFillRule fillRule) {
+        ScanFillSpans(contours, fillRule, (y, scanY, left, right) => {
+            var xStart = Math.Max(0, (int)Math.Floor(left));
+            var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
+            for (var x = xStart; x <= xEnd; x++) {
+                var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
+                if (coverage <= 0) continue;
+                var color = SamplePattern(tilePixels, tileWidth, tileHeight, x + 0.5 - originX, scanY - originY);
+                if (color.A == 0) continue;
+                BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
             }
-
-            intersections.Sort();
-            for (var i = 0; i + 1 < intersections.Count; i += 2) {
-                var left = intersections[i];
-                var right = intersections[i + 1];
-                var xStart = Math.Max(0, (int)Math.Floor(left));
-                var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
-                for (var x = xStart; x <= xEnd; x++) {
-                    var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
-                    if (coverage <= 0) continue;
-                    var color = SamplePattern(tilePixels, tileWidth, tileHeight, x + 0.5 - originX, scanY - originY);
-                    if (color.A == 0) continue;
-                    BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
-                }
-            }
-        }
+        });
     }
 
     private static ChartColor SamplePattern(byte[] tilePixels, int tileWidth, int tileHeight, double x, double y) {
