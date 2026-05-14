@@ -287,7 +287,8 @@ internal static class SvgRasterRenderer {
 
     private static void RenderClipPath(RgbaCanvas mask, SvgRasterClipPath clipPath, SvgRasterMatrix matrix) {
         var clipMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(clipPath.Element.Get("transform")));
-        foreach (var child in clipPath.Element.Children) RenderClipElement(mask, child, clipMatrix);
+        var clipStyle = SvgRasterStyle.Resolve(SvgRasterStyle.Default, clipPath.Element);
+        foreach (var child in clipPath.Element.Children) RenderClipElement(mask, child, clipStyle, clipMatrix);
     }
 
     private static void RenderMask(RgbaCanvas mask, SvgRasterMask maskDefinition, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height) {
@@ -295,13 +296,15 @@ internal static class SvgRasterRenderer {
         foreach (var child in maskDefinition.Element.Children) RenderElement(mask, child, SvgRasterStyle.Default, maskMatrix, definitions, width, height, 0);
     }
 
-    private static void RenderClipElement(RgbaCanvas mask, SvgRasterElement element, SvgRasterMatrix parentMatrix) {
+    private static void RenderClipElement(RgbaCanvas mask, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix) {
         if (IsDefinitionElement(element.Name)) return;
+        var style = SvgRasterStyle.Resolve(parentStyle, element);
+        if (!style.Visible) return;
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) matrix = ApplyNestedSvgViewport(element, matrix);
         var contours = ClipContours(element, matrix);
-        if (contours.Count > 0) mask.FillCompoundPolygon(contours, ChartColor.FromRgba(255, 255, 255, 255));
-        foreach (var child in element.Children) RenderClipElement(mask, child, matrix);
+        if (contours.Count > 0) mask.FillContours(contours, ChartColor.FromRgba(255, 255, 255, 255), FillRule(style.ClipRule));
+        foreach (var child in element.Children) RenderClipElement(mask, child, style, matrix);
     }
 
     private static List<List<ChartPoint>> ClipContours(SvgRasterElement element, SvgRasterMatrix matrix) {

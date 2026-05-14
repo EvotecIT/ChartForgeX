@@ -19,6 +19,7 @@ internal sealed class SvgRasterStyle {
         StrokeLineCap = "butt",
         StrokeLineJoin = "miter",
         FillRule = "nonzero",
+        ClipRule = "nonzero",
         FontSize = 16,
         FontWeight = "normal",
         TextAnchor = "start",
@@ -37,6 +38,7 @@ internal sealed class SvgRasterStyle {
     public string StrokeLineJoin { get; set; } = "miter";
     public IReadOnlyList<double>? StrokeDashArray { get; set; }
     public string FillRule { get; set; } = "nonzero";
+    public string ClipRule { get; set; } = "nonzero";
     public double FontSize { get; set; }
     public string FontWeight { get; set; } = "normal";
     public string TextAnchor { get; set; } = "start";
@@ -56,6 +58,7 @@ internal sealed class SvgRasterStyle {
             StrokeLineJoin = StrokeLineJoin,
             StrokeDashArray = StrokeDashArray,
             FillRule = FillRule,
+            ClipRule = ClipRule,
             FontSize = FontSize,
             FontWeight = FontWeight,
             TextAnchor = TextAnchor,
@@ -84,6 +87,7 @@ internal sealed class SvgRasterStyle {
         ApplyAttribute(style, element, "color");
         ApplyAttribute(style, element, "fill");
         ApplyAttribute(style, element, "fill-rule");
+        ApplyAttribute(style, element, "clip-rule");
         ApplyAttribute(style, element, "stroke");
         ApplyAttribute(style, element, "stroke-width");
         ApplyAttribute(style, element, "stroke-linecap");
@@ -117,6 +121,9 @@ internal sealed class SvgRasterStyle {
                 break;
             case "fill-rule":
                 style.FillRule = value.Trim();
+                break;
+            case "clip-rule":
+                style.ClipRule = value.Trim();
                 break;
             case "stroke":
                 style.Stroke = SvgRasterPaint.Parse(value, style.Color, style.Stroke);

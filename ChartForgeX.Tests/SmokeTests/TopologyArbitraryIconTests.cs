@@ -128,6 +128,17 @@ internal static partial class SmokeTests {
         Assert(CountPixelsNear(clippedPixels, 0, 255, 0) < 80, "PNG topology artwork should not paint clipPath geometry from defs as visible artwork.");
         Assert(CountPixelsNear(clippedPixels, clippedWidth, 80, 18, 44, 88, 0, 0, 255) > 900, "PNG topology artwork should continue rendering unclipped siblings after a clipped element.");
 
+        var clipRuleArtwork = TopologyIconArtwork.InlineSvg("<defs><clipPath id=\"even\"><path d=\"M0 0 H20 V44 H0 Z M6 10 H14 V34 H6 Z\" clip-rule=\"evenodd\"/></clipPath><clipPath id=\"nonzero\"><path d=\"M24 0 H44 V44 H24 Z M30 10 H38 V34 H30 Z\"/></clipPath></defs><rect x=\"0\" y=\"0\" width=\"20\" height=\"44\" fill=\"#FF0000\" clip-path=\"url(#even)\"/><rect x=\"24\" y=\"0\" width=\"20\" height=\"44\" fill=\"#0000FF\" clip-path=\"url(#nonzero)\"/>", "0 0 44 44");
+        var clipRulePng = TopologyChart.Create()
+            .WithId("png-svg-raster-clip-rule-artwork")
+            .WithViewport(160, 120, 10)
+            .AddArtworkNode("art", "Art", clipRuleArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+        var clipRulePixels = ReadPngRgba(clipRulePng, out var clipRuleWidth, out _);
+        Assert(CountPixelsNear(clipRulePixels, clipRuleWidth, 36, 18, 40, 88, 255, 0, 0) > 900, "PNG topology artwork should render the outer clipped region for clip-rule evenodd paths.");
+        Assert(CountPixelsNear(clipRulePixels, clipRuleWidth, 48, 38, 16, 48, 255, 0, 0) < 40, "PNG topology artwork should preserve holes for clip-rule evenodd clip paths.");
+        Assert(CountPixelsNear(clipRulePixels, clipRuleWidth, 96, 38, 16, 48, 0, 0, 255) > 260, "PNG topology artwork should use SVG's nonzero clip-rule default when clip-rule is omitted.");
+
         var maskedArtwork = TopologyIconArtwork.InlineSvg("<defs><mask id=\"left-mask\"><rect x=\"0\" y=\"0\" width=\"44\" height=\"44\" fill=\"#000000\"/><rect x=\"0\" y=\"0\" width=\"22\" height=\"44\" fill=\"#FFFFFF\"/></mask></defs><rect x=\"0\" y=\"0\" width=\"44\" height=\"44\" fill=\"#FF0000\" mask=\"url(#left-mask)\"/><rect x=\"22\" y=\"0\" width=\"22\" height=\"44\" fill=\"#0000FF\"/>", "0 0 44 44");
         var maskedPng = TopologyChart.Create()
             .WithId("png-svg-raster-masked-artwork")
