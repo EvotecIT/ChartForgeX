@@ -45,4 +45,83 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("cfx-topology--selected", StringComparison.Ordinal), "Relationship overview preset should still support selected record highlighting.");
         Assert(chart.ToPng(options).Length > 64, "Relationship overview topology should render multiline cards as PNG.");
     }
+
+    private static void TopologyRelationshipOverviewLabelLeadersPointBackToEdges() {
+        var chart = TopologyChart.Create()
+            .WithId("relationship-label-leaders")
+            .WithViewport(460, 240, 20)
+            .AddNode("source", "Source", 52, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 112, height: 62)
+            .AddNode("target", "Target", 292, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 112, height: 62)
+            .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
+            .WithEdgeLabelOffset("source-target", 0, -78)
+            .WithEdgeColor("source-target", "#2563EB");
+
+        var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
+        var svg = chart.ToSvg(options);
+        Assert(svg.Contains("data-cfx-role=\"topology-edge-label-leader\"", StringComparison.Ordinal), "Displaced relationship overview edge labels should point back to their edge route.");
+        Assert(svg.Contains("data-label-leader=\"true\"", StringComparison.Ordinal), "SVG edge label metadata should expose when a leader was rendered.");
+        Assert(svg.Contains("data-label-anchor-x=\"", StringComparison.Ordinal) && svg.Contains("data-label-anchor-y=\"", StringComparison.Ordinal), "SVG edge label metadata should expose the edge anchor used by label leaders.");
+        Assert(!chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }).Contains("topology-edge-label-leader", StringComparison.Ordinal), "Default topology render options should not add extra label leaders unless requested by a preset or caller.");
+        Assert(chart.ToPng(options).Length > 64, "PNG topology output should render displaced label leaders.");
+    }
+
+    private static void TopologyRelationshipOverviewLabelLeadersSupportAnnotationAnchors() {
+        var chart = TopologyChart.Create()
+            .WithId("relationship-label-anchor-node")
+            .WithViewport(520, 260, 20)
+            .AddNode("source", "Source", 54, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 122, height: 64)
+            .AddNode("target", "Target", 330, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 122, height: 64)
+            .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
+            .WithEdgeLabelOffset("source-target", 0, -86)
+            .WithEdgeLabelAnchorNode("source-target", "target");
+
+        var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
+        var svg = chart.ToSvg(options);
+        Assert(svg.Contains("data-label-anchor-node-id=\"target\"", StringComparison.Ordinal), "Displaced edge labels should be able to anchor leader lines to a node boundary.");
+        Assert(svg.Contains("data-label-leader=\"true\"", StringComparison.Ordinal), "Node-anchored displaced labels should render leader lines in relationship overview mode.");
+        Assert(chart.ToPng(options).Length > 64, "PNG topology output should render node-anchored label leaders.");
+
+        chart.WithEdgeLabelAnchor("source-target", 270, 120);
+        svg = chart.ToSvg(options);
+        Assert(svg.Contains("data-label-anchor-override=\"true\"", StringComparison.Ordinal), "Displaced edge labels should expose explicit point anchors for annotation-style placement.");
+        Assert(svg.Contains("data-label-anchor-x=\"270\"", StringComparison.Ordinal), "Explicit point anchors should drive SVG label-leader metadata.");
+
+        chart.ClearEdgeLabelAnchor("source-target");
+        svg = chart.ToSvg(options);
+        Assert(svg.Contains("data-label-anchor-override=\"false\"", StringComparison.Ordinal), "Clearing a label anchor should restore route-based leader placement.");
+        Assert(!svg.Contains("data-label-anchor-node-id=\"target\"", StringComparison.Ordinal), "Clearing a label anchor should remove the node anchor metadata.");
+    }
+
+    private static void TopologyRelationshipOverviewLabelAnchorsFollowLayoutTransforms() {
+        var shifted = TopologyChart.Create()
+            .WithId("relationship-label-anchor-shift")
+            .WithTitle("Shifted Anchor")
+            .WithViewport(360, 230, 20)
+            .AddNode("source", "Source", 0, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 92, height: 54)
+            .AddNode("target", "Target", 180, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 92, height: 54)
+            .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
+            .WithEdgeLabelOffset("source-target", 0, -64)
+            .WithEdgeLabelAnchor("source-target", 100, 30);
+
+        var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
+        var shiftedSvg = shifted.ToSvg(options);
+        var shiftedAnchorY = GetAttribute(shiftedSvg, "data-cfx-role=\"topology-edge-label\" data-edge-id=\"source-target\"", "data-label-anchor-y");
+        Assert(shiftedAnchorY > 90, "Explicit edge-label anchors should shift with normalized chart content.");
+
+        var mirrored = TopologyChart.Create()
+            .WithId("relationship-label-anchor-mirror")
+            .WithViewport(420, 260, 20)
+            .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.RightToLeft)
+            .AddAutoNode("source", "Source", TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, width: 92, height: 54)
+            .AddAutoNode("target", "Target", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 92, height: 54)
+            .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .WithEdgeLabelOffset("source-target", 0, -64)
+            .WithEdgeLabelAnchor("source-target", 90, 120);
+        mirrored.Nodes[0].Metadata["layer"] = "0";
+        mirrored.Nodes[1].Metadata["layer"] = "1";
+
+        var mirroredSvg = mirrored.ToSvg(options);
+        var mirroredAnchorX = GetAttribute(mirroredSvg, "data-cfx-role=\"topology-edge-label\" data-edge-id=\"source-target\"", "data-label-anchor-x");
+        Assert(mirroredAnchorX > 250, "Explicit edge-label anchors should mirror with right-to-left prepared layouts.");
+    }
 }

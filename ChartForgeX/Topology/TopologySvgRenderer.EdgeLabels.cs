@@ -4,6 +4,29 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
+    private static void AddEdgeLabelLeader(SvgElement group, TopologyEdgeLabelLayout layout, string color, TopologyTheme theme, TopologyRenderOptions options) {
+        if (!ShouldDrawEdgeLabelLeader(layout, options)) return;
+        var end = EdgeLabelLeaderEnd(layout);
+        var path = "M " + F(layout.AnchorX) + " " + F(layout.AnchorY) + " L " + F(end.X) + " " + F(end.Y);
+        group.Element("path", halo => halo
+            .Attribute("data-cfx-role", "topology-edge-label-leader-halo")
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", theme.Background)
+            .Attribute("stroke-opacity", IsMonitoringDashboardStyle(options) ? 0.9 : 0.76)
+            .Attribute("stroke-width", IsMonitoringDashboardStyle(options) ? 4 : 3)
+            .Attribute("stroke-linecap", "round"));
+        group.Element("path", leader => leader
+            .Attribute("data-cfx-role", "topology-edge-label-leader")
+            .Attribute("d", path)
+            .Attribute("fill", "none")
+            .Attribute("stroke", color)
+            .Attribute("stroke-opacity", IsMonitoringDashboardStyle(options) ? 0.48 : 0.42)
+            .Attribute("stroke-width", IsMonitoringDashboardStyle(options) ? 1.35 : 1.1)
+            .Attribute("stroke-dasharray", "3 4")
+            .Attribute("stroke-linecap", "round"));
+    }
+
     private static void AddEdgeLabelClearance(SvgElement group, TopologyChart chart, TopologyEdgeLabelLayout layout, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options) {
         if (!ShouldDrawEdgeLabelClearance(layout, options)) return;
         var surfaceGroup = EdgeLabelClearanceGroup(chart, layout);

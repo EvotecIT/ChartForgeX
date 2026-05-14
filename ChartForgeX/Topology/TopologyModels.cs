@@ -398,6 +398,9 @@ public sealed class TopologyEdge {
     private double _routeLane;
     private double _labelOffsetX;
     private double _labelOffsetY;
+    private double _labelAnchorX;
+    private double _labelAnchorY;
+    private string? _labelAnchorNodeId;
     private TopologyEdgeLayoutInference _layoutInference = TopologyEdgeLayoutInference.None;
 
     /// <summary>Gets or sets the stable edge identifier.</summary>
@@ -509,6 +512,30 @@ public sealed class TopologyEdge {
             _labelOffsetY = value;
         }
     }
+
+    /// <summary>Gets or sets the explicit horizontal point a displaced edge label should point to.</summary>
+    public double LabelAnchorX {
+        get => _labelAnchorX;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _labelAnchorX = value;
+        }
+    }
+
+    /// <summary>Gets or sets the explicit vertical point a displaced edge label should point to.</summary>
+    public double LabelAnchorY {
+        get => _labelAnchorY;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            _labelAnchorY = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the edge label uses an explicit point anchor instead of the route midpoint.</summary>
+    public bool HasLabelAnchorOverride { get; set; }
+
+    /// <summary>Gets or sets an optional node id whose rendered boundary anchors the edge label leader.</summary>
+    public string? LabelAnchorNodeId { get => _labelAnchorNodeId; set => _labelAnchorNodeId = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
 
     /// <summary>Gets or sets which edge layout values were inferred during layout preparation.</summary>
     public TopologyEdgeLayoutInference LayoutInference {

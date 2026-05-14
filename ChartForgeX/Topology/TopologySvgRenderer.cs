@@ -631,11 +631,17 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-label-y", cy)
                     .Attribute("data-label-width", layout.Width)
                     .Attribute("data-label-height", layout.Height)
+                    .Attribute("data-label-anchor-x", layout.AnchorX)
+                    .Attribute("data-label-anchor-y", layout.AnchorY)
+                    .Attribute("data-label-anchor-node-id", edge.LabelAnchorNodeId)
+                    .Attribute("data-label-anchor-override", edge.HasLabelAnchorOverride ? "true" : "false")
                     .Attribute("data-label-line-count", EdgeLabelLineCount(layout))
                     .Attribute("data-label-clearance", ShouldDrawEdgeLabelClearance(layout, options) ? "true" : "false")
+                    .Attribute("data-label-leader", ShouldDrawEdgeLabelLeader(layout, options) ? "true" : "false")
                     .Attribute("data-edge-label-render-order", renderOrder)
                     .Attribute("data-cfx-selected", selected);
                 if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
+                AddEdgeLabelLeader(group, layout, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme, options);
                 if (options.IncludeEdgeLabelBackplates) {
                     group.Element("rect", rect => rect
                         .Attribute("data-cfx-role", "topology-edge-label-backplate")

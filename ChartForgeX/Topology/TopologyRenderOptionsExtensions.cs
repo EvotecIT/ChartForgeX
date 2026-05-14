@@ -125,6 +125,7 @@ public static class TopologyRenderOptionsExtensions {
         options.IncludeEdgeLabels = true;
         options.IncludeDirectionMarkers = true;
         options.IncludeEdgeLabelBackplates = true;
+        options.IncludeEdgeLabelLeaders = true;
         options.IncludeStatusBadges = true;
         options.LegendMode = TopologyLegendMode.Enrich;
         return options;
