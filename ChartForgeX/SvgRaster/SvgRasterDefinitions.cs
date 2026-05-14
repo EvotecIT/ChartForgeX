@@ -9,6 +9,7 @@ namespace ChartForgeX.SvgRaster;
 
 internal sealed class SvgRasterDefinitions {
     private readonly Dictionary<string, SvgRasterElement> _gradientElements = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SvgRasterClipPath> _clipPaths = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterLinearGradient> _linearGradients = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterRadialGradient> _radialGradients = new(StringComparer.Ordinal);
 
@@ -27,6 +28,12 @@ internal sealed class SvgRasterDefinitions {
     public bool TryGetRadialGradient(string? id, out SvgRasterRadialGradient gradient) {
         if (id != null && ResolveRadialGradient(id, new HashSet<string>(StringComparer.Ordinal), out gradient!)) return true;
         gradient = null!;
+        return false;
+    }
+
+    public bool TryGetClipPath(string? id, out SvgRasterClipPath clipPath) {
+        if (id != null && _clipPaths.TryGetValue(id, out clipPath!)) return true;
+        clipPath = null!;
         return false;
     }
 
@@ -67,6 +74,10 @@ internal sealed class SvgRasterDefinitions {
             _gradientElements[id] = element;
         }
 
+        if (string.Equals(element.Name, "clipPath", StringComparison.Ordinal) && element.TryGet("id", out var clipId) && !string.IsNullOrWhiteSpace(clipId)) {
+            _clipPaths[clipId] = new SvgRasterClipPath(element);
+        }
+
         foreach (var child in element.Children) Collect(child);
     }
 
@@ -75,6 +86,14 @@ internal sealed class SvgRasterDefinitions {
         if (string.IsNullOrWhiteSpace(href) || !href!.Trim().StartsWith("#", StringComparison.Ordinal)) return null;
         return href.Trim().Substring(1);
     }
+}
+
+internal sealed class SvgRasterClipPath {
+    public SvgRasterClipPath(SvgRasterElement element) {
+        Element = element;
+    }
+
+    public SvgRasterElement Element { get; }
 }
 
 internal sealed class SvgRasterLinearGradient {

@@ -16,7 +16,7 @@ internal static class SvgRasterRenderer {
             var definitions = SvgRasterDefinitions.From(document);
             var canvas = new RgbaCanvas(width, height, 1);
             var matrix = SvgRasterMatrix.FromFit(document.ViewBox, width, height, preserveAspectRatio);
-            foreach (var child in document.Children) RenderElement(canvas, child, SvgRasterStyle.Default, matrix, definitions);
+            foreach (var child in document.Children) RenderElement(canvas, child, SvgRasterStyle.Default, matrix, definitions, width, height);
             rgba = canvas.Pixels;
             return HasVisiblePixel(rgba);
         } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
@@ -24,18 +24,30 @@ internal static class SvgRasterRenderer {
         }
     }
 
-    private static void RenderElement(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterDefinitions definitions) {
+    private static void RenderElement(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterDefinitions definitions, int width, int height) {
         var style = SvgRasterStyle.Resolve(parentStyle, element);
         if (!style.Visible) return;
 
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) matrix = ApplyNestedSvgViewport(element, matrix);
+        if (IsDefinitionElement(element.Name)) return;
+        var clipPathId = ClipPathId(element);
+        if (clipPathId != null && definitions.TryGetClipPath(clipPathId, out var clipPath)) {
+            var content = new RgbaCanvas(width, height, 1);
+            RenderElementCore(content, element, style, matrix, definitions, width, height);
+            var mask = new RgbaCanvas(width, height, 1);
+            RenderClipPath(mask, clipPath, matrix);
+            canvas.DrawImageMasked(0, 0, width, height, content.Pixels, mask.Pixels);
+            return;
+        }
+
+        RenderElementCore(canvas, element, style, matrix, definitions, width, height);
+    }
+
+    private static void RenderElementCore(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height) {
         switch (element.Name) {
             case "g":
             case "svg":
-            case "defs":
-            case "title":
-            case "desc":
                 break;
             case "path":
                 RenderPath(canvas, element, style, matrix, definitions);
@@ -63,7 +75,7 @@ internal static class SvgRasterRenderer {
                 break;
         }
 
-        foreach (var child in element.Children) RenderElement(canvas, child, style, matrix, definitions);
+        foreach (var child in element.Children) RenderElement(canvas, child, style, matrix, definitions, width, height);
     }
 
     private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
@@ -164,6 +176,48 @@ internal static class SvgRasterRenderer {
         return ChartColor.Transparent;
     }
 
+    private static void RenderClipPath(RgbaCanvas mask, SvgRasterClipPath clipPath, SvgRasterMatrix matrix) {
+        var clipMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(clipPath.Element.Get("transform")));
+        foreach (var child in clipPath.Element.Children) RenderClipElement(mask, child, clipMatrix);
+    }
+
+    private static void RenderClipElement(RgbaCanvas mask, SvgRasterElement element, SvgRasterMatrix parentMatrix) {
+        if (IsDefinitionElement(element.Name)) return;
+        var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
+        if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) matrix = ApplyNestedSvgViewport(element, matrix);
+        var contours = ClipContours(element, matrix);
+        if (contours.Count > 0) mask.FillCompoundPolygon(contours, ChartColor.FromRgba(255, 255, 255, 255));
+        foreach (var child in element.Children) RenderClipElement(mask, child, matrix);
+    }
+
+    private static List<List<ChartPoint>> ClipContours(SvgRasterElement element, SvgRasterMatrix matrix) {
+        switch (element.Name) {
+            case "path":
+                var d = element.Get("d");
+                return string.IsNullOrWhiteSpace(d) ? new List<List<ChartPoint>>() : TransformRings(ChartMapPathParser.ParseRings(d!), matrix);
+            case "rect":
+                var width = element.GetDouble("width");
+                var height = element.GetDouble("height");
+                if (width <= 0 || height <= 0) return new List<List<ChartPoint>>();
+                var x = element.GetDouble("x");
+                var y = element.GetDouble("y");
+                var rx = Math.Max(0, Math.Min(element.GetDouble("rx", element.GetDouble("ry")), Math.Min(width, height) / 2.0));
+                return new List<List<ChartPoint>> { TransformRing(rx <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx), matrix) };
+            case "circle":
+                var r = element.GetDouble("r");
+                return r <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(element.GetDouble("cx"), element.GetDouble("cy"), r, r, 36), matrix) };
+            case "ellipse":
+                var rxEllipse = element.GetDouble("rx");
+                var ryEllipse = element.GetDouble("ry");
+                return rxEllipse <= 0 || ryEllipse <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(element.GetDouble("cx"), element.GetDouble("cy"), rxEllipse, ryEllipse, 36), matrix) };
+            case "polygon":
+                var points = ReadPointList(element.Get("points"));
+                return points.Count == 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(points, matrix) };
+            default:
+                return new List<List<ChartPoint>>();
+        }
+    }
+
     private static SvgRasterMatrix ApplyNestedSvgViewport(SvgRasterElement element, SvgRasterMatrix matrix) {
         var viewBox = element.Get("viewBox");
         if (string.IsNullOrWhiteSpace(viewBox)) return matrix;
@@ -233,6 +287,31 @@ internal static class SvgRasterRenderer {
 
     private static bool PathHasClose(string pathData) =>
         pathData.IndexOf('z') >= 0 || pathData.IndexOf('Z') >= 0;
+
+    private static bool IsDefinitionElement(string name) =>
+        string.Equals(name, "defs", StringComparison.Ordinal) || string.Equals(name, "userDefs", StringComparison.Ordinal) || string.Equals(name, "clipPath", StringComparison.Ordinal) || string.Equals(name, "title", StringComparison.Ordinal) || string.Equals(name, "desc", StringComparison.Ordinal);
+
+    private static string? ClipPathId(SvgRasterElement element) {
+        var value = element.Get("clip-path");
+        var inline = element.Get("style");
+        if (!string.IsNullOrWhiteSpace(inline)) {
+            foreach (var declaration in ChartForgeX.Svg.SvgStyleDeclarationList.Parse(inline!).Declarations) {
+                if (string.Equals(declaration.Name, "clip-path", StringComparison.Ordinal)) value = declaration.Value;
+            }
+        }
+
+        return ParseReference(value);
+    }
+
+    private static string? ParseReference(string? value) {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var trimmed = value!.Trim();
+        if (!trimmed.StartsWith("url(", StringComparison.OrdinalIgnoreCase)) return null;
+        var close = trimmed.IndexOf(')');
+        if (close < 0) return null;
+        var body = trimmed.Substring(4, close - 4).Trim().Trim('\'', '"');
+        return body.StartsWith("#", StringComparison.Ordinal) && body.Length > 1 ? body.Substring(1) : null;
+    }
 
     private static bool IsBold(string value) =>
         string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "600", StringComparison.Ordinal) || string.Equals(value, "700", StringComparison.Ordinal) || string.Equals(value, "800", StringComparison.Ordinal) || string.Equals(value, "900", StringComparison.Ordinal);
