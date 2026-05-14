@@ -283,16 +283,17 @@ public sealed partial class TopologyPngRenderer {
             var edge = layout.Edge;
             var cx = layout.CenterX;
             var cy = layout.CenterY;
-            if (options.IncludeEdgeLabelBackplates) {
-                var radius = IsMonitoringDashboardStyle(options) ? 7 : 9;
-                canvas.FillRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, Color(IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background));
-                canvas.StrokeRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, WithAlpha(Color(theme.Border), IsMonitoringDashboardStyle(options) ? (byte)184 : byte.MaxValue), 1);
-            }
             var baseColor = edge.IsMuted ? Color(theme.MutedForeground) : Color(EdgeColor(edge, theme, options));
             var isHighlighted = highlight.IsEdgeHighlighted(edge);
             var color = isHighlighted ? baseColor : WithAlpha(baseColor, HighlightAlpha(255, false, highlight));
             var secondaryColor = isHighlighted ? Color(theme.MutedForeground) : WithAlpha(Color(theme.MutedForeground), HighlightAlpha(255, false, highlight));
             var haloColor = WithAlpha(Color(theme.Background), HighlightAlpha(255, isHighlighted, highlight));
+            DrawEdgeLabelLeader(canvas, layout, color, haloColor, options);
+            if (options.IncludeEdgeLabelBackplates) {
+                var radius = IsMonitoringDashboardStyle(options) ? 7 : 9;
+                canvas.FillRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, Color(IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background));
+                canvas.StrokeRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, WithAlpha(Color(theme.Border), IsMonitoringDashboardStyle(options) ? (byte)184 : byte.MaxValue), 1);
+            }
             DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options, highlight, isHighlighted);
             DrawEdgeLabelLines(canvas, layout, cx, cy, color, secondaryColor, haloColor, IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates);
         }
