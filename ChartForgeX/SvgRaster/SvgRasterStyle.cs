@@ -17,6 +17,7 @@ internal sealed class SvgRasterStyle {
         FontSize = 16,
         FontWeight = "normal",
         TextAnchor = "start",
+        DominantBaseline = "auto",
         Visible = true
     };
 
@@ -30,6 +31,7 @@ internal sealed class SvgRasterStyle {
     public double FontSize { get; set; }
     public string FontWeight { get; set; } = "normal";
     public string TextAnchor { get; set; } = "start";
+    public string DominantBaseline { get; set; } = "auto";
     public bool Visible { get; set; }
 
     public SvgRasterStyle Inherit() =>
@@ -44,6 +46,7 @@ internal sealed class SvgRasterStyle {
             FontSize = FontSize,
             FontWeight = FontWeight,
             TextAnchor = TextAnchor,
+            DominantBaseline = DominantBaseline,
             Visible = Visible
         };
 
@@ -75,6 +78,8 @@ internal sealed class SvgRasterStyle {
         ApplyAttribute(style, element, "font-size");
         ApplyAttribute(style, element, "font-weight");
         ApplyAttribute(style, element, "text-anchor");
+        ApplyAttribute(style, element, "dominant-baseline");
+        ApplyAttribute(style, element, "alignment-baseline");
         ApplyAttribute(style, element, "display");
         ApplyAttribute(style, element, "visibility");
     }
@@ -116,6 +121,10 @@ internal sealed class SvgRasterStyle {
                 break;
             case "text-anchor":
                 style.TextAnchor = value.Trim();
+                break;
+            case "dominant-baseline":
+            case "alignment-baseline":
+                style.DominantBaseline = value.Trim();
                 break;
             case "display":
                 if (string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase)) style.Visible = false;

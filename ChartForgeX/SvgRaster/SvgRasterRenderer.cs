@@ -89,7 +89,7 @@ internal static class SvgRasterRenderer {
                 break;
             case "text":
                 RenderText(canvas, element, style, matrix);
-                break;
+                return;
         }
 
         foreach (var child in element.Children) RenderElement(canvas, child, style, matrix, definitions, width, height, referenceDepth);
@@ -154,18 +154,39 @@ internal static class SvgRasterRenderer {
     }
 
     private static void RenderText(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix) {
+        var spanChildren = TextSpanChildren(element);
+        if (spanChildren.Count == 0) {
+            DrawTextRun(canvas, element.Text, element.GetDouble("x") + FirstNumber(element.Get("dx")), element.GetDouble("y") + FirstNumber(element.Get("dy")), style, matrix);
+            return;
+        }
+
+        var cursorX = element.GetDouble("x") + FirstNumber(element.Get("dx"));
+        var cursorY = element.GetDouble("y") + FirstNumber(element.Get("dy"));
+        foreach (var span in spanChildren) {
+            var spanStyle = SvgRasterStyle.Resolve(style, span);
+            if (span.TryGet("x", out _)) cursorX = span.GetDouble("x");
+            if (span.TryGet("y", out _)) cursorY = span.GetDouble("y");
+            cursorX += FirstNumber(span.Get("dx"));
+            cursorY += FirstNumber(span.Get("dy"));
+            var width = DrawTextRun(canvas, span.Text, cursorX, cursorY, spanStyle, matrix);
+            cursorX += width / matrix.ScaleFactor;
+        }
+    }
+
+    private static double DrawTextRun(RgbaCanvas canvas, string value, double x, double y, SvgRasterStyle style, SvgRasterMatrix matrix) {
         var color = style.FillColor();
-        if (color.A == 0 || string.IsNullOrWhiteSpace(element.Text)) return;
-        var point = matrix.Transform(new ChartPoint(element.GetDouble("x"), element.GetDouble("y")));
-        var text = element.Text.Trim();
+        var text = NormalizeText(value);
+        if (color.A == 0 || text.Length == 0) return 0;
+        var point = matrix.Transform(new ChartPoint(x, y));
         var fontSize = Math.Max(1, style.FontSize * matrix.ScaleFactor);
         var width = RgbaCanvas.MeasureTextWidth(text, fontSize, null);
-        var x = point.X;
-        if (string.Equals(style.TextAnchor, "middle", StringComparison.OrdinalIgnoreCase)) x -= width / 2.0;
-        else if (string.Equals(style.TextAnchor, "end", StringComparison.OrdinalIgnoreCase)) x -= width;
-        var y = point.Y - fontSize * 0.82;
-        if (IsBold(style.FontWeight)) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
-        else canvas.DrawText(x, y, text, color, fontSize);
+        var drawX = point.X;
+        if (string.Equals(style.TextAnchor, "middle", StringComparison.OrdinalIgnoreCase)) drawX -= width / 2.0;
+        else if (string.Equals(style.TextAnchor, "end", StringComparison.OrdinalIgnoreCase)) drawX -= width;
+        var drawY = TextTop(point.Y, fontSize, style.DominantBaseline);
+        if (IsBold(style.FontWeight)) canvas.DrawTextEmphasized(drawX, drawY, text, color, fontSize);
+        else canvas.DrawText(drawX, drawY, text, color, fontSize);
+        return width;
     }
 
     private static void FillAndStroke(RgbaCanvas canvas, IEnumerable<List<ChartPoint>> rings, SvgRasterStyle style, bool close, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
@@ -369,6 +390,30 @@ internal static class SvgRasterRenderer {
         var points = new List<ChartPoint>(numbers.Count / 2);
         for (var i = 0; i + 1 < numbers.Count; i += 2) points.Add(new ChartPoint(numbers[i], numbers[i + 1]));
         return points;
+    }
+
+    private static IReadOnlyList<SvgRasterElement> TextSpanChildren(SvgRasterElement element) {
+        var spans = new List<SvgRasterElement>();
+        foreach (var child in element.Children) if (string.Equals(child.Name, "tspan", StringComparison.Ordinal)) spans.Add(child);
+        return spans;
+    }
+
+    private static string NormalizeText(string value) =>
+        string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+
+    private static double FirstNumber(string? value) {
+        var numbers = SvgRasterNumbers.ParseList(value);
+        return numbers.Count == 0 ? 0 : numbers[0];
+    }
+
+    private static double TextTop(double y, double fontSize, string baseline) {
+        if (string.Equals(baseline, "middle", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(baseline, "central", StringComparison.OrdinalIgnoreCase)) return y - fontSize * 0.5;
+        if (string.Equals(baseline, "hanging", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(baseline, "text-before-edge", StringComparison.OrdinalIgnoreCase)) return y;
+        if (string.Equals(baseline, "text-after-edge", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(baseline, "ideographic", StringComparison.OrdinalIgnoreCase)) return y - fontSize;
+        return y - fontSize * 0.82;
     }
 
     private static List<ChartPoint> ClosedRing(IReadOnlyList<ChartPoint> points) {
