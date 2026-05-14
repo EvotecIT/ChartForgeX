@@ -326,9 +326,10 @@ internal static class SvgRasterGradientValues {
     public static readonly IReadOnlyList<RasterGradientStop> BlackStops = new[] { new RasterGradientStop(0, ChartColor.Black), new RasterGradientStop(1, ChartColor.Black) };
 
     public static IReadOnlyList<RasterGradientStop> ReadStops(SvgRasterElement element, SvgRasterStyleSheet styleSheet) {
+        var ancestors = new List<SvgRasterElement> { element };
         return element.Children
             .Where(child => string.Equals(child.Name, "stop", StringComparison.Ordinal))
-            .Select(child => ReadStop(child, styleSheet))
+            .Select(child => ReadStop(child, styleSheet, ancestors))
             .OrderBy(stop => stop.Offset)
             .ToArray();
     }
@@ -369,10 +370,10 @@ internal static class SvgRasterGradientValues {
         return new GradientBounds(left, top, Math.Max(0.000001, right - left), Math.Max(0.000001, bottom - top));
     }
 
-    private static RasterGradientStop ReadStop(SvgRasterElement element, SvgRasterStyleSheet styleSheet) {
+    private static RasterGradientStop ReadStop(SvgRasterElement element, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
         var stopColor = element.Get("stop-color");
         var stopOpacity = element.Get("stop-opacity");
-        foreach (var declaration in styleSheet.DeclarationsFor(element)) {
+        foreach (var declaration in styleSheet.DeclarationsFor(element, ancestors)) {
             if (string.Equals(declaration.Name, "stop-color", StringComparison.Ordinal)) stopColor = declaration.Value;
             else if (string.Equals(declaration.Name, "stop-opacity", StringComparison.Ordinal)) stopOpacity = declaration.Value;
         }

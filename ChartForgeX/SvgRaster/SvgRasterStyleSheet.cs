@@ -22,10 +22,10 @@ internal sealed class SvgRasterStyleSheet {
         return rules.Count == 0 ? Empty : new SvgRasterStyleSheet(rules);
     }
 
-    public IEnumerable<SvgStyleDeclaration> DeclarationsFor(SvgRasterElement element) {
+    public IEnumerable<SvgStyleDeclaration> DeclarationsFor(SvgRasterElement element, IReadOnlyList<SvgRasterElement>? ancestors = null) {
         if (_rules.Count == 0) yield break;
         foreach (var rule in _rules) {
-            if (!rule.Selector.Matches(element)) continue;
+            if (!rule.Selector.Matches(element, ancestors)) continue;
             foreach (var declaration in rule.Declarations.Declarations) yield return declaration;
         }
     }
@@ -127,11 +127,80 @@ internal sealed class SvgRasterStyleSheet {
     }
 
     private readonly struct SvgRasterStyleSelector {
+        private readonly IReadOnlyList<SvgRasterSimpleSelector> _chain;
+
+        private SvgRasterStyleSelector(IReadOnlyList<SvgRasterSimpleSelector> chain) {
+            _chain = chain;
+            var specificity = 0;
+            foreach (var selector in chain) specificity += selector.Specificity;
+            Specificity = specificity;
+        }
+
+        public int Specificity { get; }
+
+        public static bool TryParse(string value, out SvgRasterStyleSelector selector) {
+            selector = default;
+            var trimmed = value.Trim();
+            if (trimmed.Length == 0 || trimmed.IndexOfAny(new[] { '>', '+', '~', '[', ':', '*' }) >= 0) return false;
+            var parts = SplitSelectorParts(trimmed);
+            if (parts.Count == 0) return false;
+            var chain = new List<SvgRasterSimpleSelector>(parts.Count);
+            foreach (var part in parts) {
+                if (!SvgRasterSimpleSelector.TryParse(part, out var simple)) return false;
+                chain.Add(simple);
+            }
+
+            selector = new SvgRasterStyleSelector(chain);
+            return true;
+        }
+
+        public bool Matches(SvgRasterElement element, IReadOnlyList<SvgRasterElement>? ancestors) {
+            if (_chain.Count == 0 || !_chain[_chain.Count - 1].Matches(element)) return false;
+            var ancestorIndex = (ancestors?.Count ?? 0) - 1;
+            for (var selectorIndex = _chain.Count - 2; selectorIndex >= 0; selectorIndex--) {
+                var found = false;
+                while (ancestorIndex >= 0) {
+                    if (_chain[selectorIndex].Matches(ancestors![ancestorIndex])) {
+                        found = true;
+                        ancestorIndex--;
+                        break;
+                    }
+
+                    ancestorIndex--;
+                }
+
+                if (!found) return false;
+            }
+
+            return true;
+        }
+
+        private static IReadOnlyList<string> SplitSelectorParts(string value) {
+            var parts = new List<string>();
+            var start = 0;
+            for (var i = 0; i < value.Length; i++) {
+                if (!char.IsWhiteSpace(value[i])) continue;
+                AddSelectorPart(value, start, i, parts);
+                start = i + 1;
+            }
+
+            AddSelectorPart(value, start, value.Length, parts);
+            return parts;
+        }
+
+        private static void AddSelectorPart(string value, int start, int end, List<string> parts) {
+            if (end <= start) return;
+            var part = value.Substring(start, end - start).Trim();
+            if (part.Length > 0) parts.Add(part);
+        }
+    }
+
+    private readonly struct SvgRasterSimpleSelector {
         private readonly string? _elementName;
         private readonly string? _id;
         private readonly IReadOnlyList<string> _classNames;
 
-        private SvgRasterStyleSelector(string? elementName, string? id, IReadOnlyList<string> classNames) {
+        private SvgRasterSimpleSelector(string? elementName, string? id, IReadOnlyList<string> classNames) {
             _elementName = elementName;
             _id = id;
             _classNames = classNames;
@@ -140,11 +209,10 @@ internal sealed class SvgRasterStyleSheet {
 
         public int Specificity { get; }
 
-        public static bool TryParse(string value, out SvgRasterStyleSelector selector) {
+        public static bool TryParse(string value, out SvgRasterSimpleSelector selector) {
             selector = default;
             var trimmed = value.Trim();
             if (trimmed.Length == 0 || trimmed.IndexOfAny(new[] { ' ', '>', '+', '~', '[', ':', '*' }) >= 0) return false;
-
             string? elementName = null;
             string? id = null;
             var classNames = new List<string>();
@@ -172,7 +240,7 @@ internal sealed class SvgRasterStyleSheet {
             }
 
             if (elementName == null && id == null && classNames.Count == 0) return false;
-            selector = new SvgRasterStyleSelector(elementName, id, classNames);
+            selector = new SvgRasterSimpleSelector(elementName, id, classNames);
             return true;
         }
 

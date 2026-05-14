@@ -66,11 +66,11 @@ internal sealed class SvgRasterStyle {
             Visible = Visible
         };
 
-    public static SvgRasterStyle Resolve(SvgRasterStyle parent, SvgRasterElement element, SvgRasterStyleSheet? styleSheet = null) {
+    public static SvgRasterStyle Resolve(SvgRasterStyle parent, SvgRasterElement element, SvgRasterStyleSheet? styleSheet = null, IReadOnlyList<SvgRasterElement>? ancestors = null) {
         var style = parent.Inherit();
         ApplyPresentation(style, element);
         if (styleSheet != null) {
-            foreach (var declaration in styleSheet.DeclarationsFor(element)) Apply(style, declaration.Name, declaration.Value);
+            foreach (var declaration in styleSheet.DeclarationsFor(element, ancestors)) Apply(style, declaration.Name, declaration.Value);
         }
 
         var inline = element.Get("style");
