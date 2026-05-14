@@ -544,6 +544,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-route-candidate-count", diagnostics.CandidateCount)
                     .Attribute("data-route-fallback-reason", diagnostics.FallbackReason)
                     .Attribute("data-route-segment-count", diagnostics.SegmentCount)
+                    .Attribute("data-route-obstacle-count", diagnostics.ObstacleCount)
                     .Attribute("data-route-obstacle-hits", diagnostics.ObstacleHits)
                     .Attribute("data-route-label-obstacle-hits", diagnostics.LabelObstacleHits)
                     .Attribute("data-route-overlap-score", diagnostics.RouteOverlapScore)

@@ -169,6 +169,8 @@ public enum TopologyNodeDisplayMode {
     Pill,
     /// <summary>Render icon-only nodes.</summary>
     Icon,
+    /// <summary>Render trusted icon artwork across the full node bounds, with renderer-owned fallbacks where artwork cannot be embedded.</summary>
+    Artwork,
     /// <summary>Render small status dots.</summary>
     Dot,
     /// <summary>Do not render the node; keep it available as an edge anchor or route point.</summary>

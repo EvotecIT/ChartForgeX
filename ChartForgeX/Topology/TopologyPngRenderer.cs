@@ -330,6 +330,11 @@ public sealed partial class TopologyPngRenderer {
                 continue;
             }
 
+            if (displayMode == TopologyNodeDisplayMode.Artwork) {
+                DrawArtworkNodeFallback(canvas, node, theme, accent, isSelected, isHighlighted, highlight, options);
+                continue;
+            }
+
             if (IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon && node.Kind == TopologyNodeKind.Cloud) {
                 var radius = Math.Min(node.Width, node.Height) / 2;
                 canvas.DrawCircle(CenterX(node) + 2, CenterY(node) + 5, radius, ChartColor.FromRgba(15, 23, 42, 18));

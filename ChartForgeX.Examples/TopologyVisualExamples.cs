@@ -41,9 +41,20 @@ internal static partial class TopologyVisualExamples {
             .WithSelectedNode("entity")
             .WithSelectedEdge("finding-entity");
         evidenceTimelineOptions.ArrowMarkerStyle = TopologyArrowMarkerStyle.Circle;
+        var secureAccessCatalog = BuildSecureAccessIconCatalog();
+        var secureAccessOptions = new TopologyRenderOptions().WithRelationshipOverviewStyle();
+        secureAccessOptions.IncludeTitle = false;
+        secureAccessOptions.IncludeLegend = false;
+        secureAccessOptions.IncludeStatusBadges = false;
+        secureAccessOptions.IncludeEdgeLabelBackplates = false;
+        secureAccessOptions.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Plain;
+        secureAccessOptions.ArrowMarkerStyle = TopologyArrowMarkerStyle.Triangle;
+        secureAccessOptions.EdgeCornerStyle = TopologyEdgeCornerStyle.Sharp;
+        secureAccessOptions.IconCatalog = secureAccessCatalog;
 
         SaveTopology(target, artifacts, "visual-topology-explorer", BuildTopologyExplorer(), "Topology Explorer", "Regional grouped topology with hubs, branches, bridgeheads, route ports, labels, links, tooltips, metadata hooks, SVG, HTML, and PNG.", topologyExplorerOptions);
         SaveTopology(target, artifacts, "visual-entity-relationship-overview", BuildEntityRelationshipOverview(), "Entity Relationship Overview", "Screenshot-inspired relationship map with reusable icon ids, color accents, multiline cards, stacked edge labels, dotted/dashed/solid links, selected-state metadata, SVG, HTML, and PNG.", relationshipOverviewOptions);
+        SaveTopology(target, artifacts, "visual-secure-access-arbitrary-icons", BuildSecureAccessArbitraryIconTopology(), "Secure Access Arbitrary Icons", "Screenshot-inspired access topology using catalog-supplied inline SVG artwork, custom icon nodes, gateway bars, dashed policy tunnels, and static SVG/HTML/PNG output.", secureAccessOptions);
         SaveTopology(target, artifacts, "visual-mini-correlation-map", BuildMiniCorrelationMap(), "Mini Correlation Map", "Compact selected-asset relationship map for dashboard cards and drilldown panels with panel background, icon cards, and multiple arrow marker choices.", miniRelationshipOptions);
         SaveTopology(target, artifacts, "visual-evidence-timeline-relationship", BuildEvidenceTimelineRelationship(), "Evidence Timeline Relationship", "Timeline-like evidence stream mapped to one selected entity using topology nodes, circular markers, typed links, and multiline event cards.", evidenceTimelineOptions);
         SaveTopology(target, artifacts, "visual-impact-dependency-overview", BuildImpactDependencyOverview(), "Impact Dependency Overview", "Dependency and blast-radius topology with upstream services, owned applications, downstream consumers, risk links, and reusable relationship-label plates.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).WithSelectedNode("platform").WithSelectedEdge("platform-finding"));
@@ -698,6 +709,7 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("  \"baselineCandidates\": [");
         sb.AppendLine("    \"visual-topology-explorer\",");
         sb.AppendLine("    \"visual-entity-relationship-overview\",");
+        sb.AppendLine("    \"visual-secure-access-arbitrary-icons\",");
         sb.AppendLine("    \"visual-mini-correlation-map\",");
         sb.AppendLine("    \"visual-evidence-timeline-relationship\",");
         sb.AppendLine("    \"visual-replication-mesh-explorer\",");

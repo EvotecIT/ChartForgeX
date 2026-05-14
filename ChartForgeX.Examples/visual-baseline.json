@@ -1794,6 +1794,22 @@
       }
     },
     {
+      "name": "visual-secure-access-arbitrary-icons",
+      "width": 1280,
+      "height": 714,
+      "svg": {
+        "minVisualNodes": 100,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 900000,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "warnings-sparkline",
       "width": 360,
       "height": 90,

@@ -277,6 +277,9 @@ public sealed class TopologyNode {
     /// <summary>Gets or sets an optional reusable icon id such as <c>network:switch</c> or <c>microsoft-ad:domain-controller</c>.</summary>
     public string? IconId { get; set; }
 
+    /// <summary>Gets or sets optional node-specific artwork. SVG and HTML can embed safe artwork directly; PNG uses renderer-owned fallback glyphs.</summary>
+    public TopologyIconArtwork? Artwork { get; set; }
+
     /// <summary>Gets or sets an optional node-specific display mode. When null, render options decide.</summary>
     public TopologyNodeDisplayMode? DisplayMode {
         get => _displayMode;

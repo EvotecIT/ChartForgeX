@@ -62,6 +62,12 @@ public sealed class TopologyIconArtwork {
         };
     }
 
+    /// <summary>Sets the preserveAspectRatio value used when rendering SVG or image artwork.</summary>
+    public TopologyIconArtwork WithPreserveAspectRatio(string preserveAspectRatio) {
+        PreserveAspectRatio = RequiredText(preserveAspectRatio, nameof(preserveAspectRatio));
+        return this;
+    }
+
     /// <summary>
     /// Returns whether an inline SVG fragment is safe enough for report embedding.
     /// </summary>

@@ -202,6 +202,7 @@ internal static partial class SmokeTests {
         ("Topology nodes can apply combined kind style", TopologyNodesCanApplyCombinedKindStyle),
         ("Topology icon catalogs render palette charts", TopologyIconCatalogsRenderPaletteCharts),
         ("Topology icon artwork renders vendor SVG assets", TopologyIconArtworkRendersVendorSvgAssets),
+        ("Topology relationship overview renders arbitrary icon artwork", TopologyRelationshipOverviewRendersArbitraryIconArtwork),
         ("Topology icon stencil browser renders searchable picker", TopologyIconStencilBrowserRendersSearchablePicker),
         ("Topology icon SVG pack importer builds auditable packs", TopologyIconSvgPackImporterBuildsAuditablePacks),
         ("Topology curated icon packs load sidecar artwork", TopologyCuratedIconPacksLoadSidecarArtwork),

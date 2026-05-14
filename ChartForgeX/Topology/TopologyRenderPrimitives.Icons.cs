@@ -5,6 +5,21 @@ internal static partial class TopologyRenderPrimitives {
         return string.IsNullOrWhiteSpace(node.IconId) ? null : (options.IconCatalog ?? TopologyIconCatalog.Default()).Resolve(node.IconId);
     }
 
+    public static TopologyIconArtwork? ResolveRenderableNodeArtwork(TopologyNode node, TopologyRenderOptions options) {
+        if (IsRenderableArtwork(node.Artwork)) return node.Artwork;
+        var iconArtwork = ResolveNodeIcon(node, options)?.Artwork;
+        return IsRenderableArtwork(iconArtwork) ? iconArtwork : null;
+    }
+
+    public static string? ResolveNodeArtworkSource(TopologyNode node, TopologyRenderOptions options) {
+        if (IsRenderableArtwork(node.Artwork)) return "node";
+        return IsRenderableArtwork(ResolveNodeIcon(node, options)?.Artwork) ? "icon" : null;
+    }
+
+    public static bool HasRenderableNodeArtwork(TopologyNode node) {
+        return IsRenderableArtwork(node.Artwork);
+    }
+
     public static TopologyIconDefinition? ResolveGroupIcon(TopologyGroup group, TopologyRenderOptions options) {
         return string.IsNullOrWhiteSpace(group.IconId) ? null : (options.IconCatalog ?? TopologyIconCatalog.Default()).Resolve(group.IconId);
     }
@@ -40,7 +55,12 @@ internal static partial class TopologyRenderPrimitives {
 
     public static TopologyNodeDisplayMode EffectiveNodeDisplayMode(TopologyNode node, TopologyRenderOptions options) {
         if (node.DisplayMode.HasValue) return node.DisplayMode.Value;
+        if (IsRenderableArtwork(node.Artwork)) return TopologyNodeDisplayMode.Artwork;
         var icon = ResolveNodeIcon(node, options);
         return icon?.DisplayMode ?? options.NodeDisplayMode;
+    }
+
+    private static bool IsRenderableArtwork(TopologyIconArtwork? artwork) {
+        return artwork != null && artwork.IsSafe && (artwork.HasSvgBody || artwork.HasImageHref);
     }
 }

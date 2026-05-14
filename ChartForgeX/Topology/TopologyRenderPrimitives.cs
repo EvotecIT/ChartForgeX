@@ -146,6 +146,7 @@ internal static partial class TopologyRenderPrimitives {
         var displayMode = EffectiveNodeDisplayMode(node, options);
         if (displayMode == TopologyNodeDisplayMode.Hidden) return false;
         if (displayMode == TopologyNodeDisplayMode.Dot) return false;
+        if (displayMode == TopologyNodeDisplayMode.Artwork) return false;
         if (IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon && node.Kind == TopologyNodeKind.Cloud) return false;
         return true;
     }

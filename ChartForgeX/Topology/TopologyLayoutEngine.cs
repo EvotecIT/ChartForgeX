@@ -740,6 +740,7 @@ internal static partial class TopologyLayoutEngine {
             Kind = node.Kind,
             Symbol = node.Symbol,
             IconId = node.IconId,
+            Artwork = node.Artwork,
             DisplayMode = node.DisplayMode,
             Badge = node.Badge,
             Status = node.Status,

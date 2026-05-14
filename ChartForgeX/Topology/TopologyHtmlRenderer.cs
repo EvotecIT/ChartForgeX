@@ -335,6 +335,7 @@ public sealed class TopologyHtmlRenderer {
           iconLabel: attr(element, 'data-node-icon-label'),
           iconShape: attr(element, 'data-node-icon-shape'),
           iconArtwork: attr(element, 'data-node-icon-artwork'),
+          artworkSource: attr(element, 'data-node-artwork-source'),
           longitude: attr(element, 'data-node-longitude'),
           latitude: attr(element, 'data-node-latitude'),
           geoVisible: attr(element, 'data-node-geo-visible')
@@ -365,6 +366,7 @@ public sealed class TopologyHtmlRenderer {
             candidateCount: attr(element, 'data-route-candidate-count'),
             fallbackReason: attr(element, 'data-route-fallback-reason'),
             segmentCount: attr(element, 'data-route-segment-count'),
+            obstacleCount: attr(element, 'data-route-obstacle-count'),
             obstacleHits: attr(element, 'data-route-obstacle-hits'),
             labelObstacleHits: attr(element, 'data-route-label-obstacle-hits'),
             overlapScore: attr(element, 'data-route-overlap-score'),

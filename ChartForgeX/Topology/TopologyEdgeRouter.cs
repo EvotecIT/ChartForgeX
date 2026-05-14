@@ -64,7 +64,7 @@ internal static class TopologyEdgeRouter {
     }
 
     public static TopologyRouteDiagnostics Diagnose(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
-        if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) return new TopologyRouteDiagnostics(edge.Routing.ToString(), "missing-node", 0, 0, 0, 0, 0, "missing-node");
+        if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) return new TopologyRouteDiagnostics(edge.Routing.ToString(), "missing-node", 0, 0, 0, 0, 0, 0, "missing-node");
         var plan = Route(chart, edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], EdgeRouteLane(chart, edge));
         return plan.Diagnostics;
     }
@@ -73,7 +73,7 @@ internal static class TopologyEdgeRouter {
         var obstacleHits = RouteObstacleHits(points, obstacles);
         var routeOverlap = RouteOverlapScore(points, existingSegments);
         var labelHits = LabelObstacleHits(points, edge, obstacles);
-        return new TopologyRoutePlan(points, new TopologyRouteDiagnostics(strategy, corridor, Math.Max(0, points.Count - 1), obstacleHits, labelHits, routeOverlap, candidateCount, FallbackReason(strategy, obstacleHits, labelHits, routeOverlap)));
+        return new TopologyRoutePlan(points, new TopologyRouteDiagnostics(strategy, corridor, Math.Max(0, points.Count - 1), obstacles.Count, obstacleHits, labelHits, routeOverlap, candidateCount, FallbackReason(strategy, obstacleHits, labelHits, routeOverlap)));
     }
 
     private static double RouteScore(TopologyRoutePlan plan, TopologyEdge edge) {
@@ -233,6 +233,7 @@ internal static class TopologyEdgeRouter {
         const double nodePadding = 10;
         var obstacles = chart.Nodes
             .Where(node => !string.Equals(node.Id, sourceNodeId, StringComparison.Ordinal) && !string.Equals(node.Id, targetNodeId, StringComparison.Ordinal))
+            .Where(node => !IsRouteBackdropArtwork(node))
             .Select(node => new RouteBox(node.X - nodePadding, node.Y - nodePadding, node.X + node.Width + nodePadding, node.Y + node.Height + nodePadding))
             .ToList();
 
@@ -244,6 +245,10 @@ internal static class TopologyEdgeRouter {
 
         foreach (var box in EstimatedLabelBoxes(chart, routedEdgeId)) obstacles.Add(box.Expand(4));
         return obstacles;
+    }
+
+    private static bool IsRouteBackdropArtwork(TopologyNode node) {
+        return node.DisplayMode == TopologyNodeDisplayMode.Artwork || (!node.DisplayMode.HasValue && HasRenderableNodeArtwork(node));
     }
 
     private static IEnumerable<RouteBox> EstimatedLabelBoxes(TopologyChart chart, string? routedEdgeId) {
@@ -502,10 +507,11 @@ internal readonly struct TopologyRoutePlan {
 }
 
 internal readonly struct TopologyRouteDiagnostics {
-    public TopologyRouteDiagnostics(string strategy, string corridor, int segmentCount, int obstacleHits, int labelObstacleHits, double routeOverlapScore, int candidateCount, string fallbackReason) {
+    public TopologyRouteDiagnostics(string strategy, string corridor, int segmentCount, int obstacleCount, int obstacleHits, int labelObstacleHits, double routeOverlapScore, int candidateCount, string fallbackReason) {
         Strategy = strategy;
         Corridor = corridor;
         SegmentCount = segmentCount;
+        ObstacleCount = obstacleCount;
         ObstacleHits = obstacleHits;
         LabelObstacleHits = labelObstacleHits;
         RouteOverlapScore = routeOverlapScore;
@@ -518,6 +524,8 @@ internal readonly struct TopologyRouteDiagnostics {
     public string Corridor { get; }
 
     public int SegmentCount { get; }
+
+    public int ObstacleCount { get; }
 
     public int ObstacleHits { get; }
 
