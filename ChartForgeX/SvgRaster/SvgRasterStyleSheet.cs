@@ -129,13 +129,13 @@ internal sealed class SvgRasterStyleSheet {
     private readonly struct SvgRasterStyleSelector {
         private readonly string? _elementName;
         private readonly string? _id;
-        private readonly string? _className;
+        private readonly IReadOnlyList<string> _classNames;
 
-        private SvgRasterStyleSelector(string? elementName, string? id, string? className) {
+        private SvgRasterStyleSelector(string? elementName, string? id, IReadOnlyList<string> classNames) {
             _elementName = elementName;
             _id = id;
-            _className = className;
-            Specificity = (_id == null ? 0 : 100) + (_className == null ? 0 : 10) + (_elementName == null ? 0 : 1);
+            _classNames = classNames;
+            Specificity = (_id == null ? 0 : 100) + _classNames.Count * 10 + (_elementName == null ? 0 : 1);
         }
 
         public int Specificity { get; }
@@ -147,7 +147,7 @@ internal sealed class SvgRasterStyleSheet {
 
             string? elementName = null;
             string? id = null;
-            string? className = null;
+            var classNames = new List<string>();
             var index = 0;
             while (index < trimmed.Length && trimmed[index] != '.' && trimmed[index] != '#') index++;
             if (index > 0) {
@@ -165,22 +165,21 @@ internal sealed class SvgRasterStyleSheet {
                     if (id != null) return false;
                     id = part;
                 } else if (marker == '.') {
-                    if (className != null) return false;
-                    className = part;
+                    classNames.Add(part);
                 } else {
                     return false;
                 }
             }
 
-            if (elementName == null && id == null && className == null) return false;
-            selector = new SvgRasterStyleSelector(elementName, id, className);
+            if (elementName == null && id == null && classNames.Count == 0) return false;
+            selector = new SvgRasterStyleSelector(elementName, id, classNames);
             return true;
         }
 
         public bool Matches(SvgRasterElement element) {
             if (_elementName != null && !string.Equals(_elementName, element.Name, StringComparison.OrdinalIgnoreCase)) return false;
             if (_id != null && !string.Equals(_id, element.Get("id"), StringComparison.Ordinal)) return false;
-            if (_className != null && !HasClass(element.Get("class"), _className)) return false;
+            foreach (var className in _classNames) if (!HasClass(element.Get("class"), className)) return false;
             return true;
         }
 
