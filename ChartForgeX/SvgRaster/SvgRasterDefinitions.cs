@@ -10,10 +10,12 @@ namespace ChartForgeX.SvgRaster;
 internal sealed class SvgRasterDefinitions {
     private readonly Dictionary<string, SvgRasterElement> _elements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterElement> _gradientElements = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SvgRasterElement> _patternElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterClipPath> _clipPaths = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterMask> _masks = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterLinearGradient> _linearGradients = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterRadialGradient> _radialGradients = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SvgRasterPattern> _patterns = new(StringComparer.Ordinal);
 
     public static SvgRasterDefinitions From(SvgRasterDocument document) {
         var definitions = new SvgRasterDefinitions();
@@ -30,6 +32,12 @@ internal sealed class SvgRasterDefinitions {
     public bool TryGetRadialGradient(string? id, out SvgRasterRadialGradient gradient) {
         if (id != null && ResolveRadialGradient(id, new HashSet<string>(StringComparer.Ordinal), out gradient!)) return true;
         gradient = null!;
+        return false;
+    }
+
+    public bool TryGetPattern(string? id, out SvgRasterPattern pattern) {
+        if (id != null && ResolvePattern(id, new HashSet<string>(StringComparer.Ordinal), out pattern!)) return true;
+        pattern = null!;
         return false;
     }
 
@@ -83,6 +91,22 @@ internal sealed class SvgRasterDefinitions {
         return true;
     }
 
+    private bool ResolvePattern(string id, HashSet<string> visiting, out SvgRasterPattern pattern) {
+        if (_patterns.TryGetValue(id, out pattern!)) return true;
+        if (!visiting.Add(id) || !_patternElements.TryGetValue(id, out var element)) {
+            pattern = null!;
+            return false;
+        }
+
+        SvgRasterPattern? inherited = null;
+        var referenceId = ReferenceId(element);
+        if (referenceId != null) ResolvePattern(referenceId, visiting, out inherited!);
+        pattern = SvgRasterPattern.From(element, inherited);
+        _patterns[id] = pattern;
+        visiting.Remove(id);
+        return true;
+    }
+
     private void Collect(SvgRasterElement element) {
         if (IsReusableElement(element) && element.TryGet("id", out var reusableId) && !string.IsNullOrWhiteSpace(reusableId)) {
             _elements[reusableId] = element;
@@ -90,6 +114,10 @@ internal sealed class SvgRasterDefinitions {
 
         if ((string.Equals(element.Name, "linearGradient", StringComparison.Ordinal) || string.Equals(element.Name, "radialGradient", StringComparison.Ordinal)) && element.TryGet("id", out var id) && !string.IsNullOrWhiteSpace(id)) {
             _gradientElements[id] = element;
+        }
+
+        if (string.Equals(element.Name, "pattern", StringComparison.Ordinal) && element.TryGet("id", out var patternId) && !string.IsNullOrWhiteSpace(patternId)) {
+            _patternElements[patternId] = element;
         }
 
         if (string.Equals(element.Name, "clipPath", StringComparison.Ordinal) && element.TryGet("id", out var clipId) && !string.IsNullOrWhiteSpace(clipId)) {
@@ -114,6 +142,7 @@ internal sealed class SvgRasterDefinitions {
         !string.Equals(element.Name, "userDefs", StringComparison.Ordinal) &&
         !string.Equals(element.Name, "linearGradient", StringComparison.Ordinal) &&
         !string.Equals(element.Name, "radialGradient", StringComparison.Ordinal) &&
+        !string.Equals(element.Name, "pattern", StringComparison.Ordinal) &&
         !string.Equals(element.Name, "clipPath", StringComparison.Ordinal) &&
         !string.Equals(element.Name, "mask", StringComparison.Ordinal) &&
         !string.Equals(element.Name, "stop", StringComparison.Ordinal) &&
@@ -135,6 +164,49 @@ internal sealed class SvgRasterMask {
     }
 
     public SvgRasterElement Element { get; }
+}
+
+internal sealed class SvgRasterPattern {
+    private SvgRasterPattern(double x, double y, double width, double height, bool userSpaceOnUse, bool contentUserSpaceOnUse, SvgRasterMatrix transform, string? viewBox, string? preserveAspectRatio, IReadOnlyList<SvgRasterElement> children) {
+        X = x;
+        Y = y;
+        Width = width;
+        Height = height;
+        UserSpaceOnUse = userSpaceOnUse;
+        ContentUserSpaceOnUse = contentUserSpaceOnUse;
+        Transform = transform;
+        ViewBox = viewBox;
+        PreserveAspectRatio = preserveAspectRatio;
+        Children = children;
+    }
+
+    public double X { get; }
+    public double Y { get; }
+    public double Width { get; }
+    public double Height { get; }
+    public bool UserSpaceOnUse { get; }
+    public bool ContentUserSpaceOnUse { get; }
+    public SvgRasterMatrix Transform { get; }
+    public string? ViewBox { get; }
+    public string? PreserveAspectRatio { get; }
+    public IReadOnlyList<SvgRasterElement> Children { get; }
+
+    public static SvgRasterPattern From(SvgRasterElement element, SvgRasterPattern? inherited) {
+        var patternUnits = element.Get("patternUnits");
+        var contentUnits = element.Get("patternContentUnits");
+        var children = element.Children.Count == 0 && inherited != null ? inherited.Children : element.Children;
+        return new SvgRasterPattern(
+            SvgRasterGradientValues.ParseCoordinate(element.Get("x"), inherited?.X ?? 0),
+            SvgRasterGradientValues.ParseCoordinate(element.Get("y"), inherited?.Y ?? 0),
+            SvgRasterGradientValues.ParseCoordinate(element.Get("width"), inherited?.Width ?? 0),
+            SvgRasterGradientValues.ParseCoordinate(element.Get("height"), inherited?.Height ?? 0),
+            string.Equals(patternUnits, "userSpaceOnUse", StringComparison.Ordinal) || (patternUnits == null && inherited?.UserSpaceOnUse == true),
+            !string.Equals(contentUnits, "objectBoundingBox", StringComparison.Ordinal) && (contentUnits != null || inherited?.ContentUserSpaceOnUse != false),
+            element.Get("patternTransform") == null ? inherited?.Transform ?? SvgRasterMatrix.Identity : SvgRasterMatrix.ParseTransform(element.Get("patternTransform")),
+            element.Get("viewBox") ?? inherited?.ViewBox,
+            element.Get("preserveAspectRatio") ?? inherited?.PreserveAspectRatio,
+            children);
+    }
 }
 
 internal sealed class SvgRasterLinearGradient {
