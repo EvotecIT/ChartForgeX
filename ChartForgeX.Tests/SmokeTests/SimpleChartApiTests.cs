@@ -70,6 +70,52 @@ internal static partial class SmokeTests {
         Assert(histograms.Series.Count == 2, "Simple histogram definitions should support comparable multi-series histograms.");
         Assert(histograms.Options.XAxisLabels.Count == histograms.Series[0].Points.Count && histograms.Options.XAxisLabels.Count == histograms.Series[1].Points.Count, "Simple histogram definitions should use one shared binning scheme.");
 
+        Assert(
+            Charts.Build(new ChartDefinition[] { new ChartHorizontalBar("Disk", new double[] { 72, 28 }) }).Series[0].Kind == ChartSeriesKind.HorizontalBar,
+            "Simple horizontal bar definitions should build native horizontal bar series.");
+        Assert(
+            Charts.Build(new ChartDefinition[] { new ChartStepLine("Requests", new double[] { 4, 8, 7 }) }).Series[0].Kind == ChartSeriesKind.StepLine,
+            "Simple step line definitions should build native step line series.");
+        Assert(
+            Charts.Build(new ChartDefinition[] { new ChartStepArea("Capacity", new double[] { 4, 8, 7 }) }).Series[0].Kind == ChartSeriesKind.StepArea,
+            "Simple step area definitions should build native step area series.");
+        Assert(
+            Charts.Build(new ChartDefinition[] { new ChartStackedArea("A", new double[] { 2, 3 }), new ChartStackedArea("B", new double[] { 1, 2 }, smooth: true) }).Series.All(series => series.Kind == ChartSeriesKind.StackedArea),
+            "Simple stacked area definitions should build native stacked area series.");
+        Assert(
+            Charts.Build(new ChartDefinition[] { new ChartLollipop("Latency", new double[] { 12, 18, 9 }) }).Series[0].Kind == ChartSeriesKind.Lollipop,
+            "Simple lollipop definitions should build native lollipop series.");
+        Assert(
+            Charts.Build(new ChartDefinition[] { new ChartSlope("Current", 62, 71, "Before", "After") }).Series[0].Kind == ChartSeriesKind.Slope,
+            "Simple slope definitions should build native slope series.");
+
+        var rangeBar = Charts.Build(new ChartDefinition[] { new ChartRangeBar("Maintenance", new double[] { 1, 2 }, new double[] { 2, 4 }, new double[] { 5, 8 }) });
+        Assert(rangeBar.Series[0].Kind == ChartSeriesKind.RangeBar, "Simple range bar definitions should build native range bar series.");
+
+        var rangeBand = Charts.Build(new ChartDefinition[] { new ChartRangeBandSeries("Expected", new double[] { 1, 2 }, new double[] { 8, 9 }, new double[] { 12, 15 }) });
+        Assert(rangeBand.Series[0].Kind == ChartSeriesKind.RangeBand, "Simple range band definitions should build native range band series.");
+
+        var rangeArea = Charts.Build(new ChartDefinition[] { new ChartRangeBandSeries("Expected", new double[] { 1, 2 }, new double[] { 8, 9 }, new double[] { 12, 15 }, area: true, smooth: false) });
+        Assert(rangeArea.Series[0].Kind == ChartSeriesKind.RangeArea && !rangeArea.Series[0].Smooth, "Simple range band definitions should optionally build plain range area series.");
+
+        var boxPlot = Charts.Build(new ChartDefinition[] { new ChartBoxPlotSeries("Latency", new double[] { 1, 2 }, new double[] { 2, 3 }, new double[] { 4, 5 }, new double[] { 6, 7 }, new double[] { 8, 9 }, new double[] { 10, 11 }) });
+        Assert(boxPlot.Series[0].Kind == ChartSeriesKind.BoxPlot, "Simple box plot definitions should build native box plot series.");
+
+        var bullet = Charts.Build(new ChartDefinition[] {
+            new ChartBullet("Servers", 92, 95, rangeEnds: new double[] { 70, 85 }),
+            new ChartBullet("Workstations", 86, 90)
+        });
+        Assert(bullet.Series.Count == 2 && bullet.Series.All(series => series.Kind == ChartSeriesKind.Bullet), "Simple bullet definitions should build native bullet rows.");
+
+        var waterfall = Charts.Build(new ChartDefinition[] { new ChartWaterfall("Change", new double[] { 120, -24, 42 }, new[] { "Start", "Churn", "Expansion" }) });
+        Assert(waterfall.Series[0].Kind == ChartSeriesKind.Waterfall && waterfall.Options.XAxisLabels.Count == 3, "Simple waterfall definitions should build native waterfall series and preserve labels.");
+
+        var funnel = Charts.Build(new ChartDefinition[] { new ChartFunnel("Visitors", 1000), new ChartFunnel("Trials", 220), new ChartFunnel("Customers", 64) });
+        Assert(funnel.Series[0].Kind == ChartSeriesKind.Funnel && funnel.Options.XAxisLabels.Count == 3, "Simple funnel item definitions should build a labeled native funnel chart.");
+
+        var treemap = Charts.Build(new ChartDefinition[] { new ChartTreemap("Servers", 42), new ChartTreemap("Workstations", 120), new ChartTreemap("Laptops", 80) });
+        Assert(treemap.Series[0].Kind == ChartSeriesKind.Treemap && treemap.Options.XAxisLabels.Count == 3, "Simple treemap item definitions should build a labeled native treemap chart.");
+
         var points = ChartPoints.FromValues(10, 20, 30);
         Assert(points.Length == 3 && points[0].X == 1 && points[2].Y == 30, "Core point helpers should create one-based chart points from raw values.");
 
@@ -141,6 +187,14 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => Charts.Build(new ChartDefinition[] { new ChartRadar("Bad", new double[] { 1, 2 }, new double[] { 12, 18 }) }),
             "Simple radar definitions should reject fewer than three categories before render-time validation.");
+
+        AssertThrows<ArgumentException>(
+            () => Charts.Build(new ChartDefinition[] { new ChartRangeBar("Bad", new double[] { 1, 2 }, new double[] { 1 }, new double[] { 2, 3 }) }),
+            "Simple range bar definitions should reject mismatched interval arrays.");
+
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => Charts.Build(new ChartDefinition[] { new ChartBoxPlotSeries("Bad", new double[] { 1 }, new double[] { 5 }, new double[] { 4 }, new double[] { 3 }, new double[] { 2 }, new double[] { 1 }) }),
+            "Simple box plot definitions should reject unordered summaries.");
 
         AssertThrows<ArgumentException>(
             () => Charts.Build(new ChartDefinition[] {

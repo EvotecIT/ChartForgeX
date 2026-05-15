@@ -11,6 +11,10 @@ using CfxPictorialItem = ChartForgeX.Core.ChartPictorialItem;
 using CfxProgressItem = ChartForgeX.Core.ChartProgressItem;
 using CfxTheme = ChartForgeX.Themes.ChartTheme;
 using CfxBubble = ChartForgeX.Core.ChartBubble;
+using CfxBoxPlot = ChartForgeX.Core.ChartBoxPlot;
+using CfxInterval = ChartForgeX.Core.ChartInterval;
+using CfxRangeBand = ChartForgeX.Core.ChartRangeBand;
+using CfxTreemapItem = ChartForgeX.Core.ChartTreemapItem;
 using CfxWordCloudItem = ChartForgeX.Core.ChartWordCloudItem;
 
 namespace ChartForgeX.Simple;
@@ -62,6 +66,8 @@ public static class Charts {
 
         if (type == typeof(ChartBar)) {
             foreach (var bar in list.Cast<ChartBar>()) chart.AddBar(bar.Name, BuildIndexedPoints(bar.Value), bar.Color);
+        } else if (type == typeof(ChartHorizontalBar)) {
+            foreach (var bar in list.Cast<ChartHorizontalBar>()) chart.AddHorizontalBar(bar.Name, BuildIndexedPoints(bar.Value), bar.Color);
         } else if (type == typeof(ChartLine)) {
             ApplySharedLineMarkerSize(chart, list.Cast<ChartLine>());
             foreach (var line in list.Cast<ChartLine>()) {
@@ -69,12 +75,33 @@ public static class Charts {
                 if (line.Smooth) chart.AddSmoothLine(line.Name, points, line.Color);
                 else chart.AddLine(line.Name, points, line.Color);
             }
+        } else if (type == typeof(ChartStepLine)) {
+            foreach (var line in list.Cast<ChartStepLine>()) chart.AddStepLine(line.Name, BuildIndexedPoints(line.Value), line.Color);
         } else if (type == typeof(ChartArea)) {
             foreach (var area in list.Cast<ChartArea>()) chart.AddArea(area.Name, BuildIndexedPoints(area.Value), area.Color);
+        } else if (type == typeof(ChartStepArea)) {
+            foreach (var area in list.Cast<ChartStepArea>()) chart.AddStepArea(area.Name, BuildIndexedPoints(area.Value), area.Color);
+        } else if (type == typeof(ChartStackedArea)) {
+            foreach (var area in list.Cast<ChartStackedArea>()) {
+                if (area.Smooth) chart.AddSmoothStackedArea(area.Name, BuildIndexedPoints(area.Value), area.Color);
+                else chart.AddStackedArea(area.Name, BuildIndexedPoints(area.Value), area.Color);
+            }
         } else if (type == typeof(ChartScatter)) {
             foreach (var scatter in list.Cast<ChartScatter>()) chart.AddScatter(scatter.Name, BuildXYPoints(scatter.X, scatter.Y), scatter.Color);
         } else if (type == typeof(ChartBubbleSeries)) {
             foreach (var bubble in list.Cast<ChartBubbleSeries>()) chart.AddBubble(bubble.Name, BuildBubbles(bubble.X, bubble.Y, bubble.Size), bubble.Color);
+        } else if (type == typeof(ChartLollipop)) {
+            foreach (var lollipop in list.Cast<ChartLollipop>()) chart.AddLollipop(lollipop.Name, BuildIndexedPoints(lollipop.Value), lollipop.Color);
+        } else if (type == typeof(ChartRangeBar)) {
+            foreach (var range in list.Cast<ChartRangeBar>()) chart.AddRangeBar(range.Name, BuildIntervals(range.X, range.Start, range.End), range.Color);
+        } else if (type == typeof(ChartRangeBandSeries)) {
+            foreach (var range in list.Cast<ChartRangeBandSeries>()) {
+                var ranges = BuildRanges(range.X, range.Lower, range.Upper);
+                if (range.Area) chart.AddRangeArea(range.Name, ranges, range.Color, range.Smooth);
+                else chart.AddRangeBand(range.Name, ranges, range.Color);
+            }
+        } else if (type == typeof(ChartBoxPlotSeries)) {
+            foreach (var box in list.Cast<ChartBoxPlotSeries>()) chart.AddBoxPlot(box.Name, BuildBoxPlots(box), box.Color);
         } else if (type == typeof(ChartRadar)) {
             AddRadarDefinitions(chart, list.Cast<ChartRadar>());
         } else if (type == typeof(ChartPolarArea)) {
@@ -93,12 +120,33 @@ public static class Charts {
             chart.WithXLabels(list.Select(d => d.Name).ToArray());
             chart.AddRadialBar("Values", list.Cast<ChartRadial>().Select((radial, index) => new ChartPoint(index + 1, RequirePercent(radial.Value, radial.Name))));
             ApplyPointColors(chart, list.Cast<ChartRadial>().Select(radial => radial.Color).ToArray());
+        } else if (type == typeof(ChartSlope)) {
+            foreach (var slope in list.Cast<ChartSlope>()) {
+                if (!string.IsNullOrWhiteSpace(slope.StartLabel) || !string.IsNullOrWhiteSpace(slope.EndLabel)) {
+                    chart.AddSlope(slope.Name, slope.Start, slope.End, slope.StartLabel ?? "Start", slope.EndLabel ?? "End", slope.Color);
+                } else {
+                    chart.AddSlope(slope.Name, slope.Start, slope.End, slope.Color);
+                }
+            }
         } else if (type == typeof(ChartGauge)) {
             var gauge = RequireSingle<ChartGauge>(list);
             chart.AddGauge(gauge.Name, gauge.Value, gauge.Minimum, gauge.Maximum, gauge.Color);
         } else if (type == typeof(ChartCircle)) {
             var circle = RequireSingle<ChartCircle>(list);
             chart.AddCircle(circle.Name, circle.Value, circle.Minimum, circle.Maximum, circle.Color);
+        } else if (type == typeof(ChartBullet)) {
+            foreach (var bullet in list.Cast<ChartBullet>()) chart.AddBullet(bullet.Name, bullet.Value, bullet.Target, bullet.Minimum, bullet.Maximum, bullet.RangeEnds, bullet.Color);
+        } else if (type == typeof(ChartWaterfall)) {
+            var waterfall = RequireSingle<ChartWaterfall>(list);
+            ApplyLabels(chart, waterfall.Labels);
+            chart.AddWaterfall(waterfall.Name, BuildIndexedPoints(waterfall.Value), waterfall.Color);
+        } else if (type == typeof(ChartFunnel)) {
+            chart.WithXLabels(list.Select(d => d.Name).ToArray());
+            chart.AddFunnel("Values", list.Cast<ChartFunnel>().Select((funnel, index) => new ChartPoint(index + 1, funnel.Value)));
+            ApplyPointColors(chart, list.Cast<ChartFunnel>().Select(funnel => funnel.Color).ToArray());
+        } else if (type == typeof(ChartTreemap)) {
+            chart.AddTreemap("Values", list.Cast<ChartTreemap>().Select(item => new CfxTreemapItem(item.Name, item.Value)));
+            ApplyPointColors(chart, list.Cast<ChartTreemap>().Select(item => item.Color).ToArray());
         } else if (type == typeof(ChartProgress)) {
             chart.AddProgressBars("Values", list.Cast<ChartProgress>().Select(progress => new CfxProgressItem(progress.Name, progress.Value, progress.Color)), options?.ProgressMaximum ?? 100);
         } else if (type == typeof(ChartPictorial)) {
@@ -240,6 +288,62 @@ public static class Charts {
 
     private static CfxBubble[] BuildBubbles(IList<double> x, IList<double> y, IList<double> size) {
         return ChartBubbles.FromXYSize(x, y, size);
+    }
+
+    private static CfxInterval[] BuildIntervals(IList<double> x, IList<double> start, IList<double> end) {
+        if (x is null) throw new ArgumentNullException(nameof(x));
+        if (start is null) throw new ArgumentNullException(nameof(start));
+        if (end is null) throw new ArgumentNullException(nameof(end));
+        if (x.Count != start.Count || x.Count != end.Count) {
+            throw new ArgumentException("Range bar X, start, and end values must contain the same number of items.", nameof(x));
+        }
+
+        var intervals = new CfxInterval[x.Count];
+        for (var i = 0; i < intervals.Length; i++) {
+            intervals[i] = new CfxInterval(x[i], start[i], end[i]);
+        }
+
+        return intervals;
+    }
+
+    private static CfxRangeBand[] BuildRanges(IList<double> x, IList<double> lower, IList<double> upper) {
+        if (x is null) throw new ArgumentNullException(nameof(x));
+        if (lower is null) throw new ArgumentNullException(nameof(lower));
+        if (upper is null) throw new ArgumentNullException(nameof(upper));
+        if (x.Count != lower.Count || x.Count != upper.Count) {
+            throw new ArgumentException("Range X, lower, and upper values must contain the same number of items.", nameof(x));
+        }
+
+        var ranges = new CfxRangeBand[x.Count];
+        for (var i = 0; i < ranges.Length; i++) {
+            ranges[i] = new CfxRangeBand(x[i], lower[i], upper[i]);
+        }
+
+        return ranges;
+    }
+
+    private static CfxBoxPlot[] BuildBoxPlots(ChartBoxPlotSeries box) {
+        if (box is null) throw new ArgumentNullException(nameof(box));
+        if (box.X is null) throw new ArgumentNullException(nameof(box.X));
+        if (box.Minimum is null) throw new ArgumentNullException(nameof(box.Minimum));
+        if (box.Q1 is null) throw new ArgumentNullException(nameof(box.Q1));
+        if (box.Median is null) throw new ArgumentNullException(nameof(box.Median));
+        if (box.Q3 is null) throw new ArgumentNullException(nameof(box.Q3));
+        if (box.Maximum is null) throw new ArgumentNullException(nameof(box.Maximum));
+        if (box.X.Count != box.Minimum.Count ||
+            box.X.Count != box.Q1.Count ||
+            box.X.Count != box.Median.Count ||
+            box.X.Count != box.Q3.Count ||
+            box.X.Count != box.Maximum.Count) {
+            throw new ArgumentException("Box plot X, minimum, quartile, median, and maximum values must contain the same number of items.", nameof(box));
+        }
+
+        var boxes = new CfxBoxPlot[box.X.Count];
+        for (var i = 0; i < boxes.Length; i++) {
+            boxes[i] = new CfxBoxPlot(box.X[i], box.Minimum[i], box.Q1[i], box.Median[i], box.Q3[i], box.Maximum[i]);
+        }
+
+        return boxes;
     }
 
     private static void AddHeatmap(CfxChart chart, ChartHeatmap map) {
