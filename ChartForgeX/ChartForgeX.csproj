@@ -17,7 +17,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageId>ChartForgeX</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>Evotec</Authors>
     <Description>Dependency-free SVG, HTML, PNG, BMP, PPM, and TIFF rendering for .NET charts, visual blocks, report tables, metric cards, and topology diagrams.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
