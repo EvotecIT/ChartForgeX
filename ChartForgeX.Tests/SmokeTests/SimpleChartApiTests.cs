@@ -89,6 +89,12 @@ internal static partial class SmokeTests {
             Charts.Build(new ChartDefinition[] { new ChartSlope("Current", 62, 71, "Before", "After") }).Series[0].Kind == ChartSeriesKind.Slope,
             "Simple slope definitions should build native slope series.");
 
+        var slopeLabels = Charts.Build(new ChartDefinition[] {
+            new ChartSlope("Previous", 52, 61),
+            new ChartSlope("Current", 62, 71, "Before", "After")
+        });
+        Assert(slopeLabels.Options.XAxisLabels[0].Text == "Before" && slopeLabels.Options.XAxisLabels[1].Text == "After", "Simple slope definitions should preserve explicit axis labels even when the first series omits them.");
+
         var rangeBar = Charts.Build(new ChartDefinition[] { new ChartRangeBar("Maintenance", new double[] { 1, 2 }, new double[] { 2, 4 }, new double[] { 5, 8 }) });
         Assert(rangeBar.Series[0].Kind == ChartSeriesKind.RangeBar, "Simple range bar definitions should build native range bar series.");
 
@@ -221,6 +227,13 @@ internal static partial class SmokeTests {
                 new ChartLine("B", new double[] { 2, 3 }, markerSize: 14)
             }),
             "Simple line definitions should reject conflicting marker sizes because marker radius is chart-wide.");
+
+        AssertThrows<ArgumentException>(
+            () => Charts.Build(new ChartDefinition[] {
+                new ChartSlope("A", 1, 2, "Before", "After"),
+                new ChartSlope("B", 3, 4, "Old", "New")
+            }),
+            "Simple slope definitions should reject conflicting explicit axis labels because slope labels are chart-wide.");
 
         AssertThrows<ArgumentException>(
             () => Charts.Save(chart, Path.Combine(Path.GetTempPath(), "chartforgex-simple-chart-api-" + Guid.NewGuid().ToString("N") + ".txt")),

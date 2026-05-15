@@ -121,13 +121,7 @@ public static class Charts {
             chart.AddRadialBar("Values", list.Cast<ChartRadial>().Select((radial, index) => new ChartPoint(index + 1, RequirePercent(radial.Value, radial.Name))));
             ApplyPointColors(chart, list.Cast<ChartRadial>().Select(radial => radial.Color).ToArray());
         } else if (type == typeof(ChartSlope)) {
-            foreach (var slope in list.Cast<ChartSlope>()) {
-                if (!string.IsNullOrWhiteSpace(slope.StartLabel) || !string.IsNullOrWhiteSpace(slope.EndLabel)) {
-                    chart.AddSlope(slope.Name, slope.Start, slope.End, slope.StartLabel ?? "Start", slope.EndLabel ?? "End", slope.Color);
-                } else {
-                    chart.AddSlope(slope.Name, slope.Start, slope.End, slope.Color);
-                }
-            }
+            AddSlopeDefinitions(chart, list.Cast<ChartSlope>());
         } else if (type == typeof(ChartGauge)) {
             var gauge = RequireSingle<ChartGauge>(list);
             chart.AddGauge(gauge.Name, gauge.Value, gauge.Minimum, gauge.Maximum, gauge.Color);
@@ -288,6 +282,38 @@ public static class Charts {
 
     private static CfxBubble[] BuildBubbles(IList<double> x, IList<double> y, IList<double> size) {
         return ChartBubbles.FromXYSize(x, y, size);
+    }
+
+    private static void AddSlopeDefinitions(CfxChart chart, IEnumerable<ChartSlope> slopes) {
+        var list = slopes.ToList();
+        var labels = ResolveSlopeAxisLabels(list);
+        foreach (var slope in list) {
+            chart.AddSlope(slope.Name, slope.Start, slope.End, labels.Start, labels.End, slope.Color);
+        }
+    }
+
+    private static (string Start, string End) ResolveSlopeAxisLabels(IEnumerable<ChartSlope> slopes) {
+        string? start = null;
+        string? end = null;
+        foreach (var slope in slopes) {
+            var currentStart = string.IsNullOrWhiteSpace(slope.StartLabel) ? "Start" : slope.StartLabel!;
+            var currentEnd = string.IsNullOrWhiteSpace(slope.EndLabel) ? "End" : slope.EndLabel!;
+            if (string.IsNullOrWhiteSpace(slope.StartLabel) && string.IsNullOrWhiteSpace(slope.EndLabel)) {
+                continue;
+            }
+
+            if (start is null) {
+                start = currentStart;
+                end = currentEnd;
+                continue;
+            }
+
+            if (!string.Equals(start, currentStart, StringComparison.Ordinal) || !string.Equals(end, currentEnd, StringComparison.Ordinal)) {
+                throw new ArgumentException("Slope chart definitions must use one shared start/end label pair.", nameof(slopes));
+            }
+        }
+
+        return (start ?? "Start", end ?? "End");
     }
 
     private static CfxInterval[] BuildIntervals(IList<double> x, IList<double> start, IList<double> end) {
