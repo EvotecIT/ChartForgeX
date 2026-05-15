@@ -62,6 +62,40 @@ static ChartPoint[] Points(params double[] values) =>
     values.Select((value, index) => new ChartPoint(index, value)).ToArray();
 ```
 
+## Simple Definitions
+
+For hosts that collect chart inputs from scripts, configuration, or UI forms, `ChartForgeX.Simple` provides small deferred definition objects and turns them into native `ChartForgeX.Core.Chart` instances. Simple uses core enums, themes, shapes, render options, point helpers, and bubble helpers instead of mirroring them, so direct ChartForgeX callers can stay on the core API.
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Simple;
+
+var chart = Charts.Build(
+    new ChartDefinition[] {
+        new ChartBar("CPU", new double[] { 32, 48, 61 }, ChartColor.FromHex("#2DD4BF")),
+        new ChartBar("Memory", new double[] { 44, 58, 72 }, ChartColor.FromHex("#60A5FA"))
+    },
+    width: 640,
+    height: 360,
+    xTitle: "Sample",
+    yTitle: "Percent",
+    showGrid: true,
+    options: new ChartRenderOptions {
+        UseOverlay = true,
+        ShowLegend = true,
+        ShowDataLabels = true
+    });
+
+chart.SavePng("wallpaper-overlay.png");
+chart.SaveSvg("wallpaper-overlay.svg");
+```
+
+`UseOverlay` applies the transparent composition preset: no card, no plot fill, no axes/grid by default, and a transparent PNG/SVG background. Individual options such as `ShowLegend`, `ShowGrid`, or `ShowAxes` can still be set explicitly after the preset.
+
+When you do not need deferred host definitions, build directly with helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)`.
+
 ## Output API
 
 | Need | Use |
