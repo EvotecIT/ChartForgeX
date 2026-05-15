@@ -95,6 +95,12 @@ internal static partial class SmokeTests {
         });
         Assert(slopeLabels.Options.XAxisLabels[0].Text == "Before" && slopeLabels.Options.XAxisLabels[1].Text == "After", "Simple slope definitions should preserve explicit axis labels even when the first series omits them.");
 
+        var partialSlopeLabels = Charts.Build(new ChartDefinition[] {
+            new ChartSlope("Previous", 52, 61, startLabel: "Before"),
+            new ChartSlope("Current", 62, 71, endLabel: "After")
+        });
+        Assert(partialSlopeLabels.Options.XAxisLabels[0].Text == "Before" && partialSlopeLabels.Options.XAxisLabels[1].Text == "After", "Simple slope definitions should merge compatible partial axis labels.");
+
         var rangeBar = Charts.Build(new ChartDefinition[] { new ChartRangeBar("Maintenance", new double[] { 1, 2 }, new double[] { 2, 4 }, new double[] { 5, 8 }) });
         Assert(rangeBar.Series[0].Kind == ChartSeriesKind.RangeBar, "Simple range bar definitions should build native range bar series.");
 

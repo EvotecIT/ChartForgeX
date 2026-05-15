@@ -296,20 +296,20 @@ public static class Charts {
         string? start = null;
         string? end = null;
         foreach (var slope in slopes) {
-            var currentStart = string.IsNullOrWhiteSpace(slope.StartLabel) ? "Start" : slope.StartLabel!;
-            var currentEnd = string.IsNullOrWhiteSpace(slope.EndLabel) ? "End" : slope.EndLabel!;
-            if (string.IsNullOrWhiteSpace(slope.StartLabel) && string.IsNullOrWhiteSpace(slope.EndLabel)) {
-                continue;
+            if (!string.IsNullOrWhiteSpace(slope.StartLabel)) {
+                if (start is null) {
+                    start = slope.StartLabel;
+                } else if (!string.Equals(start, slope.StartLabel, StringComparison.Ordinal)) {
+                    throw new ArgumentException("Slope chart definitions must use one shared start label.", nameof(slopes));
+                }
             }
 
-            if (start is null) {
-                start = currentStart;
-                end = currentEnd;
-                continue;
-            }
-
-            if (!string.Equals(start, currentStart, StringComparison.Ordinal) || !string.Equals(end, currentEnd, StringComparison.Ordinal)) {
-                throw new ArgumentException("Slope chart definitions must use one shared start/end label pair.", nameof(slopes));
+            if (!string.IsNullOrWhiteSpace(slope.EndLabel)) {
+                if (end is null) {
+                    end = slope.EndLabel;
+                } else if (!string.Equals(end, slope.EndLabel, StringComparison.Ordinal)) {
+                    throw new ArgumentException("Slope chart definitions must use one shared end label.", nameof(slopes));
+                }
             }
         }
 
