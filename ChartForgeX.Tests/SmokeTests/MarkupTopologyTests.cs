@@ -58,6 +58,23 @@ edges:
         Assert(Diagnostics(result).Contains("at least one node", System.StringComparison.Ordinal), "Missing-node diagnostic should be actionable.");
     }
 
+    private static void MarkupTopologyExtractsTildeFenceWithMetadata() {
+        const string source = @"# Diagram
+
+~~~chartforgex topology {#service-map}
+title ""Tilde Fence""
+node api ""API"" kind:service status:healthy
+~~~
+";
+
+        var blocks = ChartForgeXMarkdown.ExtractTopologyPayloads(source);
+        Assert(blocks.Count == 1, "Markdown extraction should support standard three-tilde fences with trailing metadata.");
+        var result = new MarkupTopologyParser().Parse(source);
+        Assert(!result.HasErrors, "Tilde-fenced topology markup should parse without errors: " + Diagnostics(result));
+        Assert(result.Document != null && result.Document.Title == "Tilde Fence", "Tilde-fenced topology markup should produce a document.");
+        Assert(result.Document!.Nodes.Count == 1, "Tilde-fenced topology markup should parse nodes.");
+    }
+
     private static void MarkupTopologyCliKeepsWarningsOffGeneratedStreams() {
         var fixture = Path.Combine(Path.GetTempPath(), "chartforgex-markup-warning-" + Guid.NewGuid().ToString("N") + ".md");
         File.WriteAllText(fixture, "title \"Warning Stream Check\"\nunknownThing yes\nnode api \"API\" kind:service status:healthy\n");

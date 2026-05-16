@@ -35,7 +35,7 @@ public static class ChartForgeXMarkdown {
         foreach (var line in lines) {
             var trimmed = line.TrimStart();
             if (!inFence) {
-                if (!trimmed.StartsWith("```", StringComparison.Ordinal) && !trimmed.StartsWith("~~~~", StringComparison.Ordinal)) continue;
+                if (!trimmed.StartsWith("```", StringComparison.Ordinal) && !trimmed.StartsWith("~~~", StringComparison.Ordinal)) continue;
                 var marker = trimmed[0] == '`' ? "`" : "~";
                 var count = CountPrefix(trimmed, marker[0]);
                 fence = new string(marker[0], count);
@@ -63,10 +63,17 @@ public static class ChartForgeXMarkdown {
     private static bool IsTopologyFence(string info) {
         if (string.IsNullOrWhiteSpace(info)) return false;
         var normalized = info.Trim().ToLowerInvariant();
-        return normalized == "chartforgex topology" ||
-            normalized == "chartforgex-topology" ||
-            normalized == "cfx topology" ||
-            normalized == "cfx-topology";
+        return IsFenceName(normalized, "chartforgex topology") ||
+            IsFenceName(normalized, "chartforgex-topology") ||
+            IsFenceName(normalized, "cfx topology") ||
+            IsFenceName(normalized, "cfx-topology");
+    }
+
+    private static bool IsFenceName(string info, string name) {
+        if (info == name) return true;
+        if (!info.StartsWith(name, StringComparison.Ordinal)) return false;
+        var next = info[name.Length];
+        return char.IsWhiteSpace(next) || next == '{';
     }
 
     private static int CountPrefix(string text, char value) {

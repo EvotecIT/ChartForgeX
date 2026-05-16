@@ -2,6 +2,8 @@
 
 ChartForgeX markup is a Markdown-friendly authoring layer for deterministic ChartForgeX visuals. The first supported surface is topology diagrams in fenced `chartforgex topology` blocks.
 
+Topology fences may use backticks or tildes, and trailing Markdown fence metadata is ignored by the parser.
+
 Use command-style lines for small diagrams:
 
 ````markdown
