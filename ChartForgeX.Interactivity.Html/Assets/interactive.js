@@ -465,6 +465,8 @@
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
     clearReveals(root, 'hover');
+    clearReveals(root, 'crosshair');
+    clearReveals(root, 'navigate');
     root.querySelectorAll('.cfx-hovered,.cfx-hover-related').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related'));
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
@@ -965,7 +967,8 @@
   };
   const setScenario = (root, scenarioId, emit, sync) => {
     const route = scenarioRoute(root, scenarioId);
-    stopScenarioPlayback(root, 'idle', false);
+    const previousPlayback = root.dataset.cfxScenarioPlayback || '';
+    stopScenarioPlayback(root, 'idle', emit !== false && previousPlayback && previousPlayback !== 'idle');
     clearScenarioStep(root);
     clearReveals(root);
     root.querySelectorAll('.cfx-scenario-active,.cfx-scenario-muted').forEach((node) => node.classList.remove('cfx-scenario-active', 'cfx-scenario-muted'));
@@ -1141,6 +1144,13 @@
     root.querySelectorAll('[data-cfx-scenario]').forEach((button) => {
       button.addEventListener('click', () => setScenario(root, button.dataset.cfxScenario || '', true));
     });
+    if (hasFeature(root, 'Scenarios')) {
+      root.addEventListener('cfx-set-scenario', (event) => {
+        const detail = event.detail || {};
+        setScenario(root, detail.scenarioId || '', true, true);
+      });
+      root.addEventListener('cfx-clear-scenario', () => setScenario(root, '', true, true));
+    }
     if (hasFeature(root, 'StepPlayback')) {
       root.querySelectorAll('[data-cfx-scenario-step-control]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -1152,11 +1162,6 @@
           else if (action === 'link') copyScenarioLink(root);
         });
       });
-      root.addEventListener('cfx-set-scenario', (event) => {
-        const detail = event.detail || {};
-        setScenario(root, detail.scenarioId || '', true, true);
-      });
-      root.addEventListener('cfx-clear-scenario', () => setScenario(root, '', true, true));
       root.addEventListener('cfx-set-scenario-step', (event) => {
         const detail = event.detail || {};
         if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
@@ -1263,6 +1268,8 @@
       stage.addEventListener('pointercancel', () => {
         drag = null;
         hideCrosshair(root, crosshair);
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
       });
     }
     const reset = root.querySelector('[data-cfx-reset]');
