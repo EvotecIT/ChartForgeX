@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 const allowedCliArtifactNames = new Set([
@@ -90,12 +91,17 @@ async function previewActiveDocument(context: vscode.ExtensionContext, resource?
 }
 
 async function refreshPreview(context: vscode.ExtensionContext, document: vscode.TextDocument, panel: vscode.WebviewPanel): Promise<void> {
+  const requestVersion = document.version;
   if (!isChartForgeXMarkup(document)) {
     panel.webview.html = renderMessage('No chartforgex topology block was found in this document.');
     return;
   }
 
   const result = await runCli(context, document, 'preview');
+  if (document.version !== requestVersion) {
+    return;
+  }
+
   if (result.code !== 0) {
     panel.webview.html = renderMessage(escapeHtml(result.stderr || result.stdout || 'Preview failed.'));
     return;
@@ -110,12 +116,17 @@ async function validateActiveDocument(context: vscode.ExtensionContext, showStat
     return false;
   }
 
+  const requestVersion = document.version;
   if (!isChartForgeXMarkup(document)) {
     diagnostics.delete(document.uri);
     return false;
   }
 
   const result = await runCli(context, document, 'validate');
+  if (document.version !== requestVersion) {
+    return false;
+  }
+
   applyDiagnostics(document, result);
   if (showStatus) {
     if (result.code === 0) {
@@ -266,10 +277,6 @@ function isChartForgeXMarkup(document: vscode.TextDocument): boolean {
 }
 
 async function runCli(context: vscode.ExtensionContext, document: vscode.TextDocument, command: string, extraArgs: string[] = []): Promise<CliResult> {
-  if (document.isDirty) {
-    await document.save();
-  }
-
   let cli: { command: string; args: string[] };
   try {
     cli = resolveCli(context);
@@ -277,8 +284,15 @@ async function runCli(context: vscode.ExtensionContext, document: vscode.TextDoc
     return { stdout: '', stderr: error instanceof Error ? error.message : String(error), code: 1 };
   }
 
-  const args = [...cli.args, command, document.fileName, ...extraArgs];
-  return spawnProcess(cli.command, args, path.dirname(document.fileName));
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chartforgex-markup-'));
+  const tempFile = path.join(tempRoot, tempDocumentName(document));
+  fs.writeFileSync(tempFile, document.getText(), 'utf8');
+  try {
+    const args = [...cli.args, command, tempFile, ...extraArgs];
+    return await spawnProcess(cli.command, args, documentWorkingDirectory(document, tempRoot));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 }
 
 function resolveCli(context: vscode.ExtensionContext): { command: string; args: string[] } {
@@ -291,7 +305,7 @@ function resolveCli(context: vscode.ExtensionContext): { command: string; args: 
   for (const candidate of candidates) {
     if (!candidate || !fs.existsSync(candidate)) continue;
     const name = path.basename(candidate).toLowerCase();
-    if (!allowedCliArtifactNames.has(name)) continue;
+    if (!configured && !allowedCliArtifactNames.has(name)) continue;
     if (candidate.endsWith('.csproj')) return { command: 'dotnet', args: ['run', '--project', candidate, '-c', 'Release', '--'] };
     if (candidate.endsWith('.dll')) return { command: 'dotnet', args: [candidate] };
     return { command: candidate, args: [] };
@@ -338,6 +352,24 @@ function spawnProcess(command: string, args: string[], cwd: string): Promise<Cli
   });
 }
 
+function tempDocumentName(document: vscode.TextDocument): string {
+  const sourceName = document.uri.scheme === 'file' ? path.basename(document.fileName) : 'untitled.cfx.md';
+  return /\.(cfx|chartforgex)\.md$/i.test(sourceName) || /\.md$/i.test(sourceName) ? sourceName : `${sourceName}.cfx.md`;
+}
+
+function documentWorkingDirectory(document: vscode.TextDocument, fallback: string): string {
+  if (document.uri.scheme === 'file') {
+    return path.dirname(document.fileName);
+  }
+
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri;
+  if (workspaceFolder?.scheme === 'file') {
+    return workspaceFolder.fsPath;
+  }
+
+  return fallback;
+}
+
 function applyDiagnostics(document: vscode.TextDocument, result: CliResult): void {
   const items = parseDiagnostics(document, result);
   if (result.code === 0) {
@@ -360,7 +392,7 @@ function parseDiagnostics(document: vscode.TextDocument, result: CliResult): vsc
   const all = `${result.stderr}\n${result.stdout}`.split(/\r?\n/g);
   const items: vscode.Diagnostic[] = [];
   for (const line of all) {
-    const match = /^(error|warning)(?:\((\d+)\))?:\s*(.+)$/i.exec(line.trim());
+    const match = /^(error|warning)(?:\((\d+)\))?(?:\s+[\w.-]+)?:\s*(.+)$/i.exec(line.trim());
     if (!match) continue;
     const lineNumber = Math.max(0, Number.parseInt(match[2] ?? '1', 10) - 1);
     const safeLine = Math.min(lineNumber, Math.max(0, document.lineCount - 1));

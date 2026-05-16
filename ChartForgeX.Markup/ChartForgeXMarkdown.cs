@@ -58,8 +58,10 @@ public static class ChartForgeXMarkdown {
 
         for (var index = 0; index < lines.Length; index++) {
             var line = lines[index];
+            var indent = LeadingSpaceCount(line);
             var trimmed = line.TrimStart();
             if (!inFence) {
+                if (indent > 3) continue;
                 if (!trimmed.StartsWith("```", StringComparison.Ordinal) && !trimmed.StartsWith("~~~", StringComparison.Ordinal)) continue;
                 var marker = trimmed[0] == '`' ? "`" : "~";
                 var count = CountPrefix(trimmed, marker[0]);
@@ -72,7 +74,7 @@ public static class ChartForgeXMarkdown {
                 continue;
             }
 
-            if (trimmed.StartsWith(fence, StringComparison.Ordinal)) {
+            if (indent <= 3 && trimmed.StartsWith(fence, StringComparison.Ordinal)) {
                 if (include) blocks.Add(new ChartForgeXMarkdownBlock(string.Join("\n", payload), payloadStartLine));
                 inFence = false;
                 include = false;
@@ -83,6 +85,7 @@ public static class ChartForgeXMarkdown {
             if (include) payload.Add(line);
         }
 
+        if (inFence && include) blocks.Add(new ChartForgeXMarkdownBlock(string.Join("\n", payload), payloadStartLine));
         return blocks;
     }
 
@@ -105,6 +108,12 @@ public static class ChartForgeXMarkdown {
     private static int CountPrefix(string text, char value) {
         var count = 0;
         while (count < text.Length && text[count] == value) count++;
+        return count;
+    }
+
+    private static int LeadingSpaceCount(string text) {
+        var count = 0;
+        while (count < text.Length && text[count] == ' ') count++;
         return count;
     }
 }

@@ -8,9 +8,15 @@ namespace ChartForgeX.Markup.Cli;
 
 internal static class Program {
     private static int Main(string[] args) {
-        if (args.Length < 2 || IsHelp(args[0])) {
+        if (args.Length == 0 || IsHelp(args[0])) {
             Help();
             return args.Length == 0 ? 1 : 0;
+        }
+
+        if (args.Length < 2) {
+            Console.Error.WriteLine("Missing input file.");
+            Help();
+            return 1;
         }
 
         try {
@@ -35,6 +41,10 @@ internal static class Program {
                     Help();
                     return 1;
             }
+        } catch (TopologyValidationException ex) {
+            foreach (var error in ex.Result.Errors) Console.Error.WriteLine("error " + error.Code + ": " + error.Message);
+            foreach (var warning in ex.Result.Warnings) Console.Error.WriteLine("warning " + warning.Code + ": " + warning.Message);
+            return 2;
         } catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException || ex is InvalidOperationException) {
             Console.Error.WriteLine(ex.Message);
             return 1;
@@ -117,12 +127,16 @@ internal static class Program {
     }
 
     private static string? Option(string[] args, string name) {
-        for (var i = 0; i < args.Length - 1; i++) {
-            if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase)) return args[i + 1];
+        for (var i = 0; i < args.Length; i++) {
+            if (!string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase)) continue;
+            if (i + 1 >= args.Length || IsOptionName(args[i + 1])) throw new ArgumentException("Option " + name + " requires a value.");
+            return args[i + 1];
         }
 
         return null;
     }
+
+    private static bool IsOptionName(string value) => value.StartsWith("-", StringComparison.Ordinal);
 
     private static void EnsureOutputDirectory(string path) {
         var directory = Path.GetDirectoryName(Path.GetFullPath(path));

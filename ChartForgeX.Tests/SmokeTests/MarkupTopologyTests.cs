@@ -91,6 +91,76 @@ node api ""API"" kind:service status:healthy
         Assert(warning!.Line == 5, "Markdown parser diagnostics should use the original source line.");
     }
 
+    private static void MarkupTopologyPreservesMarkdownTableAuthoringDetails() {
+        const string source = @"```chartforgex topology
+nodes:
+id | label | kind | status | display | width | height | subtitle
+:-- | :---- | :--- | ---: | :------ | ----: | -----: | :-------
+api | API \| Gateway | service | healthy | tile | 180 | 80 | https://api.example.com
+db | Database | database | warning | card | 150 | 70 | Primary
+edges:
+from | to | label | status
+:--- | --: | :---- | :-----
+api | db | https://api.example.com | warning
+```";
+
+        var result = new MarkupTopologyParser().Parse(source);
+
+        Assert(!result.HasErrors, "Markdown table topology should parse without errors: " + Diagnostics(result));
+        Assert(result.Document!.Nodes[0].Label == "API | Gateway", "Escaped table pipes should stay inside the cell.");
+        Assert(result.Document.Nodes[0].Subtitle == "https://api.example.com", "Table values should preserve URL-style text.");
+        Assert(result.Document.Nodes[0].Display == TopologyNodeDisplayMode.Tile, "Node table rows should map display.");
+        Assert(result.Document.Nodes[0].Width == 180 && result.Document.Nodes[0].Height == 80, "Node table rows should map explicit dimensions.");
+        Assert(result.Document.Edges[0].Label == "https://api.example.com", "Edge table labels should preserve colon-containing values.");
+    }
+
+    private static void MarkupTopologyPreservesCommandAuthoringDetails() {
+        const string source = @"title ""Command Details""
+node api ""API"" kind:service status:healthy subtitle:https://api.example.com width:180 height:80 display:tile
+node db ""Database"" kind:database status:warning
+edge api -> db ""https://api.example.com"" status:warning
+";
+
+        var result = new MarkupTopologyParser().Parse(source);
+
+        Assert(!result.HasErrors, "Command topology should parse without errors: " + Diagnostics(result));
+        Assert(result.Document!.Nodes[0].Subtitle == "https://api.example.com", "Command attributes should preserve URL-style text.");
+        Assert(result.Document.Nodes[0].Width == 180 && result.Document.Nodes[0].Height == 80, "Command nodes should map explicit dimensions.");
+        Assert(result.Document.Nodes[0].Display == TopologyNodeDisplayMode.Tile, "Command nodes should map display.");
+        Assert(result.Document.Edges[0].Label == "https://api.example.com", "Command edge labels should preserve colon-containing values.");
+        Assert(result.Document.Edges[0].Direction == TopologyDirection.Forward, "Arrow commands should default -> to forward direction.");
+    }
+
+    private static void MarkupTopologyRejectsMismatchedSectionCommands() {
+        const string source = @"nodes:
+edge api -> db
+";
+
+        var result = new MarkupTopologyParser().Parse(source);
+
+        Assert(result.HasErrors, "Mismatched section commands should produce parser errors.");
+        Assert(Diagnostics(result).Contains("cannot appear inside nodes section", StringComparison.Ordinal), "Mismatched section diagnostics should identify the bad section.");
+    }
+
+    private static void MarkupTopologyHandlesEditingFriendlyMarkdownFences() {
+        const string unterminated = @"# Draft
+
+```chartforgex topology
+node api ""API"" kind:service status:healthy";
+
+        var blocks = ChartForgeXMarkdown.ExtractTopologyBlocks(unterminated);
+        Assert(blocks.Count == 1, "Unterminated topology fences should remain open through EOF.");
+        Assert(blocks[0].StartLine == 4, "Unterminated fence payload should preserve source line.");
+
+        const string indented = @"    ```chartforgex topology
+    node api ""API""
+    ```
+node raw ""Raw"" kind:service status:healthy";
+
+        var result = new MarkupTopologyParser().Parse(indented);
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("Unknown topology command", StringComparison.Ordinal)), "Four-space indented fences should stay as code block text, not live topology fences.");
+    }
+
     private static void MarkupTopologyCliKeepsWarningsOffGeneratedStreams() {
         var fixture = Path.Combine(Path.GetTempPath(), "chartforgex-markup-warning-" + Guid.NewGuid().ToString("N") + ".md");
         File.WriteAllText(fixture, "title \"Warning Stream Check\"\nunknownThing yes\nnode api \"API\" kind:service status:healthy\n");
@@ -115,7 +185,57 @@ node api ""API"" kind:service status:healthy
         }
     }
 
+    private static void MarkupTopologyCliRejectsMalformedAutomationInputs() {
+        var shortInvocation = RunMarkupCliRaw("validate");
+        Assert(shortInvocation.ExitCode == 1, "CLI should fail when an input file is missing.");
+        Assert(shortInvocation.StandardError.Contains("Missing input file", StringComparison.Ordinal), "Missing input file should be reported on stderr.");
+
+        var fixture = Path.Combine(Path.GetTempPath(), "chartforgex-markup-options-" + Guid.NewGuid().ToString("N") + ".md");
+        File.WriteAllText(fixture, "node api \"API\" kind:service status:healthy\n");
+        try {
+            var missingValue = RunMarkupCli("emit", fixture, "--target");
+            Assert(missingValue.ExitCode == 1, "CLI should fail when an option value is missing.");
+            Assert(missingValue.StandardError.Contains("requires a value", StringComparison.Ordinal), "Missing option value should be reported on stderr.");
+        } finally {
+            try {
+                File.Delete(fixture);
+            } catch (IOException) {
+            } catch (UnauthorizedAccessException) {
+            }
+        }
+    }
+
+    private static void MarkupTopologyCliReportsRenderValidationErrors() {
+        var fixture = Path.Combine(Path.GetTempPath(), "chartforgex-markup-invalid-" + Guid.NewGuid().ToString("N") + ".md");
+        var output = Path.Combine(Path.GetTempPath(), "chartforgex-markup-invalid-" + Guid.NewGuid().ToString("N") + ".svg");
+        File.WriteAllText(fixture, "node api \"API\" kind:service status:healthy\nedge api -> missing \"broken\"\n");
+        try {
+            var preview = RunMarkupCli("preview", fixture);
+            Assert(preview.ExitCode == 2, "CLI preview should return a stable validation error exit code.");
+            Assert(preview.StandardError.Contains("error ", StringComparison.Ordinal), "CLI preview should write topology validation errors to stderr.");
+
+            var export = RunMarkupCli("export", fixture, "--output", output);
+            Assert(export.ExitCode == 2, "CLI export should return a stable validation error exit code.");
+            Assert(export.StandardError.Contains("error ", StringComparison.Ordinal), "CLI export should write topology validation errors to stderr.");
+        } finally {
+            try {
+                File.Delete(fixture);
+                File.Delete(output);
+            } catch (IOException) {
+            } catch (UnauthorizedAccessException) {
+            }
+        }
+    }
+
     private static (int ExitCode, string StandardOutput, string StandardError) RunMarkupCli(string command, string input, params string[] extraArguments) {
+        var arguments = new string[2 + extraArguments.Length];
+        arguments[0] = command;
+        arguments[1] = input;
+        Array.Copy(extraArguments, 0, arguments, 2, extraArguments.Length);
+        return RunMarkupCliRaw(arguments);
+    }
+
+    private static (int ExitCode, string StandardOutput, string StandardError) RunMarkupCliRaw(params string[] arguments) {
         var cli = FindMarkupCliDll();
         var startInfo = new ProcessStartInfo("dotnet") {
             RedirectStandardOutput = true,
@@ -123,9 +243,7 @@ node api ""API"" kind:service status:healthy
             UseShellExecute = false
         };
         startInfo.ArgumentList.Add(cli);
-        startInfo.ArgumentList.Add(command);
-        startInfo.ArgumentList.Add(input);
-        foreach (var argument in extraArguments) startInfo.ArgumentList.Add(argument);
+        foreach (var argument in arguments) startInfo.ArgumentList.Add(argument);
 
         using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start ChartForgeX.Markup.Cli.");
         var standardOutput = process.StandardOutput.ReadToEndAsync();

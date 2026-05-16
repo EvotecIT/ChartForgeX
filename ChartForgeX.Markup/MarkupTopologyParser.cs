@@ -42,7 +42,7 @@ public sealed class MarkupTopologyParser {
                 continue;
             }
 
-            if (section.Length > 0 && line.StartsWith("|", StringComparison.Ordinal)) {
+            if (section.Length > 0 && IsTableLine(line)) {
                 tableHeaders = ParseTableLine(result, result.Document!, section, tableHeaders, line, lineNumber);
                 continue;
             }
@@ -60,16 +60,31 @@ public sealed class MarkupTopologyParser {
         var command = tokens[0].TrimEnd(':').ToLowerInvariant();
 
         if (section == "groups" && command != "group") {
+            if (IsTopologyEntryCommand(command)) {
+                Add(result, lineNumber, MarkupDiagnosticSeverity.Error, "Command '" + command + "' cannot appear inside groups section.");
+                return;
+            }
+
             command = "group";
             tokens.Insert(0, command);
         }
 
         if (section == "nodes" && command != "node") {
+            if (IsTopologyEntryCommand(command)) {
+                Add(result, lineNumber, MarkupDiagnosticSeverity.Error, "Command '" + command + "' cannot appear inside nodes section.");
+                return;
+            }
+
             command = "node";
             tokens.Insert(0, command);
         }
 
         if (section == "edges" && command != "edge") {
+            if (IsTopologyEntryCommand(command)) {
+                Add(result, lineNumber, MarkupDiagnosticSeverity.Error, "Command '" + command + "' cannot appear inside edges section.");
+                return;
+            }
+
             command = "edge";
             tokens.Insert(0, command);
         }
@@ -112,7 +127,7 @@ public sealed class MarkupTopologyParser {
     private static List<string>? ParseTableLine(MarkupParseResult<MarkupTopologyDocument> result, MarkupTopologyDocument document, string section, List<string>? headers, string line, int lineNumber) {
         var cells = SplitTableCells(line);
         if (cells.Count == 0) return headers;
-        if (cells.All(cell => cell.Length == 0 || cell.All(ch => ch == '-'))) return headers;
+        if (IsTableSeparator(cells)) return headers;
         if (headers == null) return cells.Select(cell => NormalizeKey(cell)).ToList();
 
         var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -138,7 +153,10 @@ public sealed class MarkupTopologyParser {
                 Icon = Optional(row, "icon"),
                 Symbol = Optional(row, "symbol"),
                 Badge = Optional(row, "badge"),
-                Color = Optional(row, "color")
+                Color = Optional(row, "color"),
+                Display = row.TryGetValue("display", out var display) && !string.IsNullOrWhiteSpace(display) ? ParseEnum<TopologyNodeDisplayMode>(display) : null,
+                Width = Number(row, "width", 120),
+                Height = Number(row, "height", 64)
             });
             if (section == "edges") AddEdge(document, Value(row, "id", string.Empty), Required(row, "from"), Required(row, "to"), Optional(row, "label"), row);
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is InvalidOperationException) {
@@ -192,7 +210,9 @@ public sealed class MarkupTopologyParser {
             Symbol = Optional(attributes, "symbol"),
             Badge = Optional(attributes, "badge"),
             Color = Optional(attributes, "color"),
-            Display = attributes.TryGetValue("display", out var display) ? ParseEnum<TopologyNodeDisplayMode>(display) : null
+            Display = attributes.TryGetValue("display", out var display) ? ParseEnum<TopologyNodeDisplayMode>(display) : null,
+            Width = Number(attributes, "width", 120),
+            Height = Number(attributes, "height", 64)
         });
     }
 
@@ -206,10 +226,11 @@ public sealed class MarkupTopologyParser {
             firstAttribute = 5;
         }
 
-        AddEdge(document, string.Empty, tokens[1], tokens[3], label, Attributes(tokens, firstAttribute));
+        var defaultDirection = tokens[2] == "->" ? TopologyDirection.Forward : TopologyDirection.None;
+        AddEdge(document, string.Empty, tokens[1], tokens[3], label, Attributes(tokens, firstAttribute), defaultDirection);
     }
 
-    private static void AddEdge(MarkupTopologyDocument document, string id, string source, string target, string? label, Dictionary<string, string> attributes) {
+    private static void AddEdge(MarkupTopologyDocument document, string id, string source, string target, string? label, Dictionary<string, string> attributes, TopologyDirection defaultDirection = TopologyDirection.None) {
         var edgeId = string.IsNullOrWhiteSpace(id) ? Value(attributes, "id", MakeEdgeId(document, source, target)) : id;
         document.Edges.Add(new MarkupTopologyEdge {
             Id = edgeId,
@@ -218,7 +239,7 @@ public sealed class MarkupTopologyParser {
             Label = label,
             Kind = ParseEnum<TopologyEdgeKind>(Value(attributes, "kind", "dependency")),
             Status = ParseEnum<TopologyHealthStatus>(Value(attributes, "status", "unknown")),
-            Direction = ParseEnum<TopologyDirection>(Value(attributes, "direction", "none")),
+            Direction = attributes.TryGetValue("direction", out var direction) && !string.IsNullOrWhiteSpace(direction) ? ParseEnum<TopologyDirection>(direction) : defaultDirection,
             Routing = ParseEnum<TopologyEdgeRouting>(Value(attributes, "routing", "orthogonal"))
         });
     }
@@ -228,7 +249,7 @@ public sealed class MarkupTopologyParser {
         for (var i = start; i < tokens.Count; i++) {
             var token = tokens[i];
             var split = token.IndexOf(':');
-            if (split <= 0) continue;
+            if (split <= 0 || !IsKnownAttribute(token.Substring(0, split))) continue;
             attributes[NormalizeKey(token.Substring(0, split))] = token.Substring(split + 1);
         }
 
@@ -293,10 +314,32 @@ public sealed class MarkupTopologyParser {
         var inQuote = false;
         for (var i = 0; i < line.Length - 1; i++) {
             if (line[i] == '"') inQuote = !inQuote;
-            if (!inQuote && line[i] == '/' && line[i + 1] == '/') return line.Substring(0, i);
+            if (!inQuote && line[i] == '/' && line[i + 1] == '/' && (i == 0 || char.IsWhiteSpace(line[i - 1]))) return line.Substring(0, i);
         }
 
         return line;
+    }
+
+    private static bool IsTableLine(string line) => line.StartsWith("|", StringComparison.Ordinal) || line.IndexOf('|') > 0;
+
+    private static bool IsTableSeparator(List<string> cells) {
+        foreach (var cell in cells) {
+            var value = cell.Trim();
+            if (value.Length == 0) continue;
+            var hyphenCount = 0;
+            foreach (var ch in value) {
+                if (ch == '-') {
+                    hyphenCount++;
+                    continue;
+                }
+
+                if (ch != ':' && !char.IsWhiteSpace(ch)) return false;
+            }
+
+            if (hyphenCount == 0) return false;
+        }
+
+        return true;
     }
 
     private static bool IsSection(string line) {
@@ -305,7 +348,34 @@ public sealed class MarkupTopologyParser {
     }
 
     private static bool IsSectionEnd(string line) => string.Equals(line, "end", StringComparison.OrdinalIgnoreCase);
-    private static bool IsAttribute(string token) => token.IndexOf(':') > 0;
+    private static bool IsAttribute(string token) {
+        var split = token.IndexOf(':');
+        return split > 0 && IsKnownAttribute(token.Substring(0, split));
+    }
+
+    private static bool IsKnownAttribute(string key) {
+        switch (NormalizeKey(key)) {
+            case "id":
+            case "kind":
+            case "status":
+            case "direction":
+            case "routing":
+            case "group":
+            case "subtitle":
+            case "icon":
+            case "symbol":
+            case "badge":
+            case "color":
+            case "display":
+            case "width":
+            case "height":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsTopologyEntryCommand(string command) => command == "group" || command == "node" || command == "edge";
     private static string JoinTail(List<string> tokens, int start) => start >= tokens.Count ? string.Empty : string.Join(" ", tokens.Skip(start));
     private static string NormalizeKey(string value) => new string((value ?? string.Empty).Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
     private static string? Optional(Dictionary<string, string> row, string key) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;
@@ -317,8 +387,41 @@ public sealed class MarkupTopologyParser {
     private static List<string> SplitTableCells(string line) {
         var trimmed = line.Trim();
         if (trimmed.StartsWith("|", StringComparison.Ordinal)) trimmed = trimmed.Substring(1);
-        if (trimmed.EndsWith("|", StringComparison.Ordinal)) trimmed = trimmed.Substring(0, trimmed.Length - 1);
-        return trimmed.Split('|').Select(cell => cell.Trim()).ToList();
+        if (EndsWithUnescapedPipe(trimmed)) trimmed = trimmed.Substring(0, trimmed.Length - 1);
+        var cells = new List<string>();
+        var current = new System.Text.StringBuilder();
+        var escaped = false;
+        foreach (var ch in trimmed) {
+            if (escaped) {
+                current.Append(ch);
+                escaped = false;
+                continue;
+            }
+
+            if (ch == '\\') {
+                escaped = true;
+                continue;
+            }
+
+            if (ch == '|') {
+                cells.Add(current.ToString().Trim());
+                current.Length = 0;
+                continue;
+            }
+
+            current.Append(ch);
+        }
+
+        if (escaped) current.Append('\\');
+        cells.Add(current.ToString().Trim());
+        return cells;
+    }
+
+    private static bool EndsWithUnescapedPipe(string value) {
+        if (!value.EndsWith("|", StringComparison.Ordinal)) return false;
+        var slashCount = 0;
+        for (var i = value.Length - 2; i >= 0 && value[i] == '\\'; i--) slashCount++;
+        return slashCount % 2 == 0;
     }
 
     private static string MakeEdgeId(MarkupTopologyDocument document, string source, string target) {
