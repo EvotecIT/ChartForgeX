@@ -60,7 +60,7 @@ public sealed class MarkupTopologyParser {
         var command = tokens[0].TrimEnd(':').ToLowerInvariant();
 
         if (section == "groups" && command != "group") {
-            if (IsTopologyEntryCommand(command)) {
+            if (IsKnownTopologyCommand(command)) {
                 Add(result, lineNumber, MarkupDiagnosticSeverity.Error, "Command '" + command + "' cannot appear inside groups section.");
                 return;
             }
@@ -70,7 +70,7 @@ public sealed class MarkupTopologyParser {
         }
 
         if (section == "nodes" && command != "node") {
-            if (IsTopologyEntryCommand(command)) {
+            if (IsKnownTopologyCommand(command)) {
                 Add(result, lineNumber, MarkupDiagnosticSeverity.Error, "Command '" + command + "' cannot appear inside nodes section.");
                 return;
             }
@@ -80,7 +80,7 @@ public sealed class MarkupTopologyParser {
         }
 
         if (section == "edges" && command != "edge") {
-            if (IsTopologyEntryCommand(command)) {
+            if (IsKnownTopologyCommand(command)) {
                 Add(result, lineNumber, MarkupDiagnosticSeverity.Error, "Command '" + command + "' cannot appear inside edges section.");
                 return;
             }
@@ -113,7 +113,7 @@ public sealed class MarkupTopologyParser {
                     ParseNode(document, tokens, lineNumber);
                     break;
                 case "edge":
-                    ParseEdge(document, tokens, lineNumber);
+                    ParseEdge(document, tokens, lineNumber, line);
                     break;
                 default:
                     Add(result, lineNumber, MarkupDiagnosticSeverity.Warning, "Unknown topology command '" + tokens[0] + "'.");
@@ -216,12 +216,12 @@ public sealed class MarkupTopologyParser {
         });
     }
 
-    private static void ParseEdge(MarkupTopologyDocument document, List<string> tokens, int lineNumber) {
+    private static void ParseEdge(MarkupTopologyDocument document, List<string> tokens, int lineNumber, string line) {
         if (tokens.Count < 4) throw new ArgumentException("Edge on line " + lineNumber.ToString(CultureInfo.InvariantCulture) + " requires source, arrow, and target.");
         if (tokens[2] != "->" && tokens[2] != "--") throw new ArgumentException("Edge arrow must be '->' or '--'.");
         var firstAttribute = 4;
         string? label = null;
-        if (tokens.Count > 4 && !IsAttribute(tokens[4])) {
+        if (tokens.Count > 4 && (IsTokenQuoted(line, 4) || !IsAttribute(tokens[4]))) {
             label = tokens[4];
             firstAttribute = 5;
         }
@@ -280,6 +280,43 @@ public sealed class MarkupTopologyParser {
 
         if (current.Length > 0) tokens.Add(current.ToString());
         return tokens;
+    }
+
+    private static bool IsTokenQuoted(string line, int tokenIndex) {
+        var currentToken = 0;
+        var inQuote = false;
+        var inToken = false;
+        var tokenQuoted = false;
+        for (var i = 0; i < line.Length; i++) {
+            var ch = line[i];
+            if (ch == '"') {
+                if (!inToken) {
+                    inToken = true;
+                    tokenQuoted = true;
+                }
+
+                inQuote = !inQuote;
+                continue;
+            }
+
+            if (char.IsWhiteSpace(ch) && !inQuote) {
+                if (inToken) {
+                    if (currentToken == tokenIndex) return tokenQuoted;
+                    currentToken++;
+                    inToken = false;
+                    tokenQuoted = false;
+                }
+
+                continue;
+            }
+
+            if (!inToken) {
+                inToken = true;
+                tokenQuoted = inQuote;
+            }
+        }
+
+        return inToken && currentToken == tokenIndex && tokenQuoted;
     }
 
     private static TEnum ParseEnum<TEnum>(string value) where TEnum : struct {
@@ -426,6 +463,7 @@ public sealed class MarkupTopologyParser {
     }
 
     private static bool IsTopologyEntryCommand(string command) => command == "group" || command == "node" || command == "edge";
+    private static bool IsKnownTopologyCommand(string command) => command == "id" || command == "title" || command == "subtitle" || command == "viewport" || command == "layout" || IsTopologyEntryCommand(command);
     private static string JoinTail(List<string> tokens, int start) => start >= tokens.Count ? string.Empty : string.Join(" ", tokens.Skip(start));
     private static string NormalizeKey(string value) => new string((value ?? string.Empty).Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
     private static string? Optional(Dictionary<string, string> row, string key) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;

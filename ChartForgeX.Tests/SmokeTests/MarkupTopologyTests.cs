@@ -119,7 +119,7 @@ api | db | https://api.example.com | warning
         const string source = @"title ""Command Details""
 node api ""API"" kind:service status:healthy subtitle:https://api.example.com width:180 height:80 display:tile
 node db ""Database"" kind:database status:warning
-edge api -> db ""https://api.example.com"" status:warning
+edge api -> db ""status:warning"" status:healthy
 ";
 
         var result = new MarkupTopologyParser().Parse(source);
@@ -128,7 +128,8 @@ edge api -> db ""https://api.example.com"" status:warning
         Assert(result.Document!.Nodes[0].Subtitle == "https://api.example.com", "Command attributes should preserve URL-style text.");
         Assert(result.Document.Nodes[0].Width == 180 && result.Document.Nodes[0].Height == 80, "Command nodes should map explicit dimensions.");
         Assert(result.Document.Nodes[0].Display == TopologyNodeDisplayMode.Tile, "Command nodes should map display.");
-        Assert(result.Document.Edges[0].Label == "https://api.example.com", "Command edge labels should preserve colon-containing values.");
+        Assert(result.Document.Edges[0].Label == "status:warning", "Quoted command edge labels that look like attributes should stay labels.");
+        Assert(result.Document.Edges[0].Status == TopologyHealthStatus.Healthy, "Attributes after quoted edge labels should still be parsed.");
         Assert(result.Document.Edges[0].Direction == TopologyDirection.Forward, "Arrow commands should default -> to forward direction.");
 
         const string sectionSource = @"nodes:
@@ -142,12 +143,17 @@ node api ""API | Gateway"" kind:service status:healthy
     private static void MarkupTopologyRejectsMismatchedSectionCommands() {
         const string source = @"nodes:
 edge api -> db
+title ""Wrong Place""
+layout layered lr
 ";
 
         var result = new MarkupTopologyParser().Parse(source);
 
         Assert(result.HasErrors, "Mismatched section commands should produce parser errors.");
-        Assert(Diagnostics(result).Contains("cannot appear inside nodes section", StringComparison.Ordinal), "Mismatched section diagnostics should identify the bad section.");
+        var diagnostics = Diagnostics(result);
+        Assert(diagnostics.Contains("edge' cannot appear inside nodes section", StringComparison.Ordinal), "Mismatched entry commands should identify the bad section.");
+        Assert(diagnostics.Contains("title' cannot appear inside nodes section", StringComparison.Ordinal), "Document-level title commands inside typed sections should be rejected instead of coerced.");
+        Assert(diagnostics.Contains("layout' cannot appear inside nodes section", StringComparison.Ordinal), "Document-level layout commands inside typed sections should be rejected instead of coerced.");
     }
 
     private static void MarkupTopologyHandlesEditingFriendlyMarkdownFences() {
