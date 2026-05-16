@@ -67,6 +67,11 @@ internal static partial class SmokeTests {
         Assert(File.Exists(Path.Combine(extensionRoot, "package-lock.json")), "VS Code markup extension should commit package-lock.json for deterministic packaging.");
         Assert(File.Exists(Path.Combine(extensionRoot, "src", "extension.ts")), "VS Code markup extension should include extension source.");
         Assert(File.Exists(Path.Combine(extensionRoot, "scripts", "package-vsix.cjs")), "VS Code markup extension should include a VSIX packaging script.");
+        Assert(File.Exists(Path.Combine(extensionRoot, "scripts", "package-vsix.ps1")), "VS Code markup extension should include a PowerShell VSIX packaging script.");
+        Assert(File.Exists(Path.Combine(extensionRoot, "scripts", "dev-install.ps1")), "VS Code markup extension should include a linked dev install script.");
+        Assert(File.Exists(Path.Combine(extensionRoot, "scripts", "install-insiders.ps1")), "VS Code markup extension should include a packaged Insiders install script.");
+        var workflowPath = Path.Combine(root, ".github", "workflows", "vscode-extension.yml");
+        Assert(File.Exists(workflowPath), "Repository should include VS Code extension packaging workflow.");
 
         using var packageDocument = JsonDocument.Parse(File.ReadAllText(packagePath));
         var packageRoot = packageDocument.RootElement;
@@ -110,6 +115,19 @@ internal static partial class SmokeTests {
         Assert(packageScript.Contains("ChartForgeX.Markup.Cli", StringComparison.Ordinal), "VS Code markup extension packager should publish the ChartForgeX.Markup.Cli.");
         Assert(packageScript.Contains("'win-x64'", StringComparison.Ordinal) && packageScript.Contains("'linux-x64'", StringComparison.Ordinal) && packageScript.Contains("'osx-arm64'", StringComparison.Ordinal), "VS Code markup extension packager should include common desktop runtime identifiers.");
         Assert(packageScript.Contains("VSCE_PAT", StringComparison.Ordinal), "VS Code markup extension packager should require VSCE_PAT for Marketplace publishing.");
+
+        var powerShellPackageScript = File.ReadAllText(Path.Combine(extensionRoot, "scripts", "package-vsix.ps1"));
+        Assert(powerShellPackageScript.Contains("ChartForgeX.Markup.Cli", StringComparison.Ordinal), "VS Code markup extension PowerShell packager should publish the ChartForgeX.Markup.Cli.");
+        Assert(powerShellPackageScript.Contains("'win-x64'", StringComparison.Ordinal) && powerShellPackageScript.Contains("'linux-x64'", StringComparison.Ordinal) && powerShellPackageScript.Contains("'osx-arm64'", StringComparison.Ordinal), "VS Code markup extension PowerShell packager should include common desktop runtime identifiers.");
+        Assert(powerShellPackageScript.Contains("PublishMarketplace", StringComparison.Ordinal) && powerShellPackageScript.Contains("VSCE_PAT", StringComparison.Ordinal), "VS Code markup extension PowerShell packager should support Marketplace publishing.");
+        Assert(powerShellPackageScript.Contains("tools/ChartForgeX.Markup.Cli", StringComparison.Ordinal), "VS Code markup extension PowerShell packager should copy CLI assets to the extension tools folder.");
+
+        var workflow = File.ReadAllText(workflowPath);
+        Assert(workflow.Contains("ChartForgeX-v", StringComparison.Ordinal), "VS Code markup workflow should stamp release versions from ChartForgeX release tags.");
+        Assert(workflow.Contains("origin/main", StringComparison.Ordinal), "VS Code markup workflow should validate release commits against origin/main.");
+        Assert(workflow.Contains("VSCE_PAT", StringComparison.Ordinal), "VS Code markup workflow should publish with the Marketplace token secret.");
+        Assert(workflow.Contains("ChartForgeX.Markup.VSCode/scripts/package-vsix.ps1", StringComparison.Ordinal), "VS Code markup workflow should package through the PowerShell packager.");
+        Assert(workflow.Contains("chartforgex-markup-vsix", StringComparison.Ordinal), "VS Code markup workflow should upload a stable VSIX artifact.");
 
         var gitignore = File.ReadAllText(Path.Combine(extensionRoot, ".gitignore"));
         foreach (var ignored in new[] { "node_modules/", "out/", "dist/", "tools/" }) {
@@ -591,6 +609,8 @@ internal static partial class SmokeTests {
             .ToArray();
         Assert(workflows.Length > 0, "Repository should include at least one GitHub Actions workflow.");
         foreach (var workflow in workflows) {
+            if (string.Equals(Path.GetFileName(workflow), "vscode-extension.yml", StringComparison.OrdinalIgnoreCase)) continue;
+
             var text = File.ReadAllText(workflow);
             Assert(!text.Contains("self-hosted", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should use public hosted runners now that the repository is public: " + Path.GetFileName(workflow));
             Assert(ContainsAny(text, "ubuntu-latest") && ContainsAny(text, "windows-latest") && ContainsAny(text, "macos-latest"), "GitHub Actions workflows should cover public Linux, Windows, and macOS runners: " + Path.GetFileName(workflow));
