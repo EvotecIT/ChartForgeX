@@ -1,0 +1,60 @@
+{
+  "scopeName": "source.chartforgex-markup",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#attributes"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.chartforgex-markup"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.chartforgex-markup"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(id|title|subtitle|viewport|layout|groups?|nodes?|edges?|end)\\b",
+          "name": "keyword.control.chartforgex-markup"
+        },
+        {
+          "match": "\\b(healthy|warning|critical|unknown|disabled|layered|densegrouped|geographic|forcedirected|lr|rl|tb|bt)\\b",
+          "name": "constant.language.chartforgex-markup"
+        }
+      ]
+    },
+    "attributes": {
+      "patterns": [
+        {
+          "match": "\\b[a-zA-Z][a-zA-Z0-9_-]*(?=:)",
+          "name": "entity.other.attribute-name.chartforgex-markup"
+        },
+        {
+          "match": "->|--",
+          "name": "keyword.operator.chartforgex-markup"
+        }
+      ]
+    }
+  }
+}

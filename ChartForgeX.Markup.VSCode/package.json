@@ -1,0 +1,295 @@
+{
+  "name": "chartforgex-markup",
+  "displayName": "ChartForgeX Markup",
+  "description": "Author and preview ChartForgeX topology diagrams from Markdown-friendly markup.",
+  "version": "0.1.0",
+  "publisher": "EvotecServices",
+  "author": "Evotec Services sp. z o.o.",
+  "license": "MIT",
+  "homepage": "https://github.com/EvotecIT/ChartForgeX/tree/main/ChartForgeX.Markup.VSCode",
+  "bugs": {
+    "url": "https://github.com/EvotecIT/ChartForgeX/issues"
+  },
+  "qna": false,
+  "galleryBanner": {
+    "color": "#172033",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EvotecIT/ChartForgeX.git"
+  },
+  "keywords": [
+    "chartforgex",
+    "charts",
+    "topology",
+    "diagrams",
+    "markdown",
+    "markup",
+    "svg",
+    "png",
+    "reports",
+    "dashboard"
+  ],
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:chartforgex-markup",
+    "onLanguage:markdown",
+    "onCommand:chartforgexMarkup.preview",
+    "onCommand:chartforgexMarkup.validate",
+    "onCommand:chartforgexMarkup.exportSvg",
+    "onCommand:chartforgexMarkup.exportPng",
+    "onCommand:chartforgexMarkup.exportHtml",
+    "onCommand:chartforgexMarkup.emitCSharp",
+    "onCommand:chartforgexMarkup.emitCSharpToFile",
+    "onCommand:chartforgexMarkup.openOutputFolder"
+  ],
+  "main": "./out/extension.js",
+  "files": [
+    "out/extension.js",
+    "out/extension.js.map",
+    "scripts/package-vsix.cjs",
+    "syntaxes/**",
+    "snippets/**",
+    "tools/**",
+    "CHANGELOG.md",
+    "language-configuration.json",
+    "LICENSE",
+    "README.md",
+    "SUPPORT.md",
+    "package.json"
+  ],
+  "scripts": {
+    "compile": "node scripts/bundle.cjs",
+    "watch": "node scripts/bundle.cjs --watch",
+    "package": "node scripts/package-vsix.cjs",
+    "package:vsix": "node scripts/package-vsix.cjs",
+    "publish:marketplace": "node scripts/package-vsix.cjs --publish-marketplace"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "chartforgex-markup",
+        "aliases": [
+          "ChartForgeX Markup",
+          "chartforgex-markup"
+        ],
+        "extensions": [
+          ".cfx.md",
+          ".chartforgex.md"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "chartforgex-markup",
+        "scopeName": "source.chartforgex-markup",
+        "path": "./syntaxes/chartforgex-markup.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "chartforgex-markup",
+        "path": "./snippets/chartforgex-markup.json"
+      },
+      {
+        "language": "markdown",
+        "path": "./snippets/chartforgex-markup.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "chartforgexMarkup.preview",
+        "title": "Open Preview",
+        "category": "ChartForgeX Markup",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "chartforgexMarkup.validate",
+        "title": "Validate",
+        "category": "ChartForgeX Markup"
+      },
+      {
+        "command": "chartforgexMarkup.exportSvg",
+        "title": "Export SVG",
+        "category": "ChartForgeX Markup"
+      },
+      {
+        "command": "chartforgexMarkup.exportPng",
+        "title": "Export PNG",
+        "category": "ChartForgeX Markup"
+      },
+      {
+        "command": "chartforgexMarkup.exportHtml",
+        "title": "Export HTML",
+        "category": "ChartForgeX Markup"
+      },
+      {
+        "command": "chartforgexMarkup.emitCSharp",
+        "title": "Generate C#",
+        "category": "ChartForgeX Markup"
+      },
+      {
+        "command": "chartforgexMarkup.emitCSharpToFile",
+        "title": "Generate C# File",
+        "category": "ChartForgeX Markup"
+      },
+      {
+        "command": "chartforgexMarkup.openOutputFolder",
+        "title": "Open Output Folder",
+        "category": "ChartForgeX Markup"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "chartforgexMarkup.preview",
+        "key": "shift+ctrl+v",
+        "mac": "shift+cmd+v",
+        "when": "editorLangId == chartforgex-markup && !notebookEditorFocused"
+      },
+      {
+        "command": "chartforgexMarkup.preview",
+        "key": "ctrl+k v",
+        "mac": "cmd+k v",
+        "when": "editorLangId == chartforgex-markup && !notebookEditorFocused"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "chartforgexMarkup.preview",
+          "when": "editorLangId == chartforgex-markup && !notebookEditorFocused",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "chartforgexMarkup.preview",
+          "when": "editorLangId == chartforgex-markup || resourceExtname == .md",
+          "group": "1_open"
+        },
+        {
+          "submenu": "chartforgexMarkup.contextMenu",
+          "when": "editorLangId == chartforgex-markup || resourceExtname == .md",
+          "group": "1_open@20"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "chartforgexMarkup.contextMenu",
+          "when": "editorLangId == chartforgex-markup || resourceExtname == .md",
+          "group": "1_modification@20"
+        }
+      ],
+      "explorer/context": [
+        {
+          "submenu": "chartforgexMarkup.contextMenu",
+          "when": "resourceExtname == .md",
+          "group": "1_modification@20"
+        }
+      ],
+      "chartforgexMarkup.contextMenu": [
+        {
+          "command": "chartforgexMarkup.validate",
+          "group": "1_authoring@10"
+        },
+        {
+          "command": "chartforgexMarkup.emitCSharp",
+          "group": "2_generate@10"
+        },
+        {
+          "command": "chartforgexMarkup.emitCSharpToFile",
+          "group": "2_generate@20"
+        },
+        {
+          "command": "chartforgexMarkup.exportSvg",
+          "group": "3_export@10"
+        },
+        {
+          "command": "chartforgexMarkup.exportPng",
+          "group": "3_export@20"
+        },
+        {
+          "command": "chartforgexMarkup.exportHtml",
+          "group": "3_export@30"
+        },
+        {
+          "command": "chartforgexMarkup.openOutputFolder",
+          "group": "3_export@40"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "chartforgexMarkup.contextMenu",
+        "label": "ChartForgeX Markup"
+      }
+    ],
+    "configuration": {
+      "title": "ChartForgeX Markup",
+      "properties": {
+        "chartforgexMarkup.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to a ChartForgeX.Markup.Cli executable, DLL, or csproj. Empty uses the bundled CLI, then source-tree fallbacks."
+        },
+        "chartforgexMarkup.validateDebounceMs": {
+          "type": "number",
+          "default": 650,
+          "minimum": 100,
+          "description": "Delay before validating after edits."
+        },
+        "chartforgexMarkup.previewAutoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh an open preview panel while editing."
+        },
+        "chartforgexMarkup.previewDebounceMs": {
+          "type": "number",
+          "default": 350,
+          "minimum": 100,
+          "description": "Delay before refreshing an open preview after edits."
+        },
+        "chartforgexMarkup.outputDirectoryMode": {
+          "type": "string",
+          "enum": [
+            "sourceDirectory",
+            "generatedSubfolder"
+          ],
+          "default": "generatedSubfolder",
+          "description": "Controls whether generated files default beside the source file or in a generated subfolder."
+        },
+        "chartforgexMarkup.outputSubfolderName": {
+          "type": "string",
+          "default": "generated",
+          "description": "Subfolder name used when outputDirectoryMode is set to generatedSubfolder."
+        },
+        "chartforgexMarkup.defaultExportFormat": {
+          "type": "string",
+          "enum": [
+            "svg",
+            "png",
+            "html"
+          ],
+          "default": "svg",
+          "description": "Default export format used by extension workflows."
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.40",
+    "@types/vscode": "1.107.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^6.0.3"
+  }
+}

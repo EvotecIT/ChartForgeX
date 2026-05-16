@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Interactivity.H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Tools.IconImport", "ChartForgeX.Tools.IconImport\ChartForgeX.Tools.IconImport.csproj", "{40A9075C-7BF9-4C8B-9188-73DD08E59914}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Markup", "ChartForgeX.Markup\ChartForgeX.Markup.csproj", "{5425A299-12EC-44BE-B126-A89495821E34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Markup.Cli", "ChartForgeX.Markup.Cli\ChartForgeX.Markup.Cli.csproj", "{5F54FDB7-E40C-4C1F-91ED-38F852A53067}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +101,30 @@ Global
 		{40A9075C-7BF9-4C8B-9188-73DD08E59914}.Release|x64.Build.0 = Release|Any CPU
 		{40A9075C-7BF9-4C8B-9188-73DD08E59914}.Release|x86.ActiveCfg = Release|Any CPU
 		{40A9075C-7BF9-4C8B-9188-73DD08E59914}.Release|x86.Build.0 = Release|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Debug|x64.Build.0 = Debug|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Debug|x86.Build.0 = Debug|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Release|x64.ActiveCfg = Release|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Release|x64.Build.0 = Release|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Release|x86.ActiveCfg = Release|Any CPU
+		{5425A299-12EC-44BE-B126-A89495821E34}.Release|x86.Build.0 = Release|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Debug|x64.Build.0 = Debug|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Debug|x86.Build.0 = Debug|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Release|x64.ActiveCfg = Release|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Release|x64.Build.0 = Release|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Release|x86.ActiveCfg = Release|Any CPU
+		{5F54FDB7-E40C-4C1F-91ED-38F852A53067}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
