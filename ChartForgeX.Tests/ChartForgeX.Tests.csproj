@@ -12,6 +12,7 @@
     <ProjectReference Include="..\ChartForgeX.Examples\ChartForgeX.Examples.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" PrivateAssets="all" />

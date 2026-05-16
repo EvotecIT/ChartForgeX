@@ -5,12 +5,14 @@
   "ExpectedVersionMap": {
     "ChartForgeX": "0.1.X",
     "ChartForgeX.Interactivity": "0.1.X",
-    "ChartForgeX.Interactivity.Html": "0.1.X"
+    "ChartForgeX.Interactivity.Html": "0.1.X",
+    "ChartForgeX.Markup": "0.1.X"
   },
   "ExpectedVersionMapAsInclude": true,
   "ExpectedVersionMapUseWildcards": false,
   "ExcludeProjects": [
     "ChartForgeX.AotSmoke",
+    "ChartForgeX.Markup.Cli",
     "ChartForgeX.Benchmarks",
     "ChartForgeX.Examples",
     "ChartForgeX.Tests",

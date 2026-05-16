@@ -155,6 +155,7 @@ Optional interaction support is split into separate packages:
 | `ChartForgeX` | Static SVG, HTML, PNG, BMP, PPM, and TIFF rendering. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
+| `ChartForgeX.Markup` | Markdown-friendly topology markup parser and C# emitter. |
 
 ## Native AOT and Trimming
 
