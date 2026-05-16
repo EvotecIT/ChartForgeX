@@ -329,11 +329,24 @@ function spawnProcess(command: string, args: string[], cwd: string): Promise<Cli
 }
 
 function applyDiagnostics(document: vscode.TextDocument, result: CliResult): void {
+  const items = parseDiagnostics(document, result);
   if (result.code === 0) {
-    diagnostics.delete(document.uri);
+    if (items.length === 0) {
+      diagnostics.delete(document.uri);
+    } else {
+      diagnostics.set(document.uri, items);
+    }
     return;
   }
 
+  if (items.length === 0) {
+    items.push(new vscode.Diagnostic(new vscode.Range(0, 0, 0, 1), result.stderr || result.stdout || 'ChartForgeX validation failed.', vscode.DiagnosticSeverity.Error));
+  }
+
+  diagnostics.set(document.uri, items);
+}
+
+function parseDiagnostics(document: vscode.TextDocument, result: CliResult): vscode.Diagnostic[] {
   const all = `${result.stderr}\n${result.stdout}`.split(/\r?\n/g);
   const items: vscode.Diagnostic[] = [];
   for (const line of all) {
@@ -346,11 +359,7 @@ function applyDiagnostics(document: vscode.TextDocument, result: CliResult): voi
     items.push(new vscode.Diagnostic(range, match[3], severity));
   }
 
-  if (items.length === 0) {
-    items.push(new vscode.Diagnostic(new vscode.Range(0, 0, 0, 1), result.stderr || result.stdout || 'ChartForgeX validation failed.', vscode.DiagnosticSeverity.Error));
-  }
-
-  diagnostics.set(document.uri, items);
+  return items;
 }
 
 function outputDirectory(document: vscode.TextDocument): string {

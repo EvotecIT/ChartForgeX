@@ -112,7 +112,7 @@ internal static class Program {
         foreach (var diagnostic in result.Diagnostics) {
             var line = diagnostic.Line > 0 ? "(" + diagnostic.Line.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")" : string.Empty;
             var text = diagnostic.Severity.ToString().ToLowerInvariant() + line + ": " + diagnostic.Message;
-            if (diagnostic.Severity == MarkupDiagnosticSeverity.Error) Console.Error.WriteLine(text); else Console.WriteLine(text);
+            Console.Error.WriteLine(text);
         }
     }
 
