@@ -36,6 +36,8 @@ body {
 .cfx-interactive-chart {
   position: relative;
   width: min(100%, 1200px);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .cfx-dashboard .cfx-interactive-chart {
@@ -62,6 +64,7 @@ body {
 
 .cfx-toolbar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
   margin: 0 0 10px;
@@ -183,6 +186,49 @@ body {
   color: #f8fafc;
 }
 
+.cfx-interactive-chart[data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
+  border-color: var(--cfx-scenario-color, #38bdf8);
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 30%, rgba(15, 23, 42, .92));
+  color: #fff;
+}
+
+.cfx-scenario-progress {
+  position: relative;
+  min-height: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, .54);
+  color: #dbeafe;
+}
+
+.cfx-scenario-progress[hidden] {
+  display: none;
+}
+
+.cfx-scenario-progress__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--cfx-scenario-progress, 0%);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 46%, rgba(56, 189, 248, .2));
+  transition: width .18s ease;
+}
+
+.cfx-scenario-progress__text {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cfx-tooltip {
   position: fixed;
   z-index: 20;
@@ -302,6 +348,117 @@ body {
   white-space: nowrap;
 }
 
+.cfx-reveal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cfx-reveal-layer[hidden] {
+  display: none;
+}
+
+.cfx-reveal-label {
+  position: absolute;
+  max-width: min(220px, calc(100% - 16px));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 42%, rgba(15, 23, 42, .7));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 18%, rgba(2, 6, 23, .9));
+  box-shadow: 0 10px 24px rgba(2, 6, 23, .28);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+  padding: 5px 8px;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.cfx-reveal-label::before {
+  content: attr(data-cfx-reveal-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, .16);
+  color: #bae6fd;
+  font-size: 10px;
+}
+
+.cfx-compare-tray {
+  position: absolute;
+  z-index: 11;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 36px);
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, .36);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, .82);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .24);
+  color: #e0f2fe;
+  padding: 6px;
+  pointer-events: auto;
+}
+
+.cfx-compare-tray[hidden] {
+  display: none;
+}
+
+.cfx-compare-tray__summary,
+.cfx-compare-tray__more {
+  flex: 0 0 auto;
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip,
+.cfx-compare-clear {
+  min-width: 0;
+  border: 1px solid rgba(56, 189, 248, .34);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .72);
+  color: #f8fafc;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.cfx-compare-chip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip:hover,
+.cfx-compare-chip:focus-visible {
+  border-color: #7dd3fc;
+  color: #bae6fd;
+}
+
+.cfx-compare-clear {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border-color: rgba(250, 204, 21, .44);
+  color: #fde68a;
+}
+
 .cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage {
   cursor: grab;
 }
@@ -341,6 +498,29 @@ body {
 
 .cfx-interactive-chart[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
   opacity: .38;
+}
+
+.cfx-interactive-chart .cfx-trail {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 9px rgba(34, 211, 238, .44));
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"] {
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, .72));
+  stroke-width: var(--cfx-interactive-trail-stroke-width, 2.6) !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"] {
+  opacity: .86 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"] {
+  opacity: .72 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"],
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"] {
+  opacity: .58 !important;
 }
 
 .cfx-interactive-chart .cfx-series-muted {
@@ -392,12 +572,13 @@ body {
 </head>
 <body>
 <main class="cfx-shell">
-<section class="cfx-interactive-chart" data-cfx-chart-id="domain-security-interactive" data-cfx-interaction-features="Zoom, Pan, Brush, SynchronizedCharts, Export, Scenarios, StepPlayback, DeepLinks, ReportReview" data-cfx-interaction-group="example-gallery" data-cfx-scenario-count="2" data-cfx-active-scenario="risk-review" data-cfx-deep-link-state="true">
+<section class="cfx-interactive-chart" data-cfx-chart-id="domain-security-interactive" data-cfx-interaction-features="Zoom, Pan, Brush, SynchronizedCharts, Export, Scenarios, StepPlayback, DeepLinks, ReportReview, FocusTrail, RevealLabels, StateBookmarks" data-cfx-interaction-group="example-gallery" data-cfx-scenario-count="2" data-cfx-active-scenario="risk-review" data-cfx-deep-link-state="true" data-cfx-scenario-playback="idle" data-cfx-scenario-playback-delay="900">
 <div class="cfx-toolbar"><button class="cfx-tool" type="button" data-cfx-zoom="in" title="Zoom in">Zoom +</button><button class="cfx-tool" type="button" data-cfx-zoom="out" title="Zoom out">Zoom -</button><button class="cfx-tool" type="button" data-cfx-mode-button="pan" aria-pressed="false" title="Pan chart">Pan</button><button class="cfx-tool" type="button" data-cfx-mode-button="brush" aria-pressed="false" title="Brush select region">Brush</button><button class="cfx-tool" type="button" data-cfx-export="svg" title="Download SVG">SVG</button><button class="cfx-tool" type="button" data-cfx-export="png" title="Download PNG">PNG</button><button class="cfx-tool" type="button" data-cfx-reset="true">Reset</button></div>
 <div class="cfx-scenarios" aria-label="Chart scenarios"><button class="cfx-scenario" type="button" data-cfx-scenario="" data-cfx-scenario-label="All" aria-pressed="false" title="Show all scenarios">All</button><button class="cfx-scenario" type="button" data-cfx-scenario="healthy-trend" data-cfx-scenario-color="#22C55E" data-cfx-scenario-label="Healthy trend" data-cfx-scenario-description="Focus on successful checks and the weekly control target." data-cfx-scenario-steps="[{&quot;index&quot;:0,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;0&quot;,&quot;label&quot;:&quot;Passed checks&quot;,&quot;description&quot;:&quot;&quot;,&quot;metadata&quot;:{&quot;signal&quot;:&quot;success&quot;}}]" data-cfx-scenario-metadata="{&quot;view&quot;:&quot;operations&quot;}" aria-pressed="false" title="Focus on successful checks and the weekly control target." style="--cfx-scenario-color:#22C55E">Healthy trend</button><button class="cfx-scenario" type="button" data-cfx-scenario="risk-review" data-cfx-scenario-color="#F97316" data-cfx-scenario-label="Risk review" data-cfx-scenario-description="Review warnings and remaining failures before escalation." data-cfx-scenario-steps="[{&quot;index&quot;:0,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;1&quot;,&quot;label&quot;:&quot;Warnings&quot;,&quot;description&quot;:&quot;&quot;,&quot;metadata&quot;:{}},{&quot;index&quot;:1,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;2&quot;,&quot;label&quot;:&quot;Failures&quot;,&quot;description&quot;:&quot;&quot;,&quot;metadata&quot;:{}}]" data-cfx-scenario-metadata="{&quot;view&quot;:&quot;risk&quot;}" aria-pressed="true" title="Review warnings and remaining failures before escalation." style="--cfx-scenario-color:#F97316">Risk review</button></div>
 <section class="cfx-scenario-panel" data-cfx-scenario-panel="true" data-cfx-panel-active-scenario="risk-review" aria-live="polite" style="--cfx-scenario-color:#F97316">
 <div class="cfx-scenario-panel__summary"><div class="cfx-scenario-panel__title" data-cfx-scenario-panel-title="true">Risk review</div><div class="cfx-scenario-panel__meta" data-cfx-scenario-panel-meta="true">Review warnings and remaining failures before escalation.</div></div>
-<div class="cfx-scenario-panel__controls" data-cfx-scenario-step-controls="true"><button class="cfx-tool" type="button" data-cfx-scenario-step-control="previous" title="Previous step">Prev</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="play" aria-pressed="false" title="Play scenario">Play</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="next" title="Next step">Next</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="reset" title="Clear step">Clear</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="link" title="Copy scenario link">Link</button></div>
+<div class="cfx-scenario-panel__controls" data-cfx-scenario-step-controls="true"><button class="cfx-tool" type="button" data-cfx-scenario-step-control="previous" title="Previous step">Prev</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="play" data-cfx-scenario-play-label="Play" data-cfx-scenario-pause-label="Pause" aria-pressed="false" title="Play scenario">Play</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="next" title="Next step">Next</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="reset" title="Clear step">Clear</button><button class="cfx-tool" type="button" data-cfx-scenario-step-control="link" title="Copy scenario link">Link</button></div>
+<div class="cfx-scenario-progress" data-cfx-scenario-progress="true" role="progressbar" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" hidden><span class="cfx-scenario-progress__bar" data-cfx-scenario-progress-bar="true"></span><span class="cfx-scenario-progress__text" data-cfx-scenario-progress-text="true">Step 0 / 2</span></div>
 <ol class="cfx-scenario-panel__steps" data-cfx-scenario-panel-steps="true"><li data-cfx-scenario-step-index="1" data-cfx-scenario-target-kind="series" data-cfx-scenario-target-id="1" role="button" tabindex="0">Warnings</li><li data-cfx-scenario-step-index="2" data-cfx-scenario-target-kind="series" data-cfx-scenario-target-id="2" role="button" tabindex="0">Failures</li></ol>
 </section>
 <div class="cfx-stage">
@@ -540,13 +721,15 @@ body {
 <div class="cfx-brush-box" hidden></div>
 <div class="cfx-crosshair" hidden>
 <span class="cfx-crosshair__line cfx-crosshair__line--x"></span><span class="cfx-crosshair__line cfx-crosshair__line--y"></span><span class="cfx-crosshair__label" data-cfx-crosshair-label="true"></span></div>
+<div class="cfx-reveal-layer" data-cfx-reveal-layer="true" aria-live="polite" hidden></div>
+<div class="cfx-compare-tray" data-cfx-compare-tray="true" aria-live="polite" hidden></div>
 </div>
 <div class="cfx-tooltip" role="status" aria-live="polite" hidden></div>
 </section>
 </main>
 <script>(() => {
   const featureAliases = {
-    ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair']
+    ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair', 'CompareMarkers']
   };
   const featureTokens = (root) => (root.dataset.cfxInteractionFeatures || '')
     .split(',')
@@ -556,6 +739,8 @@ body {
     || (featureAliases[feature] || []).some((alias) => alias.toLowerCase() === name.toLowerCase()));
   const targetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point]';
+  const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
+  const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
   const text = (node) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
@@ -638,18 +823,105 @@ body {
   };
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips')) return;
+    if (root.dataset.cfxTooltipPinned === 'true') return;
     if (!renderTip(tip, node)) return;
     tip.hidden = false;
-    moveTip(tip, event);
+    moveTip(tip, event, node);
   };
-  const moveTip = (tip, event) => {
+  const moveTip = (tip, event, node) => {
     if (!event || tip.hidden) return;
-    const x = Math.min(window.innerWidth - 24, event.clientX + 14);
-    const y = Math.min(window.innerHeight - 24, event.clientY + 14);
+    let clientX = event.clientX;
+    let clientY = event.clientY;
+    if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
+      const rect = node.getBoundingClientRect();
+      clientX = rect.left + rect.width / 2;
+      clientY = rect.top + rect.height / 2;
+    }
+    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+      clientX = 24;
+      clientY = 24;
+    }
+    const tipWidth = tip.offsetWidth || 0;
+    const tipHeight = tip.offsetHeight || 0;
+    const maxX = Math.max(8, window.innerWidth - tipWidth - 8);
+    const maxY = Math.max(8, window.innerHeight - tipHeight - 8);
+    const x = Math.max(8, Math.min(maxX, clientX + 14));
+    const y = Math.max(8, Math.min(maxY, clientY + 14));
     tip.style.left = x + 'px';
     tip.style.top = y + 'px';
   };
   const targetKey = (target) => target ? [target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
+  const compareItems = (root) => {
+    const items = [];
+    const seen = new Set();
+    root.querySelectorAll('.cfx-selected').forEach((node) => {
+      const target = targetIdentity(node);
+      const key = targetKey(target);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      items.push({ label: text(node) || target.label || target.role || target.id || 'Target', target });
+    });
+    return items;
+  };
+  const selectedTargets = (root) => compareItems(root).map((item) => item.target);
+  const renderCompare = (root) => {
+    const tray = root.querySelector('[data-cfx-compare-tray]');
+    if (!tray || !hasFeature(root, 'CompareMarkers')) return [];
+    const items = compareItems(root);
+    tray.replaceChildren();
+    if (!items.length) {
+      tray.hidden = true;
+      root.removeAttribute('data-cfx-compare-count');
+      return items;
+    }
+    tray.hidden = false;
+    root.dataset.cfxCompareCount = String(items.length);
+    const summary = document.createElement('div');
+    summary.className = 'cfx-compare-tray__summary';
+    summary.textContent = 'Compare ' + items.length;
+    tray.appendChild(summary);
+    items.slice(0, 6).forEach((item, index) => {
+      const chip = document.createElement('button');
+      chip.className = 'cfx-compare-chip';
+      chip.type = 'button';
+      chip.textContent = item.label;
+      chip.dataset.cfxCompareIndex = String(index);
+      chip.title = item.label;
+      chip.addEventListener('click', () => {
+        clearHover(root, false, false);
+        if (applyHoverByTarget(root, item.target)) {
+          recordFocusTrail(root, item.target, true, true);
+          emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
+        }
+      });
+      tray.appendChild(chip);
+    });
+    if (items.length > 6) {
+      const more = document.createElement('span');
+      more.className = 'cfx-compare-tray__more';
+      more.textContent = '+' + (items.length - 6);
+      tray.appendChild(more);
+    }
+    const clear = document.createElement('button');
+    clear.className = 'cfx-compare-clear';
+    clear.type = 'button';
+    clear.textContent = 'Clear';
+    clear.setAttribute('data-cfx-compare-clear', 'true');
+    clear.addEventListener('click', () => {
+      clearSelections(root);
+      publishCompare(root, true);
+    });
+    tray.appendChild(clear);
+    return items;
+  };
+  const publishCompare = (root, sync) => {
+    const items = renderCompare(root);
+    if (!hasFeature(root, 'CompareMarkers')) return items;
+    const targets = items.map((item) => item.target);
+    emitHostEvent(root, 'cfxcompare', { count: targets.length, targets });
+    if (sync !== false) emitSync(root, { action: 'compare', count: targets.length, targets });
+    return items;
+  };
   const hideTip = (root, tip, force) => {
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
     tip.hidden = true;
@@ -671,7 +943,7 @@ body {
     tip.classList.add('cfx-tooltip--pinned');
     root.dataset.cfxTooltipPinned = 'true';
     root.dataset.cfxPinnedTarget = key;
-    moveTip(tip, event);
+    moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
   };
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -705,17 +977,76 @@ body {
       if (sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
     });
   };
-  const setMode = (root, mode) => {
-    root.dataset.cfxMode = root.dataset.cfxMode === mode ? '' : mode;
+  const applyMode = (root, mode) => {
+    root.dataset.cfxMode = mode || '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
       button.setAttribute('aria-pressed', button.dataset.cfxModeButton === root.dataset.cfxMode ? 'true' : 'false');
     });
   };
+  const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
   const resetViewport = (root) => {
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     root.dataset.cfxBrush = '';
     root.dataset.cfxMode = '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+  };
+  const storeInteractionState = (root, snapshot) => {
+    try {
+      root.dataset.cfxInteractionSnapshot = JSON.stringify(snapshot);
+    } catch {
+      root.removeAttribute('data-cfx-interaction-snapshot');
+    }
+  };
+  const captureInteractionState = (root, source) => {
+    const snapshot = {
+      version: 1,
+      chartId: root.dataset.cfxChartId || '',
+      source: source || '',
+      viewport: getState(root),
+      mode: root.dataset.cfxMode || '',
+      brush: root.dataset.cfxBrush || '',
+      selectedTargets: selectedTargets(root),
+      compareCount: Number(root.dataset.cfxCompareCount || '0'),
+      scenario: {
+        id: root.dataset.cfxActiveScenario || '',
+        stepIndex: root.dataset.cfxActiveScenarioStep || '',
+        progress: root.dataset.cfxScenarioProgress || '',
+        playback: root.dataset.cfxScenarioPlayback || ''
+      }
+    };
+    storeInteractionState(root, snapshot);
+    return snapshot;
+  };
+  const publishInteractionState = (root, source, sync) => {
+    if (!hasFeature(root, 'StateBookmarks')) return null;
+    const snapshot = captureInteractionState(root, source || 'host');
+    emitHostEvent(root, 'cfxstate', { source: source || 'host', snapshot });
+    if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
+    return snapshot;
+  };
+  const applyInteractionState = (root, snapshot, emit, sync) => {
+    if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
+    if (snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));
+    if (snapshot.mode !== undefined) applyMode(root, snapshot.mode || '');
+    if (snapshot.brush !== undefined) root.dataset.cfxBrush = snapshot.brush || '';
+    const scenario = snapshot.scenario || {};
+    if (scenario.id !== undefined) {
+      setScenario(root, scenario.id || '', false, false);
+      if (scenario.id && scenario.stepIndex !== undefined && scenario.stepIndex !== '') setScenarioStep(root, scenario.stepIndex, false, false);
+      const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+      if (scenario.playback === 'playing' && route && route.steps.length) {
+        const current = Number(root.dataset.cfxActiveScenarioStep || '-1');
+        const next = Number.isFinite(current) && current + 1 < route.steps.length ? current + 1 : 0;
+        startScenarioPlayback(root, route, next, false, false);
+      } else if (scenario.playback) {
+        setScenarioPlaybackState(root, scenario.playback, route, false);
+      }
+    }
+    applySelectionSetByTargets(root, snapshot.selectedTargets || [], true);
+    renderCompare(root);
+    storeInteractionState(root, snapshot);
+    if (emit !== false) emitHostEvent(root, 'cfxstateapplied', { snapshot });
+    if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
   };
   const zoomBy = (root, factor) => {
     if (!hasFeature(root, 'Zoom')) return;
@@ -840,6 +1171,7 @@ body {
     const target = targetIdentity(node);
     emitHostEvent(root, 'cfxselect', { label: text(node), selected, target });
     emitSync(root, { action: 'selection', label: text(node), selected, target });
+    publishCompare(root, true);
   };
   const setNodeSelected = (node, selected) => {
     node.classList.toggle('cfx-selected', selected);
@@ -861,6 +1193,7 @@ body {
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
+    clearReveals(root, 'hover');
     root.querySelectorAll('.cfx-hovered,.cfx-hover-related').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related'));
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
@@ -880,11 +1213,138 @@ body {
     }
     return matched;
   };
+  const clearFocusTrail = (root) => {
+    root._cfxFocusTrail = [];
+    root.removeAttribute('data-cfx-trail-count');
+    root.querySelectorAll('.cfx-trail').forEach((node) => {
+      node.classList.remove('cfx-trail');
+      delete node.dataset.cfxTrailIndex;
+    });
+  };
+  const applyFocusTrail = (root, trail) => {
+    clearFocusTrail(root);
+    const targets = (trail || []).slice(0, 5);
+    if (!targets.length || !hasFeature(root, 'FocusTrail')) return [];
+    root._cfxFocusTrail = targets;
+    root.dataset.cfxTrailCount = String(targets.length);
+    targets.forEach((target, index) => {
+      root.querySelectorAll(targetSelector).forEach((node) => {
+        if (!matchesTargetIdentity(node, target)) return;
+        node.classList.add('cfx-trail');
+        node.dataset.cfxTrailIndex = String(index + 1);
+      });
+    });
+    return targets;
+  };
+  const recordFocusTrail = (root, target, emit, sync) => {
+    if (!target || !hasFeature(root, 'FocusTrail')) return [];
+    const key = targetKey(target);
+    if (!key) return [];
+    const existing = root._cfxFocusTrail || [];
+    const trail = [target, ...existing.filter((item) => targetKey(item) !== key)].slice(0, 5);
+    applyFocusTrail(root, trail);
+    if (emit !== false) emitHostEvent(root, 'cfxtrail', { target, trail, count: trail.length });
+    if (sync !== false) emitSync(root, { action: 'trail', target, trail, count: trail.length });
+    return trail;
+  };
+  const revealLayer = (root) => {
+    let layer = root.querySelector('[data-cfx-reveal-layer]');
+    if (layer) return layer;
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return null;
+    layer = document.createElement('div');
+    layer.className = 'cfx-reveal-layer';
+    layer.dataset.cfxRevealLayer = 'true';
+    layer.setAttribute('aria-live', 'polite');
+    layer.hidden = true;
+    stage.appendChild(layer);
+    return layer;
+  };
+  const clearReveals = (root, source) => {
+    if (source && root.dataset.cfxRevealSource && root.dataset.cfxRevealSource !== source) return;
+    const layer = root.querySelector('[data-cfx-reveal-layer]');
+    if (layer) {
+      layer.replaceChildren();
+      layer.hidden = true;
+    }
+    root.removeAttribute('data-cfx-reveal-count');
+    root.removeAttribute('data-cfx-reveal-source');
+  };
+  const revealText = (node, target) => {
+    const data = node.dataset || {};
+    if (data.cfxLabel || data.cfxText) return data.cfxLabel || data.cfxText;
+    if (target && target.label) return target.label;
+    if (data.cfxSeries !== undefined && data.cfxPoint === undefined) return 'Series ' + data.cfxSeries;
+    if (data.cfxPoint !== undefined) return text(node);
+    return text(node) || (target ? target.role || target.id : '') || 'Target';
+  };
+  const revealNodes = (root, nodes, emit, sync, source) => {
+    if (!hasFeature(root, 'RevealLabels')) return [];
+    const layer = revealLayer(root);
+    const stage = root.querySelector('.cfx-stage');
+    if (!layer || !stage) return [];
+    const stageRect = stage.getBoundingClientRect();
+    const shown = [];
+    const seen = new Set();
+    layer.replaceChildren();
+    layer.hidden = false;
+    (nodes || []).forEach((node) => {
+      if (!node || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
+      const target = targetIdentity(node);
+      const labelText = revealText(node, target);
+      const key = [labelText, target.series ?? '', target.point ?? '', target.value || ''].join('|');
+      if (!key || seen.has(key) || shown.length >= 6) return;
+      const rect = node.getBoundingClientRect();
+      if (!rect.width && !rect.height) return;
+      seen.add(key);
+      const label = document.createElement('span');
+      label.className = 'cfx-reveal-label';
+      label.textContent = labelText;
+      label.dataset.cfxRevealIndex = String(shown.length + 1);
+      label.title = label.textContent;
+      label.style.left = (rect.left + rect.width / 2 - stageRect.left) + 'px';
+      label.style.top = (rect.top - stageRect.top) + 'px';
+      layer.appendChild(label);
+      const halfWidth = label.offsetWidth / 2;
+      const maxX = Math.max(8 + halfWidth, stageRect.width - halfWidth - 8);
+      const maxY = Math.max(0, stageRect.height - label.offsetHeight - 8);
+      label.style.left = clamp(rect.left + rect.width / 2 - stageRect.left, 8 + halfWidth, maxX) + 'px';
+      label.style.top = clamp(rect.top - stageRect.top - label.offsetHeight - 8, 8, maxY) + 'px';
+      shown.push(target);
+    });
+    if (!shown.length) {
+      clearReveals(root);
+      return [];
+    }
+    root.dataset.cfxRevealCount = String(shown.length);
+    if (source) root.dataset.cfxRevealSource = source;
+    else root.removeAttribute('data-cfx-reveal-source');
+    if (emit !== false) emitHostEvent(root, 'cfxreveal', { target: shown[0], targets: shown, count: shown.length, source: source || '' });
+    if (sync !== false) emitSync(root, { action: 'reveal', target: shown[0], targets: shown, count: shown.length, source: source || '' });
+    return shown;
+  };
+  const revealTargets = (root, targets, emit, sync, source) => {
+    if (!targets || !targets.length) return [];
+    const nodes = [];
+    const seen = new Set();
+    targets.forEach((target) => {
+      root.querySelectorAll(targetSelector).forEach((node) => {
+        if (!matchesTargetIdentity(node, target)) return;
+        const key = targetKey(targetIdentity(node));
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        nodes.push(node);
+      });
+    });
+    return revealNodes(root, nodes, emit, sync, source);
+  };
   const setHover = (root, node, emit, sync) => {
     const target = targetIdentity(node);
     clearHover(root, false, false);
     applyHoverByTarget(root, target);
     root.dataset.cfxHoverKey = targetKey(target);
+    recordFocusTrail(root, target, emit, sync);
+    revealNodes(root, [node], emit, sync, 'hover');
     if (emit !== false) emitHostEvent(root, 'cfxhover', { label: text(node), target });
     if (sync !== false) emitSync(root, { action: 'hover', label: text(node), target });
   };
@@ -933,6 +1393,7 @@ body {
     const point = nearestPoint(root, event);
     if (!point) {
       hideCrosshair(root, crosshair);
+      clearHover(root, true, true);
       return;
     }
     const target = targetIdentity(point.node);
@@ -943,8 +1404,28 @@ body {
       showTip(root, tip, point.node, event);
     } else {
       showCrosshair(root, crosshair, point, event, false);
-      moveTip(tip, event);
+      moveTip(tip, event, point.node);
     }
+  };
+  const focusAdjacentTarget = (root, node, key) => {
+    const targets = interactiveTargets(root);
+    if (!targets.length) return false;
+    const current = Math.max(0, targets.indexOf(node));
+    let next = current;
+    if (key === 'Home') next = 0;
+    else if (key === 'End') next = targets.length - 1;
+    else if (key === 'ArrowLeft' || key === 'ArrowUp') next = current <= 0 ? targets.length - 1 : current - 1;
+    else if (key === 'ArrowRight' || key === 'ArrowDown') next = current >= targets.length - 1 ? 0 : current + 1;
+    else return false;
+    const targetNode = targets[next];
+    if (!targetNode) return false;
+    if (targetNode.focus) {
+      try { targetNode.focus({ preventScroll: true }); } catch { targetNode.focus(); }
+    }
+    const target = targetIdentity(targetNode);
+    emitHostEvent(root, 'cfxnavigate', { label: text(targetNode), target, index: next, count: targets.length, key });
+    emitSync(root, { action: 'navigate', label: text(targetNode), target, index: next, count: targets.length, key });
+    return true;
   };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;
@@ -1010,13 +1491,30 @@ body {
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
     else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
-    else if (detail.action === 'selection' && !applySelectionByTarget(root, detail.target, detail.selected === true)) applySelectionByLabel(root, detail.label || '', detail.selected === true);
-    else if (detail.action === 'lasso') applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+    else if (detail.action === 'selection') {
+      if (!applySelectionByTarget(root, detail.target, detail.selected === true)) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+      renderCompare(root);
+    } else if (detail.action === 'lasso') {
+      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+      renderCompare(root);
+    } else if (detail.action === 'compare') {
+      applySelectionSetByTargets(root, detail.targets || [], true);
+      renderCompare(root);
+    }
     else if (detail.action === 'hover') {
       clearHover(root, false, false);
       applyHoverByTarget(root, detail.target);
+      revealTargets(root, [detail.target], false, false, detail.source || 'hover');
     } else if (detail.action === 'hover-clear') clearHover(root, false, false);
-    else if (detail.action === 'crosshair') applyHoverByTarget(root, detail.target);
+    else if (detail.action === 'crosshair' || detail.action === 'navigate') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target);
+      revealTargets(root, [detail.target], false, false, detail.action);
+    }
+    else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);
+    else if (detail.action === 'reveal') revealTargets(root, detail.targets || [], false, false, detail.source || '');
+    else if (detail.action === 'reveal-clear') clearReveals(root, detail.source || '');
+    else if (detail.action === 'state') applyInteractionState(root, detail.state, false, false);
     else if (detail.action === 'series' && detail.series !== undefined) setSeriesMuted(root, detail.series, detail.muted === true);
     else if (detail.action === 'series-focus') setSeriesIsolation(root, detail.series || '', detail.isolated === true);
     else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
@@ -1141,10 +1639,32 @@ body {
       });
     }
   };
+  const updateScenarioProgress = (root, route, stepIndex) => {
+    const progress = root.querySelector('[data-cfx-scenario-progress]');
+    const count = route && route.steps ? route.steps.length : 0;
+    const hasStep = stepIndex !== undefined && stepIndex !== null && stepIndex !== '';
+    const current = count && hasStep ? clamp(Number(stepIndex) + 1, 0, count) : 0;
+    const percent = count ? Math.round((current / count) * 100) : 0;
+    const label = 'Step ' + current + ' / ' + count;
+    if (progress) {
+      progress.hidden = !count;
+      progress.style.setProperty('--cfx-scenario-progress', percent + '%');
+      progress.setAttribute('aria-valuemax', String(count));
+      progress.setAttribute('aria-valuenow', String(current));
+      progress.setAttribute('aria-valuetext', label);
+      const textNode = progress.querySelector('[data-cfx-scenario-progress-text]');
+      if (textNode) textNode.textContent = label;
+    }
+    if (count) root.dataset.cfxScenarioProgress = current + '/' + count;
+    else root.removeAttribute('data-cfx-scenario-progress');
+    return { current, count, percent, label };
+  };
   const clearScenarioStep = (root) => {
+    const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
     root.removeAttribute('data-cfx-active-scenario-step');
     root.querySelectorAll('.cfx-scenario-step-active,.cfx-scenario-step-muted').forEach((node) => node.classList.remove('cfx-scenario-step-active', 'cfx-scenario-step-muted'));
     root.querySelectorAll('[data-cfx-scenario-step-index]').forEach((node) => node.removeAttribute('aria-current'));
+    updateScenarioProgress(root, route, null);
   };
   const setScenarioStep = (root, stepIndex, emit, sync) => {
     const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
@@ -1160,19 +1680,29 @@ body {
     root.querySelectorAll('[data-cfx-scenario-step-index]').forEach((node) => {
       node.getAttribute('data-cfx-scenario-step-index') === String(index + 1) ? node.setAttribute('aria-current', 'step') : node.removeAttribute('aria-current');
     });
+    const progress = updateScenarioProgress(root, route, index);
+    const trail = Array.from(targets).map((node) => targetIdentity(node)).slice(0, 5);
+    if (trail.length && hasFeature(root, 'FocusTrail')) {
+      applyFocusTrail(root, trail);
+      if (emit !== false) emitHostEvent(root, 'cfxtrail', { target: trail[0], trail, count: trail.length, source: 'scenario-step' });
+      if (sync !== false) emitSync(root, { action: 'trail', target: trail[0], trail, count: trail.length, source: 'scenario-step' });
+    }
+    revealNodes(root, Array.from(targets), emit, sync, 'scenario-step');
     syncScenarioUrl(root, route.id, index);
-    if (emit !== false) emitHostEvent(root, 'cfxscenariostep', { scenarioId: route.id, index, step: route.steps[index] });
-    if (sync !== false) emitSync(root, { action: 'scenario-step', scenarioId: route.id, index });
+    if (emit !== false) emitHostEvent(root, 'cfxscenariostep', { scenarioId: route.id, index, step: route.steps[index], progress });
+    if (sync !== false) emitSync(root, { action: 'scenario-step', scenarioId: route.id, index, progress });
   };
   const setScenario = (root, scenarioId, emit, sync) => {
     const route = scenarioRoute(root, scenarioId);
-    stopScenarioPlayback(root);
+    stopScenarioPlayback(root, 'idle', false);
     clearScenarioStep(root);
+    clearReveals(root);
     root.querySelectorAll('.cfx-scenario-active,.cfx-scenario-muted').forEach((node) => node.classList.remove('cfx-scenario-active', 'cfx-scenario-muted'));
     root.querySelectorAll('[data-cfx-scenario]').forEach((button) => button.setAttribute('aria-pressed', (button.dataset.cfxScenario || '') === (route ? route.id : '') ? 'true' : 'false'));
     if (!route) {
       root.removeAttribute('data-cfx-active-scenario');
       renderScenarioPanel(root, null);
+      updateScenarioProgress(root, null, null);
       syncScenarioUrl(root, '', '');
       if (emit !== false) emitHostEvent(root, 'cfxscenarioclear', {});
       if (sync !== false) emitSync(root, { action: 'scenario', scenarioId: '' });
@@ -1188,6 +1718,7 @@ body {
       node.classList.toggle('cfx-scenario-muted', !active);
     });
     renderScenarioPanel(root, route);
+    updateScenarioProgress(root, route, null);
     syncScenarioUrl(root, route.id, '');
     if (emit !== false) emitHostEvent(root, 'cfxscenario', { scenarioId: route.id, label: route.label, description: route.description, color: route.color, steps: route.steps, metadata: route.metadata });
     if (sync !== false) emitSync(root, { action: 'scenario', scenarioId: route.id });
@@ -1198,29 +1729,58 @@ body {
     const current = Number(root.dataset.cfxActiveScenarioStep || (delta > 0 ? '-1' : route.steps.length));
     setScenarioStep(root, current + delta, true, true);
   };
-  const stopScenarioPlayback = (root) => {
+  const scenarioPlaybackDelay = (root) => {
+    const delay = Number(root.dataset.cfxScenarioPlaybackDelay || '900');
+    return Number.isFinite(delay) && delay >= 200 ? delay : 900;
+  };
+  const setScenarioPlaybackState = (root, state, route, emit) => {
+    const normalized = state || 'idle';
+    root.dataset.cfxScenarioPlayback = normalized;
+    root.querySelectorAll('[data-cfx-scenario-step-control="play"]').forEach((button) => {
+      const playing = normalized === 'playing';
+      button.setAttribute('aria-pressed', playing ? 'true' : 'false');
+      button.textContent = playing ? (button.dataset.cfxScenarioPauseLabel || 'Pause') : (button.dataset.cfxScenarioPlayLabel || 'Play');
+      button.title = playing ? 'Pause scenario' : 'Play scenario';
+    });
+    if (emit !== false) {
+      emitHostEvent(root, 'cfxscenarioplayback', {
+        state: normalized,
+        scenarioId: route ? route.id : (root.dataset.cfxActiveScenario || ''),
+        stepIndex: root.dataset.cfxActiveScenarioStep || '',
+        progress: root.dataset.cfxScenarioProgress || '',
+        delay: scenarioPlaybackDelay(root)
+      });
+    }
+  };
+  const stopScenarioPlayback = (root, state, emit) => {
     if (root._cfxScenarioPlayback) window.clearInterval(root._cfxScenarioPlayback);
     root._cfxScenarioPlayback = null;
-    root.querySelectorAll('[data-cfx-scenario-step-control="play"]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+    setScenarioPlaybackState(root, state || 'idle', scenarioRoute(root, root.dataset.cfxActiveScenario || ''), emit);
   };
-  const playScenario = (root) => {
+  const playScenario = (root, emit) => {
     const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
     if (!route || !route.steps.length) return;
     if (root._cfxScenarioPlayback) {
-      stopScenarioPlayback(root);
+      stopScenarioPlayback(root, 'paused', emit);
       return;
     }
-    root.querySelectorAll('[data-cfx-scenario-step-control="play"]').forEach((button) => button.setAttribute('aria-pressed', 'true'));
     let index = Number(root.dataset.cfxActiveScenarioStep || '-1') + 1;
+    if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
+    startScenarioPlayback(root, route, index, emit, true);
+  };
+  const startScenarioPlayback = (root, route, stepIndex, emit, advanceNow) => {
+    if (!route || !route.steps.length) return;
+    setScenarioPlaybackState(root, 'playing', route, emit);
+    let index = Number(stepIndex);
     if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
     root._cfxScenarioPlayback = window.setInterval(() => {
       if (index >= route.steps.length) {
-        stopScenarioPlayback(root);
+        stopScenarioPlayback(root, 'finished', emit);
         return;
       }
       setScenarioStep(root, index++, true, true);
-    }, 900);
-    setScenarioStep(root, index++, true, true);
+    }, scenarioPlaybackDelay(root));
+    if (advanceNow !== false) setScenarioStep(root, index++, true, true);
   };
   const copyScenarioLink = (root) => {
     syncScenarioUrl(root, root.dataset.cfxActiveScenario || '', root.dataset.cfxActiveScenarioStep || '');
@@ -1233,17 +1793,29 @@ body {
     const stage = root.querySelector('.cfx-stage');
     const brush = root.querySelector('.cfx-brush-box');
     const crosshair = root.querySelector('.cfx-crosshair');
+    const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
     applyViewport(root, getState(root));
-    const targets = root.querySelectorAll(targetSelector);
+    renderCompare(root);
+    if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
+    if (hasFeature(root, 'StateBookmarks')) {
+      root.addEventListener('cfx-capture-state', (event) => {
+        const detail = event.detail || {};
+        publishInteractionState(root, detail.source || 'host', detail.sync);
+      });
+      root.addEventListener('cfx-apply-state', (event) => {
+        const detail = event.detail || {};
+        applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
+      });
+    }
+    const targets = interactiveTargets(root);
     targets.forEach((node) => {
-      if ((node.dataset ? node.dataset.cfxRole : '') !== 'legend-item' && node.closest('[data-cfx-role="legend-item"]')) return;
       if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
       node.addEventListener('pointerenter', (event) => {
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
       });
-      node.addEventListener('pointermove', (event) => moveTip(tip, event));
+      node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
       node.addEventListener('pointerleave', () => {
         clearHover(root, true, true);
         hideTip(root, tip, false);
@@ -1271,6 +1843,10 @@ body {
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
           toggleSeriesFocus(root, node, true, true);
+          return;
+        }
+        if (focusAdjacentTarget(root, node, event.key)) {
+          event.preventDefault();
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -1301,10 +1877,32 @@ body {
           if (action === 'previous') stepScenario(root, -1);
           else if (action === 'next') stepScenario(root, 1);
           else if (action === 'play') playScenario(root);
-          else if (action === 'reset') { stopScenarioPlayback(root); clearScenarioStep(root); }
+          else if (action === 'reset') { stopScenarioPlayback(root, 'paused'); clearScenarioStep(root); clearReveals(root); }
           else if (action === 'link') copyScenarioLink(root);
         });
       });
+      root.addEventListener('cfx-set-scenario', (event) => {
+        const detail = event.detail || {};
+        setScenario(root, detail.scenarioId || '', true, true);
+      });
+      root.addEventListener('cfx-clear-scenario', () => setScenario(root, '', true, true));
+      root.addEventListener('cfx-set-scenario-step', (event) => {
+        const detail = event.detail || {};
+        if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
+        const index = detail.index !== undefined ? detail.index : detail.stepIndex;
+        setScenarioStep(root, index, true, true);
+      });
+      root.addEventListener('cfx-clear-scenario-step', () => {
+        stopScenarioPlayback(root, 'paused');
+        clearScenarioStep(root);
+        clearReveals(root);
+      });
+      root.addEventListener('cfx-play-scenario', (event) => {
+        const detail = event.detail || {};
+        if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
+        playScenario(root);
+      });
+      root.addEventListener('cfx-pause-scenario', () => stopScenarioPlayback(root, 'paused'));
       const stepsList = root.querySelector('[data-cfx-scenario-panel-steps]');
       if (stepsList) {
         const focusStep = (target) => {
@@ -1373,10 +1971,12 @@ body {
         if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
+          const replaceSelection = !event.shiftKey;
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
-          if (selectedTargets.length) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets });
+          if (selectedTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets });
           emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
-          if (selectedTargets.length) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: !event.shiftKey });
+          if (selectedTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: replaceSelection });
+          publishCompare(root, true);
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
           emitSync(root, { action: 'viewport', state: getState(root) });
@@ -1404,9 +2004,12 @@ body {
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       setSeriesIsolation(root, root.dataset.cfxIsolatedSeries || '', false);
+      clearFocusTrail(root);
+      clearReveals(root);
       if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
+      publishCompare(root, true);
     });
   });
 })();

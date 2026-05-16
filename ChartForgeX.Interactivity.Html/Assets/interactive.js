@@ -94,6 +94,7 @@
   };
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips')) return;
+    if (root.dataset.cfxTooltipPinned === 'true') return;
     if (!renderTip(tip, node)) return;
     tip.hidden = false;
     moveTip(tip, event, node);
@@ -303,6 +304,14 @@
     if (scenario.id !== undefined) {
       setScenario(root, scenario.id || '', false, false);
       if (scenario.id && scenario.stepIndex !== undefined && scenario.stepIndex !== '') setScenarioStep(root, scenario.stepIndex, false, false);
+      const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+      if (scenario.playback === 'playing' && route && route.steps.length) {
+        const current = Number(root.dataset.cfxActiveScenarioStep || '-1');
+        const next = Number.isFinite(current) && current + 1 < route.steps.length ? current + 1 : 0;
+        startScenarioPlayback(root, route, next, false, false);
+      } else if (scenario.playback) {
+        setScenarioPlaybackState(root, scenario.playback, route, false);
+      }
     }
     applySelectionSetByTargets(root, snapshot.selectedTargets || [], true);
     renderCompare(root);
@@ -655,6 +664,7 @@
     const point = nearestPoint(root, event);
     if (!point) {
       hideCrosshair(root, crosshair);
+      clearHover(root, true, true);
       return;
     }
     const target = targetIdentity(point.node);
@@ -1025,8 +1035,14 @@
       stopScenarioPlayback(root, 'paused', emit);
       return;
     }
-    setScenarioPlaybackState(root, 'playing', route, emit);
     let index = Number(root.dataset.cfxActiveScenarioStep || '-1') + 1;
+    if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
+    startScenarioPlayback(root, route, index, emit, true);
+  };
+  const startScenarioPlayback = (root, route, stepIndex, emit, advanceNow) => {
+    if (!route || !route.steps.length) return;
+    setScenarioPlaybackState(root, 'playing', route, emit);
+    let index = Number(stepIndex);
     if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
     root._cfxScenarioPlayback = window.setInterval(() => {
       if (index >= route.steps.length) {
@@ -1035,7 +1051,7 @@
       }
       setScenarioStep(root, index++, true, true);
     }, scenarioPlaybackDelay(root));
-    setScenarioStep(root, index++, true, true);
+    if (advanceNow !== false) setScenarioStep(root, index++, true, true);
   };
   const copyScenarioLink = (root) => {
     syncScenarioUrl(root, root.dataset.cfxActiveScenario || '', root.dataset.cfxActiveScenarioStep || '');
@@ -1226,10 +1242,11 @@
         if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
+          const replaceSelection = !event.shiftKey;
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
-          if (selectedTargets.length) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets });
+          if (selectedTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets });
           emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
-          if (selectedTargets.length) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: !event.shiftKey });
+          if (selectedTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: replaceSelection });
           publishCompare(root, true);
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
