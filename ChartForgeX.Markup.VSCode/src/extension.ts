@@ -270,7 +270,13 @@ async function runCli(context: vscode.ExtensionContext, document: vscode.TextDoc
     await document.save();
   }
 
-  const cli = resolveCli(context);
+  let cli: { command: string; args: string[] };
+  try {
+    cli = resolveCli(context);
+  } catch (error) {
+    return { stdout: '', stderr: error instanceof Error ? error.message : String(error), code: 1 };
+  }
+
   const args = [...cli.args, command, document.fileName, ...extraArgs];
   return spawnProcess(cli.command, args, path.dirname(document.fileName));
 }
@@ -289,6 +295,10 @@ function resolveCli(context: vscode.ExtensionContext): { command: string; args: 
     if (candidate.endsWith('.csproj')) return { command: 'dotnet', args: ['run', '--project', candidate, '-c', 'Release', '--'] };
     if (candidate.endsWith('.dll')) return { command: 'dotnet', args: [candidate] };
     return { command: candidate, args: [] };
+  }
+
+  if (configured) {
+    throw new Error(`Configured chartforgexMarkup.cliPath was not found or is unsupported: ${configured}`);
   }
 
   throw new Error('ChartForgeX.Markup.Cli was not found. Set chartforgexMarkup.cliPath or package the extension with the bundled CLI.');
