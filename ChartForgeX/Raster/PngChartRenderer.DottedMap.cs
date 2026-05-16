@@ -124,11 +124,11 @@ public sealed partial class PngChartRenderer {
             DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, color, strokeWidth);
             c.FillPolygon(DottedMapConnectorArrowPoints(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot), ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.78));
             if (ShouldDrawDataLabels(chart, series)) {
-                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.5);
+                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
                 var textWidth = RgbaCanvas.MeasureTextEmphasizedWidth(label, 12, null);
-                c.FillRoundedRect(labelPoint.X - textWidth / 2 - 5, labelPoint.Y - Math.Max(25, dot * 4), textWidth + 10, 20, 9, ApplyOpacity(t.PlotBackground, 0.78));
-                c.DrawTextEmphasized(labelPoint.X - textWidth / 2, labelPoint.Y - Math.Max(21, dot * 3.4), label, connector.Color ?? series.Color ?? t.Warning, 12);
+                c.FillRoundedRect(labelPoint.X - textWidth / 2 - 5, labelPoint.Y + Math.Max(8, dot * 1.7), textWidth + 10, 20, 9, ApplyOpacity(t.PlotBackground, 0.78));
+                c.DrawTextEmphasized(labelPoint.X - textWidth / 2, labelPoint.Y + Math.Max(12, dot * 2.4), label, connector.Color ?? series.Color ?? t.Warning, 12);
             }
         }
     }
@@ -141,13 +141,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string CompactDottedMapConnectorLabel(string label) {
-        var ms = label.LastIndexOf(" ms", StringComparison.OrdinalIgnoreCase);
-        if (ms > 0) {
-            var start = label.LastIndexOf(' ', ms - 1);
-            if (start >= 0 && ms + 3 <= label.Length) return label.Substring(start + 1, ms - start + 2);
-        }
-
-        return label.Length <= 24 ? label : label.Substring(0, 21) + "...";
+        return ChartRouteLabelCompaction.Compact(label);
     }
 
     private static ChartPoint DottedMapConnectorControlPoint(double x1, double y1, double x2, double y2, ChartRect map, double dot) {
@@ -399,7 +393,7 @@ public sealed partial class PngChartRenderer {
         var startX = pointX + dx / length * startGap;
         var startY = pointY + dy / length * startGap;
         var color = ApplyOpacity(ChartDottedMapSurface.BoundaryColor(chart.Options.Theme.PlotBackground, chart.Options.Theme.MutedText), 0.52);
-        c.DrawLine(startX, startY, end.X, end.Y, color, Math.Max(0.85, dot * 0.22));
+        DrawPremiumPngLineSegment(c, startX, startY, end.X, end.Y, color, Math.Max(0.85, dot * 0.22), ChartRouteVisualStyles.DottedMapLeader());
     }
 
     private static ChartPoint DottedMapLabelLeaderEndpoint(ChartLabelBounds bounds, double pointX, double pointY) {

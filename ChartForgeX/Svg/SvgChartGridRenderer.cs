@@ -77,8 +77,8 @@ public sealed class SvgChartGridRenderer {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
             var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, FitText(grid.Title, titleFontSize, headerWidth));
-            if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, FitText(grid.Subtitle, subtitleFontSize, headerWidth));
+            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, ChartTextFitting.TrimEnd(grid.Title, titleFontSize, headerWidth, EstimateTextWidth));
+            if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, ChartTextFitting.TrimEnd(grid.Subtitle, subtitleFontSize, headerWidth, EstimateTextWidth));
         }
 
         for (var i = 0; i < layout.Cells.Count; i++) {
@@ -149,21 +149,6 @@ public sealed class SvgChartGridRenderer {
     private static string NextScope() {
         var value = Interlocked.Increment(ref ScopeCounter);
         return value.ToString(CultureInfo.InvariantCulture);
-    }
-
-    private static string FitText(string value, double fontSize, double maxWidth) {
-        if (string.IsNullOrEmpty(value) || EstimateTextWidth(value, fontSize) <= maxWidth) return value;
-        const string suffix = "...";
-        if (EstimateTextWidth(suffix, fontSize) > maxWidth) return string.Empty;
-        var low = 0;
-        var high = value.Length;
-        while (low < high) {
-            var mid = (low + high + 1) / 2;
-            if (EstimateTextWidth(value.Substring(0, mid) + suffix, fontSize) <= maxWidth) low = mid;
-            else high = mid - 1;
-        }
-
-        return value.Substring(0, low) + suffix;
     }
 
     private static double EstimateTextWidth(string text, double fontSize) {

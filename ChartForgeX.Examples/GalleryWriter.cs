@@ -245,6 +245,7 @@ public static partial class GalleryWriter {
                     bytes = pair.SvgBytes,
                     visualNodes = pair.SvgHealth.VisualNodes,
                     textNodes = pair.SvgHealth.TextNodes,
+                    premiumStrokeNodes = pair.SvgHealth.PremiumStrokeNodes,
                     minimumTextFontSize = pair.SvgHealth.MinimumTextFontSize,
                     tinyTextNodes = pair.SvgHealth.TinyTextNodes,
                     strokedNodes = pair.SvgHealth.StrokedNodes,
@@ -413,7 +414,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
         var warnings = pair.Warnings;
         var statusClass = warnings.Length == 0 ? "ok" : "warn";
         var statusText = warnings.Length == 0 ? "Review clean" : string.Join(" / ", warnings);
-        var svgInfo = FormatDimensions(svg) + " / " + FormatBytes(pair.SvgBytes) + " / " + pair.SvgHealth.VisualNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visual nodes / min text " + FormatSvgTextSize(pair.SvgHealth.MinimumTextFontSize) + " / min stroke " + FormatSvgStrokeWidth(pair.SvgHealth.MinimumStrokeWidth) + " / min marker " + FormatSvgMarkerRadius(pair.SvgHealth.MinimumMarkerRadius);
+        var svgInfo = FormatDimensions(svg) + " / " + FormatBytes(pair.SvgBytes) + " / " + pair.SvgHealth.VisualNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visual nodes / " + pair.SvgHealth.PremiumStrokeNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " premium strokes / min text " + FormatSvgTextSize(pair.SvgHealth.MinimumTextFontSize) + " / min stroke " + FormatSvgStrokeWidth(pair.SvgHealth.MinimumStrokeWidth) + " / min marker " + FormatSvgMarkerRadius(pair.SvgHealth.MinimumMarkerRadius);
         var scaleLabel = pair.PngScale > 1 ? " @" + pair.PngScale.ToString(System.Globalization.CultureInfo.InvariantCulture) + "x" : string.Empty;
         var pngInfo = FormatDimensions(png) + scaleLabel + " / " + FormatBytes(pair.PngBytes) + " / " + pair.PngHealth.VisiblePixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visible px / " + pair.PngHealth.ForegroundPixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " foreground px";
         var largeClass = aspectWidth >= 1200 || aspectHeight >= 900 ? " large" : string.Empty;
@@ -570,8 +571,9 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
                 CountOccurrences(svg, "<polyline") +
                 CountOccurrences(svg, "<text");
             var textNodes = CountOccurrences(svg, "<text");
+            var premiumStrokeNodes = CountOccurrences(svg, "class=\"cfx-premium-stroke\"");
             var textQuality = ReadSvgTextQuality(svg, ReadSvgDimensions(fileName));
-            return new SvgHealth(visualNodes, textNodes, textQuality.MinimumFontSize, textQuality.TinyTextNodes, textQuality.StrokedNodes, textQuality.MinimumStrokeWidth, textQuality.TinyStrokeNodes, textQuality.MarkerNodes, textQuality.MinimumMarkerRadius, textQuality.TinyMarkerNodes, textQuality.ClippedTextNodes, textQuality.NearEdgeTextNodes);
+            return new SvgHealth(visualNodes, textNodes, premiumStrokeNodes, textQuality.MinimumFontSize, textQuality.TinyTextNodes, textQuality.StrokedNodes, textQuality.MinimumStrokeWidth, textQuality.TinyStrokeNodes, textQuality.MarkerNodes, textQuality.MinimumMarkerRadius, textQuality.TinyMarkerNodes, textQuality.ClippedTextNodes, textQuality.NearEdgeTextNodes);
         } catch (IOException) {
         } catch (UnauthorizedAccessException) {
         }

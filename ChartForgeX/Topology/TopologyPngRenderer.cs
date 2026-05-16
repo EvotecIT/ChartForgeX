@@ -206,14 +206,14 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawGroupStatusDot(RgbaCanvas canvas, TopologyGroup group, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options) {
-        if (!options.IncludeGroupStatusDots || !IsMonitoringDashboardStyle(options) || group.Status == TopologyHealthStatus.Unknown) return;
+        if (!ShouldDrawGroupStatusDot(group, options)) return;
         var statusColor = Color(theme.StatusColor(group.Status));
-        canvas.DrawCircle(cx, cy, 7.3, Color(theme.Background));
-        canvas.DrawCircle(cx, cy, 5.3, statusColor);
+        canvas.DrawCircle(cx, cy, GroupStatusDotOuterRadius, Color(theme.Background));
+        canvas.DrawCircle(cx, cy, GroupStatusDotInnerRadius, statusColor);
     }
 
     private static double GroupHeaderLabelWidth(TopologyGroup group, TopologyRenderOptions options, bool includesLeadingSymbol) {
-        var statusReserve = options.IncludeGroupStatusDots && IsMonitoringDashboardStyle(options) && group.Status != TopologyHealthStatus.Unknown ? 38 : 0;
+        var statusReserve = GroupStatusDotReserveWidth(group, options);
         var symbolReserve = includesLeadingSymbol ? 42 : 0;
         return Math.Max(36, group.Width - 44 - statusReserve - symbolReserve);
     }
@@ -227,24 +227,24 @@ public sealed partial class TopologyPngRenderer {
     private static void DrawGroupSymbol(RgbaCanvas canvas, TopologyGroup group, double cx, double cy, ChartColor color, TopologyRenderOptions options) {
         var symbol = string.IsNullOrWhiteSpace(group.Symbol) ? string.Empty : group.Symbol!.Trim();
         if (symbol.Equals("region", StringComparison.OrdinalIgnoreCase) || symbol.Equals("globe", StringComparison.OrdinalIgnoreCase)) {
-            canvas.DrawCircleOutline(cx, cy, 5.8, color, 1.2);
-            canvas.DrawLine(cx - 5.2, cy, cx + 5.2, cy, color, 1);
-            canvas.DrawArc(cx, cy, 3.2, Math.PI / 2, Math.PI * 1.5, color, 1);
-            canvas.DrawArc(cx, cy, 3.2, -Math.PI / 2, Math.PI / 2, color, 1);
+            canvas.DrawCircleOutline(cx, cy, GroupSymbolGlobeRadius, color, GroupSymbolGlobeOuterStrokeWidth);
+            canvas.DrawLine(cx - GroupSymbolGlobeHorizontalRadius, cy, cx + GroupSymbolGlobeHorizontalRadius, cy, color, GroupSymbolGlobeInnerStrokeWidth);
+            canvas.DrawArc(cx, cy, GroupSymbolGlobeMeridianRadius, Math.PI / 2, Math.PI * 1.5, color, GroupSymbolGlobeInnerStrokeWidth);
+            canvas.DrawArc(cx, cy, GroupSymbolGlobeMeridianRadius, -Math.PI / 2, Math.PI / 2, color, GroupSymbolGlobeInnerStrokeWidth);
             return;
         }
 
         var icon = ResolveGroupIcon(group, options);
         if (icon != null && DrawGroupIconSymbol(canvas, icon, cx, cy, color, options)) return;
 
-        if (string.IsNullOrWhiteSpace(symbol)) canvas.DrawCircleOutline(cx, cy, 4, color, 1);
+        if (string.IsNullOrWhiteSpace(symbol)) canvas.DrawCircleOutline(cx, cy, GroupSymbolFallbackRadius, color, GroupSymbolFallbackStrokeWidth);
         else DrawCentered(canvas, cx, cy - 5, TrimTo(symbol, 3), color, 7, true);
     }
 
     private static bool DrawGroupIconSymbol(RgbaCanvas canvas, TopologyIconDefinition icon, double cx, double cy, ChartColor color, TopologyRenderOptions options) {
         if (icon.Shape == TopologyIconShape.Cloud) {
-            canvas.DrawCircleOutline(cx - 3, cy + 1, 4.2, color, 1.2);
-            canvas.DrawCircleOutline(cx + 3, cy - 1, 5, color, 1.2);
+            canvas.DrawCircleOutline(cx + GroupSymbolCloudLeftOffsetX, cy + GroupSymbolCloudLeftOffsetY, GroupSymbolCloudLeftRadius, color, GroupSymbolCloudStrokeWidth);
+            canvas.DrawCircleOutline(cx + GroupSymbolCloudRightOffsetX, cy + GroupSymbolCloudRightOffsetY, GroupSymbolCloudRightRadius, color, GroupSymbolCloudStrokeWidth);
             return true;
         }
 
@@ -267,18 +267,11 @@ public sealed partial class TopologyPngRenderer {
                 : points;
             if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
-            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) DrawEdgeRoute(canvas, routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4), false, 0, 0);
-            DrawEdgeRoute(canvas, routePoints, color, width, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap);
+            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) canvas.DrawPolyline(routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4));
+            DrawPremiumEdgeRoute(canvas, routePoints, color, width, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap, edge, options, isSelected);
 
             if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, options);
             if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color, options);
-        }
-    }
-
-    private static void DrawEdgeRoute(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, double width, bool dashed, double dash, double gap) {
-        for (var i = 0; i < points.Count - 1; i++) {
-            if (dashed) canvas.DrawDashedLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, width, dash, gap);
-            else canvas.DrawLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, width);
         }
     }
 
@@ -293,11 +286,7 @@ public sealed partial class TopologyPngRenderer {
             var secondaryColor = isHighlighted ? Color(theme.MutedForeground) : WithAlpha(Color(theme.MutedForeground), HighlightAlpha(255, false, highlight));
             var haloColor = WithAlpha(Color(theme.Background), HighlightAlpha(255, isHighlighted, highlight));
             DrawEdgeLabelLeader(canvas, layout, color, haloColor, options);
-            if (options.IncludeEdgeLabelBackplates) {
-                var radius = IsMonitoringDashboardStyle(options) ? 7 : 9;
-                canvas.FillRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, Color(IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background));
-                canvas.StrokeRoundedRect(cx - layout.Width / 2, cy - layout.Height / 2, layout.Width, layout.Height, radius, WithAlpha(Color(theme.Border), IsMonitoringDashboardStyle(options) ? (byte)184 : byte.MaxValue), 1);
-            }
+            DrawEdgeLabelBackplate(canvas, layout, cx, cy, theme, options);
             DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options, highlight, isHighlighted);
             DrawEdgeLabelLines(canvas, layout, cx, cy, color, secondaryColor, haloColor, IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates);
         }
@@ -639,15 +628,16 @@ public sealed partial class TopologyPngRenderer {
             if (!ShouldRenderNodeStatusBadge(node, options)) continue;
             if (highlight.IsActive && !highlight.IsNodeHighlighted(node)) continue;
             var color = Color(theme.StatusColor(node.Status));
-            var cx = node.X + node.Width - 11;
-            var cy = node.Y + 11;
-            canvas.DrawCircle(cx, cy, 9, Color(theme.Background));
-            canvas.DrawCircle(cx, cy, 7, color);
-            if (IsMonitoringDashboardStyle(options) && node.Status == TopologyHealthStatus.Healthy) {
-                canvas.DrawLine(cx - 3.8, cy, cx - 1, cy + 3, ChartColor.White, 1.8);
-                canvas.DrawLine(cx - 1, cy + 3, cx + 4.4, cy - 3.6, ChartColor.White, 1.8);
+            var cx = NodeStatusBadgeCenterX(node);
+            var cy = NodeStatusBadgeCenterY(node);
+            canvas.DrawCircle(cx, cy, NodeStatusBadgeOuterRadius, Color(theme.Background));
+            canvas.DrawCircle(cx, cy, NodeStatusBadgeInnerRadius, color);
+            if (ShouldDrawNodeStatusBadgeCheck(node, options)) {
+                var check = NodeStatusBadgeCheckPoints(cx, cy);
+                canvas.DrawLine(check[0].X, check[0].Y, check[1].X, check[1].Y, ChartColor.White, NodeStatusBadgeCheckStrokeWidth);
+                canvas.DrawLine(check[1].X, check[1].Y, check[2].X, check[2].Y, ChartColor.White, NodeStatusBadgeCheckStrokeWidth);
             } else {
-                DrawCenteredMiddle(canvas, cx, cy, StatusGlyph(node.Status), ChartColor.White, 8, true);
+                DrawCenteredMiddle(canvas, cx, cy, StatusGlyph(node.Status), ChartColor.White, NodeStatusBadgeGlyphFontSize, true);
             }
         }
     }
@@ -729,16 +719,7 @@ public sealed partial class TopologyPngRenderer {
     private static void DrawCenteredWithHalo(RgbaCanvas canvas, double centerX, double y, string text, ChartColor color, double fontSize, bool emphasized, ChartColor haloColor) {
         var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
         var x = centerX - width / 2;
-        var offsets = fontSize >= 12
-            ? new[] { (-1.5, 0.0), (1.5, 0.0), (0.0, -1.5), (0.0, 1.5), (-1.05, -1.05), (1.05, -1.05), (-1.05, 1.05), (1.05, 1.05) }
-            : new[] { (-1.1, 0.0), (1.1, 0.0), (0.0, -1.1), (0.0, 1.1), (-0.8, -0.8), (0.8, -0.8), (-0.8, 0.8), (0.8, 0.8) };
-        foreach (var (dx, dy) in offsets) {
-            if (emphasized) canvas.DrawTextEmphasized(x + dx, y + dy, text, haloColor, fontSize);
-            else canvas.DrawText(x + dx, y + dy, text, haloColor, fontSize);
-        }
-
-        if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
-        else canvas.DrawText(x, y, text, color, fontSize);
+        DrawTextWithReadableHalo(canvas, x, y, text, color, haloColor, fontSize, emphasized);
     }
 
     private static ChartColor Color(string value) => ChartColor.FromHex(value);

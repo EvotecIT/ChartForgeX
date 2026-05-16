@@ -203,9 +203,9 @@ public sealed partial class SvgChartRenderer {
                 writer.EndElement().Line();
             });
             if (ShouldDrawDataLabels(chart, series)) {
-                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.5);
+                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
-                AppendSvg(sb, 512, writer => writer.StartElement("text").Attribute("data-cfx-role", "dotted-map-connector-label").Attribute("data-cfx-connector", i).Attribute("data-cfx-label", connector.Label).Attribute("x", labelPoint.X).Attribute("y", labelPoint.Y - Math.Max(7, dot * 2.2)).Attribute("text-anchor", "middle").Attribute("fill", color.ToCss()).Attribute("stroke", t.PlotBackground.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke").Attribute("font-size", "12").Attribute("font-weight", "700").Text(label).EndElement().Line());
+                AppendSvg(sb, 512, writer => writer.StartElement("text").Attribute("data-cfx-role", "dotted-map-connector-label").Attribute("data-cfx-connector", i).Attribute("data-cfx-label", connector.Label).Attribute("x", labelPoint.X).Attribute("y", labelPoint.Y + Math.Max(14, dot * 3.2)).Attribute("text-anchor", "middle").Attribute("fill", color.ToCss()).Attribute("stroke", t.PlotBackground.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke").Attribute("font-size", "12").Attribute("font-weight", "700").Text(label).EndElement().Line());
             }
         }
     }
@@ -218,13 +218,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string CompactDottedMapConnectorLabel(string label) {
-        var ms = label.LastIndexOf(" ms", StringComparison.OrdinalIgnoreCase);
-        if (ms > 0) {
-            var start = label.LastIndexOf(' ', ms - 1);
-            if (start >= 0 && ms + 3 <= label.Length) return label.Substring(start + 1, ms - start + 2);
-        }
-
-        return label.Length <= 24 ? label : label.Substring(0, 21) + "...";
+        return ChartRouteLabelCompaction.Compact(label);
     }
 
     private static ChartPoint DottedMapConnectorControlPoint(double x1, double y1, double x2, double y2, ChartRect map, double dot) {
@@ -521,7 +515,28 @@ public sealed partial class SvgChartRenderer {
         var startX = pointX + dx / length * startGap;
         var startY = pointY + dy / length * startGap;
         var t = chart.Options.Theme;
-        AppendSvg(sb, 512, writer => writer.StartElement("line").Attribute("data-cfx-role", "dotted-map-label-leader").Attribute("data-cfx-label", label).Attribute("data-cfx-placement", placement.Placement).Attribute("x1", startX).Attribute("y1", startY).Attribute("x2", end.X).Attribute("y2", end.Y).Attribute("stroke", ChartDottedMapSurface.BoundaryColor(t.PlotBackground, t.MutedText).ToCss()).Attribute("stroke-opacity", "0.52").Attribute("stroke-width", Math.Max(0.85, dot * 0.22)).Attribute("stroke-linecap", "round").EndEmptyElement().Line());
+        var color = ChartColorMath.WithOpacity(ChartDottedMapSurface.BoundaryColor(t.PlotBackground, t.MutedText), 0.52);
+        var width = Math.Max(0.85, dot * 0.22);
+        foreach (var layer in ChartLineVisualLayers.Build(color, width, ChartRouteVisualStyles.DottedMapLeader())) {
+            if (!layer.IsVisible) continue;
+            AppendSvg(sb, 512, writer => {
+                writer
+                    .StartElement("line")
+                    .Attribute("data-cfx-role", "dotted-map-label-leader" + layer.RoleSuffix)
+                    .Attribute("data-cfx-label", label)
+                    .Attribute("data-cfx-placement", placement.Placement)
+                    .Attribute("x1", startX)
+                    .Attribute("y1", startY)
+                    .Attribute("x2", end.X)
+                    .Attribute("y2", end.Y)
+                    .Attribute("class", ChartVisualPrimitives.SvgPremiumStrokeClass)
+                    .Attribute("stroke", layer.Color.ToCss())
+                    .Attribute("stroke-width", layer.StrokeWidth)
+                    .Attribute("stroke-linecap", "round");
+                if (layer.Opacity < 1) writer.Attribute("opacity", layer.Opacity);
+                writer.EndEmptyElement().Line();
+            });
+        }
     }
 
     private static ChartPoint DottedMapLabelLeaderEndpoint(ChartLabelBounds bounds, double pointX, double pointY) {

@@ -487,21 +487,26 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static void AddGroupStatusDot(SvgElement parent, TopologyGroup group, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options) {
-        if (!options.IncludeGroupStatusDots || !IsMonitoringDashboardStyle(options) || group.Status == TopologyHealthStatus.Unknown) return;
+        if (!ShouldDrawGroupStatusDot(group, options)) return;
         var statusColor = theme.StatusColor(group.Status);
         parent.Element("circle", circle => circle
             .Attribute("data-cfx-role", "topology-group-status")
             .Attribute("data-cfx-status", group.Status.ToString())
             .Attribute("cx", cx)
             .Attribute("cy", cy)
-            .Attribute("r", 5.3)
-            .Attribute("fill", statusColor)
-            .Attribute("stroke", theme.Background)
-            .Attribute("stroke-width", 2));
+            .Attribute("r", GroupStatusDotOuterRadius)
+            .Attribute("fill", theme.Background));
+        parent.Element("circle", circle => circle
+            .Attribute("data-cfx-role", "topology-group-status-fill")
+            .Attribute("data-cfx-status", group.Status.ToString())
+            .Attribute("cx", cx)
+            .Attribute("cy", cy)
+            .Attribute("r", GroupStatusDotInnerRadius)
+            .Attribute("fill", statusColor));
     }
 
     private static double GroupHeaderLabelWidth(TopologyGroup group, TopologyRenderOptions options, bool includesLeadingSymbol) {
-        var statusReserve = options.IncludeGroupStatusDots && IsMonitoringDashboardStyle(options) && group.Status != TopologyHealthStatus.Unknown ? 38 : 0;
+        var statusReserve = GroupStatusDotReserveWidth(group, options);
         var symbolReserve = includesLeadingSymbol ? 42 : 0;
         return Math.Max(36, group.Width - 44 - statusReserve - symbolReserve);
     }
@@ -595,18 +600,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("opacity", geographicHalo ? 0.86 : 0.88));
             }
 
-            edgeGroup.Element("path", path => {
-                path
-                    .Class(prefix + "__edge")
-                    .Attribute("d", EdgePath(chart, edge, nodes, points, options))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options))
-                    .Attribute("stroke-dasharray", dash)
-                    .Attribute("opacity", EdgeOpacity(edge, options));
-                if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, color) + ")");
-                if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, color) + ")");
-            });
+            AddPremiumEdgePath(edgeGroup, chart, edge, nodes, points, prefix, options, svgId, selected, color, dash);
         }
 
         root.AddElement(layer);
@@ -643,20 +637,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-cfx-selected", selected);
                 if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
                 AddEdgeLabelLeader(group, layout, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme, options);
-                if (options.IncludeEdgeLabelBackplates) {
-                    group.Element("rect", rect => rect
-                        .Attribute("data-cfx-role", "topology-edge-label-backplate")
-                        .Attribute("x", cx - layout.Width / 2)
-                        .Attribute("y", cy - layout.Height / 2)
-                        .Attribute("width", layout.Width)
-                        .Attribute("height", layout.Height)
-                        .Attribute("rx", IsMonitoringDashboardStyle(options) ? 7 : 9)
-                        .Attribute("fill", IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background)
-                        .Attribute("fill-opacity", IsMonitoringDashboardStyle(options) ? 0.98 : 1)
-                        .Attribute("stroke", IsMonitoringDashboardStyle(options) ? theme.Border : theme.Border)
-                        .Attribute("stroke-opacity", IsMonitoringDashboardStyle(options) ? 0.72 : 1));
-                }
-
+                AddEdgeLabelBackplate(group, layout, cx, cy, theme, options);
                 AddEdgeLabelClearance(group, chart, layout, cx, cy, theme, options);
                 AddEdgeLabelLines(group, layout, cx, cy, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme.MutedForeground, theme, options);
             });
@@ -697,7 +678,7 @@ public sealed partial class TopologySvgRenderer {
                 if (useHalo) {
                     text
                         .Attribute("stroke", theme.Background)
-                        .Attribute("stroke-width", line.Primary ? 4 : 3)
+                        .Attribute("stroke-width", EdgeLabelHaloStrokeWidth(size, line.Primary))
                         .Attribute("stroke-linejoin", "round")
                         .Attribute("paint-order", "stroke")
                         .Attribute("data-cfx-halo", "true");

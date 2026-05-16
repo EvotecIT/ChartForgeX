@@ -266,7 +266,8 @@ internal static class ChartVisualPrimitives {
     public const double TreeLayoutLeafInset = 9;
     public const double TreeNodeBorderOpacity = 0.42;
     public const double TreeNodeBorderStrokeWidth = 1.2;
-    public const double TreeLabelStrokeWidth = 2.6;
+    public const double TreeLabelHaloStrokeWidth = 1.35;
+    public const double TreeLabelHaloOpacity = 0.56;
 
     public const double TreemapTileCornerRadiusMax = 8;
     public const double TreemapTileCornerRadiusFactor = 0.08;
