@@ -11,14 +11,22 @@ internal static partial class SmokeTests {
         Assert(options.HasFeature(ChartInteractionFeatures.Selection), "Report-review interactivity should include selection.");
         Assert(options.HasFeature(ChartInteractionFeatures.LegendToggles), "Report-review interactivity should include legend toggles.");
         Assert(options.HasFeature(ChartInteractionFeatures.KeyboardNavigation), "Report-review interactivity should include keyboard navigation.");
+        Assert(options.HasFeature(ChartInteractionFeatures.Crosshair), "Report-review interactivity should include nearest-point crosshair exploration.");
+        Assert(options.HasFeature(ChartInteractionFeatures.CompareMarkers), "Report-review interactivity should include reusable selected-target comparison.");
+        Assert(!options.HasFeature(ChartInteractionFeatures.FocusTrail), "Report-review interactivity should leave playful focus trails as an opt-in preset.");
+        Assert(!options.HasFeature(ChartInteractionFeatures.RevealLabels), "Report-review interactivity should leave playful reveal labels as an opt-in preset.");
+        Assert(!options.HasFeature(ChartInteractionFeatures.StateBookmarks), "Report-review interactivity should leave reusable state bookmarks as an opt-in host feature.");
         Assert(!options.HasFeature(ChartInteractionFeatures.Zoom), "Report-review interactivity should leave zoom as an opt-in host feature.");
         Assert(!options.HasFeature(ChartInteractionFeatures.Scenarios), "Report-review interactivity should leave scenario routes as an opt-in host feature.");
 
-        options.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.Scenarios | ChartInteractionFeatures.StepPlayback | ChartInteractionFeatures.DeepLinks);
+        options.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.Scenarios | ChartInteractionFeatures.StepPlayback | ChartInteractionFeatures.DeepLinks | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
         options.ChartId = "security-posture";
         options.GroupName = "executive-dashboard";
         Assert(options.HasFeature(ChartInteractionFeatures.Zoom) && options.HasFeature(ChartInteractionFeatures.Pan), "Interactivity contracts should model future zoom and pan adapters.");
         Assert(options.HasFeature(ChartInteractionFeatures.SynchronizedCharts), "Interactivity contracts should model synchronized chart groups.");
+        Assert(options.HasFeature(ChartInteractionFeatures.FocusTrail), "Interactivity contracts should model opt-in focus trail presets.");
+        Assert(options.HasFeature(ChartInteractionFeatures.RevealLabels), "Interactivity contracts should model opt-in reveal label presets.");
+        Assert(options.HasFeature(ChartInteractionFeatures.StateBookmarks), "Interactivity contracts should model opt-in state bookmark presets.");
         Assert(options.HasFeature(ChartInteractionFeatures.Scenarios) && options.HasFeature(ChartInteractionFeatures.StepPlayback) && options.HasFeature(ChartInteractionFeatures.DeepLinks), "Interactivity contracts should model reusable scenario routes, ordered playback, and deep-linked state.");
         Assert(options.ChartId == "security-posture" && options.GroupName == "executive-dashboard", "Interactivity identifiers should preserve trimmed values.");
         AssertThrows<ArgumentException>(() => options.ChartId = " ", "Interactivity chart IDs should reject empty values.");
@@ -56,14 +64,16 @@ internal static partial class SmokeTests {
             options.ScriptNonce = "nonce-1";
             options.Interaction.ChartId = "security-posture";
             options.Interaction.GroupName = "dashboard-a";
-            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
             options.Interaction
                 .AddScenario("ops-route", "Ops route", scenario => scenario
                     .WithColor("#2563EB")
                     .WithDescription("Operations review path")
                     .WithMetadata("owner", "noc")
                     .AddSeriesStep("0", "Passed", configure: step => step.WithMetadata("unit", "checks"))
-                    .AddSeriesStep("1", "Failed"))
+                    .AddSeriesStep("1", "Failed")
+                    .AddPointStep("1:2", "Failed Friday")
+                    .AddAnnotationStep("horizontal-line", "Threshold"))
                 .WithActiveScenario("ops-route")
                 .WithDeepLinkState();
         });
@@ -74,9 +84,20 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-interaction-features=\"", StringComparison.Ordinal) && html.Contains("Zoom", StringComparison.Ordinal) && html.Contains("Pan", StringComparison.Ordinal) && html.Contains("Brush", StringComparison.Ordinal) && html.Contains("SynchronizedCharts", StringComparison.Ordinal), "Interactive HTML should describe enabled host-neutral features.");
         Assert(html.Contains("<script nonce=\"nonce-1\">", StringComparison.Ordinal), "Interactive HTML should support CSP nonces.");
         Assert(html.Contains("class=\"cfx-tooltip\"", StringComparison.Ordinal), "Interactive HTML should include an HTML tooltip surface.");
+        Assert(html.Contains("featureAliases", StringComparison.Ordinal) && html.Contains("ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair', 'CompareMarkers']", StringComparison.Ordinal), "Interactive HTML should expand composite feature flags such as ReportReview in the browser adapter.");
+        Assert(html.Contains("const tooltipRows = (node)", StringComparison.Ordinal) && html.Contains("cfx-tooltip__meta", StringComparison.Ordinal), "Interactive HTML should render rich metadata tooltips from generic SVG data attributes.");
+        Assert(html.Contains("push('Series', data.cfxSeries)", StringComparison.Ordinal) && html.Contains("push('Point', data.cfxPoint)", StringComparison.Ordinal) && html.Contains("push('Status', data.cfxStatus)", StringComparison.Ordinal), "Interactive tooltips should expose common cross-chart metadata without chart-specific JavaScript.");
+        Assert(html.Contains("const metadataRows = (node)", StringComparison.Ordinal) && html.Contains("data-cfx-meta-", StringComparison.Ordinal), "Interactive tooltips should include generic data-cfx-meta-* rows from chart and topology renderers.");
+        Assert(html.Contains("cfx-tooltip--pinned", StringComparison.Ordinal) && html.Contains("'cfxtooltip'", StringComparison.Ordinal), "Interactive HTML should let users pin reusable metadata tooltips without host dependencies.");
+        Assert(html.Contains("class=\"cfx-crosshair\"", StringComparison.Ordinal) && html.Contains("data-cfx-crosshair-label=\"true\"", StringComparison.Ordinal), "Interactive HTML should include a reusable crosshair overlay.");
+        Assert(html.Contains("const nearestPoint = (root, event)", StringComparison.Ordinal) && html.Contains("'cfxcrosshair'", StringComparison.Ordinal), "Interactive HTML should support nearest-point crosshair exploration from generic point metadata.");
+        Assert(html.Contains("class=\"cfx-compare-tray\"", StringComparison.Ordinal) && html.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should include a reusable selected-target compare tray.");
+        Assert(html.Contains("const publishCompare = (root, sync)", StringComparison.Ordinal) && html.Contains("'cfxcompare'", StringComparison.Ordinal), "Interactive HTML should publish reusable selected-target compare events.");
         Assert(html.Contains("cfx-selected", StringComparison.Ordinal), "Interactive HTML should include selectable-region styling and behavior.");
+        Assert(html.Contains("cfx-hovered", StringComparison.Ordinal) && html.Contains("cfx-hover-related", StringComparison.Ordinal), "Interactive HTML should include reusable hover spotlight styling and behavior.");
         Assert(html.Contains("cfx-series-muted", StringComparison.Ordinal), "Interactive HTML should include legend-toggle behavior.");
         Assert(html.Contains("const setSeriesMuted = (root, series, muted)", StringComparison.Ordinal), "Interactive HTML should target SVG series metadata for legend toggles.");
+        Assert(html.Contains("const toggleSeriesFocus = (root, item, emit, sync)", StringComparison.Ordinal) && html.Contains("cfx-series-isolated-out", StringComparison.Ordinal), "Interactive HTML should let users isolate one series from reusable legend metadata.");
         Assert(html.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal) && html.Contains("data-cfx-zoom=\"out\"", StringComparison.Ordinal), "Interactive HTML should include zoom controls when zoom is enabled.");
         Assert(html.Contains("data-cfx-mode-button=\"pan\"", StringComparison.Ordinal), "Interactive HTML should include a pan mode control when pan is enabled.");
         Assert(html.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal), "Interactive HTML should include a brush mode control when brush is enabled.");
@@ -89,9 +110,35 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-scenario-steps=\"[{&quot;index&quot;:0,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;0&quot;", StringComparison.Ordinal), "Interactive HTML should expose reusable ordered scenario step metadata.");
         Assert(html.Contains("&quot;metadata&quot;:{&quot;unit&quot;:&quot;checks&quot;}", StringComparison.Ordinal), "Interactive HTML should expose reusable scenario step metadata.");
         Assert(html.Contains("data-cfx-scenario-step-control=\"play\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario playback controls.");
+        Assert(html.Contains("data-cfx-scenario-playback=\"idle\"", StringComparison.Ordinal) && html.Contains("data-cfx-scenario-playback-delay=\"900\"", StringComparison.Ordinal), "Interactive HTML should expose reusable scenario playback state and cadence.");
         Assert(html.Contains("data-cfx-scenario-step-control=\"link\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario link controls when deep-link state is enabled.");
-        Assert(html.Contains("cfxscenario", StringComparison.Ordinal) && html.Contains("cfxscenariostep", StringComparison.Ordinal) && html.Contains("cfxscenariolink", StringComparison.Ordinal), "Interactive HTML should publish reusable scenario host events.");
-        Assert(html.Contains("scenarioTargetMatches", StringComparison.Ordinal) && html.Contains("data.cfxSeries === step.targetId", StringComparison.Ordinal), "Interactive HTML should map reusable scenario steps onto adapter-defined chart elements.");
+        Assert(html.Contains("class=\"cfx-scenario-progress\"", StringComparison.Ordinal) && html.Contains("data-cfx-scenario-progress=\"true\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario step progress chrome.");
+        Assert(html.Contains("cfxscenario", StringComparison.Ordinal) && html.Contains("cfxscenariostep", StringComparison.Ordinal) && html.Contains("cfxscenarioplayback", StringComparison.Ordinal) && html.Contains("cfxscenariolink", StringComparison.Ordinal), "Interactive HTML should publish reusable scenario host events.");
+        Assert(html.Contains("scenarioTargetMatches", StringComparison.Ordinal) && html.Contains("kind === 'series' && data.cfxSeries === target", StringComparison.Ordinal), "Interactive HTML should map reusable scenario steps onto adapter-defined chart elements.");
+        Assert(html.Contains("kind === 'point' && data.cfxPoint === target", StringComparison.Ordinal) && html.Contains("data.cfxSeries + ':' + data.cfxPoint === target", StringComparison.Ordinal), "Interactive HTML should map reusable point steps onto rendered point metadata.");
+        Assert(html.Contains("kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0", StringComparison.Ordinal), "Interactive HTML should map reusable annotation steps onto rendered annotation metadata.");
+        Assert(html.Contains("[data-cfx-point],[data-cfx-series]", StringComparison.Ordinal), "Interactive HTML should treat generic point and series metadata as interactive targets.");
+        Assert(html.Contains("node.closest('[data-cfx-role=\"legend-item\"]')", StringComparison.Ordinal), "Interactive HTML should avoid double-binding legend item descendants as separate selectable series targets.");
+        Assert(html.Contains("const targetIdentity = (node)", StringComparison.Ordinal) && html.Contains("applySelectionByTarget(root, detail.target", StringComparison.Ordinal), "Interactive HTML should synchronize selections by stable target metadata before falling back to labels.");
+        Assert(html.Contains("'cfxhover'", StringComparison.Ordinal) && html.Contains("'cfxhoverclear'", StringComparison.Ordinal), "Interactive HTML should publish host events for hover and hover clear.");
+        Assert(html.Contains("action: 'hover'", StringComparison.Ordinal) && html.Contains("action: 'hover-clear'", StringComparison.Ordinal), "Interactive HTML should synchronize hover spotlight state across grouped charts.");
+        Assert(html.Contains("applyHoverByTarget(root, detail.target)", StringComparison.Ordinal), "Interactive HTML should apply synchronized hover state by stable target metadata.");
+        Assert(html.Contains("const focusAdjacentTarget = (root, node, key)", StringComparison.Ordinal) && html.Contains("'cfxnavigate'", StringComparison.Ordinal), "Interactive HTML should let keyboard users traverse reusable chart targets.");
+        Assert(html.Contains("targetNode.focus({ preventScroll: true })", StringComparison.Ordinal) && html.Contains("event.key !== 'Enter' && event.key !== ' '", StringComparison.Ordinal), "Interactive keyboard traversal should preserve activation keys while adding arrow, Home, and End navigation.");
+        Assert(html.Contains("action: 'navigate'", StringComparison.Ordinal), "Interactive keyboard traversal should synchronize hover context across grouped charts.");
+        Assert(html.Contains("Number.isFinite(clientX)", StringComparison.Ordinal) && html.Contains("node.getBoundingClientRect()", StringComparison.Ordinal) && html.Contains("tip.offsetWidth", StringComparison.Ordinal), "Interactive tooltips should position correctly for focus-driven keyboard navigation and narrow viewports.");
+        Assert(html.Contains("min-width: 0;", StringComparison.Ordinal) && html.Contains("flex-wrap: wrap;", StringComparison.Ordinal), "Interactive chrome should stay within narrow viewports instead of forcing horizontal overflow.");
+        Assert(html.Contains("FocusTrail", StringComparison.Ordinal) && html.Contains("const recordFocusTrail = (root, target, emit, sync)", StringComparison.Ordinal) && html.Contains("'cfxtrail'", StringComparison.Ordinal), "Interactive HTML should support opt-in focus trail breadcrumbs from reusable target metadata.");
+        Assert(html.Contains("data-cfx-trail-index", StringComparison.Ordinal) && html.Contains("action: 'trail'", StringComparison.Ordinal), "Interactive focus trails should render recent target order and synchronize across grouped charts.");
+        Assert(html.Contains("source: 'scenario-step'", StringComparison.Ordinal) && html.Contains("Array.from(targets).map((node) => targetIdentity(node)).slice(0, 5)", StringComparison.Ordinal), "Interactive scenario playback should feed route targets into the same reusable focus trail contract.");
+        Assert(html.Contains("const updateScenarioProgress = (root, route, stepIndex)", StringComparison.Ordinal) && html.Contains("root.dataset.cfxScenarioProgress = current + '/' + count", StringComparison.Ordinal) && html.Contains("progress })", StringComparison.Ordinal), "Interactive scenario playback should expose reusable step progress state and host event metadata.");
+        Assert(html.Contains("const setScenarioPlaybackState = (root, state, route, emit)", StringComparison.Ordinal) && html.Contains("button.textContent = playing ? (button.dataset.cfxScenarioPauseLabel || 'Pause')", StringComparison.Ordinal), "Interactive scenario playback should expose reusable play, pause, and finish state.");
+        Assert(html.Contains("root.addEventListener('cfx-set-scenario-step'", StringComparison.Ordinal) && html.Contains("root.addEventListener('cfx-play-scenario'", StringComparison.Ordinal) && html.Contains("root.addEventListener('cfx-pause-scenario'", StringComparison.Ordinal), "Interactive HTML should accept generic host-driven scenario playback commands.");
+        Assert(html.Contains("StateBookmarks", StringComparison.Ordinal) && html.Contains("const captureInteractionState = (root, source)", StringComparison.Ordinal) && html.Contains("'cfxstate'", StringComparison.Ordinal), "Interactive HTML should expose opt-in reusable state bookmark snapshots.");
+        Assert(html.Contains("root.addEventListener('cfx-capture-state'", StringComparison.Ordinal) && html.Contains("root.addEventListener('cfx-apply-state'", StringComparison.Ordinal) && html.Contains("action: 'state'", StringComparison.Ordinal), "Interactive HTML should accept generic host-driven state capture and replay commands.");
+        Assert(html.Contains("class=\"cfx-reveal-layer\"", StringComparison.Ordinal) && html.Contains("data-cfx-reveal-layer=\"true\"", StringComparison.Ordinal), "Interactive HTML should include an opt-in reveal label layer.");
+        Assert(html.Contains("const revealNodes = (root, nodes, emit, sync, source)", StringComparison.Ordinal) && html.Contains("'cfxreveal'", StringComparison.Ordinal) && html.Contains("action: 'reveal'", StringComparison.Ordinal), "Interactive reveal labels should use reusable target metadata and synchronize across grouped charts.");
+        Assert(html.Contains("revealNodes(root, Array.from(targets), emit, sync, 'scenario-step')", StringComparison.Ordinal), "Interactive scenario playback should reveal route labels through the same opt-in reveal contract.");
         Assert(html.Contains("scenarioTargetCandidates(root, route)", StringComparison.Ordinal) && html.Contains("node.querySelector('.cfx-interactive-region", StringComparison.Ordinal), "Interactive HTML should apply id-targeted scenario classes without muting parent SVG containers.");
         Assert(html.Contains("scenarioUrlParam(root, 'scenario')", StringComparison.Ordinal) && html.Contains("scenarioUrlKey(root, 'scenario')", StringComparison.Ordinal), "Interactive HTML should restore reusable scenario state from chart-scoped opt-in deep links.");
         Assert(html.Contains("const initialScenarioStep = scenarioUrlParam(root, 'scenarioStep')", StringComparison.Ordinal), "Interactive HTML should read the initial legacy scenario step before normalizing query parameters.");
@@ -101,11 +148,14 @@ internal static partial class SmokeTests {
         Assert(html.Contains("class=\"cfx-brush-box\"", StringComparison.Ordinal), "Interactive HTML should include a brush selection overlay.");
         Assert(html.Contains("stage.addEventListener('wheel'", StringComparison.Ordinal), "Interactive HTML should support wheel zoom.");
         Assert(html.Contains("root.dataset.cfxBrush", StringComparison.Ordinal) && html.Contains("'cfxbrush'", StringComparison.Ordinal), "Interactive HTML should publish brush selection state for host code.");
+        Assert(html.Contains("selectTargetsInBox(root", StringComparison.Ordinal) && html.Contains("'cfxlasso'", StringComparison.Ordinal), "Interactive HTML should turn brush rectangles into reusable lasso selection events.");
         Assert(html.Contains("new XMLSerializer().serializeToString(svg)", StringComparison.Ordinal) && html.Contains("'cfxexport'", StringComparison.Ordinal), "Interactive HTML should export inline SVG without external libraries.");
         Assert(html.Contains("canvas.toBlob((blob)", StringComparison.Ordinal) && html.Contains("image/png", StringComparison.Ordinal), "Interactive HTML should export inline SVG as PNG without external libraries.");
         Assert(html.Contains("new CustomEvent(name", StringComparison.Ordinal) && html.Contains("'cfxviewport'", StringComparison.Ordinal) && html.Contains("'cfxselect'", StringComparison.Ordinal) && html.Contains("'cfxseries'", StringComparison.Ordinal) && html.Contains("'cfxreset'", StringComparison.Ordinal), "Interactive HTML should publish host events for viewport, selection, series toggles, and reset.");
+        Assert(html.Contains("'cfxseriesfocus'", StringComparison.Ordinal), "Interactive HTML should publish host events for one-series focus changes.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive HTML should synchronize grouped chart state without external libraries.");
         Assert(html.Contains("action: 'viewport'", StringComparison.Ordinal) && html.Contains("action: 'series'", StringComparison.Ordinal) && html.Contains("action: 'selection'", StringComparison.Ordinal) && html.Contains("action: 'brush'", StringComparison.Ordinal), "Interactive HTML should synchronize viewport, series, selection, and brush changes.");
+        Assert(html.Contains("action: 'crosshair'", StringComparison.Ordinal) && html.Contains("action: 'lasso'", StringComparison.Ordinal) && html.Contains("action: 'series-focus'", StringComparison.Ordinal) && html.Contains("action: 'compare'", StringComparison.Ordinal), "Interactive HTML should synchronize crosshair hover, lasso selections, one-series focus, and compare markers across grouped charts.");
         Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-reset=\"true\">Reset</button>", StringComparison.Ordinal), "Interactive HTML should include a reset control by default.");
         Assert(html.Contains("<svg", StringComparison.Ordinal), "Interactive HTML should embed the static SVG output.");
         Assert(html.Contains("aria-live=\"polite\"", StringComparison.Ordinal), "Interactive tooltips should expose polite assistive announcements.");
@@ -124,6 +174,7 @@ internal static partial class SmokeTests {
         Assert(!noReset.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal), "Interactive HTML should hide brush controls when brush is disabled.");
         Assert(!noReset.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"svg\" title=\"Download SVG\">SVG</button>", StringComparison.Ordinal), "Interactive HTML should hide SVG export controls when export is disabled.");
         Assert(!noReset.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"png\" title=\"Download PNG\">PNG</button>", StringComparison.Ordinal), "Interactive HTML should hide PNG export controls when export is disabled.");
+        Assert(!noReset.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should hide compare trays when compare markers are disabled.");
         Assert(noReset.Contains("data-cfx-interaction-features=\"Tooltips\"", StringComparison.Ordinal), "Interactive HTML should honor narrowed feature profiles.");
 
         var noPlayback = SampleChart().ToInteractiveHtmlPage(options => {

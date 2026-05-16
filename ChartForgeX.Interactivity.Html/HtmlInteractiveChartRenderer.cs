@@ -57,6 +57,8 @@ public sealed class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-count", options.Interaction.Scenarios.Count)
             .Attribute("data-cfx-active-scenario", options.Interaction.ActiveScenarioId)
             .Attribute("data-cfx-deep-link-state", scenarioControls && options.Interaction.EnableDeepLinkState)
+            .Attribute("data-cfx-scenario-playback", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "idle" : null)
+            .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
             .EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-toolbar").EndStartElement()
             .RawTrusted(BuildToolbar(options))
@@ -69,9 +71,44 @@ public sealed class HtmlInteractiveChartRenderer {
         writer.StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
             .RawTrusted(chart.ToSvg(scope)).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
+            .StartElement("div").Attribute("class", "cfx-crosshair").BooleanAttribute("hidden").EndStartElement().Line()
+            .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--x").EndStartElement().EndElement()
+            .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--y").EndStartElement().EndElement()
+            .StartElement("span").Attribute("class", "cfx-crosshair__label").Attribute("data-cfx-crosshair-label", "true").EndStartElement().EndElement()
+            .EndElement().Line()
+            .RawTrusted(BuildRevealLayer(options))
+            .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement();
+        return writer.Build();
+    }
+
+    private static string BuildCompareTray(HtmlChartInteractionOptions options) {
+        if (!options.Interaction.HasFeature(ChartInteractionFeatures.CompareMarkers)) return string.Empty;
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("div")
+            .Attribute("class", "cfx-compare-tray")
+            .Attribute("data-cfx-compare-tray", "true")
+            .Attribute("aria-live", "polite")
+            .BooleanAttribute("hidden")
+            .EndStartElement()
+            .EndElement()
+            .Line();
+        return writer.Build();
+    }
+
+    private static string BuildRevealLayer(HtmlChartInteractionOptions options) {
+        if (!options.Interaction.HasFeature(ChartInteractionFeatures.RevealLabels)) return string.Empty;
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("div")
+            .Attribute("class", "cfx-reveal-layer")
+            .Attribute("data-cfx-reveal-layer", "true")
+            .Attribute("aria-live", "polite")
+            .BooleanAttribute("hidden")
+            .EndStartElement()
+            .EndElement()
+            .Line();
         return writer.Build();
     }
 
@@ -107,11 +144,23 @@ public sealed class HtmlInteractiveChartRenderer {
         if (stepPlayback) {
             writer.StartElement("div").Attribute("class", "cfx-scenario-panel__controls").Attribute("data-cfx-scenario-step-controls", "true").EndStartElement();
             AppendToolbarButton(writer, "Prev", ("data-cfx-scenario-step-control", "previous"), ("title", "Previous step"));
-            AppendToolbarButton(writer, "Play", ("data-cfx-scenario-step-control", "play"), ("aria-pressed", "false"), ("title", "Play scenario"));
+            AppendToolbarButton(writer, "Play", ("data-cfx-scenario-step-control", "play"), ("data-cfx-scenario-play-label", "Play"), ("data-cfx-scenario-pause-label", "Pause"), ("aria-pressed", "false"), ("title", "Play scenario"));
             AppendToolbarButton(writer, "Next", ("data-cfx-scenario-step-control", "next"), ("title", "Next step"));
             AppendToolbarButton(writer, "Clear", ("data-cfx-scenario-step-control", "reset"), ("title", "Clear step"));
             if (options.Interaction.EnableDeepLinkState) AppendToolbarButton(writer, "Link", ("data-cfx-scenario-step-control", "link"), ("title", "Copy scenario link"));
             writer.EndElement().Line();
+            writer.StartElement("div")
+                .Attribute("class", "cfx-scenario-progress")
+                .Attribute("data-cfx-scenario-progress", "true")
+                .Attribute("role", "progressbar")
+                .Attribute("aria-valuemin", "0")
+                .Attribute("aria-valuemax", scenario == null ? "0" : scenario.Steps.Count.ToString(CultureInfo.InvariantCulture))
+                .Attribute("aria-valuenow", "0")
+                .BooleanAttribute("hidden")
+                .EndStartElement()
+                .StartElement("span").Attribute("class", "cfx-scenario-progress__bar").Attribute("data-cfx-scenario-progress-bar", "true").EndStartElement().EndElement()
+                .StartElement("span").Attribute("class", "cfx-scenario-progress__text").Attribute("data-cfx-scenario-progress-text", "true").EndStartElement().Text("Step 0 / " + (scenario == null ? "0" : scenario.Steps.Count.ToString(CultureInfo.InvariantCulture))).EndElement()
+                .EndElement().Line();
         }
 
         writer.StartElement("ol").Attribute("class", "cfx-scenario-panel__steps").Attribute("data-cfx-scenario-panel-steps", "true").EndStartElement();

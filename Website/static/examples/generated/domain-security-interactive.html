@@ -186,7 +186,8 @@ body {
 .cfx-tooltip {
   position: fixed;
   z-index: 20;
-  max-width: 280px;
+  min-width: 180px;
+  max-width: 320px;
   border: 1px solid rgba(56, 189, 248, .45);
   border-radius: 7px;
   background: rgba(15, 23, 42, .96);
@@ -196,6 +197,45 @@ body {
   line-height: 1.35;
   padding: 8px 10px;
   pointer-events: none;
+}
+
+.cfx-tooltip--pinned {
+  border-color: rgba(250, 204, 21, .7);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .30), 0 0 0 1px rgba(250, 204, 21, .16) inset;
+}
+
+.cfx-tooltip--pinned::before {
+  content: "Pinned";
+  display: block;
+  margin-bottom: 4px;
+  color: #fde68a;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.cfx-tooltip__title {
+  font-weight: 800;
+}
+
+.cfx-tooltip__meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 10px;
+  margin: 6px 0 0;
+  color: #cbd5e1;
+}
+
+.cfx-tooltip__meta dt,
+.cfx-tooltip__meta dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.cfx-tooltip__meta dt {
+  color: #94a3b8;
+  font-weight: 700;
 }
 
 .cfx-tooltip[hidden] {
@@ -214,6 +254,54 @@ body {
   display: none;
 }
 
+.cfx-crosshair {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.cfx-crosshair[hidden] {
+  display: none;
+}
+
+.cfx-crosshair__line {
+  position: absolute;
+  background: rgba(14, 165, 233, .58);
+  box-shadow: 0 0 10px rgba(14, 165, 233, .18);
+}
+
+.cfx-crosshair__line--x {
+  left: 0;
+  right: 0;
+  top: var(--cfx-crosshair-y, 0);
+  height: 1px;
+}
+
+.cfx-crosshair__line--y {
+  top: 0;
+  bottom: 0;
+  left: var(--cfx-crosshair-x, 0);
+  width: 1px;
+}
+
+.cfx-crosshair__label {
+  position: absolute;
+  left: min(calc(var(--cfx-crosshair-x, 0px) + 10px), calc(100% - 220px));
+  top: max(8px, calc(var(--cfx-crosshair-y, 0px) - 28px));
+  max-width: 210px;
+  overflow: hidden;
+  border: 1px solid rgba(14, 165, 233, .42);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .86);
+  color: #e0f2fe;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage {
   cursor: grab;
 }
@@ -227,6 +315,8 @@ body {
 }
 
 .cfx-interactive-chart [data-cfx-label],
+.cfx-interactive-chart [data-cfx-point],
+.cfx-interactive-chart [data-cfx-series],
 .cfx-interactive-chart [data-cfx-role="legend-item"],
 .cfx-interactive-chart .cfx-interactive-region {
   cursor: pointer;
@@ -238,8 +328,37 @@ body {
   stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
 }
 
+.cfx-interactive-chart .cfx-hovered {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
+  stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
+}
+
+.cfx-interactive-chart .cfx-hover-related {
+  opacity: .82 !important;
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
+}
+
+.cfx-interactive-chart[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
+  opacity: .38;
+}
+
 .cfx-interactive-chart .cfx-series-muted {
   opacity: .18 !important;
+}
+
+.cfx-interactive-chart .cfx-series-isolated-in {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, .34));
+}
+
+.cfx-interactive-chart .cfx-series-isolated-out {
+  opacity: .10 !important;
+  filter: saturate(.35);
+}
+
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-isolated="true"] {
+  filter: drop-shadow(0 0 8px rgba(250, 204, 21, .55));
 }
 
 .cfx-interactive-chart .cfx-scenario-muted {
@@ -273,7 +392,7 @@ body {
 </head>
 <body>
 <main class="cfx-shell">
-<section class="cfx-interactive-chart" data-cfx-chart-id="domain-security-interactive" data-cfx-interaction-features="ReportReview, Zoom, Pan, Brush, SynchronizedCharts, Export, Scenarios, StepPlayback, DeepLinks" data-cfx-interaction-group="example-gallery" data-cfx-scenario-count="2" data-cfx-active-scenario="risk-review" data-cfx-deep-link-state="true">
+<section class="cfx-interactive-chart" data-cfx-chart-id="domain-security-interactive" data-cfx-interaction-features="Zoom, Pan, Brush, SynchronizedCharts, Export, Scenarios, StepPlayback, DeepLinks, ReportReview" data-cfx-interaction-group="example-gallery" data-cfx-scenario-count="2" data-cfx-active-scenario="risk-review" data-cfx-deep-link-state="true">
 <div class="cfx-toolbar"><button class="cfx-tool" type="button" data-cfx-zoom="in" title="Zoom in">Zoom +</button><button class="cfx-tool" type="button" data-cfx-zoom="out" title="Zoom out">Zoom -</button><button class="cfx-tool" type="button" data-cfx-mode-button="pan" aria-pressed="false" title="Pan chart">Pan</button><button class="cfx-tool" type="button" data-cfx-mode-button="brush" aria-pressed="false" title="Brush select region">Brush</button><button class="cfx-tool" type="button" data-cfx-export="svg" title="Download SVG">SVG</button><button class="cfx-tool" type="button" data-cfx-export="png" title="Download PNG">PNG</button><button class="cfx-tool" type="button" data-cfx-reset="true">Reset</button></div>
 <div class="cfx-scenarios" aria-label="Chart scenarios"><button class="cfx-scenario" type="button" data-cfx-scenario="" data-cfx-scenario-label="All" aria-pressed="false" title="Show all scenarios">All</button><button class="cfx-scenario" type="button" data-cfx-scenario="healthy-trend" data-cfx-scenario-color="#22C55E" data-cfx-scenario-label="Healthy trend" data-cfx-scenario-description="Focus on successful checks and the weekly control target." data-cfx-scenario-steps="[{&quot;index&quot;:0,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;0&quot;,&quot;label&quot;:&quot;Passed checks&quot;,&quot;description&quot;:&quot;&quot;,&quot;metadata&quot;:{&quot;signal&quot;:&quot;success&quot;}}]" data-cfx-scenario-metadata="{&quot;view&quot;:&quot;operations&quot;}" aria-pressed="false" title="Focus on successful checks and the weekly control target." style="--cfx-scenario-color:#22C55E">Healthy trend</button><button class="cfx-scenario" type="button" data-cfx-scenario="risk-review" data-cfx-scenario-color="#F97316" data-cfx-scenario-label="Risk review" data-cfx-scenario-description="Review warnings and remaining failures before escalation." data-cfx-scenario-steps="[{&quot;index&quot;:0,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;1&quot;,&quot;label&quot;:&quot;Warnings&quot;,&quot;description&quot;:&quot;&quot;,&quot;metadata&quot;:{}},{&quot;index&quot;:1,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;2&quot;,&quot;label&quot;:&quot;Failures&quot;,&quot;description&quot;:&quot;&quot;,&quot;metadata&quot;:{}}]" data-cfx-scenario-metadata="{&quot;view&quot;:&quot;risk&quot;}" aria-pressed="true" title="Review warnings and remaining failures before escalation." style="--cfx-scenario-color:#F97316">Risk review</button></div>
 <section class="cfx-scenario-panel" data-cfx-scenario-panel="true" data-cfx-panel-active-scenario="risk-review" aria-live="polite" style="--cfx-scenario-color:#F97316">
@@ -286,7 +405,7 @@ body {
 <title id="cfx5451030b-title">Domain Security Checks</title>
 <desc id="cfx5451030b-desc">Domain Security Checks with 3 data series: Passed, Warnings, Failed.</desc>
 <defs>
-<style>#cfx5451030b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx5451030b .cfx-crisp-stroke,#cfx5451030b .cfx-guide-stroke,#cfx5451030b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx5451030b .cfx-guide-stroke{shape-rendering:crispEdges} #cfx5451030b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx5451030b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx5451030b .cfx-interactive-region:hover,#cfx5451030b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx5451030b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx5451030b .cfx-crisp-stroke,#cfx5451030b .cfx-guide-stroke,#cfx5451030b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx5451030b .cfx-guide-stroke{shape-rendering:crispEdges} #cfx5451030b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx5451030b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx5451030b .cfx-interactive-region:hover,#cfx5451030b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<style>#cfx5451030b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx5451030b .cfx-crisp-stroke,#cfx5451030b .cfx-guide-stroke,#cfx5451030b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx5451030b .cfx-guide-stroke{shape-rendering:crispEdges} #cfx5451030b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx5451030b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx5451030b .cfx-interactive-region:hover,#cfx5451030b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
 <filter id="cfx5451030b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.097"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.22"/></filter>
 <linearGradient id="cfx5451030b-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
 <linearGradient id="cfx5451030b-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
@@ -419,21 +538,107 @@ body {
 </svg>
 
 <div class="cfx-brush-box" hidden></div>
+<div class="cfx-crosshair" hidden>
+<span class="cfx-crosshair__line cfx-crosshair__line--x"></span><span class="cfx-crosshair__line cfx-crosshair__line--y"></span><span class="cfx-crosshair__label" data-cfx-crosshair-label="true"></span></div>
 </div>
 <div class="cfx-tooltip" role="status" aria-live="polite" hidden></div>
 </section>
 </main>
 <script>(() => {
-  const hasFeature = (root, name) => (root.dataset.cfxInteractionFeatures || '').toLowerCase().includes(name.toLowerCase());
+  const featureAliases = {
+    ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair']
+  };
+  const featureTokens = (root) => (root.dataset.cfxInteractionFeatures || '')
+    .split(',')
+    .map((feature) => feature.trim())
+    .filter(Boolean);
+  const hasFeature = (root, name) => featureTokens(root).some((feature) => feature.toLowerCase() === name.toLowerCase()
+    || (featureAliases[feature] || []).some((alias) => alias.toLowerCase() === name.toLowerCase()));
+  const targetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-role="legend-item"]';
+  const lassoSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point]';
   const text = (node) => {
     const data = node.dataset || {};
-    return node.getAttribute('aria-label') || data.cfxLabel || data.cfxValue || data.cfxRole || '';
+    const aria = node.getAttribute('aria-label');
+    if (aria) return aria;
+    const label = data.cfxLabel || data.cfxText || '';
+    const parts = [];
+    if (label) parts.push(label);
+    else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
+    if (data.cfxSeries !== undefined && !label) parts.push('Series ' + data.cfxSeries);
+    if (data.cfxPoint !== undefined) parts.push('Point ' + data.cfxPoint);
+    const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
+    if (value) parts.push('Value ' + value);
+    return parts.join(' / ');
+  };
+  const targetIdentity = (node) => {
+    const data = node.dataset || {};
+    return {
+      id: data.cfxId || node.id || '',
+      role: data.cfxRole || '',
+      label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
+      series: data.cfxSeries,
+      point: data.cfxPoint,
+      value: data.cfxValue || data.cfxY || data.cfxEnd || '',
+      kind: data.cfxKind || ''
+    };
+  };
+  const metaLabel = (attributeName) => attributeName
+    .replace(/^data-cfx-meta-/i, '')
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+  const metadataRows = (node) => Array.from(node.attributes || [])
+    .filter((attribute) => attribute.name.toLowerCase().indexOf('data-cfx-meta-') === 0 && attribute.value !== '')
+    .map((attribute) => ({ name: metaLabel(attribute.name), value: attribute.value }));
+  const tooltipRows = (node) => {
+    const data = node.dataset || {};
+    const rows = [];
+    const push = (name, value) => {
+      if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
+    };
+    push('Role', data.cfxRole ? data.cfxRole.replace(/-/g, ' ') : '');
+    push('Series', data.cfxSeries);
+    push('Point', data.cfxPoint);
+    push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    push('Y', data.cfxY || data.cfxValue);
+    push('End', data.cfxEnd);
+    push('Target', data.cfxTarget);
+    push('Status', data.cfxStatus);
+    push('Kind', data.cfxKind);
+    push('Percent', data.cfxPercent);
+    push('Delta', data.cfxDelta);
+    push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
+    metadataRows(node).forEach((row) => push(row.name, row.value));
+    return rows;
+  };
+  const renderTip = (tip, node) => {
+    const label = text(node);
+    if (!label) return false;
+    tip.replaceChildren();
+    const title = document.createElement('div');
+    title.className = 'cfx-tooltip__title';
+    title.textContent = label;
+    tip.appendChild(title);
+    const rows = tooltipRows(node);
+    if (rows.length) {
+      const list = document.createElement('dl');
+      list.className = 'cfx-tooltip__meta';
+      rows.forEach((row) => {
+        const term = document.createElement('dt');
+        term.textContent = row.name;
+        const value = document.createElement('dd');
+        value.textContent = row.value;
+        list.appendChild(term);
+        list.appendChild(value);
+      });
+      tip.appendChild(list);
+    }
+    return true;
   };
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips')) return;
-    const value = text(node);
-    if (!value) return;
-    tip.textContent = value;
+    if (!renderTip(tip, node)) return;
     tip.hidden = false;
     moveTip(tip, event);
   };
@@ -444,7 +649,31 @@ body {
     tip.style.left = x + 'px';
     tip.style.top = y + 'px';
   };
-  const hideTip = (tip) => { tip.hidden = true; };
+  const targetKey = (target) => target ? [target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
+  const hideTip = (root, tip, force) => {
+    if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
+    tip.hidden = true;
+    tip.classList.remove('cfx-tooltip--pinned');
+    root.removeAttribute('data-cfx-tooltip-pinned');
+    root.removeAttribute('data-cfx-pinned-target');
+  };
+  const pinTip = (root, tip, node, event) => {
+    if (!hasFeature(root, 'Tooltips') || !renderTip(tip, node)) return;
+    const target = targetIdentity(node);
+    const key = targetKey(target);
+    const pinned = root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key;
+    if (pinned) {
+      hideTip(root, tip, true);
+      emitHostEvent(root, 'cfxtooltip', { pinned: false, target });
+      return;
+    }
+    tip.hidden = false;
+    tip.classList.add('cfx-tooltip--pinned');
+    root.dataset.cfxTooltipPinned = 'true';
+    root.dataset.cfxPinnedTarget = key;
+    moveTip(tip, event);
+    emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+  };
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const getState = (root) => ({
     zoom: Number(root.dataset.cfxZoom || '1'),
@@ -564,10 +793,41 @@ body {
       node.classList.toggle('cfx-series-muted', muted);
     });
   };
+  const setSeriesIsolation = (root, series, isolated) => {
+    root.querySelectorAll('[data-cfx-series]').forEach((node) => {
+      const data = node.dataset || {};
+      const role = data.cfxRole || '';
+      const sameSeries = data.cfxSeries === series;
+      if (role.indexOf('legend') === 0) {
+        if (isolated && sameSeries) {
+          data.cfxIsolated = 'true';
+          node.setAttribute('aria-current', 'true');
+        } else {
+          delete data.cfxIsolated;
+          node.removeAttribute('aria-current');
+        }
+        return;
+      }
+      node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
+      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries);
+    });
+    if (isolated) root.dataset.cfxIsolatedSeries = series;
+    else root.removeAttribute('data-cfx-isolated-series');
+  };
+  const toggleSeriesFocus = (root, item, emit, sync) => {
+    if (!hasFeature(root, 'LegendToggles')) return;
+    const series = item.dataset.cfxSeries;
+    if (series === undefined) return;
+    const isolated = root.dataset.cfxIsolatedSeries !== series;
+    setSeriesIsolation(root, series, isolated);
+    emitHostEvent(root, 'cfxseriesfocus', { series, isolated });
+    if (sync !== false) emitSync(root, { action: 'series-focus', series, isolated });
+  };
   const toggleSeries = (root, item) => {
     if (!hasFeature(root, 'LegendToggles')) return;
     const series = item.dataset.cfxSeries;
     if (series === undefined) return;
+    if (root.dataset.cfxIsolatedSeries) setSeriesIsolation(root, series, false);
     const muted = item.dataset.cfxMuted !== 'true';
     setSeriesMuted(root, series, muted);
     emitHostEvent(root, 'cfxseries', { series, muted });
@@ -577,25 +837,188 @@ body {
     if (!hasFeature(root, 'Selection')) return;
     const selected = !node.classList.contains('cfx-selected');
     setNodeSelected(node, selected);
-    emitHostEvent(root, 'cfxselect', { label: text(node), selected });
-    emitSync(root, { action: 'selection', label: text(node), selected });
+    const target = targetIdentity(node);
+    emitHostEvent(root, 'cfxselect', { label: text(node), selected, target });
+    emitSync(root, { action: 'selection', label: text(node), selected, target });
   };
   const setNodeSelected = (node, selected) => {
     node.classList.toggle('cfx-selected', selected);
     node.setAttribute('aria-selected', selected ? 'true' : 'false');
   };
+  const setNodeHovered = (node, hovered, related) => {
+    node.classList.toggle('cfx-hovered', hovered);
+    node.classList.toggle('cfx-hover-related', related && !hovered);
+  };
+  const targetRelated = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    if (target.series !== undefined && data.cfxSeries === String(target.series)) return true;
+    if (target.point !== undefined && data.cfxPoint === String(target.point)) return true;
+    if (target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
+    return false;
+  };
+  const clearHover = (root, emit, sync) => {
+    root.removeAttribute('data-cfx-hovering');
+    root.removeAttribute('data-cfx-hover-label');
+    root.removeAttribute('data-cfx-hover-key');
+    root.querySelectorAll('.cfx-hovered,.cfx-hover-related').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related'));
+    if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
+    if (sync !== false) emitSync(root, { action: 'hover-clear' });
+  };
+  const applyHoverByTarget = (root, target) => {
+    if (!target) return false;
+    let matched = false;
+    root.querySelectorAll(targetSelector).forEach((node) => {
+      const hovered = matchesTargetIdentity(node, target);
+      const related = !hovered && targetRelated(node, target);
+      if (hovered || related) matched = true;
+      setNodeHovered(node, hovered, related);
+    });
+    if (matched) {
+      root.dataset.cfxHovering = 'true';
+      root.dataset.cfxHoverLabel = target.label || target.role || target.id || '';
+    }
+    return matched;
+  };
+  const setHover = (root, node, emit, sync) => {
+    const target = targetIdentity(node);
+    clearHover(root, false, false);
+    applyHoverByTarget(root, target);
+    root.dataset.cfxHoverKey = targetKey(target);
+    if (emit !== false) emitHostEvent(root, 'cfxhover', { label: text(node), target });
+    if (sync !== false) emitSync(root, { action: 'hover', label: text(node), target });
+  };
+  const hideCrosshair = (root, crosshair) => {
+    if (crosshair) crosshair.hidden = true;
+    root.removeAttribute('data-cfx-crosshair');
+  };
+  const nearestPoint = (root, event) => {
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return null;
+    const stageRect = stage.getBoundingClientRect();
+    if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    let best = null;
+    root.querySelectorAll('[data-cfx-point]').forEach((node) => {
+      if (node.closest('[data-cfx-role="legend-item"]') || node.classList.contains('cfx-series-muted')) return;
+      const box = node.getBoundingClientRect();
+      if (!box.width && !box.height) return;
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+      const dx = x - event.clientX;
+      const dy = y - event.clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (!best || distance < best.distance) best = { node, x, y, distance };
+    });
+    return best && best.distance <= 120 ? best : null;
+  };
+  const showCrosshair = (root, crosshair, point, event, emit) => {
+    if (!crosshair || !point) return;
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return;
+    const rect = stage.getBoundingClientRect();
+    crosshair.hidden = false;
+    crosshair.style.setProperty('--cfx-crosshair-x', (point.x - rect.left) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', (point.y - rect.top) + 'px');
+    const label = crosshair.querySelector('[data-cfx-crosshair-label]');
+    if (label) label.textContent = text(point.node);
+    const target = targetIdentity(point.node);
+    root.dataset.cfxCrosshair = targetKey(target);
+    if (emit !== false) {
+      emitHostEvent(root, 'cfxcrosshair', { label: text(point.node), target, x: event.clientX, y: event.clientY });
+      emitSync(root, { action: 'crosshair', label: text(point.node), target });
+    }
+  };
+  const updateNearestPoint = (root, crosshair, tip, event) => {
+    if (!hasFeature(root, 'Crosshair')) return;
+    const point = nearestPoint(root, event);
+    if (!point) {
+      hideCrosshair(root, crosshair);
+      return;
+    }
+    const target = targetIdentity(point.node);
+    const key = targetKey(target);
+    if (root.dataset.cfxHoverKey !== key) {
+      setHover(root, point.node, true, true);
+      showCrosshair(root, crosshair, point, event, true);
+      showTip(root, tip, point.node, event);
+    } else {
+      showCrosshair(root, crosshair, point, event, false);
+      moveTip(tip, event);
+    }
+  };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;
-    root.querySelectorAll('.cfx-interactive-region,[data-cfx-label]').forEach((node) => {
+    root.querySelectorAll(targetSelector).forEach((node) => {
       if (text(node) === label) setNodeSelected(node, selected);
     });
+  };
+  const matchesTargetIdentity = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    if (target.id && (node.id === target.id || data.cfxId === target.id)) return true;
+    if (target.series !== undefined && target.point !== undefined && data.cfxSeries === String(target.series) && data.cfxPoint === String(target.point)) return true;
+    if (target.series !== undefined && target.point === undefined && data.cfxSeries === String(target.series) && target.role && data.cfxRole === target.role) return true;
+    if (target.role && data.cfxRole === target.role && target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
+    if (target.role && data.cfxRole === target.role && target.value && (data.cfxValue === target.value || data.cfxY === target.value || data.cfxEnd === target.value)) return true;
+    return false;
+  };
+  const applySelectionByTarget = (root, target, selected) => {
+    if (!target) return false;
+    let matched = false;
+    root.querySelectorAll(targetSelector).forEach((node) => {
+      if (!matchesTargetIdentity(node, target)) return;
+      matched = true;
+      setNodeSelected(node, selected);
+    });
+    return matched;
+  };
+  const clearSelections = (root) => {
+    root.querySelectorAll('.cfx-selected').forEach((node) => {
+      node.classList.remove('cfx-selected');
+      node.removeAttribute('aria-selected');
+    });
+  };
+  const applySelectionSetByTargets = (root, targets, replace) => {
+    if (replace !== false) clearSelections(root);
+    let count = 0;
+    (targets || []).forEach((target) => {
+      if (applySelectionByTarget(root, target, true)) count++;
+    });
+    return count;
+  };
+  const nodeCenterInRect = (node, rect) => {
+    const box = node.getBoundingClientRect();
+    if (!box.width && !box.height) return null;
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
+    return { x, y };
+  };
+  const selectTargetsInBox = (root, rect, append) => {
+    if (!hasFeature(root, 'Selection')) return [];
+    if (!append) clearSelections(root);
+    const targets = [];
+    root.querySelectorAll(lassoSelector).forEach((node) => {
+      if (node.closest('[data-cfx-role="legend-item"]')) return;
+      if (!nodeCenterInRect(node, rect)) return;
+      setNodeSelected(node, true);
+      targets.push(targetIdentity(node));
+    });
+    return targets;
   };
   const applySync = (root, detail) => {
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
     else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
-    else if (detail.action === 'selection') applySelectionByLabel(root, detail.label || '', detail.selected === true);
+    else if (detail.action === 'selection' && !applySelectionByTarget(root, detail.target, detail.selected === true)) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+    else if (detail.action === 'lasso') applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+    else if (detail.action === 'hover') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target);
+    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
+    else if (detail.action === 'crosshair') applyHoverByTarget(root, detail.target);
     else if (detail.action === 'series' && detail.series !== undefined) setSeriesMuted(root, detail.series, detail.muted === true);
+    else if (detail.action === 'series-focus') setSeriesIsolation(root, detail.series || '', detail.isolated === true);
     else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
     else if (detail.action === 'scenario-step') {
       if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false);
@@ -649,20 +1072,25 @@ body {
   };
   const scenarioTargetMatches = (node, step) => {
     const data = node.dataset || {};
-    if ((step.targetKind || '') === 'series' && data.cfxSeries === step.targetId) return true;
-    if ((step.targetKind || '') === 'element' && (data.cfxId === step.targetId || node.id === step.targetId)) return true;
-    if (data.cfxRole === step.targetKind && (data.cfxLabel === step.targetId || data.cfxValue === step.targetId)) return true;
+    const kind = step.targetKind || '';
+    const target = step.targetId || '';
+    if (kind === 'series' && data.cfxSeries === target) return true;
+    if (kind === 'point' && data.cfxPoint === target) return true;
+    if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;
+    if (kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0 && (data.cfxLabel === target || data.cfxKind === target || data.cfxValue === target || data.cfxId === target || node.id === target)) return true;
+    if (kind === 'element' && (data.cfxId === target || node.id === target)) return true;
+    if (data.cfxRole === kind && (data.cfxLabel === target || data.cfxText === target || data.cfxValue === target || data.cfxY === target)) return true;
     return false;
   };
   const scenarioTargetCandidates = (root, route) => {
-    const candidates = new Set(root.querySelectorAll('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-id]'));
+    const candidates = new Set(root.querySelectorAll('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]'));
     const elementIds = new Set((route ? route.steps : [])
       .filter((step) => (step.targetKind || '') === 'element' && step.targetId)
       .map((step) => step.targetId));
     if (elementIds.size) {
       root.querySelectorAll('[id]').forEach((node) => {
         if (!elementIds.has(node.id) || node.closest('defs')) return;
-        if (node.querySelector('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-id]')) return;
+        if (node.querySelector('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]')) return;
         candidates.add(node);
       });
     }
@@ -804,25 +1232,51 @@ body {
     const tip = root.querySelector('.cfx-tooltip');
     const stage = root.querySelector('.cfx-stage');
     const brush = root.querySelector('.cfx-brush-box');
+    const crosshair = root.querySelector('.cfx-crosshair');
     if (!tip) return;
     applyViewport(root, getState(root));
-    const targets = root.querySelectorAll('.cfx-interactive-region,[data-cfx-label],[data-cfx-role="legend-item"]');
+    const targets = root.querySelectorAll(targetSelector);
     targets.forEach((node) => {
+      if ((node.dataset ? node.dataset.cfxRole : '') !== 'legend-item' && node.closest('[data-cfx-role="legend-item"]')) return;
       if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
-      node.addEventListener('pointerenter', (event) => showTip(root, tip, node, event));
+      node.addEventListener('pointerenter', (event) => {
+        setHover(root, node, true, true);
+        showTip(root, tip, node, event);
+      });
       node.addEventListener('pointermove', (event) => moveTip(tip, event));
-      node.addEventListener('pointerleave', () => hideTip(tip));
-      node.addEventListener('focus', (event) => showTip(root, tip, node, event));
-      node.addEventListener('blur', () => hideTip(tip));
-      node.addEventListener('click', () => {
-        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') toggleSeries(root, node);
-        else toggleSelection(root, node);
+      node.addEventListener('pointerleave', () => {
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      });
+      node.addEventListener('focus', (event) => {
+        setHover(root, node, true, true);
+        showTip(root, tip, node, event);
+      });
+      node.addEventListener('blur', () => {
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      });
+      node.addEventListener('click', (event) => {
+        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
+          if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
+          else toggleSeries(root, node);
+        }
+        else {
+          toggleSelection(root, node);
+          pinTip(root, tip, node, event);
+        }
       });
       node.addEventListener('keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation')) return;
+        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
+          event.preventDefault();
+          toggleSeriesFocus(root, node, true, true);
+          return;
+        }
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
-        node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
+        else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
@@ -896,7 +1350,10 @@ body {
         }
       });
       stage.addEventListener('pointermove', (event) => {
-        if (!drag || drag.id !== event.pointerId) return;
+        if (!drag || drag.id !== event.pointerId) {
+          updateNearestPoint(root, crosshair, tip, event);
+          return;
+        }
         if (drag.mode === 'pan') {
           applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + event.clientX - drag.x, panY: drag.panY + event.clientY - drag.y });
         } else if (drag.mode === 'brush' && brush) {
@@ -915,8 +1372,11 @@ body {
         if (!drag || drag.id !== event.pointerId) return;
         if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
+          const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
+          if (selectedTargets.length) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets });
           emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
+          if (selectedTargets.length) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: !event.shiftKey });
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
           emitSync(root, { action: 'viewport', state: getState(root) });
@@ -924,7 +1384,15 @@ body {
         stage.releasePointerCapture(event.pointerId);
         drag = null;
       });
-      stage.addEventListener('pointercancel', () => { drag = null; });
+      stage.addEventListener('pointerleave', () => {
+        hideCrosshair(root, crosshair);
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      });
+      stage.addEventListener('pointercancel', () => {
+        drag = null;
+        hideCrosshair(root, crosshair);
+      });
     }
     const reset = root.querySelector('[data-cfx-reset]');
     if (reset) reset.addEventListener('click', () => {
@@ -932,14 +1400,13 @@ body {
       emitHostEvent(root, 'cfxreset', {});
       emitHostEvent(root, 'cfxviewport', { state: getState(root) });
       emitSync(root, { action: 'viewport', state: getState(root) });
-      root.querySelectorAll('.cfx-selected').forEach((node) => {
-        node.classList.remove('cfx-selected');
-        node.removeAttribute('aria-selected');
-      });
+      clearSelections(root);
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
+      setSeriesIsolation(root, root.dataset.cfxIsolatedSeries || '', false);
       if (brush) brush.hidden = true;
-      hideTip(tip);
+      hideCrosshair(root, crosshair);
+      hideTip(root, tip, true);
     });
   });
 })();

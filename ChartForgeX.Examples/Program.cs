@@ -44,7 +44,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
     options.IdScope = "domain-security-interactive";
     options.Interaction.ChartId = "domain-security-interactive";
     options.Interaction.GroupName = "example-gallery";
-    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
     ExampleInteractiveScenarios.ConfigureDomainSecurity(options.Interaction);
 });
 
@@ -89,7 +89,7 @@ new[] { dnssec, bars, grouped }.SaveInteractiveHtmlDashboard(Path.Combine(output
     options.IdScope = "executive-interactive-dashboard";
     options.Columns = 2;
     options.Interaction.GroupName = "example-gallery";
-    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
 });
 
 var horizontal = Chart.Create()

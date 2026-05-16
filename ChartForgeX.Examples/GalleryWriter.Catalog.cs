@@ -165,7 +165,8 @@ public static partial class GalleryWriter {
             "visual-evidence-timeline-relationship",
             "visual-impact-dependency-overview",
             "visual-mini-correlation-map",
-            "visual-ownership-evidence-bundle"),
+            "visual-ownership-evidence-bundle",
+            "visual-secure-access-arbitrary-icons"),
         new(
             "Topology Visual Showcase",
             "Reusable directory, team, region, replication, service, coverage, and WAN topology examples that demonstrate ChartForgeX as a diagram engine.",

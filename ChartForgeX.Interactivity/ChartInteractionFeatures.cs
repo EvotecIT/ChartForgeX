@@ -73,7 +73,32 @@ public enum ChartInteractionFeatures {
     DeepLinks = 2048,
 
     /// <summary>
+    /// Allows an adapter to show nearest-point crosshair exploration.
+    /// </summary>
+    Crosshair = 4096,
+
+    /// <summary>
+    /// Allows an adapter to summarize selected targets for quick visual comparison.
+    /// </summary>
+    CompareMarkers = 8192,
+
+    /// <summary>
+    /// Allows an adapter to keep a short visual breadcrumb of recently focused targets.
+    /// </summary>
+    FocusTrail = 16384,
+
+    /// <summary>
+    /// Allows an adapter to reveal compact labels beside the current hover, focus, or route targets.
+    /// </summary>
+    RevealLabels = 32768,
+
+    /// <summary>
+    /// Allows an adapter or host page to capture and reapply reusable interaction snapshots.
+    /// </summary>
+    StateBookmarks = 65536,
+
+    /// <summary>
     /// Enables the first report-friendly interaction set for generated dashboards.
     /// </summary>
-    ReportReview = Tooltips | Selection | LegendToggles | KeyboardNavigation
+    ReportReview = Tooltips | Selection | LegendToggles | KeyboardNavigation | Crosshair | CompareMarkers
 }

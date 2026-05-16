@@ -1187,6 +1187,13 @@
       "image": "/examples/generated/visual-reusable-regional-topology.svg"
     },
     {
+      "category": "charts",
+      "title": "Visual Secure Access Arbitrary Icons",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-secure-access-arbitrary-icons.svg"
+    },
+    {
       "category": "topology",
       "title": "Visual Service Dependency Map",
       "body": "Generated ChartForgeX visual output.",

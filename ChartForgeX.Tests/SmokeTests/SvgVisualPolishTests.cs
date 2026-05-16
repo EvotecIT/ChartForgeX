@@ -22,6 +22,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(".cfx-premium-stroke", StringComparison.Ordinal), "SVG stylesheet should define a premium-stroke class for non-scaling series lighting.");
         Assert(svg.Contains("vector-effect:non-scaling-stroke", StringComparison.Ordinal), "SVG strokes should stay readable when charts are embedded very small or very large.");
         Assert(svg.Contains(" text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}", StringComparison.Ordinal), "SVG text should request crisp browser rendering without relying on page-level CSS.");
+        Assert(CountOccurrences(svg, "font-synthesis:none") == 1, "SVG should emit shared embedded polish styles only once.");
         Assert(svg.Contains("class=\"cfx-guide-stroke\"", StringComparison.Ordinal), "SVG axis and grid lines should opt into the shared guide-stroke class.");
         Assert(svg.Contains("class=\"cfx-premium-stroke\"", StringComparison.Ordinal), "SVG line layers should opt into the shared premium-stroke class.");
         Assert(svg.Contains("-cardSurface\"", StringComparison.Ordinal) && svg.Contains("-plotSurface\"", StringComparison.Ordinal), "SVG surfaces should define reusable card and plot gradients.");
