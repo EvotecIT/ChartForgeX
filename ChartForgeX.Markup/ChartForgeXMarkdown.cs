@@ -19,20 +19,45 @@ public static class ChartForgeXMarkdown {
     }
 
     /// <summary>
+    /// Returns the first topology block from a Markdown document, or a raw-markup block when no topology fence is present.
+    /// </summary>
+    /// <param name="text">The Markdown or raw markup text.</param>
+    /// <returns>The topology block payload and one-based source line.</returns>
+    public static ChartForgeXMarkdownBlock ExtractFirstTopologyBlock(string text) {
+        if (text == null) throw new ArgumentNullException(nameof(text));
+        var blocks = ExtractTopologyBlocks(text);
+        return blocks.Count == 0 ? new ChartForgeXMarkdownBlock(text, 1) : blocks[0];
+    }
+
+    /// <summary>
     /// Extracts all fenced topology blocks from Markdown.
     /// </summary>
     /// <param name="text">The Markdown text.</param>
     /// <returns>Fenced topology payloads.</returns>
     public static List<string> ExtractTopologyPayloads(string text) {
+        var blocks = ExtractTopologyBlocks(text);
+        var payloads = new List<string>(blocks.Count);
+        foreach (var block in blocks) payloads.Add(block.Payload);
+        return payloads;
+    }
+
+    /// <summary>
+    /// Extracts all fenced topology blocks from Markdown with their one-based source line.
+    /// </summary>
+    /// <param name="text">The Markdown text.</param>
+    /// <returns>Fenced topology blocks.</returns>
+    public static List<ChartForgeXMarkdownBlock> ExtractTopologyBlocks(string text) {
         if (text == null) throw new ArgumentNullException(nameof(text));
-        var blocks = new List<string>();
+        var blocks = new List<ChartForgeXMarkdownBlock>();
         var lines = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var inFence = false;
         var fence = string.Empty;
         var include = false;
+        var payloadStartLine = 1;
         var payload = new List<string>();
 
-        foreach (var line in lines) {
+        for (var index = 0; index < lines.Length; index++) {
+            var line = lines[index];
             var trimmed = line.TrimStart();
             if (!inFence) {
                 if (!trimmed.StartsWith("```", StringComparison.Ordinal) && !trimmed.StartsWith("~~~", StringComparison.Ordinal)) continue;
@@ -42,12 +67,13 @@ public static class ChartForgeXMarkdown {
                 var info = trimmed.Substring(count).Trim();
                 include = IsTopologyFence(info);
                 inFence = true;
+                payloadStartLine = index + 2;
                 payload.Clear();
                 continue;
             }
 
             if (trimmed.StartsWith(fence, StringComparison.Ordinal)) {
-                if (include) blocks.Add(string.Join("\n", payload));
+                if (include) blocks.Add(new ChartForgeXMarkdownBlock(string.Join("\n", payload), payloadStartLine));
                 inFence = false;
                 include = false;
                 payload.Clear();
@@ -81,4 +107,23 @@ public static class ChartForgeXMarkdown {
         while (count < text.Length && text[count] == value) count++;
         return count;
     }
+}
+
+/// <summary>
+/// Describes a fenced ChartForgeX Markdown block.
+/// </summary>
+public sealed class ChartForgeXMarkdownBlock {
+    /// <summary>Initializes a new fenced block descriptor.</summary>
+    /// <param name="payload">The extracted fence payload.</param>
+    /// <param name="startLine">The one-based source line where the payload starts.</param>
+    public ChartForgeXMarkdownBlock(string payload, int startLine) {
+        Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        StartLine = startLine < 1 ? 1 : startLine;
+    }
+
+    /// <summary>Gets the extracted fence payload.</summary>
+    public string Payload { get; }
+
+    /// <summary>Gets the one-based source line where the payload starts.</summary>
+    public int StartLine { get; }
 }

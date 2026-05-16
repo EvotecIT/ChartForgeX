@@ -17,14 +17,16 @@ public sealed class MarkupTopologyParser {
     /// <returns>The parse result.</returns>
     public MarkupParseResult<MarkupTopologyDocument> Parse(string text) {
         if (text == null) throw new ArgumentNullException(nameof(text));
-        var payload = ChartForgeXMarkdown.ExtractFirstTopologyPayload(text);
+        var block = ChartForgeXMarkdown.ExtractFirstTopologyBlock(text);
+        var payload = block.Payload;
+        var lineOffset = block.StartLine - 1;
         var result = new MarkupParseResult<MarkupTopologyDocument> { Document = new MarkupTopologyDocument() };
         var lines = payload.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var section = string.Empty;
         List<string>? tableHeaders = null;
 
         for (var index = 0; index < lines.Length; index++) {
-            var lineNumber = index + 1;
+            var lineNumber = lineOffset + index + 1;
             var line = StripComment(lines[index]).Trim();
             if (string.IsNullOrWhiteSpace(line)) continue;
 

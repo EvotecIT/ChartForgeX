@@ -351,6 +351,7 @@ internal static partial class SmokeTests {
         ("Markup topology parses table diagram and emits C#", MarkupTopologyParsesTableDiagramAndEmitsCSharp),
         ("Markup topology reports missing nodes", MarkupTopologyReportsMissingNodes),
         ("Markup topology extracts tilde fence with metadata", MarkupTopologyExtractsTildeFenceWithMetadata),
+        ("Markup topology diagnostics use Markdown source lines", MarkupTopologyDiagnosticsUseMarkdownSourceLines),
         ("Markup topology CLI keeps warnings off generated streams", MarkupTopologyCliKeepsWarningsOffGeneratedStreams),
         ("Dotted map trims point labels", DottedMapTrimsPointLabels),
         ("Dotted map world viewport suppresses polar points outside map band", DottedMapWorldViewportSuppressesPolarPointsOutsideMapBand),

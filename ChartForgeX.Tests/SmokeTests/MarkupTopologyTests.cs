@@ -75,6 +75,22 @@ node api ""API"" kind:service status:healthy
         Assert(result.Document!.Nodes.Count == 1, "Tilde-fenced topology markup should parse nodes.");
     }
 
+    private static void MarkupTopologyDiagnosticsUseMarkdownSourceLines() {
+        const string source = @"# Diagram
+
+```chartforgex topology
+title ""Source Line Check""
+unknownThing yes
+node api ""API"" kind:service status:healthy
+```";
+
+        var result = new MarkupTopologyParser().Parse(source);
+        Assert(!result.HasErrors, "Unknown commands should remain warnings.");
+        var warning = result.Diagnostics.Find(diagnostic => diagnostic.Severity == MarkupDiagnosticSeverity.Warning);
+        Assert(warning != null, "Unknown commands should produce a warning.");
+        Assert(warning!.Line == 5, "Markdown parser diagnostics should use the original source line.");
+    }
+
     private static void MarkupTopologyCliKeepsWarningsOffGeneratedStreams() {
         var fixture = Path.Combine(Path.GetTempPath(), "chartforgex-markup-warning-" + Guid.NewGuid().ToString("N") + ".md");
         File.WriteAllText(fixture, "title \"Warning Stream Check\"\nunknownThing yes\nnode api \"API\" kind:service status:healthy\n");
