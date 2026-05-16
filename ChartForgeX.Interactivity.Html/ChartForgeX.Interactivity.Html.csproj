@@ -17,7 +17,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageId>ChartForgeX.Interactivity.Html</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML and SVG interaction adapter for ChartForgeX charts.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
