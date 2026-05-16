@@ -1,0 +1,41 @@
+{
+  "Topology fence": {
+    "prefix": "cfx-topology",
+    "body": [
+      "```chartforgex topology",
+      "title \"${1:Service Dependency Map}\"",
+      "layout layered lr",
+      "",
+      "node ${2:api} \"${3:API}\" kind:service status:healthy icon:service",
+      "node ${4:db} \"${5:Database}\" kind:database status:warning icon:database",
+      "edge ${2:api} -> ${4:db} \"${6:32 ms}\" kind:dependency status:warning direction:forward",
+      "```"
+    ],
+    "description": "Insert a ChartForgeX topology fenced block"
+  },
+  "Topology table": {
+    "prefix": "cfx-topology-table",
+    "body": [
+      "```chartforgex topology",
+      "title: \"${1:Regional Topology}\"",
+      "layout: densegrouped tb",
+      "",
+      "groups:",
+      "| id | label | status | icon |",
+      "| -- | ----- | ------ | ---- |",
+      "| ${2:emea} | ${3:EMEA} | warning | microsoft-ad:site |",
+      "",
+      "nodes:",
+      "| id | label | group | kind | status | badge |",
+      "| -- | ----- | ----- | ---- | ------ | ----- |",
+      "| ${4:dc-emea} | ${5:EMEA DC01} | ${2:emea} | server | warning | GC |",
+      "",
+      "edges:",
+      "| from | to | label | status | direction |",
+      "| ---- | -- | ----- | ------ | --------- |",
+      "| ${4:dc-emea} | ${6:dc-amer} | ${7:92 ms} | warning | bidirectional |",
+      "```"
+    ],
+    "description": "Insert a table-driven ChartForgeX topology fenced block"
+  }
+}

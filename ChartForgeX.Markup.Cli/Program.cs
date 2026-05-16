@@ -24,6 +24,8 @@ internal static class Program {
             switch (command) {
                 case "validate":
                     return Validate(result.Document);
+                case "preview":
+                    return Preview(result.Document, args.Skip(2).ToArray());
                 case "export":
                     return Export(result.Document, args.Skip(2).ToArray());
                 case "emit":
@@ -76,6 +78,20 @@ internal static class Program {
         return 0;
     }
 
+    private static int Preview(MarkupTopologyDocument document, string[] args) {
+        var html = document.ToTopologyChart().ToHtmlPage();
+        var output = Option(args, "--output") ?? Option(args, "-o");
+        if (string.IsNullOrWhiteSpace(output)) {
+            Console.Write(html);
+        } else {
+            EnsureOutputDirectory(output);
+            File.WriteAllText(output, html);
+            Console.WriteLine("Wrote " + output);
+        }
+
+        return 0;
+    }
+
     private static int Emit(MarkupTopologyDocument document, string[] args) {
         var target = (Option(args, "--target") ?? "csharp").ToLowerInvariant();
         if (target != "csharp") throw new ArgumentException("Only --target csharp is supported by the MVP emitter.");
@@ -119,6 +135,7 @@ internal static class Program {
         Console.WriteLine("ChartForgeX Markup CLI");
         Console.WriteLine("Usage:");
         Console.WriteLine("  chartforgex-markup validate <file>");
+        Console.WriteLine("  chartforgex-markup preview <file> [--output <preview.html>]");
         Console.WriteLine("  chartforgex-markup export <file> --output <diagram.svg|diagram.html|diagram.png>");
         Console.WriteLine("  chartforgex-markup emit <file> --target csharp [--output <file.cs>]");
     }
