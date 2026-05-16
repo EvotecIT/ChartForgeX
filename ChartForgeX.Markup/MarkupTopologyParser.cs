@@ -42,7 +42,7 @@ public sealed class MarkupTopologyParser {
                 continue;
             }
 
-            if (section.Length > 0 && IsTableLine(line)) {
+            if (section.Length > 0 && IsTableLine(line, tableHeaders)) {
                 tableHeaders = ParseTableLine(result, result.Document!, section, tableHeaders, line, lineNumber);
                 continue;
             }
@@ -320,7 +320,32 @@ public sealed class MarkupTopologyParser {
         return line;
     }
 
-    private static bool IsTableLine(string line) => line.StartsWith("|", StringComparison.Ordinal) || line.IndexOf('|') > 0;
+    private static bool IsTableLine(string line, List<string>? headers) {
+        if (line.StartsWith("|", StringComparison.Ordinal)) return true;
+        if (!HasUnquotedPipe(line)) return false;
+        var firstToken = Tokenize(line).FirstOrDefault()?.TrimEnd(':').ToLowerInvariant();
+        if (firstToken != null && IsTopologyEntryCommand(firstToken)) return false;
+        var cells = SplitTableCells(line);
+        if (cells.Count < 2) return false;
+        if (headers != null) return true;
+        return cells.All(cell => IsKnownTableHeader(cell));
+    }
+
+    private static bool HasUnquotedPipe(string line) {
+        var inQuote = false;
+        for (var i = 0; i < line.Length; i++) {
+            var ch = line[i];
+            if (ch == '"') inQuote = !inQuote;
+            if (ch == '\\' && i + 1 < line.Length) {
+                i++;
+                continue;
+            }
+
+            if (!inQuote && ch == '|') return true;
+        }
+
+        return false;
+    }
 
     private static bool IsTableSeparator(List<string> cells) {
         foreach (var cell in cells) {
@@ -375,6 +400,31 @@ public sealed class MarkupTopologyParser {
         }
     }
 
+    private static bool IsKnownTableHeader(string key) {
+        switch (NormalizeKey(key)) {
+            case "id":
+            case "from":
+            case "to":
+            case "label":
+            case "kind":
+            case "status":
+            case "direction":
+            case "routing":
+            case "group":
+            case "subtitle":
+            case "icon":
+            case "symbol":
+            case "badge":
+            case "color":
+            case "display":
+            case "width":
+            case "height":
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private static bool IsTopologyEntryCommand(string command) => command == "group" || command == "node" || command == "edge";
     private static string JoinTail(List<string> tokens, int start) => start >= tokens.Count ? string.Empty : string.Join(" ", tokens.Skip(start));
     private static string NormalizeKey(string value) => new string((value ?? string.Empty).Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
@@ -390,16 +440,11 @@ public sealed class MarkupTopologyParser {
         if (EndsWithUnescapedPipe(trimmed)) trimmed = trimmed.Substring(0, trimmed.Length - 1);
         var cells = new List<string>();
         var current = new System.Text.StringBuilder();
-        var escaped = false;
-        foreach (var ch in trimmed) {
-            if (escaped) {
-                current.Append(ch);
-                escaped = false;
-                continue;
-            }
-
-            if (ch == '\\') {
-                escaped = true;
+        for (var i = 0; i < trimmed.Length; i++) {
+            var ch = trimmed[i];
+            if (ch == '\\' && i + 1 < trimmed.Length && trimmed[i + 1] == '|') {
+                current.Append('|');
+                i++;
                 continue;
             }
 
@@ -412,7 +457,6 @@ public sealed class MarkupTopologyParser {
             current.Append(ch);
         }
 
-        if (escaped) current.Append('\\');
         cells.Add(current.ToString().Trim());
         return cells;
     }

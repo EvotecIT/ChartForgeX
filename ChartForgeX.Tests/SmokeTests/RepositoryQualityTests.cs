@@ -116,6 +116,10 @@ internal static partial class SmokeTests {
         Assert(packageScript.Contains("'win-x64'", StringComparison.Ordinal) && packageScript.Contains("'linux-x64'", StringComparison.Ordinal) && packageScript.Contains("'osx-arm64'", StringComparison.Ordinal), "VS Code markup extension packager should include common desktop runtime identifiers.");
         Assert(packageScript.Contains("VSCE_PAT", StringComparison.Ordinal), "VS Code markup extension packager should require VSCE_PAT for Marketplace publishing.");
 
+        var extensionSource = File.ReadAllText(Path.Combine(extensionRoot, "src", "extension.ts"));
+        Assert(extensionSource.Contains("spawnError", StringComparison.Ordinal) && extensionSource.Contains("fallbacks", StringComparison.Ordinal), "VS Code markup extension should fall back from unusable RID executables to portable CLI assets.");
+        Assert(extensionSource.Contains("document.getText()", StringComparison.Ordinal) && extensionSource.Contains("mkdtempSync", StringComparison.Ordinal), "VS Code markup extension should run CLI commands against current buffer text without force-saving user files.");
+
         var powerShellPackageScript = File.ReadAllText(Path.Combine(extensionRoot, "scripts", "package-vsix.ps1"));
         Assert(powerShellPackageScript.Contains("ChartForgeX.Markup.Cli", StringComparison.Ordinal), "VS Code markup extension PowerShell packager should publish the ChartForgeX.Markup.Cli.");
         Assert(powerShellPackageScript.Contains("'win-x64'", StringComparison.Ordinal) && powerShellPackageScript.Contains("'linux-x64'", StringComparison.Ordinal) && powerShellPackageScript.Contains("'osx-arm64'", StringComparison.Ordinal), "VS Code markup extension PowerShell packager should include common desktop runtime identifiers.");

@@ -58,7 +58,7 @@ public static class ChartForgeXMarkdown {
 
         for (var index = 0; index < lines.Length; index++) {
             var line = lines[index];
-            var indent = LeadingSpaceCount(line);
+            var indent = LeadingIndentColumns(line);
             var trimmed = line.TrimStart();
             if (!inFence) {
                 if (indent > 3) continue;
@@ -74,7 +74,7 @@ public static class ChartForgeXMarkdown {
                 continue;
             }
 
-            if (indent <= 3 && trimmed.StartsWith(fence, StringComparison.Ordinal)) {
+            if (indent <= 3 && IsClosingFence(trimmed, fence)) {
                 if (include) blocks.Add(new ChartForgeXMarkdownBlock(string.Join("\n", payload), payloadStartLine));
                 inFence = false;
                 include = false;
@@ -111,9 +111,28 @@ public static class ChartForgeXMarkdown {
         return count;
     }
 
-    private static int LeadingSpaceCount(string text) {
+    private static bool IsClosingFence(string text, string fence) {
+        var markerCount = CountPrefix(text, fence[0]);
+        if (markerCount < fence.Length) return false;
+        for (var i = markerCount; i < text.Length; i++) {
+            if (!char.IsWhiteSpace(text[i])) return false;
+        }
+
+        return true;
+    }
+
+    private static int LeadingIndentColumns(string text) {
         var count = 0;
-        while (count < text.Length && text[count] == ' ') count++;
+        for (var i = 0; i < text.Length; i++) {
+            if (text[i] == ' ') {
+                count++;
+            } else if (text[i] == '\t') {
+                count += 4;
+            } else {
+                break;
+            }
+        }
+
         return count;
     }
 }

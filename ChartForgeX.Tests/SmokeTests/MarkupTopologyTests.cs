@@ -97,7 +97,7 @@ nodes:
 id | label | kind | status | display | width | height | subtitle
 :-- | :---- | :--- | ---: | :------ | ----: | -----: | :-------
 api | API \| Gateway | service | healthy | tile | 180 | 80 | https://api.example.com
-db | Database | database | warning | card | 150 | 70 | Primary
+db | Database | database | warning | card | 150 | 70 | DOMAIN\user
 edges:
 from | to | label | status
 :--- | --: | :---- | :-----
@@ -111,6 +111,7 @@ api | db | https://api.example.com | warning
         Assert(result.Document.Nodes[0].Subtitle == "https://api.example.com", "Table values should preserve URL-style text.");
         Assert(result.Document.Nodes[0].Display == TopologyNodeDisplayMode.Tile, "Node table rows should map display.");
         Assert(result.Document.Nodes[0].Width == 180 && result.Document.Nodes[0].Height == 80, "Node table rows should map explicit dimensions.");
+        Assert(result.Document.Nodes[1].Subtitle == @"DOMAIN\user", "Table cells should preserve literal backslashes.");
         Assert(result.Document.Edges[0].Label == "https://api.example.com", "Edge table labels should preserve colon-containing values.");
     }
 
@@ -129,6 +130,13 @@ edge api -> db ""https://api.example.com"" status:warning
         Assert(result.Document.Nodes[0].Display == TopologyNodeDisplayMode.Tile, "Command nodes should map display.");
         Assert(result.Document.Edges[0].Label == "https://api.example.com", "Command edge labels should preserve colon-containing values.");
         Assert(result.Document.Edges[0].Direction == TopologyDirection.Forward, "Arrow commands should default -> to forward direction.");
+
+        const string sectionSource = @"nodes:
+node api ""API | Gateway"" kind:service status:healthy
+";
+        var sectionResult = new MarkupTopologyParser().Parse(sectionSource);
+        Assert(!sectionResult.HasErrors, "Command-style section rows with pipe text should not be misread as Markdown tables: " + Diagnostics(sectionResult));
+        Assert(sectionResult.Document!.Nodes[0].Label == "API | Gateway", "Command-style section rows should preserve pipe labels.");
     }
 
     private static void MarkupTopologyRejectsMismatchedSectionCommands() {
@@ -159,6 +167,19 @@ node raw ""Raw"" kind:service status:healthy";
 
         var result = new MarkupTopologyParser().Parse(indented);
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("Unknown topology command", StringComparison.Ordinal)), "Four-space indented fences should stay as code block text, not live topology fences.");
+
+        var tabIndented = "\t```chartforgex topology\n\tnode api \"API\"\n\t```\nnode raw \"Raw\" kind:service status:healthy";
+        var tabResult = new MarkupTopologyParser().Parse(tabIndented);
+        Assert(tabResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("Unknown topology command", StringComparison.Ordinal)), "Tab-indented fences should stay as code block text, not live topology fences.");
+
+        const string closingSuffix = @"```chartforgex topology
+node api ""API"" kind:service status:healthy
+```not-a-close
+node db ""Database"" kind:database status:warning
+```";
+        var closingResult = new MarkupTopologyParser().Parse(closingSuffix);
+        Assert(!closingResult.HasErrors, "Closing fences with trailing text should stay inside the payload until a valid close.");
+        Assert(closingResult.Document!.Nodes.Count == 2, "Invalid closing-fence suffixes should not truncate topology payloads.");
     }
 
     private static void MarkupTopologyCliKeepsWarningsOffGeneratedStreams() {
@@ -191,8 +212,13 @@ node raw ""Raw"" kind:service status:healthy";
         Assert(shortInvocation.StandardError.Contains("Missing input file", StringComparison.Ordinal), "Missing input file should be reported on stderr.");
 
         var fixture = Path.Combine(Path.GetTempPath(), "chartforgex-markup-options-" + Guid.NewGuid().ToString("N") + ".md");
-        File.WriteAllText(fixture, "node api \"API\" kind:service status:healthy\n");
+        File.WriteAllText(fixture, "not even valid topology\n");
         try {
+            var unknownCommand = RunMarkupCliRaw("valdiate", fixture);
+            Assert(unknownCommand.ExitCode == 1, "CLI should reject unknown commands before parsing input.");
+            Assert(unknownCommand.StandardError.Contains("Unknown command", StringComparison.Ordinal), "Unknown commands should be reported on stderr.");
+
+            File.WriteAllText(fixture, "node api \"API\" kind:service status:healthy\n");
             var missingValue = RunMarkupCli("emit", fixture, "--target");
             Assert(missingValue.ExitCode == 1, "CLI should fail when an option value is missing.");
             Assert(missingValue.StandardError.Contains("requires a value", StringComparison.Ordinal), "Missing option value should be reported on stderr.");

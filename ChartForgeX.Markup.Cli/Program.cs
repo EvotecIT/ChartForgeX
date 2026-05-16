@@ -21,6 +21,12 @@ internal static class Program {
 
         try {
             var command = args[0].ToLowerInvariant();
+            if (!IsCommand(command)) {
+                Console.Error.WriteLine("Unknown command '" + args[0] + "'.");
+                Help();
+                return 1;
+            }
+
             var input = args[1];
             var source = File.ReadAllText(input);
             var result = new MarkupTopologyParser().Parse(source);
@@ -37,8 +43,6 @@ internal static class Program {
                 case "emit":
                     return Emit(result.Document, args.Skip(2).ToArray());
                 default:
-                    Console.Error.WriteLine("Unknown command '" + args[0] + "'.");
-                    Help();
                     return 1;
             }
         } catch (TopologyValidationException ex) {
@@ -144,6 +148,7 @@ internal static class Program {
     }
 
     private static bool IsHelp(string value) => value == "-h" || value == "--help" || value == "help";
+    private static bool IsCommand(string value) => value == "validate" || value == "preview" || value == "export" || value == "emit";
 
     private static void Help() {
         Console.WriteLine("ChartForgeX Markup CLI");

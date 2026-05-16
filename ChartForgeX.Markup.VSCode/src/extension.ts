@@ -15,6 +15,13 @@ type CliResult = {
   stdout: string;
   stderr: string;
   code: number | null;
+  spawnError?: boolean;
+};
+
+type CliCommand = {
+  command: string;
+  args: string[];
+  fallbacks?: CliCommand[];
 };
 
 type ExportFormat = 'svg' | 'png' | 'html';
@@ -277,7 +284,7 @@ function isChartForgeXMarkup(document: vscode.TextDocument): boolean {
 }
 
 async function runCli(context: vscode.ExtensionContext, document: vscode.TextDocument, command: string, extraArgs: string[] = []): Promise<CliResult> {
-  let cli: { command: string; args: string[] };
+  let cli: CliCommand;
   try {
     cli = resolveCli(context);
   } catch (error) {
@@ -289,26 +296,43 @@ async function runCli(context: vscode.ExtensionContext, document: vscode.TextDoc
   fs.writeFileSync(tempFile, document.getText(), 'utf8');
   try {
     const args = [...cli.args, command, tempFile, ...extraArgs];
-    return await spawnProcess(cli.command, args, documentWorkingDirectory(document, tempRoot));
+    let result = await spawnProcess(cli.command, args, documentWorkingDirectory(document, tempRoot));
+    for (const fallback of cli.fallbacks ?? []) {
+      if (!result.spawnError) break;
+      const fallbackArgs = [...fallback.args, command, tempFile, ...extraArgs];
+      result = await spawnProcess(fallback.command, fallbackArgs, documentWorkingDirectory(document, tempRoot));
+    }
+
+    return result;
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
 }
 
-function resolveCli(context: vscode.ExtensionContext): { command: string; args: string[] } {
+function resolveCli(context: vscode.ExtensionContext): CliCommand {
   const configured = vscode.workspace.getConfiguration('chartforgexMarkup').get<string>('cliPath', '').trim();
   const candidates = configured ? [configured] : [
-    bundledCliPath(context),
+    ...bundledCliPaths(context),
     sourceCliProjectPath(context)
   ];
 
+  const resolved: CliCommand[] = [];
   for (const candidate of candidates) {
     if (!candidate || !fs.existsSync(candidate)) continue;
     const name = path.basename(candidate).toLowerCase();
     if (!configured && !allowedCliArtifactNames.has(name)) continue;
-    if (candidate.endsWith('.csproj')) return { command: 'dotnet', args: ['run', '--project', candidate, '-c', 'Release', '--'] };
-    if (candidate.endsWith('.dll')) return { command: 'dotnet', args: [candidate] };
-    return { command: candidate, args: [] };
+    if (candidate.endsWith('.csproj')) {
+      resolved.push({ command: 'dotnet', args: ['run', '--project', candidate, '-c', 'Release', '--'] });
+    } else if (candidate.endsWith('.dll')) {
+      resolved.push({ command: 'dotnet', args: [candidate] });
+    } else {
+      resolved.push({ command: candidate, args: [] });
+    }
+  }
+
+  if (resolved.length > 0) {
+    const [primary, ...fallbacks] = resolved;
+    return { ...primary, fallbacks };
   }
 
   if (configured) {
@@ -318,15 +342,13 @@ function resolveCli(context: vscode.ExtensionContext): { command: string; args: 
   throw new Error('ChartForgeX.Markup.Cli was not found. Set chartforgexMarkup.cliPath or package the extension with the bundled CLI.');
 }
 
-function bundledCliPath(context: vscode.ExtensionContext): string {
+function bundledCliPaths(context: vscode.ExtensionContext): string[] {
   const root = path.join(context.extensionPath, 'tools', 'ChartForgeX.Markup.Cli');
   const rid = runtimeIdentifier();
   const executable = process.platform === 'win32' ? 'ChartForgeX.Markup.Cli.exe' : 'ChartForgeX.Markup.Cli';
   const ridExecutable = path.join(root, rid, executable);
-  if (fs.existsSync(ridExecutable)) return ridExecutable;
   const portableDll = path.join(root, 'ChartForgeX.Markup.Cli.dll');
-  if (fs.existsSync(portableDll)) return portableDll;
-  return ridExecutable;
+  return [ridExecutable, portableDll];
 }
 
 function sourceCliProjectPath(context: vscode.ExtensionContext): string {
@@ -347,7 +369,7 @@ function spawnProcess(command: string, args: string[], cwd: string): Promise<Cli
     let stderr = '';
     child.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString(); });
     child.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString(); });
-    child.on('error', (error) => resolve({ stdout, stderr: error.message, code: 1 }));
+    child.on('error', (error) => resolve({ stdout, stderr: error.message, code: 1, spawnError: true }));
     child.on('close', (code) => resolve({ stdout, stderr, code }));
   });
 }
