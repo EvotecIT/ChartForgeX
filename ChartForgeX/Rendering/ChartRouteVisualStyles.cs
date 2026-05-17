@@ -13,14 +13,17 @@ internal static class ChartRouteVisualStyles {
 
     public static ChartLineVisualStyle TopologyEdge(bool monitoringStyle, bool muted, bool selected) {
         if (!monitoringStyle) return ChartLineVisualStyle.Premium()
-            .WithAmbientHalo(selected ? 0.060 : muted ? 0.022 : 0.038, selected ? 7.0 : muted ? 4.2 : 5.8)
-            .WithHalo(selected ? 0.18 : muted ? 0.080 : 0.115, selected ? 4.8 : muted ? 2.4 : 3.3)
-            .WithHighlight(selected ? 0.135 : muted ? 0.035 : 0.082, 0.26);
-        if (muted && !selected) return ChartLineVisualStyle.Classic().WithHalo(0.08, 2.6);
+            .WithAmbientHalo(selected ? 0.035 : muted ? 0.006 : 0.014, selected ? 4.0 : muted ? 1.6 : 2.4)
+            .WithHalo(selected ? 0.11 : muted ? 0.025 : 0.055, selected ? 2.4 : muted ? 0.8 : 1.2)
+            .WithHighlight(selected ? 0.080 : muted ? 0.018 : 0.035, 0.18);
+        if (muted && !selected) return ChartLineVisualStyle.Premium()
+            .WithAmbientHalo(0, 0)
+            .WithHalo(0.030, 0.8)
+            .WithHighlight(0.015, 0.18);
         return ChartLineVisualStyle.Premium()
-            .WithAmbientHalo(selected ? 0.075 : 0.045, selected ? 7.8 : 5.8)
-            .WithHalo(selected ? 0.20 : 0.13, selected ? 4.0 : 3.0)
-            .WithHighlight(selected ? 0.16 : 0.10, 0.28);
+            .WithAmbientHalo(selected ? 0.040 : 0.014, selected ? 4.2 : 2.2)
+            .WithHalo(selected ? 0.12 : 0.052, selected ? 2.4 : 1.1)
+            .WithHighlight(selected ? 0.085 : 0.034, 0.18);
     }
 
     public static ChartLineVisualStyle DottedMapLeader() => ChartLineVisualStyle.Premium()

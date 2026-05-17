@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Topology;
 
@@ -34,6 +36,9 @@ internal static partial class TopologyRenderPrimitives {
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) return 0.98;
         return edge.IsMuted ? 0.78 : 0.96;
     }
+
+    public static ChartLineVisualStyle EdgeVisualStyle(TopologyEdge edge, bool selected, TopologyRenderOptions options) =>
+        options.EdgeVisualStyle ?? ChartRouteVisualStyles.TopologyEdge(IsMonitoringDashboardStyle(options), edge.IsMuted, selected);
 
     public static string EdgeColor(TopologyEdge edge, TopologyTheme theme, TopologyRenderOptions options) {
         if (edge.IsMuted) return IsMonitoringDashboardStyle(options) ? "#CBD5E1" : theme.Border;

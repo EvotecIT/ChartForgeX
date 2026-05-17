@@ -9,7 +9,7 @@ namespace ChartForgeX.Topology;
 public sealed partial class TopologySvgRenderer {
     private static void AddPremiumEdgePath(SvgElement edgeGroup, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, IReadOnlyList<ChartPoint> points, string prefix, TopologyRenderOptions options, string svgId, bool selected, string color, string dash) {
         var pathData = EdgePath(chart, edge, nodes, points, options);
-        var style = ChartRouteVisualStyles.TopologyEdge(IsMonitoringDashboardStyle(options), edge.IsMuted, selected);
+        var style = EdgeVisualStyle(edge, selected, options);
         if (!ChartColor.TryParse(color, out var edgeColor)) {
             AddPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, selected, color, dash, pathData, null);
             return;

@@ -128,6 +128,8 @@ internal static partial class SmokeTests {
         Assert(topology.Contains("class=\"cfx-topology__edge cfx-premium-stroke", StringComparison.Ordinal), "Topology SVG routes should opt into the same premium stroke class as charts.");
         var cssColorTopology = CreateSampleTopologyChart().WithEdgeColor("amer-emea", "var(--directory-edge)").ToSvg();
         Assert(cssColorTopology.Contains("stroke=\"var(--directory-edge)\"", StringComparison.Ordinal) && !cssColorTopology.Contains("stroke=\"#2563EB\"", StringComparison.Ordinal), "Topology SVG routes should preserve caller-supplied CSS edge colors instead of substituting the fallback accent.");
+        var plainEdgeTopology = CreateSampleTopologyChart().ToSvg(new TopologyRenderOptions().WithPlainTopologyEdges());
+        Assert(!plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-path-halo\"", StringComparison.Ordinal) && !plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal) && CountOccurrences(plainEdgeTopology, "data-cfx-role=\"topology-edge-path\"") == 2, "Topology edge polish should be configurable down to crisp single-stroke route lines.");
         var floatingLabelTopology = CreateSampleTopologyChart().ToSvg(new TopologyRenderOptions { VisualStyle = TopologyVisualStyle.MonitoringDashboard, IncludeEdgeLabelBackplates = false });
         Assert(floatingLabelTopology.Contains("data-cfx-halo=\"true\"", StringComparison.Ordinal), "Topology floating edge labels should keep explicit readable halo metadata.");
         Assert(CreateSampleTopologyChart().ToPng().Length > 64, "Premium topology route polish should render in PNG output.");

@@ -9,7 +9,7 @@ namespace ChartForgeX.Topology;
 public sealed partial class TopologyPngRenderer {
     private static void DrawPremiumEdgeRoute(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, double width, bool dashed, double dash, double gap, TopologyEdge edge, TopologyRenderOptions options, bool selected) {
         var dashArray = dashed ? new[] { dash, gap } : null;
-        foreach (var layer in ChartLineVisualLayers.Build(color, width, ChartRouteVisualStyles.TopologyEdge(IsMonitoringDashboardStyle(options), edge.IsMuted, selected))) {
+        foreach (var layer in ChartLineVisualLayers.Build(color, width, EdgeVisualStyle(edge, selected, options))) {
             if (!layer.IsVisible) continue;
             canvas.DrawPolyline(points, layer.ColorWithOpacity(), layer.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, dashArray);
         }

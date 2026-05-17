@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Topology;
 
@@ -6,6 +7,8 @@ namespace ChartForgeX.Topology;
 /// Defines topology rendering options.
 /// </summary>
 public sealed class TopologyRenderOptions {
+    private ChartLineVisualStyle? _edgeVisualStyle;
+
     /// <summary>
     /// Creates render options from a reusable topology view preset.
     /// </summary>
@@ -170,6 +173,12 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets the radius used when rendering rounded orthogonal edge bends.</summary>
     public double EdgeCornerRadius { get; set; } = 12;
+
+    /// <summary>Gets or sets an optional reusable visual style for topology edge strokes. When unset, the renderer uses its topology preset.</summary>
+    public ChartLineVisualStyle? EdgeVisualStyle {
+        get => _edgeVisualStyle;
+        set => _edgeVisualStyle = value?.Clone();
+    }
 
     /// <summary>Gets or sets an optional icon catalog used to resolve node and group icon ids. When unset, the built-in catalog is used.</summary>
     public TopologyIconCatalog? IconCatalog { get; set; }
