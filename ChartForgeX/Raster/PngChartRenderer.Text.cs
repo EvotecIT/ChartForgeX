@@ -9,23 +9,7 @@ namespace ChartForgeX.Raster;
 public sealed partial class PngChartRenderer {
     private static void DrawReadablePngLabel(RgbaCanvas c, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize, ChartTextStyle? style = null) {
         text = style == null ? text : PngStyleColor(style, text);
-        var strongHalo = ApplyOpacity(halo, ChartVisualPrimitives.PngTextHaloStrongOpacity);
-        var softHalo = ApplyOpacity(halo, ChartVisualPrimitives.PngTextHaloSoftOpacity);
-        var outerHalo = ApplyOpacity(halo, ChartVisualPrimitives.PngTextHaloOuterOpacity);
-        var inner = ChartVisualPrimitives.PngTextHaloInnerOffset;
-        var outer = ChartVisualPrimitives.PngTextHaloOuterOffset;
-        c.DrawText(x - outer, y, label, outerHalo, fontSize);
-        c.DrawText(x + outer, y, label, outerHalo, fontSize);
-        c.DrawText(x, y - outer, label, outerHalo, fontSize);
-        c.DrawText(x, y + outer, label, outerHalo, fontSize);
-        c.DrawText(x - inner, y, label, strongHalo, fontSize);
-        c.DrawText(x + inner, y, label, strongHalo, fontSize);
-        c.DrawText(x, y - inner, label, strongHalo, fontSize);
-        c.DrawText(x, y + inner, label, strongHalo, fontSize);
-        c.DrawText(x - inner, y - inner, label, softHalo, fontSize);
-        c.DrawText(x + inner, y - inner, label, softHalo, fontSize);
-        c.DrawText(x - inner, y + inner, label, softHalo, fontSize);
-        c.DrawText(x + inner, y + inner, label, softHalo, fontSize);
+        foreach (var layer in ChartTextHalo.ReadableRasterLayers(fontSize)) c.DrawText(x + layer.Dx, y + layer.Dy, label, ApplyOpacity(halo, layer.Opacity), fontSize);
         c.DrawTextEmphasized(x, y, label, text, fontSize);
         if (style != null) DrawPngUnderline(c, x, y + fontSize, label, style, text, fontSize, emphasized: true);
     }

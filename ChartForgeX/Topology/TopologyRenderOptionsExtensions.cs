@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Topology;
 
@@ -82,6 +83,34 @@ public static class TopologyRenderOptionsExtensions {
         options.EdgeTertiaryLabelMetricKey = tertiaryMetricKey;
         return options;
     }
+
+    /// <summary>
+    /// Uses a caller supplied visual style for topology edge strokes across SVG and PNG output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="style">The edge stroke visual style. Pass null to return to the topology default.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithTopologyEdgeVisualStyle(this TopologyRenderOptions options, ChartLineVisualStyle? style) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EdgeVisualStyle = style;
+        return options;
+    }
+
+    /// <summary>
+    /// Uses a plain single-stroke topology edge style without halo or highlight layers.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithPlainTopologyEdges(this TopologyRenderOptions options) =>
+        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Plain());
+
+    /// <summary>
+    /// Uses a stronger luminous topology edge style for dark dashboards and deliberate emphasis.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithLuminousTopologyEdges(this TopologyRenderOptions options) =>
+        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Luminous().WithAmbientHalo(0.045, 5.8).WithHalo(0.13, 3.0).WithHighlight(0.10, 0.28));
 
     /// <summary>
     /// Applies the reusable monitoring-dashboard visual treatment used for dense topology and geographic monitoring views.

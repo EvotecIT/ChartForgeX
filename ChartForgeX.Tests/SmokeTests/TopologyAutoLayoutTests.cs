@@ -512,6 +512,7 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-edge-route-halo\"", StringComparison.Ordinal), "Monitoring topology routes should render route halos so crossing paths remain separated.");
+        Assert(svg.Contains("data-cfx-role=\"topology-edge-path-ambient-halo\"", StringComparison.Ordinal) && svg.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal), "Monitoring topology routes should render shared premium edge layers in addition to clearance halos.");
         Assert(chart.ToPng(options).Length > 64, "Monitoring route halos should render as PNG.");
     }
 

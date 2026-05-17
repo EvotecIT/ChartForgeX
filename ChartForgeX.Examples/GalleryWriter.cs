@@ -245,6 +245,7 @@ public static partial class GalleryWriter {
                     bytes = pair.SvgBytes,
                     visualNodes = pair.SvgHealth.VisualNodes,
                     textNodes = pair.SvgHealth.TextNodes,
+                    premiumStrokeNodes = pair.SvgHealth.PremiumStrokeNodes,
                     minimumTextFontSize = pair.SvgHealth.MinimumTextFontSize,
                     tinyTextNodes = pair.SvgHealth.TinyTextNodes,
                     strokedNodes = pair.SvgHealth.StrokedNodes,
@@ -413,7 +414,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
         var warnings = pair.Warnings;
         var statusClass = warnings.Length == 0 ? "ok" : "warn";
         var statusText = warnings.Length == 0 ? "Review clean" : string.Join(" / ", warnings);
-        var svgInfo = FormatDimensions(svg) + " / " + FormatBytes(pair.SvgBytes) + " / " + pair.SvgHealth.VisualNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visual nodes / min text " + FormatSvgTextSize(pair.SvgHealth.MinimumTextFontSize) + " / min stroke " + FormatSvgStrokeWidth(pair.SvgHealth.MinimumStrokeWidth) + " / min marker " + FormatSvgMarkerRadius(pair.SvgHealth.MinimumMarkerRadius);
+        var svgInfo = FormatDimensions(svg) + " / " + FormatBytes(pair.SvgBytes) + " / " + pair.SvgHealth.VisualNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visual nodes / " + pair.SvgHealth.PremiumStrokeNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " premium strokes / min text " + FormatSvgTextSize(pair.SvgHealth.MinimumTextFontSize) + " / min stroke " + FormatSvgStrokeWidth(pair.SvgHealth.MinimumStrokeWidth) + " / min marker " + FormatSvgMarkerRadius(pair.SvgHealth.MinimumMarkerRadius);
         var scaleLabel = pair.PngScale > 1 ? " @" + pair.PngScale.ToString(System.Globalization.CultureInfo.InvariantCulture) + "x" : string.Empty;
         var pngInfo = FormatDimensions(png) + scaleLabel + " / " + FormatBytes(pair.PngBytes) + " / " + pair.PngHealth.VisiblePixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visible px / " + pair.PngHealth.ForegroundPixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " foreground px";
         var largeClass = aspectWidth >= 1200 || aspectHeight >= 900 ? " large" : string.Empty;
@@ -570,8 +571,9 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
                 CountOccurrences(svg, "<polyline") +
                 CountOccurrences(svg, "<text");
             var textNodes = CountOccurrences(svg, "<text");
+            var premiumStrokeNodes = CountClassToken(svg, "cfx-premium-stroke");
             var textQuality = ReadSvgTextQuality(svg, ReadSvgDimensions(fileName));
-            return new SvgHealth(visualNodes, textNodes, textQuality.MinimumFontSize, textQuality.TinyTextNodes, textQuality.StrokedNodes, textQuality.MinimumStrokeWidth, textQuality.TinyStrokeNodes, textQuality.MarkerNodes, textQuality.MinimumMarkerRadius, textQuality.TinyMarkerNodes, textQuality.ClippedTextNodes, textQuality.NearEdgeTextNodes);
+            return new SvgHealth(visualNodes, textNodes, premiumStrokeNodes, textQuality.MinimumFontSize, textQuality.TinyTextNodes, textQuality.StrokedNodes, textQuality.MinimumStrokeWidth, textQuality.TinyStrokeNodes, textQuality.MarkerNodes, textQuality.MinimumMarkerRadius, textQuality.TinyMarkerNodes, textQuality.ClippedTextNodes, textQuality.NearEdgeTextNodes);
         } catch (IOException) {
         } catch (UnauthorizedAccessException) {
         }
@@ -706,6 +708,51 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
         }
 
         return count;
+    }
+
+    private static int CountClassToken(string value, string token) {
+        var count = 0;
+        var index = 0;
+        while ((index = value.IndexOf("class", index, StringComparison.OrdinalIgnoreCase)) >= 0) {
+            if (index > 0 && value[index - 1] != '<' && !char.IsWhiteSpace(value[index - 1])) {
+                index += 5;
+                continue;
+            }
+
+            var cursor = index + 5;
+            while (cursor < value.Length && char.IsWhiteSpace(value[cursor])) cursor++;
+            if (cursor >= value.Length || value[cursor] != '=') {
+                index += 5;
+                continue;
+            }
+
+            cursor++;
+            while (cursor < value.Length && char.IsWhiteSpace(value[cursor])) cursor++;
+            if (cursor >= value.Length || (value[cursor] != '"' && value[cursor] != '\'')) {
+                index = cursor;
+                continue;
+            }
+
+            var quote = value[cursor++];
+            var end = value.IndexOf(quote, cursor);
+            if (end < 0) break;
+            if (ContainsClassToken(value, cursor, end, token)) count++;
+            index = end + 1;
+        }
+
+        return count;
+    }
+
+    private static bool ContainsClassToken(string value, int start, int end, string token) {
+        var cursor = start;
+        while (cursor < end) {
+            while (cursor < end && char.IsWhiteSpace(value[cursor])) cursor++;
+            var tokenStart = cursor;
+            while (cursor < end && !char.IsWhiteSpace(value[cursor])) cursor++;
+            if (cursor - tokenStart == token.Length && string.Compare(value, tokenStart, token, 0, token.Length, StringComparison.Ordinal) == 0) return true;
+        }
+
+        return false;
     }
 
     private static string EscapeHtml(string value) => System.Net.WebUtility.HtmlEncode(value);

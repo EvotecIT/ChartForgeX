@@ -693,8 +693,8 @@ public sealed partial class TopologySvgRenderer {
             if (!ShouldRenderNodeStatusBadge(node, options)) continue;
             var color = theme.StatusColor(node.Status);
             var highlighted = highlight.IsNodeHighlighted(node);
-            var cx = node.X + node.Width - 11;
-            var cy = node.Y + 11;
+            var cx = NodeStatusBadgeCenterX(node);
+            var cy = NodeStatusBadgeCenterY(node);
             layer.Element("g", group => {
                 group
                     .Class(prefix + "__status-badge" + highlight.CssClass(prefix, highlighted))
@@ -705,24 +705,28 @@ public sealed partial class TopologySvgRenderer {
                 group.Element("circle", circle => circle
                     .Attribute("cx", cx)
                     .Attribute("cy", cy)
-                    .Attribute("r", 8)
-                    .Attribute("fill", color)
-                    .Attribute("stroke", theme.Background)
-                    .Attribute("stroke-width", 2));
+                    .Attribute("r", NodeStatusBadgeOuterRadius)
+                    .Attribute("fill", theme.Background));
+                group.Element("circle", circle => circle
+                    .Attribute("cx", cx)
+                    .Attribute("cy", cy)
+                    .Attribute("r", NodeStatusBadgeInnerRadius)
+                    .Attribute("fill", color));
                 group.Element("text", text => text
                     .Attribute("x", cx)
-                    .Attribute("y", cy + 3)
+                    .Attribute("y", cy + NodeStatusBadgeGlyphYOffset)
                     .Attribute("text-anchor", "middle")
                     .Attribute("fill", "#FFFFFF")
-                    .Attribute("font-size", 9)
+                    .Attribute("font-size", NodeStatusBadgeGlyphFontSize)
                     .Attribute("font-weight", "800")
-                    .Text(IsMonitoringDashboardStyle(options) && node.Status == TopologyHealthStatus.Healthy ? string.Empty : StatusGlyph(node.Status)));
-                if (IsMonitoringDashboardStyle(options) && node.Status == TopologyHealthStatus.Healthy) {
+                    .Text(ShouldDrawNodeStatusBadgeCheck(node, options) ? string.Empty : StatusGlyph(node.Status)));
+                if (ShouldDrawNodeStatusBadgeCheck(node, options)) {
+                    var check = NodeStatusBadgeCheckPoints(cx, cy);
                     group.Element("path", path => path
-                        .Attribute("d", "M " + F(cx - 3.8) + " " + F(cy) + " L " + F(cx - 1) + " " + F(cy + 3) + " L " + F(cx + 4.4) + " " + F(cy - 3.6))
+                        .Attribute("d", "M " + F(check[0].X) + " " + F(check[0].Y) + " L " + F(check[1].X) + " " + F(check[1].Y) + " L " + F(check[2].X) + " " + F(check[2].Y))
                         .Attribute("fill", "none")
                         .Attribute("stroke", "#FFFFFF")
-                        .Attribute("stroke-width", 1.8)
+                        .Attribute("stroke-width", NodeStatusBadgeCheckStrokeWidth)
                         .Attribute("stroke-linecap", "round")
                         .Attribute("stroke-linejoin", "round"));
                 }

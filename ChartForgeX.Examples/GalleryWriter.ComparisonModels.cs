@@ -111,9 +111,10 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct SvgHealth {
-        public SvgHealth(int visualNodes, int textNodes, double minimumTextFontSize, int tinyTextNodes, int strokedNodes, double minimumStrokeWidth, int tinyStrokeNodes, int markerNodes, double minimumMarkerRadius, int tinyMarkerNodes, int clippedTextNodes, int nearEdgeTextNodes) {
+        public SvgHealth(int visualNodes, int textNodes, int premiumStrokeNodes, double minimumTextFontSize, int tinyTextNodes, int strokedNodes, double minimumStrokeWidth, int tinyStrokeNodes, int markerNodes, double minimumMarkerRadius, int tinyMarkerNodes, int clippedTextNodes, int nearEdgeTextNodes) {
             VisualNodes = visualNodes;
             TextNodes = textNodes;
+            PremiumStrokeNodes = premiumStrokeNodes;
             MinimumTextFontSize = minimumTextFontSize;
             TinyTextNodes = tinyTextNodes;
             StrokedNodes = strokedNodes;
@@ -129,6 +130,8 @@ public static partial class GalleryWriter {
         public int VisualNodes { get; }
 
         public int TextNodes { get; }
+
+        public int PremiumStrokeNodes { get; }
 
         public double MinimumTextFontSize { get; }
 

@@ -5,6 +5,7 @@ using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using ChartForgeX.Topology;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
@@ -115,6 +116,39 @@ internal static partial class SmokeTests {
         var rightNodeWidth = double.Parse(GetStringAttribute(tree, "data-cfx-label=\"Stale record cleanup\"", "width"), CultureInfo.InvariantCulture);
         Assert(leftNodeX >= 90, "Tree root nodes should keep left breathing room inside the plot frame.");
         Assert(rightNodeX + rightNodeWidth <= 990, "Tree leaf nodes should keep right breathing room inside the plot frame.");
+        Assert(tree.Contains("data-cfx-role=\"tree-link-ambient-halo\"", StringComparison.Ordinal) && tree.Contains("data-cfx-role=\"tree-link-highlight\"", StringComparison.Ordinal), "Tree links should use the shared premium stroke layers instead of a single flat path.");
+        Assert(tree.Contains("class=\"cfx-premium-stroke\"", StringComparison.Ordinal), "Tree links should opt into the shared non-scaling premium stroke class.");
+        Assert(tree.Contains("data-cfx-role=\"tree-node-label\"", StringComparison.Ordinal) && tree.Contains("stroke-opacity=\"0.56\"", StringComparison.Ordinal), "Tree labels should use a softer surface-colored halo instead of heavy opposite-color outlines.");
+    }
+
+    private static void SharedRoutePolishReachesTopologyAndMapOutputs() {
+        var topology = CreateSampleTopologyChart().ToSvg();
+        Assert(topology.Contains("data-cfx-role=\"topology-edge-path-halo\"", StringComparison.Ordinal), "Topology routes should use the shared premium route halo layer.");
+        Assert(topology.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal), "Topology routes should use the shared premium route highlight layer.");
+        Assert(topology.Contains("class=\"cfx-topology__edge cfx-premium-stroke", StringComparison.Ordinal), "Topology SVG routes should opt into the same premium stroke class as charts.");
+        var cssColorTopology = CreateSampleTopologyChart().WithEdgeColor("amer-emea", "var(--directory-edge)").ToSvg();
+        Assert(cssColorTopology.Contains("stroke=\"var(--directory-edge)\"", StringComparison.Ordinal) && !cssColorTopology.Contains("stroke=\"#2563EB\"", StringComparison.Ordinal), "Topology SVG routes should preserve caller-supplied CSS edge colors instead of substituting the fallback accent.");
+        var cssColorLayeredTopology = CreateSampleTopologyChart().WithEdgeColor("amer-emea", "var(--directory-edge)").ToSvg(new TopologyRenderOptions().WithLuminousTopologyEdges());
+        Assert(cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-path-halo\"", StringComparison.Ordinal) && cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal) && cssColorLayeredTopology.Contains("stroke=\"var(--directory-edge)\"", StringComparison.Ordinal), "Topology SVG routes should keep configured premium layers when caller edge colors use CSS syntax.");
+        var plainEdgeTopology = CreateSampleTopologyChart().ToSvg(new TopologyRenderOptions().WithPlainTopologyEdges());
+        Assert(!plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-path-halo\"", StringComparison.Ordinal) && !plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal) && CountOccurrences(plainEdgeTopology, "data-cfx-role=\"topology-edge-path\"") == 2, "Topology edge polish should be configurable down to crisp single-stroke route lines.");
+        var floatingLabelTopology = CreateSampleTopologyChart().ToSvg(new TopologyRenderOptions { VisualStyle = TopologyVisualStyle.MonitoringDashboard, IncludeEdgeLabelBackplates = false });
+        Assert(floatingLabelTopology.Contains("data-cfx-halo=\"true\"", StringComparison.Ordinal), "Topology floating edge labels should keep explicit readable halo metadata.");
+        Assert(CreateSampleTopologyChart().ToPng().Length > 64, "Premium topology route polish should render in PNG output.");
+
+        var mapChart = Chart.Create()
+            .WithSize(520, 320)
+            .WithMapViewport(ChartMapViewport.Europe())
+            .WithDataLabels()
+            .AddDottedMap("Revenue", new[] {
+                new ChartMapPoint("Poland", 19.1451, 51.9194, 142, ChartColor.FromHex("#DC2626")),
+                new ChartMapPoint("Germany", 10.4515, 51.1657, 214, ChartColor.FromHex("#22C55E")),
+                new ChartMapPoint("Spain", -3.7038, 40.4168, 96, ChartColor.FromHex("#F59E0B"))
+            });
+        var map = mapChart.ToSvg("premium-map");
+        Assert(map.Contains("data-cfx-role=\"dotted-map-label-leader-halo\"", StringComparison.Ordinal), "Dotted-map label leaders should share premium route halo styling.");
+        Assert(CountOccurrences(map, "data-cfx-role=\"dotted-map-label-leader\"") == 3, "Dotted-map foreground leader metadata should stay stable while premium layers are added.");
+        Assert(mapChart.ToPng().Length > 64, "Premium dotted-map leader polish should render in PNG output.");
     }
 
     private static void MetricStatusBarsRespectRoundedCards() {

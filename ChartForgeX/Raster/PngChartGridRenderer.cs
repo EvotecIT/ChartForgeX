@@ -35,8 +35,8 @@ public sealed class PngChartGridRenderer {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
             var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) DrawStyledText(output, grid.Padding, Math.Max(0, grid.Padding - titleFontSize * 0.3), FitText(grid.Title, titleFontSize, headerWidth), grid.TitleStyle, theme.Text, titleFontSize, emphasized: true);
-            if (grid.Subtitle.Length > 0) DrawStyledText(output, grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize * 0.3, FitText(grid.Subtitle, subtitleFontSize, headerWidth), grid.SubtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
+            if (grid.Title.Length > 0) DrawStyledText(output, grid.Padding, Math.Max(0, grid.Padding - titleFontSize * 0.3), ChartTextFitting.TrimEnd(grid.Title, titleFontSize, headerWidth, MeasureEmphasizedText), grid.TitleStyle, theme.Text, titleFontSize, emphasized: true);
+            if (grid.Subtitle.Length > 0) DrawStyledText(output, grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize * 0.3, ChartTextFitting.TrimEnd(grid.Subtitle, subtitleFontSize, headerWidth, MeasureText), grid.SubtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
         }
 
         foreach (var cell in layout.Cells) {
@@ -60,19 +60,8 @@ public sealed class PngChartGridRenderer {
         canvas.DrawLine(x, y + fontSize + 2, x + width, y + fontSize + 2, color, Math.Max(1, fontSize / 13.0));
     }
 
-    private static string FitText(string value, double fontSize, double maxWidth) {
-        if (string.IsNullOrEmpty(value) || RgbaCanvas.MeasureTextWidth(value, fontSize, null) <= maxWidth) return value;
-        const string suffix = "...";
-        if (RgbaCanvas.MeasureTextWidth(suffix, fontSize, null) > maxWidth) return string.Empty;
-        var low = 0;
-        var high = value.Length;
-        while (low < high) {
-            var mid = (low + high + 1) / 2;
-            if (RgbaCanvas.MeasureTextWidth(value.Substring(0, mid) + suffix, fontSize, null) <= maxWidth) low = mid;
-            else high = mid - 1;
-        }
+    private static double MeasureText(string text, double fontSize) => RgbaCanvas.MeasureTextWidth(text, fontSize, null);
 
-        return value.Substring(0, low) + suffix;
-    }
+    private static double MeasureEmphasizedText(string text, double fontSize) => RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null);
 
 }

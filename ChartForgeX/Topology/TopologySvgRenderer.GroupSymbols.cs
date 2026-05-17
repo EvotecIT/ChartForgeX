@@ -11,15 +11,15 @@ public sealed partial class TopologySvgRenderer {
             parent.Element("circle", circle => circle
                 .Attribute("cx", cx)
                 .Attribute("cy", cy)
-                .Attribute("r", 5.8)
+                .Attribute("r", GroupSymbolGlobeRadius)
                 .Attribute("fill", "none")
                 .Attribute("stroke", color)
-                .Attribute("stroke-width", 1.3));
+                .Attribute("stroke-width", GroupSymbolGlobeOuterStrokeWidth));
             parent.Element("path", path => path
-                .Attribute("d", "M " + F(cx - 5.2) + " " + F(cy) + " H " + F(cx + 5.2) + " M " + F(cx) + " " + F(cy - 5.8) + " C " + F(cx - 3.2) + " " + F(cy - 2.6) + " " + F(cx - 3.2) + " " + F(cy + 2.6) + " " + F(cx) + " " + F(cy + 5.8) + " M " + F(cx) + " " + F(cy - 5.8) + " C " + F(cx + 3.2) + " " + F(cy - 2.6) + " " + F(cx + 3.2) + " " + F(cy + 2.6) + " " + F(cx) + " " + F(cy + 5.8))
+                .Attribute("d", "M " + F(cx - GroupSymbolGlobeHorizontalRadius) + " " + F(cy) + " H " + F(cx + GroupSymbolGlobeHorizontalRadius) + " M " + F(cx) + " " + F(cy - GroupSymbolGlobeRadius) + " C " + F(cx - GroupSymbolGlobeMeridianRadius) + " " + F(cy - 2.6) + " " + F(cx - GroupSymbolGlobeMeridianRadius) + " " + F(cy + 2.6) + " " + F(cx) + " " + F(cy + GroupSymbolGlobeRadius) + " M " + F(cx) + " " + F(cy - GroupSymbolGlobeRadius) + " C " + F(cx + GroupSymbolGlobeMeridianRadius) + " " + F(cy - 2.6) + " " + F(cx + GroupSymbolGlobeMeridianRadius) + " " + F(cy + 2.6) + " " + F(cx) + " " + F(cy + GroupSymbolGlobeRadius))
                 .Attribute("fill", "none")
                 .Attribute("stroke", color)
-                .Attribute("stroke-width", 1.1)
+                .Attribute("stroke-width", GroupSymbolGlobeInnerStrokeWidth)
                 .Attribute("stroke-linecap", "round"));
             return;
         }
@@ -31,9 +31,10 @@ public sealed partial class TopologySvgRenderer {
             parent.Element("circle", circle => circle
                 .Attribute("cx", cx)
                 .Attribute("cy", cy)
-                .Attribute("r", 4)
+                .Attribute("r", GroupSymbolFallbackRadius)
                 .Attribute("fill", "none")
-                .Attribute("stroke", color));
+                .Attribute("stroke", color)
+                .Attribute("stroke-width", GroupSymbolFallbackStrokeWidth));
             return;
         }
 
@@ -48,22 +49,22 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static bool AddGroupIconSymbol(SvgElement parent, TopologyIconDefinition icon, double cx, double cy, string color, string prefix, TopologyRenderOptions options) {
-        if (TryDrawIconArtwork(parent, icon.Artwork, prefix, cx, cy, 20)) return true;
+        if (TryDrawIconArtwork(parent, icon.Artwork, prefix, cx, cy, GroupSymbolArtworkSize)) return true;
         if (icon.Shape == TopologyIconShape.Cloud) {
             parent.Element("circle", circle => circle
-                .Attribute("cx", cx - 3)
-                .Attribute("cy", cy + 1)
-                .Attribute("r", 4.2)
+                .Attribute("cx", cx + GroupSymbolCloudLeftOffsetX)
+                .Attribute("cy", cy + GroupSymbolCloudLeftOffsetY)
+                .Attribute("r", GroupSymbolCloudLeftRadius)
                 .Attribute("fill", "none")
                 .Attribute("stroke", color)
-                .Attribute("stroke-width", 1.3));
+                .Attribute("stroke-width", GroupSymbolCloudStrokeWidth));
             parent.Element("circle", circle => circle
-                .Attribute("cx", cx + 3)
-                .Attribute("cy", cy - 1)
-                .Attribute("r", 5)
+                .Attribute("cx", cx + GroupSymbolCloudRightOffsetX)
+                .Attribute("cy", cy + GroupSymbolCloudRightOffsetY)
+                .Attribute("r", GroupSymbolCloudRightRadius)
                 .Attribute("fill", "none")
                 .Attribute("stroke", color)
-                .Attribute("stroke-width", 1.3));
+                .Attribute("stroke-width", GroupSymbolCloudStrokeWidth));
             return true;
         }
 
