@@ -7,9 +7,9 @@ namespace ChartForgeX.Rendering;
 
 internal static class ChartRouteVisualStyles {
     public static ChartLineVisualStyle TreeLink() => ChartLineVisualStyle.Premium()
-        .WithAmbientHalo(0.075, 7.5)
-        .WithHalo(0.18, 3.8)
-        .WithHighlight(0.12, 0.28);
+        .WithAmbientHalo(0.018, 2.6)
+        .WithHalo(0.070, 1.4)
+        .WithHighlight(0.040, 0.18);
 
     public static ChartLineVisualStyle TopologyEdge(bool monitoringStyle, bool muted, bool selected) {
         if (!monitoringStyle) return ChartLineVisualStyle.Premium()
@@ -27,9 +27,9 @@ internal static class ChartRouteVisualStyles {
     }
 
     public static ChartLineVisualStyle DottedMapLeader() => ChartLineVisualStyle.Premium()
-        .WithAmbientHalo(0.025, 3.2)
-        .WithHalo(0.090, 1.8)
-        .WithHighlight(0.055, 0.28);
+        .WithAmbientHalo(0.012, 1.8)
+        .WithHalo(0.052, 1.0)
+        .WithHighlight(0.030, 0.18);
 
     public static ChartLeaderVisualStyle TopologyEdgeLabelLeader(bool monitoringStyle) => monitoringStyle
         ? new ChartLeaderVisualStyle(0.90, 4.0, 0.48, 1.35, 3.0, 4.0)

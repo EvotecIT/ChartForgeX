@@ -102,7 +102,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <returns>The current render options.</returns>
     public static TopologyRenderOptions WithPlainTopologyEdges(this TopologyRenderOptions options) =>
-        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Premium().WithAmbientHalo(0, 0).WithHalo(0, 0).WithHighlight(0, 0.30));
+        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Plain());
 
     /// <summary>
     /// Uses a stronger luminous topology edge style for dark dashboards and deliberate emphasis.
@@ -110,7 +110,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <returns>The current render options.</returns>
     public static TopologyRenderOptions WithLuminousTopologyEdges(this TopologyRenderOptions options) =>
-        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Premium().WithAmbientHalo(0.045, 5.8).WithHalo(0.13, 3.0).WithHighlight(0.10, 0.28));
+        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Luminous().WithAmbientHalo(0.045, 5.8).WithHalo(0.13, 3.0).WithHighlight(0.10, 0.28));
 
     /// <summary>
     /// Applies the reusable monitoring-dashboard visual treatment used for dense topology and geographic monitoring views.

@@ -6,12 +6,12 @@ namespace ChartForgeX.Core;
 /// Defines reusable visual tokens for line, area boundary, trend, and slope strokes.
 /// </summary>
 public sealed class ChartLineVisualStyle {
-    private double _ambientHaloOpacity = 0.055;
-    private double _ambientHaloStrokeExtra = 10.0;
-    private double _haloOpacity = 0.14;
-    private double _haloStrokeExtra = 5.0;
-    private double _highlightOpacity = 0.13;
-    private double _highlightStrokeRatio = 0.30;
+    private double _ambientHaloOpacity = 0.014;
+    private double _ambientHaloStrokeExtra = 2.4;
+    private double _haloOpacity = 0.055;
+    private double _haloStrokeExtra = 1.2;
+    private double _highlightOpacity = 0.035;
+    private double _highlightStrokeRatio = 0.18;
 
     /// <summary>
     /// Gets or sets the opacity used for the widest soft color halo.
@@ -83,9 +83,33 @@ public sealed class ChartLineVisualStyle {
     }
 
     /// <summary>
-    /// Creates the premium default line style used by dashboard and report charts.
+    /// Creates the premium default line style used by dashboard and report charts. The default keeps lines crisp with subtle polish rather than glow.
     /// </summary>
     public static ChartLineVisualStyle Premium() => new();
+
+    /// <summary>
+    /// Creates a plain single-stroke line style without halo or highlight layers.
+    /// </summary>
+    public static ChartLineVisualStyle Plain() => new() {
+        AmbientHaloOpacity = 0,
+        AmbientHaloStrokeExtra = 0,
+        HaloOpacity = 0,
+        HaloStrokeExtra = 0,
+        HighlightOpacity = 0,
+        HighlightStrokeRatio = 0.30
+    };
+
+    /// <summary>
+    /// Creates a stronger luminous line style for deliberate glow-heavy dashboard treatments.
+    /// </summary>
+    public static ChartLineVisualStyle Luminous() => new() {
+        AmbientHaloOpacity = 0.055,
+        AmbientHaloStrokeExtra = 10.0,
+        HaloOpacity = 0.14,
+        HaloStrokeExtra = 5.0,
+        HighlightOpacity = 0.13,
+        HighlightStrokeRatio = 0.30
+    };
 
     /// <summary>
     /// Creates the previous simpler line style with only a readable color halo.

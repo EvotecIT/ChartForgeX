@@ -91,6 +91,7 @@ internal static partial class SmokeTests {
         ("Axis visibility can be configured independently", AxisVisibilityCanBeConfiguredIndependently),
         ("Smooth series render as Bezier paths", SmoothSeriesRenderAsBezierPaths),
         ("Line visual style is reusable and configurable", LineVisualStyleIsReusableAndConfigurable),
+        ("Line visual style defaults stay crisp and glow is opt-in", LineVisualStyleDefaultsStayCrispAndGlowIsOptIn),
         ("PNG scatter does not connect points", PngScatterDoesNotConnectPoints),
         ("Step line series render as stair steps", StepLineSeriesRenderAsStairSteps),
         ("Step area series render as stair-step areas", StepAreaSeriesRenderAsStairStepAreas),

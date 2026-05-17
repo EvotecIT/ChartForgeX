@@ -4,11 +4,11 @@ internal static class ChartVisualPrimitives {
     public const string SvgGuideStrokeClass = "cfx-guide-stroke";
     public const string SvgPremiumStrokeClass = "cfx-premium-stroke";
     public const double StrokeHaloOpacity = 0.14;
-    public const double LineHaloStrokeExtra = 5;
-    public const double LineAmbientHaloOpacity = 0.055;
-    public const double LineAmbientHaloStrokeExtra = 10;
-    public const double LineHighlightOpacity = 0.13;
-    public const double LineHighlightStrokeRatio = 0.30;
+    public const double LineHaloStrokeExtra = 1.2;
+    public const double LineAmbientHaloOpacity = 0.014;
+    public const double LineAmbientHaloStrokeExtra = 2.4;
+    public const double LineHighlightOpacity = 0.035;
+    public const double LineHighlightStrokeRatio = 0.18;
     public const double CardSurfaceInset = 14;
     public const double CardBorderInset = 0.5;
     public const double CardInnerHighlightInset = 1.5;
