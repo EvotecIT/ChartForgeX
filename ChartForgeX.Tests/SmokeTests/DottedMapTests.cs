@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
 
@@ -24,7 +25,9 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains("data-cfx-role=\"legend\"", StringComparison.Ordinal), "Dotted maps should not emit generic series legends.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-graticule\"") == 5, "Dotted maps should render subtle longitude and latitude guide lines.");
         Assert(svg.Contains("data-cfx-role=\"dotted-map-base-layer\" clip-path=\"url(#", StringComparison.Ordinal), "Dotted maps should clip geography and route base layers to the plot frame.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-land-dot\"") > 1000, "Dotted maps should render a recognizable dotted land layer from world geometry.");
+        Assert(!svg.Contains("data-cfx-role=\"dotted-map-land-dot\"", StringComparison.Ordinal), "Light world maps should avoid the dotted land texture because it reads poorly on white report surfaces.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-land-area\"") > 100, "World dotted maps should include a quiet land-area layer so the map remains readable on light report surfaces.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-boundary\"") > 100, "World dotted maps should render coastline and country boundary paths rather than only a sparse dot texture.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-point\"") == 3, "Dotted maps should render one highlighted point per map item.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-point-halo\"") == 3, "Dotted maps should render a soft emphasis halo for each highlighted point.");
         Assert(svg.Contains("data-cfx-label=\"Indonesia\"", StringComparison.Ordinal), "Dotted map points should expose labels.");
@@ -34,6 +37,11 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("<title>Indonesia: 0.789 S, 113.921 E</title>", StringComparison.Ordinal), "Dotted map points should expose native SVG hover titles.");
         Assert(svg.Contains("class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"dotted-map-point\"", StringComparison.Ordinal), "Dotted map points should be keyboard-focusable interactive SVG regions.");
         Assert(svg.Contains("fill=\"#22C55E\"", StringComparison.Ordinal), "Dotted map points should honor per-point colors.");
+        var darkSvg = Chart.Create()
+            .WithTheme(ChartTheme.ReportDark())
+            .AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) })
+            .ToSvg();
+        Assert(CountOccurrences(darkSvg, "data-cfx-role=\"dotted-map-land-dot\"") > 1000, "Dark world maps can keep the dotted land texture because it remains legible on dark report surfaces.");
         Assert(chart.ToPng().Length > 64, "Dotted maps should render PNG output.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddDottedMap("Empty", Array.Empty<ChartMapPoint>()), "Dotted maps should reject empty inputs.");
         AssertThrows<ArgumentException>(() => new ChartMapPoint(" ", 0, 0), "Map points should reject empty labels.");
@@ -135,12 +143,9 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         var width = GetAttribute(svg, "<svg", "width");
         var height = GetAttribute(svg, "<svg", "height");
-        var west = GetAttribute(svg, "data-cfx-role=\"dotted-map-land-dot\"", "cx");
-        var top = GetAttribute(svg, "data-cfx-role=\"dotted-map-land-dot\"", "cy");
         var centerY = GetAttribute(svg, "data-cfx-label=\"Equator\"", "cy");
         Assert(centerY > height * 0.30 && centerY < height * 0.70, "Dotted maps should center the fitted world band in tall cards.");
-        Assert(west > 0 && west < width, "Dotted map fitted longitude coordinates should remain inside the SVG viewport.");
-        Assert(top > 0 && top < height, "Dotted map fitted latitude coordinates should remain inside the SVG viewport.");
+        Assert(width > 0 && CountOccurrences(svg, "data-cfx-role=\"dotted-map-land-area\"") > 100, "Dotted map fitted geography should remain present in aspect-fitted SVG output.");
         Assert(chart.ToPng().Length > 64, "Aspect-fitted dotted maps should render PNG output.");
     }
 
@@ -171,7 +176,7 @@ internal static partial class SmokeTests {
             .WithMapViewport(ChartMapViewport.Poland())
             .AddDottedMap("Cities", new[] { new ChartMapPoint("Warsaw", 21.0122, 52.2297) })
             .ToSvg();
-        Assert(CountOccurrences(polandSvg, "data-cfx-role=\"dotted-map-land-dot\"") > 100, "Poland dotted maps should use a dedicated country-shaped land-dot layer instead of a sparse rectangular grid.");
+        Assert(!polandSvg.Contains("data-cfx-role=\"dotted-map-land-dot\"", StringComparison.Ordinal), "Light country-focused dotted maps should avoid dot texture when a viewport silhouette is available.");
         Assert(polandSvg.Contains("data-cfx-role=\"dotted-map-viewport-shape\" data-cfx-viewport=\"Poland\"", StringComparison.Ordinal), "Country-focused dotted maps should render a subtle viewport silhouette so the geography remains readable in small previews.");
         Assert(Chart.Create().WithMapViewport(ChartMapViewport.Poland()).AddDottedMap("Cities", new[] { new ChartMapPoint("Warsaw", 21.0122, 52.2297) }).ToPng().Length > 64, "Country-focused dotted map viewports should render PNG output.");
         AssertThrows<ArgumentException>(() => new ChartMapViewport(" ", -10, 10, -10, 10), "Map viewports should reject empty names.");
@@ -272,5 +277,32 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddMapConnector("Bad", -181, 0, 1, 1), "Map connectors should reject invalid coordinates.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddMapRouteBetweenPoints("Bad", "Spain", "Warsaw"), "Point-bound map routes should require dotted map points to exist first.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }).AddMapRouteBetweenPoints("Bad", "Spain", "Missing"), "Point-bound map routes should reject unknown point labels.");
+
+        var seaRoute = Chart.Create()
+            .WithSize(760, 420)
+            .WithMapViewport(ChartMapViewport.World())
+            .AddDottedMap("Ports", new[] {
+                new ChartMapPoint("Rotterdam", 4.4792, 51.9244),
+                new ChartMapPoint("Singapore", 103.8198, 1.3521)
+            })
+            .AddMapRoute("Rotterdam to Singapore via Suez", new[] {
+                new ChartMapPoint("Rotterdam", 4.4792, 51.9244),
+                new ChartMapPoint("Gibraltar", -5.3536, 36.1408),
+                new ChartMapPoint("Suez Canal", 32.5498, 29.9668),
+                new ChartMapPoint("Singapore", 103.8198, 1.3521)
+            }, ChartColor.FromHex("#2563EB"))
+            .AddMapRoute("Rotterdam to Singapore via Cape", new[] {
+                new ChartMapPoint("Rotterdam", 4.4792, 51.9244),
+                new ChartMapPoint("Gibraltar", -5.3536, 36.1408),
+                new ChartMapPoint("Cape of Good Hope", 18.4741, -34.3587),
+                new ChartMapPoint("Singapore", 103.8198, 1.3521)
+            }, ChartColor.FromHex("#F97316"));
+        var seaSvg = seaRoute.ToSvg();
+        Assert(seaSvg.Contains("data-cfx-route-kind=\"waypoint\"", StringComparison.Ordinal), "Waypoint map routes should expose that the route uses ordered geographic waypoints.");
+        Assert(CountOccurrences(seaSvg, "data-cfx-waypoint-count=\"4\"") == 2, "Sea-route alternatives should expose their waypoint counts for SVG QA and host inspectors.");
+        Assert(seaSvg.Contains("data-cfx-label=\"Rotterdam to Singapore via Suez\"", StringComparison.Ordinal), "Sea-route maps should support Suez-style waypoint labels.");
+        Assert(seaSvg.Contains("data-cfx-label=\"Rotterdam to Singapore via Cape\"", StringComparison.Ordinal), "Sea-route maps should support Cape-style waypoint labels.");
+        Assert(seaSvg.Contains(" L ", StringComparison.Ordinal), "Waypoint map routes should render deterministic polyline segments instead of a single endpoint arc.");
+        Assert(seaRoute.ToPng().Length > 64, "Waypoint map routes should preserve PNG parity.");
     }
 }

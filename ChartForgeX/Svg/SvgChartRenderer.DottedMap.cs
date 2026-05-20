@@ -21,7 +21,7 @@ public sealed partial class SvgChartRenderer {
         var landOpacity = ChartDottedMapSurface.LandDotOpacity(t.PlotBackground);
         var reservedLabels = new List<ChartLabelBounds>();
         var visiblePoints = series.Points.Count(point => IsVisibleMapCoordinate(viewport, point.X, point.Y));
-        var visibleConnectors = chart.Options.MapConnectors.Count(item => IsVisibleMapCoordinate(viewport, item.FromLongitude, item.FromLatitude) && IsVisibleMapCoordinate(viewport, item.ToLongitude, item.ToLatitude));
+        var visibleConnectors = chart.Options.MapConnectors.Count(item => IsVisibleMapConnector(viewport, item));
         var valuedPointCount = DottedMapValuedPointCount(series);
         var valueRange = GetDottedMapValueRange(series);
         var minLongitude = series.Points.Min(point => point.X);
@@ -45,7 +45,7 @@ public sealed partial class SvgChartRenderer {
                 var latitude = land.Y + offset.Y;
                 if (!IsInsideMapViewport(viewport, longitude, latitude)) continue;
                 if (!IsInsideDottedMapViewportShape(viewport, longitude, latitude)) continue;
-                if (!ShouldDrawDottedMapLandDot(viewport, longitude, latitude)) continue;
+                if (!ShouldDrawDottedMapLandDot(viewport, t.PlotBackground, longitude, latitude)) continue;
                 var x = ProjectMapX(map, viewport, longitude);
                 var y = ProjectMapY(map, viewport, latitude);
                 AppendSvg(sb, 256, writer => writer.StartElement("circle").Attribute("data-cfx-role", "dotted-map-land-dot").Attribute("cx", x).Attribute("cy", y).Attribute("r", DottedMapLandDotRadius(dot, viewport)).Attribute("fill", landColor.ToCss()).Attribute("opacity", landOpacity).EndEmptyElement().Line());
@@ -141,18 +141,26 @@ public sealed partial class SvgChartRenderer {
         var valueRange = GetDottedMapValueRange(series);
         for (var i = 0; i < chart.Options.MapConnectors.Count; i++) {
             var connector = chart.Options.MapConnectors[i];
-            if (!IsVisibleMapCoordinate(viewport, connector.FromLongitude, connector.FromLatitude) || !IsVisibleMapCoordinate(viewport, connector.ToLongitude, connector.ToLatitude)) continue;
-            var x1 = ProjectMapX(map, viewport, connector.FromLongitude);
-            var y1 = ProjectMapY(map, viewport, connector.FromLatitude);
-            var x2 = ProjectMapX(map, viewport, connector.ToLongitude);
-            var y2 = ProjectMapY(map, viewport, connector.ToLatitude);
+            if (!IsVisibleMapConnector(viewport, connector)) continue;
+            var routePoints = DottedMapConnectorProjectedRoute(connector, viewport, map);
+            var x1 = routePoints[0].X;
+            var y1 = routePoints[0].Y;
+            var x2 = routePoints[routePoints.Count - 1].X;
+            var y2 = routePoints[routePoints.Count - 1].Y;
             var color = connector.Color ?? series.Color ?? t.Warning;
             var control = DottedMapConnectorControlPoint(x1, y1, x2, y2, map, dot);
             var fromTrim = DottedMapEndpointTrim(series, viewport, connector.FromLongitude, connector.FromLatitude, dot, valueRange);
             var toTrim = DottedMapEndpointTrim(series, viewport, connector.ToLongitude, connector.ToLatitude, dot, valueRange);
-            var renderedFrom = MoveDottedMapConnectorEndpoint(x1, y1, control.X, control.Y, fromTrim);
-            var renderedTo = MoveDottedMapConnectorEndpoint(x2, y2, control.X, control.Y, toTrim);
-            var renderedD = $"M {F(renderedFrom.X)} {F(renderedFrom.Y)} Q {F(control.X)} {F(control.Y)} {F(renderedTo.X)} {F(renderedTo.Y)}";
+            var renderedFrom = connector.RoutePoints.Length > 0
+                ? MoveDottedMapConnectorEndpoint(x1, y1, routePoints[Math.Min(1, routePoints.Count - 1)].X, routePoints[Math.Min(1, routePoints.Count - 1)].Y, fromTrim)
+                : MoveDottedMapConnectorEndpoint(x1, y1, control.X, control.Y, fromTrim);
+            var renderedTo = connector.RoutePoints.Length > 0
+                ? MoveDottedMapConnectorEndpoint(x2, y2, routePoints[Math.Max(0, routePoints.Count - 2)].X, routePoints[Math.Max(0, routePoints.Count - 2)].Y, toTrim)
+                : MoveDottedMapConnectorEndpoint(x2, y2, control.X, control.Y, toTrim);
+            routePoints[0] = renderedFrom;
+            routePoints[routePoints.Count - 1] = renderedTo;
+            var smoothRoutePoints = connector.RoutePoints.Length > 0 ? DottedMapSmoothRoute(routePoints) : routePoints;
+            var renderedD = DottedMapConnectorPath(smoothRoutePoints, control, connector.RoutePoints.Length > 0);
             var summary = connector.Label + ": " + DottedMapCoordinateText(connector.FromLatitude, "N", "S") + ", " + DottedMapCoordinateText(connector.FromLongitude, "E", "W") + " to " + DottedMapCoordinateText(connector.ToLatitude, "N", "S") + ", " + DottedMapCoordinateText(connector.ToLongitude, "E", "W");
             var strokeWidth = Math.Max(1.2, dot * 0.78);
             var focusStrokeWidth = strokeWidth + Math.Max(1.4, dot * 0.5);
@@ -169,6 +177,8 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-from-latitude", connector.FromLatitude)
                     .Attribute("data-cfx-to-longitude", connector.ToLongitude)
                     .Attribute("data-cfx-to-latitude", connector.ToLatitude)
+                    .Attribute("data-cfx-route-kind", connector.RoutePoints.Length > 0 ? "waypoint" : "arc")
+                    .Attribute("data-cfx-waypoint-count", connector.RoutePoints.Length)
                     .Attribute("data-cfx-rendered-from-x", renderedFrom.X)
                     .Attribute("data-cfx-rendered-from-y", renderedFrom.Y)
                     .Attribute("data-cfx-rendered-to-x", renderedTo.X)
@@ -192,7 +202,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-role", "dotted-map-connector-arrow")
                     .Attribute("data-cfx-connector", i)
                     .Attribute("data-cfx-label", connector.Label)
-                    .Attribute("d", BuildDottedMapConnectorArrowPath(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot))
+                    .Attribute("d", connector.RoutePoints.Length > 0 ? BuildDottedMapConnectorArrowPath(smoothRoutePoints, dot) : BuildDottedMapConnectorArrowPath(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot))
                     .Attribute("fill", color.ToCss())
                     .Attribute("fill-opacity", "0.78")
                     .Attribute("stroke", t.PlotBackground.ToCss())
@@ -203,7 +213,7 @@ public sealed partial class SvgChartRenderer {
                 writer.EndElement().Line();
             });
             if (ShouldDrawDataLabels(chart, series)) {
-                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
+                var labelPoint = connector.RoutePoints.Length > 0 ? DottedMapPolylinePoint(smoothRoutePoints, 0.36) : DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
                 AppendSvg(sb, 512, writer => writer.StartElement("text").Attribute("data-cfx-role", "dotted-map-connector-label").Attribute("data-cfx-connector", i).Attribute("data-cfx-label", connector.Label).Attribute("x", labelPoint.X).Attribute("y", labelPoint.Y + Math.Max(14, dot * 3.2)).Attribute("text-anchor", "middle").Attribute("fill", color.ToCss()).Attribute("stroke", t.PlotBackground.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke").Attribute("font-size", "12").Attribute("font-weight", "700").Text(label).EndElement().Line());
             }
@@ -313,7 +323,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var color = ChartDottedMapSurface.BoundaryColor(t.PlotBackground, t.MutedText);
         var opacity = ChartDottedMapSurface.BoundaryOpacity(t.PlotBackground);
-        var strokeWidth = Math.Max(0.65, dot * 0.26);
+        var strokeWidth = Math.Max(0.75, dot * 0.30);
         for (var lineIndex = 0; lineIndex < boundaries.Length; lineIndex++) {
             var line = boundaries[lineIndex];
             if (line.Length < 2) continue;
@@ -619,6 +629,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartPoint[][] DottedMapBoundaryLines(ChartMapViewport viewport) =>
+        IsWorldMapViewport(viewport) ? WorldMapDots.WorldBoundaries :
         IsNorthAmericaDottedMapViewport(viewport) ? WorldMapDots.NorthAmericaBoundaries :
         IsSouthAmericaDottedMapViewport(viewport) ? WorldMapDots.SouthAmericaBoundaries :
         IsAfricaDottedMapViewport(viewport) ? WorldMapDots.AfricaBoundaries :

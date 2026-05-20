@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -33,7 +34,7 @@ public sealed partial class PngChartRenderer {
                 var latitude = land.Y + offset.Y;
                 if (!IsInsideMapViewport(viewport, longitude, latitude)) continue;
                 if (!IsInsideDottedMapViewportShape(viewport, longitude, latitude)) continue;
-                if (!ShouldDrawDottedMapLandDot(viewport, longitude, latitude)) continue;
+                if (!ShouldDrawDottedMapLandDot(viewport, t.PlotBackground, longitude, latitude)) continue;
                 var x = ProjectMapX(map, viewport, longitude);
                 var y = ProjectMapY(map, viewport, latitude);
                 var dotRadius = DottedMapLandDotRadius(dot, viewport);
@@ -108,23 +109,38 @@ public sealed partial class PngChartRenderer {
         var t = chart.Options.Theme;
         var valueRange = GetDottedMapValueRange(series);
         foreach (var connector in chart.Options.MapConnectors) {
-            if (!IsVisibleMapCoordinate(viewport, connector.FromLongitude, connector.FromLatitude) || !IsVisibleMapCoordinate(viewport, connector.ToLongitude, connector.ToLatitude)) continue;
-            var x1 = ProjectMapX(map, viewport, connector.FromLongitude);
-            var y1 = ProjectMapY(map, viewport, connector.FromLatitude);
-            var x2 = ProjectMapX(map, viewport, connector.ToLongitude);
-            var y2 = ProjectMapY(map, viewport, connector.ToLatitude);
+            if (!IsVisibleMapConnector(viewport, connector)) continue;
+            var routePoints = DottedMapConnectorProjectedRoute(connector, viewport, map);
+            var x1 = routePoints[0].X;
+            var y1 = routePoints[0].Y;
+            var x2 = routePoints[routePoints.Count - 1].X;
+            var y2 = routePoints[routePoints.Count - 1].Y;
             var color = ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.62);
             var control = DottedMapConnectorControlPoint(x1, y1, x2, y2, map, dot);
             var fromTrim = DottedMapEndpointTrim(series, viewport, connector.FromLongitude, connector.FromLatitude, dot, valueRange);
             var toTrim = DottedMapEndpointTrim(series, viewport, connector.ToLongitude, connector.ToLatitude, dot, valueRange);
-            var renderedFrom = MoveDottedMapConnectorEndpoint(x1, y1, control.X, control.Y, fromTrim);
-            var renderedTo = MoveDottedMapConnectorEndpoint(x2, y2, control.X, control.Y, toTrim);
+            var renderedFrom = connector.RoutePoints.Length > 0
+                ? MoveDottedMapConnectorEndpoint(x1, y1, routePoints[Math.Min(1, routePoints.Count - 1)].X, routePoints[Math.Min(1, routePoints.Count - 1)].Y, fromTrim)
+                : MoveDottedMapConnectorEndpoint(x1, y1, control.X, control.Y, fromTrim);
+            var renderedTo = connector.RoutePoints.Length > 0
+                ? MoveDottedMapConnectorEndpoint(x2, y2, routePoints[Math.Max(0, routePoints.Count - 2)].X, routePoints[Math.Max(0, routePoints.Count - 2)].Y, toTrim)
+                : MoveDottedMapConnectorEndpoint(x2, y2, control.X, control.Y, toTrim);
+            routePoints[0] = renderedFrom;
+            routePoints[routePoints.Count - 1] = renderedTo;
             var strokeWidth = Math.Max(1.2, dot * 0.78);
-            DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, ApplyOpacity(t.PlotBackground, 0.72), strokeWidth + 3.2);
-            DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, color, strokeWidth);
-            c.FillPolygon(DottedMapConnectorArrowPoints(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot), ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.78));
+            if (connector.RoutePoints.Length > 0) {
+                var smoothRoutePoints = DottedMapSmoothRoute(routePoints);
+                c.DrawPolyline(smoothRoutePoints, ApplyOpacity(t.PlotBackground, 0.72), strokeWidth + 3.2);
+                c.DrawPolyline(smoothRoutePoints, color, strokeWidth);
+                c.FillPolygon(DottedMapConnectorArrowPoints(smoothRoutePoints, dot), ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.78));
+            } else {
+                DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, ApplyOpacity(t.PlotBackground, 0.72), strokeWidth + 3.2);
+                DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, color, strokeWidth);
+                c.FillPolygon(DottedMapConnectorArrowPoints(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot), ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.78));
+            }
+
             if (ShouldDrawDataLabels(chart, series)) {
-                var labelPoint = DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
+                var labelPoint = connector.RoutePoints.Length > 0 ? DottedMapPolylinePoint(DottedMapSmoothRoute(routePoints), 0.36) : DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
                 var textWidth = RgbaCanvas.MeasureTextEmphasizedWidth(label, 12, null);
                 c.FillRoundedRect(labelPoint.X - textWidth / 2 - 5, labelPoint.Y + Math.Max(8, dot * 1.7), textWidth + 10, 20, 9, ApplyOpacity(t.PlotBackground, 0.78));
@@ -138,6 +154,70 @@ public sealed partial class PngChartRenderer {
         return new ChartPoint(
             oneMinus * oneMinus * x1 + 2 * oneMinus * t * controlX + t * t * x2,
             oneMinus * oneMinus * y1 + 2 * oneMinus * t * controlY + t * t * y2);
+    }
+
+    private static List<ChartPoint> DottedMapConnectorProjectedRoute(ChartMapConnector connector, ChartMapViewport viewport, ChartRect map) {
+        var points = new List<ChartPoint>();
+        if (connector.RoutePoints.Length > 0) {
+            foreach (var point in connector.RoutePoints) points.Add(new ChartPoint(ProjectMapX(map, viewport, point.Longitude), ProjectMapY(map, viewport, point.Latitude)));
+            return points;
+        }
+
+        points.Add(new ChartPoint(ProjectMapX(map, viewport, connector.FromLongitude), ProjectMapY(map, viewport, connector.FromLatitude)));
+        points.Add(new ChartPoint(ProjectMapX(map, viewport, connector.ToLongitude), ProjectMapY(map, viewport, connector.ToLatitude)));
+        return points;
+    }
+
+    private static ChartPoint DottedMapPolylinePoint(IReadOnlyList<ChartPoint> points, double progress) {
+        if (points.Count == 0) return new ChartPoint(0, 0);
+        if (points.Count == 1) return points[0];
+        var total = 0.0;
+        for (var i = 0; i < points.Count - 1; i++) total += Distance(points[i], points[i + 1]);
+        if (total <= 0) return points[0];
+        var target = total * Clamp(progress, 0, 1);
+        var walked = 0.0;
+        for (var i = 0; i < points.Count - 1; i++) {
+            var segment = Distance(points[i], points[i + 1]);
+            if (walked + segment >= target) {
+                var t = (target - walked) / Math.Max(segment, 0.000001);
+                return new ChartPoint(points[i].X + (points[i + 1].X - points[i].X) * t, points[i].Y + (points[i + 1].Y - points[i].Y) * t);
+            }
+
+            walked += segment;
+        }
+
+        return points[points.Count - 1];
+    }
+
+    private static List<ChartPoint> DottedMapSmoothRoute(IReadOnlyList<ChartPoint> points) {
+        if (points.Count <= 2) return points.ToList();
+        var smoothed = new List<ChartPoint>();
+        for (var i = 0; i < points.Count - 1; i++) {
+            var previous = points[Math.Max(0, i - 1)];
+            var current = points[i];
+            var next = points[i + 1];
+            var following = points[Math.Min(points.Count - 1, i + 2)];
+            var steps = Math.Max(8, Math.Min(22, (int)Math.Ceiling(Distance(current, next) / 34.0)));
+            for (var step = 0; step < steps; step++) {
+                if (i > 0 || step > 0) {
+                    var t = step / (double)steps;
+                    smoothed.Add(CatmullRom(previous, current, next, following, t));
+                } else {
+                    smoothed.Add(current);
+                }
+            }
+        }
+
+        smoothed.Add(points[points.Count - 1]);
+        return smoothed;
+    }
+
+    private static ChartPoint CatmullRom(ChartPoint p0, ChartPoint p1, ChartPoint p2, ChartPoint p3, double t) {
+        var t2 = t * t;
+        var t3 = t2 * t;
+        var x = 0.5 * ((2 * p1.X) + (-p0.X + p2.X) * t + (2 * p0.X - 5 * p1.X + 4 * p2.X - p3.X) * t2 + (-p0.X + 3 * p1.X - 3 * p2.X + p3.X) * t3);
+        var y = 0.5 * ((2 * p1.Y) + (-p0.Y + p2.Y) * t + (2 * p0.Y - 5 * p1.Y + 4 * p2.Y - p3.Y) * t2 + (-p0.Y + 3 * p1.Y - 3 * p2.Y + p3.Y) * t3);
+        return new ChartPoint(x, y);
     }
 
     private static string CompactDottedMapConnectorLabel(string label) {
@@ -234,6 +314,36 @@ public sealed partial class PngChartRenderer {
         var perpY = unitX;
         return new[] {
             new ChartPoint(tipX, tipY),
+            new ChartPoint(baseX + perpX * arrowWidth / 2, baseY + perpY * arrowWidth / 2),
+            new ChartPoint(baseX - perpX * arrowWidth / 2, baseY - perpY * arrowWidth / 2)
+        };
+    }
+
+    private static ChartPoint[] DottedMapConnectorArrowPoints(IReadOnlyList<ChartPoint> routePoints, double dot) {
+        var tip = DottedMapPolylinePoint(routePoints, 0.63);
+        var before = DottedMapPolylinePoint(routePoints, 0.58);
+        var after = DottedMapPolylinePoint(routePoints, 0.68);
+        var dx = after.X - before.X;
+        var dy = after.Y - before.Y;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        if (length < 0.000001 && routePoints.Count >= 2) {
+            var previous = routePoints[Math.Max(0, routePoints.Count - 2)];
+            var last = routePoints[routePoints.Count - 1];
+            dx = last.X - previous.X;
+            dy = last.Y - previous.Y;
+            length = Math.Max(0.000001, Math.Sqrt(dx * dx + dy * dy));
+        }
+
+        var unitX = dx / length;
+        var unitY = dy / length;
+        var arrowLength = Math.Max(10, dot * 4.8);
+        var arrowWidth = Math.Max(6, dot * 2.4);
+        var baseX = tip.X - unitX * arrowLength;
+        var baseY = tip.Y - unitY * arrowLength;
+        var perpX = -unitY;
+        var perpY = unitX;
+        return new[] {
+            tip,
             new ChartPoint(baseX + perpX * arrowWidth / 2, baseY + perpY * arrowWidth / 2),
             new ChartPoint(baseX - perpX * arrowWidth / 2, baseY - perpY * arrowWidth / 2)
         };
@@ -476,6 +586,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartPoint[][] DottedMapBoundaryLines(ChartMapViewport viewport) =>
+        IsWorldMapViewport(viewport) ? WorldMapDots.WorldBoundaries :
         IsNorthAmericaDottedMapViewport(viewport) ? WorldMapDots.NorthAmericaBoundaries :
         IsSouthAmericaDottedMapViewport(viewport) ? WorldMapDots.SouthAmericaBoundaries :
         IsAfricaDottedMapViewport(viewport) ? WorldMapDots.AfricaBoundaries :
@@ -516,6 +627,21 @@ public sealed partial class PngChartRenderer {
 
     private static bool IsVisibleMapCoordinate(ChartMapViewport viewport, double longitude, double latitude) {
         return IsInsideMapViewport(viewport, longitude, latitude);
+    }
+
+    private static bool IsVisibleMapConnector(ChartMapViewport viewport, ChartMapConnector connector) {
+        if (connector.RoutePoints.Length == 0) return IsVisibleMapCoordinate(viewport, connector.FromLongitude, connector.FromLatitude) && IsVisibleMapCoordinate(viewport, connector.ToLongitude, connector.ToLatitude);
+        foreach (var point in connector.RoutePoints) {
+            if (!IsVisibleMapCoordinate(viewport, point.Longitude, point.Latitude)) return false;
+        }
+
+        return true;
+    }
+
+    private static double Distance(ChartPoint a, ChartPoint b) {
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
     }
 
     private static bool IsWorldMapViewport(ChartMapViewport viewport) {
