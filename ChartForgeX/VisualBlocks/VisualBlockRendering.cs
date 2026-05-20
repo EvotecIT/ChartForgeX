@@ -82,7 +82,7 @@ internal static partial class VisualBlockRendering {
                 if (segmentedMetric.Style == SegmentedMetricStyle.FunnelColumns && (item.Segments < 1 || item.Segments > 120)) throw new InvalidOperationException("Segmented metric funnel segment counts must be between one and one hundred twenty.");
             }
 
-            if (segmentedMetric.Style != SegmentedMetricStyle.ProgressRows && SegmentedTotal(segmentedMetric) <= 0) throw new InvalidOperationException("Segmented metric composition styles must include at least one positive item value.");
+            if (SegmentedMetricRequiresPositiveTotal(segmentedMetric.Style) && SegmentedTotal(segmentedMetric) <= 0) throw new InvalidOperationException("Segmented metric composition styles must include at least one positive item value.");
             return;
         }
 
@@ -400,6 +400,12 @@ internal static partial class VisualBlockRendering {
 
     public static bool SegmentedMetricRequiresMetric(SegmentedMetricStyle style) =>
         style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
+
+    public static bool SegmentedMetricRequiresPositiveTotal(SegmentedMetricStyle style) =>
+        style == SegmentedMetricStyle.CapsuleRing || style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
+
+    public static bool CanRenderLegendRow(double y, double rowHeight, double legendBottom) =>
+        y + rowHeight <= legendBottom + 1;
 
     public static IReadOnlyList<SegmentedMetricSlice> SegmentedSlices(SegmentedMetricBlock block) {
         var total = SegmentedTotal(block);

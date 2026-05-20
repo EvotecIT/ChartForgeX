@@ -21,7 +21,7 @@
 <rect data-cfx-role="segmented-metric-composition-segment" data-cfx-label="Revoked" data-cfx-value="24" data-cfx-pattern="None" data-cfx-share="0.087" x="614.722" y="148" width="66.195" height="30.6" rx="7" fill="#EF5DA8"/>
 <rect data-cfx-role="segmented-metric-composition-segment" data-cfx-label="Unknown" data-cfx-value="41" data-cfx-pattern="None" data-cfx-share="0.148" x="684.917" y="148" width="113.083" height="30.6" rx="7" fill="#6D83F2"/>
 </g>
-<g data-cfx-role="segmented-metric-composition">
+<g data-cfx-role="segmented-metric-composition" data-cfx-legend-y="196.6" data-cfx-row-height="30.35" data-cfx-legend-bottom="318">
 <rect data-cfx-role="segmented-metric-legend-swatch" x="22" y="204.775" width="14" height="14" rx="4" fill="#36C47D"/>
 <text data-cfx-role="visual-text" x="46" y="216.631" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Valid</text>
 <text data-cfx-role="visual-text" x="798" y="216.631" text-anchor="end" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="750">164  59%</text>

@@ -89,7 +89,7 @@
 <line data-cfx-role="segmented-metric-composition-pattern" data-cfx-pattern="DiagonalBackward" x1="640.909" y1="183" x2="654.364" y2="196.455" stroke="#fff" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round"/>
 <rect data-cfx-role="segmented-metric-composition-segment" data-cfx-label="Finish" data-cfx-value="4" data-cfx-pattern="None" data-cfx-share="0.182" x="658.364" y="183" width="139.636" height="34" rx="7" fill="#36C47D"/>
 </g>
-<g data-cfx-role="segmented-metric-composition">
+<g data-cfx-role="segmented-metric-composition" data-cfx-legend-y="235" data-cfx-row-height="33.667" data-cfx-legend-bottom="336">
 <rect data-cfx-role="segmented-metric-legend-swatch" x="22" y="244.833" width="14" height="14" rx="4" fill="#5EA2F6"/>
 <text data-cfx-role="visual-text" x="46" y="257.22" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">On Going</text>
 <text data-cfx-role="visual-text" x="798" y="257.22" text-anchor="end" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="750">12 Task  55%</text>

@@ -27,8 +27,8 @@ public sealed partial class SvgVisualBlockRenderer {
     private static void RenderCompositionLegend(SvgMarkupWriter writer, SegmentedMetricBlock card, ChartRect content, ref double y, double rowHeight, double legendBottom) {
         var theme = card.Options.Theme;
         var total = VisualBlockRendering.SegmentedTotal(card);
-        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-composition").EndStartElement().Line();
-        for (var i = 0; i < card.Items.Count && y < legendBottom + 1; i++) {
+        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-composition").Attribute("data-cfx-legend-y", y).Attribute("data-cfx-row-height", rowHeight).Attribute("data-cfx-legend-bottom", legendBottom).EndStartElement().Line();
+        for (var i = 0; i < card.Items.Count && VisualBlockRendering.CanRenderLegendRow(y, rowHeight, legendBottom); i++) {
             var segment = card.Items[i];
             var color = VisualBlockRendering.SegmentedItemColor(theme, segment, i);
             var swatchSize = Math.Max(8, Math.Min(14, rowHeight * 0.55));

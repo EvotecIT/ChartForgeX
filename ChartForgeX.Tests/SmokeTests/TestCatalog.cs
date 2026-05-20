@@ -150,6 +150,7 @@ internal static partial class SmokeTests {
         ("Chart grids support panel spans", ChartGridsSupportPanelSpans),
         ("Chart grid headers support text styles", ChartGridHeadersSupportTextStyles),
         ("Visual blocks render tables lists and metric cards", VisualBlocksRenderTablesListsAndMetricCards),
+        ("Visual block review regressions stay covered", VisualBlockReviewRegressionsStayCovered),
         ("Visual grid composes charts and visual blocks", VisualGridComposesChartsAndVisualBlocks),
         ("Visual blocks reject invalid inputs close to caller", VisualBlocksRejectInvalidInputsCloseToCaller),
         ("Explicit axis bounds affect SVG ticks", ExplicitAxisBoundsAffectSvgTicks),

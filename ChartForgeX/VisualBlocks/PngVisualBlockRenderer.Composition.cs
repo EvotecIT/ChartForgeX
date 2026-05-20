@@ -27,7 +27,7 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawCompositionLegend(RgbaCanvas canvas, SegmentedMetricBlock card, ChartRect content, ref double y, double rowHeight, double legendBottom) {
         var theme = card.Options.Theme;
         var total = VisualBlockRendering.SegmentedTotal(card);
-        for (var i = 0; i < card.Items.Count && y < legendBottom + 1; i++) {
+        for (var i = 0; i < card.Items.Count && VisualBlockRendering.CanRenderLegendRow(y, rowHeight, legendBottom); i++) {
             var segment = card.Items[i];
             var color = VisualBlockRendering.SegmentedItemColor(theme, segment, i);
             var swatchSize = Math.Max(8, Math.Min(14, rowHeight * 0.55));
