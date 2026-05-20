@@ -21,6 +21,10 @@ internal static class DashboardPatternExamples {
 
         Save(AppointmentOperationsGrid(scale), output, "dashboard-appointment-operations-grid");
         Save(ProjectProgressCard(scale), output, "dashboard-project-progress-card");
+        Save(ChannelShareCapsuleRing(scale), output, "dashboard-channel-share-capsule-ring");
+        Save(CertificateInventoryCompositionStrip(scale), output, "dashboard-certificate-inventory-composition-strip");
+        Save(ContentPerformanceRows(scale), output, "dashboard-content-performance-rows");
+        Save(ConversionFunnelColumns(scale), output, "dashboard-conversion-funnel-columns");
         Save(ProjectTaskCompositionCard(scale), output, "dashboard-project-task-composition-card");
         Save(ProjectTrackCard().WithPngOutputScale(pngOutputScale), output, "dashboard-project-track-card");
         Save(ProjectScheduleTimeline().WithPngOutputScale(pngOutputScale), output, "dashboard-project-schedule-timeline");
@@ -144,7 +148,7 @@ internal static class DashboardPatternExamples {
         .AddStatusItem("Second peak", VisualStatus.Neutral, "Mon 7 PM - 9 PM")
         .AddStatusItem("Suggested action", VisualStatus.Positive, "Manage shift");
 
-    private static SegmentedProgressCard ProjectProgressCard(int outputScale) => SegmentedProgressCard.Create()
+    private static SegmentedMetricBlock ProjectProgressCard(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
         .WithTitle("Project Progress")
         .WithSubtitle("Overall completion rate all projects.")
         .WithSize(820, 360)
@@ -152,22 +156,73 @@ internal static class DashboardPatternExamples {
         .WithPngOutputScale(outputScale)
         .WithHeaderSymbol("%")
         .WithMenu()
-        .AddRow("Performing Progress", 89, segments: 44, color: Green, delta: "+10.2%", status: VisualStatus.Positive)
-        .AddRow("Target Sales", 67, segments: 44, color: Blue, delta: "+2.2%", status: VisualStatus.Info)
+        .AddItem("Performing Progress", 89, segments: 44, color: Green, delta: "+10.2%", status: VisualStatus.Positive)
+        .AddItem("Target Sales", 67, segments: 44, color: Blue, delta: "+2.2%", status: VisualStatus.Info)
         .WithAction("Up by 6% compared to last week, great momentum.")
         .WithActionStyle(Green.WithAlpha(38), ChartColor.FromHex("#16A36A"));
 
-    private static CompositionStatusCard ProjectTaskCompositionCard(int outputScale) => CompositionStatusCard.Create()
+    private static SegmentedMetricBlock CertificateInventoryCompositionStrip(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
+        .WithTitle("Certificate Count")
+        .WithSubtitle("Inventory split by lifecycle state.")
+        .WithSize(820, 340)
+        .WithTheme(ProjectTheme())
+        .WithPngOutputScale(outputScale)
+        .WithMetric("Certificates", 277)
+        .AddItem("Valid", 164, color: Green, displayValue: "164")
+        .AddItem("Expiring", 48, color: Orange, displayValue: "48")
+        .AddItem("Revoked", 24, color: ChartColor.FromHex("#EF5DA8"), displayValue: "24")
+        .AddItem("Unknown", 41, color: ChartColor.FromHex("#6D83F2"), displayValue: "41");
+
+    private static SegmentedMetricBlock ChannelShareCapsuleRing(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing)
+        .WithTitle("Channel Share")
+        .WithSubtitle("Balanced source mix rendered as a closed-loop split.")
+        .WithSize(820, 340)
+        .WithTheme(ProjectTheme())
+        .WithPngOutputScale(outputScale)
+        .WithMenu()
+        .AddItem("Direct", 40, color: Green, displayValue: "24,000")
+        .AddItem("Partner", 35, color: Orange, displayValue: "21,000")
+        .AddItem("Referral", 15, color: ChartColor.FromHex("#EF5DA8"), displayValue: "9,000")
+        .AddItem("Other", 10, color: ChartColor.FromHex("#6D83F2"), displayValue: "6,000");
+
+    private static SegmentedMetricBlock ContentPerformanceRows(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
+        .WithTitle("Content Performance")
+        .WithSubtitle("Metric rows with exact values, deltas, and segmented progress.")
+        .WithSize(820, 460)
+        .WithTheme(ProjectTheme())
+        .WithPngOutputScale(outputScale)
+        .WithMenu()
+        .AddItem(new SegmentedMetricItem("Posts", 86).WithProgress(100, 44).WithColor(Blue).WithDisplayValue("132,034").WithDelta("+4.3%").WithStatus(VisualStatus.Positive))
+        .AddItem(new SegmentedMetricItem("Replies", 62).WithProgress(100, 44).WithColor(ChartColor.FromHex("#7894F8")).WithDisplayValue("56,234").WithDelta("-6.4%").WithStatus(VisualStatus.Negative))
+        .AddItem(new SegmentedMetricItem("Likes", 84).WithProgress(100, 44).WithColor(ChartColor.FromHex("#8B7AF4")).WithDisplayValue("125,485,958").WithDelta("+12.34%").WithStatus(VisualStatus.Positive))
+        .AddItem(new SegmentedMetricItem("Reposts", 79).WithProgress(100, 44).WithColor(Purple).WithDisplayValue("94,344").WithDelta("+10.02%").WithStatus(VisualStatus.Positive))
+        .AddItem(new SegmentedMetricItem("Bookmarks", 61).WithProgress(100, 44).WithColor(ChartColor.FromHex("#9A7CF0")).WithDisplayValue("12,344").WithDelta("+4%").WithStatus(VisualStatus.Positive))
+        .AddItem(new SegmentedMetricItem("Shares", 48).WithProgress(100, 44).WithColor(ChartColor.FromHex("#A75AEF")).WithDisplayValue("42,344").WithDelta("-3.4%").WithStatus(VisualStatus.Negative));
+
+    private static SegmentedMetricBlock ConversionFunnelColumns(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+        .WithTitle("Conversion Funnel")
+        .WithSubtitle("Ordered stage counts rendered as reusable segmented columns.")
+        .WithSize(820, 330)
+        .WithTheme(ProjectTheme())
+        .WithPngOutputScale(outputScale)
+        .WithMenu()
+        .AddItem("Clicks", 82000, segments: 24, color: Green, displayValue: "82,000")
+        .AddItem("Added to Cart", 7200, segments: 16, color: Orange, displayValue: "7,200")
+        .AddItem("Payment", 1230, segments: 12, color: ChartColor.FromHex("#6D83F2"), displayValue: "1,230")
+        .AddItem("Abandoned Cart", 5970, segments: 15, color: ChartColor.FromHex("#EF5DA8"), displayValue: "5,970");
+
+    private static SegmentedMetricBlock ProjectTaskCompositionCard(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
         .WithTitle("Overall Tasks")
         .WithSubtitle("Spread across 6 projects.")
-        .WithSize(820, 360)
+        .WithSize(820, 400)
         .WithTheme(ProjectTheme())
         .WithPngOutputScale(outputScale)
         .WithCard(false)
         .WithMetric("Tasks", 23, "Task")
-        .AddSegment("On Going", 12, Blue, VisualStatus.Info, ChartFillPattern.DiagonalForward)
-        .AddSegment("Under Review", 6, Orange, VisualStatus.Warning, ChartFillPattern.DiagonalBackward)
-        .AddSegment("Finish", 4, Green, VisualStatus.Positive)
+        .WithMenu()
+        .AddItem("On Going", 12, color: Blue, status: VisualStatus.Info, pattern: ChartFillPattern.DiagonalForward)
+        .AddItem("Under Review", 6, color: Orange, status: VisualStatus.Warning, pattern: ChartFillPattern.DiagonalBackward)
+        .AddItem("Finish", 4, color: Green, status: VisualStatus.Positive)
         .WithAction("View details task");
 
     private static Chart ProjectTrackCard() => Chart.Create()
@@ -359,18 +414,18 @@ internal static class DashboardPatternExamples {
         .WithTheme(PaymentTheme())
         .WithMiniSparkline(new[] { 20d, 26d, 27d, 35d, 33d, 31d, 38d, 42d }, color: color, fillColor: color.WithAlpha(32));
 
-    private static DistributionStripCard CurrencyDistribution() => DistributionStripCard.Create()
+    private static SegmentedMetricBlock CurrencyDistribution() => SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRows)
         .WithTitle("Net Earning")
         .WithSubtitle("Currency split with row-level shares")
         .WithTheme(PaymentTheme())
         .WithPadding(34, 28, 34, 28)
         .WithMetric("Net earning", "EUR 56,980.00", "Last month")
-        .AddSegment("Russian Ruble (RUB)", 9.74, ChartColor.FromHex("#FF3B13"), "RUB", "EUR 12.23", VisualStatus.Warning)
-        .AddSegment("Euro (EUR)", 38.48, ChartColor.FromHex("#1389F2"), "EUR", "EUR 20.23", VisualStatus.Info)
-        .AddSegment("Japanese Yen (JPY)", 12.55, ChartColor.FromHex("#AE14E8"), "JPY", "EUR 10.00", VisualStatus.Info)
-        .AddSegment("United States Dollar (USD)", 14.11, ChartColor.FromHex("#24D47B"), "USD", "EUR 12.00", VisualStatus.Positive)
-        .AddSegment("Ukrainian Hryvnia (UAH)", 12.55, ChartColor.FromHex("#F5D318"), "UAH", "EUR 14.00", VisualStatus.Warning)
-        .AddSegment("British Pound Sterling (GBP)", 12.55, Mint, "GBP", "EUR 10.00", VisualStatus.Info);
+        .AddItem("Russian Ruble (RUB)", 9.74, color: ChartColor.FromHex("#FF3B13"), symbol: "RUB", displayValue: "EUR 12.23", status: VisualStatus.Warning)
+        .AddItem("Euro (EUR)", 38.48, color: ChartColor.FromHex("#1389F2"), symbol: "EUR", displayValue: "EUR 20.23", status: VisualStatus.Info)
+        .AddItem("Japanese Yen (JPY)", 12.55, color: ChartColor.FromHex("#AE14E8"), symbol: "JPY", displayValue: "EUR 10.00", status: VisualStatus.Info)
+        .AddItem("United States Dollar (USD)", 14.11, color: ChartColor.FromHex("#24D47B"), symbol: "USD", displayValue: "EUR 12.00", status: VisualStatus.Positive)
+        .AddItem("Ukrainian Hryvnia (UAH)", 12.55, color: ChartColor.FromHex("#F5D318"), symbol: "UAH", displayValue: "EUR 14.00", status: VisualStatus.Warning)
+        .AddItem("British Pound Sterling (GBP)", 12.55, color: Mint, symbol: "GBP", displayValue: "EUR 10.00", status: VisualStatus.Info);
 
     private static Chart TransactionMap() => Chart.Create()
         .WithTitle("Transaction by Country")

@@ -164,12 +164,43 @@
     },
     {
       "category": "dashboards",
+      "title": "Dashboard Certificate Inventory Composition Strip",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-certificate-inventory-composition-strip.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Channel Share Capsule Ring",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-channel-share-capsule-ring.svg"
+    },
+    {
+      "category": "dashboards",
       "title": "Chart portfolio",
       "body": "Hand-picked tour of the chart catalog.",
       "tags": [
         "Portfolio"
       ],
       "image": "/examples/generated/dashboard-chart-portfolio-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Content Performance Rows",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-content-performance-rows.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Conversion Funnel Columns",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Bar",
+        "Funnel"
+      ],
+      "image": "/examples/generated/dashboard-conversion-funnel-columns.svg"
     },
     {
       "category": "dashboards",

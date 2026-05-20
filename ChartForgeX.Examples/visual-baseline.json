@@ -258,6 +258,38 @@
       }
     },
     {
+      "name": "dashboard-certificate-inventory-composition-strip",
+      "width": 820,
+      "height": 340,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 557600,
+        "minDistinctColors": 711,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-channel-share-capsule-ring",
+      "width": 820,
+      "height": 340,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 557600,
+        "minDistinctColors": 1842,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "dashboard-chart-portfolio-grid",
       "width": 1224,
       "height": 2331,
@@ -269,6 +301,38 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 5706288,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-content-performance-rows",
+      "width": 820,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 414,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 754400,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-conversion-funnel-columns",
+      "width": 820,
+      "height": 330,
+      "svg": {
+        "minVisualNodes": 79,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 541200,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -374,7 +438,7 @@
       "width": 1416,
       "height": 1339,
       "svg": {
-        "minVisualNodes": 426,
+        "minVisualNodes": 772,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -429,7 +493,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 590400,
-        "minDistinctColors": 1901,
+        "minDistinctColors": 1976,
         "maxEdgeInkPixels": 0
       }
     },
@@ -452,16 +516,16 @@
     {
       "name": "dashboard-project-task-composition-card",
       "width": 820,
-      "height": 360,
+      "height": 400,
       "svg": {
-        "minVisualNodes": 47,
+        "minVisualNodes": 49,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 590400,
-        "minDistinctColors": 561,
+        "minVisiblePixels": 656000,
+        "minDistinctColors": 523,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1101,7 +1165,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1889,
+        "minDistinctColors": 1858,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1117,7 +1181,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1786,
+        "minDistinctColors": 1759,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1133,7 +1197,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1602,
+        "minDistinctColors": 1572,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1149,7 +1213,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1739,
+        "minDistinctColors": 1731,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1165,7 +1229,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1425,
+        "minDistinctColors": 1409,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1174,14 +1238,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 195,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1461,
+        "minDistinctColors": 1494,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1197,7 +1261,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1716,
+        "minDistinctColors": 1699,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1206,7 +1270,7 @@
       "width": 1118,
       "height": 1550,
       "svg": {
-        "minVisualNodes": 802,
+        "minVisualNodes": 1314,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1222,14 +1286,14 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 316,
+        "minVisualNodes": 662,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1532,
+        "minDistinctColors": 1150,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1538,22 +1602,6 @@
       }
     },
     {
-      "name": "sea-route-suez-cape-map-light",
-      "width": 980,
-      "height": 560,
-      "svg": {
-        "minVisualNodes": 313,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 1026949,
-        "minDistinctColors": 2048,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
       "name": "security-findings-grouped-light",
       "width": 920,
       "height": 560,
@@ -1718,7 +1766,7 @@
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 956,
+        "minVisualNodes": 669,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
