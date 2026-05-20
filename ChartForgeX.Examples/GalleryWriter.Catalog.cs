@@ -115,6 +115,7 @@ public static partial class GalleryWriter {
             "Maps and Geography",
             "Dotted world maps, focused regional viewports, route overlays, and value-colored region maps.",
             "travel-dotted-map-dark",
+            "sea-route-suez-cape-map-light",
             "map-viewport-showcase-grid",
             "revenue-europe-country-map-light",
             "revenue-region-map-us-states-light",

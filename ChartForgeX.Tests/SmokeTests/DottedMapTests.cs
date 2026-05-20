@@ -179,6 +179,13 @@ internal static partial class SmokeTests {
         Assert(!polandSvg.Contains("data-cfx-role=\"dotted-map-land-dot\"", StringComparison.Ordinal), "Light country-focused dotted maps should avoid dot texture when a viewport silhouette is available.");
         Assert(polandSvg.Contains("data-cfx-role=\"dotted-map-viewport-shape\" data-cfx-viewport=\"Poland\"", StringComparison.Ordinal), "Country-focused dotted maps should render a subtle viewport silhouette so the geography remains readable in small previews.");
         Assert(Chart.Create().WithMapViewport(ChartMapViewport.Poland()).AddDottedMap("Cities", new[] { new ChartMapPoint("Warsaw", 21.0122, 52.2297) }).ToPng().Length > 64, "Country-focused dotted map viewports should render PNG output.");
+        var customSvg = Chart.Create()
+            .WithSize(420, 320)
+            .WithMapViewport(new ChartMapViewport("Iberia", -10, 5, 35, 45))
+            .AddDottedMap("Cities", new[] { new ChartMapPoint("Madrid", -3.7038, 40.4168) })
+            .ToSvg();
+        Assert(customSvg.Contains("data-cfx-role=\"dotted-map-land-dot\"", StringComparison.Ordinal), "Custom light dotted-map viewports should keep the land-dot fallback when no built-in vector geography exists.");
+        Assert(!customSvg.Contains("data-cfx-role=\"dotted-map-land-area\"", StringComparison.Ordinal), "Custom dotted-map viewports should not claim built-in filled geography when no boundary source exists.");
         AssertThrows<ArgumentException>(() => new ChartMapViewport(" ", -10, 10, -10, 10), "Map viewports should reject empty names.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapViewport("Bad", 10, 10, -10, 10), "Map viewports should reject unordered longitude ranges.");
     }

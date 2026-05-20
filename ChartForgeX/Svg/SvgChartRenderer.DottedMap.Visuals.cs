@@ -26,7 +26,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static bool ShouldDrawDottedMapLandDot(ChartMapViewport viewport, ChartColor plotBackground, double longitude, double latitude) {
-        if (ChartDottedMapSurface.IsLightSurface(plotBackground)) return false;
-        return IsWorldMapViewport(viewport) || IsPolandDottedMapViewport(viewport);
+        var hasVectorGeography = DottedMapBoundaryLines(viewport).Length > 0 || DottedMapViewportOutlines(viewport).Length > 0;
+        return !ChartDottedMapSurface.IsLightSurface(plotBackground) || !hasVectorGeography;
     }
 }
