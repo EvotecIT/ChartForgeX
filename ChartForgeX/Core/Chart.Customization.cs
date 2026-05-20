@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
@@ -248,6 +249,28 @@ public sealed partial class Chart {
     }
 
     /// <summary>
+    /// Adds a connector line through ordered longitude/latitude route points on capable map charts.
+    /// </summary>
+    /// <param name="label">The connector label.</param>
+    /// <param name="routePoints">The ordered route points, including the source and target points.</param>
+    /// <param name="color">An optional connector color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddMapConnector(string label, IEnumerable<ChartMapPoint> routePoints, ChartColor? color = null) {
+        Options.MapConnectors.Add(new ChartMapConnector(label, routePoints, color));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a connector line through ordered longitude/latitude route points on capable map charts.
+    /// </summary>
+    /// <param name="label">The connector label.</param>
+    /// <param name="routePoints">The ordered route points, including the source and target points.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddMapConnector(string label, params ChartMapPoint[] routePoints) {
+        return AddMapConnector(label, (IEnumerable<ChartMapPoint>)routePoints);
+    }
+
+    /// <summary>
     /// Adds a route line between two longitude/latitude points on capable map charts.
     /// </summary>
     /// <param name="label">The route label.</param>
@@ -259,6 +282,27 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddMapRoute(string label, double fromLongitude, double fromLatitude, double toLongitude, double toLatitude, ChartColor? color = null) {
         return AddMapConnector(label, fromLongitude, fromLatitude, toLongitude, toLatitude, color);
+    }
+
+    /// <summary>
+    /// Adds a route line through ordered longitude/latitude points on capable map charts.
+    /// </summary>
+    /// <param name="label">The route label.</param>
+    /// <param name="routePoints">The ordered route points, including the source and target points.</param>
+    /// <param name="color">An optional route color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddMapRoute(string label, IEnumerable<ChartMapPoint> routePoints, ChartColor? color = null) {
+        return AddMapConnector(label, routePoints, color);
+    }
+
+    /// <summary>
+    /// Adds a route line through ordered longitude/latitude points on capable map charts.
+    /// </summary>
+    /// <param name="label">The route label.</param>
+    /// <param name="routePoints">The ordered route points, including the source and target points.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddMapRoute(string label, params ChartMapPoint[] routePoints) {
+        return AddMapConnector(label, routePoints);
     }
 
     /// <summary>

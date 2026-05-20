@@ -25,14 +25,8 @@ public sealed partial class SvgChartRenderer {
             .Line());
     }
 
-    private static bool ShouldDrawDottedMapLandDot(ChartMapViewport viewport, double longitude, double latitude) {
-        var boundaries = DottedMapBoundaryLines(viewport);
-        var hasClosedBoundary = false;
-        foreach (var boundary in boundaries) {
-            if (!CanFillDottedMapBoundary(boundary)) continue;
-            hasClosedBoundary = true;
-        }
-
-        return !hasClosedBoundary;
+    private static bool ShouldDrawDottedMapLandDot(ChartMapViewport viewport, ChartColor plotBackground, double longitude, double latitude) {
+        var hasVectorGeography = DottedMapBoundaryLines(viewport).Length > 0 || DottedMapViewportOutlines(viewport).Length > 0;
+        return !ChartDottedMapSurface.IsLightSurface(plotBackground) || !hasVectorGeography;
     }
 }

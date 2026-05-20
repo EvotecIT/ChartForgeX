@@ -700,6 +700,16 @@
       "image": "/examples/generated/map-world-route-light.svg"
     },
     {
+      "category": "maps",
+      "title": "Sea route alternatives",
+      "body": "Ordered waypoint routes comparing Suez Canal and Cape of Good Hope paths.",
+      "tags": [
+        "Map",
+        "Route"
+      ],
+      "image": "/examples/generated/sea-route-suez-cape-map-light.svg"
+    },
+    {
       "category": "charts",
       "title": "Monthly Posture Dark",
       "body": "Generated ChartForgeX visual output.",

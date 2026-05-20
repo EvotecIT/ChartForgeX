@@ -7,6 +7,7 @@ internal static class MapExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale, bool includeExternalCatalogMaps = false) {
         Save(CreateCalendarHeatmap(), output, "developer-consistency-calendar-light", pngOutputScale);
         Save(CreateDottedMap(), output, "travel-dotted-map-dark", pngOutputScale);
+        Save(CreateSeaRouteMap(), output, "sea-route-suez-cape-map-light", pngOutputScale);
         Save(CreateEuropeRevenueDottedMap(), output, "revenue-europe-country-map-light", pngOutputScale);
         foreach (var example in MapViewportExamples()) {
             Save(CreateViewportMap(example.Title + " Route Map", example.Viewport, example.Points, example.Route, 760, 460, example.Viewport.Name + " dotted viewport with route connectors"), output, example.FileName, pngOutputScale);
@@ -59,6 +60,43 @@ internal static class MapExamples {
             })
             .AddMapRouteBetweenPoints("United States to Spain", "United States", "Spain", ChartColor.FromRgb(34, 197, 94))
             .AddMapRouteBetweenPoints("Spain to Indonesia", "Spain", "Indonesia", ChartColor.FromRgb(59, 130, 246));
+    }
+
+    private static Chart CreateSeaRouteMap() {
+        return Chart.Create()
+            .WithTitle("Sea Route Alternatives")
+            .WithSubtitle("Ordered waypoint routes compare Suez Canal and Cape of Good Hope paths")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(980, 560)
+            .WithLegend(false)
+            .WithDataLabels()
+            .WithMapViewport(ChartMapViewport.World())
+            .AddDottedMap("Ports", new[] {
+                new ChartMapPoint("Rotterdam", 4.4792, 51.9244, ChartColor.FromRgb(37, 99, 235)),
+                new ChartMapPoint("Singapore", 103.8198, 1.3521, ChartColor.FromRgb(14, 165, 233))
+            })
+            .AddMapRoute("Via Suez Canal", new[] {
+                new ChartMapPoint("Rotterdam", 4.4792, 51.9244),
+                new ChartMapPoint("English Channel", -1.2, 50.0),
+                new ChartMapPoint("Gibraltar", -5.6, 35.9),
+                new ChartMapPoint("Mediterranean Sea", 15.5, 34.8),
+                new ChartMapPoint("Port Said", 32.3, 31.2),
+                new ChartMapPoint("Red Sea", 39.8, 19.0),
+                new ChartMapPoint("Arabian Sea", 62.0, 13.0),
+                new ChartMapPoint("Malacca Strait", 98.0, 5.6),
+                new ChartMapPoint("Singapore", 103.8198, 1.3521)
+            }, ChartColor.FromRgb(37, 99, 235))
+            .AddMapRoute("Via Cape of Good Hope", new[] {
+                new ChartMapPoint("Rotterdam", 4.4792, 51.9244),
+                new ChartMapPoint("English Channel", -1.2, 50.0),
+                new ChartMapPoint("Gibraltar", -5.6, 35.9),
+                new ChartMapPoint("Canary Basin", -16.0, 25.0),
+                new ChartMapPoint("Gulf of Guinea", 0.0, 0.5),
+                new ChartMapPoint("Cape of Good Hope", 18.2, -35.5),
+                new ChartMapPoint("South Indian Ocean", 47.0, -31.0),
+                new ChartMapPoint("Malacca Strait", 98.0, 5.6),
+                new ChartMapPoint("Singapore", 103.8198, 1.3521)
+            }, ChartColor.FromRgb(249, 115, 22));
     }
 
     private static ChartGrid CreateMapViewportShowcaseGrid() {

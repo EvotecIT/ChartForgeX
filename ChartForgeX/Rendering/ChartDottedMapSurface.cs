@@ -8,7 +8,7 @@ internal static class ChartDottedMapSurface {
         return ChartColorMath.Blend(plotBackground, mutedText, weight);
     }
 
-    public static double LandDotOpacity(ChartColor plotBackground) => IsLightSurface(plotBackground) ? 0.14 : 0.44;
+    public static double LandDotOpacity(ChartColor plotBackground) => IsLightSurface(plotBackground) ? 0.26 : 0.50;
 
     public static ChartColor LandAreaColor(ChartColor plotBackground, ChartColor mutedText) {
         var weight = IsLightSurface(plotBackground) ? 0.24 : 0.28;
@@ -22,7 +22,7 @@ internal static class ChartDottedMapSurface {
         return ChartColorMath.Blend(plotBackground, mutedText, weight);
     }
 
-    public static double BoundaryOpacity(ChartColor plotBackground) => IsLightSurface(plotBackground) ? 0.16 : 0.22;
+    public static double BoundaryOpacity(ChartColor plotBackground) => IsLightSurface(plotBackground) ? 0.30 : 0.30;
 
     public static bool IsLightSurface(ChartColor color) => ChartColorMath.RelativeLuminance(color) > 0.70;
 }
