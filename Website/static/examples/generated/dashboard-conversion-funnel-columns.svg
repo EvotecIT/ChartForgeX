@@ -17,160 +17,160 @@
 <text data-cfx-role="visual-text" x="22" y="41.5" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Conversion Funnel</text>
 <text data-cfx-role="visual-text" x="22" y="66.5" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Ordered stage counts rendered as reusable segmented columns.</text>
 <line data-cfx-role="segmented-metric-header-divider" x1="22" y1="93" x2="798" y2="93" stroke="#DCDDE3"/>
-<g data-cfx-role="segmented-metric-funnel-columns" data-cfx-stages="4" data-cfx-segments="67">
-<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Clicks" data-cfx-value="82000" data-cfx-segments="24">
+<g data-cfx-role="segmented-metric-funnel-columns" data-cfx-stages="4" data-cfx-segments="67" data-cfx-bar-y="172" data-cfx-bar-height="132" data-cfx-bar-width="7.195" data-cfx-bar-gap="4">
+<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Clicks" data-cfx-value="82000" data-cfx-segments="24" data-cfx-x="22" data-cfx-width="264.691">
 <rect data-cfx-role="segmented-metric-funnel-marker" x="22" y="129" width="7" height="24" rx="3.5" fill="#36C47D"/>
 <text data-cfx-role="visual-text" x="33" y="143" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Clicks</text>
 <text data-cfx-role="visual-text" x="33" y="162" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="850">82,000</text>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="0" x="22" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="0" x="23.263" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="1" x="33.016" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="1" x="34.279" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="2" x="44.033" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="2" x="45.296" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="3" x="55.049" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="3" x="56.312" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="4" x="66.065" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="4" x="67.328" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="5" x="77.082" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="5" x="78.345" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="6" x="88.098" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="6" x="89.361" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="7" x="99.115" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="7" x="100.377" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="8" x="110.131" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="8" x="111.394" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="9" x="121.147" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="9" x="122.41" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="10" x="132.164" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="10" x="133.427" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="11" x="143.18" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="11" x="144.443" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="12" x="154.196" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="12" x="155.459" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="13" x="165.213" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="13" x="166.476" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="14" x="176.229" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="14" x="177.492" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="15" x="187.245" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="15" x="188.508" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="16" x="198.262" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="16" x="199.525" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="17" x="209.278" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="17" x="210.541" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="18" x="220.294" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="18" x="221.557" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="19" x="231.311" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="19" x="232.574" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="20" x="242.327" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="20" x="243.59" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="21" x="253.344" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="21" x="254.606" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="22" x="264.36" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="22" x="265.623" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="23" x="275.376" y="172" width="7.016" height="132" rx="3.368" fill="#36C47D"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="23" x="276.639" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="0" x="22" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="0" x="23.295" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="1" x="33.195" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="1" x="34.491" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="2" x="44.391" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="2" x="45.686" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="3" x="55.586" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="3" x="56.882" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="4" x="66.782" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="4" x="68.077" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="5" x="77.977" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="5" x="79.272" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="6" x="89.173" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="6" x="90.468" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="7" x="100.368" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="7" x="101.663" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="8" x="111.564" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="8" x="112.859" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="9" x="122.759" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="9" x="124.054" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="10" x="133.955" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="10" x="135.25" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="11" x="145.15" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="11" x="146.445" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="12" x="156.346" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="12" x="157.641" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="13" x="167.541" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="13" x="168.836" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="14" x="178.736" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="14" x="180.032" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="15" x="189.932" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="15" x="191.227" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="16" x="201.127" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="16" x="202.423" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="17" x="212.323" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="17" x="213.618" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="18" x="223.518" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="18" x="224.814" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="19" x="234.714" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="19" x="236.009" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="20" x="245.909" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="20" x="247.204" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="21" x="257.105" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="21" x="258.4" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="22" x="268.3" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="22" x="269.595" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="0" data-cfx-index="23" x="279.496" y="172" width="7.195" height="132" rx="3.454" fill="#36C47D"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="0" data-cfx-index="23" x="280.791" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
 </g>
-<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Added to Cart" data-cfx-value="7200" data-cfx-segments="16">
-<rect data-cfx-role="segmented-metric-funnel-marker" x="296.361" y="129" width="7" height="24" rx="3.5" fill="#FFB05C"/>
-<text data-cfx-role="visual-text" x="307.361" y="143" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Added to Cart</text>
-<text data-cfx-role="visual-text" x="307.361" y="162" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="850">7,200</text>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="0" x="296.361" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="0" x="297.624" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="1" x="307.377" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="1" x="308.64" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="2" x="318.393" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="2" x="319.656" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="3" x="329.41" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="3" x="330.673" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="4" x="340.426" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="4" x="341.689" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="5" x="351.442" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="5" x="352.705" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="6" x="362.459" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="6" x="363.722" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="7" x="373.475" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="7" x="374.738" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="8" x="384.491" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="8" x="385.754" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="9" x="395.508" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="9" x="396.771" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="10" x="406.524" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="10" x="407.787" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="11" x="417.541" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="11" x="418.803" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="12" x="428.557" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="12" x="429.82" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="13" x="439.573" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="13" x="440.836" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="14" x="450.59" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="14" x="451.853" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="15" x="461.606" y="172" width="7.016" height="132" rx="3.368" fill="#FFB05C"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="15" x="462.869" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
+<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Added to Cart" data-cfx-value="7200" data-cfx-segments="16" data-cfx-x="300.659" data-cfx-width="175.127">
+<rect data-cfx-role="segmented-metric-funnel-marker" x="300.659" y="129" width="7" height="24" rx="3.5" fill="#FFB05C"/>
+<text data-cfx-role="visual-text" x="311.659" y="143" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Added to Cart</text>
+<text data-cfx-role="visual-text" x="311.659" y="162" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="850">7,200</text>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="0" x="300.659" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="0" x="301.954" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="1" x="311.855" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="1" x="313.15" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="2" x="323.05" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="2" x="324.345" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="3" x="334.245" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="3" x="335.541" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="4" x="345.441" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="4" x="346.736" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="5" x="356.636" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="5" x="357.932" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="6" x="367.832" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="6" x="369.127" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="7" x="379.027" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="7" x="380.323" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="8" x="390.223" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="8" x="391.518" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="9" x="401.418" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="9" x="402.713" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="10" x="412.614" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="10" x="413.909" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="11" x="423.809" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="11" x="425.104" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="12" x="435.005" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="12" x="436.3" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="13" x="446.2" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="13" x="447.495" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="14" x="457.396" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="14" x="458.691" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="1" data-cfx-index="15" x="468.591" y="172" width="7.195" height="132" rx="3.454" fill="#FFB05C"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="1" data-cfx-index="15" x="469.886" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
 </g>
-<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Payment" data-cfx-value="1230" data-cfx-segments="12">
-<rect data-cfx-role="segmented-metric-funnel-marker" x="482.59" y="129" width="7" height="24" rx="3.5" fill="#6D83F2"/>
-<text data-cfx-role="visual-text" x="493.59" y="143" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Payment</text>
-<text data-cfx-role="visual-text" x="493.59" y="162" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="850">1,230</text>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="0" x="482.59" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="0" x="483.853" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="1" x="493.607" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="1" x="494.87" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="2" x="504.623" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="2" x="505.886" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="3" x="515.639" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="3" x="516.902" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="4" x="526.656" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="4" x="527.919" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="5" x="537.672" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="5" x="538.935" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="6" x="548.688" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="6" x="549.951" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="7" x="559.705" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="7" x="560.968" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="8" x="570.721" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="8" x="571.984" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="9" x="581.738" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="9" x="583" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="10" x="592.754" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="10" x="594.017" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="11" x="603.77" y="172" width="7.016" height="132" rx="3.368" fill="#6D83F2"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="11" x="605.033" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
+<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Payment" data-cfx-value="1230" data-cfx-segments="12" data-cfx-x="489.755" data-cfx-width="130.346">
+<rect data-cfx-role="segmented-metric-funnel-marker" x="489.755" y="129" width="7" height="24" rx="3.5" fill="#6D83F2"/>
+<text data-cfx-role="visual-text" x="500.755" y="143" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Payment</text>
+<text data-cfx-role="visual-text" x="500.755" y="162" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="850">1,230</text>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="0" x="489.755" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="0" x="491.05" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="1" x="500.95" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="1" x="502.245" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="2" x="512.145" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="2" x="513.441" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="3" x="523.341" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="3" x="524.636" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="4" x="534.536" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="4" x="535.832" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="5" x="545.732" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="5" x="547.027" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="6" x="556.927" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="6" x="558.222" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="7" x="568.123" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="7" x="569.418" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="8" x="579.318" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="8" x="580.613" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="9" x="590.514" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="9" x="591.809" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="10" x="601.709" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="10" x="603.004" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="2" data-cfx-index="11" x="612.905" y="172" width="7.195" height="132" rx="3.454" fill="#6D83F2"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="2" data-cfx-index="11" x="614.2" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
 </g>
-<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Abandoned Cart" data-cfx-value="5970" data-cfx-segments="15">
-<rect data-cfx-role="segmented-metric-funnel-marker" x="624.755" y="129" width="7" height="24" rx="3.5" fill="#EF5DA8"/>
-<text data-cfx-role="visual-text" x="635.755" y="143" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Abandoned Cart</text>
-<text data-cfx-role="visual-text" x="635.755" y="162" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="850">5,970</text>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="0" x="624.755" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="0" x="626.018" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="1" x="635.771" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="1" x="637.034" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="2" x="646.787" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="2" x="648.05" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="3" x="657.804" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="3" x="659.067" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="4" x="668.82" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="4" x="670.083" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="5" x="679.836" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="5" x="681.099" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="6" x="690.853" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="6" x="692.116" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="7" x="701.869" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="7" x="703.132" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="8" x="712.885" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="8" x="714.148" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="9" x="723.902" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="9" x="725.165" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="10" x="734.918" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="10" x="736.181" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="11" x="745.935" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="11" x="747.198" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="12" x="756.951" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="12" x="758.214" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="13" x="767.967" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="13" x="769.23" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
-<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="14" x="778.984" y="172" width="7.016" height="132" rx="3.368" fill="#EF5DA8"/>
-<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="14" x="780.247" y="174" width="1.965" height="128" rx="1.684" fill="rgba(255,255,255,0.188)"/>
+<g data-cfx-role="segmented-metric-funnel-stage" data-cfx-label="Abandoned Cart" data-cfx-value="5970" data-cfx-segments="15" data-cfx-x="634.068" data-cfx-width="163.932">
+<rect data-cfx-role="segmented-metric-funnel-marker" x="634.068" y="129" width="7" height="24" rx="3.5" fill="#EF5DA8"/>
+<text data-cfx-role="visual-text" x="645.068" y="143" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Abandoned Cart</text>
+<text data-cfx-role="visual-text" x="645.068" y="162" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="850">5,970</text>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="0" x="634.068" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="0" x="635.363" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="1" x="645.264" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="1" x="646.559" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="2" x="656.459" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="2" x="657.754" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="3" x="667.654" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="3" x="668.95" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="4" x="678.85" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="4" x="680.145" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="5" x="690.045" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="5" x="691.341" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="6" x="701.241" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="6" x="702.536" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="7" x="712.436" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="7" x="713.731" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="8" x="723.632" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="8" x="724.927" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="9" x="734.827" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="9" x="736.122" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="10" x="746.023" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="10" x="747.318" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="11" x="757.218" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="11" x="758.513" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="12" x="768.414" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="12" x="769.709" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="13" x="779.609" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="13" x="780.904" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
+<rect data-cfx-role="segmented-metric-funnel-bar" data-cfx-stage="3" data-cfx-index="14" x="790.805" y="172" width="7.195" height="132" rx="3.454" fill="#EF5DA8"/>
+<rect data-cfx-role="segmented-metric-funnel-bar-highlight" data-cfx-stage="3" data-cfx-index="14" x="792.1" y="174" width="2.015" height="128" rx="1.727" fill="rgba(255,255,255,0.188)"/>
 </g>
 </g>
 </svg>

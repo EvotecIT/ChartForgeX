@@ -287,6 +287,23 @@ internal static partial class SmokeTests {
         Assert(funnelSvg.Contains("data-cfx-segments=\"24\"", StringComparison.Ordinal), "SegmentedMetricBlock funnel columns should preserve per-stage segment counts.");
         Assert(funnel.ToPng().Length > 64, "SegmentedMetricBlock funnel columns should render PNG output.");
 
+        var compactFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+            .WithTitle("Compact Funnel")
+            .WithSubtitle("Longer header with action")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(360, 170)
+            .WithAction("Open")
+            .AddItem("First", 10, segments: 12)
+            .AddItem("Second", 8, segments: 10)
+            .AddItem("Third", 6, segments: 8);
+        var compactFunnelSvg = compactFunnel.ToSvg("visual-block-segmented-compact-funnel");
+        var compactBarY = GetAttribute(compactFunnelSvg, "data-cfx-role=\"segmented-metric-funnel-columns\"", "data-cfx-bar-y");
+        var compactBarHeight = GetAttribute(compactFunnelSvg, "data-cfx-role=\"segmented-metric-funnel-columns\"", "data-cfx-bar-height");
+        Assert(compactBarY >= 0 && compactBarHeight < 52, "SegmentedMetricBlock compact funnel bars should cap to the available plot height instead of overlapping the header.");
+        var lastStageX = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
+        var lastStageWidth = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
+        Assert(lastStageX + lastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock funnel stage geometry should fit within the card content width.");
+
         var configuredItems = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(460, 220)
@@ -346,6 +363,13 @@ internal static partial class SmokeTests {
         Assert(compositionSvg.Contains("data-cfx-pattern=\"DiagonalForward\"", StringComparison.Ordinal), "SegmentedMetricBlock should preserve segment pattern hints in SVG metadata.");
         Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-legend-swatch\"", StringComparison.Ordinal), "SegmentedMetricBlock should render legend swatches.");
         Assert(compositionSvg.Contains("data-cfx-role=\"visual-action-chevron\"", StringComparison.Ordinal), "SegmentedMetricBlock should draw default action chevrons instead of relying on a text glyph.");
+        var formattedComposition = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(520, 300)
+            .WithMetric("Certificates", 150)
+            .AddItem("Valid", 100, displayValue: 99.5, displayFormat: "0.0")
+            .AddItem("Expiring", 50);
+        Assert(formattedComposition.ToSvg("visual-block-composition-formatted-display-value").Contains(">99.5  67%<", StringComparison.Ordinal), "SegmentedMetricBlock composition legends should honor formatted display values.");
         Assert(composition.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "SegmentedMetricBlock should render an embeddable HTML fragment.");
         Assert(composition.ToPng().Length > 64, "SegmentedMetricBlock composition strips should render PNG output.");
 

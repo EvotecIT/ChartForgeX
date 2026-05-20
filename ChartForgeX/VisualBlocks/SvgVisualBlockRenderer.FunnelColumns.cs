@@ -17,12 +17,12 @@ public sealed partial class SvgVisualBlockRenderer {
         var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.14)) : 0;
         var layout = VisualBlockRendering.SegmentedFunnelLayout(card, content, y, footerHeight);
 
-        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-funnel-columns").Attribute("data-cfx-stages", card.Items.Count).Attribute("data-cfx-segments", layout.TotalSegments).EndStartElement().Line();
+        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-funnel-columns").Attribute("data-cfx-stages", card.Items.Count).Attribute("data-cfx-segments", layout.TotalSegments).Attribute("data-cfx-bar-y", layout.BarY).Attribute("data-cfx-bar-height", layout.BarHeight).Attribute("data-cfx-bar-width", layout.BarWidth).Attribute("data-cfx-bar-gap", layout.BarGap).EndStartElement().Line();
         foreach (var stage in layout.Stages) {
             var item = stage.Item;
             var color = VisualBlockRendering.SegmentedItemColor(theme, item, stage.Index);
             var value = VisualBlockRendering.SegmentedItemDisplayValue(card, item);
-            writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-funnel-stage").Attribute("data-cfx-label", item.Label).Attribute("data-cfx-value", item.Value).Attribute("data-cfx-segments", stage.SegmentCount).EndStartElement().Line();
+            writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-funnel-stage").Attribute("data-cfx-label", item.Label).Attribute("data-cfx-value", item.Value).Attribute("data-cfx-segments", stage.SegmentCount).Attribute("data-cfx-x", stage.X).Attribute("data-cfx-width", stage.Width).EndStartElement().Line();
             writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-funnel-marker").Attribute("x", stage.X).Attribute("y", y + 2).Attribute("width", 7).Attribute("height", 24).Attribute("rx", 3.5).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
             WriteText(writer, item.Label, stage.X + 11, y + 16, Math.Max(48, stage.Width + layout.GroupGap * 0.5), VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "500");
             WriteText(writer, value, stage.X + 11, y + 35, Math.Max(48, stage.Width + layout.GroupGap * 0.5), VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 2), "850");

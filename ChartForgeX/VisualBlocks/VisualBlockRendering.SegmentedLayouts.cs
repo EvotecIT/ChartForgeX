@@ -41,11 +41,13 @@ internal static partial class VisualBlockRendering {
         foreach (var item in card.Items) totalSegments += Math.Max(1, item.Segments);
         var groupGap = Math.Min(16, Math.Max(8, content.Width * 0.018));
         var availableWidth = Math.Max(1, content.Width - groupGap * Math.Max(0, card.Items.Count - 1));
-        var metrics = FitRepeatedItems(totalSegments, availableWidth, 4, 3);
+        var intraStageGaps = Math.Max(0, totalSegments - card.Items.Count);
+        var metrics = FitRepeatedItems(totalSegments, availableWidth, intraStageGaps, 4, 3);
         var barWidth = Math.Max(2, metrics.ItemWidth);
         var barGap = metrics.Gap;
         var labelHeight = Math.Max(36, theme.SubtitleFontSize * 2.2);
-        var barHeight = Math.Max(52, Math.Min(132, bottom - y - labelHeight - 6));
+        var availableBarHeight = Math.Max(1, bottom - y - labelHeight - 6);
+        var barHeight = Math.Min(132, availableBarHeight);
         var barY = bottom - barHeight - 4;
         var stages = new List<SegmentedFunnelStageLayout>(card.Items.Count);
         var cursor = content.X;

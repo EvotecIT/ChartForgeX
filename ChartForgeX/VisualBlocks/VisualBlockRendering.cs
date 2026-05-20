@@ -370,7 +370,9 @@ internal static partial class VisualBlockRendering {
         (SegmentedShare(item, total) * 100).ToString(format, CultureInfo.InvariantCulture) + "%";
 
     public static string SegmentedCompositionValueText(SegmentedMetricBlock block, SegmentedMetricItem item, double total) {
-        var value = item.Value.ToString("0.##", CultureInfo.InvariantCulture) + (block.Unit.Length > 0 ? " " + block.Unit : string.Empty);
+        var value = item.DisplayValue.Length > 0
+            ? item.DisplayValue
+            : item.Value.ToString("0.##", CultureInfo.InvariantCulture) + (block.Unit.Length > 0 ? " " + block.Unit : string.Empty);
         return total <= 0 ? value : value + "  " + SegmentedShareText(item, total, "0");
     }
 
@@ -522,11 +524,16 @@ internal static partial class VisualBlockRendering {
     }
 
     public static (double ItemWidth, double Gap) FitRepeatedItems(int count, double width, double preferredGap, double minimumItemWidth) {
+        return FitRepeatedItems(count, width, Math.Max(0, count - 1), preferredGap, minimumItemWidth);
+    }
+
+    public static (double ItemWidth, double Gap) FitRepeatedItems(int count, double width, int gapCount, double preferredGap, double minimumItemWidth) {
         if (count <= 0 || width <= 0) return (0, 0);
         if (count == 1) return (Math.Max(0, width), 0);
+        var gaps = Math.Max(0, gapCount);
         var minWidth = Math.Max(0, minimumItemWidth);
-        var gap = Math.Min(Math.Max(0, preferredGap), Math.Max(0, (width - minWidth * count) / (count - 1)));
-        var itemWidth = Math.Max(0, (width - gap * (count - 1)) / count);
+        var gap = gaps == 0 ? 0 : Math.Min(Math.Max(0, preferredGap), Math.Max(0, (width - minWidth * count) / gaps));
+        var itemWidth = Math.Max(0, (width - gap * gaps) / count);
         if (itemWidth < minWidth && width < minWidth * count) {
             gap = 0;
             itemWidth = Math.Max(0, width / count);
