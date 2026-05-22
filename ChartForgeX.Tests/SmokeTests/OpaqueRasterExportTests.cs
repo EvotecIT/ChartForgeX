@@ -198,6 +198,10 @@ internal static partial class SmokeTests {
 
         AssertExtensionInferredSave("topology", ".svg", path => topology.Save(path, topologyOptions), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<svg", StringComparison.Ordinal), "Topology Save should infer SVG from the output extension."));
         AssertExtensionInferredSave("topology", ".png", path => topology.Save(path, topologyOptions), bytes => AssertPngHeader(bytes));
+        var topologyMotionOptions = new TopologyRenderOptions { IncludeLegend = false }
+            .WithMotion(TopologyMotionOptions.RoutePulseForEdges("amer-emea"));
+        AssertExtensionInferredSave("topology", ".gif", path => topology.Save(path, topologyMotionOptions), bytes => Assert(bytes.Length > 128 && bytes[0] == (byte)'G' && bytes[1] == (byte)'I' && bytes[2] == (byte)'F', "Topology Save should infer animated GIF from the output extension."));
+        AssertExtensionInferredSave("topology", ".apng", path => topology.Save(path, topologyMotionOptions), bytes => Assert(bytes.Length > 128 && bytes[0] == 137 && bytes[1] == 80 && bytes[2] == 78 && bytes[3] == 71 && System.Text.Encoding.ASCII.GetString(bytes).Contains("acTL", StringComparison.Ordinal), "Topology Save should infer animated PNG from the output extension."));
         AssertExtensionInferredSave("topology", ".tiff", path => topology.Save(path, topologyOptions), bytes => AssertTiffHeader(bytes, null, null));
     }
 

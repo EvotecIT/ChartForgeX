@@ -172,10 +172,11 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 | SVG markup | `chart.ToSvg()` or `chart.SaveSvg("chart.svg")` |
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
-| Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.tiff")` |
+| Topology animated raster | `topology.ToGif(options)`, `topology.ToApng(options)`, `topology.WriteGif(stream, options)`, `topology.WriteApng(stream, options)`, `topology.SaveGif("route.gif", options)`, or `topology.SaveApng("route.apng", options)` with `TopologyMotionOptions.RoutePulseForScenario(...)` or `.RoutePulseForEdges(...)` |
+| Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.tiff")`; topology also supports `topology.Save("route.gif", options)` and `topology.Save("route.apng", options)` |
 | Advanced opaque raster output | `ToBmp`, `ToPpm`, `ToTiff`, `ToRasterImage`, `WriteRasterImage`, and `SaveRasterImage` |
 
-`Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` applies to opaque raster formats; PNG keeps its dedicated renderer path and PNG output-scale options.
+`Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Topology `Save(path, options)` also infers `.gif` and `.apng` when `TopologyMotionOptions` describes a route. Animated GIF output uses an adaptive palette, error diffusion, and cropped delta frames for compatibility-friendly previews. APNG keeps full RGBA color and also crops unchanged frame regions for high-fidelity animated raster output, while SVG remains the highest-fidelity script-free animated surface. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` applies to opaque raster formats; PNG keeps its dedicated renderer path and PNG output-scale options.
 
 ## Simple Definitions
 

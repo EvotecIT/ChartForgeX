@@ -19,7 +19,7 @@ internal static class TopologyExamples {
         foreach (var file in Directory.EnumerateFiles(source, "*.*", SearchOption.TopDirectoryOnly)) {
             var fileName = Path.GetFileName(file);
             var extension = Path.GetExtension(file);
-            if (extension is not ".html" and not ".svg" and not ".png" and not ".txt") continue;
+            if (extension is not ".html" and not ".svg" and not ".png" and not ".gif" and not ".apng" and not ".txt") continue;
             var targetName = string.Equals(fileName, "index.html", StringComparison.OrdinalIgnoreCase) ? "topology-demo.html" : fileName;
             File.Copy(file, Path.Combine(output, targetName), overwrite: true);
         }

@@ -335,6 +335,7 @@ internal static partial class SmokeTests {
         Assert(result.Errors.Any(error => error.Code == "missing-node-group"), "Topology validator should detect nodes referencing missing groups.");
         Assert(result.Errors.Any(error => error.Code == "missing-edge-target"), "Topology validator should detect edges referencing missing target nodes.");
         AssertThrows<TopologyValidationException>(() => chart.ToSvg(), "Topology renderer should throw a clear validation exception for invalid data.");
+        AssertThrows<TopologyValidationException>(() => chart.ToGif(new TopologyRenderOptions().WithMotion(TopologyMotionOptions.RoutePulseForEdges("e"))), "Topology GIF export should preserve renderer validation errors for invalid data.");
     }
 
     private static void TopologyValidatorRejectsInvalidDimensions() {

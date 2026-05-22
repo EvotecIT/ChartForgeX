@@ -1810,6 +1810,22 @@
       }
     },
     {
+      "name": "visual-replication-mesh-route-motion",
+      "width": 1280,
+      "height": 814,
+      "svg": {
+        "minVisualNodes": 150,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 520960,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "visual-secure-access-arbitrary-icons",
       "width": 1280,
       "height": 714,

@@ -21,6 +21,14 @@ internal static partial class TopologyVisualExamples {
             .WithActiveScenario("client-request-europe")
             .WithHtmlScenarioUrlState();
         meshOptions.EnableHtmlInteractions = true;
+        var meshMotion = TopologyMotionOptions.RoutePulseForScenario("client-request-europe")
+            .WithDuration(4)
+            .WithFrameRate(10)
+            .WithMarker(5);
+        var meshMotionOptions = new TopologyRenderOptions { IncludeIconLabels = true, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
+            .WithMonitoringDashboardStyle()
+            .WithActiveScenario("client-request-europe")
+            .WithMotion(meshMotion);
         var replicationHealthOptions = new TopologyRenderOptions { IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Explicit }
             .WithMonitoringDashboardStyle()
             .WithNeutralGroupSurfaces();
@@ -64,6 +72,7 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-ownership-evidence-bundle", BuildOwnershipEvidenceBundle(), "Ownership Evidence Bundle", "Ownership and evidence topology for selected assets, showing owner teams, certificates, DNS, IP evidence, findings, and exported evidence bundles.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).WithSelectedNode("asset").WithSelectedEdge("asset-finding"));
         SaveTopology(target, artifacts, "visual-reusable-regional-topology", BuildReusableRegionalTopology(), "Reusable Regional Topology", "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, scenario switching, and offender highlighting support.", meshOptions);
+        SaveTopology(target, artifacts, "visual-replication-mesh-route-motion", BuildReplicationMeshExplorer(), "Replication Mesh Route Motion", "Script-free SVG route pulse plus sampled animated GIF and APNG exports for a scenario-driven topology route.", meshMotionOptions);
         SaveTopology(target, artifacts, "visual-subnets-site-links-map", BuildSubnetsSiteLinksMap(), "Subnets and Site Links Map", "Subnet-to-site mapping topology with overlapping/orphan subnet states, bridgehead mapping, site links, and route labels.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-dc-connectivity-map", BuildDcConnectivityMap(), "Domain Controller Connectivity", "Selected-object connectivity topology for domain controllers, connection objects, service checks, and partner health.");
         SaveTopology(target, artifacts, "visual-ad-sites-hierarchy", BuildAdSitesHierarchy(), "AD Sites Hierarchy", "Hierarchy-style site map with hubs, branches, bridgeheads, primary and backup links.", tileSubtitleOptions);
@@ -712,7 +721,10 @@ internal static partial class TopologyVisualExamples {
         chart.SaveSvg(Path.Combine(target, name + ".svg"), options);
         chart.SaveHtml(Path.Combine(target, name + ".html"), options);
         chart.SavePng(Path.Combine(target, name + ".png"), options);
-        artifacts.Add(new VisualArtifact(name, title, "topology", notes));
+        var hasMotion = options?.Motion != null;
+        if (hasMotion) chart.SaveGif(Path.Combine(target, name + ".gif"), options);
+        if (hasMotion) chart.SaveApng(Path.Combine(target, name + ".apng"), options);
+        artifacts.Add(new VisualArtifact(name, title, "topology", notes, hasMotion, hasMotion));
     }
 
     private static void SaveMap(string target, List<VisualArtifact> artifacts, string name, Chart chart, string title, string notes) {

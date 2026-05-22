@@ -35,6 +35,10 @@ public sealed partial class TopologyPngRenderer {
         var validation = validator.Validate(prepared, validateScenarioReferences: false);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
+        return RenderPreparedImage(prepared, options, requestedWidth, requestedHeight);
+    }
+
+    internal RgbaImage RenderPreparedImage(TopologyChart prepared, TopologyRenderOptions options, int requestedWidth, int requestedHeight, TopologyMotionPlan? motionPlan = null) {
         var width = (int)Math.Ceiling(prepared.Viewport.Width);
         var height = (int)Math.Ceiling(prepared.Viewport.Height);
         var theme = prepared.Theme ?? TopologyTheme.Light();
@@ -50,6 +54,7 @@ public sealed partial class TopologyPngRenderer {
         if (options.IncludeEdgeLabels) DrawEdgeLabels(canvas, prepared, theme, options, highlight);
         DrawNodes(canvas, prepared, theme, options, highlight);
         if (options.IncludeStatusBadges) DrawStatusBadges(canvas, prepared, theme, options, highlight);
+        DrawMotionOverlay(canvas, prepared, theme, options, motionPlan);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
         if (options.IncludeLegend && prepared.Legend != null) DrawLegend(canvas, prepared, theme, options);
         var pixels = canvas.ToOutputPixels();

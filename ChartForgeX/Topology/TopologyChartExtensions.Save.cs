@@ -1,12 +1,13 @@
 using System;
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Raster;
 
 namespace ChartForgeX.Topology;
 
 public static partial class TopologyChartExtensions {
     /// <summary>
-    /// Saves the topology chart using the output path extension to choose SVG, HTML, PNG, or an opaque raster image format.
+    /// Saves the topology chart using the output path extension to choose SVG, HTML, PNG, animated GIF, animated PNG, or an opaque raster image format.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
     /// <param name="path">The output path.</param>
@@ -14,6 +15,11 @@ public static partial class TopologyChartExtensions {
     /// <param name="imageOptions">Optional raster export options for opaque raster formats.</param>
     public static void Save(this TopologyChart chart, string path, TopologyRenderOptions? options = null, RasterImageOptions? imageOptions = null) {
         var extension = ChartExtensions.GetExportExtension(path);
+        if (AnimatedRasterFormatExtensions.TryFromFileExtension(extension, out var animatedFormat)) {
+            SaveAnimatedRaster(chart, path, options, animatedFormat);
+            return;
+        }
+
         switch (extension) {
             case ".svg":
                 chart.SaveSvg(path, options);

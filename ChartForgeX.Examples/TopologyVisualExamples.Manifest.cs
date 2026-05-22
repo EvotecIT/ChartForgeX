@@ -16,6 +16,7 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("    \"visual-mini-correlation-map\",");
         sb.AppendLine("    \"visual-evidence-timeline-relationship\",");
         sb.AppendLine("    \"visual-replication-mesh-explorer\",");
+        sb.AppendLine("    \"visual-replication-mesh-route-motion\",");
         sb.AppendLine("    \"visual-subnets-site-links-map\",");
         sb.AppendLine("    \"visual-nested-user-hierarchy\",");
         sb.AppendLine("    \"visual-nested-user-hierarchy-bottom-top\",");
@@ -33,6 +34,8 @@ internal static partial class TopologyVisualExamples {
             sb.AppendLine("      \"svg\": \"" + EscapeJson(artifact.Name + ".svg") + "\",");
             sb.AppendLine("      \"html\": \"" + EscapeJson(artifact.Name + ".html") + "\",");
             sb.AppendLine("      \"png\": \"" + EscapeJson(artifact.Name + ".png") + "\",");
+            if (artifact.HasGif) sb.AppendLine("      \"gif\": \"" + EscapeJson(artifact.Name + ".gif") + "\",");
+            if (artifact.HasApng) sb.AppendLine("      \"apng\": \"" + EscapeJson(artifact.Name + ".apng") + "\",");
             sb.AppendLine("      \"notes\": \"" + EscapeJson(artifact.Notes) + "\"");
             sb.Append("    }");
             sb.AppendLine(i == artifacts.Count - 1 ? string.Empty : ",");
@@ -59,7 +62,7 @@ internal static partial class TopologyVisualExamples {
             sb.AppendLine("<h2>" + EscapeHtml(artifact.Title) + "</h2>");
             sb.AppendLine("<p class=\"notes\">" + EscapeHtml(artifact.Notes) + "</p>");
             sb.AppendLine("<img class=\"preview\" loading=\"lazy\" src=\"" + EscapeHtml(artifact.Name) + ".svg\" alt=\"" + EscapeHtml(artifact.Title) + "\">");
-            sb.AppendLine("<div class=\"links\"><a href=\"" + EscapeHtml(artifact.Name) + ".svg\">SVG</a><a href=\"" + EscapeHtml(artifact.Name) + ".html\">HTML</a><a href=\"" + EscapeHtml(artifact.Name) + ".png\">PNG</a></div>");
+            sb.AppendLine("<div class=\"links\"><a href=\"" + EscapeHtml(artifact.Name) + ".svg\">SVG</a><a href=\"" + EscapeHtml(artifact.Name) + ".html\">HTML</a><a href=\"" + EscapeHtml(artifact.Name) + ".png\">PNG</a>" + (artifact.HasGif ? "<a href=\"" + EscapeHtml(artifact.Name) + ".gif\">GIF</a>" : string.Empty) + (artifact.HasApng ? "<a href=\"" + EscapeHtml(artifact.Name) + ".apng\">APNG</a>" : string.Empty) + "</div>");
             sb.AppendLine("</article>");
         }
 
@@ -73,16 +76,20 @@ internal static partial class TopologyVisualExamples {
     private static string EscapeJson(string value) => value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
 
     private readonly struct VisualArtifact {
-        public VisualArtifact(string name, string title, string kind, string notes) {
+        public VisualArtifact(string name, string title, string kind, string notes, bool hasGif = false, bool hasApng = false) {
             Name = name;
             Title = title;
             Kind = kind;
             Notes = notes;
+            HasGif = hasGif;
+            HasApng = hasApng;
         }
 
         public readonly string Name;
         public readonly string Title;
         public readonly string Kind;
         public readonly string Notes;
+        public readonly bool HasGif;
+        public readonly bool HasApng;
     }
 }

@@ -225,6 +225,31 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Enables deterministic, script-free topology motion for SVG and sampled raster exports.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="motion">The topology motion options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithMotion(this TopologyRenderOptions options, TopologyMotionOptions motion) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (motion == null) throw new ArgumentNullException(nameof(motion));
+        motion.Validate();
+        options.Motion = motion;
+        return options;
+    }
+
+    /// <summary>
+    /// Clears topology motion.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithoutMotion(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.Motion = null;
+        return options;
+    }
+
+    /// <summary>
     /// Enables or disables topology scenario picker controls in interactive HTML output.
     /// </summary>
     /// <param name="options">The render options.</param>

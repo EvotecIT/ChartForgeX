@@ -96,6 +96,99 @@ internal static partial class SmokeTests {
         Assert(focusedViewSvg.Contains("data-chart-id=\"active-scenario\"", StringComparison.Ordinal), "Focused topology views should render when global scenarios reference nodes or edges outside the current view.");
     }
 
+    private static void TopologyScenarioMotionRendersSvgGifAndApng() {
+        var chart = TopologyChart.Create()
+            .WithId("motion-scenario")
+            .WithViewport(420, 220, 20)
+            .WithLegend(null)
+            .AddNode("a", "A", 40, 80)
+            .AddNode("b", "B", 220, 80)
+            .AddEdge("a-b", "a", "b", "flow", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy)
+            .AddScenario("route", "Route", scenario => scenario
+                .WithColor("#2563EB")
+                .AddNodeStep("a")
+                .AddEdgeStep("a-b")
+                .AddNodeStep("b"));
+
+        var options = new TopologyRenderOptions { IncludeLegend = false }
+            .WithMotion(new TopologyMotionOptions {
+                ScenarioId = "route",
+                DurationSeconds = 1,
+                FramesPerSecond = 4,
+                MarkerRadius = 4,
+                Progress = 0.375
+            });
+        var svg = chart.ToSvg(options);
+        Assert(svg.Contains("data-cfx-role=\"topology-motion\"", StringComparison.Ordinal), "Topology SVG motion should emit a script-free motion layer.");
+        Assert(svg.Contains("<animate", StringComparison.Ordinal) && svg.Contains("attributeName=\"stroke-dashoffset\"", StringComparison.Ordinal), "Topology SVG motion should use native SVG animation elements.");
+        Assert(svg.Contains("data-cfx-role=\"topology-motion-tour-path\"", StringComparison.Ordinal), "Topology SVG motion should build one reusable tour path across the animated route.");
+        Assert(svg.Contains("<animateMotion", StringComparison.Ordinal) && svg.Contains("href=\"#motion-scenario-motion-tour-route\"", StringComparison.Ordinal) && svg.Contains("xlink:href=\"#motion-scenario-motion-tour-route\"", StringComparison.Ordinal), "Topology SVG motion should render one marker that follows the generated tour path.");
+        Assert(svg.IndexOf("data-cfx-role=\"topology-motion-route\"", StringComparison.Ordinal) < svg.IndexOf("data-cfx-role=\"topology-node\"", StringComparison.Ordinal), "Topology SVG route pulses should render under node surfaces.");
+        Assert(svg.IndexOf("data-cfx-role=\"topology-motion-marker\"", StringComparison.Ordinal) > svg.IndexOf("data-cfx-role=\"topology-node\"", StringComparison.Ordinal), "Topology SVG moving markers should render above node surfaces to match PNG frame visibility.");
+        var gif = chart.ToGif(options);
+        Assert(gif.Length > 128, "Topology motion GIF should render encoded frames.");
+        Assert(Math.Abs(options.Motion!.Progress - 0.375) < 0.0001, "Topology GIF export should not leak sampled frame progress back into caller-owned motion options.");
+        Assert(gif[0] == (byte)'G' && gif[1] == (byte)'I' && gif[2] == (byte)'F', "Topology motion GIF should use the GIF header.");
+        Assert(System.Text.Encoding.ASCII.GetString(gif).Contains("NETSCAPE2.0", StringComparison.Ordinal), "Looping topology GIFs should include the Netscape loop extension.");
+        using var gifStream = new System.IO.MemoryStream();
+        chart.WriteGif(gifStream, options);
+        Assert(gifStream.ToArray().SequenceEqual(gif), "Topology motion GIF stream export should match byte-array export.");
+        var gifPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "chartforgex-motion-" + Guid.NewGuid().ToString("N") + ".gif");
+        try {
+            chart.SaveGif(gifPath, options);
+            Assert(System.IO.File.ReadAllBytes(gifPath).SequenceEqual(gif), "Topology motion GIF file export should match byte-array export.");
+        } finally {
+            if (System.IO.File.Exists(gifPath)) System.IO.File.Delete(gifPath);
+        }
+
+        AssertThrows<ArgumentNullException>(() => chart.WriteGif(null!, options), "Topology motion GIF stream export should reject null streams.");
+        var apng = chart.ToApng(options);
+        Assert(apng.Length > 128, "Topology motion APNG should render encoded frames.");
+        Assert(apng[0] == 137 && apng[1] == 80 && apng[2] == 78 && apng[3] == 71, "Topology motion APNG should use the PNG signature.");
+        var apngAscii = System.Text.Encoding.ASCII.GetString(apng);
+        Assert(apngAscii.Contains("acTL", StringComparison.Ordinal) && apngAscii.Contains("fcTL", StringComparison.Ordinal) && apngAscii.Contains("fdAT", StringComparison.Ordinal), "Topology motion APNG should include animation control and frame data chunks.");
+        using var apngStream = new System.IO.MemoryStream();
+        chart.WriteApng(apngStream, options);
+        Assert(apngStream.ToArray().SequenceEqual(apng), "Topology motion APNG stream export should match byte-array export.");
+        var apngPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "chartforgex-motion-" + Guid.NewGuid().ToString("N") + ".apng");
+        try {
+            chart.SaveApng(apngPath, options);
+            Assert(System.IO.File.ReadAllBytes(apngPath).SequenceEqual(apng), "Topology motion APNG file export should match byte-array export.");
+        } finally {
+            if (System.IO.File.Exists(apngPath)) System.IO.File.Delete(apngPath);
+        }
+
+        AssertThrows<ArgumentNullException>(() => chart.WriteApng(null!, options), "Topology motion APNG stream export should reject null streams.");
+
+        var explicitEdgeOptions = new TopologyRenderOptions { IncludeLegend = false }
+            .WithMotion(TopologyMotionOptions.RoutePulseForEdges("a-b"));
+        var explicitEdgeSvg = chart.ToSvg(explicitEdgeOptions);
+        Assert(explicitEdgeSvg.Contains("data-cfx-motion-source=\"explicit-edges\"", StringComparison.Ordinal), "Topology motion should animate explicit edge ids without requiring a scenario.");
+        Assert(explicitEdgeSvg.Contains("data-cfx-role=\"topology-motion-node\"", StringComparison.Ordinal), "Explicit edge motion should expose endpoint node pulses through the same reusable motion layer.");
+
+        var noScenarioChart = TopologyChart.Create()
+            .WithId("motion-explicit-edge")
+            .WithViewport(420, 220, 20)
+            .WithLegend(null)
+            .AddNode("a", "A", 40, 80)
+            .AddNode("b", "B", 220, 80)
+            .AddEdge("a-b", "a", "b", "flow", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy);
+        var noScenarioSvg = noScenarioChart.ToSvg(explicitEdgeOptions);
+        Assert(noScenarioSvg.Contains("data-cfx-motion-source=\"explicit-edges\"", StringComparison.Ordinal), "Explicit edge motion should render even when the topology has no scenarios.");
+        Assert(noScenarioChart.ToGif(explicitEdgeOptions).Length > 128, "Explicit edge motion should export GIF frames even when the topology has no scenarios.");
+        Assert(noScenarioChart.ToApng(explicitEdgeOptions).Length > 128, "Explicit edge motion should export APNG frames even when the topology has no scenarios.");
+        AssertThrows<InvalidOperationException>(() => noScenarioChart.ToGif(new TopologyRenderOptions { IncludeLegend = false }), "Topology GIF export should fail clearly when no scenario or explicit edge route can be animated.");
+        AssertThrows<InvalidOperationException>(() => noScenarioChart.ToApng(new TopologyRenderOptions { IncludeLegend = false }), "Topology APNG export should fail clearly when no scenario or explicit edge route can be animated.");
+
+        var scenarioOptions = TopologyMotionOptions.RoutePulseForScenario(" route ");
+        Assert(scenarioOptions.ScenarioId == "route", "Topology motion scenario factories should trim stable ids.");
+        scenarioOptions
+            .WithDuration(2)
+            .WithFrameRate(4)
+            .WithFrameLimit(4);
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.ToGif(new TopologyRenderOptions { IncludeLegend = false }.WithMotion(scenarioOptions)), "Topology GIF export should reject frame counts above the configured raster frame limit.");
+    }
+
     private static void TopologyScenarioModelsRejectInvalidInputs() {
         var scenario = new TopologyScenario { Id = "scenario", Label = "Scenario" }
             .WithMetadata("owner", "network")
@@ -127,6 +220,24 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.WithMetadata(" ", "value"), "Topology scenario metadata helpers should reject empty keys close to the caller.");
         AssertThrows<ArgumentException>(() => new TopologyScenarioStep { Id = "node", Kind = TopologyScenarioStepKind.Node }.WithMetadata(" ", "value"), "Topology scenario step metadata helpers should reject empty keys close to the caller.");
         AssertThrows<ArgumentException>(() => new TopologyRenderOptions().WithActiveScenario("bad id"), "Topology active scenario helpers should reject ids that cannot be used as stable HTML tokens.");
+        AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForScenario("bad id"), "Topology motion scenario helpers should reject ids that cannot be used as stable HTML tokens.");
+        AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForEdges(), "Topology motion explicit edge helpers should require at least one edge id.");
+        AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForEdges(" "), "Topology motion explicit edge helpers should reject empty edge ids.");
+        var motion = TopologyMotionOptions.RoutePulseForEdges("edge")
+            .WithDuration(2)
+            .WithFrameRate(8)
+            .WithFrameLimit(32)
+            .WithMarker(6, " #2563EB ")
+            .AtProgress(0.5)
+            .WithEndpointPulses(false);
+        Assert(motion.DurationSeconds == 2 && motion.FramesPerSecond == 8 && motion.MaximumRasterFrames == 32 && motion.MarkerRadius == 6 && motion.MarkerColor == "#2563EB" && Math.Abs(motion.Progress - 0.5) < 0.0001 && !motion.PulseRouteEndpoints, "Topology motion fluent helpers should tune reusable route animation options close to the caller.");
+        Assert(motion.WithMarkerColor(" ").MarkerColor == null, "Topology motion marker color helpers should clear empty overrides.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithDuration(0), "Topology motion fluent duration helper should reject invalid values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithFrameRate(double.PositiveInfinity), "Topology motion fluent frame-rate helper should reject invalid values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithFrameLimit(0), "Topology motion fluent frame-limit helper should reject invalid values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithMarker(double.NaN), "Topology motion fluent marker helper should reject invalid values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").AtProgress(1.1), "Topology motion fluent progress helper should reject values outside the sampled progress range.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyRenderOptions().WithMotion(new TopologyMotionOptions { MaximumRasterFrames = 0 }), "Topology motion options should reject non-positive raster frame limits.");
     }
 
 }
