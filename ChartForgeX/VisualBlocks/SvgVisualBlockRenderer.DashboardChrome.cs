@@ -23,8 +23,8 @@ public sealed partial class SvgVisualBlockRenderer {
             for (var i = 0; i < 3; i++) writer.StartElement("circle").Attribute("data-cfx-role", "segmented-metric-menu-dot").Attribute("cx", layout.MenuDotStartX + i * 7).Attribute("cy", layout.MenuDotY).Attribute("r", 2.1).Attribute("fill", theme.MutedText.ToCss()).EndEmptyElement().Line();
         }
 
-        if (card.Title.Length > 0) WriteText(writer, card.Title, layout.TextX, y + theme.TitleFontSize * 0.75, layout.TextWidth, VisualTextAlignment.Left, theme.Text, theme.FontFamily, theme.TitleFontSize, "800");
-        if (card.Subtitle.Length > 0) WriteText(writer, card.Subtitle, layout.TextX, y + theme.TitleFontSize + 8 + theme.SubtitleFontSize * 0.75, layout.TextWidth, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
+        if (card.Title.Length > 0) WriteText(writer, card.Title, layout.TextX, layout.TitleTop + theme.TitleFontSize * 0.75, layout.TextWidth, VisualTextAlignment.Left, theme.Text, theme.FontFamily, theme.TitleFontSize, "800");
+        if (card.Subtitle.Length > 0) WriteText(writer, card.Subtitle, layout.TextX, layout.SubtitleTop + theme.SubtitleFontSize * 0.75, layout.TextWidth, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
         writer.StartElement("line").Attribute("data-cfx-role", "segmented-metric-header-divider").Attribute("x1", x).Attribute("y1", layout.DividerY).Attribute("x2", x + width).Attribute("y2", layout.DividerY).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
         y = layout.NextY;
     }

@@ -25,8 +25,8 @@ public sealed partial class PngVisualBlockRenderer {
             for (var i = 0; i < 3; i++) canvas.DrawCircle(layout.MenuDotStartX + i * 7, layout.MenuDotY, 2.1, theme.MutedText);
         }
 
-        if (card.Title.Length > 0) DrawAlignedText(canvas, card.Title, layout.TextX, y, layout.TextWidth, VisualTextAlignment.Left, theme.Text, theme.TitleFontSize, true);
-        if (card.Subtitle.Length > 0) DrawAlignedText(canvas, card.Subtitle, layout.TextX, y + theme.TitleFontSize + 8, layout.TextWidth, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
+        if (card.Title.Length > 0) DrawAlignedText(canvas, card.Title, layout.TextX, layout.TitleTop, layout.TextWidth, VisualTextAlignment.Left, theme.Text, theme.TitleFontSize, true);
+        if (card.Subtitle.Length > 0) DrawAlignedText(canvas, card.Subtitle, layout.TextX, layout.SubtitleTop, layout.TextWidth, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
         canvas.DrawLine(x, layout.DividerY, x + width, layout.DividerY, theme.PlotBorder, 1);
         y = layout.NextY;
     }

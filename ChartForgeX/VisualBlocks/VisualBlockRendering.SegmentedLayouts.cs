@@ -24,9 +24,15 @@ internal static partial class VisualBlockRendering {
         var badgeSize = card.HeaderSymbol.Length > 0 ? 48.0 : 0.0;
         var textX = x + (badgeSize > 0 ? badgeSize + 18 : 0);
         var menuReserve = card.ShowMenu ? 42.0 : 0.0;
-        var titleHeight = card.Title.Length > 0 ? theme.TitleFontSize + (card.Subtitle.Length > 0 ? theme.SubtitleFontSize + 13 : 8) : 0;
-        var dividerY = y + Math.Max(badgeSize, titleHeight) + 18;
-        return new SegmentedHeaderLayout(badgeSize, textX, Math.Max(1, width - (textX - x) - menuReserve), x + width - 22, y + 22, dividerY, dividerY + 24);
+        var hasTitle = card.Title.Length > 0;
+        var hasSubtitle = card.Subtitle.Length > 0;
+        var titleTop = y;
+        var subtitleTop = hasTitle ? y + theme.TitleFontSize + 8 : y + (badgeSize > 0 && hasSubtitle ? Math.Max(0, (badgeSize - theme.SubtitleFontSize) / 2) : 0);
+        var textHeight = hasTitle
+            ? theme.TitleFontSize + (hasSubtitle ? theme.SubtitleFontSize + 13 : 8)
+            : hasSubtitle ? subtitleTop - y + theme.SubtitleFontSize + 6 : 0;
+        var dividerY = y + Math.Max(badgeSize, textHeight) + 18;
+        return new SegmentedHeaderLayout(badgeSize, textX, Math.Max(1, width - (textX - x) - menuReserve), x + width - 22, y + 22, titleTop, subtitleTop, dividerY, dividerY + 24);
     }
 
     public static SegmentedFunnelLayout SegmentedFunnelLayout(SegmentedMetricBlock card, ChartRect content, double y, double footerHeight) {
@@ -240,12 +246,14 @@ internal readonly struct SegmentedCapsuleLayout {
 }
 
 internal readonly struct SegmentedHeaderLayout {
-    public SegmentedHeaderLayout(double badgeSize, double textX, double textWidth, double menuDotStartX, double menuDotY, double dividerY, double nextY) {
+    public SegmentedHeaderLayout(double badgeSize, double textX, double textWidth, double menuDotStartX, double menuDotY, double titleTop, double subtitleTop, double dividerY, double nextY) {
         BadgeSize = badgeSize;
         TextX = textX;
         TextWidth = textWidth;
         MenuDotStartX = menuDotStartX;
         MenuDotY = menuDotY;
+        TitleTop = titleTop;
+        SubtitleTop = subtitleTop;
         DividerY = dividerY;
         NextY = nextY;
     }
@@ -255,6 +263,8 @@ internal readonly struct SegmentedHeaderLayout {
     public double TextWidth { get; }
     public double MenuDotStartX { get; }
     public double MenuDotY { get; }
+    public double TitleTop { get; }
+    public double SubtitleTop { get; }
     public double DividerY { get; }
     public double NextY { get; }
 }

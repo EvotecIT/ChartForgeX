@@ -218,6 +218,17 @@ internal static partial class SmokeTests {
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-action-band\"", StringComparison.Ordinal), "SegmentedMetricBlock should render optional action bands.");
         Assert(segmented.ToPng().Length > 64, "SegmentedMetricBlock progress rows should render PNG output.");
 
+        var subtitleOnlyHeader = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
+            .WithSubtitle("Subtitle without title")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(420, 180)
+            .WithMenu()
+            .AddItem("Ready", 1, segments: 8);
+        var subtitleOnlyHeaderSvg = subtitleOnlyHeader.ToSvg("visual-block-segmented-subtitle-only-header");
+        var subtitleOnlyDividerY = GetAttribute(subtitleOnlyHeaderSvg, "data-cfx-role=\"segmented-metric-header-divider\"", "y1");
+        Assert(subtitleOnlyDividerY >= 50, "SegmentedMetricBlock subtitle-only headers should reserve text height before drawing the divider.");
+        Assert(subtitleOnlyHeader.ToPng().Length > 64, "SegmentedMetricBlock subtitle-only headers should render PNG output.");
+
         var performanceRows = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(620, 260)
