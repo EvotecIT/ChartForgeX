@@ -278,14 +278,14 @@
       "width": 820,
       "height": 340,
       "svg": {
-        "minVisualNodes": 17,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
-        "minDistinctColors": 1959,
+        "minDistinctColors": 1857,
         "maxEdgeInkPixels": 0
       }
     },

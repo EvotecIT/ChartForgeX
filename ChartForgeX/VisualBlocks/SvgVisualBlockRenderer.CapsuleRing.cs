@@ -37,34 +37,26 @@ public sealed partial class SvgVisualBlockRenderer {
         var theme = card.Options.Theme;
         writer.StartElement("path")
             .Attribute("data-cfx-role", "segmented-metric-capsule-track-shadow")
-            .Attribute("d", PathFromPoints(VisualBlockRendering.CapsuleRingSegmentPoints(x, y + 1.1, width, height, 0, 1, VisualBlockRendering.CapsuleRingSamples)))
-            .Attribute("fill", "none")
-            .Attribute("stroke", theme.MutedText.WithAlpha(16).ToCss())
-            .Attribute("stroke-width", stroke + 2)
-            .Attribute("stroke-linecap", "round")
-            .Attribute("stroke-linejoin", "round")
+            .Attribute("d", ClosedPathFromPoints(VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y + 1.2, width, height, stroke + 2, 0, 1, VisualBlockRendering.CapsuleRingSamples)))
+            .Attribute("fill", theme.MutedText.WithAlpha(8).ToCss())
             .EndEmptyElement().Line();
         writer.StartElement("path")
             .Attribute("data-cfx-role", "segmented-metric-capsule-track")
-            .Attribute("d", PathFromPoints(VisualBlockRendering.CapsuleRingSegmentPoints(x, y, width, height, 0, 1, VisualBlockRendering.CapsuleRingSamples)))
-            .Attribute("fill", "none")
-            .Attribute("stroke", theme.PlotBackground.ToCss())
-            .Attribute("stroke-width", stroke)
-            .Attribute("stroke-linecap", "round")
-            .Attribute("stroke-linejoin", "round")
+            .Attribute("d", ClosedPathFromPoints(VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y, width, height, stroke, 0, 1, VisualBlockRendering.CapsuleRingSamples)))
+            .Attribute("fill", theme.CardBackground.WithAlpha(160).ToCss())
             .EndEmptyElement().Line();
     }
 
     private static void RenderCapsuleSegments(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
         var theme = card.Options.Theme;
-        var gap = VisualBlockRendering.CapsuleRingBoundaryGapRatio(width, height, stroke);
-        foreach (var slice in VisualBlockRendering.SegmentedSlices(card)) {
+        var slices = VisualBlockRendering.SegmentedSlices(card);
+        foreach (var slice in slices) {
             var color = VisualBlockRendering.SegmentedItemColor(theme, slice.Item, slice.Index);
-            var segmentGap = Math.Min(gap, Math.Max(0, slice.Share * 0.10));
-            var start = Math.Min(slice.End, slice.Start + segmentGap);
-            var end = Math.Max(start, slice.End - segmentGap);
+            var segmentGap = 0.0;
+            var start = slice.Start;
+            var end = slice.End;
             if (end - start <= 0.001) continue;
-            var path = PathFromPoints(VisualBlockRendering.CapsuleRingSegmentPoints(x, y, width, height, start, end, VisualBlockRendering.CapsuleRingSamples));
+            var path = ClosedPathFromPoints(VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y, width, height, stroke, start, end, VisualBlockRendering.CapsuleRingSamples));
             writer.StartElement("path")
                 .Attribute("data-cfx-role", "segmented-metric-capsule-segment")
                 .Attribute("data-cfx-label", slice.Item.Label)
@@ -73,13 +65,25 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("data-cfx-gap", segmentGap)
                 .Attribute("data-cfx-samples", VisualBlockRendering.CapsuleRingSamples)
                 .Attribute("d", path)
-                .Attribute("fill", "none")
-                .Attribute("stroke", color.ToCss())
-                .Attribute("stroke-width", stroke)
-                .Attribute("stroke-linecap", "round")
-                .Attribute("stroke-linejoin", "round")
+                .Attribute("fill", color.ToCss())
                 .EndEmptyElement().Line();
             if (slice.Share >= 0.075) RenderCapsuleSegmentLabel(writer, card, slice, color, x, y, width, height, stroke);
+        }
+
+        RenderCapsuleSeparators(writer, card, slices, x, y, width, height, stroke);
+    }
+
+    private static void RenderCapsuleSeparators(SvgMarkupWriter writer, SegmentedMetricBlock card, IReadOnlyList<SegmentedMetricSlice> slices, double x, double y, double width, double height, double stroke) {
+        var theme = card.Options.Theme;
+        var gap = VisualBlockRendering.CapsuleRingBoundaryGapRatio(width, height, stroke);
+        for (var i = 1; i < slices.Count; i++) {
+            var ratio = slices[i].Start;
+            writer.StartElement("path")
+                .Attribute("data-cfx-role", "segmented-metric-capsule-separator")
+                .Attribute("data-cfx-ratio", ratio)
+                .Attribute("d", ClosedPathFromPoints(VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y, width, height, stroke + 0.8, Math.Max(0, ratio - gap), Math.Min(1, ratio + gap), Math.Max(8, VisualBlockRendering.CapsuleRingSamples / 6))))
+                .Attribute("fill", theme.CardBackground.ToCss())
+                .EndEmptyElement().Line();
         }
     }
 
@@ -133,5 +137,10 @@ public sealed partial class SvgVisualBlockRenderer {
         }
 
         return builder.ToString();
+    }
+
+    private static string ClosedPathFromPoints(IReadOnlyList<ChartPoint> points) {
+        if (points.Count == 0) return string.Empty;
+        return PathFromPoints(points) + " Z";
     }
 }

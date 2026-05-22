@@ -254,7 +254,7 @@ internal static partial class SmokeTests {
         Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should share segmented metric header chrome.");
         Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-segment\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render part-to-whole segments.");
         Assert(capsuleSvg.Contains("data-cfx-samples=\"96\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render smooth segment geometry.");
-        Assert(capsuleSvg.Contains("stroke-linejoin=\"round\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should keep curved segment joins smooth.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-segment\"", StringComparison.Ordinal) && capsuleSvg.Contains(" Z\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render filled band segments instead of disconnected stroked pills.");
         Assert(GetAttribute(capsuleSvg, "data-cfx-label=\"Revoked\"", "data-cfx-gap") <= 0.012, "SegmentedMetricBlock capsule rings should keep small-slice separators tight instead of leaving large visual gaps.");
         Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-label\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render readable share labels when there is room.");
         Assert(capsuleSvg.Contains("paint-order=\"stroke\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule labels should render with a readable halo.");
@@ -268,8 +268,8 @@ internal static partial class SmokeTests {
             .AddItem("First", 3)
             .AddItem("Second", 2);
         var paletteFallbackSvg = paletteFallback.ToSvg("visual-block-segmented-palette-fallback");
-        Assert(paletteFallbackSvg.Contains("stroke=\"#112233\"", StringComparison.Ordinal), "SegmentedMetricBlock items without color or status should use the theme palette.");
-        Assert(paletteFallbackSvg.Contains("stroke=\"#445566\"", StringComparison.Ordinal), "SegmentedMetricBlock should cycle the theme palette across generic items.");
+        Assert(paletteFallbackSvg.Contains("fill=\"#112233\"", StringComparison.Ordinal), "SegmentedMetricBlock items without color or status should use the theme palette.");
+        Assert(paletteFallbackSvg.Contains("fill=\"#445566\"", StringComparison.Ordinal), "SegmentedMetricBlock should cycle the theme palette across generic items.");
 
         var funnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
             .WithTitle("Conversion Funnel")

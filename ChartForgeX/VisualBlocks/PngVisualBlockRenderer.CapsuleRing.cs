@@ -29,29 +29,37 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawCapsuleTrack(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
         var theme = card.Options.Theme;
-        canvas.DrawPolyline(VisualBlockRendering.CapsuleRingSegmentPoints(x, y + 1.1, width, height, 0, 1, VisualBlockRendering.CapsuleRingSamples), theme.MutedText.WithAlpha(16), stroke + 2);
-        canvas.DrawPolyline(VisualBlockRendering.CapsuleRingSegmentPoints(x, y, width, height, 0, 1, VisualBlockRendering.CapsuleRingSamples), theme.PlotBackground, stroke);
+        canvas.FillPolygon(VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y + 1.2, width, height, stroke + 2, 0, 1, VisualBlockRendering.CapsuleRingSamples), theme.MutedText.WithAlpha(8));
+        canvas.FillPolygon(VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y, width, height, stroke, 0, 1, VisualBlockRendering.CapsuleRingSamples), theme.CardBackground.WithAlpha(160));
     }
 
     private static void DrawCapsuleSegments(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
         var theme = card.Options.Theme;
-        var gap = VisualBlockRendering.CapsuleRingBoundaryGapRatio(width, height, stroke);
-        foreach (var slice in VisualBlockRendering.SegmentedSlices(card)) {
+        var slices = VisualBlockRendering.SegmentedSlices(card);
+        foreach (var slice in slices) {
             var color = VisualBlockRendering.SegmentedItemColor(theme, slice.Item, slice.Index);
-            var segmentGap = Math.Min(gap, Math.Max(0, slice.Share * 0.10));
-            var start = Math.Min(slice.End, slice.Start + segmentGap);
-            var end = Math.Max(start, slice.End - segmentGap);
+            var start = slice.Start;
+            var end = slice.End;
             if (end - start <= 0.001) continue;
-            var points = VisualBlockRendering.CapsuleRingSegmentPoints(x, y, width, height, start, end, VisualBlockRendering.CapsuleRingSamples);
-            DrawCapsulePolyline(canvas, points, color, stroke);
-            if (slice.Share >= 0.075) DrawCapsuleSegmentLabel(canvas, card, slice, color, x, y, width, height, stroke);
+            canvas.FillPolygon(VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y, width, height, stroke, start, end, VisualBlockRendering.CapsuleRingSamples), color);
+        }
+
+        DrawCapsuleSeparators(canvas, card, slices, x, y, width, height, stroke);
+        foreach (var slice in slices) {
+            if (slice.Share < 0.075) continue;
+            DrawCapsuleSegmentLabel(canvas, card, slice, VisualBlockRendering.SegmentedItemColor(theme, slice.Item, slice.Index), x, y, width, height, stroke);
         }
     }
 
-    private static void DrawCapsulePolyline(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) {
-        canvas.DrawPolyline(points, color, thickness);
-        var radius = Math.Max(0.5, thickness / 2);
-        for (var i = 1; i < points.Count - 1; i++) canvas.DrawCircle(points[i].X, points[i].Y, radius, color);
+    private static void DrawCapsuleSeparators(RgbaCanvas canvas, SegmentedMetricBlock card, IReadOnlyList<SegmentedMetricSlice> slices, double x, double y, double width, double height, double stroke) {
+        var theme = card.Options.Theme;
+        var gap = VisualBlockRendering.CapsuleRingBoundaryGapRatio(width, height, stroke);
+        for (var i = 1; i < slices.Count; i++) {
+            var ratio = slices[i].Start;
+            canvas.FillPolygon(
+                VisualBlockRendering.CapsuleRingBandSegmentPoints(x, y, width, height, stroke + 0.8, Math.Max(0, ratio - gap), Math.Min(1, ratio + gap), Math.Max(8, VisualBlockRendering.CapsuleRingSamples / 6)),
+                theme.CardBackground);
+        }
     }
 
     private static void DrawCapsuleSegmentLabel(RgbaCanvas canvas, SegmentedMetricBlock card, SegmentedMetricSlice slice, ChartColor color, double x, double y, double width, double height, double stroke) {

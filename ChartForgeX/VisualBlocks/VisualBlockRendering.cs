@@ -467,6 +467,25 @@ internal static partial class VisualBlockRendering {
         return points;
     }
 
+    public static IReadOnlyList<ChartPoint> CapsuleRingBandSegmentPoints(double x, double y, double width, double height, double stroke, double startRatio, double endRatio, int samples = 24) {
+        var count = Math.Max(4, samples);
+        var points = new List<ChartPoint>((count + 1) * 2);
+        var start = Math.Max(0, Math.Min(1, startRatio));
+        var end = Math.Max(start, Math.Min(1, endRatio));
+        var halfStroke = Math.Max(0.5, stroke / 2);
+        for (var i = 0; i <= count; i++) {
+            var t = start + (end - start) * i / count;
+            points.Add(CapsuleRingOffsetPoint(x, y, width, height, t, halfStroke));
+        }
+
+        for (var i = count; i >= 0; i--) {
+            var t = start + (end - start) * i / count;
+            points.Add(CapsuleRingOffsetPoint(x, y, width, height, t, -halfStroke));
+        }
+
+        return points;
+    }
+
     public static ChartPoint CapsuleRingPoint(double x, double y, double width, double height, double ratio) {
         var radius = Math.Max(1, Math.Min(height / 2, width / 2));
         var straight = Math.Max(0, width - radius * 2);
@@ -486,6 +505,24 @@ internal static partial class VisualBlockRendering {
         d -= straight;
         var leftAngle = Math.PI / 2 + d / radius;
         return new ChartPoint(x + radius + Math.Cos(leftAngle) * radius, y + radius + Math.Sin(leftAngle) * radius);
+    }
+
+    private static ChartPoint CapsuleRingOffsetPoint(double x, double y, double width, double height, double ratio, double offset) {
+        var point = CapsuleRingPoint(x, y, width, height, ratio);
+        var epsilon = 1.0 / Math.Max(384, CapsuleRingSamples * 4);
+        var before = CapsuleRingPoint(x, y, width, height, NormalizeRatio(ratio - epsilon));
+        var after = CapsuleRingPoint(x, y, width, height, NormalizeRatio(ratio + epsilon));
+        var dx = after.X - before.X;
+        var dy = after.Y - before.Y;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        if (length < double.Epsilon) return point;
+        return new ChartPoint(point.X + dy / length * offset, point.Y - dx / length * offset);
+    }
+
+    private static double NormalizeRatio(double ratio) {
+        if (ratio >= 0 && ratio <= 1) return ratio;
+        var normalized = ratio - Math.Floor(ratio);
+        return normalized >= 1 ? 0 : normalized;
     }
 
     public static double WorkloadRatio(WorkloadListRow row) => SegmentRatio(row.Value, row.Maximum);
