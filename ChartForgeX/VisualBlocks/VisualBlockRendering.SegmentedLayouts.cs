@@ -6,24 +6,17 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
-    public static SegmentedCapsuleLayout CapsuleRingLayout(VisualBlockOptions options, ChartRect content, double y, bool hasAction) {
+    public static SegmentedCapsuleLayout CapsuleSplitLayout(VisualBlockOptions options, ChartRect content, double y, bool hasAction) {
         var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.13)) : 0;
         var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
         var legendRight = content.Width >= 430;
         var legendWidth = legendRight ? Math.Min(230, Math.Max(150, content.Width * 0.34)) : content.Width;
-        var availableRingWidth = legendRight ? Math.Max(160, content.Width - legendWidth - 30) : content.Width;
-        var availableRingHeight = Math.Max(1, bottom - y - 18);
-        var minimumRingHeight = Math.Min(72, availableRingHeight);
-        var ringHeight = Math.Min(availableRingHeight, Math.Max(minimumRingHeight, Math.Min(128, Math.Min(availableRingHeight, availableRingWidth * 0.43))));
-        var ringWidth = legendRight ? Math.Min(availableRingWidth, Math.Max(180, ringHeight * 3.75)) : availableRingWidth;
-        var stroke = Math.Max(10, Math.Min(30, ringHeight * 0.235));
-        var ringX = content.X + stroke / 2;
-        var ringY = y + stroke / 2 + Math.Max(0, (bottom - y - ringHeight) * 0.25);
-        var pathWidth = Math.Max(1, ringWidth - stroke);
-        var pathHeight = Math.Max(1, ringHeight - stroke);
-        var legendX = legendRight ? content.X + ringWidth + 30 : content.X;
-        var legendY = legendRight ? ringY - stroke / 2 + 8 : ringY + pathHeight + stroke + 14;
-        return new SegmentedCapsuleLayout(footerHeight, bottom, legendRight, legendWidth, ringWidth, ringHeight, stroke, ringX, ringY, pathWidth, pathHeight, legendX, legendY, Math.Max(0, bottom - legendY));
+        var availableSplitWidth = legendRight ? Math.Max(160, content.Width - legendWidth - 30) : content.Width;
+        var stripHeight = Math.Max(18, Math.Min(34, (bottom - y) * 0.22));
+        var stripY = y + Math.Max(18, (bottom - y - stripHeight) * 0.32);
+        var legendX = legendRight ? content.X + availableSplitWidth + 30 : content.X;
+        var legendY = legendRight ? Math.Max(y + 10, stripY - 18) : stripY + stripHeight + 18;
+        return new SegmentedCapsuleLayout(footerHeight, bottom, legendRight, legendWidth, availableSplitWidth, stripHeight, stripHeight, content.X, stripY, availableSplitWidth, stripHeight, legendX, legendY, Math.Max(0, bottom - legendY));
     }
 
     public static SegmentedHeaderLayout SegmentedHeaderLayout(SegmentedMetricBlock card, double x, double y, double width) {
@@ -174,12 +167,6 @@ internal static partial class VisualBlockRendering {
             SegmentedShareText(segment, total, "0.##"));
     }
 
-    public static double CapsuleRingBoundaryGapRatio(double width, double height, double stroke) {
-        var radius = Math.Max(1, Math.Min(height / 2, width / 2));
-        var straight = Math.Max(0, width - radius * 2);
-        var perimeter = Math.Max(1, straight * 2 + Math.PI * radius * 2);
-        return Math.Min(0.003, Math.Max(0.0015, stroke * 0.10 / perimeter));
-    }
 }
 
 internal readonly struct SegmentedMetricSlice {

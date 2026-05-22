@@ -238,9 +238,9 @@ internal static partial class SmokeTests {
         Assert(performanceRowsSvg.Contains("+4.3%", StringComparison.Ordinal) && performanceRowsSvg.Contains("-6.4%", StringComparison.Ordinal), "SegmentedMetricBlock progress rows should render semantic deltas alongside exact values.");
         Assert(performanceRows.ToPng().Length > 64, "SegmentedMetricBlock performance rows should render PNG output.");
 
-        var capsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing)
+        var capsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleSplit)
             .WithTitle("Certificate Count")
-            .WithSubtitle("Reusable capsule ring split")
+            .WithSubtitle("Reusable capsule split")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(620, 260)
             .WithMenu()
@@ -249,19 +249,17 @@ internal static partial class SmokeTests {
             .AddItem("Revoked", 6, color: ChartColor.FromHex("#EF5DA8"), displayValue: "6")
             .AddItem("Unknown", 10, color: ChartColor.FromHex("#6D83F2"), displayValue: "10");
         var capsuleSvg = capsule.ToSvg("visual-block-segmented-capsule");
-        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-ring\"", StringComparison.Ordinal), "SegmentedMetricBlock should render capsule ring treatments.");
-        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-track\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render a base track.");
-        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should share segmented metric header chrome.");
-        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-segment\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render part-to-whole segments.");
-        Assert(capsuleSvg.Contains("data-cfx-samples=\"96\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render smooth segment geometry.");
-        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-segment\"", StringComparison.Ordinal) && capsuleSvg.Contains(" Z\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render filled band segments instead of disconnected stroked pills.");
-        Assert(GetAttribute(capsuleSvg, "data-cfx-label=\"Revoked\"", "data-cfx-gap") <= 0.012, "SegmentedMetricBlock capsule rings should keep small-slice separators tight instead of leaving large visual gaps.");
-        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-label\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render readable share labels when there is room.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-split\"", StringComparison.Ordinal), "SegmentedMetricBlock should render capsule split treatments.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-track\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule splits should render a base track.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule splits should share segmented metric header chrome.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-segment\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule splits should render part-to-whole segments.");
+        Assert(GetAttribute(capsuleSvg, "data-cfx-label=\"Revoked\"", "data-cfx-width") > 0, "SegmentedMetricBlock capsule splits should keep small slices visible without closed-loop gap artifacts.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-label\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule splits should render readable share labels when there is room.");
         Assert(capsuleSvg.Contains("paint-order=\"stroke\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule labels should render with a readable halo.");
-        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-legend\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render generic legend values.");
-        Assert(capsule.ToPng().Length > 64, "SegmentedMetricBlock capsule rings should render PNG output.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-legend\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule splits should render generic legend values.");
+        Assert(capsule.ToPng().Length > 64, "SegmentedMetricBlock capsule splits should render PNG output.");
 
-        var paletteFallback = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing)
+        var paletteFallback = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleSplit)
             .WithTheme(ChartTheme.ReportLight())
             .WithPalette("#112233", "#445566")
             .WithSize(420, 220)
@@ -316,7 +314,7 @@ internal static partial class SmokeTests {
         var denseLastStageWidth = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
         Assert(denseLastStageX + denseLastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock dense funnel stages should preserve fitted widths instead of overflowing after a minimum bar clamp.");
 
-        var compactCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing)
+        var compactCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleSplit)
             .WithTitle("Compact Capsule")
             .WithSubtitle("Tight card")
             .WithTheme(ChartTheme.ReportLight())
@@ -326,8 +324,8 @@ internal static partial class SmokeTests {
             .AddItem("Second", 8)
             .AddItem("Third", 6);
         var compactCapsuleSvg = compactCapsule.ToSvg("visual-block-segmented-compact-capsule");
-        var compactCapsuleHeight = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-ring\"", "data-cfx-ring-height");
-        Assert(compactCapsuleHeight > 0 && compactCapsuleHeight < 72, "SegmentedMetricBlock compact capsule rings should fit available plot height instead of forcing the default minimum.");
+        var compactCapsuleHeight = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-split\"", "data-cfx-strip-height");
+        Assert(compactCapsuleHeight > 0 && compactCapsuleHeight < 72, "SegmentedMetricBlock compact capsule splits should fit available plot height instead of forcing the old closed-loop minimum.");
 
         var configuredItems = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTheme(ChartTheme.ReportLight())
@@ -746,7 +744,7 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip).WithMetric("Tasks", 0).ToSvg(), "SegmentedMetricBlock composition styles should require at least one item.");
         AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip).WithMetric("Tasks", 0).AddItem("Bad", -1).ToSvg(), "SegmentedMetricBlock should reject negative composition values.");
         AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip).WithMetric("Tasks", 0).AddItem("Zero", 0).ToSvg(), "SegmentedMetricBlock composition styles should require at least one positive item value.");
-        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing).AddItem("Zero", 0).ToSvg(), "SegmentedMetricBlock capsule rings should require at least one positive item value.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleSplit).AddItem("Zero", 0).ToSvg(), "SegmentedMetricBlock capsule splits should require at least one positive item value.");
         AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns).AddItem("Bad", 1, segments: 0).ToSvg(), "SegmentedMetricBlock funnel columns should reject invalid segment counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => new SegmentedMetricItem("Bad", 1).Pattern = (ChartFillPattern)999, "SegmentedMetricItem should reject unknown fill patterns.");
         AssertThrows<ArgumentOutOfRangeException>(() => SegmentedMetricBlock.Create().Style = (SegmentedMetricStyle)999, "SegmentedMetricBlock should reject unknown styles.");

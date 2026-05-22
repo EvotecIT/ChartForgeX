@@ -284,8 +284,8 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static void DrawSegmentedMetric(RgbaCanvas canvas, SegmentedMetricBlock card) {
-        if (card.Style == SegmentedMetricStyle.CapsuleRing) {
-            DrawSegmentedMetricCapsuleRing(canvas, card);
+        if (card.Style == SegmentedMetricStyle.CapsuleSplit) {
+            DrawSegmentedMetricCapsuleSplit(canvas, card);
             return;
         }
 

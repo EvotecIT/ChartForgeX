@@ -274,18 +274,18 @@
       }
     },
     {
-      "name": "dashboard-channel-share-capsule-ring",
+      "name": "dashboard-channel-share-capsule-split",
       "width": 820,
       "height": 340,
       "svg": {
-        "minVisualNodes": 19,
+        "minVisualNodes": 18,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
-        "minDistinctColors": 1857,
+        "minDistinctColors": 1396,
         "maxEdgeInkPixels": 0
       }
     },

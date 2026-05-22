@@ -12,7 +12,6 @@ internal static partial class VisualBlockRendering {
     public const int MaximumScheduleTicks = 512;
     public const int MaximumScheduleLanes = 256;
     public const int MaximumTableMicroVisualPoints = 512;
-    public const int CapsuleRingSamples = 96;
 
     public static void Validate(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
@@ -402,7 +401,7 @@ internal static partial class VisualBlockRendering {
         style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
 
     public static bool SegmentedMetricRequiresPositiveTotal(SegmentedMetricStyle style) =>
-        style == SegmentedMetricStyle.CapsuleRing || style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
+        style == SegmentedMetricStyle.CapsuleSplit || style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
 
     public static bool CanRenderLegendRow(double y, double rowHeight, double legendBottom) =>
         y + rowHeight <= legendBottom + 1;
@@ -448,82 +447,11 @@ internal static partial class VisualBlockRendering {
         return trimmed.Length <= 4 ? trimmed : trimmed.Substring(0, Math.Min(3, trimmed.Length)).ToUpperInvariant();
     }
 
-    public static ChartColor CapsuleRingLabelForeground(ChartColor color) =>
+    public static ChartColor CapsuleSplitLabelForeground(ChartColor color) =>
         ChartColorMath.TextOnBackground(color, 0.70);
 
-    public static ChartColor CapsuleRingLabelHalo(ChartColor foreground) =>
+    public static ChartColor CapsuleSplitLabelHalo(ChartColor foreground) =>
         ChartColorMath.TextOnBackground(foreground, 0.70).WithAlpha(112);
-
-    public static IReadOnlyList<ChartPoint> CapsuleRingSegmentPoints(double x, double y, double width, double height, double startRatio, double endRatio, int samples = 24) {
-        var count = Math.Max(2, samples);
-        var points = new List<ChartPoint>(count + 1);
-        var start = Math.Max(0, Math.Min(1, startRatio));
-        var end = Math.Max(start, Math.Min(1, endRatio));
-        for (var i = 0; i <= count; i++) {
-            var t = start + (end - start) * i / count;
-            points.Add(CapsuleRingPoint(x, y, width, height, t));
-        }
-
-        return points;
-    }
-
-    public static IReadOnlyList<ChartPoint> CapsuleRingBandSegmentPoints(double x, double y, double width, double height, double stroke, double startRatio, double endRatio, int samples = 24) {
-        var count = Math.Max(4, samples);
-        var points = new List<ChartPoint>((count + 1) * 2);
-        var start = Math.Max(0, Math.Min(1, startRatio));
-        var end = Math.Max(start, Math.Min(1, endRatio));
-        var halfStroke = Math.Max(0.5, stroke / 2);
-        for (var i = 0; i <= count; i++) {
-            var t = start + (end - start) * i / count;
-            points.Add(CapsuleRingOffsetPoint(x, y, width, height, t, halfStroke));
-        }
-
-        for (var i = count; i >= 0; i--) {
-            var t = start + (end - start) * i / count;
-            points.Add(CapsuleRingOffsetPoint(x, y, width, height, t, -halfStroke));
-        }
-
-        return points;
-    }
-
-    public static ChartPoint CapsuleRingPoint(double x, double y, double width, double height, double ratio) {
-        var radius = Math.Max(1, Math.Min(height / 2, width / 2));
-        var straight = Math.Max(0, width - radius * 2);
-        var arc = Math.PI * radius;
-        var perimeter = Math.Max(1, straight * 2 + arc * 2);
-        var d = Math.Max(0, Math.Min(1, ratio)) * perimeter;
-
-        if (d <= straight) return new ChartPoint(x + radius + d, y);
-        d -= straight;
-        if (d <= arc) {
-            var angle = -Math.PI / 2 + d / radius;
-            return new ChartPoint(x + width - radius + Math.Cos(angle) * radius, y + radius + Math.Sin(angle) * radius);
-        }
-
-        d -= arc;
-        if (d <= straight) return new ChartPoint(x + width - radius - d, y + height);
-        d -= straight;
-        var leftAngle = Math.PI / 2 + d / radius;
-        return new ChartPoint(x + radius + Math.Cos(leftAngle) * radius, y + radius + Math.Sin(leftAngle) * radius);
-    }
-
-    private static ChartPoint CapsuleRingOffsetPoint(double x, double y, double width, double height, double ratio, double offset) {
-        var point = CapsuleRingPoint(x, y, width, height, ratio);
-        var epsilon = 1.0 / Math.Max(384, CapsuleRingSamples * 4);
-        var before = CapsuleRingPoint(x, y, width, height, NormalizeRatio(ratio - epsilon));
-        var after = CapsuleRingPoint(x, y, width, height, NormalizeRatio(ratio + epsilon));
-        var dx = after.X - before.X;
-        var dy = after.Y - before.Y;
-        var length = Math.Sqrt(dx * dx + dy * dy);
-        if (length < double.Epsilon) return point;
-        return new ChartPoint(point.X + dy / length * offset, point.Y - dx / length * offset);
-    }
-
-    private static double NormalizeRatio(double ratio) {
-        if (ratio >= 0 && ratio <= 1) return ratio;
-        var normalized = ratio - Math.Floor(ratio);
-        return normalized >= 1 ? 0 : normalized;
-    }
 
     public static double WorkloadRatio(WorkloadListRow row) => SegmentRatio(row.Value, row.Maximum);
 

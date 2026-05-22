@@ -21,7 +21,7 @@ internal static class DashboardPatternExamples {
 
         Save(AppointmentOperationsGrid(scale), output, "dashboard-appointment-operations-grid");
         Save(ProjectProgressCard(scale), output, "dashboard-project-progress-card");
-        Save(ChannelShareCapsuleRing(scale), output, "dashboard-channel-share-capsule-ring");
+        Save(ChannelShareCapsuleSplit(scale), output, "dashboard-channel-share-capsule-split");
         Save(CertificateInventoryCompositionStrip(scale), output, "dashboard-certificate-inventory-composition-strip");
         Save(ContentPerformanceRows(scale), output, "dashboard-content-performance-rows");
         Save(ConversionFunnelColumns(scale), output, "dashboard-conversion-funnel-columns");
@@ -173,9 +173,9 @@ internal static class DashboardPatternExamples {
         .AddItem("Revoked", 24, color: ChartColor.FromHex("#EF5DA8"), displayValue: "24")
         .AddItem("Unknown", 41, color: ChartColor.FromHex("#6D83F2"), displayValue: "41");
 
-    private static SegmentedMetricBlock ChannelShareCapsuleRing(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing)
+    private static SegmentedMetricBlock ChannelShareCapsuleSplit(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleSplit)
         .WithTitle("Channel Share")
-        .WithSubtitle("Balanced source mix rendered as a closed-loop split.")
+        .WithSubtitle("Balanced source mix rendered as a capsule split.")
         .WithSize(820, 340)
         .WithTheme(ProjectTheme())
         .WithPngOutputScale(outputScale)

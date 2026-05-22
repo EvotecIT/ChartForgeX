@@ -295,7 +295,7 @@ var snapshot = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 });
 ```
 
-Segmented dashboard visuals use one generic block instead of domain-specific card classes. The same `SegmentedMetricBlock` can render progress rows, performance rows with exact values, balanced capsule rings, funnel columns, composition strips, or distribution rows; item colors fall back to the active theme palette unless a color or semantic status is supplied.
+Segmented dashboard visuals use one generic block instead of domain-specific card classes. The same `SegmentedMetricBlock` can render progress rows, performance rows with exact values, balanced capsule splits, funnel columns, composition strips, or distribution rows; item colors fall back to the active theme palette unless a color or semantic status is supplied.
 
 ```csharp
 var performance = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
@@ -305,7 +305,7 @@ var performance = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
         .WithDisplayValue(132034, "N0")
         .WithDelta("+4.3%"));
 
-var channels = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing)
+var channels = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleSplit)
     .WithTitle("Channel Share")
     .AddItem("Direct", 40, displayValue: "24,000")
     .AddItem("Partner", 35, displayValue: "21,000")

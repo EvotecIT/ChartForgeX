@@ -11,8 +11,8 @@ namespace ChartForgeX.VisualBlocks;
 public enum SegmentedMetricStyle {
     /// <summary>Render one or more fixed-count progress rows.</summary>
     ProgressRows,
-    /// <summary>Render a part-to-whole capsule ring with optional legend values.</summary>
-    CapsuleRing,
+    /// <summary>Render a part-to-whole capsule split with optional legend values.</summary>
+    CapsuleSplit,
     /// <summary>Render ordered stage groups as compact vertical segmented columns.</summary>
     FunnelColumns,
     /// <summary>Render one part-to-whole stacked strip with legend rows.</summary>

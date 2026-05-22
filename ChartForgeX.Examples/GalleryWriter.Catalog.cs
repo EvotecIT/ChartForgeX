@@ -104,7 +104,7 @@ public static partial class GalleryWriter {
             "Dashboard Inspiration",
             "Screenshot-inspired operations, project, HR, and payment analytics compositions used to drive the next visual-block capabilities.",
             "dashboard-appointment-operations-grid",
-            "dashboard-channel-share-capsule-ring",
+            "dashboard-channel-share-capsule-split",
             "dashboard-certificate-inventory-composition-strip",
             "dashboard-content-performance-rows",
             "dashboard-conversion-funnel-columns",
