@@ -12,9 +12,11 @@ internal static partial class VisualBlockRendering {
         var legendRight = content.Width >= 430;
         var legendWidth = legendRight ? Math.Min(230, Math.Max(150, content.Width * 0.34)) : content.Width;
         var availableRingWidth = legendRight ? Math.Max(160, content.Width - legendWidth - 30) : content.Width;
-        var ringHeight = Math.Max(72, Math.Min(128, Math.Min(bottom - y - 18, availableRingWidth * 0.43)));
+        var availableRingHeight = Math.Max(1, bottom - y - 18);
+        var minimumRingHeight = Math.Min(72, availableRingHeight);
+        var ringHeight = Math.Min(availableRingHeight, Math.Max(minimumRingHeight, Math.Min(128, Math.Min(availableRingHeight, availableRingWidth * 0.43))));
         var ringWidth = legendRight ? Math.Min(availableRingWidth, Math.Max(180, ringHeight * 3.75)) : availableRingWidth;
-        var stroke = Math.Max(16, Math.Min(30, ringHeight * 0.235));
+        var stroke = Math.Max(10, Math.Min(30, ringHeight * 0.235));
         var ringX = content.X + stroke / 2;
         var ringY = y + stroke / 2 + Math.Max(0, (bottom - y - ringHeight) * 0.25);
         var pathWidth = Math.Max(1, ringWidth - stroke);
@@ -43,7 +45,7 @@ internal static partial class VisualBlockRendering {
         var availableWidth = Math.Max(1, content.Width - groupGap * Math.Max(0, card.Items.Count - 1));
         var intraStageGaps = Math.Max(0, totalSegments - card.Items.Count);
         var metrics = FitRepeatedItems(totalSegments, availableWidth, intraStageGaps, 4, 3);
-        var barWidth = Math.Max(2, metrics.ItemWidth);
+        var barWidth = metrics.ItemWidth;
         var barGap = metrics.Gap;
         var labelHeight = Math.Max(36, theme.SubtitleFontSize * 2.2);
         var availableBarHeight = Math.Max(1, bottom - y - labelHeight - 6);

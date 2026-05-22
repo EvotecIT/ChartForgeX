@@ -24,6 +24,8 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.StartElement("g")
             .Attribute("data-cfx-role", "segmented-metric-capsule-ring")
             .Attribute("data-cfx-total", VisualBlockRendering.SegmentedTotal(card))
+            .Attribute("data-cfx-ring-height", layout.RingHeight)
+            .Attribute("data-cfx-stroke", layout.Stroke)
             .EndStartElement().Line();
         RenderCapsuleTrack(writer, card, layout.RingX, layout.RingY, layout.PathWidth, layout.PathHeight, layout.Stroke);
         RenderCapsuleSegments(writer, card, layout.RingX, layout.RingY, layout.PathWidth, layout.PathHeight, layout.Stroke);

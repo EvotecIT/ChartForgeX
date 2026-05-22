@@ -305,6 +305,30 @@ internal static partial class SmokeTests {
         var lastStageWidth = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
         Assert(lastStageX + lastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock funnel stage geometry should fit within the card content width.");
 
+        var denseFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(360, 180)
+            .AddItem("First", 100, segments: 120)
+            .AddItem("Second", 80, segments: 120)
+            .AddItem("Third", 60, segments: 120);
+        var denseFunnelSvg = denseFunnel.ToSvg("visual-block-segmented-dense-funnel");
+        var denseLastStageX = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
+        var denseLastStageWidth = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
+        Assert(denseLastStageX + denseLastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock dense funnel stages should preserve fitted widths instead of overflowing after a minimum bar clamp.");
+
+        var compactCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleRing)
+            .WithTitle("Compact Capsule")
+            .WithSubtitle("Tight card")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(360, 170)
+            .WithAction("Open")
+            .AddItem("First", 10)
+            .AddItem("Second", 8)
+            .AddItem("Third", 6);
+        var compactCapsuleSvg = compactCapsule.ToSvg("visual-block-segmented-compact-capsule");
+        var compactCapsuleHeight = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-ring\"", "data-cfx-ring-height");
+        Assert(compactCapsuleHeight > 0 && compactCapsuleHeight < 72, "SegmentedMetricBlock compact capsule rings should fit available plot height instead of forcing the default minimum.");
+
         var configuredItems = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(460, 220)
