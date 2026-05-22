@@ -15,10 +15,11 @@ public sealed partial class PngVisualBlockRenderer {
         DrawSegmentedMetricHeading(canvas, card, ref y, content.X, content.Width);
         var hasAction = card.ActionLabel.Length > 0;
         var layout = VisualBlockRendering.SegmentedProgressRowsLayout(card, y, hasAction);
-        for (var rowIndex = 0; rowIndex < card.Items.Count && y + 38 <= layout.Bottom; rowIndex++) {
+        for (var rowIndex = 0; rowIndex < card.Items.Count; rowIndex++) {
             var row = card.Items[rowIndex];
             var accent = VisualBlockRendering.SegmentedItemColor(theme, row, rowIndex);
             var rowLayout = VisualBlockRendering.SegmentedProgressRowLayout(card, row, content, y, layout.RowHeight, accent);
+            if (!VisualBlockRendering.CanRenderProgressRow(rowLayout, layout.Bottom)) break;
             DrawAlignedText(canvas, row.Label, content.X, y, rowLayout.LabelWidth, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
             if (row.Delta.Length > 0) {
                 canvas.FillRoundedRect(rowLayout.DeltaX, y - 2, rowLayout.DeltaWidth, 22, 11, rowLayout.DeltaColor.WithAlpha(34));

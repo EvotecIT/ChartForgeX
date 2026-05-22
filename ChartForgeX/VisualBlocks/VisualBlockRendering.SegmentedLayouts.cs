@@ -13,10 +13,12 @@ internal static partial class VisualBlockRendering {
         var legendWidth = legendRight ? Math.Min(230, Math.Max(150, content.Width * 0.34)) : content.Width;
         var loopWidth = legendRight ? Math.Max(180, content.Width - legendWidth - 30) : content.Width;
         var availableHeight = Math.Max(1, bottom - y);
-        var loopHeight = Math.Min(Math.Max(54, availableHeight * 0.52), Math.Min(108, Math.Max(36, availableHeight - 8)));
-        var stroke = Math.Max(18, Math.Min(34, loopHeight * 0.34));
-        if (loopHeight < stroke * 1.8) stroke = Math.Max(14, loopHeight * 0.42);
-        var loopY = y + Math.Max(10, (availableHeight - loopHeight) * 0.30);
+        var preferredLoopHeight = availableHeight >= 62 ? Math.Max(54, availableHeight * 0.52) : Math.Max(1, availableHeight - 8);
+        var loopHeight = Math.Min(preferredLoopHeight, Math.Min(108, availableHeight));
+        var stroke = Math.Max(8, Math.Min(34, loopHeight * 0.34));
+        if (loopHeight < stroke * 1.8) stroke = Math.Max(6, Math.Min(stroke, loopHeight * 0.42));
+        var loopSlack = Math.Max(0, availableHeight - loopHeight);
+        var loopY = y + Math.Min(loopSlack, Math.Max(0, loopSlack * 0.30));
         var legendX = legendRight ? content.X + loopWidth + 30 : content.X;
         var legendY = legendRight ? Math.Max(y + 4, loopY + loopHeight * 0.08) : loopY + loopHeight + 18;
         return new SegmentedCapsuleLayout(footerHeight, bottom, legendRight, legendWidth, loopWidth, loopHeight, stroke, content.X, loopY, loopWidth, loopHeight, legendX, legendY, Math.Max(0, bottom - legendY));
@@ -88,6 +90,8 @@ internal static partial class VisualBlockRendering {
         var stripHeight = Math.Max(12, Math.Min(22, rowHeight * 0.28));
         return new SegmentedProgressRowLayout(valueText, deltaColor, valueFontSize, valueWidth, deltaWidth, valueX, deltaX, labelWidth, stripY, stripHeight);
     }
+
+    public static bool CanRenderProgressRow(SegmentedProgressRowLayout rowLayout, double bottom) => rowLayout.Bottom <= bottom + 0.1;
 
     public static IReadOnlyList<SegmentedProgressStripSegment> SegmentedProgressStripSegments(SegmentedMetricItem row, double x, double y, double width, double height) {
         var metrics = FitRepeatedItems(row.Segments, width, row.Segments > 50 ? 2.0 : 3.0, 2);
@@ -374,6 +378,7 @@ internal readonly struct SegmentedProgressRowLayout {
     public double LabelWidth { get; }
     public double StripY { get; }
     public double StripHeight { get; }
+    public double Bottom => StripY + StripHeight;
 }
 
 internal readonly struct SegmentedProgressStripSegment {

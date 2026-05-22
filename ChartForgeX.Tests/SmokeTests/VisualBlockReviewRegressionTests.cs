@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualBlocks;
 
@@ -47,5 +48,44 @@ internal static partial class SmokeTests {
         Assert(compactLegendRows < 12, "SegmentedMetricBlock compact composition legends should clip overflowing rows before the footer.");
         Assert(compactLegendY + compactLegendRows * compactLegendRowHeight <= compactLegendBottom + 1.1, "SegmentedMetricBlock compact composition legends should reserve the full row height before drawing.");
         Assert(compactCompositionLegend.ToPng().Length > 64, "SegmentedMetricBlock compact composition legends should render PNG output.");
+
+        var compactProgressRows = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
+            .WithTitle("Compact Progress")
+            .WithSubtitle("Tight footer")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(420, 250)
+            .WithAction("Open")
+            .AddItem("One", 8, item => item.Segments = 12)
+            .AddItem("Two", 7, item => item.Segments = 12)
+            .AddItem("Three", 6, item => item.Segments = 12)
+            .AddItem("Four", 5, item => item.Segments = 12)
+            .AddItem("Five", 4, item => item.Segments = 12)
+            .AddItem("Six", 3, item => item.Segments = 12);
+        var compactProgressSvg = compactProgressRows.ToSvg("visual-block-compact-progress-rows");
+        var renderedProgressRows = CountOccurrences(compactProgressSvg, "data-cfx-role=\"segmented-metric-progress-strip\"");
+        var progressBottom = GetAttribute(compactProgressSvg, "data-cfx-role=\"segmented-metric-progress-rows\"", "data-cfx-bottom");
+        var progressStripYs = ExtractAttributeValues(compactProgressSvg, "data-cfx-strip-y=\"");
+        var progressStripHeights = ExtractAttributeValues(compactProgressSvg, "data-cfx-strip-height=\"");
+        var lastStripY = double.Parse(progressStripYs[progressStripYs.Length - 1], CultureInfo.InvariantCulture);
+        var lastStripHeight = double.Parse(progressStripHeights[progressStripHeights.Length - 1], CultureInfo.InvariantCulture);
+        Assert(renderedProgressRows > 0 && renderedProgressRows < 6, "SegmentedMetricBlock compact progress rows should clip overflowing rows before footer actions.");
+        Assert(lastStripY + lastStripHeight <= progressBottom + 1.1, "SegmentedMetricBlock compact progress rows should reserve the full strip height before drawing.");
+        Assert(compactProgressRows.ToPng().Length > 64, "SegmentedMetricBlock compact progress rows should render PNG output.");
+
+        var compactCapsuleLoop = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
+            .WithTitle("Compact Capsule")
+            .WithSubtitle("Tight footer")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(360, 170)
+            .WithAction("Open")
+            .AddItem("First", 10)
+            .AddItem("Second", 8)
+            .AddItem("Third", 6);
+        var compactCapsuleSvg = compactCapsuleLoop.ToSvg("visual-block-compact-capsule-loop");
+        var capsuleBottom = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-loop\"", "data-cfx-bottom");
+        var capsuleY = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-loop\"", "data-cfx-loop-y");
+        var capsuleHeight = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-loop\"", "data-cfx-loop-height");
+        Assert(capsuleY + capsuleHeight <= capsuleBottom + 1.1, "SegmentedMetricBlock compact capsule loops should clamp loop geometry before the footer.");
+        Assert(compactCapsuleLoop.ToPng().Length > 64, "SegmentedMetricBlock compact capsule loops should render PNG output.");
     }
 }

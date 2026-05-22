@@ -14,11 +14,16 @@ public sealed partial class SvgVisualBlockRenderer {
         RenderSegmentedMetricHeading(writer, card, ref y, content.X, content.Width);
         var hasAction = card.ActionLabel.Length > 0;
         var layout = VisualBlockRendering.SegmentedProgressRowsLayout(card, y, hasAction);
-        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-progress-rows").EndStartElement().Line();
-        for (var rowIndex = 0; rowIndex < card.Items.Count && y + 38 <= layout.Bottom; rowIndex++) {
+        writer.StartElement("g")
+            .Attribute("data-cfx-role", "segmented-metric-progress-rows")
+            .Attribute("data-cfx-bottom", layout.Bottom)
+            .Attribute("data-cfx-row-height", layout.RowHeight)
+            .EndStartElement().Line();
+        for (var rowIndex = 0; rowIndex < card.Items.Count; rowIndex++) {
             var row = card.Items[rowIndex];
             var accent = VisualBlockRendering.SegmentedItemColor(theme, row, rowIndex);
             var rowLayout = VisualBlockRendering.SegmentedProgressRowLayout(card, row, content, y, layout.RowHeight, accent);
+            if (!VisualBlockRendering.CanRenderProgressRow(rowLayout, layout.Bottom)) break;
             WriteText(writer, row.Label, content.X, y + theme.SubtitleFontSize, rowLayout.LabelWidth, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
             if (row.Delta.Length > 0) {
                 writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-delta-pill").Attribute("x", rowLayout.DeltaX).Attribute("y", y).Attribute("width", rowLayout.DeltaWidth).Attribute("height", 22).Attribute("rx", 11).Attribute("fill", rowLayout.DeltaColor.WithAlpha(34).ToCss()).EndEmptyElement().Line();
@@ -55,7 +60,13 @@ public sealed partial class SvgVisualBlockRenderer {
         var filled = VisualBlockRendering.FilledSegments(row);
         var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
         var emptyStroke = theme.PlotBorder.WithAlpha(120);
-        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-progress-strip").Attribute("data-cfx-segments", row.Segments).Attribute("data-cfx-filled", filled).EndStartElement().Line();
+        writer.StartElement("g")
+            .Attribute("data-cfx-role", "segmented-metric-progress-strip")
+            .Attribute("data-cfx-segments", row.Segments)
+            .Attribute("data-cfx-filled", filled)
+            .Attribute("data-cfx-strip-y", y)
+            .Attribute("data-cfx-strip-height", height)
+            .EndStartElement().Line();
         foreach (var segment in VisualBlockRendering.SegmentedProgressStripSegments(row, x, y, width, height)) {
             var role = segment.Filled ? "segmented-metric-segment-filled" : "segmented-metric-segment-empty";
             var color = segment.Filled ? accent : empty;

@@ -23,6 +23,8 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.StartElement("g")
             .Attribute("data-cfx-role", "segmented-metric-capsule-loop")
             .Attribute("data-cfx-total", VisualBlockRendering.SegmentedTotal(card))
+            .Attribute("data-cfx-bottom", layout.Bottom)
+            .Attribute("data-cfx-loop-y", layout.RingY)
             .Attribute("data-cfx-loop-height", layout.RingHeight)
             .Attribute("data-cfx-stroke", layout.Stroke)
             .EndStartElement().Line();
