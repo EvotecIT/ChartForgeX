@@ -7,7 +7,7 @@ Current visual-block primitives:
 - `ChartTable` for structured rows, columns, headers, alignment, formattable values, row striping, status columns, conditional row/cell colors, dense mode, table-cell badges/chips, mini bars/sparklines, transparent backgrounds, and SVG/PNG/HTML export.
 - `ChartList` for bullets, numbered lists, key/value rows, checklists, status lists, and compact inventory summaries.
 - `MetricCard` for one KPI with label, value, trend, status, optional comparison/supporting text, footer action text, and embedded mini bars or sparklines for compact history/current-state cards.
-- `SegmentedMetricBlock` for fixed-count progress rows, ordered funnel columns, balanced capsule splits, part-to-whole strips, and distribution rows using one generic item model and a `SegmentedMetricStyle` visual-treatment enum.
+- `SegmentedMetricBlock` for fixed-count progress rows, ordered funnel columns, balanced capsule loops, part-to-whole strips, and distribution rows using one generic item model and a `SegmentedMetricStyle` visual-treatment enum.
 - `HeatmapInsightCard` for dashboard matrix cards with controls, value cells, a right-side insight rail, and a color key.
 - `WorkloadListBlock` for staff, ranked people, or merchant rows with avatar/initial slots, progress rails, status notes, optional checkbox controls, and right-aligned values.
 - `ActivityTimelineBlock` for static SVG/PNG timeline overlays with section labels, status nodes, connector spines, nested checklist rows, hidden-item summaries, timestamps, badges, compact event rows, and node symbols.
@@ -158,9 +158,9 @@ var attendance = Chart.Create()
     .WithDashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
 ```
 
-Segmented metric blocks provide fixed-count progress rows, exact-value performance rows, capsule splits, part-to-whole status strips, funnel columns, and distribution rows without domain-specific card APIs. Items use the theme palette by default; provide a color or semantic status only when a specific item needs one. Filled and empty ticks include renderer-owned shadow/highlight layers, so cards can keep a polished report look in both SVG and PNG without hand-drawing rectangles:
+Segmented metric blocks provide fixed-count progress rows, exact-value performance rows, capsule loops, part-to-whole status strips, funnel columns, and distribution rows without domain-specific card APIs. Items use the theme palette by default; provide a color or semantic status only when a specific item needs one. Filled and empty ticks include renderer-owned shadow/highlight layers, so cards can keep a polished report look in both SVG and PNG without hand-drawing rectangles:
 
-Header chrome is shared across styles: `WithHeaderSymbol()` and `WithMenu()` work the same way for progress rows, capsule splits, funnel columns, composition strips, and distribution rows.
+Header chrome is shared across styles: `WithHeaderSymbol()` and `WithMenu()` work the same way for progress rows, capsule loops, funnel columns, composition strips, and distribution rows.
 
 ```csharp
 var progress = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
@@ -214,10 +214,10 @@ var certificates = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionS
     .AddItem("Unknown", 41, displayValue: "41");
 ```
 
-Use `CapsuleSplit` for intentionally balanced compact part-to-whole compositions. Skewed inventory and count data should use `CompositionStrip` or `DistributionRows` so exact values stay calm and readable.
+Use `CapsuleLoop` for intentionally balanced compact part-to-whole compositions. Skewed inventory and count data should use `CompositionStrip` or `DistributionRows` so exact values stay calm and readable.
 
 ```csharp
-var channels = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleSplit)
+var channels = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
     .WithTitle("Channel Share")
     .AddItem("Direct", 40, displayValue: "24,000")
     .AddItem("Partner", 35, displayValue: "21,000")

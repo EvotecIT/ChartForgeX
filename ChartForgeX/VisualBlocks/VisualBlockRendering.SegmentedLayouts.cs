@@ -6,17 +6,20 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
-    public static SegmentedCapsuleLayout CapsuleSplitLayout(VisualBlockOptions options, ChartRect content, double y, bool hasAction) {
+    public static SegmentedCapsuleLayout CapsuleLoopLayout(VisualBlockOptions options, ChartRect content, double y, bool hasAction) {
         var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.13)) : 0;
         var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
         var legendRight = content.Width >= 430;
         var legendWidth = legendRight ? Math.Min(230, Math.Max(150, content.Width * 0.34)) : content.Width;
-        var availableSplitWidth = legendRight ? Math.Max(160, content.Width - legendWidth - 30) : content.Width;
-        var stripHeight = Math.Max(18, Math.Min(34, (bottom - y) * 0.22));
-        var stripY = y + Math.Max(18, (bottom - y - stripHeight) * 0.32);
-        var legendX = legendRight ? content.X + availableSplitWidth + 30 : content.X;
-        var legendY = legendRight ? Math.Max(y + 10, stripY - 18) : stripY + stripHeight + 18;
-        return new SegmentedCapsuleLayout(footerHeight, bottom, legendRight, legendWidth, availableSplitWidth, stripHeight, stripHeight, content.X, stripY, availableSplitWidth, stripHeight, legendX, legendY, Math.Max(0, bottom - legendY));
+        var loopWidth = legendRight ? Math.Max(180, content.Width - legendWidth - 30) : content.Width;
+        var availableHeight = Math.Max(1, bottom - y);
+        var loopHeight = Math.Min(Math.Max(54, availableHeight * 0.52), Math.Min(108, Math.Max(36, availableHeight - 8)));
+        var stroke = Math.Max(18, Math.Min(34, loopHeight * 0.34));
+        if (loopHeight < stroke * 1.8) stroke = Math.Max(14, loopHeight * 0.42);
+        var loopY = y + Math.Max(10, (availableHeight - loopHeight) * 0.30);
+        var legendX = legendRight ? content.X + loopWidth + 30 : content.X;
+        var legendY = legendRight ? Math.Max(y + 4, loopY + loopHeight * 0.08) : loopY + loopHeight + 18;
+        return new SegmentedCapsuleLayout(footerHeight, bottom, legendRight, legendWidth, loopWidth, loopHeight, stroke, content.X, loopY, loopWidth, loopHeight, legendX, legendY, Math.Max(0, bottom - legendY));
     }
 
     public static SegmentedHeaderLayout SegmentedHeaderLayout(SegmentedMetricBlock card, double x, double y, double width) {

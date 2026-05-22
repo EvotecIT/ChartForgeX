@@ -401,7 +401,7 @@ internal static partial class VisualBlockRendering {
         style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
 
     public static bool SegmentedMetricRequiresPositiveTotal(SegmentedMetricStyle style) =>
-        style == SegmentedMetricStyle.CapsuleSplit || style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
+        style == SegmentedMetricStyle.CapsuleLoop || style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
 
     public static bool CanRenderLegendRow(double y, double rowHeight, double legendBottom) =>
         y + rowHeight <= legendBottom + 1;
@@ -439,6 +439,45 @@ internal static partial class VisualBlockRendering {
         return segments;
     }
 
+    public static IReadOnlyList<ChartPoint> CapsuleLoopPoints(double x, double y, double width, double height, double stroke, double start, double end, int samples) {
+        var points = new List<ChartPoint>(Math.Max(2, samples + 1));
+        if (width <= stroke || height <= stroke || end <= start) return points;
+        var count = Math.Max(24, (int)Math.Ceiling(Math.Max(24, samples) * Math.Min(1, end - start)));
+        for (var i = 0; i <= count; i++) {
+            var ratio = start + (end - start) * i / count;
+            points.Add(CapsuleLoopPoint(x, y, width, height, stroke, ratio));
+        }
+
+        return points;
+    }
+
+    public static ChartPoint CapsuleLoopPoint(double x, double y, double width, double height, double stroke, double ratio) {
+        ratio = Math.Max(0, Math.Min(1, ratio));
+        var inset = stroke / 2;
+        var radius = Math.Max(1, (height - stroke) / 2);
+        var left = x + inset + radius;
+        var right = x + Math.Max(inset + radius, width - inset - radius);
+        var top = y + inset;
+        var bottom = y + Math.Max(inset, height - inset);
+        var centerY = y + height / 2;
+        var straight = Math.Max(0, right - left);
+        var arc = Math.PI * radius;
+        var length = straight * 2 + arc * 2;
+        var distance = ratio * length;
+        if (distance <= straight) return new ChartPoint(left + distance, top);
+        distance -= straight;
+        if (distance <= arc) {
+            var angle = -Math.PI / 2 + distance / radius;
+            return new ChartPoint(right + Math.Cos(angle) * radius, centerY + Math.Sin(angle) * radius);
+        }
+
+        distance -= arc;
+        if (distance <= straight) return new ChartPoint(right - distance, bottom);
+        distance -= straight;
+        var leftAngle = Math.PI / 2 + Math.Min(arc, distance) / radius;
+        return new ChartPoint(left + Math.Cos(leftAngle) * radius, centerY + Math.Sin(leftAngle) * radius);
+    }
+
     public static string ShortSegmentLabel(string value) {
         var start = value.LastIndexOf('(');
         var end = value.LastIndexOf(')');
@@ -447,10 +486,10 @@ internal static partial class VisualBlockRendering {
         return trimmed.Length <= 4 ? trimmed : trimmed.Substring(0, Math.Min(3, trimmed.Length)).ToUpperInvariant();
     }
 
-    public static ChartColor CapsuleSplitLabelForeground(ChartColor color) =>
+    public static ChartColor CapsuleLoopLabelForeground(ChartColor color) =>
         ChartColorMath.TextOnBackground(color, 0.70);
 
-    public static ChartColor CapsuleSplitLabelHalo(ChartColor foreground) =>
+    public static ChartColor CapsuleLoopLabelHalo(ChartColor foreground) =>
         ChartColorMath.TextOnBackground(foreground, 0.70).WithAlpha(112);
 
     public static double WorkloadRatio(WorkloadListRow row) => SegmentRatio(row.Value, row.Maximum);

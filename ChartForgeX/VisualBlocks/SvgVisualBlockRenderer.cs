@@ -350,8 +350,8 @@ public sealed partial class SvgVisualBlockRenderer {
     }
 
     private static void RenderSegmentedMetric(SvgMarkupWriter writer, SegmentedMetricBlock card) {
-        if (card.Style == SegmentedMetricStyle.CapsuleSplit) {
-            RenderSegmentedMetricCapsuleSplit(writer, card);
+        if (card.Style == SegmentedMetricStyle.CapsuleLoop) {
+            RenderSegmentedMetricCapsuleLoop(writer, card);
             return;
         }
 
