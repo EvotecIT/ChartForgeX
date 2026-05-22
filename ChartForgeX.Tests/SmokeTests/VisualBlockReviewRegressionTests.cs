@@ -17,6 +17,11 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(zeroFunnelSvg, "data-cfx-role=\"segmented-metric-funnel-bar\"") == 7, "SegmentedMetricBlock zero-total funnel columns should preserve caller supplied segment counts.");
         Assert(zeroFunnel.ToPng().Length > 64, "SegmentedMetricBlock zero-total funnel columns should render PNG output.");
 
+        var zeroSliceCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop).WithTheme(ChartTheme.ReportLight()).WithSize(420, 220).AddItem("Used", 10).AddItem("Empty", 0);
+        var zeroSliceCapsuleSvg = zeroSliceCapsule.ToSvg("visual-block-segmented-zero-slice-capsule");
+        Assert(!zeroSliceCapsuleSvg.Contains("data-cfx-label=\"Empty\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule loops should not render visible segments for zero-share items.");
+        Assert(zeroSliceCapsule.ToPng().Length > 64, "SegmentedMetricBlock capsule loops with zero-share items should still render PNG output.");
+
         var compactCompositionLegend = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(360, 190)

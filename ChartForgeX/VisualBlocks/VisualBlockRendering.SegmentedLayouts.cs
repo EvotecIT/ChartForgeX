@@ -214,6 +214,36 @@ internal readonly struct SegmentedStackSegment {
     public double Share { get; }
 }
 
+internal enum CapsuleLoopPartKind {
+    Line,
+    Arc
+}
+
+internal readonly struct CapsuleLoopPart {
+    private CapsuleLoopPart(CapsuleLoopPartKind kind, ChartPoint startPoint, ChartPoint endPoint, double centerX, double centerY, double radius, double startAngle, double endAngle) {
+        Kind = kind;
+        StartPoint = startPoint;
+        EndPoint = endPoint;
+        CenterX = centerX;
+        CenterY = centerY;
+        Radius = radius;
+        StartAngle = startAngle;
+        EndAngle = endAngle;
+    }
+
+    public static CapsuleLoopPart Line(ChartPoint startPoint, ChartPoint endPoint) => new CapsuleLoopPart(CapsuleLoopPartKind.Line, startPoint, endPoint, 0, 0, 0, 0, 0);
+    public static CapsuleLoopPart Arc(ChartPoint startPoint, ChartPoint endPoint, double centerX, double centerY, double radius, double startAngle, double endAngle) => new CapsuleLoopPart(CapsuleLoopPartKind.Arc, startPoint, endPoint, centerX, centerY, radius, startAngle, endAngle);
+
+    public CapsuleLoopPartKind Kind { get; }
+    public ChartPoint StartPoint { get; }
+    public ChartPoint EndPoint { get; }
+    public double CenterX { get; }
+    public double CenterY { get; }
+    public double Radius { get; }
+    public double StartAngle { get; }
+    public double EndAngle { get; }
+}
+
 internal readonly struct SegmentedCapsuleLayout {
     public SegmentedCapsuleLayout(double footerHeight, double bottom, bool legendRight, double legendWidth, double ringWidth, double ringHeight, double stroke, double ringX, double ringY, double pathWidth, double pathHeight, double legendX, double legendY, double legendHeight) {
         FooterHeight = footerHeight;

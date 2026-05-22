@@ -478,6 +478,50 @@ internal static partial class VisualBlockRendering {
         return new ChartPoint(left + Math.Cos(leftAngle) * radius, centerY + Math.Sin(leftAngle) * radius);
     }
 
+    public static IReadOnlyList<CapsuleLoopPart> CapsuleLoopParts(double x, double y, double width, double height, double stroke, double start, double end) {
+        start = Math.Max(0, Math.Min(1, start));
+        end = Math.Max(0, Math.Min(1, end));
+        var parts = new List<CapsuleLoopPart>();
+        if (width <= stroke || height <= stroke || end <= start) return parts;
+        var radius = Math.Max(1, (height - stroke) / 2);
+        var left = x + height / 2;
+        var right = x + Math.Max(height / 2, width - height / 2);
+        var top = y + stroke / 2;
+        var bottom = y + Math.Max(stroke / 2, height - stroke / 2);
+        var centerY = y + height / 2;
+        var straight = Math.Max(0, right - left);
+        var arc = Math.PI * radius;
+        var total = straight * 2 + arc * 2;
+        var boundaries = new[] { 0, straight / total, (straight + arc) / total, (straight + arc + straight) / total, 1 };
+        for (var i = 0; i < 4; i++) {
+            var a = Math.Max(start, boundaries[i]);
+            var b = Math.Min(end, boundaries[i + 1]);
+            if (b <= a) continue;
+            parts.Add(CapsuleLoopPartFromRange(i, a * total, b * total, left, right, top, bottom, centerY, radius, straight, arc));
+        }
+
+        return parts;
+    }
+
+    private static CapsuleLoopPart CapsuleLoopPartFromRange(int index, double startDistance, double endDistance, double left, double right, double top, double bottom, double centerY, double radius, double straight, double arc) {
+        if (index == 0) return CapsuleLoopPart.Line(new ChartPoint(left + startDistance, top), new ChartPoint(left + endDistance, top));
+        if (index == 1) {
+            var startAngle = -Math.PI / 2 + (startDistance - straight) / radius;
+            var endAngle = -Math.PI / 2 + (endDistance - straight) / radius;
+            return CapsuleLoopPart.Arc(new ChartPoint(right + Math.Cos(startAngle) * radius, centerY + Math.Sin(startAngle) * radius), new ChartPoint(right + Math.Cos(endAngle) * radius, centerY + Math.Sin(endAngle) * radius), right, centerY, radius, startAngle, endAngle);
+        }
+
+        if (index == 2) {
+            var startOffset = startDistance - straight - arc;
+            var endOffset = endDistance - straight - arc;
+            return CapsuleLoopPart.Line(new ChartPoint(right - startOffset, bottom), new ChartPoint(right - endOffset, bottom));
+        }
+
+        var leftStartAngle = Math.PI / 2 + (startDistance - straight - arc - straight) / radius;
+        var leftEndAngle = Math.PI / 2 + (endDistance - straight - arc - straight) / radius;
+        return CapsuleLoopPart.Arc(new ChartPoint(left + Math.Cos(leftStartAngle) * radius, centerY + Math.Sin(leftStartAngle) * radius), new ChartPoint(left + Math.Cos(leftEndAngle) * radius, centerY + Math.Sin(leftEndAngle) * radius), left, centerY, radius, leftStartAngle, leftEndAngle);
+    }
+
     public static string ShortSegmentLabel(string value) {
         var start = value.LastIndexOf('(');
         var end = value.LastIndexOf(')');
@@ -491,6 +535,12 @@ internal static partial class VisualBlockRendering {
 
     public static ChartColor CapsuleLoopLabelHalo(ChartColor foreground) =>
         ChartColorMath.TextOnBackground(foreground, 0.70).WithAlpha(112);
+
+    public static ChartColor CapsuleLoopSheenColor(ChartColor color) =>
+        ChartColorMath.Blend(color, ChartColor.White, 0.28).WithAlpha(58);
+
+    public static double CapsuleLoopSheenStroke(double stroke) =>
+        Math.Max(2.4, stroke * 0.14);
 
     public static double WorkloadRatio(WorkloadListRow row) => SegmentRatio(row.Value, row.Maximum);
 

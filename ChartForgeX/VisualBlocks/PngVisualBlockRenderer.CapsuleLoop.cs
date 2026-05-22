@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -28,20 +27,19 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawCapsuleTrack(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
         var theme = card.Options.Theme;
-        var points = VisualBlockRendering.CapsuleLoopPoints(x, y, width, height, stroke, 0, 1, 180);
-        DrawCapsuleLoopStroke(canvas, OffsetPoints(points, 0, 1.4), theme.MutedText.WithAlpha(14), stroke + 2);
-        DrawCapsuleLoopStroke(canvas, points, theme.CardBackground.WithAlpha(170), stroke);
+        DrawCapsuleLoopStroke(canvas, x, y + 1.4, width, height, stroke + 2, 0, 1, theme.MutedText.WithAlpha(14), RasterLineCap.Round);
+        DrawCapsuleLoopStroke(canvas, x, y, width, height, stroke, 0, 1, theme.CardBackground.WithAlpha(170), RasterLineCap.Round);
     }
 
     private static void DrawCapsuleSegments(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
         var theme = card.Options.Theme;
         foreach (var slice in VisualBlockRendering.SegmentedSlices(card)) {
+            if (slice.Share <= 0) continue;
             var color = VisualBlockRendering.SegmentedItemColor(theme, slice.Item, slice.Index);
             var start = Math.Max(0, slice.Start - 0.002);
             var end = Math.Min(1, slice.End + 0.002);
-            var points = VisualBlockRendering.CapsuleLoopPoints(x, y, width, height, stroke, start, end, 180);
-            if (points.Count < 2) continue;
-            DrawCapsuleLoopStroke(canvas, points, color, stroke);
+            DrawCapsuleLoopStroke(canvas, x, y, width, height, stroke, start, end, color, RasterLineCap.Butt);
+            DrawCapsuleLoopStroke(canvas, x, y, width, height, VisualBlockRendering.CapsuleLoopSheenStroke(stroke), start, end, VisualBlockRendering.CapsuleLoopSheenColor(color), RasterLineCap.Butt);
             if (slice.Share >= 0.075) DrawCapsuleSegmentLabel(canvas, slice, color, x, y, width, height, stroke);
         }
     }
@@ -62,15 +60,14 @@ public sealed partial class PngVisualBlockRenderer {
         DrawAlignedText(canvas, label, labelX, labelY, labelWidth, VisualTextAlignment.Center, foreground, fontSize, true);
     }
 
-    private static IReadOnlyList<ChartPoint> OffsetPoints(IReadOnlyList<ChartPoint> points, double dx, double dy) {
-        var shifted = new ChartPoint[points.Count];
-        for (var i = 0; i < points.Count; i++) shifted[i] = new ChartPoint(points[i].X + dx, points[i].Y + dy);
-        return shifted;
-    }
-
-    private static void DrawCapsuleLoopStroke(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) {
-        for (var i = 1; i < points.Count; i++) {
-            canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, color, thickness);
+    private static void DrawCapsuleLoopStroke(RgbaCanvas canvas, double x, double y, double width, double height, double stroke, double start, double end, ChartColor color, RasterLineCap lineCap) {
+        if (color.A == 0) return;
+        foreach (var part in VisualBlockRendering.CapsuleLoopParts(x, y, width, height, stroke, start, end)) {
+            if (part.Kind == CapsuleLoopPartKind.Line) {
+                canvas.DrawLine(part.StartPoint.X, part.StartPoint.Y, part.EndPoint.X, part.EndPoint.Y, color, stroke, lineCap);
+            } else {
+                canvas.DrawArc(part.CenterX, part.CenterY, part.Radius, part.StartAngle, part.EndAngle, color, stroke, lineCap);
+            }
         }
     }
 

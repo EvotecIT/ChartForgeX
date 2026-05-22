@@ -36,10 +36,10 @@ public sealed partial class SvgVisualBlockRenderer {
 
     private static void RenderCapsuleTrack(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
         var theme = card.Options.Theme;
-        var points = VisualBlockRendering.CapsuleLoopPoints(x, y, width, height, stroke, 0, 1, 360);
+        var path = CapsuleLoopPath(x, y, width, height, stroke, 0, 1);
         writer.StartElement("path")
             .Attribute("data-cfx-role", "segmented-metric-capsule-track-shadow")
-            .Attribute("d", PolylinePath(points))
+            .Attribute("d", path)
             .Attribute("fill", "none")
             .Attribute("stroke", theme.MutedText.WithAlpha(14).ToCss())
             .Attribute("stroke-width", stroke + 2)
@@ -49,7 +49,7 @@ public sealed partial class SvgVisualBlockRenderer {
             .EndEmptyElement().Line();
         writer.StartElement("path")
             .Attribute("data-cfx-role", "segmented-metric-capsule-track")
-            .Attribute("d", PolylinePath(points))
+            .Attribute("d", path)
             .Attribute("fill", "none")
             .Attribute("stroke", theme.CardBackground.WithAlpha(170).ToCss())
             .Attribute("stroke-width", stroke)
@@ -62,11 +62,12 @@ public sealed partial class SvgVisualBlockRenderer {
         var theme = card.Options.Theme;
         var slices = VisualBlockRendering.SegmentedSlices(card);
         foreach (var slice in slices) {
+            if (slice.Share <= 0) continue;
             var color = VisualBlockRendering.SegmentedItemColor(theme, slice.Item, slice.Index);
             var start = Math.Max(0, slice.Start - 0.002);
             var end = Math.Min(1, slice.End + 0.002);
-            var points = VisualBlockRendering.CapsuleLoopPoints(x, y, width, height, stroke, start, end, 360);
-            if (points.Count < 2) continue;
+            var path = CapsuleLoopPath(x, y, width, height, stroke, start, end);
+            if (path.Length == 0) continue;
             writer.StartElement("path")
                 .Attribute("data-cfx-role", "segmented-metric-capsule-segment")
                 .Attribute("data-cfx-label", slice.Item.Label)
@@ -74,11 +75,21 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("data-cfx-share", slice.Share)
                 .Attribute("data-cfx-start", slice.Start)
                 .Attribute("data-cfx-end", slice.End)
-                .Attribute("d", PolylinePath(points))
+                .Attribute("d", path)
                 .Attribute("fill", "none")
                 .Attribute("stroke", color.ToCss())
                 .Attribute("stroke-width", stroke)
-                .Attribute("stroke-linecap", "round")
+                .Attribute("stroke-linecap", "butt")
+                .Attribute("stroke-linejoin", "round")
+                .EndEmptyElement().Line();
+            writer.StartElement("path")
+                .Attribute("data-cfx-role", "segmented-metric-capsule-segment-sheen")
+                .Attribute("data-cfx-label", slice.Item.Label)
+                .Attribute("d", path)
+                .Attribute("fill", "none")
+                .Attribute("stroke", VisualBlockRendering.CapsuleLoopSheenColor(color).ToCss())
+                .Attribute("stroke-width", VisualBlockRendering.CapsuleLoopSheenStroke(stroke))
+                .Attribute("stroke-linecap", "butt")
                 .Attribute("stroke-linejoin", "round")
                 .EndEmptyElement().Line();
             if (slice.Share >= 0.075) RenderCapsuleSegmentLabel(writer, card, slice, color, x, y, width, height, stroke);
@@ -108,17 +119,6 @@ public sealed partial class SvgVisualBlockRenderer {
             .EndElement().Line();
     }
 
-    private static string PolylinePath(IReadOnlyList<ChartPoint> points) {
-        if (points.Count == 0) return string.Empty;
-        var builder = new System.Text.StringBuilder();
-        for (var i = 0; i < points.Count; i++) {
-            builder.Append(i == 0 ? "M " : " L ");
-            builder.Append(F(points[i].X)).Append(' ').Append(F(points[i].Y));
-        }
-
-        return builder.ToString();
-    }
-
     private static void RenderCapsuleLegend(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
         var rowHeight = Math.Max(26, Math.Min(34, height / Math.Max(1, card.Items.Count)));
@@ -137,4 +137,25 @@ public sealed partial class SvgVisualBlockRenderer {
 
         writer.EndElement().Line();
     }
+
+    private static string CapsuleLoopPath(double x, double y, double width, double height, double stroke, double start, double end) {
+        var parts = VisualBlockRendering.CapsuleLoopParts(x, y, width, height, stroke, start, end);
+        if (parts.Count == 0) return string.Empty;
+        var builder = new System.Text.StringBuilder();
+        var first = parts[0].StartPoint;
+        builder.Append("M ").Append(F(first.X)).Append(' ').Append(F(first.Y));
+        foreach (var part in parts) {
+            if (part.Kind == CapsuleLoopPartKind.Line) {
+                builder.Append(" L ").Append(F(part.EndPoint.X)).Append(' ').Append(F(part.EndPoint.Y));
+            } else {
+                var sweep = Math.Abs(part.EndAngle - part.StartAngle);
+                builder.Append(" A ").Append(F(part.Radius)).Append(' ').Append(F(part.Radius)).Append(" 0 ")
+                    .Append(sweep > Math.PI ? "1" : "0").Append(" 1 ")
+                    .Append(F(part.EndPoint.X)).Append(' ').Append(F(part.EndPoint.Y));
+            }
+        }
+
+        return builder.ToString();
+    }
+
 }
