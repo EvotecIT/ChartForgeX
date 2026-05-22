@@ -176,7 +176,7 @@ internal static partial class VisualBlockRendering {
         var radius = Math.Max(1, Math.Min(height / 2, width / 2));
         var straight = Math.Max(0, width - radius * 2);
         var perimeter = Math.Max(1, straight * 2 + Math.PI * radius * 2);
-        return Math.Min(0.032, Math.Max(0.010, stroke * 1.05 / perimeter));
+        return Math.Min(0.018, Math.Max(0.006, stroke * 0.56 / perimeter));
     }
 }
 

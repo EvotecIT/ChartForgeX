@@ -255,6 +255,7 @@ internal static partial class SmokeTests {
         Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-segment\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render part-to-whole segments.");
         Assert(capsuleSvg.Contains("data-cfx-samples=\"96\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render smooth segment geometry.");
         Assert(capsuleSvg.Contains("stroke-linejoin=\"round\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should keep curved segment joins smooth.");
+        Assert(GetAttribute(capsuleSvg, "data-cfx-label=\"Revoked\"", "data-cfx-gap") <= 0.012, "SegmentedMetricBlock capsule rings should keep small-slice separators tight instead of leaving large visual gaps.");
         Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-label\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render readable share labels when there is room.");
         Assert(capsuleSvg.Contains("paint-order=\"stroke\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule labels should render with a readable halo.");
         Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-legend\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule rings should render generic legend values.");

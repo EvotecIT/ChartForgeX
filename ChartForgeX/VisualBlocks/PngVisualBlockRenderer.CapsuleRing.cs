@@ -38,7 +38,7 @@ public sealed partial class PngVisualBlockRenderer {
         var gap = VisualBlockRendering.CapsuleRingBoundaryGapRatio(width, height, stroke);
         foreach (var slice in VisualBlockRendering.SegmentedSlices(card)) {
             var color = VisualBlockRendering.SegmentedItemColor(theme, slice.Item, slice.Index);
-            var segmentGap = Math.Min(gap, Math.Max(0, slice.Share * 0.28));
+            var segmentGap = Math.Min(gap, Math.Max(0, slice.Share * 0.10));
             var start = Math.Min(slice.End, slice.Start + segmentGap);
             var end = Math.Max(start, slice.End - segmentGap);
             if (end - start <= 0.001) continue;
