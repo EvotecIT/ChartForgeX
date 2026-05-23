@@ -66,9 +66,7 @@ public sealed partial class SvgVisualBlockRenderer {
         else if (block is ChartList list) RenderList(writer, list);
         else if (block is MetricCard card) RenderMetric(writer, card, id);
         else if (block is RadialMetricCard radialCard) RenderRadialMetric(writer, radialCard);
-        else if (block is SegmentedProgressCard segmentedCard) RenderSegmentedProgress(writer, segmentedCard);
-        else if (block is CompositionStatusCard compositionCard) RenderCompositionStatus(writer, compositionCard);
-        else if (block is DistributionStripCard distributionCard) RenderDistributionStripCard(writer, distributionCard);
+        else if (block is SegmentedMetricBlock segmentedMetric) RenderSegmentedMetric(writer, segmentedMetric);
         else if (block is HeatmapInsightCard heatmapCard) RenderHeatmapInsightCard(writer, heatmapCard);
         else if (block is DateStripBlock dateStrip) RenderDateStrip(writer, dateStrip);
         else if (block is EntityStripBlock entityStrip) RenderEntityStrip(writer, entityStrip);
@@ -261,7 +259,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var baseline = footerY + footerHeight * 0.64;
         if (card.ActionUrl.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "metric-action-link").Attribute("href", card.ActionUrl).Attribute("target", "_top").EndStartElement().Line();
         writer.StartElement("text").Attribute("data-cfx-role", "metric-action-label").Attribute("x", x).Attribute("y", baseline).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", fontSize).Text(VisualBlockRendering.FitText(card.ActionLabel, fontSize, Math.Max(1, width - symbolWidth - 8))).EndElement().Line();
-        writer.StartElement("text").Attribute("data-cfx-role", "metric-action-symbol").Attribute("x", x + width).Attribute("y", baseline).Attribute("text-anchor", "end").Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", fontSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(card.ActionSymbol, fontSize, symbolWidth)).EndElement().Line();
+        RenderActionSymbol(writer, card.ActionSymbol, x + width - 14, footerY + footerHeight * 0.5, 12, theme.Text, theme, fontSize);
         if (card.ActionUrl.Length > 0) writer.EndElement().Line();
     }
 
@@ -351,174 +349,28 @@ public sealed partial class SvgVisualBlockRenderer {
         }
     }
 
-    private static void RenderSegmentedProgress(SvgMarkupWriter writer, SegmentedProgressCard card) {
-        var options = card.Options;
-        var theme = options.Theme;
-        var content = VisualBlockRendering.ContentRect(options);
-        var y = content.Y;
-        if (card.HeaderSymbol.Length > 0 || card.ShowMenu) RenderSegmentedProgressHeader(writer, card, ref y, content.X, content.Width);
-        else RenderBlockHeading(writer, card, ref y, content.X, content.Width);
-        var hasAction = card.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(58, Math.Max(42, options.Size.Height * 0.16)) : 0;
-        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
-        var rowHeight = Math.Max(48, Math.Min(72, (bottom - y) / Math.Max(1, card.Rows.Count)));
-        writer.StartElement("g").Attribute("data-cfx-role", "segmented-progress-card").EndStartElement().Line();
-        for (var rowIndex = 0; rowIndex < card.Rows.Count && y + 38 <= bottom; rowIndex++) {
-            var row = card.Rows[rowIndex];
-            var accent = row.Color ?? (row.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, rowIndex) : VisualBlockRendering.StatusColor(theme, row.Status));
-            var valueText = Math.Round(VisualBlockRendering.SegmentRatio(row.Value, row.Maximum) * 100).ToString("0", CultureInfo.InvariantCulture) + "%";
-            var deltaWidth = row.Delta.Length == 0 ? 0 : Math.Min(92, VisualBlockRendering.EstimateTextWidth(row.Delta, theme.SubtitleFontSize) + 18);
-            WriteText(writer, row.Label, content.X, y + theme.SubtitleFontSize, content.Width - deltaWidth - 58, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
-            if (row.Delta.Length > 0) {
-                writer.StartElement("rect").Attribute("data-cfx-role", "segmented-progress-delta-pill").Attribute("x", content.X + content.Width - deltaWidth - 54).Attribute("y", y).Attribute("width", deltaWidth).Attribute("height", 22).Attribute("rx", 11).Attribute("fill", accent.WithAlpha(34).ToCss()).EndEmptyElement().Line();
-                WriteText(writer, row.Delta, content.X + content.Width - deltaWidth - 48, y + 15.5, deltaWidth - 12, VisualTextAlignment.Center, accent, theme.FontFamily, theme.SubtitleFontSize, "800");
-            }
-
-            WriteText(writer, valueText, content.X + content.Width - 46, y + theme.SubtitleFontSize, 46, VisualTextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 1), "850");
-            var stripY = y + 30;
-            var stripHeight = Math.Max(12, Math.Min(22, rowHeight * 0.28));
-            RenderSegmentedStrip(writer, row, content.X, stripY, content.Width, stripHeight, accent, theme);
-            y += rowHeight;
+    private static void RenderSegmentedMetric(SvgMarkupWriter writer, SegmentedMetricBlock card) {
+        if (card.Style == SegmentedMetricStyle.CapsuleLoop) {
+            RenderSegmentedMetricCapsuleLoop(writer, card);
+            return;
         }
 
-        writer.EndElement().Line();
-        if (hasAction) {
-            if (card.ActionBackground.HasValue) RenderSegmentedFooterAction(writer, card, options.Size.Height - footerHeight, footerHeight, content.X, content.Width);
-            else RenderFooterAction(writer, card.ActionLabel, card.ActionSymbol, card.ActionUrl, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
-        }
-    }
-
-    private static void RenderSegmentedFooterAction(SvgMarkupWriter writer, SegmentedProgressCard card, double footerY, double footerHeight, double x, double width) {
-        var theme = card.Options.Theme;
-        var fill = card.ActionBackground ?? theme.PlotBackground;
-        var foreground = card.ActionForeground ?? theme.Text;
-        var inset = Math.Min(8, Math.Max(1, footerHeight * 0.16));
-        writer.StartElement("rect").Attribute("data-cfx-role", "segmented-progress-action-band").Attribute("x", x).Attribute("y", footerY + 1).Attribute("width", width).Attribute("height", Math.Max(1, footerHeight - inset - 1)).Attribute("rx", Math.Min(10, Math.Max(2, footerHeight * 0.18))).Attribute("fill", fill.ToCss()).EndEmptyElement().Line();
-        var fontSize = Math.Max(10, theme.SubtitleFontSize);
-        var baseline = footerY + footerHeight * 0.64;
-        if (card.ActionUrl.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "visual-action-link").Attribute("href", card.ActionUrl).Attribute("target", "_top").EndStartElement().Line();
-        WriteText(writer, card.ActionLabel, x, baseline, Math.Max(1, width - 38), VisualTextAlignment.Left, foreground, theme.FontFamily, fontSize, "500");
-        WriteText(writer, card.ActionSymbol, x + width - 28, baseline, 28, VisualTextAlignment.Right, foreground, theme.FontFamily, fontSize, "800");
-        if (card.ActionUrl.Length > 0) writer.EndElement().Line();
-    }
-
-    private static void RenderSegmentedStrip(SvgMarkupWriter writer, SegmentedProgressRow row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ChartTheme theme) {
-        var metrics = VisualBlockRendering.FitRepeatedItems(row.Segments, width, row.Segments > 50 ? 2.0 : 3.0, 2);
-        var gap = metrics.Gap;
-        var segmentWidth = metrics.ItemWidth;
-        var filled = VisualBlockRendering.FilledSegments(row);
-        var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
-        var emptyStroke = theme.PlotBorder.WithAlpha(120);
-        writer.StartElement("g").Attribute("data-cfx-role", "segmented-progress-strip").Attribute("data-cfx-segments", row.Segments).Attribute("data-cfx-filled", filled).EndStartElement().Line();
-        for (var i = 0; i < row.Segments; i++) {
-            var segmentX = x + i * (segmentWidth + gap);
-            var role = i < filled ? "segmented-progress-segment-filled" : "segmented-progress-segment-empty";
-            var color = i < filled ? accent : empty;
-            writer.StartElement("rect")
-                .Attribute("data-cfx-role", "segmented-progress-segment-shadow")
-                .Attribute("data-cfx-index", i)
-                .Attribute("x", segmentX + 0.6)
-                .Attribute("y", y + 1.2)
-                .Attribute("width", segmentWidth)
-                .Attribute("height", height)
-                .Attribute("rx", Math.Min(4, segmentWidth * 0.35))
-                .Attribute("fill", theme.MutedText.WithAlpha(i < filled ? (byte)28 : (byte)18).ToCss())
-                .EndEmptyElement().Line();
-            writer.StartElement("rect")
-                .Attribute("data-cfx-role", role)
-                .Attribute("data-cfx-index", i)
-                .Attribute("x", segmentX)
-                .Attribute("y", y)
-                .Attribute("width", segmentWidth)
-                .Attribute("height", height)
-                .Attribute("rx", Math.Min(4, segmentWidth * 0.35))
-                .Attribute("fill", color.ToCss())
-                .Attribute("stroke", i < filled ? accent.WithAlpha(120).ToCss() : emptyStroke.ToCss())
-                .Attribute("stroke-width", 0.8)
-                .EndEmptyElement().Line();
-            writer.StartElement("rect")
-                .Attribute("data-cfx-role", "segmented-progress-segment-highlight")
-                .Attribute("data-cfx-index", i)
-                .Attribute("x", segmentX + 1)
-                .Attribute("y", y + 1)
-                .Attribute("width", Math.Max(1, segmentWidth - 2))
-                .Attribute("height", Math.Max(1, height * 0.32))
-                .Attribute("rx", Math.Min(3, segmentWidth * 0.28))
-                .Attribute("fill", ChartColor.White.WithAlpha(i < filled ? (byte)48 : (byte)92).ToCss())
-                .EndEmptyElement().Line();
+        if (card.Style == SegmentedMetricStyle.FunnelColumns) {
+            RenderSegmentedMetricFunnelColumns(writer, card);
+            return;
         }
 
-        writer.EndElement().Line();
-    }
-
-    private static void RenderCompositionStatus(SvgMarkupWriter writer, CompositionStatusCard card) {
-        var options = card.Options;
-        var theme = options.Theme;
-        var content = VisualBlockRendering.ContentRect(options);
-        var y = content.Y;
-        RenderBlockHeading(writer, card, ref y, content.X, content.Width);
-        var hasAction = card.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.16)) : 0;
-        var metricSize = Math.Min(46, Math.Max(28, options.Size.Height * 0.16));
-        WriteText(writer, card.Label, content.X, y + theme.SubtitleFontSize, content.Width * 0.58, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
-        WriteText(writer, card.Value, content.X + content.Width * 0.58, y + metricSize * 0.82, content.Width * 0.42, VisualTextAlignment.Right, theme.Text, theme.FontFamily, metricSize, "850");
-        y += metricSize + 20;
-        var stripHeight = Math.Max(20, Math.Min(34, options.Size.Height * 0.09));
-        RenderCompositionStrip(writer, card, content.X, y, content.Width, stripHeight);
-        y += stripHeight + 24;
-        var legendBottom = options.Size.Height - options.Padding.Bottom - footerHeight;
-        var rowHeight = Math.Max(28, Math.Min(38, (legendBottom - y) / Math.Max(1, card.Segments.Count)));
-        var total = VisualBlockRendering.CompositionTotal(card);
-        writer.StartElement("g").Attribute("data-cfx-role", "composition-status-card").EndStartElement().Line();
-        for (var i = 0; i < card.Segments.Count && y + rowHeight <= legendBottom + 1; i++) {
-            var segment = card.Segments[i];
-            var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
-            writer.StartElement("rect").Attribute("data-cfx-role", "composition-legend-swatch").Attribute("x", content.X).Attribute("y", y + rowHeight * 0.22).Attribute("width", 14).Attribute("height", 14).Attribute("rx", 4).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, segment.Label, content.X + 24, y + rowHeight * 0.66, content.Width * 0.58, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize), "500");
-            var valueText = segment.Value.ToString("0.##", CultureInfo.InvariantCulture) + (card.Unit.Length > 0 ? " " + card.Unit : string.Empty);
-            var share = total <= 0 ? string.Empty : "  " + (segment.Value / total * 100).ToString("0", CultureInfo.InvariantCulture) + "%";
-            WriteText(writer, valueText + share, content.X + content.Width * 0.66, y + rowHeight * 0.66, content.Width * 0.34, VisualTextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize), "750");
-            y += rowHeight;
+        if (card.Style == SegmentedMetricStyle.CompositionStrip) {
+            RenderSegmentedMetricComposition(writer, card);
+            return;
         }
 
-        writer.EndElement().Line();
-        if (hasAction) RenderFooterAction(writer, card.ActionLabel, card.ActionSymbol, card.ActionUrl, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
-    }
-
-    private static void RenderCompositionStrip(SvgMarkupWriter writer, CompositionStatusCard card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
-        var total = VisualBlockRendering.CompositionTotal(card);
-        var gap = VisualBlockRendering.EffectiveStackGap(card.Segments.Count, width, 4);
-        var segmentArea = Math.Max(0, width - gap * Math.Max(0, card.Segments.Count - 1));
-        var cursor = x;
-        writer.StartElement("g").Attribute("data-cfx-role", "composition-strip").Attribute("data-cfx-total", total).EndStartElement().Line();
-        for (var i = 0; i < card.Segments.Count; i++) {
-            var segment = card.Segments[i];
-            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, segmentArea * segment.Value / total);
-            if (segmentWidth <= 0) continue;
-            var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
-            writer.StartElement("rect")
-                .Attribute("data-cfx-role", "composition-strip-segment")
-                .Attribute("data-cfx-label", segment.Label)
-                .Attribute("data-cfx-value", segment.Value)
-                .Attribute("data-cfx-pattern", segment.Pattern.ToString())
-                .Attribute("x", cursor)
-                .Attribute("y", y)
-                .Attribute("width", segmentWidth)
-                .Attribute("height", height)
-                .Attribute("rx", Math.Min(7, height / 2))
-                .Attribute("fill", color.ToCss())
-                .EndEmptyElement().Line();
-            if (segment.Pattern != ChartFillPattern.None) {
-                for (var lineX = cursor - height; lineX < cursor + segmentWidth; lineX += 10) {
-                    writer.StartElement("line").Attribute("data-cfx-role", "composition-strip-pattern").Attribute("x1", lineX).Attribute("y1", y + height).Attribute("x2", lineX + height).Attribute("y2", y).Attribute("stroke", "#fff").Attribute("stroke-opacity", 0.18).Attribute("stroke-width", 2).EndEmptyElement().Line();
-                }
-            }
-
-            cursor += segmentWidth + gap;
+        if (card.Style == SegmentedMetricStyle.DistributionRows) {
+            RenderDistributionRows(writer, card);
+            return;
         }
 
-        writer.EndElement().Line();
+        RenderSegmentedMetricProgressRows(writer, card);
     }
 
     private static void RenderFooterAction(SvgMarkupWriter writer, string label, string symbol, string url, double footerY, double footerHeight, double x, double width, ChartForgeX.Themes.ChartTheme theme) {
@@ -527,7 +379,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var baseline = footerY + footerHeight * 0.64;
         if (url.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "visual-action-link").Attribute("href", url).Attribute("target", "_top").EndStartElement().Line();
         WriteText(writer, label, x, baseline, Math.Max(1, width - 38), VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, fontSize, "500");
-        WriteText(writer, symbol, x + width - 28, baseline, 28, VisualTextAlignment.Right, theme.Text, theme.FontFamily, fontSize, "800");
+        RenderActionSymbol(writer, symbol, x + width - 18, footerY + footerHeight * 0.5, 12, theme.Text, theme, fontSize);
         if (url.Length > 0) writer.EndElement().Line();
     }
 

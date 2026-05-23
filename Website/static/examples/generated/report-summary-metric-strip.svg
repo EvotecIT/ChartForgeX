@@ -35,7 +35,7 @@
 <line data-cfx-role="metric-action-divider" x1="0" y1="129.2" x2="300" y2="129.2" stroke="#D8E1EF"/>
 <a data-cfx-role="metric-action-link" href="#report-patch-rate" target="_top">
 <text data-cfx-role="metric-action-label" x="22" y="155.312" fill="#647086" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">Open report</text>
-<text data-cfx-role="metric-action-symbol" x="278" y="155.312" text-anchor="end" fill="#172033" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">&gt;</text>
+<path data-cfx-role="visual-action-chevron" d="M 261 145.28 L 267 149.6 L 261 153.92" fill="none" stroke="#172033" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </a>
 </svg>
 
@@ -68,7 +68,7 @@
 <line data-cfx-role="metric-action-divider" x1="0" y1="129.2" x2="300" y2="129.2" stroke="#D8E1EF"/>
 <a data-cfx-role="metric-action-link" href="#report-warnings" target="_top">
 <text data-cfx-role="metric-action-label" x="22" y="155.312" fill="#647086" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">Open report</text>
-<text data-cfx-role="metric-action-symbol" x="278" y="155.312" text-anchor="end" fill="#172033" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">&gt;</text>
+<path data-cfx-role="visual-action-chevron" d="M 261 145.28 L 267 149.6 L 261 153.92" fill="none" stroke="#172033" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </a>
 </svg>
 
@@ -99,7 +99,7 @@
 <line data-cfx-role="metric-action-divider" x1="0" y1="129.2" x2="300" y2="129.2" stroke="#D8E1EF"/>
 <a data-cfx-role="metric-action-link" href="#report-coverage" target="_top">
 <text data-cfx-role="metric-action-label" x="22" y="155.312" fill="#647086" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">Open report</text>
-<text data-cfx-role="metric-action-symbol" x="278" y="155.312" text-anchor="end" fill="#172033" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">&gt;</text>
+<path data-cfx-role="visual-action-chevron" d="M 261 145.28 L 267 149.6 L 261 153.92" fill="none" stroke="#172033" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </a>
 </svg>
 

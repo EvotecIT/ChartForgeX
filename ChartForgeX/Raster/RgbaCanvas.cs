@@ -94,10 +94,14 @@ internal sealed partial class RgbaCanvas {
     }
 
     public void DrawArc(double cx, double cy, double radius, double startAngle, double endAngle, ChartColor color, double thickness) {
+        DrawArc(cx, cy, radius, startAngle, endAngle, color, thickness, RasterLineCap.Round);
+    }
+
+    internal void DrawArc(double cx, double cy, double radius, double startAngle, double endAngle, ChartColor color, double thickness, RasterLineCap lineCap) {
         var fullCircle = Math.Abs(endAngle - startAngle) >= Math.PI * 2 - 0.000001;
         var start = fullCircle ? 0 : NormalizeAngle(startAngle);
         var end = fullCircle ? Math.PI * 2 : NormalizeAngle(endAngle);
-        DrawArcPixels(cx * _scale, cy * _scale, radius * _scale, start, end, color, Math.Max(1, thickness * _scale));
+        DrawArcPixels(cx * _scale, cy * _scale, radius * _scale, start, end, color, Math.Max(1, thickness * _scale), lineCap);
     }
 
     public void FillPolygon(IReadOnlyList<ChartPoint> points, ChartColor color) {
@@ -464,7 +468,7 @@ internal sealed partial class RgbaCanvas {
         }
     }
 
-    private void DrawArcPixels(double cx, double cy, double radius, double startAngle, double endAngle, ChartColor color, double thickness) {
+    private void DrawArcPixels(double cx, double cy, double radius, double startAngle, double endAngle, ChartColor color, double thickness, RasterLineCap lineCap) {
         if (radius <= 0 || thickness <= 0 || color.A == 0) return;
         var strokeRadius = Math.Max(0.5, thickness / 2.0);
         var feather = 1.0;
@@ -488,7 +492,7 @@ internal sealed partial class RgbaCanvas {
             }
         }
 
-        if (!fullCircle) {
+        if (!fullCircle && lineCap == RasterLineCap.Round) {
             DrawSoftCirclePixels(cx + Math.Cos(startAngle) * radius, cy + Math.Sin(startAngle) * radius, strokeRadius, color);
             DrawSoftCirclePixels(cx + Math.Cos(endAngle) * radius, cy + Math.Sin(endAngle) * radius, strokeRadius, color);
         }

@@ -274,6 +274,8 @@ report.SaveTiff("scorecards.tiff");
 Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series.
 
 ```csharp
+using ChartForgeX.Core;
+using ChartForgeX.Rendering;
 using ChartForgeX.VisualBlocks;
 
 var drives = ChartTable.Create()
@@ -291,6 +293,45 @@ var snapshot = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
     MetricCard.Create().WithMetric("CPU Load", "38%").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
     MetricCard.Create().WithMetric("Memory Used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
 });
+```
+
+Segmented dashboard visuals use one generic block instead of domain-specific card classes. The same `SegmentedMetricBlock` can render progress rows, performance rows with exact values, balanced capsule loops, funnel columns, composition strips, or distribution rows; item colors fall back to the active theme palette unless a color or semantic status is supplied.
+
+```csharp
+var performance = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
+    .WithTitle("Content Performance")
+    .AddItem(new SegmentedMetricItem("Posts", 86)
+        .WithProgress(100, 44)
+        .WithDisplayValue(132034, "N0")
+        .WithDelta("+4.3%"));
+
+var channels = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
+    .WithTitle("Channel Share")
+    .AddItem("Direct", 40, displayValue: "24,000")
+    .AddItem("Partner", 35, displayValue: "21,000")
+    .AddItem("Referral", 15, displayValue: "9,000")
+    .AddItem("Other", 10, displayValue: "6,000");
+
+var certificates = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
+    .WithTitle("Certificate Count")
+    .WithMetric("Certificates", 277)
+    .AddItem("Valid", 164, displayValue: "164")
+    .AddItem("Expiring", 48, displayValue: "48")
+    .AddItem("Revoked", 24, displayValue: "24")
+    .AddItem("Unknown", 41, displayValue: "41");
+
+var tasks = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
+    .WithTitle("Overall Tasks")
+    .WithMetric("Tasks", 23, "Task")
+    .AddItem("On Going", 12, pattern: ChartFillPattern.DiagonalForward)
+    .AddItem("Under Review", 6)
+    .AddItem("Finish", 4);
+
+var funnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+    .WithTitle("Conversion Funnel")
+    .AddItem("Clicks", 82000, segments: 24, displayValue: "82,000")
+    .AddItem("Added to Cart", 7200, segments: 16, displayValue: "7,200")
+    .AddItem("Payment", 1230, segments: 12, displayValue: "1,230");
 ```
 
 ## Topology Diagrams

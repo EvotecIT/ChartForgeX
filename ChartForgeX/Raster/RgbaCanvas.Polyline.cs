@@ -21,6 +21,15 @@ internal sealed partial class RgbaCanvas {
         DrawPolyline(points, color, thickness, RasterLineCap.Round, RasterLineJoin.Round, null);
     }
 
+    internal void DrawLine(double x0, double y0, double x1, double y1, ChartColor color, double thickness, RasterLineCap lineCap) {
+        if (lineCap == RasterLineCap.Round) {
+            DrawLine(x0, y0, x1, y1, color, thickness);
+            return;
+        }
+
+        DrawLinePixelsButt(x0 * _scale, y0 * _scale, x1 * _scale, y1 * _scale, Math.Max(1, thickness * _scale), color);
+    }
+
     internal void DrawPolyline(IReadOnlyList<ChartPoint> points, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         if (points.Count < 2) return;
