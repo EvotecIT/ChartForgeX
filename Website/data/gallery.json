@@ -164,12 +164,43 @@
     },
     {
       "category": "dashboards",
+      "title": "Dashboard Certificate Inventory Composition Strip",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-certificate-inventory-composition-strip.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Channel Share Capsule Loop",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-channel-share-capsule-loop.svg"
+    },
+    {
+      "category": "dashboards",
       "title": "Chart portfolio",
       "body": "Hand-picked tour of the chart catalog.",
       "tags": [
         "Portfolio"
       ],
       "image": "/examples/generated/dashboard-chart-portfolio-grid.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Content Performance Rows",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dashboard-content-performance-rows.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Dashboard Conversion Funnel Columns",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Bar",
+        "Funnel"
+      ],
+      "image": "/examples/generated/dashboard-conversion-funnel-columns.svg"
     },
     {
       "category": "dashboards",
@@ -700,16 +731,6 @@
       "image": "/examples/generated/map-world-route-light.svg"
     },
     {
-      "category": "maps",
-      "title": "Sea route alternatives",
-      "body": "Ordered waypoint routes comparing Suez Canal and Cape of Good Hope paths.",
-      "tags": [
-        "Map",
-        "Route"
-      ],
-      "image": "/examples/generated/sea-route-suez-cape-map-light.svg"
-    },
-    {
       "category": "charts",
       "title": "Monthly Posture Dark",
       "body": "Generated ChartForgeX visual output.",
@@ -906,6 +927,16 @@
         "Tiles"
       ],
       "image": "/examples/generated/revenue-tile-map-us-states-light.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Sea route alternatives",
+      "body": "Ordered waypoint routes comparing Suez Canal and Cape of Good Hope paths.",
+      "tags": [
+        "Map",
+        "Route"
+      ],
+      "image": "/examples/generated/sea-route-suez-cape-map-light.svg"
     },
     {
       "category": "charts",

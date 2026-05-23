@@ -34,7 +34,7 @@
 <text data-cfx-role="metric-caption" x="58.25" y="116.76" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">5 minute trend</text>
 <line data-cfx-role="metric-action-divider" x1="0" y1="133.76" x2="320" y2="133.76" stroke="#2A3240"/>
 <text data-cfx-role="metric-action-label" x="22" y="160.794" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">View details</text>
-<text data-cfx-role="metric-action-symbol" x="298" y="160.794" text-anchor="end" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">&gt;</text>
+<path data-cfx-role="visual-action-chevron" d="M 281 150.56 L 287 154.88 L 281 159.2" fill="none" stroke="#F8FAFC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
 <svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-f50e9d42" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-f50e9d42-title cfx-visual-f50e9d42-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="360" y="100" data-cfx-role="visual-grid-panel">
@@ -65,7 +65,7 @@
 <text data-cfx-role="metric-caption" x="58.25" y="116.76" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">since boot</text>
 <line data-cfx-role="metric-action-divider" x1="0" y1="133.76" x2="320" y2="133.76" stroke="#2A3240"/>
 <text data-cfx-role="metric-action-label" x="22" y="160.794" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">View details</text>
-<text data-cfx-role="metric-action-symbol" x="298" y="160.794" text-anchor="end" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">&gt;</text>
+<path data-cfx-role="visual-action-chevron" d="M 281 150.56 L 287 154.88 L 281 159.2" fill="none" stroke="#F8FAFC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
 <svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-e722b68b" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-e722b68b-title cfx-visual-e722b68b-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="696" y="100" data-cfx-role="visual-grid-panel">
@@ -96,7 +96,7 @@
 <text data-cfx-role="metric-caption" x="78.75" y="116.76" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">system volume</text>
 <line data-cfx-role="metric-action-divider" x1="0" y1="133.76" x2="320" y2="133.76" stroke="#2A3240"/>
 <text data-cfx-role="metric-action-label" x="22" y="160.794" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">View details</text>
-<text data-cfx-role="metric-action-symbol" x="298" y="160.794" text-anchor="end" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">&gt;</text>
+<path data-cfx-role="visual-action-chevron" d="M 281 150.56 L 287 154.88 L 281 159.2" fill="none" stroke="#F8FAFC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
 <svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-312beb31" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-312beb31-title cfx-visual-312beb31-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="1032" y="100" data-cfx-role="visual-grid-panel">
@@ -125,7 +125,7 @@
 <text data-cfx-role="metric-caption" x="66" y="116.76" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">active adapter</text>
 <line data-cfx-role="metric-action-divider" x1="0" y1="133.76" x2="320" y2="133.76" stroke="#2A3240"/>
 <text data-cfx-role="metric-action-label" x="22" y="160.794" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">View details</text>
-<text data-cfx-role="metric-action-symbol" x="298" y="160.794" text-anchor="end" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">&gt;</text>
+<path data-cfx-role="visual-action-chevron" d="M 281 150.56 L 287 154.88 L 281 159.2" fill="none" stroke="#F8FAFC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
 </svg>

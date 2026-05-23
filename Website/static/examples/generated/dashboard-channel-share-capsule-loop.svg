@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-9a1bc6dd" width="820" height="340" viewBox="0 0 820 340" role="img" aria-labelledby="cfx-visual-9a1bc6dd-title cfx-visual-9a1bc6dd-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-9a1bc6dd-title">Channel Share</title>
+<desc id="cfx-visual-9a1bc6dd-desc">Static ChartForgeX visual block.</desc>
+<defs>
+<style>#cfx-visual-9a1bc6dd .cfx-guide-stroke,#cfx-visual-9a1bc6dd .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-9a1bc6dd text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-9a1bc6dd-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-9a1bc6dd-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-9a1bc6dd-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-9a1bc6dd-visualCardClip"><rect x="0" y="0" width="820" height="340" rx="18"/></clipPath>
+</defs>
+<rect width="100%" height="100%" fill="url(#cfx-visual-9a1bc6dd-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="819" height="339" rx="17.5" fill="url(#cfx-visual-9a1bc6dd-visualCard)" stroke="#ECEEF2"/>
+<rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="817" height="337" rx="16.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
+<circle data-cfx-role="segmented-metric-menu-dot" cx="776" cy="44" r="2.1" fill="#7A7D86"/>
+<circle data-cfx-role="segmented-metric-menu-dot" cx="783" cy="44" r="2.1" fill="#7A7D86"/>
+<circle data-cfx-role="segmented-metric-menu-dot" cx="790" cy="44" r="2.1" fill="#7A7D86"/>
+<text data-cfx-role="visual-text" x="22" y="41.5" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Channel Share</text>
+<text data-cfx-role="visual-text" x="22" y="66.5" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Balanced source mix rendered as a capsule loop.</text>
+<line data-cfx-role="segmented-metric-header-divider" x1="22" y1="93" x2="798" y2="93" stroke="#DCDDE3"/>
+<g data-cfx-role="segmented-metric-capsule-loop" data-cfx-total="100" data-cfx-loop-height="100.36" data-cfx-stroke="34">
+<path data-cfx-role="segmented-metric-capsule-track-shadow" d="M 72.18 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 487.82 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 72.18 169.792" fill="none" stroke="rgba(122,125,134,0.055)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.4)"/>
+<path data-cfx-role="segmented-metric-capsule-track" d="M 72.18 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 487.82 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 72.18 169.792" fill="none" stroke="rgba(255,255,255,0.667)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+<path data-cfx-role="segmented-metric-capsule-segment" data-cfx-label="Direct" data-cfx-value="40" data-cfx-share="0.4" data-cfx-start="0" data-cfx-end="0.4" d="M 72.18 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 490.16 169.875" fill="none" stroke="#36C47D" stroke-width="34" stroke-linecap="butt" stroke-linejoin="round"/>
+<path data-cfx-role="segmented-metric-capsule-segment-sheen" data-cfx-label="Direct" d="M 72.18 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 490.16 169.875" fill="none" stroke="rgba(110,213,161,0.227)" stroke-width="4.76" stroke-linecap="butt" stroke-linejoin="round"/>
+<text data-cfx-role="segmented-metric-capsule-label" x="280.131" y="173.872" text-anchor="middle" fill="#FFFFFF" stroke="rgba(15,23,42,0.439)" stroke-width="2.4" paint-order="stroke" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="12" font-weight="850">40%</text>
+<path data-cfx-role="segmented-metric-capsule-segment" data-cfx-label="Partner" data-cfx-value="35" data-cfx-share="0.35" data-cfx-start="0.4" data-cfx-end="0.75" d="M 486.003 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 487.82 236.152 L 225.801 236.152" fill="none" stroke="#FFB05C" stroke-width="34" stroke-linecap="butt" stroke-linejoin="round"/>
+<path data-cfx-role="segmented-metric-capsule-segment-sheen" data-cfx-label="Partner" d="M 486.003 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 487.82 236.152 L 225.801 236.152" fill="none" stroke="rgba(255,198,138,0.227)" stroke-width="4.76" stroke-linecap="butt" stroke-linejoin="round"/>
+<text data-cfx-role="segmented-metric-capsule-label" x="409.838" y="240.232" text-anchor="middle" fill="#0F172A" stroke="rgba(255,255,255,0.439)" stroke-width="2.4" paint-order="stroke" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="12" font-weight="850">35%</text>
+<path data-cfx-role="segmented-metric-capsule-segment" data-cfx-label="Referral" data-cfx-value="15" data-cfx-share="0.15" data-cfx-start="0.75" data-cfx-end="0.9" d="M 229.96 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 69.84 236.069" fill="none" stroke="#EF5DA8" stroke-width="34" stroke-linecap="butt" stroke-linejoin="round"/>
+<path data-cfx-role="segmented-metric-capsule-segment-sheen" data-cfx-label="Referral" d="M 229.96 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 69.84 236.069" fill="none" stroke="rgba(243,138,192,0.227)" stroke-width="4.76" stroke-linecap="butt" stroke-linejoin="round"/>
+<text data-cfx-role="segmented-metric-capsule-label" x="149.899" y="240.232" text-anchor="middle" fill="#FFFFFF" stroke="rgba(15,23,42,0.439)" stroke-width="2.4" paint-order="stroke" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="12" font-weight="850">15%</text>
+<path data-cfx-role="segmented-metric-capsule-segment" data-cfx-label="Other" data-cfx-value="10" data-cfx-share="0.1" data-cfx-start="0.9" data-cfx-end="1" d="M 73.997 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 72.18 169.792" fill="none" stroke="#6D83F2" stroke-width="34" stroke-linecap="butt" stroke-linejoin="round"/>
+<path data-cfx-role="segmented-metric-capsule-segment-sheen" data-cfx-label="Other" d="M 73.997 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 72.18 169.792" fill="none" stroke="rgba(150,166,246,0.227)" stroke-width="4.76" stroke-linecap="butt" stroke-linejoin="round"/>
+<text data-cfx-role="segmented-metric-capsule-label" x="39" y="206.921" text-anchor="middle" fill="#FFFFFF" stroke="rgba(15,23,42,0.439)" stroke-width="2.4" paint-order="stroke" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="12" font-weight="850">10%</text>
+</g>
+<g data-cfx-role="segmented-metric-capsule-legend">
+<rect data-cfx-role="segmented-metric-capsule-swatch" x="568" y="169.661" width="12" height="12" rx="3" fill="#36C47D"/>
+<text data-cfx-role="visual-text" x="590" y="183.941" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="550">Direct</text>
+<text data-cfx-role="visual-text" x="798" y="183.941" text-anchor="end" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="800">24,000</text>
+<rect data-cfx-role="segmented-metric-capsule-swatch" x="568" y="203.661" width="12" height="12" rx="3" fill="#FFB05C"/>
+<text data-cfx-role="visual-text" x="590" y="217.941" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="550">Partner</text>
+<text data-cfx-role="visual-text" x="798" y="217.941" text-anchor="end" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="800">21,000</text>
+<rect data-cfx-role="segmented-metric-capsule-swatch" x="568" y="237.661" width="12" height="12" rx="3" fill="#EF5DA8"/>
+<text data-cfx-role="visual-text" x="590" y="251.941" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="550">Referral</text>
+<text data-cfx-role="visual-text" x="798" y="251.941" text-anchor="end" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="800">9,000</text>
+<rect data-cfx-role="segmented-metric-capsule-swatch" x="568" y="271.661" width="12" height="12" rx="3" fill="#6D83F2"/>
+<text data-cfx-role="visual-text" x="590" y="285.941" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="550">Other</text>
+<text data-cfx-role="visual-text" x="798" y="285.941" text-anchor="end" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="800">6,000</text>
+</g>
+</svg>

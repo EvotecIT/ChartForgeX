@@ -6,26 +6,27 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgVisualBlockRenderer {
-    private static void RenderSegmentedProgressHeader(SvgMarkupWriter writer, SegmentedProgressCard card, ref double y, double x, double width) {
+    private static void RenderSegmentedMetricHeading(SvgMarkupWriter writer, SegmentedMetricBlock card, ref double y, double x, double width) {
+        if (card.HeaderSymbol.Length > 0 || card.ShowMenu) RenderSegmentedMetricHeader(writer, card, ref y, x, width);
+        else RenderBlockHeading(writer, card, ref y, x, width);
+    }
+
+    private static void RenderSegmentedMetricHeader(SvgMarkupWriter writer, SegmentedMetricBlock card, ref double y, double x, double width) {
         var theme = card.Options.Theme;
-        var badgeSize = card.HeaderSymbol.Length > 0 ? 48.0 : 0.0;
-        var textX = x + (badgeSize > 0 ? badgeSize + 18 : 0);
-        var menuReserve = card.ShowMenu ? 42.0 : 0.0;
-        if (badgeSize > 0) {
-            writer.StartElement("rect").Attribute("data-cfx-role", "segmented-progress-header-badge").Attribute("x", x).Attribute("y", y).Attribute("width", badgeSize).Attribute("height", badgeSize).Attribute("rx", 14).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, card.HeaderSymbol, x, y + 31, badgeSize, VisualTextAlignment.Center, theme.Text, theme.FontFamily, 18, "850");
+        var layout = VisualBlockRendering.SegmentedHeaderLayout(card, x, y, width);
+        if (layout.BadgeSize > 0) {
+            writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-header-badge").Attribute("x", x).Attribute("y", y).Attribute("width", layout.BadgeSize).Attribute("height", layout.BadgeSize).Attribute("rx", 14).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
+            WriteText(writer, card.HeaderSymbol, x, y + 31, layout.BadgeSize, VisualTextAlignment.Center, theme.Text, theme.FontFamily, 18, "850");
         }
 
         if (card.ShowMenu) {
-            var dotY = y + 22;
-            for (var i = 0; i < 3; i++) writer.StartElement("circle").Attribute("data-cfx-role", "segmented-progress-menu-dot").Attribute("cx", x + width - 22 + i * 7).Attribute("cy", dotY).Attribute("r", 2.1).Attribute("fill", theme.MutedText.ToCss()).EndEmptyElement().Line();
+            for (var i = 0; i < 3; i++) writer.StartElement("circle").Attribute("data-cfx-role", "segmented-metric-menu-dot").Attribute("cx", layout.MenuDotStartX + i * 7).Attribute("cy", layout.MenuDotY).Attribute("r", 2.1).Attribute("fill", theme.MutedText.ToCss()).EndEmptyElement().Line();
         }
 
-        if (card.Title.Length > 0) WriteText(writer, card.Title, textX, y + theme.TitleFontSize * 0.75, width - (textX - x) - menuReserve, VisualTextAlignment.Left, theme.Text, theme.FontFamily, theme.TitleFontSize, "800");
-        if (card.Subtitle.Length > 0) WriteText(writer, card.Subtitle, textX, y + theme.TitleFontSize + 8 + theme.SubtitleFontSize * 0.75, width - (textX - x) - menuReserve, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
-        y += Math.Max(badgeSize, card.Title.Length > 0 ? theme.TitleFontSize + (card.Subtitle.Length > 0 ? theme.SubtitleFontSize + 13 : 8) : 0) + 18;
-        writer.StartElement("line").Attribute("data-cfx-role", "segmented-progress-header-divider").Attribute("x1", x).Attribute("y1", y).Attribute("x2", x + width).Attribute("y2", y).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
-        y += 24;
+        if (card.Title.Length > 0) WriteText(writer, card.Title, layout.TextX, layout.TitleTop + theme.TitleFontSize * 0.75, layout.TextWidth, VisualTextAlignment.Left, theme.Text, theme.FontFamily, theme.TitleFontSize, "800");
+        if (card.Subtitle.Length > 0) WriteText(writer, card.Subtitle, layout.TextX, layout.SubtitleTop + theme.SubtitleFontSize * 0.75, layout.TextWidth, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
+        writer.StartElement("line").Attribute("data-cfx-role", "segmented-metric-header-divider").Attribute("x1", x).Attribute("y1", layout.DividerY).Attribute("x2", x + width).Attribute("y2", layout.DividerY).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
+        y = layout.NextY;
     }
 
 }

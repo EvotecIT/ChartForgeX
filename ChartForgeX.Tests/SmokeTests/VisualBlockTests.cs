@@ -75,7 +75,7 @@ internal static partial class SmokeTests {
         Assert(metricSvg.Contains("data-cfx-role=\"visual-icon\"", StringComparison.Ordinal), "MetricCard should render reusable built-in icons.");
         Assert(metricSvg.Contains("data-cfx-placement=\"top-left\"", StringComparison.Ordinal), "MetricCard should render configurable badge placement.");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-action-label\"", StringComparison.Ordinal), "MetricCard should render optional footer action text.");
-        Assert(metricSvg.Contains("data-cfx-role=\"metric-action-symbol\"", StringComparison.Ordinal), "MetricCard should render optional footer action symbols.");
+        Assert(metricSvg.Contains("data-cfx-role=\"visual-action-chevron\"", StringComparison.Ordinal), "MetricCard should render optional footer action symbols as shared action glyphs.");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-action-link\"", StringComparison.Ordinal) && metricSvg.Contains("href=\"#coverage\"", StringComparison.Ordinal), "MetricCard should render safe action links in SVG/HTML outputs.");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-mini-bars\"", StringComparison.Ordinal), "MetricCard should render compact mini bar groups.");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-mini-bar-highlight\"", StringComparison.Ordinal), "MetricCard should emphasize one mini bar.");
@@ -194,65 +194,238 @@ internal static partial class SmokeTests {
         Assert(radialSvg.Contains("data-cfx-icon=\"flame\"", StringComparison.Ordinal), "RadialMetricCard should render reusable built-in icons.");
         Assert(radialMetric.ToPng().Length > 64, "RadialMetricCard should render PNG output.");
 
-        var segmented = SegmentedProgressCard.Create()
+        var segmented = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTitle("Project Progress")
             .WithSubtitle("Reusable fixed-count progress rows")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(620, 250)
             .WithHeaderSymbol("%")
             .WithMenu()
-            .AddRow("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", status: VisualStatus.Positive)
-            .AddRow("Target Sales", 67, segments: 44, color: ChartColor.FromHex("#5EA2F6"), delta: "+2.2%", status: VisualStatus.Info)
+            .AddItem("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", status: VisualStatus.Positive)
+            .AddItem("Target Sales", 67, segments: 44, color: ChartColor.FromHex("#5EA2F6"), delta: "+2.2%", status: VisualStatus.Info)
             .WithAction("Up by 6% compared to last week")
             .WithActionStyle(ChartColor.FromHex("#DCFCE7"), ChartColor.FromHex("#16A34A"));
-        var segmentedSvg = segmented.ToSvg("visual-block-segmented-progress");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-card\"", StringComparison.Ordinal), "SegmentedProgressCard should render a public card role.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-header-badge\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional header badges.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-menu-dot\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional menu dots.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-strip\"", StringComparison.Ordinal), "SegmentedProgressCard should render segmented strips.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-segment-shadow\"", StringComparison.Ordinal), "SegmentedProgressCard should render dimensional segment shadows.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-segment-highlight\"", StringComparison.Ordinal), "SegmentedProgressCard should render dimensional segment highlights.");
-        Assert(segmentedSvg.Contains("data-cfx-segments=\"44\"", StringComparison.Ordinal), "SegmentedProgressCard should preserve fixed segment counts in SVG metadata.");
-        Assert(segmentedSvg.Contains("data-cfx-filled=\"39\"", StringComparison.Ordinal), "SegmentedProgressCard should derive filled segment counts from value and maximum.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-delta-pill\"", StringComparison.Ordinal), "SegmentedProgressCard should render delta pills.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-progress-action-band\"", StringComparison.Ordinal), "SegmentedProgressCard should render optional action bands.");
-        Assert(segmented.ToPng().Length > 64, "SegmentedProgressCard should render PNG output.");
+        var segmentedSvg = segmented.ToSvg("visual-block-segmented-metric");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-rows\"", StringComparison.Ordinal), "SegmentedMetricBlock should render progress-row treatments.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-header-badge\"", StringComparison.Ordinal), "SegmentedMetricBlock should render optional header badges.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock should render optional menu dots.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-strip\"", StringComparison.Ordinal), "SegmentedMetricBlock should render segmented strips.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-segment-shadow\"", StringComparison.Ordinal), "SegmentedMetricBlock should render dimensional segment shadows.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-segment-highlight\"", StringComparison.Ordinal), "SegmentedMetricBlock should render dimensional segment highlights.");
+        Assert(segmentedSvg.Contains("data-cfx-segments=\"44\"", StringComparison.Ordinal), "SegmentedMetricBlock should preserve fixed segment counts in SVG metadata.");
+        Assert(segmentedSvg.Contains("data-cfx-filled=\"39\"", StringComparison.Ordinal), "SegmentedMetricBlock should derive filled segment counts from value and maximum.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-delta-pill\"", StringComparison.Ordinal), "SegmentedMetricBlock should render delta pills.");
+        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-action-band\"", StringComparison.Ordinal), "SegmentedMetricBlock should render optional action bands.");
+        Assert(segmented.ToPng().Length > 64, "SegmentedMetricBlock progress rows should render PNG output.");
 
-        var composition = CompositionStatusCard.Create()
+        var subtitleOnlyHeader = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
+            .WithSubtitle("Subtitle without title")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(420, 180)
+            .WithMenu()
+            .AddItem("Ready", 1, segments: 8);
+        var subtitleOnlyHeaderSvg = subtitleOnlyHeader.ToSvg("visual-block-segmented-subtitle-only-header");
+        var subtitleOnlyDividerY = GetAttribute(subtitleOnlyHeaderSvg, "data-cfx-role=\"segmented-metric-header-divider\"", "y1");
+        Assert(subtitleOnlyDividerY >= 50, "SegmentedMetricBlock subtitle-only headers should reserve text height before drawing the divider.");
+        Assert(subtitleOnlyHeader.ToPng().Length > 64, "SegmentedMetricBlock subtitle-only headers should render PNG output.");
+
+        var performanceRows = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 260)
+            .AddItem(new SegmentedMetricItem("Posts", 86)
+                .WithProgress(100, 44)
+                .WithColor(ChartColor.FromHex("#5EA2F6"))
+                .WithDisplayValue("132,034")
+                .WithDelta("+4.3%")
+                .WithStatus(VisualStatus.Positive))
+            .AddItem(new SegmentedMetricItem("Replies", 62)
+                .WithProgress(100, 44)
+                .WithColor(ChartColor.FromHex("#7894F8"))
+                .WithDisplayValue("56,234")
+                .WithDelta("-6.4%")
+                .WithStatus(VisualStatus.Negative));
+        var performanceRowsSvg = performanceRows.ToSvg("visual-block-segmented-performance-rows");
+        Assert(performanceRowsSvg.Contains("132,034", StringComparison.Ordinal), "SegmentedMetricBlock progress rows should render item display values when supplied.");
+        Assert(performanceRowsSvg.Contains("+4.3%", StringComparison.Ordinal) && performanceRowsSvg.Contains("-6.4%", StringComparison.Ordinal), "SegmentedMetricBlock progress rows should render semantic deltas alongside exact values.");
+        Assert(performanceRows.ToPng().Length > 64, "SegmentedMetricBlock performance rows should render PNG output.");
+
+        var capsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
+            .WithTitle("Certificate Count")
+            .WithSubtitle("Reusable capsule loop")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 260)
+            .WithMenu()
+            .AddItem("Valid", 42, color: ChartColor.FromHex("#34C77B"), displayValue: "42")
+            .AddItem("Expiring", 12, color: ChartColor.FromHex("#FFB05C"), displayValue: "12")
+            .AddItem("Revoked", 6, color: ChartColor.FromHex("#EF5DA8"), displayValue: "6")
+            .AddItem("Unknown", 10, color: ChartColor.FromHex("#6D83F2"), displayValue: "10");
+        var capsuleSvg = capsule.ToSvg("visual-block-segmented-capsule");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-loop\"", StringComparison.Ordinal), "SegmentedMetricBlock should render capsule loop treatments.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-track\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule loops should render a base track.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule loops should share segmented metric header chrome.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-segment\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule loops should render part-to-whole segments.");
+        Assert(GetAttribute(capsuleSvg, "data-cfx-label=\"Revoked\"", "data-cfx-end") > GetAttribute(capsuleSvg, "data-cfx-label=\"Revoked\"", "data-cfx-start"), "SegmentedMetricBlock capsule loops should keep small slices visible on the loop track.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-label\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule loops should render readable share labels when there is room.");
+        Assert(capsuleSvg.Contains("paint-order=\"stroke\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule labels should render with a readable halo.");
+        Assert(capsuleSvg.Contains("data-cfx-role=\"segmented-metric-capsule-legend\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule loops should render generic legend values.");
+        Assert(capsule.ToPng().Length > 64, "SegmentedMetricBlock capsule loops should render PNG output.");
+
+        var paletteFallback = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithPalette("#112233", "#445566")
+            .WithSize(420, 220)
+            .AddItem("First", 3)
+            .AddItem("Second", 2);
+        var paletteFallbackSvg = paletteFallback.ToSvg("visual-block-segmented-palette-fallback");
+        Assert(paletteFallbackSvg.Contains("stroke=\"#112233\"", StringComparison.Ordinal), "SegmentedMetricBlock items without color or status should use the theme palette.");
+        Assert(paletteFallbackSvg.Contains("stroke=\"#445566\"", StringComparison.Ordinal), "SegmentedMetricBlock should cycle the theme palette across generic items.");
+
+        var funnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+            .WithTitle("Conversion Funnel")
+            .WithSubtitle("Ordered stage counts")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(620, 280)
+            .WithMenu()
+            .AddItem("Clicks", 82000, segments: 24, color: ChartColor.FromHex("#34C77B"), displayValue: "82,000")
+            .AddItem("Added", 7200, segments: 16, color: ChartColor.FromHex("#FFB05C"), displayValue: "7,200")
+            .AddItem("Payment", 1230, segments: 12, color: ChartColor.FromHex("#6D83F2"), displayValue: "1,230");
+        var funnelSvg = funnel.ToSvg("visual-block-segmented-funnel-columns");
+        Assert(funnelSvg.Contains("data-cfx-role=\"segmented-metric-funnel-columns\"", StringComparison.Ordinal), "SegmentedMetricBlock should render ordered funnel-column treatments.");
+        Assert(funnelSvg.Contains("data-cfx-role=\"segmented-metric-funnel-stage\"", StringComparison.Ordinal), "SegmentedMetricBlock funnel columns should render generic stage groups.");
+        Assert(funnelSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock funnel columns should share segmented metric header chrome.");
+        Assert(funnelSvg.Contains("data-cfx-role=\"segmented-metric-funnel-bar\"", StringComparison.Ordinal), "SegmentedMetricBlock funnel columns should render repeated stage bars.");
+        Assert(funnelSvg.Contains("data-cfx-segments=\"24\"", StringComparison.Ordinal), "SegmentedMetricBlock funnel columns should preserve per-stage segment counts.");
+        Assert(funnel.ToPng().Length > 64, "SegmentedMetricBlock funnel columns should render PNG output.");
+
+        var compactFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+            .WithTitle("Compact Funnel")
+            .WithSubtitle("Longer header with action")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(360, 170)
+            .WithAction("Open")
+            .AddItem("First", 10, segments: 12)
+            .AddItem("Second", 8, segments: 10)
+            .AddItem("Third", 6, segments: 8);
+        var compactFunnelSvg = compactFunnel.ToSvg("visual-block-segmented-compact-funnel");
+        var compactBarY = GetAttribute(compactFunnelSvg, "data-cfx-role=\"segmented-metric-funnel-columns\"", "data-cfx-bar-y");
+        var compactBarHeight = GetAttribute(compactFunnelSvg, "data-cfx-role=\"segmented-metric-funnel-columns\"", "data-cfx-bar-height");
+        Assert(compactBarY >= 0 && compactBarHeight < 52, "SegmentedMetricBlock compact funnel bars should cap to the available plot height instead of overlapping the header.");
+        var lastStageX = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
+        var lastStageWidth = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
+        Assert(lastStageX + lastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock funnel stage geometry should fit within the card content width.");
+
+        var denseFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(360, 180)
+            .AddItem("First", 100, segments: 120)
+            .AddItem("Second", 80, segments: 120)
+            .AddItem("Third", 60, segments: 120);
+        var denseFunnelSvg = denseFunnel.ToSvg("visual-block-segmented-dense-funnel");
+        var denseLastStageX = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
+        var denseLastStageWidth = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
+        Assert(denseLastStageX + denseLastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock dense funnel stages should preserve fitted widths instead of overflowing after a minimum bar clamp.");
+
+        var compactCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
+            .WithTitle("Compact Capsule")
+            .WithSubtitle("Tight card")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(360, 170)
+            .WithAction("Open")
+            .AddItem("First", 10)
+            .AddItem("Second", 8)
+            .AddItem("Third", 6);
+        var compactCapsuleSvg = compactCapsule.ToSvg("visual-block-segmented-compact-capsule");
+        var compactCapsuleHeight = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-loop\"", "data-cfx-loop-height");
+        Assert(compactCapsuleHeight > 0 && compactCapsuleHeight < 72, "SegmentedMetricBlock compact capsule loops should fit available plot height.");
+
+        var configuredItems = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(460, 220)
+            .AddItem("Configured", 5, item => {
+                item.Maximum = 10;
+                item.Segments = 20;
+                item.Delta = "+1";
+            })
+            .AddItem(new SegmentedMetricItem("Prebuilt", 4)
+                .WithProgress(8, 16)
+                .WithStatus(VisualStatus.Positive)
+                .WithDelta("+2"));
+        var configuredItemsSvg = configuredItems.ToSvg("visual-block-segmented-configured-items");
+        Assert(configuredItemsSvg.Contains("data-cfx-segments=\"20\"", StringComparison.Ordinal), "SegmentedMetricBlock should support callback-configured items without growing AddItem overloads.");
+        Assert(configuredItemsSvg.Contains("data-cfx-segments=\"16\"", StringComparison.Ordinal), "SegmentedMetricBlock should accept preconfigured item instances.");
+        Assert(configuredItemsSvg.Contains("data-cfx-role=\"segmented-metric-delta-pill\"", StringComparison.Ordinal), "SegmentedMetricBlock should render configured item deltas.");
+
+        var formattedDisplayValue = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(420, 220)
+            .AddItem("Formatted", 1234.56, segments: 6, displayValue: 1234.56, displayFormat: "0.0");
+        Assert(formattedDisplayValue.ToSvg("visual-block-segmented-formatted-display-value").Contains(">1234.6<", StringComparison.Ordinal), "SegmentedMetricBlock display values should accept formatted objects.");
+
+        var fluentItems = SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRows)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(460, 260)
+            .WithMetric("Inventory", 30)
+            .AddItem(new SegmentedMetricItem("Certificates (TLS)", 18)
+                .WithSymbol("TLS")
+                .WithDisplayValue(18, "0")
+                .WithPattern(ChartFillPattern.DiagonalForward))
+            .AddItem(new SegmentedMetricItem("Certificates (S/MIME)", 12)
+                .WithSymbol("SM")
+                .WithDisplayValue("12")
+                .WithColor(ChartColor.FromHex("#445566")));
+        var fluentItemsSvg = fluentItems.ToSvg("visual-block-segmented-fluent-items");
+        Assert(fluentItemsSvg.Contains("data-cfx-pattern=\"DiagonalForward\"", StringComparison.Ordinal) || fluentItemsSvg.Contains("TLS", StringComparison.Ordinal), "SegmentedMetricItem fluent helpers should configure reusable item metadata.");
+        Assert(fluentItemsSvg.Contains("TLS", StringComparison.Ordinal), "SegmentedMetricItem fluent helpers should configure symbols.");
+        Assert(fluentItemsSvg.Contains("18", StringComparison.Ordinal), "SegmentedMetricItem fluent helpers should configure display values.");
+
+        var composition = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
             .WithTitle("Overall Tasks")
             .WithSubtitle("Spread across 6 projects.")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(620, 360)
             .WithMetric("Tasks", 23, "Task")
-            .AddSegment("On Going", 12, ChartColor.FromHex("#5EA2F6"), VisualStatus.Info, ChartFillPattern.DiagonalForward)
-            .AddSegment("Under Review", 6, ChartColor.FromHex("#FFB05C"), VisualStatus.Warning)
-            .AddSegment("Finish", 4, ChartColor.FromHex("#34C77B"), VisualStatus.Positive)
+            .WithMenu()
+            .AddItem("On Going", 12, color: ChartColor.FromHex("#5EA2F6"), status: VisualStatus.Info, pattern: ChartFillPattern.DiagonalForward)
+            .AddItem("Under Review", 6, color: ChartColor.FromHex("#FFB05C"), status: VisualStatus.Warning)
+            .AddItem("Finish", 4, color: ChartColor.FromHex("#34C77B"), status: VisualStatus.Positive)
             .WithAction("View details task");
         var compositionSvg = composition.ToSvg("visual-block-composition-status");
-        Assert(compositionSvg.Contains("data-cfx-role=\"composition-status-card\"", StringComparison.Ordinal), "CompositionStatusCard should render a public card role.");
-        Assert(compositionSvg.Contains("data-cfx-role=\"composition-strip\"", StringComparison.Ordinal), "CompositionStatusCard should render a stacked composition strip.");
-        Assert(compositionSvg.Contains("data-cfx-pattern=\"DiagonalForward\"", StringComparison.Ordinal), "CompositionStatusCard should preserve segment pattern hints in SVG metadata.");
-        Assert(compositionSvg.Contains("data-cfx-role=\"composition-legend-swatch\"", StringComparison.Ordinal), "CompositionStatusCard should render legend swatches.");
-        Assert(composition.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "CompositionStatusCard should render an embeddable HTML fragment.");
-        Assert(composition.ToPng().Length > 64, "CompositionStatusCard should render PNG output.");
+        Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-composition\"", StringComparison.Ordinal), "SegmentedMetricBlock should render a composition treatment.");
+        Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock composition strips should share segmented metric header chrome.");
+        Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-composition-strip\"", StringComparison.Ordinal), "SegmentedMetricBlock should render a stacked composition strip.");
+        Assert(compositionSvg.Contains("Finish", StringComparison.Ordinal), "SegmentedMetricBlock composition strips should fit all legend rows after header chrome.");
+        Assert(compositionSvg.Contains("data-cfx-pattern=\"DiagonalForward\"", StringComparison.Ordinal), "SegmentedMetricBlock should preserve segment pattern hints in SVG metadata.");
+        Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-legend-swatch\"", StringComparison.Ordinal), "SegmentedMetricBlock should render legend swatches.");
+        Assert(compositionSvg.Contains("data-cfx-role=\"visual-action-chevron\"", StringComparison.Ordinal), "SegmentedMetricBlock should draw default action chevrons instead of relying on a text glyph.");
+        var formattedComposition = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(520, 300)
+            .WithMetric("Certificates", 150)
+            .AddItem("Valid", 100, displayValue: 99.5, displayFormat: "0.0")
+            .AddItem("Expiring", 50);
+        Assert(formattedComposition.ToSvg("visual-block-composition-formatted-display-value").Contains(">99.5  67%<", StringComparison.Ordinal), "SegmentedMetricBlock composition legends should honor formatted display values.");
+        Assert(composition.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "SegmentedMetricBlock should render an embeddable HTML fragment.");
+        Assert(composition.ToPng().Length > 64, "SegmentedMetricBlock composition strips should render PNG output.");
 
-        var distribution = DistributionStripCard.Create()
+        var distribution = SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRows)
             .WithTitle("Net Earning")
             .WithSubtitle("Currency split")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(620, 360)
-            .WithMetric("Net earning", "EUR 56,980.00", "Last month")
-            .AddSegment("Russian Ruble (RUB)", 9.74, ChartColor.FromHex("#FF3B13"), "RUB", "EUR 12.23")
-            .AddSegment("Euro (EUR)", 38.48, ChartColor.FromHex("#1389F2"), "EUR", "EUR 20.23")
-            .AddSegment("United States Dollar (USD)", 14.11, ChartColor.FromHex("#24D47B"), "USD", "EUR 12.00");
+            .WithMetric("Net earning", "EUR 56,980.00", caption: "Last month")
+            .WithMenu()
+            .AddItem("Russian Ruble (RUB)", 9.74, color: ChartColor.FromHex("#FF3B13"), symbol: "RUB", displayValue: "EUR 12.23")
+            .AddItem("Euro (EUR)", 38.48, color: ChartColor.FromHex("#1389F2"), symbol: "EUR", displayValue: "EUR 20.23")
+            .AddItem("United States Dollar (USD)", 14.11, color: ChartColor.FromHex("#24D47B"), symbol: "USD", displayValue: "EUR 12.00");
         var distributionSvg = distribution.ToSvg("visual-block-distribution-strip");
-        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-strip-card\"", StringComparison.Ordinal), "DistributionStripCard should render a public card role.");
-        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-segment\"", StringComparison.Ordinal), "DistributionStripCard should render stacked strip segments.");
-        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-legend-chip\"", StringComparison.Ordinal), "DistributionStripCard should render legend chips.");
-        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-row\"", StringComparison.Ordinal), "DistributionStripCard should render detail rows.");
-        Assert(distributionSvg.Contains("data-cfx-role=\"distribution-ring\"", StringComparison.Ordinal), "DistributionStripCard should render row share rings.");
-        Assert(distribution.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "DistributionStripCard should render an embeddable HTML fragment.");
-        Assert(distribution.ToPng().Length > 64, "DistributionStripCard should render PNG output.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"segmented-metric-distribution\"", StringComparison.Ordinal), "SegmentedMetricBlock should render a distribution treatment.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"segmented-metric-menu-dot\"", StringComparison.Ordinal), "SegmentedMetricBlock distribution rows should share segmented metric header chrome.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"segmented-metric-distribution-segment\"", StringComparison.Ordinal), "SegmentedMetricBlock should render stacked strip segments.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"segmented-metric-distribution-chip\"", StringComparison.Ordinal), "SegmentedMetricBlock should render legend chips.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"segmented-metric-distribution-row\"", StringComparison.Ordinal), "SegmentedMetricBlock should render detail rows.");
+        Assert(distributionSvg.Contains("data-cfx-role=\"segmented-metric-ring\"", StringComparison.Ordinal), "SegmentedMetricBlock should render row share rings.");
+        Assert(distribution.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "SegmentedMetricBlock should render an embeddable HTML fragment.");
+        Assert(distribution.ToPng().Length > 64, "SegmentedMetricBlock distribution rows should render PNG output.");
 
         var heatmap = HeatmapInsightCard.Create()
             .WithTitle("Appointment Volume")
@@ -570,23 +743,23 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().AddLayer("Bad", 1, configure: _ => null!).ToSvg(), "RadialMetricCard should reject null fluent layer configuration results.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddLayeredRadial("Bad", _ => null!), "Layered radial builder should reject null fluent layer configuration results.");
         AssertThrows<ArgumentOutOfRangeException>(() => RadialMetricCard.Create().Icon = (VisualIcon)999, "RadialMetricCard should reject unknown icon values.");
-        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().ToSvg(), "SegmentedProgressCard should require at least one row.");
-        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", -1).ToSvg(), "SegmentedProgressCard should reject negative values.");
-        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1, maximum: 0).ToSvg(), "SegmentedProgressCard should require a positive maximum.");
-        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1, segments: 0).ToSvg(), "SegmentedProgressCard should reject invalid segment counts.");
-        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1).WithHeaderSymbol("longer").ToSvg(), "SegmentedProgressCard header symbols should stay compact.");
-        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1).WithAction(new string('x', 49)).ToSvg(), "SegmentedProgressCard action labels should stay compact.");
-        AssertThrows<InvalidOperationException>(() => SegmentedProgressCard.Create().AddRow("Bad", 1).WithAction("Open", url: "javascript:alert(1)").ToSvg(), "SegmentedProgressCard action URLs should reject scriptable URLs.");
-        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().ToSvg(), "CompositionStatusCard should require metric text and segments.");
-        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().WithMetric("Tasks", 0).ToSvg(), "CompositionStatusCard should require at least one segment.");
-        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().WithMetric("Tasks", 0).AddSegment("Bad", -1).ToSvg(), "CompositionStatusCard should reject negative segment values.");
-        AssertThrows<InvalidOperationException>(() => CompositionStatusCard.Create().WithMetric("Tasks", 0).AddSegment("Zero", 0).ToSvg(), "CompositionStatusCard should require at least one positive segment value.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new CompositionStatusSegment("Bad", 1).Pattern = (ChartFillPattern)999, "CompositionStatusSegment should reject unknown fill patterns.");
-        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().ToSvg(), "DistributionStripCard should require metric text and segments.");
-        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).ToSvg(), "DistributionStripCard should require at least one segment.");
-        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).AddSegment("Bad", -1).ToSvg(), "DistributionStripCard should reject negative segment values.");
-        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).AddSegment("Zero", 0).ToSvg(), "DistributionStripCard should require at least one positive segment value.");
-        AssertThrows<InvalidOperationException>(() => DistributionStripCard.Create().WithMetric("Net", 0).AddSegment("Symbol", 1, symbol: new string('x', 9)).ToSvg(), "DistributionStripCard should keep row symbols compact.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().ToSvg(), "SegmentedMetricBlock should require at least one item.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", -1).ToSvg(), "SegmentedMetricBlock should reject negative values.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", 1, maximum: 0).ToSvg(), "SegmentedMetricBlock should require a positive maximum for progress rows.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", 1, segments: 0).ToSvg(), "SegmentedMetricBlock should reject invalid progress segment counts.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", 1).WithHeaderSymbol("longer").ToSvg(), "SegmentedMetricBlock header symbols should stay compact.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", 1).WithAction(new string('x', 49)).ToSvg(), "SegmentedMetricBlock action labels should stay compact.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", 1).WithAction("Open", url: "javascript:alert(1)").ToSvg(), "SegmentedMetricBlock action URLs should reject scriptable URLs.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem(new SegmentedMetricItem("Bad", 1).WithDisplayValue(new string('x', 37))).ToSvg(), "SegmentedMetricBlock display values should stay compact.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip).AddItem("Zero", 0).ToSvg(), "SegmentedMetricBlock composition styles should require metric text.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip).WithMetric("Tasks", 0).ToSvg(), "SegmentedMetricBlock composition styles should require at least one item.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip).WithMetric("Tasks", 0).AddItem("Bad", -1).ToSvg(), "SegmentedMetricBlock should reject negative composition values.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip).WithMetric("Tasks", 0).AddItem("Zero", 0).ToSvg(), "SegmentedMetricBlock composition styles should require at least one positive item value.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop).AddItem("Zero", 0).ToSvg(), "SegmentedMetricBlock capsule loops should require at least one positive item value.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns).AddItem("Bad", 1, segments: 0).ToSvg(), "SegmentedMetricBlock funnel columns should reject invalid segment counts.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new SegmentedMetricItem("Bad", 1).Pattern = (ChartFillPattern)999, "SegmentedMetricItem should reject unknown fill patterns.");
+        AssertThrows<ArgumentOutOfRangeException>(() => SegmentedMetricBlock.Create().Style = (SegmentedMetricStyle)999, "SegmentedMetricBlock should reject unknown styles.");
+        AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRows).WithMetric("Net", 0).AddItem("Symbol", 1, symbol: new string('x', 9)).ToSvg(), "SegmentedMetricBlock should keep row symbols compact.");
         AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().ToSvg(), "HeatmapInsightCard should require columns and rows.");
         AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().WithColumns("A", "B").AddRow("Bad", 1).ToSvg(), "HeatmapInsightCard rows should match the column count.");
         AssertThrows<InvalidOperationException>(() => HeatmapInsightCard.Create().WithColumns("A").WithColorKey(2, 1).AddRow("Bad", 1).ToSvg(), "HeatmapInsightCard should require a valid color key range.");

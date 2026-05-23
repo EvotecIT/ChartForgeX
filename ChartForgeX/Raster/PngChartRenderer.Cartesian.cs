@@ -418,115 +418,12 @@ public sealed partial class PngChartRenderer {
     private static void DrawHatchOverlay(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartFillPattern pattern) {
         if (pattern == ChartFillPattern.None || width <= 1 || height <= 1) return;
         var color = ApplyOpacity(ChartColor.White, pattern == ChartFillPattern.Crosshatch ? 0.22 : 0.30);
-        if (pattern == ChartFillPattern.DiagonalForward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, radius, true, color);
-        if (pattern == ChartFillPattern.DiagonalBackward || pattern == ChartFillPattern.Crosshatch) DrawHatchDirection(c, x, y, width, height, radius, false, color);
-    }
-
-    private static void DrawHatchDirection(RgbaCanvas c, double x, double y, double width, double height, double radius, bool forward, ChartColor color) {
-        var spacing = 8.0;
-        for (var offset = -height; offset < width + height; offset += spacing) {
-            double x0;
-            double y0;
-            double x1;
-            double y1;
-            if (forward) {
-                x0 = x + offset;
-                y0 = y + height;
-                x1 = x + offset + height;
-                y1 = y;
-            } else {
-                x0 = x + offset;
-                y0 = y;
-                x1 = x + offset + height;
-                y1 = y + height;
-            }
-
-            if (!ClipLineToRect(ref x0, ref y0, ref x1, ref y1, x, y, x + width, y + height)) continue;
-            DrawRoundedClippedLine(c, x0, y0, x1, y1, x, y, width, height, radius, color);
-        }
+        foreach (var line in ChartPatternLineGeometry.Build(pattern, x, y, width, height, radius, 8)) c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.15);
     }
 
     private static string FormatRangeBarLabel(Chart chart, ChartSeries series, int intervalIndex, double startValue, double endValue) {
         if (intervalIndex >= 0 && intervalIndex < series.PointLabels.Count && series.PointLabels[intervalIndex] != null) return series.PointLabels[intervalIndex]!;
         return FormatValue(chart, Math.Min(startValue, endValue)) + "-" + FormatValue(chart, Math.Max(startValue, endValue));
-    }
-
-    private static void DrawRoundedClippedLine(RgbaCanvas c, double x0, double y0, double x1, double y1, double rectX, double rectY, double width, double height, double radius, ChartColor color) {
-        radius = Math.Max(0, Math.Min(radius, Math.Min(width, height) / 2.0));
-        if (radius <= 0.000001) {
-            c.DrawLine(x0, y0, x1, y1, color, 1.15);
-            return;
-        }
-
-        var dx = x1 - x0;
-        var dy = y1 - y0;
-        var steps = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(dx * dx + dy * dy) / 1.5));
-        var active = false;
-        var segmentStartX = x0;
-        var segmentStartY = y0;
-        var previousX = x0;
-        var previousY = y0;
-        for (var i = 0; i <= steps; i++) {
-            var t = i / (double)steps;
-            var currentX = x0 + dx * t;
-            var currentY = y0 + dy * t;
-            var inside = IsInsideRoundedRect(currentX, currentY, rectX, rectY, width, height, radius);
-            if (inside && !active) {
-                segmentStartX = currentX;
-                segmentStartY = currentY;
-                active = true;
-            } else if (!inside && active) {
-                c.DrawLine(segmentStartX, segmentStartY, previousX, previousY, color, 1.15);
-                active = false;
-            }
-
-            previousX = currentX;
-            previousY = currentY;
-        }
-
-        if (active) c.DrawLine(segmentStartX, segmentStartY, x1, y1, color, 1.15);
-    }
-
-    private static bool IsInsideRoundedRect(double px, double py, double x, double y, double width, double height, double radius) {
-        if (px < x || px > x + width || py < y || py > y + height) return false;
-        var closestX = Clamp(px, x + radius, x + width - radius);
-        var closestY = Clamp(py, y + radius, y + height - radius);
-        var dx = px - closestX;
-        var dy = py - closestY;
-        return dx * dx + dy * dy <= radius * radius + 0.000001;
-    }
-
-    private static bool ClipLineToRect(ref double x0, ref double y0, ref double x1, ref double y1, double minX, double minY, double maxX, double maxY) {
-        var dx = x1 - x0;
-        var dy = y1 - y0;
-        var t0 = 0.0;
-        var t1 = 1.0;
-        if (!ClipTest(-dx, x0 - minX, ref t0, ref t1)) return false;
-        if (!ClipTest(dx, maxX - x0, ref t0, ref t1)) return false;
-        if (!ClipTest(-dy, y0 - minY, ref t0, ref t1)) return false;
-        if (!ClipTest(dy, maxY - y0, ref t0, ref t1)) return false;
-        if (t1 < 1) {
-            x1 = x0 + t1 * dx;
-            y1 = y0 + t1 * dy;
-        }
-        if (t0 > 0) {
-            x0 += t0 * dx;
-            y0 += t0 * dy;
-        }
-        return true;
-    }
-
-    private static bool ClipTest(double p, double q, ref double t0, ref double t1) {
-        if (Math.Abs(p) < 0.000001) return q >= 0;
-        var r = q / p;
-        if (p < 0) {
-            if (r > t1) return false;
-            if (r > t0) t0 = r;
-        } else {
-            if (r < t0) return false;
-            if (r < t1) t1 = r;
-        }
-        return true;
     }
 
     private static void DrawMarker(RgbaCanvas c, Chart chart, double x, double y, double radius, ChartColor color) {

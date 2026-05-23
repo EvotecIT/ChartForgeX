@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 
 namespace ChartForgeX.VisualBlocks;
 
-internal static class VisualBlockRendering {
+internal static partial class VisualBlockRendering {
     public const int MaximumScheduleTicks = 512;
     public const int MaximumScheduleLanes = 256;
     public const int MaximumTableMicroVisualPoints = 512;
@@ -58,57 +58,30 @@ internal static class VisualBlockRendering {
             return;
         }
 
-        if (block is SegmentedProgressCard segmentedCard) {
-            if (segmentedCard.Rows.Count == 0) throw new InvalidOperationException("Segmented progress cards must contain at least one row.");
-            if (segmentedCard.HeaderSymbol.Length > 4) throw new InvalidOperationException("Segmented progress card header symbols must be four characters or fewer.");
-            if (segmentedCard.ActionLabel.Length > 48) throw new InvalidOperationException("Segmented progress card action labels must be forty-eight characters or fewer.");
-            if (segmentedCard.ActionSymbol.Length > 4) throw new InvalidOperationException("Segmented progress card action symbols must be four characters or fewer.");
-            if (segmentedCard.ActionUrl.Length > 0 && !IsSafeActionUrl(segmentedCard.ActionUrl)) throw new InvalidOperationException("Segmented progress card action URLs must be relative URLs, http(s), or mailto links.");
-            foreach (var row in segmentedCard.Rows) {
-                if (row.Label.Length == 0) throw new InvalidOperationException("Segmented progress rows must define a label.");
-                if (!IsFinite(row.Value)) throw new InvalidOperationException("Segmented progress row values must be finite.");
-                if (!IsFinite(row.Maximum) || row.Maximum <= 0) throw new InvalidOperationException("Segmented progress row maximum values must be greater than zero.");
-                if (row.Value < 0) throw new InvalidOperationException("Segmented progress row values must be zero or greater.");
-                if (row.Segments < 1 || row.Segments > 120) throw new InvalidOperationException("Segmented progress row segment counts must be between one and one hundred twenty.");
+        if (block is SegmentedMetricBlock segmentedMetric) {
+            if (segmentedMetric.Items.Count == 0) throw new InvalidOperationException("Segmented metric blocks must contain at least one item.");
+            if (segmentedMetric.HeaderSymbol.Length > 4) throw new InvalidOperationException("Segmented metric header symbols must be four characters or fewer.");
+            if (segmentedMetric.Caption.Length > 64) throw new InvalidOperationException("Segmented metric captions must be sixty-four characters or fewer.");
+            if (segmentedMetric.ActionLabel.Length > 48) throw new InvalidOperationException("Segmented metric action labels must be forty-eight characters or fewer.");
+            if (segmentedMetric.ActionSymbol.Length > 4) throw new InvalidOperationException("Segmented metric action symbols must be four characters or fewer.");
+            if (segmentedMetric.ActionUrl.Length > 0 && !IsSafeActionUrl(segmentedMetric.ActionUrl)) throw new InvalidOperationException("Segmented metric action URLs must be relative URLs, http(s), or mailto links.");
+            if (SegmentedMetricRequiresMetric(segmentedMetric.Style) && segmentedMetric.Label.Length == 0) throw new InvalidOperationException("Segmented metric composition styles must define a metric label.");
+            if (SegmentedMetricRequiresMetric(segmentedMetric.Style) && segmentedMetric.Value.Length == 0) throw new InvalidOperationException("Segmented metric composition styles must define a metric value.");
+            foreach (var item in segmentedMetric.Items) {
+                if (item.Label.Length == 0) throw new InvalidOperationException("Segmented metric items must define a label.");
+                if (!IsFinite(item.Value)) throw new InvalidOperationException("Segmented metric item values must be finite.");
+                if (item.Value < 0) throw new InvalidOperationException("Segmented metric item values must be zero or greater.");
+                if (item.Symbol.Length > 8) throw new InvalidOperationException("Segmented metric item symbols must be eight characters or fewer.");
+                if (item.DisplayValue.Length > 36) throw new InvalidOperationException("Segmented metric item display values must be thirty-six characters or fewer.");
+                if (segmentedMetric.Style == SegmentedMetricStyle.ProgressRows) {
+                    if (!IsFinite(item.Maximum) || item.Maximum <= 0) throw new InvalidOperationException("Segmented metric progress maximum values must be greater than zero.");
+                    if (item.Segments < 1 || item.Segments > 120) throw new InvalidOperationException("Segmented metric progress segment counts must be between one and one hundred twenty.");
+                }
+
+                if (segmentedMetric.Style == SegmentedMetricStyle.FunnelColumns && (item.Segments < 1 || item.Segments > 120)) throw new InvalidOperationException("Segmented metric funnel segment counts must be between one and one hundred twenty.");
             }
 
-            return;
-        }
-
-        if (block is CompositionStatusCard compositionCard) {
-            if (compositionCard.Label.Length == 0) throw new InvalidOperationException("Composition status cards must define a label.");
-            if (compositionCard.Value.Length == 0) throw new InvalidOperationException("Composition status cards must define a value.");
-            if (compositionCard.Segments.Count == 0) throw new InvalidOperationException("Composition status cards must contain at least one segment.");
-            if (compositionCard.ActionLabel.Length > 48) throw new InvalidOperationException("Composition status card action labels must be forty-eight characters or fewer.");
-            if (compositionCard.ActionSymbol.Length > 4) throw new InvalidOperationException("Composition status card action symbols must be four characters or fewer.");
-            if (compositionCard.ActionUrl.Length > 0 && !IsSafeActionUrl(compositionCard.ActionUrl)) throw new InvalidOperationException("Composition status card action URLs must be relative URLs, http(s), or mailto links.");
-            foreach (var segment in compositionCard.Segments) {
-                if (segment.Label.Length == 0) throw new InvalidOperationException("Composition status card segments must define a label.");
-                if (!IsFinite(segment.Value)) throw new InvalidOperationException("Composition status card segment values must be finite.");
-                if (segment.Value < 0) throw new InvalidOperationException("Composition status card segment values must be zero or greater.");
-            }
-
-            if (CompositionTotal(compositionCard) <= 0) throw new InvalidOperationException("Composition status card segments must include at least one positive value.");
-            return;
-        }
-
-        if (block is DistributionStripCard distributionCard) {
-            if (distributionCard.Label.Length == 0) throw new InvalidOperationException("Distribution strip cards must define a label.");
-            if (distributionCard.Value.Length == 0) throw new InvalidOperationException("Distribution strip cards must define a value.");
-            if (distributionCard.Caption.Length > 64) throw new InvalidOperationException("Distribution strip card captions must be sixty-four characters or fewer.");
-            if (distributionCard.Segments.Count == 0) throw new InvalidOperationException("Distribution strip cards must contain at least one segment.");
-            if (distributionCard.ActionLabel.Length > 48) throw new InvalidOperationException("Distribution strip card action labels must be forty-eight characters or fewer.");
-            if (distributionCard.ActionSymbol.Length > 4) throw new InvalidOperationException("Distribution strip card action symbols must be four characters or fewer.");
-            if (distributionCard.ActionUrl.Length > 0 && !IsSafeActionUrl(distributionCard.ActionUrl)) throw new InvalidOperationException("Distribution strip card action URLs must be relative URLs, http(s), or mailto links.");
-            foreach (var segment in distributionCard.Segments) {
-                if (segment.Label.Length == 0) throw new InvalidOperationException("Distribution strip segments must define a label.");
-                if (!IsFinite(segment.Value)) throw new InvalidOperationException("Distribution strip segment values must be finite.");
-                if (segment.Value < 0) throw new InvalidOperationException("Distribution strip segment values must be zero or greater.");
-                if (segment.Symbol.Length > 8) throw new InvalidOperationException("Distribution strip segment symbols must be eight characters or fewer.");
-                if (segment.Detail.Length > 36) throw new InvalidOperationException("Distribution strip segment details must be thirty-six characters or fewer.");
-            }
-
-            if (DistributionTotal(distributionCard) <= 0) throw new InvalidOperationException("Distribution strip segments must include at least one positive value.");
+            if (SegmentedMetricRequiresPositiveTotal(segmentedMetric.Style) && SegmentedTotal(segmentedMetric) <= 0) throw new InvalidOperationException("Segmented metric composition styles must include at least one positive item value.");
             return;
         }
 
@@ -376,21 +349,198 @@ internal static class VisualBlockRendering {
         return ChartPathBuilder.FromPoints(sparkline.Points, ChartSeriesKind.Line, smooth: true).Flatten(5);
     }
 
-    public static double CompositionTotal(CompositionStatusCard card) {
+    public static double SegmentedTotal(SegmentedMetricBlock block) {
         var total = 0.0;
-        foreach (var segment in card.Segments) total += segment.Value;
-        return total;
-    }
-
-    public static double DistributionTotal(DistributionStripCard card) {
-        var total = 0.0;
-        foreach (var segment in card.Segments) total += segment.Value;
+        foreach (var item in block.Items) total += item.Value;
         return total;
     }
 
     public static double SegmentRatio(double value, double maximum) => maximum <= 0 ? 0 : Math.Max(0, Math.Min(1, value / maximum));
 
-    public static int FilledSegments(SegmentedProgressRow row) => Math.Max(0, Math.Min(row.Segments, (int)Math.Round(row.Segments * SegmentRatio(row.Value, row.Maximum))));
+    public static int FilledSegments(SegmentedMetricItem item) => Math.Max(0, Math.Min(item.Segments, (int)Math.Round(item.Segments * SegmentRatio(item.Value, item.Maximum))));
+
+    public static ChartColor SegmentedItemColor(ChartTheme theme, SegmentedMetricItem item, int index) =>
+        item.Color ?? (item.Status == VisualStatus.None ? PaletteAt(theme, index) : StatusColor(theme, item.Status));
+
+    public static double SegmentedShare(SegmentedMetricItem item, double total) =>
+        total <= 0 ? 0 : Math.Max(0, item.Value / total);
+
+    public static string SegmentedShareText(SegmentedMetricItem item, double total, string format) =>
+        (SegmentedShare(item, total) * 100).ToString(format, CultureInfo.InvariantCulture) + "%";
+
+    public static string SegmentedCompositionValueText(SegmentedMetricBlock block, SegmentedMetricItem item, double total) {
+        var value = item.DisplayValue.Length > 0
+            ? item.DisplayValue
+            : item.Value.ToString("0.##", CultureInfo.InvariantCulture) + (block.Unit.Length > 0 ? " " + block.Unit : string.Empty);
+        return total <= 0 ? value : value + "  " + SegmentedShareText(item, total, "0");
+    }
+
+    public static string SegmentedCapsuleLegendValue(SegmentedMetricBlock block, SegmentedMetricItem item, double total) {
+        if (item.DisplayValue.Length > 0) return item.DisplayValue;
+        var value = item.Value.ToString("0.##", CultureInfo.InvariantCulture);
+        if (block.Unit.Length > 0) value += " " + block.Unit;
+        else if (total > 0) value += " (" + SegmentedShareText(item, total, "0") + ")";
+        return value;
+    }
+
+    public static string SegmentedItemDisplayValue(SegmentedMetricBlock block, SegmentedMetricItem item) {
+        if (item.DisplayValue.Length > 0) return item.DisplayValue;
+        var value = item.Value.ToString("0.##", CultureInfo.InvariantCulture);
+        return block.Unit.Length > 0 ? value + " " + block.Unit : value;
+    }
+
+    public static string SegmentedProgressValueText(SegmentedMetricItem item) =>
+        item.DisplayValue.Length > 0
+            ? item.DisplayValue
+            : Math.Round(SegmentRatio(item.Value, item.Maximum) * 100).ToString("0", CultureInfo.InvariantCulture) + "%";
+
+    public static ChartColor SegmentedDeltaColor(ChartTheme theme, SegmentedMetricItem item, ChartColor fallback) =>
+        item.Status == VisualStatus.None ? fallback : StatusColor(theme, item.Status);
+
+    public static bool SegmentedMetricRequiresMetric(SegmentedMetricStyle style) =>
+        style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
+
+    public static bool SegmentedMetricRequiresPositiveTotal(SegmentedMetricStyle style) =>
+        style == SegmentedMetricStyle.CapsuleLoop || style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;
+
+    public static bool CanRenderLegendRow(double y, double rowHeight, double legendBottom) =>
+        y + rowHeight <= legendBottom + 1;
+
+    public static IReadOnlyList<SegmentedMetricSlice> SegmentedSlices(SegmentedMetricBlock block) {
+        var total = SegmentedTotal(block);
+        var slices = new List<SegmentedMetricSlice>(block.Items.Count);
+        if (total <= 0) return slices;
+        var cursor = 0.0;
+        for (var i = 0; i < block.Items.Count; i++) {
+            var share = Math.Max(0, block.Items[i].Value / total);
+            var end = i == block.Items.Count - 1 ? 1 : Math.Min(1, cursor + share);
+            slices.Add(new SegmentedMetricSlice(block.Items[i], i, cursor, end, share));
+            cursor = end;
+        }
+
+        return slices;
+    }
+
+    public static IReadOnlyList<SegmentedStackSegment> SegmentedStackSegments(SegmentedMetricBlock block, double x, double y, double width, double height, double preferredGap) {
+        var total = SegmentedTotal(block);
+        var segments = new List<SegmentedStackSegment>(block.Items.Count);
+        if (total <= 0) return segments;
+        var gap = EffectiveStackGap(block.Items.Count, width, preferredGap);
+        var segmentArea = Math.Max(0, width - gap * Math.Max(0, block.Items.Count - 1));
+        var cursor = x;
+        for (var i = 0; i < block.Items.Count; i++) {
+            var item = block.Items[i];
+            var segmentWidth = i == block.Items.Count - 1 ? x + width - cursor : Math.Max(0, segmentArea * item.Value / total);
+            if (segmentWidth <= 0) continue;
+            segments.Add(new SegmentedStackSegment(item, i, cursor, y, segmentWidth, height, SegmentedShare(item, total)));
+            cursor += segmentWidth + gap;
+        }
+
+        return segments;
+    }
+
+    public static IReadOnlyList<ChartPoint> CapsuleLoopPoints(double x, double y, double width, double height, double stroke, double start, double end, int samples) {
+        var points = new List<ChartPoint>(Math.Max(2, samples + 1));
+        if (width <= stroke || height <= stroke || end <= start) return points;
+        var count = Math.Max(24, (int)Math.Ceiling(Math.Max(24, samples) * Math.Min(1, end - start)));
+        for (var i = 0; i <= count; i++) {
+            var ratio = start + (end - start) * i / count;
+            points.Add(CapsuleLoopPoint(x, y, width, height, stroke, ratio));
+        }
+
+        return points;
+    }
+
+    public static ChartPoint CapsuleLoopPoint(double x, double y, double width, double height, double stroke, double ratio) {
+        ratio = Math.Max(0, Math.Min(1, ratio));
+        var inset = stroke / 2;
+        var radius = Math.Max(1, (height - stroke) / 2);
+        var left = x + inset + radius;
+        var right = x + Math.Max(inset + radius, width - inset - radius);
+        var top = y + inset;
+        var bottom = y + Math.Max(inset, height - inset);
+        var centerY = y + height / 2;
+        var straight = Math.Max(0, right - left);
+        var arc = Math.PI * radius;
+        var length = straight * 2 + arc * 2;
+        var distance = ratio * length;
+        if (distance <= straight) return new ChartPoint(left + distance, top);
+        distance -= straight;
+        if (distance <= arc) {
+            var angle = -Math.PI / 2 + distance / radius;
+            return new ChartPoint(right + Math.Cos(angle) * radius, centerY + Math.Sin(angle) * radius);
+        }
+
+        distance -= arc;
+        if (distance <= straight) return new ChartPoint(right - distance, bottom);
+        distance -= straight;
+        var leftAngle = Math.PI / 2 + Math.Min(arc, distance) / radius;
+        return new ChartPoint(left + Math.Cos(leftAngle) * radius, centerY + Math.Sin(leftAngle) * radius);
+    }
+
+    public static IReadOnlyList<CapsuleLoopPart> CapsuleLoopParts(double x, double y, double width, double height, double stroke, double start, double end) {
+        start = Math.Max(0, Math.Min(1, start));
+        end = Math.Max(0, Math.Min(1, end));
+        var parts = new List<CapsuleLoopPart>();
+        if (width <= stroke || height <= stroke || end <= start) return parts;
+        var radius = Math.Max(1, (height - stroke) / 2);
+        var left = x + height / 2;
+        var right = x + Math.Max(height / 2, width - height / 2);
+        var top = y + stroke / 2;
+        var bottom = y + Math.Max(stroke / 2, height - stroke / 2);
+        var centerY = y + height / 2;
+        var straight = Math.Max(0, right - left);
+        var arc = Math.PI * radius;
+        var total = straight * 2 + arc * 2;
+        var boundaries = new[] { 0, straight / total, (straight + arc) / total, (straight + arc + straight) / total, 1 };
+        for (var i = 0; i < 4; i++) {
+            var a = Math.Max(start, boundaries[i]);
+            var b = Math.Min(end, boundaries[i + 1]);
+            if (b <= a) continue;
+            parts.Add(CapsuleLoopPartFromRange(i, a * total, b * total, left, right, top, bottom, centerY, radius, straight, arc));
+        }
+
+        return parts;
+    }
+
+    private static CapsuleLoopPart CapsuleLoopPartFromRange(int index, double startDistance, double endDistance, double left, double right, double top, double bottom, double centerY, double radius, double straight, double arc) {
+        if (index == 0) return CapsuleLoopPart.Line(new ChartPoint(left + startDistance, top), new ChartPoint(left + endDistance, top));
+        if (index == 1) {
+            var startAngle = -Math.PI / 2 + (startDistance - straight) / radius;
+            var endAngle = -Math.PI / 2 + (endDistance - straight) / radius;
+            return CapsuleLoopPart.Arc(new ChartPoint(right + Math.Cos(startAngle) * radius, centerY + Math.Sin(startAngle) * radius), new ChartPoint(right + Math.Cos(endAngle) * radius, centerY + Math.Sin(endAngle) * radius), right, centerY, radius, startAngle, endAngle);
+        }
+
+        if (index == 2) {
+            var startOffset = startDistance - straight - arc;
+            var endOffset = endDistance - straight - arc;
+            return CapsuleLoopPart.Line(new ChartPoint(right - startOffset, bottom), new ChartPoint(right - endOffset, bottom));
+        }
+
+        var leftStartAngle = Math.PI / 2 + (startDistance - straight - arc - straight) / radius;
+        var leftEndAngle = Math.PI / 2 + (endDistance - straight - arc - straight) / radius;
+        return CapsuleLoopPart.Arc(new ChartPoint(left + Math.Cos(leftStartAngle) * radius, centerY + Math.Sin(leftStartAngle) * radius), new ChartPoint(left + Math.Cos(leftEndAngle) * radius, centerY + Math.Sin(leftEndAngle) * radius), left, centerY, radius, leftStartAngle, leftEndAngle);
+    }
+
+    public static string ShortSegmentLabel(string value) {
+        var start = value.LastIndexOf('(');
+        var end = value.LastIndexOf(')');
+        if (start >= 0 && end > start + 1) return value.Substring(start + 1, end - start - 1);
+        var trimmed = value.Trim();
+        return trimmed.Length <= 4 ? trimmed : trimmed.Substring(0, Math.Min(3, trimmed.Length)).ToUpperInvariant();
+    }
+
+    public static ChartColor CapsuleLoopLabelForeground(ChartColor color) =>
+        ChartColorMath.TextOnBackground(color, 0.70);
+
+    public static ChartColor CapsuleLoopLabelHalo(ChartColor foreground) =>
+        ChartColorMath.TextOnBackground(foreground, 0.70).WithAlpha(112);
+
+    public static ChartColor CapsuleLoopSheenColor(ChartColor color) =>
+        ChartColorMath.Blend(color, ChartColor.White, 0.28).WithAlpha(58);
+
+    public static double CapsuleLoopSheenStroke(double stroke) =>
+        Math.Max(2.4, stroke * 0.14);
 
     public static double WorkloadRatio(WorkloadListRow row) => SegmentRatio(row.Value, row.Maximum);
 
@@ -434,11 +584,16 @@ internal static class VisualBlockRendering {
     }
 
     public static (double ItemWidth, double Gap) FitRepeatedItems(int count, double width, double preferredGap, double minimumItemWidth) {
+        return FitRepeatedItems(count, width, Math.Max(0, count - 1), preferredGap, minimumItemWidth);
+    }
+
+    public static (double ItemWidth, double Gap) FitRepeatedItems(int count, double width, int gapCount, double preferredGap, double minimumItemWidth) {
         if (count <= 0 || width <= 0) return (0, 0);
         if (count == 1) return (Math.Max(0, width), 0);
+        var gaps = Math.Max(0, gapCount);
         var minWidth = Math.Max(0, minimumItemWidth);
-        var gap = Math.Min(Math.Max(0, preferredGap), Math.Max(0, (width - minWidth * count) / (count - 1)));
-        var itemWidth = Math.Max(0, (width - gap * (count - 1)) / count);
+        var gap = gaps == 0 ? 0 : Math.Min(Math.Max(0, preferredGap), Math.Max(0, (width - minWidth * count) / gaps));
+        var itemWidth = Math.Max(0, (width - gap * gaps) / count);
         if (itemWidth < minWidth && width < minWidth * count) {
             gap = 0;
             itemWidth = Math.Max(0, width / count);

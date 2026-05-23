@@ -258,6 +258,38 @@
       }
     },
     {
+      "name": "dashboard-certificate-inventory-composition-strip",
+      "width": 820,
+      "height": 340,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 557600,
+        "minDistinctColors": 711,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-channel-share-capsule-loop",
+      "width": 820,
+      "height": 340,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 557600,
+        "minDistinctColors": 1628,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "dashboard-chart-portfolio-grid",
       "width": 1224,
       "height": 2331,
@@ -269,6 +301,38 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 5706288,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-content-performance-rows",
+      "width": 820,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 414,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 754400,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dashboard-conversion-funnel-columns",
+      "width": 820,
+      "height": 330,
+      "svg": {
+        "minVisualNodes": 79,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 541200,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -374,7 +438,7 @@
       "width": 1416,
       "height": 1339,
       "svg": {
-        "minVisualNodes": 426,
+        "minVisualNodes": 421,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -429,7 +493,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 590400,
-        "minDistinctColors": 1901,
+        "minDistinctColors": 1979,
         "maxEdgeInkPixels": 0
       }
     },
@@ -452,7 +516,7 @@
     {
       "name": "dashboard-project-task-composition-card",
       "width": 820,
-      "height": 360,
+      "height": 400,
       "svg": {
         "minVisualNodes": 47,
         "maxClippedTextNodes": 0,
@@ -460,8 +524,8 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 590400,
-        "minDistinctColors": 561,
+        "minVisiblePixels": 656000,
+        "minDistinctColors": 504,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1708,7 +1772,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 69596,
+        "minVisiblePixels": 69874,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }

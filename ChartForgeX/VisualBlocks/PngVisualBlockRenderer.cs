@@ -31,9 +31,7 @@ public sealed partial class PngVisualBlockRenderer {
         else if (block is ChartList list) DrawList(canvas, list);
         else if (block is MetricCard card) DrawMetric(canvas, card);
         else if (block is RadialMetricCard radialCard) DrawRadialMetric(canvas, radialCard);
-        else if (block is SegmentedProgressCard segmentedCard) DrawSegmentedProgress(canvas, segmentedCard);
-        else if (block is CompositionStatusCard compositionCard) DrawCompositionStatus(canvas, compositionCard);
-        else if (block is DistributionStripCard distributionCard) DrawDistributionStripCard(canvas, distributionCard);
+        else if (block is SegmentedMetricBlock segmentedMetric) DrawSegmentedMetric(canvas, segmentedMetric);
         else if (block is HeatmapInsightCard heatmapCard) DrawHeatmapInsightCard(canvas, heatmapCard);
         else if (block is DateStripBlock dateStrip) DrawDateStrip(canvas, dateStrip);
         else if (block is EntityStripBlock entityStrip) DrawEntityStrip(canvas, entityStrip);
@@ -228,7 +226,7 @@ public sealed partial class PngVisualBlockRenderer {
         var symbolWidth = Math.Min(24, RgbaCanvas.MeasureTextEmphasizedWidth(card.ActionSymbol, fontSize, null) + 6);
         var y = footerY + (footerHeight - fontSize) * 0.52;
         canvas.DrawText(x, y, FitText(card.ActionLabel, fontSize, Math.Max(1, width - symbolWidth - 8)), theme.MutedText, fontSize);
-        DrawAlignedText(canvas, card.ActionSymbol, x + width - symbolWidth, y, symbolWidth, VisualTextAlignment.Right, theme.Text, fontSize, true);
+        DrawActionSymbol(canvas, card.ActionSymbol, x + width - 14, footerY + footerHeight * 0.5, 12, theme.Text, fontSize);
     }
 
     private static void DrawMetricMiniBars(RgbaCanvas canvas, MetricCard card, double x, double y, double width, double height) {
@@ -285,160 +283,28 @@ public sealed partial class PngVisualBlockRenderer {
         }
     }
 
-    private static void DrawSegmentedProgress(RgbaCanvas canvas, SegmentedProgressCard card) {
-        var options = card.Options;
-        var theme = options.Theme;
-        var content = VisualBlockRendering.ContentRect(options);
-        var y = content.Y;
-        if (card.HeaderSymbol.Length > 0 || card.ShowMenu) DrawSegmentedProgressHeader(canvas, card, ref y, content.X, content.Width);
-        else DrawHeading(canvas, card, ref y, content.X, content.Width);
-        var hasAction = card.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(58, Math.Max(42, options.Size.Height * 0.16)) : 0;
-        var bottom = options.Size.Height - options.Padding.Bottom - footerHeight;
-        var rowHeight = Math.Max(48, Math.Min(72, (bottom - y) / Math.Max(1, card.Rows.Count)));
-        for (var rowIndex = 0; rowIndex < card.Rows.Count && y + 38 <= bottom; rowIndex++) {
-            var row = card.Rows[rowIndex];
-            var accent = row.Color ?? (row.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, rowIndex) : VisualBlockRendering.StatusColor(theme, row.Status));
-            var valueText = Math.Round(VisualBlockRendering.SegmentRatio(row.Value, row.Maximum) * 100).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-            var deltaWidth = row.Delta.Length == 0 ? 0 : Math.Min(92, RgbaCanvas.MeasureTextEmphasizedWidth(row.Delta, theme.SubtitleFontSize, null) + 18);
-            DrawAlignedText(canvas, row.Label, content.X, y, content.Width - deltaWidth - 58, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
-            if (row.Delta.Length > 0) {
-                canvas.FillRoundedRect(content.X + content.Width - deltaWidth - 54, y - 2, deltaWidth, 22, 11, accent.WithAlpha(34));
-                DrawAlignedText(canvas, row.Delta, content.X + content.Width - deltaWidth - 48, y + 3, deltaWidth - 12, VisualTextAlignment.Center, accent, theme.SubtitleFontSize, true);
-            }
-
-            DrawAlignedText(canvas, valueText, content.X + content.Width - 46, y, 46, VisualTextAlignment.Right, theme.Text, Math.Max(13, theme.SubtitleFontSize + 1), true);
-            var stripY = y + 30;
-            var stripHeight = Math.Max(12, Math.Min(22, rowHeight * 0.28));
-            DrawSegmentedStrip(canvas, row, content.X, stripY, content.Width, stripHeight, accent, theme);
-            y += rowHeight;
+    private static void DrawSegmentedMetric(RgbaCanvas canvas, SegmentedMetricBlock card) {
+        if (card.Style == SegmentedMetricStyle.CapsuleLoop) {
+            DrawSegmentedMetricCapsuleLoop(canvas, card);
+            return;
         }
 
-        if (hasAction) {
-            if (card.ActionBackground.HasValue) DrawSegmentedFooterAction(canvas, card, options.Size.Height - footerHeight, footerHeight, content.X, content.Width);
-            else DrawFooterAction(canvas, card.ActionLabel, card.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
-        }
-    }
-
-    private static void DrawSegmentedFooterAction(RgbaCanvas canvas, SegmentedProgressCard card, double footerY, double footerHeight, double x, double width) {
-        var theme = card.Options.Theme;
-        var fill = card.ActionBackground ?? theme.PlotBackground;
-        var foreground = card.ActionForeground ?? theme.Text;
-        var inset = Math.Min(8, Math.Max(1, footerHeight * 0.16));
-        canvas.FillRoundedRect(x, footerY + 1, width, Math.Max(1, footerHeight - inset - 1), Math.Min(10, Math.Max(2, footerHeight * 0.18)), fill);
-        var fontSize = Math.Max(10, theme.SubtitleFontSize);
-        var y = footerY + (footerHeight - fontSize) * 0.52;
-        DrawAlignedText(canvas, card.ActionLabel, x, y, Math.Max(1, width - 38), VisualTextAlignment.Left, foreground, fontSize, false);
-        DrawAlignedText(canvas, card.ActionSymbol, x + width - 28, y, 28, VisualTextAlignment.Right, foreground, fontSize, true);
-    }
-
-    private static void DrawSegmentedProgressHeader(RgbaCanvas canvas, SegmentedProgressCard card, ref double y, double x, double width) {
-        var theme = card.Options.Theme;
-        var badgeSize = card.HeaderSymbol.Length > 0 ? 48.0 : 0.0;
-        var textX = x + (badgeSize > 0 ? badgeSize + 18 : 0);
-        var menuReserve = card.ShowMenu ? 42.0 : 0.0;
-        if (badgeSize > 0) {
-            canvas.FillRoundedRectVerticalGradient(x, y, badgeSize, badgeSize, 14, ChartSurfacePolish.GradientTop(ChartColor.White), ChartSurfacePolish.GradientBottom(ChartColor.White));
-            canvas.StrokeRoundedRect(x, y, badgeSize, badgeSize, 14, theme.CardBorder, 1);
-            DrawAlignedText(canvas, card.HeaderSymbol, x, y + 12, badgeSize, VisualTextAlignment.Center, theme.Text, 18, true);
+        if (card.Style == SegmentedMetricStyle.FunnelColumns) {
+            DrawSegmentedMetricFunnelColumns(canvas, card);
+            return;
         }
 
-        if (card.ShowMenu) {
-            var dotY = y + 22;
-            for (var i = 0; i < 3; i++) canvas.DrawCircle(x + width - 22 + i * 7, dotY, 2.1, theme.MutedText);
+        if (card.Style == SegmentedMetricStyle.CompositionStrip) {
+            DrawSegmentedMetricComposition(canvas, card);
+            return;
         }
 
-        if (card.Title.Length > 0) DrawAlignedText(canvas, card.Title, textX, y, width - (textX - x) - menuReserve, VisualTextAlignment.Left, theme.Text, theme.TitleFontSize, true);
-        if (card.Subtitle.Length > 0) DrawAlignedText(canvas, card.Subtitle, textX, y + theme.TitleFontSize + 8, width - (textX - x) - menuReserve, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
-        y += Math.Max(badgeSize, card.Title.Length > 0 ? theme.TitleFontSize + (card.Subtitle.Length > 0 ? theme.SubtitleFontSize + 13 : 8) : 0) + 18;
-        canvas.DrawLine(x, y, x + width, y, theme.PlotBorder, 1);
-        y += 24;
-    }
-
-    private static void DrawSegmentedStrip(RgbaCanvas canvas, SegmentedProgressRow row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ChartTheme theme) {
-        var metrics = VisualBlockRendering.FitRepeatedItems(row.Segments, width, row.Segments > 50 ? 2.0 : 3.0, 2);
-        var gap = metrics.Gap;
-        var segmentWidth = metrics.ItemWidth;
-        var filled = VisualBlockRendering.FilledSegments(row);
-        var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
-        var emptyStroke = theme.PlotBorder.WithAlpha(120);
-        for (var i = 0; i < row.Segments; i++) {
-            var segmentX = x + i * (segmentWidth + gap);
-            var radius = Math.Min(4, segmentWidth * 0.35);
-            var color = i < filled ? accent : empty;
-            canvas.FillRoundedRect(segmentX + 0.6, y + 1.2, segmentWidth, height, radius, theme.MutedText.WithAlpha(i < filled ? (byte)28 : (byte)18));
-            if (i < filled) {
-                canvas.FillRoundedRectVerticalGradient(segmentX, y, segmentWidth, height, radius, ChartSurfacePolish.GradientTop(color), ChartSurfacePolish.GradientBottom(color));
-                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, accent.WithAlpha(120), 0.8);
-                canvas.FillRoundedRect(segmentX + 1, y + 1, Math.Max(1, segmentWidth - 2), Math.Max(1, height * 0.32), Math.Min(3, segmentWidth * 0.28), ChartColor.White.WithAlpha(48));
-            } else {
-                canvas.FillRoundedRectVerticalGradient(segmentX, y, segmentWidth, height, radius, ChartSurfacePolish.GradientTop(empty), ChartSurfacePolish.GradientBottom(empty));
-                canvas.StrokeRoundedRect(segmentX, y, segmentWidth, height, radius, emptyStroke, 0.8);
-                canvas.FillRoundedRect(segmentX + 1, y + 1, Math.Max(1, segmentWidth - 2), Math.Max(1, height * 0.32), Math.Min(3, segmentWidth * 0.28), ChartColor.White.WithAlpha(92));
-            }
-        }
-    }
-
-    private static void DrawCompositionStatus(RgbaCanvas canvas, CompositionStatusCard card) {
-        var options = card.Options;
-        var theme = options.Theme;
-        var content = VisualBlockRendering.ContentRect(options);
-        var y = content.Y;
-        DrawHeading(canvas, card, ref y, content.X, content.Width);
-        var hasAction = card.ActionLabel.Length > 0;
-        var footerHeight = hasAction ? Math.Min(42, Math.Max(32, options.Size.Height * 0.16)) : 0;
-        var metricSize = Math.Min(46, Math.Max(28, options.Size.Height * 0.16));
-        DrawAlignedText(canvas, card.Label, content.X, y, content.Width * 0.58, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
-        DrawAlignedText(canvas, card.Value, content.X + content.Width * 0.58, y + metricSize * 0.08, content.Width * 0.42, VisualTextAlignment.Right, theme.Text, metricSize, true);
-        y += metricSize + 20;
-        var stripHeight = Math.Max(20, Math.Min(34, options.Size.Height * 0.09));
-        DrawCompositionStrip(canvas, card, content.X, y, content.Width, stripHeight);
-        y += stripHeight + 24;
-        var legendBottom = options.Size.Height - options.Padding.Bottom - footerHeight;
-        var rowHeight = Math.Max(28, Math.Min(38, (legendBottom - y) / Math.Max(1, card.Segments.Count)));
-        var total = VisualBlockRendering.CompositionTotal(card);
-        for (var i = 0; i < card.Segments.Count && y + rowHeight <= legendBottom + 1; i++) {
-            var segment = card.Segments[i];
-            var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
-            canvas.FillRoundedRect(content.X, y + rowHeight * 0.22, 14, 14, 4, color);
-            DrawAlignedText(canvas, segment.Label, content.X + 24, y + rowHeight * 0.24, content.Width * 0.58, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize), true);
-            var valueText = segment.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + (card.Unit.Length > 0 ? " " + card.Unit : string.Empty);
-            var share = total <= 0 ? string.Empty : "  " + (segment.Value / total * 100).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-            DrawAlignedText(canvas, valueText + share, content.X + content.Width * 0.66, y + rowHeight * 0.24, content.Width * 0.34, VisualTextAlignment.Right, theme.Text, Math.Max(12, theme.SubtitleFontSize), true);
-            y += rowHeight;
+        if (card.Style == SegmentedMetricStyle.DistributionRows) {
+            DrawDistributionRows(canvas, card);
+            return;
         }
 
-        if (hasAction) DrawFooterAction(canvas, card.ActionLabel, card.ActionSymbol, options.Size.Height - footerHeight, footerHeight, content.X, content.Width, theme);
-    }
-
-    private static void DrawCompositionStrip(RgbaCanvas canvas, CompositionStatusCard card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
-        var total = VisualBlockRendering.CompositionTotal(card);
-        var gap = VisualBlockRendering.EffectiveStackGap(card.Segments.Count, width, 4);
-        var segmentArea = Math.Max(0, width - gap * Math.Max(0, card.Segments.Count - 1));
-        var cursor = x;
-        for (var i = 0; i < card.Segments.Count; i++) {
-            var segment = card.Segments[i];
-            var segmentWidth = i == card.Segments.Count - 1 ? x + width - cursor : Math.Max(0, segmentArea * segment.Value / total);
-            if (segmentWidth <= 0) continue;
-            var color = segment.Color ?? VisualBlockRendering.StatusColor(theme, segment.Status);
-            canvas.FillRoundedRect(cursor, y, segmentWidth, height, Math.Min(7, height / 2), color);
-            if (segment.Pattern != ChartFillPattern.None) {
-                for (var lineX = cursor - height; lineX < cursor + segmentWidth; lineX += 10) {
-                    canvas.DrawLine(lineX, y + height, lineX + height, y, ChartColor.White.WithAlpha(46), 2);
-                }
-            }
-
-            cursor += segmentWidth + gap;
-        }
-    }
-
-    private static void DrawFooterAction(RgbaCanvas canvas, string label, string symbol, double footerY, double footerHeight, double x, double width, ChartForgeX.Themes.ChartTheme theme) {
-        canvas.DrawLine(x, footerY, x + width, footerY, theme.PlotBorder, 1);
-        var fontSize = Math.Max(10, theme.SubtitleFontSize);
-        var y = footerY + (footerHeight - fontSize) * 0.52;
-        DrawAlignedText(canvas, label, x, y, Math.Max(1, width - 38), VisualTextAlignment.Left, theme.MutedText, fontSize, false);
-        DrawAlignedText(canvas, symbol, x + width - 28, y, 28, VisualTextAlignment.Right, theme.Text, fontSize, true);
+        DrawSegmentedMetricProgressRows(canvas, card);
     }
 
     private static void DrawWorkloadList(RgbaCanvas canvas, WorkloadListBlock block) {
