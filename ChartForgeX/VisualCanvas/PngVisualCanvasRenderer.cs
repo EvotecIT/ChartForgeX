@@ -105,32 +105,19 @@ public sealed class PngVisualCanvasRenderer {
         var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
         var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
         if (isRaised) {
-            var depthX = Math.Max(14, Math.Min(24, width * 0.042));
-            var depthY = Math.Max(14, Math.Min(24, height * 0.22));
-            var shadow = ChartColor.Black.WithOpacity(0.58);
-            canvas.FillRoundedRect(x + depthX + 4, y + depthY + 5, width, height, radius + 2, shadow);
-            canvas.FillRoundedRect(x + depthX, y + depthY, width, height, radius + 1, tile.Accent.WithOpacity(0.20));
-            canvas.FillPolygon(new[] {
-                new ChartPoint(x + width, y + radius * 0.7),
-                new ChartPoint(x + width + depthX, y + depthY + radius * 0.7),
-                new ChartPoint(x + width + depthX, y + height + depthY - radius * 0.7),
-                new ChartPoint(x + width, y + height - radius * 0.7)
-            }, tile.Accent.WithOpacity(0.32));
-            canvas.FillPolygon(new[] {
-                new ChartPoint(x + radius * 0.7, y + height),
-                new ChartPoint(x + width - radius * 0.7, y + height),
-                new ChartPoint(x + width + depthX - radius * 0.7, y + height + depthY),
-                new ChartPoint(x + depthX + radius * 0.7, y + height + depthY)
-            }, ChartColor.Black.WithOpacity(0.42));
-            canvas.DrawLine(x + width - 1, y + radius, x + width + depthX - 1, y + depthY + radius, tile.Accent.WithOpacity(0.62), 2.0);
-            canvas.DrawLine(x + radius, y + height - 1, x + depthX + radius, y + height + depthY - 1, tile.Accent.WithOpacity(0.48), 1.7);
+            canvas.FillRoundedRect(x + 10, y + 13, width, height, radius + 2, ChartColor.Black.WithOpacity(0.42));
+            canvas.FillRoundedRect(x + 4, y + 6, width, height, radius + 1, ChartColor.Black.WithOpacity(0.24));
+            canvas.FillRoundedRect(x - 5, y - 5, width + 10, height + 10, radius + 5, tile.Accent.WithOpacity(0.11));
+            canvas.FillRoundedRect(x - 2, y - 2, width + 4, height + 4, radius + 2, tile.Accent.WithOpacity(0.13));
         }
         if (isFilled) {
             canvas.FillRoundedRectVerticalGradient(x, y, width, height, radius, theme.TileGlassTop, theme.TileGlassBottom);
         }
         if (isRaised) {
             canvas.FillRoundedRectVerticalGradient(x + 2, y + 2, Math.Max(1, width - 4), Math.Max(1, height * 0.52), Math.Max(1, radius - 2), ChartColor.White.WithOpacity(0.20), ChartColor.White.WithOpacity(0.03));
-            canvas.StrokeRoundedRect(x - 2, y - 2, width + 4, height + 4, radius + 2, tile.Accent.WithOpacity(0.48), 4.4);
+            canvas.StrokeRoundedRect(x - 2, y - 2, width + 4, height + 4, radius + 2, tile.Accent.WithOpacity(0.42), 3.2);
+            canvas.DrawLine(x + radius, y + 3, x + width - radius, y + 3, ChartColor.White.WithOpacity(0.28), 1.4);
+            canvas.DrawLine(x + radius, y + height - 2, x + width - radius, y + height - 2, tile.Accent.WithOpacity(0.48), 1.6);
         }
         canvas.StrokeRoundedRect(x + 0.5, y + 0.5, Math.Max(1, width - 1), Math.Max(1, height - 1), radius, tile.Accent.WithOpacity(isRaised ? 0.92 : 0.72), isRaised ? 2.2 : 1.4);
         if (isFilled) {
