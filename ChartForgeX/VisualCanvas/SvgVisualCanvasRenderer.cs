@@ -54,8 +54,8 @@ public sealed class SvgVisualCanvasRenderer {
             .EndElement().Line();
         writer.EndElement().Line();
         writer.StartElement("filter").Attribute("id", id + "-raised-depth").Attribute("x", "-18%").Attribute("y", "-18%").Attribute("width", "136%").Attribute("height", "148%").EndStartElement().Line();
-        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 10).Attribute("stdDeviation", 7).Attribute("flood-color", "#000000").Attribute("flood-opacity", 0.42).EndEmptyElement().Line();
-        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 0).Attribute("stdDeviation", 4).Attribute("flood-color", theme.SecondaryAccent.ToCss()).Attribute("flood-opacity", 0.22).EndEmptyElement().Line();
+        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 14).Attribute("stdDeviation", 9).Attribute("flood-color", "#000000").Attribute("flood-opacity", 0.56).EndEmptyElement().Line();
+        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 0).Attribute("stdDeviation", 5).Attribute("flood-color", theme.SecondaryAccent.ToCss()).Attribute("flood-opacity", 0.30).EndEmptyElement().Line();
         writer.EndElement().Line();
         writer.EndElement().Line();
         if (canvas.BackdropStyle != VisualCanvasBackdropStyle.Transparent) {
@@ -171,9 +171,14 @@ public sealed class SvgVisualCanvasRenderer {
         var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-info-tile").EndStartElement().Line();
         if (isRaised) {
-            writer.StartElement("rect").Attribute("x", x).Attribute("y", y).Attribute("width", width).Attribute("height", height).Attribute("rx", radius).Attribute("fill", theme.TileGlassBottom.ToCss()).Attribute("filter", "url(#" + id + "-raised-depth)").EndEmptyElement().Line();
-            writer.StartElement("rect").Attribute("x", x + 2).Attribute("y", y + 2).Attribute("width", Math.Max(1, width - 4)).Attribute("height", Math.Max(1, height * 0.46)).Attribute("rx", Math.Max(1, radius - 2)).Attribute("fill", ChartColor.White.WithOpacity(0.10).ToCss()).EndEmptyElement().Line();
-            writer.StartElement("rect").Attribute("x", x - 1).Attribute("y", y - 1).Attribute("width", width + 2).Attribute("height", height + 2).Attribute("rx", radius + 1).Attribute("fill", "none").Attribute("stroke", tile.Accent.WithOpacity(0.26).ToCss()).Attribute("stroke-width", 3.2).EndEmptyElement().Line();
+            var depthX = Math.Max(14, Math.Min(24, width * 0.042));
+            var depthY = Math.Max(14, Math.Min(24, height * 0.22));
+            writer.StartElement("rect").Attribute("x", x + depthX).Attribute("y", y + depthY).Attribute("width", width).Attribute("height", height).Attribute("rx", radius + 1).Attribute("fill", tile.Accent.WithOpacity(0.20).ToCss()).Attribute("filter", "url(#" + id + "-raised-depth)").EndEmptyElement().Line();
+            writer.StartElement("polygon").Attribute("points", Points(x + width, y + radius * 0.7, x + width + depthX, y + depthY + radius * 0.7, x + width + depthX, y + height + depthY - radius * 0.7, x + width, y + height - radius * 0.7)).Attribute("fill", tile.Accent.WithOpacity(0.32).ToCss()).EndEmptyElement().Line();
+            writer.StartElement("polygon").Attribute("points", Points(x + radius * 0.7, y + height, x + width - radius * 0.7, y + height, x + width + depthX - radius * 0.7, y + height + depthY, x + depthX + radius * 0.7, y + height + depthY)).Attribute("fill", ChartColor.Black.WithOpacity(0.42).ToCss()).EndEmptyElement().Line();
+            writer.StartElement("path").Attribute("d", "M " + F(x + width - 1) + " " + F(y + radius) + " L " + F(x + width + depthX - 1) + " " + F(y + depthY + radius) + " M " + F(x + radius) + " " + F(y + height - 1) + " L " + F(x + depthX + radius) + " " + F(y + height + depthY - 1)).Attribute("fill", "none").Attribute("stroke", tile.Accent.WithOpacity(0.56).ToCss()).Attribute("stroke-width", 1.9).EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("x", x + 2).Attribute("y", y + 2).Attribute("width", Math.Max(1, width - 4)).Attribute("height", Math.Max(1, height * 0.52)).Attribute("rx", Math.Max(1, radius - 2)).Attribute("fill", ChartColor.White.WithOpacity(0.20).ToCss()).EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("x", x - 2).Attribute("y", y - 2).Attribute("width", width + 4).Attribute("height", height + 4).Attribute("rx", radius + 2).Attribute("fill", "none").Attribute("stroke", tile.Accent.WithOpacity(0.48).ToCss()).Attribute("stroke-width", 4.4).EndEmptyElement().Line();
         }
         writer.StartElement("rect").Attribute("x", x + 0.5).Attribute("y", y + 0.5).Attribute("width", Math.Max(1, width - 1)).Attribute("height", Math.Max(1, height - 1)).Attribute("rx", radius).Attribute("fill", isFilled ? fill.ToCss() : "none").Attribute("stroke", tile.Accent.WithOpacity(isRaised ? 0.92 : 0.72).ToCss()).Attribute("stroke-width", isRaised ? 2.2 : 1.4).EndEmptyElement().Line();
         if (isFilled) {
@@ -264,6 +269,15 @@ public sealed class SvgVisualCanvasRenderer {
         }
         writer.StartElement("path").Attribute("d", line.ToString()).Attribute("fill", "none").Attribute("stroke", tile.Accent.ToCss()).Attribute("stroke-width", 2.2).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
         writer.EndElement().Line();
+    }
+
+    private static string Points(params double[] values) {
+        var builder = new StringBuilder();
+        for (var i = 0; i + 1 < values.Length; i += 2) {
+            if (builder.Length > 0) builder.Append(' ');
+            builder.Append(F(values[i])).Append(',').Append(F(values[i + 1]));
+        }
+        return builder.ToString();
     }
 
     private static void RenderTileIcon(SvgMarkupWriter writer, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, double iconFont, ChartColor color) {
