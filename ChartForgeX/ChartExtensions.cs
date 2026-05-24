@@ -7,6 +7,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Svg;
 using ChartForgeX.Themes;
+using ChartForgeX.Composition;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX;
@@ -408,4 +409,40 @@ public static partial class ChartExtensions {
     /// <param name="grid">The visual grid to render.</param>
     /// <param name="path">The output file path.</param>
     public static void SavePng(this VisualGrid grid, string path) => File.WriteAllBytes(path, grid.ToPng());
+
+    /// <summary>
+    /// Renders a visual canvas to SVG markup.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <returns>SVG markup.</returns>
+    public static string ToSvg(this VisualCanvas canvas) => new SvgVisualCanvasRenderer().Render(canvas);
+
+    /// <summary>
+    /// Renders a visual canvas to SVG markup with an additional deterministic ID scope.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="idScope">A caller-provided scope used to keep SVG element IDs unique when embedding multiple SVGs in one document.</param>
+    /// <returns>SVG markup.</returns>
+    public static string ToSvg(this VisualCanvas canvas, string idScope) => new SvgVisualCanvasRenderer().Render(canvas, idScope);
+
+    /// <summary>
+    /// Renders a visual canvas to PNG bytes.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <returns>A PNG image.</returns>
+    public static byte[] ToPng(this VisualCanvas canvas) => new PngVisualCanvasRenderer().Render(canvas);
+
+    /// <summary>
+    /// Saves a visual canvas as an SVG file.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="path">The output file path.</param>
+    public static void SaveSvg(this VisualCanvas canvas, string path) => File.WriteAllText(path, canvas.ToSvg(), Encoding.UTF8);
+
+    /// <summary>
+    /// Saves a visual canvas as a PNG file.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="path">The output file path.</param>
+    public static void SavePng(this VisualCanvas canvas, string path) => File.WriteAllBytes(path, canvas.ToPng());
 }

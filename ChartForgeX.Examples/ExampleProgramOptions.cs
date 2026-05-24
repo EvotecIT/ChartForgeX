@@ -32,6 +32,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--visual-canvas-only")) {
+            WellnessDashboardExamples.WritePowerBgInfoSocialPreview(output, (int)pngOutputScale);
+            Console.WriteLine("Generated visual canvas files in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--dashboard-shipment-only")) {
             DashboardPatternExamples.WriteShipmentActivityPanel(output, pngOutputScale);
             Console.WriteLine("Generated dashboard shipment panel in: " + output);

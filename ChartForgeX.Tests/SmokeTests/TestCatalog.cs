@@ -159,6 +159,7 @@ internal static partial class SmokeTests {
         ("Visual blocks render tables lists and metric cards", VisualBlocksRenderTablesListsAndMetricCards),
         ("Visual block review regressions stay covered", VisualBlockReviewRegressionsStayCovered),
         ("Visual grid composes charts and visual blocks", VisualGridComposesChartsAndVisualBlocks),
+        ("Visual canvas composes wallpaper style artboards", VisualCanvasComposesWallpaperStyleArtboards),
         ("Visual blocks reject invalid inputs close to caller", VisualBlocksRejectInvalidInputsCloseToCaller),
         ("Explicit axis bounds affect SVG ticks", ExplicitAxisBoundsAffectSvgTicks),
         ("Example gallery is static and links generated artifacts", ExampleGalleryIsStaticAndLinksGeneratedArtifacts),

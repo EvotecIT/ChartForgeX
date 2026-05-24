@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Core;
+using ChartForgeX.Composition;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX;
@@ -47,6 +48,25 @@ public static partial class ChartExtensions {
     public static void Save(this VisualGrid grid, string path, RasterImageOptions? rasterOptions = null) {
         if (TrySaveCommonOutput(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path), () => grid.SavePng(path))) return;
         grid.SaveRasterImage(path, rasterOptions);
+    }
+
+    /// <summary>
+    /// Saves a visual canvas using the output path extension to choose SVG or PNG.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="path">The output file path.</param>
+    public static void Save(this VisualCanvas canvas, string path) {
+        var extension = GetExportExtension(path);
+        switch (extension) {
+            case ".svg":
+                canvas.SaveSvg(path);
+                return;
+            case ".png":
+                canvas.SavePng(path);
+                return;
+            default:
+                throw new NotSupportedException("Visual canvas Save supports .svg and .png output.");
+        }
     }
 
     private static bool TrySaveCommonOutput(string path, Action saveSvg, Action saveHtml, Action savePng) {
