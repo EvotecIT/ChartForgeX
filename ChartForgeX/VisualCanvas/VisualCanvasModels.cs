@@ -68,6 +68,20 @@ public enum VisualCanvasInfoTileIconKind {
 }
 
 /// <summary>
+/// Compact chart treatment for visual canvas information tiles.
+/// </summary>
+public enum VisualCanvasInfoTileMiniChartKind {
+    /// <summary>Render no mini chart.</summary>
+    None,
+    /// <summary>Render a compact sparkline on the right side of the tile.</summary>
+    Sparkline,
+    /// <summary>Render a compact area sparkline on the right side of the tile.</summary>
+    Area,
+    /// <summary>Render compact bars on the right side of the tile.</summary>
+    Bars
+}
+
+/// <summary>
 /// Theme colors for reusable visual canvas layers.
 /// </summary>
 public sealed class VisualCanvasTheme {
@@ -95,6 +109,10 @@ public sealed class VisualCanvasTheme {
     public ChartColor TileDetailColor { get; set; } = ChartColor.FromHex("#A8BAD4");
     /// <summary>Gets or sets the progress rail color.</summary>
     public ChartColor TileProgressTrackColor { get; set; } = ChartColor.FromHex("#18345D").WithOpacity(0.92);
+    /// <summary>Gets or sets the mini-chart plot fill color.</summary>
+    public ChartColor TileMiniChartFillColor { get; set; } = ChartColor.FromHex("#2F80FF").WithOpacity(0.18);
+    /// <summary>Gets or sets the mini-chart track/grid color.</summary>
+    public ChartColor TileMiniChartTrackColor { get; set; } = ChartColor.FromHex("#8AA9D6").WithOpacity(0.18);
     /// <summary>Gets or sets the hero badge glow color.</summary>
     public ChartColor HeroBadgeGlowColor { get; set; } = ChartColor.FromHex("#22A7FF").WithOpacity(0.12);
     /// <summary>Gets or sets the hero badge top fill color.</summary>
@@ -221,8 +239,8 @@ public sealed class VisualCanvas {
         AddLayer(new VisualCanvasHeroTitleLayer(x, y, width, fontSize, runs) { Alignment = alignment });
 
     /// <summary>Adds a reusable information tile.</summary>
-    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text) =>
-        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, Accent = accent ?? Theme.Accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind });
+    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null) =>
+        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, Accent = accent ?? Theme.Accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
 
     /// <summary>Adds a central icon or logo badge.</summary>
     public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent = null) =>
@@ -372,11 +390,13 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
 
 /// <summary>Reusable information tile layer.</summary>
 public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
+    private readonly List<double> _miniChartValues = new();
     private string _icon;
     private string _label;
     private string _value;
     private string _detail = string.Empty;
     private double? _progress;
+    private double? _miniChartMaximum;
 
     /// <summary>Initializes a reusable information tile layer.</summary>
     /// <param name="x">The tile X coordinate.</param>
@@ -406,6 +426,18 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     public VisualCanvasInfoTileSurfaceStyle SurfaceStyle { get; set; }
     /// <summary>Gets or sets the tile icon treatment.</summary>
     public VisualCanvasInfoTileIconKind IconKind { get; set; }
+    /// <summary>Gets or sets the compact chart kind rendered inside the tile.</summary>
+    public VisualCanvasInfoTileMiniChartKind MiniChartKind { get; set; }
+    /// <summary>Gets compact chart values rendered inside the tile.</summary>
+    public IReadOnlyList<double> MiniChartValues => _miniChartValues;
+    /// <summary>Gets or sets the optional compact chart maximum. When empty, the values define the scale.</summary>
+    public double? MiniChartMaximum {
+        get => _miniChartMaximum;
+        set {
+            if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value <= 0)) throw new ArgumentOutOfRangeException(nameof(value), value, "Mini chart maximum must be finite and greater than zero.");
+            _miniChartMaximum = value;
+        }
+    }
 
     /// <summary>Gets or sets optional progress from zero to one.</summary>
     public double? Progress {
@@ -414,6 +446,22 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
             if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value < 0 || value.Value > 1)) throw new ArgumentOutOfRangeException(nameof(value), value, "Progress must be between zero and one.");
             _progress = value;
         }
+    }
+
+    /// <summary>Sets the compact chart rendered inside the tile.</summary>
+    public VisualCanvasInfoTileLayer WithMiniChart(VisualCanvasInfoTileMiniChartKind kind, IEnumerable<double>? values, double? maximum = null) {
+        VisualCanvas.ValidateEnum(kind, nameof(kind));
+        _miniChartValues.Clear();
+        if (values != null) {
+            foreach (var value in values) {
+                if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(nameof(values), value, "Mini chart values must be finite.");
+                _miniChartValues.Add(value);
+            }
+        }
+
+        MiniChartKind = _miniChartValues.Count == 0 ? VisualCanvasInfoTileMiniChartKind.None : kind;
+        MiniChartMaximum = maximum;
+        return this;
     }
 }
 

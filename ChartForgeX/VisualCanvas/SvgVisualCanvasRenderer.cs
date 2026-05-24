@@ -155,6 +155,7 @@ public sealed class SvgVisualCanvasRenderer {
     private static void RenderInfoTile(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
+        VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         var x = Math.Round(tile.X);
         var y = Math.Round(tile.Y);
         var width = Math.Round(tile.Width);
@@ -175,6 +176,11 @@ public sealed class SvgVisualCanvasRenderer {
         writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass ? tile.Accent.WithOpacity(0.18).ToCss() : "none").Attribute("stroke", tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? tile.Accent.WithOpacity(0.38).ToCss() : "none").EndEmptyElement().Line();
         RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, tile.Accent);
         var textX = iconX + iconBox + 22;
+        var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartValues.Count > 0;
+        var chartW = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82, width * 0.20)) : 0;
+        var chartX = x + width - padX - chartW;
+        var chartY = y + Math.Max(24, height * 0.30);
+        var chartH = Math.Max(28, Math.Min(46, height * 0.42));
         var hasDetail = tile.Detail.Length > 0;
         var labelY = y + (hasDetail ? 30 : Math.Max(32, (height - 52) / 2 + 14));
         var valueY = labelY + 28;
@@ -185,11 +191,67 @@ public sealed class SvgVisualCanvasRenderer {
         if (tile.Progress.HasValue) {
             var railX = textX;
             var railY = y + height - 16;
-            var railW = Math.Max(24, width - (railX - x) - padX);
+            var railW = hasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
             writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW).Attribute("height", 8).Attribute("rx", 4).Attribute("fill", theme.TileProgressTrackColor.ToCss()).EndEmptyElement().Line();
             writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW * tile.Progress.Value).Attribute("height", 8).Attribute("rx", 4).Attribute("fill", tile.Accent.ToCss()).EndEmptyElement().Line();
         }
+        if (hasMiniChart) {
+            RenderTileMiniChart(writer, tile, theme, chartX, chartY, chartW, chartH);
+        }
 
+        writer.EndElement().Line();
+    }
+
+    private static void RenderTileMiniChart(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme, double x, double y, double width, double height) {
+        writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-info-tile-mini-chart").EndStartElement().Line();
+        writer.StartElement("rect").Attribute("x", x).Attribute("y", y).Attribute("width", width).Attribute("height", height).Attribute("rx", Math.Min(8, height * 0.24)).Attribute("fill", theme.TileMiniChartTrackColor.WithOpacity(0.20).ToCss()).EndEmptyElement().Line();
+        writer.StartElement("path").Attribute("d", "M " + F(x + 4) + " " + F(y + height * 0.72) + " L " + F(x + width - 4) + " " + F(y + height * 0.72) + " M " + F(x + 4) + " " + F(y + height * 0.38) + " L " + F(x + width - 4) + " " + F(y + height * 0.38)).Attribute("fill", "none").Attribute("stroke", theme.TileMiniChartTrackColor.ToCss()).Attribute("stroke-width", 1).EndEmptyElement().Line();
+
+        var values = tile.MiniChartValues;
+        var min = 0.0;
+        var max = tile.MiniChartMaximum ?? 0.0;
+        for (var i = 0; i < values.Count; i++) {
+            if (values[i] < min) min = values[i];
+            if (values[i] > max) max = values[i];
+        }
+        if (max <= min) max = min + 1;
+
+        var plotX = x + 7;
+        var plotY = y + 6;
+        var plotW = Math.Max(1, width - 14);
+        var plotH = Math.Max(1, height - 12);
+        var baseY = plotY + plotH;
+        if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Bars) {
+            var gap = Math.Max(1, plotW * 0.035);
+            var barW = Math.Max(2, (plotW - gap * (values.Count - 1)) / values.Count);
+            for (var i = 0; i < values.Count; i++) {
+                var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
+                var barH = Math.Max(2, plotH * ratio);
+                writer.StartElement("rect").Attribute("x", plotX + i * (barW + gap)).Attribute("y", baseY - barH).Attribute("width", barW).Attribute("height", barH).Attribute("rx", Math.Min(4, barW * 0.42)).Attribute("fill", tile.Accent.WithOpacity(0.82).ToCss()).EndEmptyElement().Line();
+            }
+            writer.EndElement().Line();
+            return;
+        }
+
+        var line = new StringBuilder();
+        var area = new StringBuilder();
+        for (var i = 0; i < values.Count; i++) {
+            var px = values.Count == 1 ? plotX + plotW / 2 : plotX + plotW * i / (values.Count - 1);
+            var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
+            var py = plotY + plotH - plotH * ratio;
+            if (i == 0) {
+                line.Append("M ").Append(F(px)).Append(' ').Append(F(py));
+                area.Append("M ").Append(F(px)).Append(' ').Append(F(baseY)).Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+            } else {
+                line.Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+                area.Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+            }
+            if (i == values.Count - 1) area.Append(" L ").Append(F(px)).Append(' ').Append(F(baseY)).Append(" Z");
+        }
+        if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Area && values.Count > 1) {
+            writer.StartElement("path").Attribute("d", area.ToString()).Attribute("fill", theme.TileMiniChartFillColor.ToCss()).EndEmptyElement().Line();
+        }
+        writer.StartElement("path").Attribute("d", line.ToString()).Attribute("fill", "none").Attribute("stroke", tile.Accent.ToCss()).Attribute("stroke-width", 2.2).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
         writer.EndElement().Line();
     }
 

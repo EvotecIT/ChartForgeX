@@ -96,6 +96,7 @@ public sealed class PngVisualCanvasRenderer {
     private static void DrawInfoTile(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
+        VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         var x = Math.Round(tile.X);
         var y = Math.Round(tile.Y);
         var width = Math.Round(tile.Width);
@@ -120,7 +121,12 @@ public sealed class PngVisualCanvasRenderer {
         }
         DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, tile.Accent);
         var textX = iconX + iconBox + 22;
-        var textMax = Math.Max(24, width - (textX - x) - padX);
+        var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartValues.Count > 0;
+        var chartW = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82, width * 0.20)) : 0;
+        var chartX = x + width - padX - chartW;
+        var chartY = y + Math.Max(24, height * 0.30);
+        var chartH = Math.Max(28, Math.Min(46, height * 0.42));
+        var textMax = hasMiniChart ? Math.Max(24, chartX - textX - 16) : Math.Max(24, width - (textX - x) - padX);
         var labelFont = 14.0;
         var valueFont = height < 92 ? 21.0 : 22.0;
         var detailFont = 13.0;
@@ -134,9 +140,65 @@ public sealed class PngVisualCanvasRenderer {
         if (tile.Progress.HasValue) {
             var railX = textX;
             var railY = y + height - 16;
-            var railW = Math.Max(24, width - (railX - x) - padX);
+            var railW = hasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
             canvas.FillRoundedRect(railX, railY, railW, 8, 4, theme.TileProgressTrackColor);
             canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, 8, 4, tile.Accent);
+        }
+        if (hasMiniChart) {
+            DrawTileMiniChart(canvas, tile, theme, chartX, chartY, chartW, chartH);
+        }
+    }
+
+    private static void DrawTileMiniChart(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme, double x, double y, double width, double height) {
+        canvas.FillRoundedRect(x, y, width, height, Math.Min(8, height * 0.24), theme.TileMiniChartTrackColor.WithOpacity(0.20));
+        canvas.DrawLine(x + 4, y + height * 0.72, x + width - 4, y + height * 0.72, theme.TileMiniChartTrackColor, 1);
+        canvas.DrawLine(x + 4, y + height * 0.38, x + width - 4, y + height * 0.38, theme.TileMiniChartTrackColor.WithOpacity(0.62), 1);
+
+        var values = tile.MiniChartValues;
+        if (values.Count == 0) return;
+
+        var min = 0.0;
+        var max = tile.MiniChartMaximum ?? 0.0;
+        for (var i = 0; i < values.Count; i++) {
+            if (values[i] < min) min = values[i];
+            if (values[i] > max) max = values[i];
+        }
+        if (max <= min) max = min + 1;
+
+        var plotX = x + 7;
+        var plotY = y + 6;
+        var plotW = Math.Max(1, width - 14);
+        var plotH = Math.Max(1, height - 12);
+        var baseY = plotY + plotH;
+        if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Bars) {
+            var gap = Math.Max(1, plotW * 0.035);
+            var barW = Math.Max(2, (plotW - gap * (values.Count - 1)) / values.Count);
+            for (var i = 0; i < values.Count; i++) {
+                var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
+                var barH = Math.Max(2, plotH * ratio);
+                canvas.FillRoundedRect(plotX + i * (barW + gap), baseY - barH, barW, barH, Math.Min(4, barW * 0.42), tile.Accent.WithOpacity(0.82));
+            }
+            return;
+        }
+
+        var points = new ChartPoint[values.Count];
+        for (var i = 0; i < values.Count; i++) {
+            var px = values.Count == 1 ? plotX + plotW / 2 : plotX + plotW * i / (values.Count - 1);
+            var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
+            var py = plotY + plotH - plotH * ratio;
+            points[i] = new ChartPoint(px, py);
+        }
+
+        if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Area && points.Length > 1) {
+            var polygon = new ChartPoint[points.Length + 2];
+            polygon[0] = new ChartPoint(points[0].X, baseY);
+            for (var i = 0; i < points.Length; i++) polygon[i + 1] = points[i];
+            polygon[polygon.Length - 1] = new ChartPoint(points[points.Length - 1].X, baseY);
+            canvas.FillPolygon(polygon, theme.TileMiniChartFillColor);
+        }
+
+        for (var i = 1; i < points.Length; i++) {
+            canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, tile.Accent, 2.2);
         }
     }
 

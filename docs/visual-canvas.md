@@ -11,7 +11,7 @@ The first canvas primitives are intentionally generic:
 - reusable `VisualCanvasTheme` colors for accents, tile text, glass fills, badge fills, feature strips, placeholders, and backdrop highlights
 - absolute text layers
 - multi-color hero title layers
-- information tiles for side rails, with glass or outline surfaces and text or built-in icons
+- information tiles for side rails, with glass or outline surfaces, text or built-in icons, progress rails, and compact right-side mini charts
 - hero badges for logos, terminal prompts, or product marks
 - image layers using SVG hrefs and host-provided RGBA pixels for PNG output
 - feature strips for compact bottom rows
@@ -34,7 +34,7 @@ var canvas = VisualCanvas.CreateSocialPreview()
     .WithBackground(ChartColor.FromHex("#020713"), ChartColor.FromHex("#071A35"))
     .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
     .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), iconKind: VisualCanvasInfoTileIconKind.Computer)
-    .AddInfoTile(892, 70, 250, 96, "CPU", "CPU", "Intel Core i7-12700K", "23%", ChartColor.FromHex("#60A5FA"), 0.23, VisualCanvasInfoTileSurfaceStyle.Outline, VisualCanvasInfoTileIconKind.Cpu)
+    .AddInfoTile(892, 70, 250, 96, "CPU", "CPU", "Intel Core i7-12700K", "23%", ChartColor.FromHex("#60A5FA"), 0.23, VisualCanvasInfoTileSurfaceStyle.Outline, VisualCanvasInfoTileIconKind.Cpu, VisualCanvasInfoTileMiniChartKind.Area, new[] { 18d, 26d, 22d, 37d, 48d, 43d }, 100)
     .AddHeroBadge(538, 157, 124, 88, ">_", ChartColor.FromHex("#22A7FF"))
     .AddHeroTitle(312, 296, 576, 82, new[] {
         new VisualCanvasTextRun("Power", ChartColor.FromHex("#F8FAFC")),
