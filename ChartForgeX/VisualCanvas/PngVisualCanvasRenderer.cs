@@ -102,11 +102,21 @@ public sealed class PngVisualCanvasRenderer {
         var width = Math.Round(tile.Width);
         var height = Math.Round(tile.Height);
         var radius = Math.Min(16, height * 0.18);
-        if (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass) {
+        var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
+        var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
+        if (isRaised) {
+            canvas.FillRoundedRect(x + 10, y + 12, width, height, radius + 1, ChartColor.Black.WithOpacity(0.34));
+            canvas.FillRoundedRect(x + 4, y + 5, width, height, radius, tile.Accent.WithOpacity(0.13));
+        }
+        if (isFilled) {
             canvas.FillRoundedRectVerticalGradient(x, y, width, height, radius, theme.TileGlassTop, theme.TileGlassBottom);
         }
-        canvas.StrokeRoundedRect(x + 0.5, y + 0.5, Math.Max(1, width - 1), Math.Max(1, height - 1), radius, tile.Accent.WithOpacity(0.72), 1.4);
-        if (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass) {
+        if (isRaised) {
+            canvas.FillRoundedRectVerticalGradient(x + 2, y + 2, Math.Max(1, width - 4), Math.Max(1, height * 0.46), Math.Max(1, radius - 2), ChartColor.White.WithOpacity(0.10), ChartColor.White.WithOpacity(0.01));
+            canvas.StrokeRoundedRect(x - 1, y - 1, width + 2, height + 2, radius + 1, tile.Accent.WithOpacity(0.26), 3.2);
+        }
+        canvas.StrokeRoundedRect(x + 0.5, y + 0.5, Math.Max(1, width - 1), Math.Max(1, height - 1), radius, tile.Accent.WithOpacity(isRaised ? 0.92 : 0.72), isRaised ? 2.2 : 1.4);
+        if (isFilled) {
             canvas.StrokeRoundedRect(x + 2.5, y + 2.5, Math.Max(1, width - 5), Math.Max(1, height - 5), Math.Max(1, radius - 2), theme.TileInnerStroke, 1);
         }
         var padX = Math.Max(20, Math.Min(28, width * 0.06));
@@ -114,8 +124,9 @@ public sealed class PngVisualCanvasRenderer {
         var iconX = x + padX;
         var iconY = y + (height - iconBox) / 2;
         var iconRadius = Math.Min(13, iconBox * 0.25);
-        if (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass) {
-            canvas.FillRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, tile.Accent.WithOpacity(0.18));
+        if (isFilled) {
+            canvas.FillRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, tile.Accent.WithOpacity(isRaised ? 0.25 : 0.18));
+            if (isRaised) canvas.StrokeRoundedRect(iconX + 0.5, iconY + 0.5, iconBox - 1, iconBox - 1, iconRadius, tile.Accent.WithOpacity(0.32), 1);
         } else {
             canvas.StrokeRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, tile.Accent.WithOpacity(0.38), 1);
         }

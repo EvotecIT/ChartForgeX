@@ -36,7 +36,9 @@ public enum VisualCanvasInfoTileSurfaceStyle {
     /// <summary>Render a translucent filled panel with an accent border.</summary>
     Glass,
     /// <summary>Render only the tile border and contents over the underlying image.</summary>
-    Outline
+    Outline,
+    /// <summary>Render a raised panel with depth, glow, and stronger edge highlights.</summary>
+    Raised
 }
 
 /// <summary>

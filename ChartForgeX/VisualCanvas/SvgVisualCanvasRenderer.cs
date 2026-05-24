@@ -53,6 +53,10 @@ public sealed class SvgVisualCanvasRenderer {
             .StartElement("feMergeNode").Attribute("in", "SourceGraphic").EndEmptyElement()
             .EndElement().Line();
         writer.EndElement().Line();
+        writer.StartElement("filter").Attribute("id", id + "-raised-depth").Attribute("x", "-18%").Attribute("y", "-18%").Attribute("width", "136%").Attribute("height", "148%").EndStartElement().Line();
+        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 10).Attribute("stdDeviation", 7).Attribute("flood-color", "#000000").Attribute("flood-opacity", 0.42).EndEmptyElement().Line();
+        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 0).Attribute("stdDeviation", 4).Attribute("flood-color", theme.SecondaryAccent.ToCss()).Attribute("flood-opacity", 0.22).EndEmptyElement().Line();
+        writer.EndElement().Line();
         writer.EndElement().Line();
         if (canvas.BackdropStyle != VisualCanvasBackdropStyle.Transparent) {
             writer.StartElement("rect").Attribute("data-cfx-role", "visual-canvas-background").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", "url(#" + id + "-background)").EndEmptyElement().Line();
@@ -69,7 +73,7 @@ public sealed class SvgVisualCanvasRenderer {
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
             RenderHeroTitle(writer, hero);
         } else if (layer is VisualCanvasInfoTileLayer tile) {
-            RenderInfoTile(writer, tile, theme);
+            RenderInfoTile(writer, tile, id, theme);
         } else if (layer is VisualCanvasHeroBadgeLayer badge) {
             RenderHeroBadge(writer, badge, id, theme);
         } else if (layer is VisualCanvasImageLayer image) {
@@ -152,7 +156,7 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderInfoTile(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme) {
+    private static void RenderInfoTile(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, string id, VisualCanvasTheme theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
@@ -163,9 +167,16 @@ public sealed class SvgVisualCanvasRenderer {
         var fill = theme.TileGlassTop;
         var border = tile.Accent.WithOpacity(0.72);
         var radius = Math.Min(16, height * 0.18);
+        var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
+        var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-info-tile").EndStartElement().Line();
-        writer.StartElement("rect").Attribute("x", x + 0.5).Attribute("y", y + 0.5).Attribute("width", Math.Max(1, width - 1)).Attribute("height", Math.Max(1, height - 1)).Attribute("rx", radius).Attribute("fill", tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass ? fill.ToCss() : "none").Attribute("stroke", border.ToCss()).Attribute("stroke-width", 1.4).EndEmptyElement().Line();
-        if (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass) {
+        if (isRaised) {
+            writer.StartElement("rect").Attribute("x", x).Attribute("y", y).Attribute("width", width).Attribute("height", height).Attribute("rx", radius).Attribute("fill", theme.TileGlassBottom.ToCss()).Attribute("filter", "url(#" + id + "-raised-depth)").EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("x", x + 2).Attribute("y", y + 2).Attribute("width", Math.Max(1, width - 4)).Attribute("height", Math.Max(1, height * 0.46)).Attribute("rx", Math.Max(1, radius - 2)).Attribute("fill", ChartColor.White.WithOpacity(0.10).ToCss()).EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("x", x - 1).Attribute("y", y - 1).Attribute("width", width + 2).Attribute("height", height + 2).Attribute("rx", radius + 1).Attribute("fill", "none").Attribute("stroke", tile.Accent.WithOpacity(0.26).ToCss()).Attribute("stroke-width", 3.2).EndEmptyElement().Line();
+        }
+        writer.StartElement("rect").Attribute("x", x + 0.5).Attribute("y", y + 0.5).Attribute("width", Math.Max(1, width - 1)).Attribute("height", Math.Max(1, height - 1)).Attribute("rx", radius).Attribute("fill", isFilled ? fill.ToCss() : "none").Attribute("stroke", tile.Accent.WithOpacity(isRaised ? 0.92 : 0.72).ToCss()).Attribute("stroke-width", isRaised ? 2.2 : 1.4).EndEmptyElement().Line();
+        if (isFilled) {
             writer.StartElement("rect").Attribute("x", x + 2.5).Attribute("y", y + 2.5).Attribute("width", Math.Max(1, width - 5)).Attribute("height", Math.Max(1, height - 5)).Attribute("rx", Math.Max(1, radius - 2)).Attribute("fill", "none").Attribute("stroke", theme.TileInnerStroke.ToCss()).EndEmptyElement().Line();
         }
         var padX = Math.Max(20, Math.Min(28, width * 0.06));
@@ -173,7 +184,7 @@ public sealed class SvgVisualCanvasRenderer {
         var iconX = x + padX;
         var iconY = y + (height - iconBox) / 2;
         var iconFont = Math.Min(25, iconBox * (tile.Icon.Length > 3 ? 0.34 : 0.42));
-        writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass ? tile.Accent.WithOpacity(0.18).ToCss() : "none").Attribute("stroke", tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? tile.Accent.WithOpacity(0.38).ToCss() : "none").EndEmptyElement().Line();
+        writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", isFilled ? tile.Accent.WithOpacity(isRaised ? 0.25 : 0.18).ToCss() : "none").Attribute("stroke", isRaised ? tile.Accent.WithOpacity(0.32).ToCss() : (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? tile.Accent.WithOpacity(0.38).ToCss() : "none")).EndEmptyElement().Line();
         RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, tile.Accent);
         var textX = iconX + iconBox + 22;
         var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartValues.Count > 0;
