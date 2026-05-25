@@ -30,6 +30,20 @@ public enum VisualCanvasTextAlignment {
 }
 
 /// <summary>
+/// Defines how source images are placed inside a visual canvas image layer.
+/// </summary>
+public enum VisualCanvasImageFit {
+    /// <summary>Scale the image independently in both axes to fill the destination rectangle.</summary>
+    Stretch,
+    /// <summary>Scale the image uniformly so the entire source is visible inside the destination rectangle.</summary>
+    Contain,
+    /// <summary>Scale and crop the image uniformly so the destination rectangle is fully covered.</summary>
+    Cover,
+    /// <summary>Draw the image at its source pixel size, centered inside the destination rectangle.</summary>
+    Center
+}
+
+/// <summary>
 /// Surface treatment for visual canvas information tiles.
 /// </summary>
 public enum VisualCanvasInfoTileSurfaceStyle {
@@ -143,6 +157,7 @@ public sealed class VisualCanvasTheme {
 /// </summary>
 public sealed class VisualCanvas {
     private readonly List<VisualCanvasLayer> _layers = new();
+    private VisualCanvasTheme _theme = new();
     private int _width;
     private int _height;
     private int _pngOutputScale = 1;
@@ -184,7 +199,7 @@ public sealed class VisualCanvas {
     public VisualCanvasBackdropStyle BackdropStyle { get; set; } = VisualCanvasBackdropStyle.Plain;
 
     /// <summary>Gets or sets the theme used by built-in visual canvas layers.</summary>
-    public VisualCanvasTheme Theme { get; set; } = new();
+    public VisualCanvasTheme Theme { get => _theme; set => _theme = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the PNG output pixel multiplier.</summary>
     public int PngOutputScale {
@@ -242,15 +257,18 @@ public sealed class VisualCanvas {
 
     /// <summary>Adds a reusable information tile.</summary>
     public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null) =>
-        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, Accent = accent ?? Theme.Accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
+        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, AccentOverride = accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
 
     /// <summary>Adds a central icon or logo badge.</summary>
     public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent = null) =>
-        AddLayer(new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) { Accent = accent ?? Theme.SecondaryAccent });
+        AddLayer(new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) { AccentOverride = accent });
 
     /// <summary>Adds an image layer. SVG output uses <paramref name="href"/>; PNG output uses <paramref name="rgba"/> when supplied.</summary>
-    public VisualCanvas AddImage(double x, double y, double width, double height, string? href = null, byte[]? rgba = null, int sourceWidth = 0, int sourceHeight = 0, double opacity = 1) =>
-        AddLayer(new VisualCanvasImageLayer(x, y, width, height) { Href = href ?? string.Empty, Rgba = rgba, SourceWidth = sourceWidth, SourceHeight = sourceHeight, Opacity = opacity });
+    public VisualCanvas AddImage(double x, double y, double width, double height, string? href = null, byte[]? rgba = null, int sourceWidth = 0, int sourceHeight = 0, double opacity = 1, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
+        if (rgba != null && (sourceWidth <= 0 || sourceHeight <= 0)) throw new ArgumentOutOfRangeException(nameof(sourceWidth), "RGBA image layers require positive sourceWidth and sourceHeight.");
+        ValidateEnum(fit, nameof(fit));
+        return AddLayer(new VisualCanvasImageLayer(x, y, width, height) { Href = href ?? string.Empty, Rgba = rgba, SourceWidth = sourceWidth, SourceHeight = sourceHeight, Opacity = opacity, Fit = fit });
+    }
 
     /// <summary>Adds a compact feature strip.</summary>
     public VisualCanvas AddFeatureStrip(double x, double y, double width, double height, IEnumerable<VisualCanvasFeatureItem> items) =>
@@ -423,7 +441,9 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     /// <summary>Gets or sets optional detail text.</summary>
     public string Detail { get => _detail; set => _detail = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Gets or sets the accent color.</summary>
-    public ChartColor Accent { get; set; } = ChartColor.FromHex("#2F80FF");
+    public ChartColor Accent { get => AccentOverride ?? ChartColor.FromHex("#2F80FF"); set => AccentOverride = value; }
+    /// <summary>Gets or sets an explicit accent color. When empty, renderers use the current theme accent.</summary>
+    public ChartColor? AccentOverride { get; set; }
     /// <summary>Gets or sets the tile surface treatment.</summary>
     public VisualCanvasInfoTileSurfaceStyle SurfaceStyle { get; set; }
     /// <summary>Gets or sets the tile icon treatment.</summary>
@@ -484,7 +504,9 @@ public sealed class VisualCanvasHeroBadgeLayer : VisualCanvasLayer {
     /// <summary>Gets or sets the badge symbol.</summary>
     public string Symbol { get => _symbol; set => _symbol = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Gets or sets the badge accent color.</summary>
-    public ChartColor Accent { get; set; } = ChartColor.FromHex("#22A7FF");
+    public ChartColor Accent { get => AccentOverride ?? ChartColor.FromHex("#22A7FF"); set => AccentOverride = value; }
+    /// <summary>Gets or sets an explicit badge accent color. When empty, renderers use the current theme secondary accent.</summary>
+    public ChartColor? AccentOverride { get; set; }
 }
 
 /// <summary>Image layer for host-provided bitmap or SVG-compatible image references.</summary>
@@ -507,6 +529,8 @@ public sealed class VisualCanvasImageLayer : VisualCanvasLayer {
     public int SourceWidth { get; set; }
     /// <summary>Gets or sets the source bitmap height for PNG output.</summary>
     public int SourceHeight { get; set; }
+    /// <summary>Gets or sets how the source image is placed inside the destination rectangle.</summary>
+    public VisualCanvasImageFit Fit { get; set; }
 
     /// <summary>Gets or sets image opacity from zero to one.</summary>
     public double Opacity {

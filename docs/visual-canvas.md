@@ -13,16 +13,39 @@ The first canvas primitives are intentionally generic:
 - multi-color hero title layers
 - information tiles for side rails, with glass, outline, or raised surfaces, text or built-in icons, progress rails, and compact right-side mini charts
 - hero badges for logos, terminal prompts, or product marks
-- image layers using SVG hrefs and host-provided RGBA pixels for PNG output
+- image layers using SVG hrefs and host-provided RGBA pixels for raster output, with `Stretch`, `Contain`, `Cover`, and `Center` fit modes
+- rendered ChartForgeX layers for charts, chart grids, visual blocks, visual grids, and topology diagrams
 - feature strips for compact bottom rows
-- SVG and PNG export
+- SVG, HTML, PNG, BMP, PPM, and TIFF export
 
 Example:
 
 ```csharp
 using ChartForgeX;
 using ChartForgeX.Composition;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.VisualBlocks;
+
+var cpuChart = Chart.Create()
+    .WithSize(220, 120)
+    .WithTransparentBackground()
+    .WithHeader(false)
+    .WithCard(false)
+    .AddLine("CPU", new[] {
+        new ChartPoint(1, 18),
+        new ChartPoint(2, 31),
+        new ChartPoint(3, 24),
+        new ChartPoint(4, 45),
+        new ChartPoint(5, 39)
+    });
+
+var ramCard = MetricCard.Create()
+    .WithSize(180, 104)
+    .WithTransparentBackground()
+    .WithCard(false)
+    .WithMetric("RAM", "41%")
+    .WithMiniSparkline(new[] { 32d, 36d, 41d, 38d, 43d });
 
 var canvas = VisualCanvas.CreateSocialPreview()
     .WithTitle("PowerBGInfo social preview")
@@ -40,10 +63,13 @@ var canvas = VisualCanvas.CreateSocialPreview()
         new VisualCanvasTextRun("Power", ChartColor.FromHex("#F8FAFC")),
         new VisualCanvasTextRun("BGInfo", ChartColor.FromHex("#2F80FF"))
     })
-    .AddText(330, 402, 540, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), VisualCanvasTextAlignment.Center);
+    .AddText(330, 402, 540, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), VisualCanvasTextAlignment.Center)
+    .AddChart(66, 460, 220, 120, cpuChart, VisualCanvasImageFit.Contain)
+    .AddVisualBlock(914, 452, 180, 104, ramCard, VisualCanvasImageFit.Center);
 
 canvas.SaveSvg("powerbginfo-social-preview.svg");
 canvas.SavePng("powerbginfo-social-preview.png");
+canvas.SaveBmp("powerbginfo-social-preview.bmp");
 ```
 
 PowerBGInfo-style desktop generation should stay thin: resolve Windows facts in PowerBGInfo, then pass those strings into `VisualCanvas` templates or layers. Keep reusable layout, typography, image, and tile behavior in ChartForgeX so other hosts can reuse the same engine for OpenGraph images, generated documentation, and report covers.

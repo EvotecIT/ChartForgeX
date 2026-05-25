@@ -640,7 +640,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var edgeBackground = DominantPngCornerColor(cornerColors);
             var visualBackground = DominantPngVisibleColor(pixelColors, edgeBackground);
             var foreground = CountPngForeground(pixelColors, dimensions, visualBackground, out var contentBounds);
-            var edgeInkPixels = CountPngEdgeInk(edgeColors, edgeBackground);
+            var edgeInkPixels = IsFullBleedVisualCanvasPng(fileName) ? 0 : CountPngEdgeInk(edgeColors, edgeBackground);
             return new PngHealth(visiblePixels, foreground, contentBounds, colors.Count, edgeInkPixels, edgeColors.Count);
         } catch (IOException) {
         } catch (UnauthorizedAccessException) {
@@ -648,6 +648,14 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
         }
 
         return default;
+    }
+
+    private static bool IsFullBleedVisualCanvasPng(string pngFileName) {
+        var directory = Path.GetDirectoryName(pngFileName) ?? string.Empty;
+        var svgFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(pngFileName) + ".svg");
+        if (!File.Exists(svgFileName)) return false;
+        var svg = File.ReadAllText(svgFileName);
+        return svg.Contains("data-cfx-role=\"visual-canvas-background\"", StringComparison.Ordinal);
     }
 
     private static bool UnfilterPngRow(byte[] raw, int rawOffset, byte[] output, byte[] previous, int stride, int bytesPerPixel, int filter) {

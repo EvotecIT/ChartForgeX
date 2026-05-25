@@ -54,6 +54,7 @@ internal static class WellnessDashboardExamples {
             });
 
         canvas.SaveSvg(Path.Combine(output, "powerbginfo-social-preview-canvas.svg"));
+        canvas.SaveHtml(Path.Combine(output, "powerbginfo-social-preview-canvas.html"));
         canvas.SavePng(Path.Combine(output, "powerbginfo-social-preview-canvas.png"));
     }
 

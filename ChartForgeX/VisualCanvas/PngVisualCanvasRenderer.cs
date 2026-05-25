@@ -104,22 +104,23 @@ public sealed class PngVisualCanvasRenderer {
         var radius = Math.Min(16, height * 0.18);
         var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
         var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
+        var accent = tile.AccentOverride ?? theme.Accent;
         if (isRaised) {
             canvas.FillRoundedRect(x + 10, y + 13, width, height, radius + 2, ChartColor.Black.WithOpacity(0.42));
             canvas.FillRoundedRect(x + 4, y + 6, width, height, radius + 1, ChartColor.Black.WithOpacity(0.24));
-            canvas.FillRoundedRect(x - 5, y - 5, width + 10, height + 10, radius + 5, tile.Accent.WithOpacity(0.11));
-            canvas.FillRoundedRect(x - 2, y - 2, width + 4, height + 4, radius + 2, tile.Accent.WithOpacity(0.13));
+            canvas.FillRoundedRect(x - 5, y - 5, width + 10, height + 10, radius + 5, accent.WithOpacity(0.11));
+            canvas.FillRoundedRect(x - 2, y - 2, width + 4, height + 4, radius + 2, accent.WithOpacity(0.13));
         }
         if (isFilled) {
             canvas.FillRoundedRectVerticalGradient(x, y, width, height, radius, theme.TileGlassTop, theme.TileGlassBottom);
         }
         if (isRaised) {
             canvas.FillRoundedRectVerticalGradient(x + 2, y + 2, Math.Max(1, width - 4), Math.Max(1, height * 0.52), Math.Max(1, radius - 2), ChartColor.White.WithOpacity(0.20), ChartColor.White.WithOpacity(0.03));
-            canvas.StrokeRoundedRect(x - 2, y - 2, width + 4, height + 4, radius + 2, tile.Accent.WithOpacity(0.42), 3.2);
+            canvas.StrokeRoundedRect(x - 2, y - 2, width + 4, height + 4, radius + 2, accent.WithOpacity(0.42), 3.2);
             canvas.DrawLine(x + radius, y + 3, x + width - radius, y + 3, ChartColor.White.WithOpacity(0.28), 1.4);
-            canvas.DrawLine(x + radius, y + height - 2, x + width - radius, y + height - 2, tile.Accent.WithOpacity(0.48), 1.6);
+            canvas.DrawLine(x + radius, y + height - 2, x + width - radius, y + height - 2, accent.WithOpacity(0.48), 1.6);
         }
-        canvas.StrokeRoundedRect(x + 0.5, y + 0.5, Math.Max(1, width - 1), Math.Max(1, height - 1), radius, tile.Accent.WithOpacity(isRaised ? 0.92 : 0.72), isRaised ? 2.2 : 1.4);
+        canvas.StrokeRoundedRect(x + 0.5, y + 0.5, Math.Max(1, width - 1), Math.Max(1, height - 1), radius, accent.WithOpacity(isRaised ? 0.92 : 0.72), isRaised ? 2.2 : 1.4);
         if (isFilled) {
             canvas.StrokeRoundedRect(x + 2.5, y + 2.5, Math.Max(1, width - 5), Math.Max(1, height - 5), Math.Max(1, radius - 2), theme.TileInnerStroke, 1);
         }
@@ -129,12 +130,12 @@ public sealed class PngVisualCanvasRenderer {
         var iconY = y + (height - iconBox) / 2;
         var iconRadius = Math.Min(13, iconBox * 0.25);
         if (isFilled) {
-            canvas.FillRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, tile.Accent.WithOpacity(isRaised ? 0.25 : 0.18));
-            if (isRaised) canvas.StrokeRoundedRect(iconX + 0.5, iconY + 0.5, iconBox - 1, iconBox - 1, iconRadius, tile.Accent.WithOpacity(0.32), 1);
+            canvas.FillRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, accent.WithOpacity(isRaised ? 0.25 : 0.18));
+            if (isRaised) canvas.StrokeRoundedRect(iconX + 0.5, iconY + 0.5, iconBox - 1, iconBox - 1, iconRadius, accent.WithOpacity(0.32), 1);
         } else {
-            canvas.StrokeRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, tile.Accent.WithOpacity(0.38), 1);
+            canvas.StrokeRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, accent.WithOpacity(0.38), 1);
         }
-        DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, tile.Accent);
+        DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, accent);
         var textX = iconX + iconBox + 22;
         var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartValues.Count > 0;
         var chartW = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82, width * 0.20)) : 0;
@@ -157,14 +158,14 @@ public sealed class PngVisualCanvasRenderer {
             var railY = y + height - 16;
             var railW = hasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
             canvas.FillRoundedRect(railX, railY, railW, 8, 4, theme.TileProgressTrackColor);
-            canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, 8, 4, tile.Accent);
+            canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, 8, 4, accent);
         }
         if (hasMiniChart) {
-            DrawTileMiniChart(canvas, tile, theme, chartX, chartY, chartW, chartH);
+            DrawTileMiniChart(canvas, tile, theme, accent, chartX, chartY, chartW, chartH);
         }
     }
 
-    private static void DrawTileMiniChart(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme, double x, double y, double width, double height) {
+    private static void DrawTileMiniChart(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme, ChartColor accent, double x, double y, double width, double height) {
         canvas.FillRoundedRect(x, y, width, height, Math.Min(8, height * 0.24), theme.TileMiniChartTrackColor.WithOpacity(0.20));
         canvas.DrawLine(x + 4, y + height * 0.72, x + width - 4, y + height * 0.72, theme.TileMiniChartTrackColor, 1);
         canvas.DrawLine(x + 4, y + height * 0.38, x + width - 4, y + height * 0.38, theme.TileMiniChartTrackColor.WithOpacity(0.62), 1);
@@ -176,7 +177,7 @@ public sealed class PngVisualCanvasRenderer {
         var max = tile.MiniChartMaximum ?? 0.0;
         for (var i = 0; i < values.Count; i++) {
             if (values[i] < min) min = values[i];
-            if (values[i] > max) max = values[i];
+            if (!tile.MiniChartMaximum.HasValue && values[i] > max) max = values[i];
         }
         if (max <= min) max = min + 1;
 
@@ -186,12 +187,12 @@ public sealed class PngVisualCanvasRenderer {
         var plotH = Math.Max(1, height - 12);
         var baseY = plotY + plotH;
         if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Bars) {
-            var gap = Math.Max(1, plotW * 0.035);
-            var barW = Math.Max(2, (plotW - gap * (values.Count - 1)) / values.Count);
+            var gap = values.Count > 1 ? Math.Min(Math.Max(1, plotW * 0.035), plotW / (values.Count * 3.0)) : 0;
+            var barW = Math.Max(0.5, (plotW - gap * (values.Count - 1)) / values.Count);
             for (var i = 0; i < values.Count; i++) {
                 var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
                 var barH = Math.Max(2, plotH * ratio);
-                canvas.FillRoundedRect(plotX + i * (barW + gap), baseY - barH, barW, barH, Math.Min(4, barW * 0.42), tile.Accent.WithOpacity(0.82));
+                canvas.FillRoundedRect(plotX + i * (barW + gap), baseY - barH, barW, barH, Math.Min(4, barW * 0.42), accent.WithOpacity(0.82));
             }
             return;
         }
@@ -213,7 +214,7 @@ public sealed class PngVisualCanvasRenderer {
         }
 
         for (var i = 1; i < points.Length; i++) {
-            canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, tile.Accent, 2.2);
+            canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, accent, 2.2);
         }
     }
 
@@ -314,19 +315,68 @@ public sealed class PngVisualCanvasRenderer {
         var radius = Math.Min(22, badge.Height * 0.20);
         canvas.FillRoundedRect(badge.X - 6, badge.Y - 6, badge.Width + 12, badge.Height + 12, radius + 4, theme.HeroBadgeGlowColor);
         canvas.FillRoundedRectVerticalGradient(badge.X, badge.Y, badge.Width, badge.Height, radius, theme.HeroBadgeTop, theme.HeroBadgeBottom);
-        canvas.StrokeRoundedRect(badge.X, badge.Y, badge.Width, badge.Height, radius, badge.Accent, 2.4);
+        var accent = badge.AccentOverride ?? theme.SecondaryAccent;
+        canvas.StrokeRoundedRect(badge.X, badge.Y, badge.Width, badge.Height, radius, accent, 2.4);
         var fontSize = Math.Max(24, badge.Height * 0.42);
         DrawText(canvas, badge.X, badge.Y + badge.Height / 2 - fontSize * 0.40, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, VisualCanvasTextAlignment.Center, true);
     }
 
     private static void DrawImage(RgbaCanvas canvas, VisualCanvasImageLayer image, VisualCanvasTheme theme) {
+        VisualCanvas.ValidateEnum(image.Fit, nameof(image.Fit));
         if (image.Rgba != null && image.SourceWidth > 0 && image.SourceHeight > 0) {
             var rgba = image.Opacity >= 0.999 ? image.Rgba : ApplyOpacity(image.Rgba, image.Opacity);
-            canvas.DrawImageScaled((int)Math.Round(image.X), (int)Math.Round(image.Y), (int)Math.Round(image.Width), (int)Math.Round(image.Height), image.SourceWidth, image.SourceHeight, rgba);
+            DrawFittedImage(canvas, image, rgba);
         } else {
             canvas.FillRoundedRect(image.X, image.Y, image.Width, image.Height, 12, theme.ImagePlaceholderFill);
             canvas.StrokeRoundedRect(image.X, image.Y, image.Width, image.Height, 12, theme.ImagePlaceholderStroke, 1);
         }
+    }
+
+    private static void DrawFittedImage(RgbaCanvas canvas, VisualCanvasImageLayer image, byte[] rgba) {
+        var destinationWidth = Math.Max(1, (int)Math.Round(image.Width));
+        var destinationHeight = Math.Max(1, (int)Math.Round(image.Height));
+        var destinationX = (int)Math.Round(image.X);
+        var destinationY = (int)Math.Round(image.Y);
+        var sourceWidth = image.SourceWidth;
+        var sourceHeight = image.SourceHeight;
+
+        switch (image.Fit) {
+            case VisualCanvasImageFit.Contain:
+                {
+                    var scale = Math.Min(destinationWidth / (double)sourceWidth, destinationHeight / (double)sourceHeight);
+                    var width = Math.Max(1, (int)Math.Round(sourceWidth * scale));
+                    var height = Math.Max(1, (int)Math.Round(sourceHeight * scale));
+                    canvas.DrawImageScaled(destinationX + (destinationWidth - width) / 2, destinationY + (destinationHeight - height) / 2, width, height, sourceWidth, sourceHeight, rgba);
+                    return;
+                }
+            case VisualCanvasImageFit.Cover:
+                {
+                    var scale = Math.Max(destinationWidth / (double)sourceWidth, destinationHeight / (double)sourceHeight);
+                    var cropWidth = Math.Min(sourceWidth, destinationWidth / scale);
+                    var cropHeight = Math.Min(sourceHeight, destinationHeight / scale);
+                    canvas.DrawImageScaled(destinationX, destinationY, destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba, (sourceWidth - cropWidth) / 2, (sourceHeight - cropHeight) / 2, cropWidth, cropHeight);
+                    return;
+                }
+            case VisualCanvasImageFit.Center:
+                DrawCenteredImage(canvas, destinationX, destinationY, destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba);
+                return;
+            default:
+                canvas.DrawImageScaled(destinationX, destinationY, destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba);
+                return;
+        }
+    }
+
+    private static void DrawCenteredImage(RgbaCanvas canvas, int destinationX, int destinationY, int destinationWidth, int destinationHeight, int sourceWidth, int sourceHeight, byte[] rgba) {
+        var centeredX = destinationX + (destinationWidth - sourceWidth) / 2;
+        var centeredY = destinationY + (destinationHeight - sourceHeight) / 2;
+        var drawX = Math.Max(destinationX, centeredX);
+        var drawY = Math.Max(destinationY, centeredY);
+        var drawRight = Math.Min(destinationX + destinationWidth, centeredX + sourceWidth);
+        var drawBottom = Math.Min(destinationY + destinationHeight, centeredY + sourceHeight);
+        var drawWidth = drawRight - drawX;
+        var drawHeight = drawBottom - drawY;
+        if (drawWidth <= 0 || drawHeight <= 0) return;
+        canvas.DrawImageScaled(drawX, drawY, drawWidth, drawHeight, sourceWidth, sourceHeight, rgba, drawX - centeredX, drawY - centeredY, drawWidth, drawHeight);
     }
 
     private static void DrawFeatureStrip(RgbaCanvas canvas, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
