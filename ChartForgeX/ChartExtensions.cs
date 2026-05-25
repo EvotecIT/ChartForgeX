@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
@@ -7,6 +8,8 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Svg;
 using ChartForgeX.Themes;
+using ChartForgeX.Composition;
+using ChartForgeX.Topology;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX;
@@ -408,4 +411,154 @@ public static partial class ChartExtensions {
     /// <param name="grid">The visual grid to render.</param>
     /// <param name="path">The output file path.</param>
     public static void SavePng(this VisualGrid grid, string path) => File.WriteAllBytes(path, grid.ToPng());
+
+    /// <summary>
+    /// Renders a visual canvas to SVG markup.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <returns>SVG markup.</returns>
+    public static string ToSvg(this VisualCanvas canvas) => new SvgVisualCanvasRenderer().Render(canvas);
+
+    /// <summary>
+    /// Renders a visual canvas to SVG markup with an additional deterministic ID scope.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="idScope">A caller-provided scope used to keep SVG element IDs unique when embedding multiple SVGs in one document.</param>
+    /// <returns>SVG markup.</returns>
+    public static string ToSvg(this VisualCanvas canvas, string idScope) => new SvgVisualCanvasRenderer().Render(canvas, idScope);
+
+    /// <summary>
+    /// Renders a visual canvas to PNG bytes.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <returns>A PNG image.</returns>
+    public static byte[] ToPng(this VisualCanvas canvas) => new PngVisualCanvasRenderer().Render(canvas);
+
+    /// <summary>
+    /// Renders a visual canvas to a complete HTML document.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <returns>An HTML page.</returns>
+    public static string ToHtmlPage(this VisualCanvas canvas) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var title = WebUtility.HtmlEncode(canvas.Title.Length == 0 ? "ChartForgeX visual canvas" : canvas.Title);
+        return "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + title + "</title><style>html,body{margin:0;min-height:100%;background:#020617}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;background:linear-gradient(180deg,#020617,#0b1120);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-canvas{max-width:100%;height:auto}.chartforgex-visual-canvas svg{display:block;max-width:100%;height:auto;overflow:visible}@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-canvas{max-width:none}}</style></head><body><div class=\"chartforgex-visual-canvas\">" + canvas.ToSvg("html-page") + "</div></body></html>";
+    }
+
+    /// <summary>
+    /// Saves a visual canvas as an SVG file.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="path">The output file path.</param>
+    public static void SaveSvg(this VisualCanvas canvas, string path) => File.WriteAllText(path, canvas.ToSvg(), Encoding.UTF8);
+
+    /// <summary>
+    /// Saves a visual canvas as a complete HTML file.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="path">The output file path.</param>
+    public static void SaveHtml(this VisualCanvas canvas, string path) => File.WriteAllText(path, canvas.ToHtmlPage(), Encoding.UTF8);
+
+    /// <summary>
+    /// Saves a visual canvas as a PNG file.
+    /// </summary>
+    /// <param name="canvas">The visual canvas to render.</param>
+    /// <param name="path">The output file path.</param>
+    public static void SavePng(this VisualCanvas canvas, string path) => File.WriteAllBytes(path, canvas.ToPng());
+
+    /// <summary>
+    /// Adds a rendered chart layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddChart(this VisualCanvas canvas, double x, double y, double width, double height, Chart chart, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        return AddRenderedImage(canvas, x, y, width, height, RasterRenderer.RenderImage(chart), SvgDataUri(chart.ToSvg("visual-canvas-chart")), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered chart layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddChart(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, Chart chart, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddChart(bounds.X, bounds.Y, bounds.Width, bounds.Height, chart, fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered chart grid layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddChartGrid(this VisualCanvas canvas, double x, double y, double width, double height, ChartGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (grid == null) throw new ArgumentNullException(nameof(grid));
+        return AddRenderedImage(canvas, x, y, width, height, RasterRenderer.RenderImage(grid), SvgDataUri(grid.ToSvg()), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered chart grid layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddChartGrid(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, ChartGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddChartGrid(bounds.X, bounds.Y, bounds.Width, bounds.Height, grid, fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered visual block layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddVisualBlock(this VisualCanvas canvas, double x, double y, double width, double height, IVisualBlock block, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (block == null) throw new ArgumentNullException(nameof(block));
+        return AddRenderedImage(canvas, x, y, width, height, RasterRenderer.RenderImage(block), SvgDataUri(block.ToSvg()), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered visual block layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddVisualBlock(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, IVisualBlock block, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddVisualBlock(bounds.X, bounds.Y, bounds.Width, bounds.Height, block, fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered visual grid layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddVisualGrid(this VisualCanvas canvas, double x, double y, double width, double height, VisualGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (grid == null) throw new ArgumentNullException(nameof(grid));
+        return AddRenderedImage(canvas, x, y, width, height, RasterRenderer.RenderImage(grid), SvgDataUri(grid.ToSvg()), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered visual grid layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddVisualGrid(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, VisualGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddVisualGrid(bounds.X, bounds.Y, bounds.Width, bounds.Height, grid, fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered topology chart layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddTopology(this VisualCanvas canvas, double x, double y, double width, double height, TopologyChart topology, TopologyRenderOptions? options = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (topology == null) throw new ArgumentNullException(nameof(topology));
+        return AddRenderedImage(canvas, x, y, width, height, TopologyRasterRenderer.RenderImage(topology, options), SvgDataUri(topology.ToSvg(options)), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered topology chart layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddTopology(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, TopologyChart topology, TopologyRenderOptions? options = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddTopology(bounds.X, bounds.Y, bounds.Width, bounds.Height, topology, options, fit, opacity);
+    }
+
+    private static VisualCanvas AddRenderedImage(VisualCanvas canvas, double x, double y, double width, double height, RgbaImage image, string href, VisualCanvasImageFit fit, double opacity) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        VisualCanvas.ValidateEnum(fit, nameof(fit));
+        return canvas.AddImage(x, y, width, height, href, image.Pixels, image.Width, image.Height, opacity, fit);
+    }
+
+    private static string SvgDataUri(string svg) {
+        if (svg == null) throw new ArgumentNullException(nameof(svg));
+        return "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(svg);
+    }
 }

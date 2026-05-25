@@ -23,7 +23,7 @@ ChartForgeX renders polished charts, visual blocks, topology diagrams, and stati
 
 ## What It Does
 
-ChartForgeX turns .NET data into deterministic static visuals: charts, chart grids, visual blocks, topology diagrams, and map-backed report graphics. It is meant for generated reports, documentation, email, static websites, dashboards, wallpapers, Office-style generators, and other hosts that need polished output without a JavaScript chart dependency.
+ChartForgeX turns .NET data into deterministic static visuals: charts, chart grids, visual blocks, visual canvases, topology diagrams, and map-backed report graphics. It is meant for generated reports, documentation, email, static websites, dashboards, wallpapers, social preview images, Office-style generators, and other hosts that need polished output without a JavaScript chart dependency.
 
 The core package renders SVG, script-free static HTML, PNG, BMP, PPM, and TIFF without runtime package dependencies. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
 
@@ -172,6 +172,7 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 | SVG markup | `chart.ToSvg()` or `chart.SaveSvg("chart.svg")` |
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
+| Layered visual canvas | `VisualCanvas.CreateSocialPreview()`, `VisualCanvas.CreateDesktopWallpaper()`, `canvas.ToSvg()`, or `canvas.SavePng("social-preview.png")` for fixed-size wallpaper, social image, report cover, and hero compositions |
 | Topology animated raster | `topology.ToGif(options)`, `topology.ToApng(options)`, `topology.WriteGif(stream, options)`, `topology.WriteApng(stream, options)`, `topology.SaveGif("route.gif", options)`, or `topology.SaveApng("route.apng", options)` with `TopologyMotionOptions.RoutePulseForScenario(...)` or `.RoutePulseForEdges(...)` |
 | Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.tiff")`; topology also supports `topology.Save("route.gif", options)` and `topology.Save("route.apng", options)` |
 | Advanced opaque raster output | `ToBmp`, `ToPpm`, `ToTiff`, `ToRasterImage`, `WriteRasterImage`, and `SaveRasterImage` |

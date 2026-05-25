@@ -180,9 +180,17 @@ internal sealed partial class RgbaCanvas {
         if (rgba == null) throw new ArgumentNullException(nameof(rgba));
         if (destinationWidth <= 0 || destinationHeight <= 0 || sourceWidth <= 0 || sourceHeight <= 0) return;
         if (rgba.Length < sourceWidth * sourceHeight * 4) throw new ArgumentException("RGBA buffer is smaller than the requested source dimensions.", nameof(rgba));
+        DrawImageScaled(x, y, destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba, 0, 0, sourceWidth, sourceHeight);
+    }
+
+    public void DrawImageScaled(int x, int y, int destinationWidth, int destinationHeight, int sourceWidth, int sourceHeight, byte[] rgba, double sourceX, double sourceY, double sourceRectWidth, double sourceRectHeight) {
+        if (rgba == null) throw new ArgumentNullException(nameof(rgba));
+        if (destinationWidth <= 0 || destinationHeight <= 0 || sourceWidth <= 0 || sourceHeight <= 0 || sourceRectWidth <= 0 || sourceRectHeight <= 0) return;
+        if (rgba.Length < sourceWidth * sourceHeight * 4) throw new ArgumentException("RGBA buffer is smaller than the requested source dimensions.", nameof(rgba));
         var scaledDestinationWidth = destinationWidth * _scale;
         var scaledDestinationHeight = destinationHeight * _scale;
-        if (scaledDestinationWidth == sourceWidth && scaledDestinationHeight == sourceHeight) {
+        if (sourceX == 0 && sourceY == 0 && Math.Abs(sourceRectWidth - sourceWidth) < 0.000001 && Math.Abs(sourceRectHeight - sourceHeight) < 0.000001 &&
+            scaledDestinationWidth == sourceWidth && scaledDestinationHeight == sourceHeight) {
             DrawImage(x, y, sourceWidth, sourceHeight, rgba);
             return;
         }
@@ -197,8 +205,8 @@ internal sealed partial class RgbaCanvas {
                 rgba,
                 sourceWidth,
                 sourceHeight,
-                (dx + 0.5) * sourceWidth / scaledDestinationWidth - 0.5,
-                (dy + 0.5) * sourceHeight / scaledDestinationHeight - 0.5);
+                sourceX + (dx + 0.5) * sourceRectWidth / scaledDestinationWidth - 0.5,
+                sourceY + (dy + 0.5) * sourceRectHeight / scaledDestinationHeight - 0.5);
             if (color.A == 0) continue;
             BlendPixel(targetX, targetY, color);
         }

@@ -1,4 +1,5 @@
 using ChartForgeX;
+using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -18,12 +19,43 @@ internal static class WellnessDashboardExamples {
 
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
         SaveLayeredRadial(output, pngOutputScale);
+        WritePowerBgInfoSocialPreview(output, (int)pngOutputScale);
         SaveWeightCard(output, (int)pngOutputScale);
         SaveCaloriesCard(output, (int)pngOutputScale);
         SavePowerBgInfoStatsSection(output, (int)pngOutputScale);
         SaveReportMetricStrip(output, (int)pngOutputScale);
         SaveTransparentReportMetricStrip(output, (int)pngOutputScale);
         SaveWeeklyProgressDashboard(output, (int)pngOutputScale);
+    }
+
+    public static void WritePowerBgInfoSocialPreview(string output, int outputScale) {
+        var canvas = VisualCanvas.CreateSocialPreview()
+            .WithTitle("PowerBGInfo social preview")
+            .WithBackground(ChartColor.FromHex("#020713"), ChartColor.FromHex("#071A35"))
+            .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
+            .WithPngOutputScale(outputScale)
+            .AddInfoTile(48, 92, 300, 82, "PC", "HOSTNAME", "DEV-WKS-01", accent: ChartColor.FromHex("#2F80FF"))
+            .AddInfoTile(48, 190, 300, 82, "IP", "IP ADDRESS", "10.0.0.42", "192.168.1.42", ChartColor.FromHex("#2F80FF"))
+            .AddInfoTile(48, 288, 300, 82, "OS", "OS", "Windows 11", "24H2", ChartColor.FromHex("#2F80FF"))
+            .AddInfoTile(852, 70, 300, 96, "CPU", "CPU", "Intel Core i7", accent: ChartColor.FromHex("#60A5FA"), progress: 0.23)
+            .AddInfoTile(852, 184, 300, 96, "RAM", "RAM", "32.0 GB", accent: ChartColor.FromHex("#60A5FA"), progress: 0.41)
+            .AddInfoTile(852, 298, 300, 82, "USR", "USER", "jdoe", accent: ChartColor.FromHex("#60A5FA"))
+            .AddHeroBadge(538, 157, 124, 88, ">_", ChartColor.FromHex("#22A7FF"))
+            .AddHeroTitle(312, 296, 576, 82, new[] {
+                new VisualCanvasTextRun("Power", ChartColor.FromHex("#F8FAFC")),
+                new VisualCanvasTextRun("BGInfo", ChartColor.FromHex("#2F80FF"))
+            })
+            .AddText(240, 402, 720, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), VisualCanvasTextAlignment.Center)
+            .AddFeatureStrip(290, 522, 620, 62, new[] {
+                new VisualCanvasFeatureItem("PS", "LIGHTWEIGHT"),
+                new VisualCanvasFeatureItem("OK", "SECURE"),
+                new VisualCanvasFeatureItem("UI", "CUSTOMIZABLE"),
+                new VisualCanvasFeatureItem("OS", "OPEN SOURCE")
+            });
+
+        canvas.SaveSvg(Path.Combine(output, "powerbginfo-social-preview-canvas.svg"));
+        canvas.SaveHtml(Path.Combine(output, "powerbginfo-social-preview-canvas.html"));
+        canvas.SavePng(Path.Combine(output, "powerbginfo-social-preview-canvas.png"));
     }
 
     private static void SaveLayeredRadial(string output, ChartPngOutputScale pngOutputScale) {

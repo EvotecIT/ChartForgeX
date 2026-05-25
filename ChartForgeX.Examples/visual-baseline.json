@@ -1474,6 +1474,22 @@
       }
     },
     {
+      "name": "powerbginfo-social-preview-canvas",
+      "width": 1200,
+      "height": 630,
+      "svg": {
+        "minVisualNodes": 64,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1512000,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "remediation-impact-waterfall-dark",
       "width": 920,
       "height": 540,
