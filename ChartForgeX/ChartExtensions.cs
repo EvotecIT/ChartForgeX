@@ -475,11 +475,29 @@ public static partial class ChartExtensions {
     }
 
     /// <summary>
+    /// Adds a rendered chart layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddChart(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, Chart chart, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddChart(bounds.X, bounds.Y, bounds.Width, bounds.Height, chart, fit, opacity);
+    }
+
+    /// <summary>
     /// Adds a rendered chart grid layer to a visual canvas.
     /// </summary>
     public static VisualCanvas AddChartGrid(this VisualCanvas canvas, double x, double y, double width, double height, ChartGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         return AddRenderedImage(canvas, x, y, width, height, RasterRenderer.RenderImage(grid), SvgDataUri(grid.ToSvg()), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered chart grid layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddChartGrid(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, ChartGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddChartGrid(bounds.X, bounds.Y, bounds.Width, bounds.Height, grid, fit, opacity);
     }
 
     /// <summary>
@@ -491,6 +509,15 @@ public static partial class ChartExtensions {
     }
 
     /// <summary>
+    /// Adds a rendered visual block layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddVisualBlock(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, IVisualBlock block, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddVisualBlock(bounds.X, bounds.Y, bounds.Width, bounds.Height, block, fit, opacity);
+    }
+
+    /// <summary>
     /// Adds a rendered visual grid layer to a visual canvas.
     /// </summary>
     public static VisualCanvas AddVisualGrid(this VisualCanvas canvas, double x, double y, double width, double height, VisualGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
@@ -499,11 +526,29 @@ public static partial class ChartExtensions {
     }
 
     /// <summary>
+    /// Adds a rendered visual grid layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddVisualGrid(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, VisualGrid grid, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddVisualGrid(bounds.X, bounds.Y, bounds.Width, bounds.Height, grid, fit, opacity);
+    }
+
+    /// <summary>
     /// Adds a rendered topology chart layer to a visual canvas.
     /// </summary>
     public static VisualCanvas AddTopology(this VisualCanvas canvas, double x, double y, double width, double height, TopologyChart topology, TopologyRenderOptions? options = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
         if (topology == null) throw new ArgumentNullException(nameof(topology));
         return AddRenderedImage(canvas, x, y, width, height, TopologyRasterRenderer.RenderImage(topology, options), SvgDataUri(topology.ToSvg(options)), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds a rendered topology chart layer to a visual canvas using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddTopology(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, TopologyChart topology, TopologyRenderOptions? options = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddTopology(bounds.X, bounds.Y, bounds.Width, bounds.Height, topology, options, fit, opacity);
     }
 
     private static VisualCanvas AddRenderedImage(VisualCanvas canvas, double x, double y, double width, double height, RgbaImage image, string href, VisualCanvasImageFit fit, double opacity) {

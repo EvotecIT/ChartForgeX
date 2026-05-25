@@ -80,6 +80,23 @@ internal static partial class SmokeTests {
         Assert(nativeCanvas.ToPng().Length > 64, "VisualCanvas should render embedded ChartForgeX renderables to PNG output.");
         Assert(nativeCanvas.ToBmp().Length > 64, "VisualCanvas should render embedded ChartForgeX renderables to BMP output.");
 
+        var anchoredCanvas = VisualCanvas.Create(400, 300)
+            .AddInfoTile(VisualCanvasPlacement.At(VisualCanvasAnchor.TopLeft, 20, 20), 120, 60, "PC", "HOST", "WK01")
+            .AddInfoTile(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 20, 20), 120, 60, "IP", "IP", "10.0.0.42")
+            .AddChart(VisualCanvasPlacement.At(VisualCanvasAnchor.TopRight, 20, 90), 140, 72, cpuChart, VisualCanvasImageFit.Contain)
+            .AddTopology(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomLeft, 20, 20), 140, 72, topology, fit: VisualCanvasImageFit.Cover);
+        var topLeftTile = anchoredCanvas.Layers[0];
+        var bottomRightTile = anchoredCanvas.Layers[1];
+        var topRightChart = anchoredCanvas.Layers[2];
+        var bottomLeftTopology = anchoredCanvas.Layers[3];
+        Assert(IsClose(topLeftTile.X, 20) && IsClose(topLeftTile.Y, 20), "VisualCanvas TopLeft placement should use offsets from the top-left edge.");
+        Assert(IsClose(bottomRightTile.X, 260) && IsClose(bottomRightTile.Y, 220), "VisualCanvas BottomRight placement should use offsets as insets from the bottom-right edge.");
+        Assert(IsClose(topRightChart.X, 240) && IsClose(topRightChart.Y, 90), "VisualCanvas chart placement should support top-right anchors.");
+        Assert(IsClose(bottomLeftTopology.X, 20) && IsClose(bottomLeftTopology.Y, 208), "VisualCanvas topology placement should support bottom-left anchors.");
+        var relativeBounds = VisualCanvasPlacement.At(VisualCanvasAnchor.Center, 10, -8).Resolve(topLeftTile.Bounds, 20, 10);
+        Assert(IsClose(relativeBounds.X, 80) && IsClose(relativeBounds.Y, 37), "VisualCanvas placements should resolve relative to another layer's bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualCanvasPlacement.At((VisualCanvasAnchor)999, 0, 0), "VisualCanvas placement should reject unknown anchors.");
+
         var overlay = VisualCanvas.CreateDesktopWallpaper()
             .WithTitle("Transparent overlay")
             .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
@@ -107,4 +124,6 @@ internal static partial class SmokeTests {
             if (System.IO.File.Exists(ppmPath)) System.IO.File.Delete(ppmPath);
         }
     }
+
+    private static bool IsClose(double actual, double expected) => Math.Abs(actual - expected) < 0.001;
 }

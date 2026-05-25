@@ -15,6 +15,7 @@ The first canvas primitives are intentionally generic:
 - hero badges for logos, terminal prompts, or product marks
 - image layers using SVG hrefs and host-provided RGBA pixels for raster output, with `Stretch`, `Contain`, `Cover`, and `Center` fit modes
 - rendered ChartForgeX layers for charts, chart grids, visual blocks, visual grids, and topology diagrams
+- anchor-based placement for all built-in canvas layers and rendered ChartForgeX layers
 - feature strips for compact bottom rows
 - SVG, HTML, PNG, BMP, PPM, and TIFF export
 
@@ -64,12 +65,21 @@ var canvas = VisualCanvas.CreateSocialPreview()
         new VisualCanvasTextRun("BGInfo", ChartColor.FromHex("#2F80FF"))
     })
     .AddText(330, 402, 540, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), VisualCanvasTextAlignment.Center)
-    .AddChart(66, 460, 220, 120, cpuChart, VisualCanvasImageFit.Contain)
-    .AddVisualBlock(914, 452, 180, 104, ramCard, VisualCanvasImageFit.Center);
+    .AddChart(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomLeft, 66, 50), 220, 120, cpuChart, VisualCanvasImageFit.Contain)
+    .AddVisualBlock(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 106, 74), 180, 104, ramCard, VisualCanvasImageFit.Center);
 
 canvas.SaveSvg("powerbginfo-social-preview.svg");
 canvas.SavePng("powerbginfo-social-preview.png");
 canvas.SaveBmp("powerbginfo-social-preview.bmp");
+```
+
+`VisualCanvasPlacement` resolves layer coordinates from a named anchor. For `TopLeft`, offsets move right and down from the top-left edge. For `BottomRight`, positive offsets are insets from the right and bottom edges, so `VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 20, 20)` places a layer 20 pixels from the bottom-right corner. Center anchors use offsets as signed nudges from the centered position.
+
+The same placement object can resolve against another region:
+
+```csharp
+var tile = new VisualCanvasInfoTileLayer(20, 20, 240, 90, "PC", "HOST", "WK01");
+var badgeBounds = VisualCanvasPlacement.At(VisualCanvasAnchor.TopRight, 8, 8).Resolve(tile.Bounds, 42, 24);
 ```
 
 PowerBGInfo-style desktop generation should stay thin: resolve Windows facts in PowerBGInfo, then pass those strings into `VisualCanvas` templates or layers. Keep reusable layout, typography, image, and tile behavior in ChartForgeX so other hosts can reuse the same engine for OpenGraph images, generated documentation, and report covers.

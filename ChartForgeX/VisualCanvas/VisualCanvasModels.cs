@@ -30,6 +30,108 @@ public enum VisualCanvasTextAlignment {
 }
 
 /// <summary>
+/// Defines the reference point used when placing visual canvas layers.
+/// </summary>
+public enum VisualCanvasAnchor {
+    /// <summary>Place from the top-left edge.</summary>
+    TopLeft,
+    /// <summary>Place from the top-center edge.</summary>
+    TopCenter,
+    /// <summary>Place from the top-right edge.</summary>
+    TopRight,
+    /// <summary>Place from the middle-left edge.</summary>
+    MiddleLeft,
+    /// <summary>Place from the center of the container.</summary>
+    Center,
+    /// <summary>Place from the middle-right edge.</summary>
+    MiddleRight,
+    /// <summary>Place from the bottom-left edge.</summary>
+    BottomLeft,
+    /// <summary>Place from the bottom-center edge.</summary>
+    BottomCenter,
+    /// <summary>Place from the bottom-right edge.</summary>
+    BottomRight
+}
+
+/// <summary>
+/// Describes reusable anchor-based placement inside a canvas or another rectangular region.
+/// </summary>
+public readonly struct VisualCanvasPlacement {
+    /// <summary>Initializes an anchor placement.</summary>
+    public VisualCanvasPlacement(VisualCanvasAnchor anchor, double offsetX = 0, double offsetY = 0) {
+        VisualCanvas.ValidateEnum(anchor, nameof(anchor));
+        ValidateFinite(offsetX, nameof(offsetX));
+        ValidateFinite(offsetY, nameof(offsetY));
+        Anchor = anchor;
+        OffsetX = offsetX;
+        OffsetY = offsetY;
+    }
+
+    /// <summary>Gets the anchor used as the placement reference.</summary>
+    public VisualCanvasAnchor Anchor { get; }
+
+    /// <summary>Gets the horizontal offset. For right anchors, positive values inset from the right edge.</summary>
+    public double OffsetX { get; }
+
+    /// <summary>Gets the vertical offset. For bottom anchors, positive values inset from the bottom edge.</summary>
+    public double OffsetY { get; }
+
+    /// <summary>Creates an anchor placement.</summary>
+    public static VisualCanvasPlacement At(VisualCanvasAnchor anchor, double offsetX = 0, double offsetY = 0) => new(anchor, offsetX, offsetY);
+
+    /// <summary>Resolves this placement inside a zero-origin container.</summary>
+    public ChartRect Resolve(double containerWidth, double containerHeight, double width, double height) => Resolve(new ChartRect(0, 0, containerWidth, containerHeight), width, height);
+
+    /// <summary>Resolves this placement inside another rectangular region.</summary>
+    public ChartRect Resolve(ChartRect container, double width, double height) {
+        ValidatePositive(width, nameof(width));
+        ValidatePositive(height, nameof(height));
+        var x = ResolveX(container, width);
+        var y = ResolveY(container, height);
+        return new ChartRect(x, y, width, height);
+    }
+
+    private double ResolveX(ChartRect container, double width) {
+        switch (Anchor) {
+            case VisualCanvasAnchor.TopRight:
+            case VisualCanvasAnchor.MiddleRight:
+            case VisualCanvasAnchor.BottomRight:
+                return container.Right - width - OffsetX;
+            case VisualCanvasAnchor.TopCenter:
+            case VisualCanvasAnchor.Center:
+            case VisualCanvasAnchor.BottomCenter:
+                return container.X + (container.Width - width) / 2 + OffsetX;
+            default:
+                return container.X + OffsetX;
+        }
+    }
+
+    private double ResolveY(ChartRect container, double height) {
+        switch (Anchor) {
+            case VisualCanvasAnchor.BottomLeft:
+            case VisualCanvasAnchor.BottomCenter:
+            case VisualCanvasAnchor.BottomRight:
+                return container.Bottom - height - OffsetY;
+            case VisualCanvasAnchor.MiddleLeft:
+            case VisualCanvasAnchor.Center:
+            case VisualCanvasAnchor.MiddleRight:
+                return container.Y + (container.Height - height) / 2 + OffsetY;
+            default:
+                return container.Y + OffsetY;
+        }
+    }
+
+    private static void ValidateFinite(double value, string parameterName) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, "Placement values must be finite.");
+    }
+
+    private static void ValidatePositive(double value, string parameterName) {
+        ValidateFinite(value, parameterName);
+        if (value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Placement dimensions must be greater than zero.");
+    }
+}
+
+/// <summary>
 /// Defines how source images are placed inside a visual canvas image layer.
 /// </summary>
 public enum VisualCanvasImageFit {
@@ -247,21 +349,48 @@ public sealed class VisualCanvas {
         return this;
     }
 
+    /// <summary>Resolves anchor-based placement against the full canvas.</summary>
+    public ChartRect ResolvePlacement(VisualCanvasPlacement placement, double width, double height) => placement.Resolve(Width, Height, width, height);
+
     /// <summary>Adds a plain text layer.</summary>
     public VisualCanvas AddText(double x, double y, double width, string text, double fontSize, ChartColor color, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Left, bool emphasized = false) =>
         AddLayer(new VisualCanvasTextLayer(x, y, width, text, fontSize, color) { Alignment = alignment, Emphasized = emphasized });
+
+    /// <summary>Adds a plain text layer using anchor-based placement.</summary>
+    public VisualCanvas AddText(VisualCanvasPlacement placement, double width, string text, double fontSize, ChartColor color, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Left, bool emphasized = false) {
+        var bounds = ResolvePlacement(placement, width, Math.Max(1, fontSize * 1.25));
+        return AddText(bounds.X, bounds.Y, bounds.Width, text, fontSize, color, alignment, emphasized);
+    }
 
     /// <summary>Adds a multi-color hero title layer.</summary>
     public VisualCanvas AddHeroTitle(double x, double y, double width, double fontSize, IEnumerable<VisualCanvasTextRun> runs, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Center) =>
         AddLayer(new VisualCanvasHeroTitleLayer(x, y, width, fontSize, runs) { Alignment = alignment });
 
+    /// <summary>Adds a multi-color hero title layer using anchor-based placement.</summary>
+    public VisualCanvas AddHeroTitle(VisualCanvasPlacement placement, double width, double fontSize, IEnumerable<VisualCanvasTextRun> runs, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Center) {
+        var bounds = ResolvePlacement(placement, width, Math.Max(1, fontSize * 1.25));
+        return AddHeroTitle(bounds.X, bounds.Y, bounds.Width, fontSize, runs, alignment);
+    }
+
     /// <summary>Adds a reusable information tile.</summary>
     public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null) =>
         AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, AccentOverride = accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
 
+    /// <summary>Adds a reusable information tile using anchor-based placement.</summary>
+    public VisualCanvas AddInfoTile(VisualCanvasPlacement placement, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null) {
+        var bounds = ResolvePlacement(placement, width, height);
+        return AddInfoTile(bounds.X, bounds.Y, bounds.Width, bounds.Height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum);
+    }
+
     /// <summary>Adds a central icon or logo badge.</summary>
     public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent = null) =>
         AddLayer(new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) { AccentOverride = accent });
+
+    /// <summary>Adds a central icon or logo badge using anchor-based placement.</summary>
+    public VisualCanvas AddHeroBadge(VisualCanvasPlacement placement, double width, double height, string symbol, ChartColor? accent = null) {
+        var bounds = ResolvePlacement(placement, width, height);
+        return AddHeroBadge(bounds.X, bounds.Y, bounds.Width, bounds.Height, symbol, accent);
+    }
 
     /// <summary>Adds an image layer. SVG output uses <paramref name="href"/>; PNG output uses <paramref name="rgba"/> when supplied.</summary>
     public VisualCanvas AddImage(double x, double y, double width, double height, string? href = null, byte[]? rgba = null, int sourceWidth = 0, int sourceHeight = 0, double opacity = 1, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
@@ -270,9 +399,21 @@ public sealed class VisualCanvas {
         return AddLayer(new VisualCanvasImageLayer(x, y, width, height) { Href = href ?? string.Empty, Rgba = rgba, SourceWidth = sourceWidth, SourceHeight = sourceHeight, Opacity = opacity, Fit = fit });
     }
 
+    /// <summary>Adds an image layer using anchor-based placement.</summary>
+    public VisualCanvas AddImage(VisualCanvasPlacement placement, double width, double height, string? href = null, byte[]? rgba = null, int sourceWidth = 0, int sourceHeight = 0, double opacity = 1, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
+        var bounds = ResolvePlacement(placement, width, height);
+        return AddImage(bounds.X, bounds.Y, bounds.Width, bounds.Height, href, rgba, sourceWidth, sourceHeight, opacity, fit);
+    }
+
     /// <summary>Adds a compact feature strip.</summary>
     public VisualCanvas AddFeatureStrip(double x, double y, double width, double height, IEnumerable<VisualCanvasFeatureItem> items) =>
         AddLayer(new VisualCanvasFeatureStripLayer(x, y, width, height, items));
+
+    /// <summary>Adds a compact feature strip using anchor-based placement.</summary>
+    public VisualCanvas AddFeatureStrip(VisualCanvasPlacement placement, double width, double height, IEnumerable<VisualCanvasFeatureItem> items) {
+        var bounds = ResolvePlacement(placement, width, height);
+        return AddFeatureStrip(bounds.X, bounds.Y, bounds.Width, bounds.Height, items);
+    }
 
     internal static void ValidateEnum<TEnum>(TEnum value, string parameterName) where TEnum : struct {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + typeof(TEnum).Name + " value.");
@@ -317,6 +458,9 @@ public abstract class VisualCanvasLayer {
 
     /// <summary>Gets or sets the layer height.</summary>
     public double Height { get => _height; set { ValidatePositive(value, nameof(value)); _height = value; } }
+
+    /// <summary>Gets the current layer bounds.</summary>
+    public ChartRect Bounds => new(X, Y, Width, Height);
 
     /// <summary>Validates that a numeric value is finite.</summary>
     /// <param name="value">The value to validate.</param>
