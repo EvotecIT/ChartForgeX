@@ -323,6 +323,9 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void DrawImage(RgbaCanvas canvas, VisualCanvasImageLayer image, VisualCanvasTheme theme) {
         VisualCanvas.ValidateEnum(image.Fit, nameof(image.Fit));
+        if (image.Rgba != null && (image.SourceWidth <= 0 || image.SourceHeight <= 0)) {
+            throw new ArgumentOutOfRangeException(nameof(image.SourceWidth), "RGBA image layers require positive source dimensions.");
+        }
         if (image.Rgba != null && image.SourceWidth > 0 && image.SourceHeight > 0) {
             var rgba = image.Opacity >= 0.999 ? image.Rgba : ApplyOpacity(image.Rgba, image.Opacity);
             DrawFittedImage(canvas, image, rgba);
