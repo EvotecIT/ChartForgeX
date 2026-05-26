@@ -109,7 +109,11 @@ internal static partial class SmokeTests {
         Assert(RasterImageDecoder.Decode(sourceImage.ToBmp()).Width == 18, "RasterImageDecoder should decode dependency-free BMP images.");
         var decodedIndexedBmp = RasterImageDecoder.Decode(IndexedBmp());
         Assert(decodedIndexedBmp.Width == 2 && decodedIndexedBmp.Height == 1 && decodedIndexedBmp.Pixels[0] == 255 && decodedIndexedBmp.Pixels[4 + 2] == 255, "RasterImageDecoder should decode indexed BMP palettes.");
+        var decodedTransparentBmp = RasterImageDecoder.Decode(Transparent32BitBmp());
+        Assert(decodedTransparentBmp.Pixels[3] == 0, "RasterImageDecoder should preserve explicit BMP alpha channels even when all pixels are transparent.");
         Assert(RasterImageDecoder.Decode(sourceImage.ToPpm()).Height == 12, "RasterImageDecoder should decode dependency-free PPM images.");
+        var decodedCrLfPpm = RasterImageDecoder.Decode(BinaryPpmWithCrLfHeader());
+        Assert(decodedCrLfPpm.Pixels[0] == 255 && decodedCrLfPpm.Pixels[1] == 0 && decodedCrLfPpm.Pixels[2] == 0, "RasterImageDecoder should consume CRLF PPM header separators before binary pixels.");
         Assert(RasterImageDecoder.Decode(sourceImage.ToTiff()).Width == 18, "RasterImageDecoder should decode dependency-free uncompressed TIFF images.");
         var whiteIsZeroTiff = RasterImageDecoder.Decode(GrayscaleTiff(0, new byte[] { 0, 255 }));
         Assert(whiteIsZeroTiff.Pixels[0] == 255 && whiteIsZeroTiff.Pixels[4] == 0, "RasterImageDecoder should decode WhiteIsZero grayscale TIFF images.");
@@ -130,6 +134,14 @@ internal static partial class SmokeTests {
             Assert(imageLayerSvg.Contains("data:image/jpeg;base64", StringComparison.Ordinal), "VisualCanvas image byte layers should preserve JPEG source bytes for SVG output.");
             Assert(imageLayerCanvas.ToPng().Length > 64, "VisualCanvas image file layers should render to PNG output.");
             Assert(decodedPng.ToVisualCanvas().ToPng().Length > 64, "Decoded RGBA images should be reusable as visual canvases.");
+            var nonWebRasterSvg = VisualCanvas.Create(60, 20)
+                .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+                .AddImageBytes(0, 0, 20, 20, sourceImage.ToBmp())
+                .AddImageBytes(20, 0, 20, 20, sourceImage.ToPpm())
+                .AddImageBytes(40, 0, 20, 20, sourceImage.ToTiff())
+                .ToSvg("visual-canvas-non-web-raster-input");
+            Assert(nonWebRasterSvg.Contains("data:image/png;base64", StringComparison.Ordinal), "VisualCanvas should re-encode non-web raster image inputs as PNG for SVG output.");
+            Assert(!nonWebRasterSvg.Contains("data:image/bmp", StringComparison.Ordinal) && !nonWebRasterSvg.Contains("image/tiff", StringComparison.Ordinal) && !nonWebRasterSvg.Contains("image/x-portable-pixmap", StringComparison.Ordinal), "VisualCanvas SVG output should not embed non-web raster MIME types.");
         } finally {
             if (System.IO.File.Exists(imageFilePath)) System.IO.File.Delete(imageFilePath);
         }
@@ -316,6 +328,38 @@ internal static partial class SmokeTests {
         var pixels = fileHeader + dibHeader + paletteBytes;
         bytes[pixels] = 0;
         bytes[pixels + 1] = 1;
+        return bytes;
+    }
+
+    private static byte[] Transparent32BitBmp() {
+        const int width = 1;
+        const int height = 1;
+        const int fileHeader = 14;
+        const int dibHeader = 40;
+        const int pixelOffset = fileHeader + dibHeader;
+        var bytes = new byte[pixelOffset + 4];
+        bytes[0] = (byte)'B';
+        bytes[1] = (byte)'M';
+        WriteLittleEndian(bytes, 2, bytes.Length);
+        WriteLittleEndian(bytes, 10, pixelOffset);
+        WriteLittleEndian(bytes, 14, dibHeader);
+        WriteLittleEndian(bytes, 18, width);
+        WriteLittleEndian(bytes, 22, height);
+        bytes[26] = 1;
+        bytes[28] = 32;
+        WriteLittleEndian(bytes, 34, 4);
+        bytes[pixelOffset] = 0x30;
+        bytes[pixelOffset + 1] = 0x20;
+        bytes[pixelOffset + 2] = 0x10;
+        bytes[pixelOffset + 3] = 0x00;
+        return bytes;
+    }
+
+    private static byte[] BinaryPpmWithCrLfHeader() {
+        var header = System.Text.Encoding.ASCII.GetBytes("P6\n1 1\n255\r\n");
+        var bytes = new byte[header.Length + 3];
+        Buffer.BlockCopy(header, 0, bytes, 0, header.Length);
+        bytes[header.Length] = 255;
         return bytes;
     }
 

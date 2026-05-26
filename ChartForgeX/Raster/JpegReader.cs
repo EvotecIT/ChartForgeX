@@ -26,7 +26,7 @@ internal static partial class JpegReader {
         if (state.Frame == null) throw new InvalidDataException("JPEG image is missing a frame header.");
         if (state.Scans.Count == 0) throw new InvalidDataException("JPEG image is missing scan data.");
         if (state.Progressive) DecodeProgressiveScans(data, state);
-        else DecodeScan(data, state, state.Scans[0]);
+        else DecodeSequentialScans(data, state);
         return BuildImage(state);
     }
 
@@ -72,6 +72,9 @@ internal static partial class JpegReader {
                     break;
                 case 0xE1:
                     ParseExif(data, segment, segmentLength, state);
+                    break;
+                case 0xEE:
+                    ParseAdobe(data, segment, segmentLength, state);
                     break;
             }
 
@@ -123,7 +126,7 @@ internal static partial class JpegReader {
         var p = offset + 2;
         var count = data[p++];
         if (state.Frame == null) throw new InvalidDataException("JPEG scan appears before a frame header.");
-        if (!state.Progressive && count != state.Frame.Components.Length) throw new NotSupportedException("Baseline JPEG scans must include all frame components.");
+        if (count <= 0 || count > state.Frame.Components.Length) throw new InvalidDataException("JPEG scan component count is invalid.");
         if (length < 6 + count * 2) throw new InvalidDataException("JPEG scan component data is truncated.");
         var scan = new JpegScan();
         for (var i = 0; i < count; i++) {
@@ -193,6 +196,12 @@ internal static partial class JpegReader {
         }
     }
 
+    private static void ParseAdobe(byte[] data, int offset, int length, JpegState state) {
+        if (length < 12) return;
+        if (data[offset] != (byte)'A' || data[offset + 1] != (byte)'d' || data[offset + 2] != (byte)'o' || data[offset + 3] != (byte)'b' || data[offset + 4] != (byte)'e') return;
+        state.AdobeTransform = data[offset + 11];
+    }
+
     private static void ParseHuffmanTables(byte[] data, int offset, int length, JpegState state) {
         var end = offset + length;
         while (offset < end) {
@@ -218,32 +227,59 @@ internal static partial class JpegReader {
         }
     }
 
-    private static void DecodeScan(byte[] data, JpegState state, JpegScan scan) {
+    private static void DecodeSequentialScans(byte[] data, JpegState state) {
+        foreach (var scan in state.Scans) DecodeSequentialScan(data, state, scan);
+    }
+
+    private static void DecodeSequentialScan(byte[] data, JpegState state, JpegScan scan) {
         var frame = state.Frame!;
         var reader = new JpegBitReader(data, scan.DataOffset, scan.DataEnd);
+        var block = new int[64];
+        var samples = new byte[64];
+        var restartCounter = state.RestartInterval;
+        if (scan.Components.Count == 1) {
+            var component = scan.Components[0].Component;
+            ApplyScanTables(scan);
+            ForEachComponentBlock(component, (blockX, blockY) => {
+                if (state.RestartInterval > 0 && restartCounter == 0) {
+                    reader.AlignToByte();
+                    component.PreviousDc = 0;
+                    restartCounter = state.RestartInterval;
+                }
+
+                Array.Clear(block, 0, block.Length);
+                DecodeBlock(reader, state, component, block);
+                InverseDct(block, state.QuantizationTables[component.QuantizationTable]!, samples);
+                StoreBlock(component, blockX, blockY, samples);
+                if (state.RestartInterval > 0) restartCounter--;
+            });
+            return;
+        }
+
         var mcuWidth = frame.MaxH * 8;
         var mcuHeight = frame.MaxV * 8;
         var mcuColumns = DivideRoundUp(frame.Width, mcuWidth);
         var mcuRows = DivideRoundUp(frame.Height, mcuHeight);
-        var block = new int[64];
-        var samples = new byte[64];
-        var restartCounter = state.RestartInterval;
         for (var my = 0; my < mcuRows; my++) {
             for (var mx = 0; mx < mcuColumns; mx++) {
                 if (state.RestartInterval > 0 && restartCounter == 0) {
                     reader.AlignToByte();
-                    foreach (var component in frame.Components) component.PreviousDc = 0;
+                    foreach (var scanComponent in scan.Components) scanComponent.Component.PreviousDc = 0;
                     restartCounter = state.RestartInterval;
                 }
 
-                foreach (var component in frame.Components) {
+                foreach (var scanComponent in scan.Components) {
+                    var component = scanComponent.Component;
+                    component.DcTable = scanComponent.DcTable;
+                    component.AcTable = scanComponent.AcTable;
                     for (var vy = 0; vy < component.V; vy++) {
                         for (var hx = 0; hx < component.H; hx++) {
+                            var blockX = mx * component.H + hx;
+                            var blockY = my * component.V + vy;
+                            if (blockX >= component.WidthInBlocks || blockY >= component.HeightInBlocks) continue;
                             Array.Clear(block, 0, block.Length);
                             DecodeBlock(reader, state, component, block);
                             InverseDct(block, state.QuantizationTables[component.QuantizationTable]!, samples);
-                            var blockX = mx * component.H + hx;
-                            var blockY = my * component.V + vy;
                             StoreBlock(component, blockX, blockY, samples);
                         }
                     }
@@ -251,6 +287,13 @@ internal static partial class JpegReader {
 
                 if (state.RestartInterval > 0) restartCounter--;
             }
+        }
+    }
+
+    private static void ApplyScanTables(JpegScan scan) {
+        foreach (var scanComponent in scan.Components) {
+            scanComponent.Component.DcTable = scanComponent.DcTable;
+            scanComponent.Component.AcTable = scanComponent.AcTable;
         }
     }
 
@@ -547,11 +590,17 @@ internal static partial class JpegReader {
         var frame = state.Frame!;
         var rgba = new byte[frame.Width * frame.Height * 4];
         var target = 0;
+        var directRgb = UsesDirectRgb(frame, state);
         for (var y = 0; y < frame.Height; y++) {
             for (var x = 0; x < frame.Width; x++) {
                 if (frame.Components.Length == 1) {
                     var gray = Sample(frame.Components[0], x, y, frame);
                     rgba[target++] = gray; rgba[target++] = gray; rgba[target++] = gray; rgba[target++] = 255;
+                } else if (directRgb) {
+                    rgba[target++] = Sample(frame.Components[0], x, y, frame);
+                    rgba[target++] = Sample(frame.Components[1], x, y, frame);
+                    rgba[target++] = Sample(frame.Components[2], x, y, frame);
+                    rgba[target++] = 255;
                 } else {
                     var yy = Sample(frame.Components[0], x, y, frame);
                     var cb = Sample(frame.Components[1], x, y, frame) - 128;
@@ -566,6 +615,11 @@ internal static partial class JpegReader {
 
         return ApplyOrientation(new RgbaImage(frame.Width, frame.Height, rgba), state.Orientation);
     }
+
+    private static bool UsesDirectRgb(JpegFrame frame, JpegState state) =>
+        frame.Components.Length == 3 &&
+        (state.AdobeTransform == 0 ||
+         frame.Components[0].Id == (byte)'R' && frame.Components[1].Id == (byte)'G' && frame.Components[2].Id == (byte)'B');
 
     private static RgbaImage ApplyOrientation(RgbaImage image, int orientation) {
         if (orientation <= 1 || orientation > 8) return image;
@@ -674,91 +728,6 @@ internal static partial class JpegReader {
         }
 
         return table;
-    }
-
-    private sealed class JpegState {
-        public readonly int[][] QuantizationTables = new int[4][];
-        public readonly JpegHuffmanTable?[] DcTables = new JpegHuffmanTable?[4];
-        public readonly JpegHuffmanTable?[] AcTables = new JpegHuffmanTable?[4];
-        public readonly List<JpegScan> Scans = new();
-        public JpegFrame? Frame;
-        public int RestartInterval;
-        public bool Progressive;
-        public int Orientation = 1;
-    }
-
-    private sealed class JpegScan {
-        public readonly List<JpegScanComponent> Components = new();
-        public int SpectralStart;
-        public int SpectralEnd;
-        public int SuccessiveHigh;
-        public int SuccessiveLow;
-        public int DataOffset;
-        public int DataEnd;
-
-        public JpegScanComponent Find(JpegComponent component) {
-            foreach (var scanComponent in Components) {
-                if (ReferenceEquals(scanComponent.Component, component)) return scanComponent;
-            }
-
-            throw new InvalidDataException("JPEG scan is missing a component table mapping.");
-        }
-    }
-
-    private sealed class JpegScanComponent {
-        public readonly JpegComponent Component;
-        public readonly int DcTable;
-        public readonly int AcTable;
-
-        public JpegScanComponent(JpegComponent component, int dcTable, int acTable) {
-            Component = component;
-            DcTable = dcTable;
-            AcTable = acTable;
-        }
-    }
-
-    private sealed class JpegFrame {
-        public readonly int Width;
-        public readonly int Height;
-        public readonly JpegComponent[] Components;
-        public int MaxH;
-        public int MaxV;
-
-        public JpegFrame(int width, int height, int componentCount) {
-            Width = width;
-            Height = height;
-            Components = new JpegComponent[componentCount];
-        }
-
-        public JpegComponent Find(int id) {
-            foreach (var component in Components) {
-                if (component.Id == id) return component;
-            }
-
-            throw new InvalidDataException("JPEG scan references an unknown component.");
-        }
-    }
-
-    private sealed class JpegComponent {
-        public readonly int Id;
-        public readonly int H;
-        public readonly int V;
-        public readonly int QuantizationTable;
-        public int DcTable;
-        public int AcTable;
-        public int PreviousDc;
-        public int WidthInBlocks;
-        public int HeightInBlocks;
-        public int CurrentBlockOffset;
-        public int[] Coefficients = Array.Empty<int>();
-        public byte[] Samples = Array.Empty<byte>();
-
-        public JpegComponent(int id, int h, int v, int quantizationTable) {
-            Id = id;
-            H = h;
-            V = v;
-            QuantizationTable = quantizationTable;
-        }
     }
 
     private sealed class JpegHuffmanTable {

@@ -34,7 +34,6 @@ internal static class BmpReader {
         }
 
         var bytesPerPixel = bitsPerPixel / 8;
-        var hasAlpha = bitsPerPixel == 32 && HasAnyAlpha(data, pixelOffset, width, height, topDown, stride);
         for (var y = 0; y < height; y++) {
             var sourceY = topDown ? y : height - 1 - y;
             var source = pixelOffset + sourceY * stride;
@@ -43,7 +42,7 @@ internal static class BmpReader {
                 rgba[target++] = data[source + 2];
                 rgba[target++] = data[source + 1];
                 rgba[target++] = data[source];
-                rgba[target++] = bytesPerPixel == 4 && hasAlpha ? data[source + 3] : (byte)255;
+                rgba[target++] = bytesPerPixel == 4 ? data[source + 3] : (byte)255;
                 source += bytesPerPixel;
             }
         }
@@ -69,19 +68,6 @@ internal static class BmpReader {
                 rgba[target++] = 255;
             }
         }
-    }
-
-    private static bool HasAnyAlpha(byte[] data, int pixelOffset, int width, int height, bool topDown, int stride) {
-        for (var y = 0; y < height; y++) {
-            var sourceY = topDown ? y : height - 1 - y;
-            var source = pixelOffset + sourceY * stride + 3;
-            for (var x = 0; x < width; x++) {
-                if (data[source] != 0) return true;
-                source += 4;
-            }
-        }
-
-        return false;
     }
 
     private static ushort ReadUInt16(byte[] data, int offset) => (ushort)(data[offset] | (data[offset + 1] << 8));

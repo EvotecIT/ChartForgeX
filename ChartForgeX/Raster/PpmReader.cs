@@ -20,7 +20,7 @@ internal static class PpmReader {
     }
 
     private static RgbaImage DecodeBinary(byte[] data, int offset, int width, int height, int maxValue) {
-        SkipSingleWhitespace(data, ref offset);
+        SkipBinaryHeaderSeparator(data, ref offset);
         var expected = checked(width * height * 3);
         if (offset + expected > data.Length) throw new InvalidDataException("PPM pixel data is shorter than expected.");
         var rgba = new byte[checked(width * height * 4)];
@@ -65,8 +65,14 @@ internal static class PpmReader {
         return value;
     }
 
-    private static void SkipSingleWhitespace(byte[] data, ref int offset) {
-        if (offset < data.Length && IsWhitespace(data[offset])) offset++;
+    private static void SkipBinaryHeaderSeparator(byte[] data, ref int offset) {
+        if (offset >= data.Length || !IsWhitespace(data[offset])) return;
+        if (data[offset] == 13 && offset + 1 < data.Length && data[offset + 1] == 10) {
+            offset += 2;
+            return;
+        }
+
+        offset++;
     }
 
     private static bool IsWhitespace(byte value) => value == 9 || value == 10 || value == 12 || value == 13 || value == 32;

@@ -498,7 +498,7 @@ public static partial class ChartExtensions {
     public static VisualCanvas AddImageBytes(this VisualCanvas canvas, double x, double y, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
         if (data == null) throw new ArgumentNullException(nameof(data));
         var image = RasterImageDecoder.Decode(data);
-        return AddRenderedImage(canvas, x, y, width, height, image, BinaryDataUri(data, RasterImageDecoder.MimeTypeFor(data)), fit, opacity);
+        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image, null), fit, opacity);
     }
 
     /// <summary>
@@ -517,7 +517,7 @@ public static partial class ChartExtensions {
         if (path == null) throw new ArgumentNullException(nameof(path));
         var data = File.ReadAllBytes(path);
         var image = RasterImageDecoder.Decode(data);
-        return AddRenderedImage(canvas, x, y, width, height, image, BinaryDataUri(data, RasterImageDecoder.MimeTypeFor(data, path)), fit, opacity);
+        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image, path), fit, opacity);
     }
 
     /// <summary>
@@ -626,6 +626,12 @@ public static partial class ChartExtensions {
     }
 
     private static string RasterDataUri(RgbaImage image) => BinaryDataUri(PngWriter.WriteRgba(image), "image/png");
+
+    private static string EmbeddedRasterDataUri(byte[] data, RgbaImage image, string? path) {
+        var mimeType = RasterImageDecoder.MimeTypeFor(data, path);
+        if (mimeType == "image/png" || mimeType == "image/jpeg") return BinaryDataUri(data, mimeType);
+        return RasterDataUri(image);
+    }
 
     private static string BinaryDataUri(byte[] data, string mimeType) => "data:" + mimeType + ";base64," + Convert.ToBase64String(data);
 }
