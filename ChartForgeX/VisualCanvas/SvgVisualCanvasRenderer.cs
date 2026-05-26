@@ -81,6 +81,8 @@ public sealed class SvgVisualCanvasRenderer {
             RenderText(writer, text);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
             RenderHeroTitle(writer, hero);
+        } else if (layer is VisualCanvasKeyValueBlockLayer keyValue) {
+            RenderKeyValueBlock(writer, keyValue, theme);
         } else if (layer is VisualCanvasInfoTileLayer tile) {
             RenderInfoTile(writer, tile, id, theme);
         } else if (layer is VisualCanvasHeroBadgeLayer badge) {
@@ -163,6 +165,45 @@ public sealed class SvgVisualCanvasRenderer {
             .Attribute("letter-spacing", "0")
             .EndStartElement();
         foreach (var run in hero.Runs) writer.StartElement("tspan").Attribute("fill", run.Color.ToCss()).Text(run.Text).EndElement();
+        writer.EndElement().Line();
+    }
+
+    private static void RenderKeyValueBlock(SvgMarkupWriter writer, VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
+        var layout = VisualCanvasKeyValueBlockLayout.Build(block);
+        var labelColor = block.LabelColorOverride ?? theme.TileLabelColor;
+        var valueColor = block.ValueColorOverride ?? theme.TileValueColor;
+        var fontFamily = string.IsNullOrWhiteSpace(block.FontFamilyName) ? "Segoe UI, Arial, sans-serif" : block.FontFamilyName;
+        writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-key-value-block").EndStartElement().Line();
+        foreach (var row in layout.Rows) {
+            writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-key-value-row").EndStartElement().Line();
+            writer.StartElement("text")
+                .Attribute("x", row.LabelX)
+                .Attribute("y", row.Y + block.LabelFontSize)
+                .Attribute("fill", (row.Item.LabelColor ?? labelColor).ToCss())
+                .Attribute("font-family", fontFamily)
+                .Attribute("font-size", block.LabelFontSize)
+                .Attribute("font-weight", block.LabelEmphasized ? "800" : "500")
+                .Text(row.LabelText)
+                .EndElement()
+                .Line();
+            if (!row.LabelOnly) {
+                for (var i = 0; i < row.ValueLines.Count; i++) {
+                    writer.StartElement("text")
+                        .Attribute("x", row.ValueX)
+                        .Attribute("y", row.Y + block.ValueFontSize + row.ValueLineHeight * i)
+                        .Attribute("fill", (row.Item.ValueColor ?? valueColor).ToCss())
+                        .Attribute("font-family", fontFamily)
+                        .Attribute("font-size", block.ValueFontSize)
+                        .Attribute("font-weight", block.ValueEmphasized ? "700" : "500")
+                        .Text(row.ValueLines[i])
+                        .EndElement()
+                        .Line();
+                }
+            }
+
+            writer.EndElement().Line();
+        }
+
         writer.EndElement().Line();
     }
 

@@ -372,6 +372,43 @@ public sealed class VisualCanvas {
         return AddHeroTitle(bounds.X, bounds.Y, bounds.Width, fontSize, runs, alignment);
     }
 
+    /// <summary>Adds a key/value text block with measured columns and wrapped values.</summary>
+    public VisualCanvas AddKeyValueBlock(double x, double y, double width, IEnumerable<VisualCanvasKeyValueItem> items, double labelFontSize = 16, double valueFontSize = 16, double columnGap = 24, double rowGap = 4, double? labelWidth = null, double? valueWrapWidth = null, ChartColor? labelColor = null, ChartColor? valueColor = null, string? fontFamilyName = null) {
+        var layer = new VisualCanvasKeyValueBlockLayer(x, y, width, 1, items) {
+            LabelFontSize = labelFontSize,
+            ValueFontSize = valueFontSize,
+            ColumnGap = columnGap,
+            RowGap = rowGap,
+            LabelWidth = labelWidth,
+            ValueWrapWidth = valueWrapWidth,
+            LabelColorOverride = labelColor,
+            ValueColorOverride = valueColor,
+            FontFamilyName = fontFamilyName ?? string.Empty
+        };
+        layer.Height = layer.MeasureHeight();
+        return AddLayer(layer);
+    }
+
+    /// <summary>Adds a key/value text block with measured columns and wrapped values using anchor-based placement.</summary>
+    public VisualCanvas AddKeyValueBlock(VisualCanvasPlacement placement, double width, IEnumerable<VisualCanvasKeyValueItem> items, double labelFontSize = 16, double valueFontSize = 16, double columnGap = 24, double rowGap = 4, double? labelWidth = null, double? valueWrapWidth = null, ChartColor? labelColor = null, ChartColor? valueColor = null, string? fontFamilyName = null) {
+        var layer = new VisualCanvasKeyValueBlockLayer(0, 0, width, 1, items) {
+            LabelFontSize = labelFontSize,
+            ValueFontSize = valueFontSize,
+            ColumnGap = columnGap,
+            RowGap = rowGap,
+            LabelWidth = labelWidth,
+            ValueWrapWidth = valueWrapWidth,
+            LabelColorOverride = labelColor,
+            ValueColorOverride = valueColor,
+            FontFamilyName = fontFamilyName ?? string.Empty
+        };
+        var bounds = ResolvePlacement(placement, width, layer.MeasureHeight());
+        layer.X = bounds.X;
+        layer.Y = bounds.Y;
+        layer.Height = bounds.Height;
+        return AddLayer(layer);
+    }
+
     /// <summary>Adds a reusable information tile.</summary>
     public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null) =>
         AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, AccentOverride = accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
@@ -474,6 +511,13 @@ public abstract class VisualCanvasLayer {
     /// <param name="parameterName">The parameter name used when throwing.</param>
     protected static void ValidatePositive(double value, string parameterName) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite and greater than zero.");
+    }
+
+    /// <summary>Validates that a numeric value is finite and not negative.</summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="parameterName">The parameter name used when throwing.</param>
+    protected static void ValidateNonNegative(double value, string parameterName) {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value < 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite and greater than or equal to zero.");
     }
 }
 

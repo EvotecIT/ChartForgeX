@@ -467,6 +467,69 @@ public static partial class ChartExtensions {
     public static void SavePng(this VisualCanvas canvas, string path) => File.WriteAllBytes(path, canvas.ToPng());
 
     /// <summary>
+    /// Creates a visual canvas from decoded RGBA pixels with the image as the first layer.
+    /// </summary>
+    public static VisualCanvas ToVisualCanvas(this RgbaImage image, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
+        VisualCanvas.ValidateEnum(fit, nameof(fit));
+        return VisualCanvas.Create(image.Width, image.Height)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddRasterImage(0, 0, image.Width, image.Height, image, fit);
+    }
+
+    /// <summary>
+    /// Adds decoded RGBA pixels as an image layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddRasterImage(this VisualCanvas canvas, double x, double y, double width, double height, RgbaImage image, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        return AddRenderedImage(canvas, x, y, width, height, image, RasterDataUri(image), fit, opacity);
+    }
+
+    /// <summary>
+    /// Adds decoded RGBA pixels as an image layer using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddRasterImage(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, RgbaImage image, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddRasterImage(bounds.X, bounds.Y, bounds.Width, bounds.Height, image, fit, opacity);
+    }
+
+    /// <summary>
+    /// Decodes image bytes and adds them as an image layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddImageBytes(this VisualCanvas canvas, double x, double y, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (data == null) throw new ArgumentNullException(nameof(data));
+        var image = RasterImageDecoder.Decode(data);
+        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image, null), fit, opacity);
+    }
+
+    /// <summary>
+    /// Decodes image bytes and adds them as an image layer using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddImageBytes(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddImageBytes(bounds.X, bounds.Y, bounds.Width, bounds.Height, data, fit, opacity);
+    }
+
+    /// <summary>
+    /// Decodes an image file and adds it as an image layer to a visual canvas.
+    /// </summary>
+    public static VisualCanvas AddImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+        var data = File.ReadAllBytes(path);
+        var image = RasterImageDecoder.Decode(data);
+        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image, path), fit, opacity);
+    }
+
+    /// <summary>
+    /// Decodes an image file and adds it as an image layer using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddImageFile(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, string path, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddImageFile(bounds.X, bounds.Y, bounds.Width, bounds.Height, path, fit, opacity);
+    }
+
+    /// <summary>
     /// Adds a rendered chart layer to a visual canvas.
     /// </summary>
     public static VisualCanvas AddChart(this VisualCanvas canvas, double x, double y, double width, double height, Chart chart, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
@@ -561,4 +624,14 @@ public static partial class ChartExtensions {
         if (svg == null) throw new ArgumentNullException(nameof(svg));
         return "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(svg);
     }
+
+    private static string RasterDataUri(RgbaImage image) => BinaryDataUri(PngWriter.WriteRgba(image), "image/png");
+
+    private static string EmbeddedRasterDataUri(byte[] data, RgbaImage image, string? path) {
+        var mimeType = RasterImageDecoder.MimeTypeFor(data, path);
+        if (mimeType == "image/png" || mimeType == "image/jpeg") return BinaryDataUri(data, mimeType);
+        return RasterDataUri(image);
+    }
+
+    private static string BinaryDataUri(byte[] data, string mimeType) => "data:" + mimeType + ";base64," + Convert.ToBase64String(data);
 }

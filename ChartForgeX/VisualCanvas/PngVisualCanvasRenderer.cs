@@ -32,6 +32,8 @@ public sealed class PngVisualCanvasRenderer {
             DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.Color, text.Alignment, text.Emphasized);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
             DrawHeroTitle(canvas, hero);
+        } else if (layer is VisualCanvasKeyValueBlockLayer keyValue) {
+            DrawKeyValueBlock(canvas, keyValue, theme);
         } else if (layer is VisualCanvasInfoTileLayer tile) {
             DrawInfoTile(canvas, tile, theme);
         } else if (layer is VisualCanvasHeroBadgeLayer badge) {
@@ -90,6 +92,25 @@ public sealed class PngVisualCanvasRenderer {
         foreach (var run in hero.Runs) {
             canvas.DrawTextEmphasized(x, hero.Y, run.Text, run.Color, hero.FontSize);
             x += RgbaCanvas.MeasureTextEmphasizedWidth(run.Text, hero.FontSize, null);
+        }
+    }
+
+    private static void DrawKeyValueBlock(RgbaCanvas canvas, VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
+        var layout = VisualCanvasKeyValueBlockLayout.Build(block);
+        var defaultLabel = block.LabelColorOverride ?? theme.TileLabelColor;
+        var defaultValue = block.ValueColorOverride ?? theme.TileValueColor;
+        foreach (var row in layout.Rows) {
+            var labelColor = row.Item.LabelColor ?? defaultLabel;
+            if (block.LabelEmphasized) canvas.DrawTextEmphasized(row.LabelX, row.Y, row.LabelText, labelColor, block.LabelFontSize);
+            else canvas.DrawText(row.LabelX, row.Y, row.LabelText, labelColor, block.LabelFontSize);
+            if (row.LabelOnly) continue;
+
+            var valueColor = row.Item.ValueColor ?? defaultValue;
+            for (var i = 0; i < row.ValueLines.Count; i++) {
+                var lineY = row.Y + row.ValueLineHeight * i;
+                if (block.ValueEmphasized) canvas.DrawTextEmphasized(row.ValueX, lineY, row.ValueLines[i], valueColor, block.ValueFontSize);
+                else canvas.DrawText(row.ValueX, lineY, row.ValueLines[i], valueColor, block.ValueFontSize);
+            }
         }
     }
 
