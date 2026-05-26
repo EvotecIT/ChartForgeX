@@ -424,18 +424,6 @@ internal static partial class SmokeTests {
         theme.Palette = palette;
         palette[0] = ChartColor.White;
         Assert(theme.Palette[0].R == ChartColor.Black.R && theme.Palette[0].G == ChartColor.Black.G && theme.Palette[0].B == ChartColor.Black.B, "Themes should snapshot assigned palettes instead of retaining caller-owned arrays.");
-        Assert(ChartColors.Emerald400.WithAlpha(172).A == 172, "Named chart colors should support explicit alpha values.");
-        Assert(ChartColors.Emerald400.WithOpacity(0.5).A == 128, "Named chart colors should support opacity helpers.");
-        Assert(ChartColors.Emerald400.WithAlpha(172).ToHexRgba() == "#34D399AC", "Named chart colors should round-trip to RGBA hex.");
-        Assert(ChartColors.GetNamedColors().Count >= 142, "ChartForgeX should expose the stable System.Drawing/CSS named color set.");
-        Assert(ChartColors.TryGet("RebeccaPurple", out var rebecca) && rebecca.ToHex() == "#663399", "Named color lookup should include modern CSS colors.");
-        Assert(ChartColor.Parse("DarkSlateGrey").ToHex() == ChartColors.DarkSlateGray.ToHex(), "Named color parsing should support grey aliases.");
-        Assert(ChartColors.TryGet("Slate950", out var slate) && slate.ToHex() == ChartColors.Slate950.ToHex(), "Named color lookup should include ChartForgeX design tokens.");
-        Assert(ChartColor.Parse("emerald400").ToHex() == ChartColors.Emerald400.ToHex(), "Named color parsing should support ChartForgeX design tokens.");
-        Assert(ChartColors.GetTokenColors().Count >= 29, "ChartForgeX should expose its design token color set.");
-        var tokenPalette = ChartPalettes.FromHex("Slate950", "Blue400", "Emerald400");
-        Assert(tokenPalette[0].ToHex() == ChartColors.Slate950.ToHex() && tokenPalette[2].ToHex() == ChartColors.Emerald400.ToHex(), "Palette parsing should accept ChartForgeX design token names.");
-        Assert(ChartColor.Parse("#34D399").ToHex() == ChartColors.Emerald400.ToHex(), "Color parsing should keep hex support.");
         var pastel = ChartPalettes.Pastel;
         pastel[0] = ChartColor.Black;
         Assert(ChartPalettes.Pastel[0].R != ChartColor.Black.R || ChartPalettes.Pastel[0].G != ChartColor.Black.G || ChartPalettes.Pastel[0].B != ChartColor.Black.B, "Palette presets should return fresh arrays so callers can mutate local copies safely.");

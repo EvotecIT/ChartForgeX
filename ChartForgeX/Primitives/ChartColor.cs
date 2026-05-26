@@ -46,6 +46,30 @@ public readonly struct ChartColor {
     public static ChartColor FromRgb(byte r, byte g, byte b) => new(r, g, b, 255);
 
     /// <summary>
+    /// Creates a color from explicit alpha, red, green, and blue channels.
+    /// </summary>
+    /// <param name="a">The alpha channel.</param>
+    /// <param name="r">The red channel.</param>
+    /// <param name="g">The green channel.</param>
+    /// <param name="b">The blue channel.</param>
+    /// <returns>A chart color.</returns>
+    public static ChartColor FromArgb(byte a, byte r, byte g, byte b) => new(r, g, b, a);
+
+    /// <summary>
+    /// Creates a color from a packed 0xAARRGGBB value.
+    /// </summary>
+    /// <param name="argb">The packed ARGB color.</param>
+    /// <returns>A chart color.</returns>
+    public static ChartColor FromArgb(uint argb) => new((byte)(argb >> 16), (byte)(argb >> 8), (byte)argb, (byte)(argb >> 24));
+
+    /// <summary>
+    /// Creates a color from a packed 0xAARRGGBB value.
+    /// </summary>
+    /// <param name="argb">The packed ARGB color.</param>
+    /// <returns>A chart color.</returns>
+    public static ChartColor FromArgb(int argb) => FromArgb(unchecked((uint)argb));
+
+    /// <summary>
     /// Creates a color with an explicit alpha channel.
     /// </summary>
     /// <param name="r">The red channel.</param>
@@ -54,6 +78,13 @@ public readonly struct ChartColor {
     /// <param name="a">The alpha channel.</param>
     /// <returns>A chart color.</returns>
     public static ChartColor FromRgba(byte r, byte g, byte b, byte a) => new(r, g, b, a);
+
+    /// <summary>
+    /// Creates a color from a packed 0xRRGGBBAA value.
+    /// </summary>
+    /// <param name="rgba">The packed RGBA color.</param>
+    /// <returns>A chart color.</returns>
+    public static ChartColor FromRgba(uint rgba) => new((byte)(rgba >> 24), (byte)(rgba >> 16), (byte)(rgba >> 8), (byte)rgba);
 
     /// <summary>
     /// Creates a copy of this color with a different alpha channel.
@@ -101,6 +132,23 @@ public readonly struct ChartColor {
     }
 
     /// <summary>
+    /// Attempts to create a color from #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.
+    /// </summary>
+    /// <param name="hex">The hexadecimal color string.</param>
+    /// <param name="color">The parsed chart color.</param>
+    /// <returns>True when parsing succeeds.</returns>
+    public static bool TryFromHex(string? hex, out ChartColor color) {
+        color = default;
+        if (string.IsNullOrWhiteSpace(hex)) return false;
+        try {
+            color = FromHex(hex!);
+            return true;
+        } catch (ArgumentException) {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Parses a named color or a hexadecimal color string.
     /// </summary>
     /// <param name="value">The named color or hexadecimal color string.</param>
@@ -140,6 +188,38 @@ public readonly struct ChartColor {
     /// </summary>
     /// <returns>A CSS-compatible hexadecimal color string with alpha.</returns>
     public string ToHexRgba() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";
+
+    /// <summary>
+    /// Converts the color to a packed 0xAARRGGBB value.
+    /// </summary>
+    /// <returns>The packed ARGB color.</returns>
+    public uint ToArgb() => ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | B;
+
+    /// <summary>
+    /// Converts the color to a packed 0xAARRGGBB signed integer.
+    /// </summary>
+    /// <returns>The packed ARGB color as a signed integer.</returns>
+    public int ToArgbInt32() => unchecked((int)ToArgb());
+
+    /// <summary>
+    /// Converts the color to a packed 0xRRGGBBAA value.
+    /// </summary>
+    /// <returns>The packed RGBA color.</returns>
+    public uint ToRgba() => ((uint)R << 24) | ((uint)G << 16) | ((uint)B << 8) | A;
+
+    /// <summary>
+    /// Deconstructs the color into red, green, blue, and alpha channels.
+    /// </summary>
+    /// <param name="r">The red channel.</param>
+    /// <param name="g">The green channel.</param>
+    /// <param name="b">The blue channel.</param>
+    /// <param name="a">The alpha channel.</param>
+    public void Deconstruct(out byte r, out byte g, out byte b, out byte a) {
+        r = R;
+        g = G;
+        b = B;
+        a = A;
+    }
 
     /// <summary>
     /// Converts the color to a CSS color string.
