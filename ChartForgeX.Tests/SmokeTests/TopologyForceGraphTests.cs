@@ -81,6 +81,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("queryNodes.add(attr(edge, 'data-source-node-id'))", StringComparison.Ordinal), "Force graph search should surface endpoints for matching edge terms.");
         Assert(html.Contains("if (!state.focus || !state.edges) {", StringComparison.Ordinal), "Force graph focus toggles should clear stale focus labels when disabled.");
         Assert(html.Contains("statusNodes.add(attr(edge, 'data-source-node-id'))", StringComparison.Ordinal), "Force graph status filters should surface endpoints for matching edge statuses.");
+        Assert(html.Contains("const edgeQueryOk = !query || forceSearchText(edge).includes(query)", StringComparison.Ordinal), "Force graph search filters should not reveal unrelated parallel edges between matching endpoints.");
+        Assert(html.Contains("const edgeStatusOk = !state.status || attr(edge, 'data-cfx-status') === state.status", StringComparison.Ordinal), "Force graph status filters should not reveal unrelated parallel edges between matching endpoints.");
         Assert(html.Contains("const hasVisibleNodes = !!wrapper.querySelector", StringComparison.Ordinal), "Force graph group shells should disappear when filtering leaves them empty.");
         Assert(html.Contains("style.setAttribute('data-cfx-export-style', 'force-filters')", StringComparison.Ordinal), "Force graph exports should serialize filter hiding styles into the SVG.");
     }

@@ -305,7 +305,17 @@ public sealed partial class TopologyHtmlRenderer
         wrapper.querySelectorAll('[data-cfx-role="topology-node-status"][data-node-id="' + cssEscape(attr(node, 'data-node-id')) + '"]').forEach(status => status.classList.toggle('cfx-topology-html-force-hidden', !visible));
         if (visible) visibleNodes.add(attr(node, 'data-node-id'));
       });
-      setForceHidden('[data-cfx-role="topology-edge"]', edge => !state.edges || !visibleNodes.has(attr(edge, 'data-source-node-id')) || !visibleNodes.has(attr(edge, 'data-target-node-id')));
+      const nodeById = id => wrapper.querySelector('[data-cfx-role="topology-node"][data-node-id="' + cssEscape(id) + '"]');
+      setForceHidden('[data-cfx-role="topology-edge"]', edge => {
+        const sourceId = attr(edge, 'data-source-node-id');
+        const targetId = attr(edge, 'data-target-node-id');
+        const source = nodeById(sourceId);
+        const target = nodeById(targetId);
+        const endpointsVisible = visibleNodes.has(sourceId) && visibleNodes.has(targetId);
+        const edgeQueryOk = !query || forceSearchText(edge).includes(query) || (source && forceSearchText(source).includes(query)) || (target && forceSearchText(target).includes(query));
+        const edgeStatusOk = !state.status || attr(edge, 'data-cfx-status') === state.status || (source && attr(source, 'data-cfx-status') === state.status) || (target && attr(target, 'data-cfx-status') === state.status);
+        return !state.edges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
+      });
       setForceHidden('[data-cfx-role="topology-edge-label"]', label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
       setForceHidden('[data-cfx-role="topology-group"]', group => {
         const groupId = attr(group, 'data-group-id');
