@@ -160,8 +160,12 @@ public static partial class GalleryWriter {
             "service-dependency-critical-dependencies-view"),
         new(
             "Topology Interactive Demos",
-            "Topology-first HTML demos for route scenarios, step playback, scoped deep links, and host dashboard events.",
+            "Topology-first HTML demos for route scenarios, graph exploration, scoped deep links, and host dashboard events.",
             "topology-demo",
+            "visual-force-relationship-graph",
+            "visual-force-busy-relationship-graph",
+            "visual-relationship-radial-ego-graph",
+            "visual-relationship-radial-500-ego-graph",
             "visual-replication-mesh-explorer"),
         new(
             "Relationship Diagrams",

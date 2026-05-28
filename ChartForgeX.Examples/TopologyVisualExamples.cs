@@ -35,6 +35,10 @@ internal static partial class TopologyVisualExamples {
         var denseHierarchyOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
             .WithMonitoringDashboardStyle()
             .WithFitContentToViewport();
+        var forceGraphOptions = new TopologyRenderOptions { IncludeLegend = true }
+            .WithForceGraphStyle()
+            .WithHtmlForceGraphControls()
+            .WithFitContentToViewport();
         var topologyExplorerOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
             .WithMonitoringDashboardStyle()
             .WithSelectedGroup("APAC")
@@ -73,6 +77,21 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-reusable-regional-topology", BuildReusableRegionalTopology(), "Reusable Regional Topology", "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, scenario switching, and offender highlighting support.", meshOptions);
         SaveTopology(target, artifacts, "visual-replication-mesh-route-motion", BuildReplicationMeshExplorer(), "Replication Mesh Route Motion", "Script-free SVG route pulse plus sampled animated GIF and APNG exports for a scenario-driven topology route.", meshMotionOptions);
+        SaveTopology(target, artifacts, "visual-force-relationship-graph", BuildForceRelationshipGraph(), "Force Relationship Graph", "Moderately dense force-directed relationship graph with low-ink SVG/PNG defaults, HTML search, status/group filtering, zoom, pan, and on-demand edge labels.", forceGraphOptions);
+        SaveTopology(target, artifacts, "visual-force-busy-relationship-graph", BuildBusyForceRelationshipGraph(), "Busy Force Relationship Graph", "Busy force-directed relationship graph using degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", forceGraphOptions);
+        var relationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
+            .WithForceGraphStyle()
+            .WithHtmlForceGraphControls()
+            .WithRelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9)
+            .WithFitContentToViewport();
+        relationshipRadialOptions.IncludeEdgeLabels = true;
+        SaveTopology(target, artifacts, "visual-relationship-radial-ego-graph", BuildRelationshipRadialEgoGraph(), "Relationship Radial Ego Graph", "Selected application relationship graph with the root in the center, direct conversations around it, second-hop conversations farther out, and capped expansion for large networks.", relationshipRadialOptions);
+        var largeRelationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false }
+            .WithForceGraphStyle()
+            .WithHtmlForceGraphControls()
+            .WithRelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40)
+            .WithFitContentToViewport();
+        SaveTopology(target, artifacts, "visual-relationship-radial-500-ego-graph", BuildLargeRelationshipRadialEgoGraph(), "Relationship Radial 500 Ego Graph", "Large 500-node relationship ego graph: all nodes remain present as dots, first-hop conversations spread around the root, second-hop conversations fan out farther, and HTML focus reveals labels on demand.", largeRelationshipRadialOptions);
         SaveTopology(target, artifacts, "visual-subnets-site-links-map", BuildSubnetsSiteLinksMap(), "Subnets and Site Links Map", "Subnet-to-site mapping topology with overlapping/orphan subnet states, bridgehead mapping, site links, and route labels.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-dc-connectivity-map", BuildDcConnectivityMap(), "Domain Controller Connectivity", "Selected-object connectivity topology for domain controllers, connection objects, service checks, and partner health.");
         SaveTopology(target, artifacts, "visual-ad-sites-hierarchy", BuildAdSitesHierarchy(), "AD Sites Hierarchy", "Hierarchy-style site map with hubs, branches, bridgeheads, primary and backup links.", tileSubtitleOptions);

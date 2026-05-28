@@ -18,6 +18,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--force-graph-only")) {
+            TopologyVisualExamples.WriteForceGraph(output);
+            Console.WriteLine("Generated force graph files in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--dashboard-patterns-only")) {
             DashboardPatternExamples.Write(output, pngOutputScale);
             GalleryWriter.Write(output);

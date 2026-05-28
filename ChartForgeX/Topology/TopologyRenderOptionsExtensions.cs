@@ -161,6 +161,71 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Applies a readable force-graph treatment for relationship-heavy topology clouds.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithForceGraphStyle(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.WithMonitoringDashboardStyle();
+        options.UseForceGraphPresentation = true;
+        options.ForceLayoutProfile = TopologyForceLayoutProfile.RelationshipGraph;
+        options.NodeDisplayMode = TopologyNodeDisplayMode.Dot;
+        options.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Panel;
+        options.GroupSurfaceStyle = TopologyGroupSurfaceStyle.Neutral;
+        options.IncludeEdgeLabels = false;
+        options.IncludeEdgeLabelBackplates = false;
+        options.IncludeEdgeLabelLeaders = false;
+        options.IncludeDirectionMarkers = false;
+        options.IncludeGroups = false;
+        options.IncludeGroupLabels = false;
+        options.IncludeLegend = false;
+        options.IncludeNodeLabels = false;
+        options.IncludeIconLabels = false;
+        options.IncludeTileSubtitles = false;
+        options.IncludeStatusBadges = false;
+        options.LegendMode = TopologyLegendMode.Merge;
+        options.EdgeVisualStyle = ChartLineVisualStyle.Plain();
+        return options;
+    }
+
+    /// <summary>
+    /// Selects a deterministic force-directed solver profile.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="profile">The force layout profile.</param>
+    /// <param name="iterations">Optional solver iteration override.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithForceLayout(this TopologyRenderOptions options, TopologyForceLayoutProfile profile, int? iterations = null) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        TopologyModelGuards.EnumDefined(profile, nameof(profile));
+        if (iterations.HasValue && iterations.Value < 1) throw new ArgumentOutOfRangeException(nameof(iterations), "Force layout iterations must be greater than zero.");
+        options.ForceLayoutProfile = profile;
+        options.ForceLayoutIterations = iterations;
+        return options;
+    }
+
+    /// <summary>
+    /// Selects the root and caps used by relationship-radial ego layouts.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="nodeId">The root node id.</param>
+    /// <param name="maxDepth">The maximum number of relationship hops to expand.</param>
+    /// <param name="maxFanout">The maximum neighbor count expanded per node.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithRelationshipRadialFocus(this TopologyRenderOptions options, string nodeId, int maxDepth = 2, int maxFanout = 18) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (string.IsNullOrWhiteSpace(nodeId)) throw new ArgumentException("Relationship radial root node id cannot be empty.", nameof(nodeId));
+        if (maxDepth < 1) throw new ArgumentOutOfRangeException(nameof(maxDepth), "Relationship radial depth must be greater than zero.");
+        if (maxFanout < 1) throw new ArgumentOutOfRangeException(nameof(maxFanout), "Relationship radial fanout must be greater than zero.");
+        options.RelationshipRootNodeId = nodeId;
+        options.RelationshipRadialMaxDepth = maxDepth;
+        options.RelationshipRadialMaxFanout = maxFanout;
+        if (!options.SelectedNodeIds.Contains(nodeId)) options.SelectedNodeIds.Add(nodeId);
+        return options;
+    }
+
+    /// <summary>
     /// Renders group containers as neutral cards while preserving status/identity borders and labels.
     /// </summary>
     /// <param name="options">The render options.</param>
@@ -282,6 +347,23 @@ public static class TopologyRenderOptionsExtensions {
     public static TopologyRenderOptions WithHtmlScenarioUrlState(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.EnableHtmlScenarioUrlState = enabled;
+        return options;
+    }
+
+    /// <summary>
+    /// Enables or disables force-directed graph exploration controls in interactive HTML output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render graph exploration controls.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlForceGraphControls(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlForceGraphControls = enabled;
+        if (enabled) {
+            options.EnableHtmlInteractions = true;
+            options.EnableHtmlViewportControls = true;
+        }
+
         return options;
     }
 

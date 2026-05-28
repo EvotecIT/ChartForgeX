@@ -21,7 +21,19 @@ public enum TopologyLayoutMode {
     /// <summary>Project nodes and groups from longitude/latitude coordinates into the topology viewport.</summary>
     Geographic = 6,
     /// <summary>Place connected nodes with a deterministic force-directed simulation using repulsion, link attraction, and group gravity.</summary>
-    ForceDirected = 7
+    ForceDirected = 7,
+    /// <summary>Place a selected/root relationship as a radial ego graph with first-hop and second-hop conversations on expanding rings.</summary>
+    RelationshipRadial = 8
+}
+
+/// <summary>
+/// Defines deterministic force-directed solver profiles.
+/// </summary>
+public enum TopologyForceLayoutProfile {
+    /// <summary>Use the balanced solver profile suitable for mixed topology diagrams.</summary>
+    Balanced,
+    /// <summary>Use a looser graph-exploration profile for dense relationship clouds.</summary>
+    RelationshipGraph
 }
 
 /// <summary>

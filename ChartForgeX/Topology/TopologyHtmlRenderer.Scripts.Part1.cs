@@ -10,14 +10,17 @@ public sealed partial class TopologyHtmlRenderer
     const viewportControls = wrapper.getAttribute('data-cfx-viewport-controls') === 'true';
     const exportControls = wrapper.getAttribute('data-cfx-export-controls') === 'true';
     const scenarioControls = wrapper.getAttribute('data-cfx-scenario-controls') === 'true';
+    const forceGraphControls = wrapper.getAttribute('data-cfx-force-graph-controls') === 'true';
     const scenarioUrlState = wrapper.getAttribute('data-cfx-scenario-url-state') === 'true';
     const scenarioPanel = wrapper.querySelector('[data-cfx-topology-scenario-panel]');
+    const forceGraphPanel = wrapper.querySelector('[data-cfx-force-graph-panel]');
     const syncEnabled = wrapper.getAttribute('data-cfx-sync-enabled') === 'true';
     const syncGroup = wrapper.getAttribute('data-cfx-sync-group') || '';
     const viewport = wrapper.querySelector('.cfx-topology-viewport') || wrapper;
     const topologyRoot = wrapper.querySelector('[data-cfx-role="topology"]');
     let applyingSync = false;
     let scenarioPlayback = null;
+    let forceGraphMotionTimer = null;
     const scenarioUrlKey = name => {
       const chartId = attr(wrapper, 'data-chart-id').replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
       return 'cfx-' + chartId + '-' + name;
@@ -282,8 +285,19 @@ public sealed partial class TopologyHtmlRenderer
     };
     const zoomBy = factor => {
       const state = viewportState();
+      markForceGraphMoving();
       applyViewport({ zoom: state.zoom * factor, panX: state.panX, panY: state.panY });
       emitViewport();
+    };
+    const markForceGraphMoving = () => {
+      if (!forceGraphControls || wrapper.getAttribute('data-cfx-force-hide-moving-edges') !== 'true') return;
+      wrapper.setAttribute('data-cfx-force-moving-edges', 'true');
+      wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => edge.classList.add('cfx-topology-html-force-moving'));
+      if (forceGraphMotionTimer) window.clearTimeout(forceGraphMotionTimer);
+      forceGraphMotionTimer = window.setTimeout(() => {
+        wrapper.removeAttribute('data-cfx-force-moving-edges');
+        wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
+      }, 280);
     };
     const resetViewport = () => {
       applyViewport({ zoom: 1, panX: 0, panY: 0 });

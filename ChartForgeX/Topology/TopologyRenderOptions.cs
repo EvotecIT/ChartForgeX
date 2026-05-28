@@ -96,6 +96,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether interactive HTML pages should include lightweight SVG and PNG export controls.</summary>
     public bool EnableHtmlExportControls { get; set; }
 
+    /// <summary>Gets or sets whether force-directed HTML pages should include graph exploration controls.</summary>
+    public bool EnableHtmlForceGraphControls { get; set; }
+
     /// <summary>Gets or sets whether interactive HTML pages should synchronize selection and viewport state with wrappers in the same sync group.</summary>
     public bool EnableHtmlSynchronizedState { get; set; }
 
@@ -152,6 +155,24 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets the reusable visual treatment used by renderers.</summary>
     public TopologyVisualStyle VisualStyle { get; set; } = TopologyVisualStyle.Default;
+
+    /// <summary>Gets or sets whether renderers should use force-graph presentation defaults for dense relationship clouds.</summary>
+    public bool UseForceGraphPresentation { get; set; }
+
+    /// <summary>Gets or sets the deterministic force-directed solver profile.</summary>
+    public TopologyForceLayoutProfile ForceLayoutProfile { get; set; } = TopologyForceLayoutProfile.Balanced;
+
+    /// <summary>Gets or sets an optional force-directed solver iteration override.</summary>
+    public int? ForceLayoutIterations { get; set; }
+
+    /// <summary>Gets or sets an optional root node id for relationship-radial layouts.</summary>
+    public string? RelationshipRootNodeId { get; set; }
+
+    /// <summary>Gets or sets the maximum relationship depth for relationship-radial layouts.</summary>
+    public int RelationshipRadialMaxDepth { get; set; } = 2;
+
+    /// <summary>Gets or sets the maximum fanout expanded from each node in relationship-radial layouts.</summary>
+    public int RelationshipRadialMaxFanout { get; set; } = 18;
 
     /// <summary>Gets or sets the geographic map background treatment.</summary>
     public TopologyMapBackgroundStyle MapBackgroundStyle { get; set; } = TopologyMapBackgroundStyle.Auto;

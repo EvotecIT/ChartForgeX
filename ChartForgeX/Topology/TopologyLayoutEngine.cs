@@ -33,7 +33,10 @@ internal static partial class TopologyLayoutEngine {
                 ApplyDenseGrouped(copy);
                 break;
             case TopologyLayoutMode.ForceDirected:
-                ApplyForceDirected(copy);
+                ApplyForceDirected(copy, options);
+                break;
+            case TopologyLayoutMode.RelationshipRadial:
+                ApplyRelationshipRadial(copy, options);
                 break;
             case TopologyLayoutMode.Geographic:
                 ApplyGeographic(copy);

@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using ChartForgeX.Html;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
@@ -30,9 +31,12 @@ public sealed partial class TopologyHtmlRenderer {
         var controlsClass = cssPrefix + "-controls";
         var scenariosClass = cssPrefix + "-scenarios";
         var scenarioPanelClass = cssPrefix + "-scenario-panel";
+        var forceControlsClass = cssPrefix + "-force-controls";
         var enableViewportControls = options.EnableHtmlInteractions && options.EnableHtmlViewportControls;
         var enableExportControls = options.EnableHtmlInteractions && options.EnableHtmlExportControls;
         var enableScenarioInteractions = options.EnableHtmlInteractions && chart.Scenarios.Count > 0;
+        var isGraphExplorationLayout = chart.LayoutMode == TopologyLayoutMode.ForceDirected || chart.LayoutMode == TopologyLayoutMode.RelationshipRadial;
+        var enableForceGraphControls = options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls && isGraphExplorationLayout;
         var renderScenarioControls = enableScenarioInteractions && options.EnableHtmlScenarioControls;
         var enableScenarioPanel = enableScenarioInteractions && options.EnableHtmlScenarioPanel;
         var enableScenarioUrlState = enableScenarioInteractions && options.EnableHtmlScenarioUrlState;
@@ -48,6 +52,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-viewport-controls", enableViewportControls)
             .Attribute("data-cfx-export-controls", enableExportControls)
             .Attribute("data-cfx-scenario-controls", enableScenarioInteractions)
+            .Attribute("data-cfx-force-graph-controls", enableForceGraphControls)
             .Attribute("data-cfx-scenario-panel", enableScenarioPanel)
             .Attribute("data-cfx-scenario-url-state", enableScenarioUrlState)
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
@@ -57,6 +62,7 @@ public sealed partial class TopologyHtmlRenderer {
             .EndStartElement();
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState);
+        if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, chart, options);
         writer.StartElement("div").Attribute("class", viewportClass).EndStartElement();
         if (enableViewportControls || enableExportControls) {
             writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", "Topology controls").EndStartElement();
@@ -75,19 +81,22 @@ public sealed partial class TopologyHtmlRenderer {
             writer.EndElement();
         }
 
-        writer.RawTrusted(RenderEmbeddedSvg(chart, options, enableScenarioInteractions));
+        writer.RawTrusted(RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
         writer.EndElement().EndElement();
         return writer.Build();
     }
 
-    private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls) {
-        if (!interactiveScenarioControls) return _svg.Render(chart, options);
+    private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
+        if (!interactiveScenarioControls && !forceGraphControls) return _svg.Render(chart, options);
         var activeScenarioId = options.ActiveScenarioId;
+        var includeEdgeLabels = options.IncludeEdgeLabels;
         try {
-            options.ActiveScenarioId = null;
+            if (interactiveScenarioControls) options.ActiveScenarioId = null;
+            if (forceGraphControls) options.IncludeEdgeLabels = true;
             return _svg.Render(chart, options);
         } finally {
             options.ActiveScenarioId = activeScenarioId;
+            options.IncludeEdgeLabels = includeEdgeLabels;
         }
     }
 
@@ -129,6 +138,59 @@ public sealed partial class TopologyHtmlRenderer {
             .EndElement();
     }
 
+    private static void WriteForceGraphControls(HtmlMarkupWriter writer, string className, TopologyChart chart, TopologyRenderOptions options) {
+        writer.StartElement("div")
+            .Attribute("class", className)
+            .Attribute("data-cfx-force-graph-panel", "true")
+            .Attribute("aria-label", "Force graph controls")
+            .EndStartElement();
+        writer.StartElement("div").Attribute("class", className + "__row").EndStartElement();
+        writer.StartElement("input")
+            .Attribute("type", "search")
+            .Attribute("data-cfx-force-search", "true")
+            .Attribute("placeholder", "Find node, edge, group")
+            .Attribute("aria-label", "Find node, edge, or group")
+            .EndVoidElement();
+        WriteForceSelect(writer, "data-cfx-force-status", "Status", new[] { "All", "Healthy", "Warning", "Critical", "Unknown", "Disabled" });
+        WriteGroupSelect(writer, chart);
+        writer.EndElement();
+        writer.StartElement("div").Attribute("class", className + "__toggles").EndStartElement();
+        WriteToggle(writer, "data-cfx-force-toggle", "edges", "Edges", true);
+        WriteToggle(writer, "data-cfx-force-toggle", "focus", "Focus", true);
+        WriteToggle(writer, "data-cfx-force-toggle", "edge-labels", "Labels", options.IncludeEdgeLabels);
+        WriteToggle(writer, "data-cfx-force-toggle", "groups", "Groups", options.IncludeGroups);
+        WriteToggle(writer, "data-cfx-force-toggle", "hide-moving-edges", "Quiet pan", true);
+        writer.EndElement();
+        writer.StartElement("output").Attribute("data-cfx-force-summary", "true").EndStartElement().Text("Graph ready").EndElement();
+        writer.EndElement();
+    }
+
+    private static void WriteForceSelect(HtmlMarkupWriter writer, string dataAttribute, string ariaLabel, string[] values) {
+        writer.StartElement("select").Attribute(dataAttribute, "true").Attribute("aria-label", ariaLabel).EndStartElement();
+        foreach (var value in values) writer.StartElement("option").Attribute("value", value == "All" ? string.Empty : value).EndStartElement().Text(value).EndElement();
+        writer.EndElement();
+    }
+
+    private static void WriteGroupSelect(HtmlMarkupWriter writer, TopologyChart chart) {
+        writer.StartElement("select").Attribute("data-cfx-force-group", "true").Attribute("aria-label", "Group").EndStartElement();
+        writer.StartElement("option").Attribute("value", string.Empty).EndStartElement().Text("All groups").EndElement();
+        foreach (var group in chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).OrderBy(group => group.Label, StringComparer.OrdinalIgnoreCase)) {
+            writer.StartElement("option").Attribute("value", group.Id).EndStartElement().Text(string.IsNullOrWhiteSpace(group.Label) ? group.Id : group.Label).EndElement();
+        }
+
+        writer.EndElement();
+    }
+
+    private static void WriteToggle(HtmlMarkupWriter writer, string dataAttribute, string dataValue, string text, bool isChecked) {
+        writer.StartElement("label").EndStartElement();
+        writer.StartElement("input")
+            .Attribute("type", "checkbox")
+            .Attribute(dataAttribute, dataValue)
+            .Attribute("checked", isChecked ? "checked" : null)
+            .EndVoidElement();
+        writer.Text(text).EndElement();
+    }
+
     private static string StyleSheet(string cssPrefix, string fontFamily, string background) {
         var stylesheet = new StringBuilder()
             .Append(HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "24px"))
@@ -163,6 +225,18 @@ public sealed partial class TopologyHtmlRenderer {
             .Append(";color:#0f172a}")
             .Append(".cfx-topology-scenario-panel__steps li:before{content:attr(data-cfx-scenario-step-index);display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--cfx-topology-scenario-color,#2563eb);color:#fff;font-size:10px}")
             .Append(".cfx-topology-scenario-panel__steps li[aria-current='step']{border-color:var(--cfx-topology-scenario-color,#2563eb);background:#eff6ff;color:#0f172a}")
+            .Append(".cfx-topology-force-controls{display:grid;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(148,163,184,.42);border-radius:8px;background:rgba(255,255,255,.9);box-shadow:0 10px 24px rgba(15,23,42,.07);color:#0f172a}")
+            .Append(".cfx-topology-force-controls__row{display:grid;grid-template-columns:minmax(180px,1fr) minmax(118px,.25fr) minmax(140px,.35fr);gap:8px}")
+            .Append(".cfx-topology-force-controls input[type='search'],.cfx-topology-force-controls select{min-width:0;height:32px;border:1px solid rgba(148,163,184,.48);border-radius:6px;background:#fff;color:#0f172a;padding:0 9px;font:600 12px/1 ")
+            .Append(fontFamily)
+            .Append("}")
+            .Append(".cfx-topology-force-controls__toggles{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}")
+            .Append(".cfx-topology-force-controls label{display:inline-flex;gap:6px;align-items:center;font:700 11px/1 ")
+            .Append(fontFamily)
+            .Append(";color:#334155}")
+            .Append(".cfx-topology-force-controls output{font:600 11px/1.35 ")
+            .Append(fontFamily)
+            .Append(";color:#64748b}")
             .Append(".cfx-topology-controls button:hover,.cfx-topology-controls button:focus-visible,.cfx-topology-controls button[aria-pressed='true'],.cfx-topology-scenarios button:hover,.cfx-topology-scenarios button:focus-visible,.cfx-topology-scenarios button[aria-pressed='true']{border-color:var(--cfx-topology-scenario-color,#2563eb);color:#0f172a;background:#eff6ff}")
             .Append(".cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport{cursor:grab}")
             .Append(".cfx-topology-wrapper[data-cfx-topology-mode='pan'] .cfx-topology-viewport:active{cursor:grabbing}")
@@ -185,6 +259,14 @@ public sealed partial class TopologyHtmlRenderer {
             .Append(".cfx-topology-wrapper .cfx-topology-html-scenario-step-active{opacity:1;filter:drop-shadow(0 10px 18px rgba(15,23,42,.2))}")
             .Append(".cfx-topology-wrapper .cfx-topology-html-scenario-step-active .cfx-topology__edge{stroke-width:6!important}")
             .Append(".cfx-topology-wrapper .cfx-topology-html-scenario-step-active .cfx-topology__node-card{stroke-width:3!important}")
+            .Append(".cfx-topology-wrapper .cfx-topology-html-force-hidden{display:none!important}")
+            .Append(".cfx-topology-wrapper .cfx-topology-html-force-faded{opacity:.12!important}")
+            .Append(".cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-muted,.cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-hover-muted{opacity:.06!important}")
+            .Append(".cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-related .cfx-topology__edge,.cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-hover-related .cfx-topology__edge{opacity:.92!important;stroke-width:3.2!important}")
+            .Append(".cfx-topology-wrapper[data-cfx-force-focus='true'] [data-cfx-role='topology-edge-label'].cfx-topology-html-force-focus-label{display:block!important;opacity:1!important}")
+            .Append(".cfx-topology-wrapper[data-cfx-force-moving-edges='true'] .cfx-topology-html-force-moving .cfx-topology__edge,.cfx-topology-wrapper[data-cfx-force-moving-edges='true'] .cfx-topology-html-force-moving .cfx-topology__edge--premium-layer{opacity:.08!important}")
+            .Append(".cfx-topology-wrapper[data-cfx-force-moving-edges='true'] [data-cfx-role='topology-edge-label']{display:none!important}")
+            .Append("@media (max-width:720px){.cfx-topology-force-controls__row{grid-template-columns:1fr}.cfx-topology-force-controls{padding:9px}}")
             .Append(HtmlSurfacePolish.ResponsiveCenteredBodyCss)
             .Append(HtmlSurfacePolish.PrintBodyCss("0", ".cfx-topology-wrapper{width:100%;max-width:none}.cfx-topology-wrapper svg{width:100%;height:auto}.cfx-topology-scenarios,.cfx-topology-scenario-panel{display:none}"))
             .ToString();
@@ -194,6 +276,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Replace(".cfx-topology-controls", "." + cssPrefix + "-controls")
             .Replace(".cfx-topology-scenarios", "." + cssPrefix + "-scenarios")
             .Replace(".cfx-topology-scenario-panel", "." + cssPrefix + "-scenario-panel")
+            .Replace(".cfx-topology-force-controls", "." + cssPrefix + "-force-controls")
             .Replace(".cfx-topology__edge", "." + cssPrefix + "__edge")
             .Replace(".cfx-topology__node-card", "." + cssPrefix + "__node-card")
             .Replace(".cfx-topology-html-", "." + cssPrefix + "-html-");

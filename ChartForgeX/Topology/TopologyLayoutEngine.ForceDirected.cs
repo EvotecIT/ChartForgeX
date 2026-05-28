@@ -8,12 +8,14 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
     private sealed class ForceParticle {
-        public ForceParticle(TopologyNode node, double x, double y, double preferredX, double preferredY) {
+        public ForceParticle(TopologyNode node, double x, double y, double preferredX, double preferredY, int degree = 0) {
             Node = node;
             X = x;
             Y = y;
             PreferredX = preferredX;
             PreferredY = preferredY;
+            Degree = degree;
+            Mass = Math.Max(1, degree + 1);
         }
 
         public TopologyNode Node { get; }
@@ -21,6 +23,8 @@ internal static partial class TopologyLayoutEngine {
         public double Y { get; set; }
         public double PreferredX { get; }
         public double PreferredY { get; }
+        public int Degree { get; }
+        public double Mass { get; }
         public double Dx { get; set; }
         public double Dy { get; set; }
     }
@@ -41,8 +45,69 @@ internal static partial class TopologyLayoutEngine {
         public string Strategy { get; }
     }
 
-    private static void ApplyForceDirected(TopologyChart chart) {
+    private sealed class ForceSettings {
+        public TopologyForceLayoutProfile Profile { get; set; }
+        public int? IterationOverride { get; set; }
+        public double IterationScale { get; set; } = 1;
+        public double SpacingScale { get; set; } = 1;
+        public double TemperatureScale { get; set; } = 1;
+        public double InitialRadiusScale { get; set; } = 1;
+        public double RepulsionStrength { get; set; } = 0.18;
+        public double CollisionStrength { get; set; } = 1.15;
+        public double SpringStrength { get; set; } = 0.095;
+        public double MembershipLength { get; set; } = 104;
+        public double DependencyLength { get; set; } = 128;
+        public double DefaultLengthScale { get; set; } = 1.15;
+        public double HubGravity { get; set; } = 0.22;
+        public double GroupGravity { get; set; } = 0.075;
+        public double LargeGroupGravity { get; set; } = 0.12;
+        public double CenterGravity { get; set; } = 0.006;
+        public double BoundaryGravity { get; set; }
+        public double CoolingRate { get; set; } = 0.965;
+        public double GroupRadiusScale { get; set; } = 1;
+        public int PackedSeedThreshold { get; set; } = 80;
+        public bool ConstrainToGroupAnchors { get; set; } = true;
+        public bool UseDegreeMass { get; set; }
+        public bool UseLinearRepulsion { get; set; }
+        public int CollisionPolishPasses { get; set; } = 4;
+
+        public static ForceSettings FromOptions(TopologyRenderOptions? options) {
+            var profile = options?.ForceLayoutProfile ?? TopologyForceLayoutProfile.Balanced;
+            var settings = profile == TopologyForceLayoutProfile.RelationshipGraph
+                ? new ForceSettings {
+                    Profile = profile,
+                    IterationScale = 1.22,
+                    SpacingScale = 1.06,
+                    TemperatureScale = 0.92,
+                    InitialRadiusScale = 1.12,
+                    RepulsionStrength = 0.062,
+                    CollisionStrength = 1.55,
+                    SpringStrength = 0.16,
+                    MembershipLength = 82,
+                    DependencyLength = 126,
+                    DefaultLengthScale = 1.18,
+                    HubGravity = 0.26,
+                    GroupGravity = 0.12,
+                    LargeGroupGravity = 0.14,
+                    CenterGravity = 0.04,
+                    BoundaryGravity = 0.5,
+                    CoolingRate = 0.952,
+                    GroupRadiusScale = 0.82,
+                    PackedSeedThreshold = 56,
+                    ConstrainToGroupAnchors = false,
+                    UseDegreeMass = true,
+                    UseLinearRepulsion = true,
+                    CollisionPolishPasses = 10
+                }
+                : new ForceSettings { Profile = profile };
+            settings.IterationOverride = options?.ForceLayoutIterations;
+            return settings;
+        }
+    }
+
+    private static void ApplyForceDirected(TopologyChart chart, TopologyRenderOptions? options) {
         if (chart.Nodes.Count == 0) return;
+        var settings = ForceSettings.FromOptions(options);
 
         var pad = Math.Max(24, chart.Viewport.Padding);
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72;
@@ -54,15 +119,16 @@ internal static partial class TopologyLayoutEngine {
         var centerX = (left + right) / 2;
         var centerY = (top + bottom) / 2;
 
-        var groupAnchors = ForceGroupAnchors(chart, left, top, right, bottom);
+        var groupAnchors = ForceGroupAnchors(chart, left, top, right, bottom, settings);
         var groupHubIds = ForceGroupHubIds(chart);
         var groupParticleCounts = chart.Nodes
             .GroupBy(node => node.GroupId ?? string.Empty, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
         ApplyForceGroupAnchorDiagnostics(chart, groupAnchors, groupParticleCounts);
         var groupParticleIndexes = ForceGroupParticleIndexes(chart.Nodes);
+        var degreeCounts = ForceDegreeCounts(chart);
         var particles = chart.Nodes
-            .Select((node, index) => CreateForceParticle(node, index, chart.Nodes.Count, groupAnchors, groupHubIds, groupParticleCounts, groupParticleIndexes, centerX, centerY, left, top, right, bottom))
+            .Select((node, index) => CreateForceParticle(node, index, chart.Nodes.Count, groupAnchors, groupHubIds, groupParticleCounts, groupParticleIndexes, degreeCounts, centerX, centerY, left, top, right, bottom, settings))
             .ToList();
         var lookup = particles.ToDictionary(particle => particle.Node.Id, StringComparer.Ordinal);
         var springs = chart.Edges
@@ -71,9 +137,9 @@ internal static partial class TopologyLayoutEngine {
             .ToList();
 
         var area = Math.Max(1, (right - left) * (bottom - top));
-        var spacing = Math.Sqrt(area / Math.Max(1, particles.Count));
-        var iterations = ForceIterationCount(particles.Count, springs.Count);
-        var temperature = Math.Max(18, Math.Min(96, spacing * 0.9));
+        var spacing = Math.Sqrt(area / Math.Max(1, particles.Count)) * settings.SpacingScale;
+        var iterations = settings.IterationOverride ?? Math.Max(1, (int)Math.Round(ForceIterationCount(particles.Count, springs.Count) * settings.IterationScale));
+        var temperature = Math.Max(18, Math.Min(112, spacing * 0.9 * settings.TemperatureScale));
 
         for (var i = 0; i < iterations; i++) {
             foreach (var particle in particles) {
@@ -81,19 +147,25 @@ internal static partial class TopologyLayoutEngine {
                 particle.Dy = 0;
             }
 
-            ApplyForceRepulsion(particles, spacing);
-            ApplyForceSprings(springs, spacing);
-            ApplyForceGroupGravity(particles, groupAnchors, groupParticleCounts, groupHubIds, centerX, centerY, Math.Min(right - left, bottom - top));
-            ApplyForceCenterGravity(particles, centerX, centerY);
-            MoveForceParticles(particles, groupAnchors, left, top, right, bottom, temperature);
-            temperature *= 0.965;
+            ApplyForceRepulsion(particles, spacing, settings);
+            ApplyForceSprings(springs, spacing, settings);
+            ApplyForceGroupGravity(particles, groupAnchors, groupParticleCounts, groupHubIds, centerX, centerY, Math.Min(right - left, bottom - top), settings);
+            ApplyForceCenterGravity(particles, centerX, centerY, settings);
+            ApplyForceBoundaryGravity(particles, left, top, right, bottom, spacing, settings);
+            MoveForceParticles(particles, groupAnchors, left, top, right, bottom, temperature, settings);
+            temperature *= settings.CoolingRate;
         }
+
+        PolishForceCollisions(particles, groupAnchors, left, top, right, bottom, spacing, settings);
 
         foreach (var particle in particles) {
             particle.Node.X = particle.X - particle.Node.Width / 2;
             particle.Node.Y = particle.Y - particle.Node.Height / 2;
             particle.Node.Metadata["layout.force.x"] = particle.X.ToString("0.###", CultureInfo.InvariantCulture);
             particle.Node.Metadata["layout.force.y"] = particle.Y.ToString("0.###", CultureInfo.InvariantCulture);
+            particle.Node.Metadata["layout.force.degree"] = particle.Degree.ToString(CultureInfo.InvariantCulture);
+            particle.Node.Metadata["layout.force.mass"] = particle.Mass.ToString("0.###", CultureInfo.InvariantCulture);
+            particle.Node.Metadata["layout.force.profile"] = settings.Profile.ToString();
             if (!string.IsNullOrWhiteSpace(particle.Node.GroupId) &&
                 groupHubIds.TryGetValue(particle.Node.GroupId!, out var hubId) &&
                 string.Equals(hubId, particle.Node.Id, StringComparison.Ordinal)) {
@@ -102,11 +174,12 @@ internal static partial class TopologyLayoutEngine {
         }
 
         ApplyForceGroupBounds(chart, particles, groupAnchors, left, top, right, bottom);
-        ApplyForceEdgeDefaults(chart);
+        ApplyForceEdgeDefaults(chart, settings);
     }
 
-    private static ForceParticle CreateForceParticle(TopologyNode node, int index, int count, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, IReadOnlyDictionary<string, string> groupHubIds, IReadOnlyDictionary<string, int> groupParticleCounts, IReadOnlyDictionary<string, int> groupParticleIndexes, double centerX, double centerY, double left, double top, double right, double bottom) {
-        if (!IsUnset(node.X) || !IsUnset(node.Y)) return new ForceParticle(node, node.X + node.Width / 2, node.Y + node.Height / 2, node.X + node.Width / 2, node.Y + node.Height / 2);
+    private static ForceParticle CreateForceParticle(TopologyNode node, int index, int count, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, IReadOnlyDictionary<string, string> groupHubIds, IReadOnlyDictionary<string, int> groupParticleCounts, IReadOnlyDictionary<string, int> groupParticleIndexes, IReadOnlyDictionary<string, int> degreeCounts, double centerX, double centerY, double left, double top, double right, double bottom, ForceSettings settings) {
+        var degree = degreeCounts.TryGetValue(node.Id, out var value) ? value : 0;
+        if (!IsUnset(node.X) || !IsUnset(node.Y)) return new ForceParticle(node, node.X + node.Width / 2, node.Y + node.Height / 2, node.X + node.Width / 2, node.Y + node.Height / 2, degree);
 
         var groupId = node.GroupId ?? string.Empty;
         var anchor = !string.IsNullOrWhiteSpace(groupId) && groupAnchors.TryGetValue(groupId, out var groupAnchor)
@@ -115,22 +188,32 @@ internal static partial class TopologyLayoutEngine {
         if (!string.IsNullOrWhiteSpace(node.GroupId) &&
             groupHubIds.TryGetValue(node.GroupId!, out var hubId) &&
             string.Equals(hubId, node.Id, StringComparison.Ordinal)) {
-            return new ForceParticle(node, anchor.X, anchor.Y, anchor.X, anchor.Y);
+            return new ForceParticle(node, anchor.X, anchor.Y, anchor.X, anchor.Y, degree);
         }
 
         var groupCount = groupParticleCounts.TryGetValue(groupId, out var localCount) ? localCount : count;
-        if (groupCount >= 80 && groupParticleIndexes.TryGetValue(node.Id, out var groupIndex)) {
+        if (groupCount >= settings.PackedSeedThreshold && groupParticleIndexes.TryGetValue(node.Id, out var groupIndex)) {
             var packed = ForcePackedSeed(node, groupIndex, groupCount, anchor, left, top, right, bottom);
-            return new ForceParticle(node, packed.X, packed.Y, packed.X, packed.Y);
+            return new ForceParticle(node, packed.X, packed.Y, packed.X, packed.Y, degree);
         }
 
         var seedA = StableUnit(node.Id + ":a");
         var seedB = StableUnit(node.Id + ":b");
         var angle = Math.PI * 2 * seedA + index * 2.399963229728653;
-        var radius = Math.Sqrt(seedB) * Math.Max(28, Math.Min(right - left, bottom - top) * (count > 80 ? 0.2 : 0.14));
+        var radius = Math.Sqrt(seedB) * Math.Max(28, Math.Min(right - left, bottom - top) * (count > 80 ? 0.2 : 0.14)) * settings.InitialRadiusScale;
         var x = ClampForce(anchor.X + Math.Cos(angle) * radius, left + node.Width / 2, right - node.Width / 2);
         var y = ClampForce(anchor.Y + Math.Sin(angle) * radius, top + node.Height / 2, bottom - node.Height / 2);
-        return new ForceParticle(node, x, y, x, y);
+        return new ForceParticle(node, x, y, x, y, degree);
+    }
+
+    private static Dictionary<string, int> ForceDegreeCounts(TopologyChart chart) {
+        var result = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var edge in chart.Edges) {
+            result[edge.SourceNodeId] = result.TryGetValue(edge.SourceNodeId, out var source) ? source + 1 : 1;
+            result[edge.TargetNodeId] = result.TryGetValue(edge.TargetNodeId, out var target) ? target + 1 : 1;
+        }
+
+        return result;
     }
 
     private static Dictionary<string, int> ForceGroupParticleIndexes(IEnumerable<TopologyNode> nodes) {
@@ -171,7 +254,7 @@ internal static partial class TopologyLayoutEngine {
             ClampForce(y, top + node.Height / 2, bottom - node.Height / 2));
     }
 
-    private static Dictionary<string, ForceAnchor> ForceGroupAnchors(TopologyChart chart, double left, double top, double right, double bottom) {
+    private static Dictionary<string, ForceAnchor> ForceGroupAnchors(TopologyChart chart, double left, double top, double right, double bottom, ForceSettings settings) {
         var result = new Dictionary<string, ForceAnchor>(StringComparer.Ordinal);
         if (chart.Groups.Count == 0) return result;
 
@@ -188,6 +271,10 @@ internal static partial class TopologyLayoutEngine {
                 var height = group.Height > 0 ? group.Height : explicitFallbackHeight;
                 result[group.Id] = new ForceAnchor(group.X + width / 2, group.Y + height / 2, width, height, "explicit");
             }
+        }
+
+        if (result.Count == 0 && settings.Profile == TopologyForceLayoutProfile.RelationshipGraph) {
+            return ForceRelationshipGroupAnchors(orderedGroups, nodeCounts, left, top, right, bottom);
         }
 
         if (result.Count == 0 && orderedGroups.Count > 1 && orderedGroups.Count <= 4) {
@@ -223,6 +310,36 @@ internal static partial class TopologyLayoutEngine {
             var rowCount = Math.Min(columns, orderedGroups.Count - row * columns);
             var rowLeft = left + ((columns - rowCount) * cellW) / 2;
             result[group.Id] = new ForceAnchor(rowLeft + col * cellW + cellW / 2, top + row * cellH + cellH / 2, cellW, cellH, "grid");
+        }
+
+        return result;
+    }
+
+    private static Dictionary<string, ForceAnchor> ForceRelationshipGroupAnchors(IReadOnlyList<TopologyGroup> orderedGroups, IReadOnlyDictionary<string, int> nodeCounts, double left, double top, double right, double bottom) {
+        var result = new Dictionary<string, ForceAnchor>(StringComparer.Ordinal);
+        var centerX = (left + right) / 2;
+        var centerY = (top + bottom) / 2;
+        var width = right - left;
+        var height = bottom - top;
+        if (orderedGroups.Count == 1) {
+            result[orderedGroups[0].Id] = new ForceAnchor(centerX, centerY, width * 0.58, height * 0.58, "relationship-radial");
+            return result;
+        }
+
+        var radiusX = Math.Max(80, width * 0.27);
+        var radiusY = Math.Max(64, height * 0.24);
+        for (var i = 0; i < orderedGroups.Count; i++) {
+            var group = orderedGroups[i];
+            var angle = -Math.PI / 2 + (Math.PI * 2 * i / orderedGroups.Count);
+            var count = nodeCounts.TryGetValue(group.Id, out var nodeCount) ? nodeCount : 1;
+            var anchorW = Math.Max(160, Math.Min(width * 0.42, 92 + Math.Sqrt(count) * 38));
+            var anchorH = Math.Max(128, Math.Min(height * 0.42, 82 + Math.Sqrt(count) * 32));
+            result[group.Id] = new ForceAnchor(
+                centerX + Math.Cos(angle) * radiusX,
+                centerY + Math.Sin(angle) * radiusY,
+                anchorW,
+                anchorH,
+                "relationship-radial");
         }
 
         return result;
@@ -295,11 +412,11 @@ internal static partial class TopologyLayoutEngine {
         return 48;
     }
 
-    private static void ApplyForceRepulsion(IReadOnlyList<ForceParticle> particles, double spacing) {
+    private static void ApplyForceRepulsion(IReadOnlyList<ForceParticle> particles, double spacing, ForceSettings settings) {
         if (particles.Count <= 650) {
             for (var i = 0; i < particles.Count; i++) {
                 for (var j = i + 1; j < particles.Count; j++) {
-                    RepelForcePair(particles[i], particles[j], spacing);
+                    RepelForcePair(particles[i], particles[j], spacing, settings);
                 }
             }
 
@@ -329,7 +446,7 @@ internal static partial class TopologyLayoutEngine {
                         if (!cells.TryGetValue(neighborKey, out var neighbor)) continue;
                         foreach (var j in neighbor) {
                             if (j <= i) continue;
-                            RepelForcePair(particles[i], particles[j], spacing);
+                            RepelForcePair(particles[i], particles[j], spacing, settings);
                         }
                     }
                 }
@@ -346,7 +463,7 @@ internal static partial class TopologyLayoutEngine {
                 var dy = b.Y - a.Y;
                 var distance = Math.Sqrt(dx * dx + dy * dy);
                 if (distance < 0.001) continue;
-                var force = spacing * spacing / distance * 0.025;
+                var force = ForceRepulsionMagnitude(spacing, distance, 1, settings) * 0.025;
                 a.Dx -= dx / distance * force;
                 a.Dy -= dy / distance * force;
                 b.Dx += dx / distance * force;
@@ -363,7 +480,7 @@ internal static partial class TopologyLayoutEngine {
         return ((long)x << 32) ^ (uint)y;
     }
 
-    private static void RepelForcePair(ForceParticle a, ForceParticle b, double spacing) {
+    private static void RepelForcePair(ForceParticle a, ForceParticle b, double spacing, ForceSettings settings) {
         var dx = b.X - a.X;
         var dy = b.Y - a.Y;
         var distance = Math.Sqrt(dx * dx + dy * dy);
@@ -376,8 +493,9 @@ internal static partial class TopologyLayoutEngine {
 
         var padding = Math.Max(8, Math.Min(42, spacing * 0.35));
         var minDistance = (Math.Max(a.Node.Width, a.Node.Height) + Math.Max(b.Node.Width, b.Node.Height)) / 2 + padding;
-        var force = spacing * spacing / distance * 0.18;
-        if (distance < minDistance) force += (minDistance - distance) * 1.15;
+        var massScale = settings.UseDegreeMass ? Math.Sqrt(a.Mass * b.Mass) : 1;
+        var force = ForceRepulsionMagnitude(spacing, distance, massScale, settings);
+        if (distance < minDistance) force += (minDistance - distance) * settings.CollisionStrength;
         var fx = dx / distance * force;
         var fy = dy / distance * force;
         a.Dx -= fx;
@@ -386,7 +504,15 @@ internal static partial class TopologyLayoutEngine {
         b.Dy += fy;
     }
 
-    private static void ApplyForceSprings(IEnumerable<(TopologyEdge Edge, ForceParticle Source, ForceParticle Target)> springs, double spacing) {
+    private static double ForceRepulsionMagnitude(double spacing, double distance, double massScale, ForceSettings settings) {
+        if (!settings.UseLinearRepulsion) return spacing * spacing / distance * settings.RepulsionStrength;
+
+        var range = Math.Max(spacing * 2.45, 82);
+        var falloff = Math.Max(0.08, 1 - Math.Min(distance, range) / range);
+        return spacing * settings.RepulsionStrength * Math.Min(2.2, Math.Max(1, massScale)) * falloff;
+    }
+
+    private static void ApplyForceSprings(IEnumerable<(TopologyEdge Edge, ForceParticle Source, ForceParticle Target)> springs, double spacing, ForceSettings settings) {
         foreach (var spring in springs) {
             var dx = spring.Target.X - spring.Source.X;
             var dy = spring.Target.Y - spring.Source.Y;
@@ -394,11 +520,11 @@ internal static partial class TopologyLayoutEngine {
             if (distance < 0.001) continue;
 
             var desired = spring.Edge.Kind switch {
-                TopologyEdgeKind.Membership => 104,
-                TopologyEdgeKind.Dependency => 128,
-                _ => Math.Max(118, spacing * 1.15)
+                TopologyEdgeKind.Membership => settings.MembershipLength,
+                TopologyEdgeKind.Dependency => settings.DependencyLength,
+                _ => Math.Max(118, spacing * settings.DefaultLengthScale)
             };
-            var force = (distance - desired) * 0.095;
+            var force = (distance - desired) * settings.SpringStrength;
             var fx = dx / distance * force;
             var fy = dy / distance * force;
             spring.Source.Dx += fx;
@@ -408,7 +534,7 @@ internal static partial class TopologyLayoutEngine {
         }
     }
 
-    private static void ApplyForceGroupGravity(IEnumerable<ForceParticle> particles, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, IReadOnlyDictionary<string, int> groupParticleCounts, IReadOnlyDictionary<string, string> groupHubIds, double centerX, double centerY, double shortSide) {
+    private static void ApplyForceGroupGravity(IEnumerable<ForceParticle> particles, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, IReadOnlyDictionary<string, int> groupParticleCounts, IReadOnlyDictionary<string, string> groupHubIds, double centerX, double centerY, double shortSide, ForceSettings settings) {
         foreach (var particle in particles) {
             var groupId = particle.Node.GroupId ?? string.Empty;
             var anchor = !string.IsNullOrWhiteSpace(groupId) && groupAnchors.TryGetValue(groupId, out var groupAnchor)
@@ -423,26 +549,41 @@ internal static partial class TopologyLayoutEngine {
                 targetY = particle.PreferredY;
             } else if (!hub && groupCount > 1) {
                 var angle = StableUnit(particle.Node.Id + ":group-angle") * Math.PI * 2;
-                var radius = Math.Min(shortSide * 0.12, Math.Max(58, Math.Sqrt(groupCount) * 22));
+                var radius = Math.Min(shortSide * 0.12 * settings.GroupRadiusScale, Math.Max(58, Math.Sqrt(groupCount) * 22 * settings.GroupRadiusScale));
                 radius *= 0.55 + StableUnit(particle.Node.Id + ":group-radius") * 0.55;
                 targetX += Math.Cos(angle) * radius;
                 targetY += Math.Sin(angle) * radius;
             }
 
-            var strength = hub ? 0.22 : groupCount >= 80 ? 0.12 : 0.075;
+            var strength = hub ? settings.HubGravity : groupCount >= settings.PackedSeedThreshold ? settings.LargeGroupGravity : settings.GroupGravity;
             particle.Dx += (targetX - particle.X) * strength;
             particle.Dy += (targetY - particle.Y) * strength;
         }
     }
 
-    private static void ApplyForceCenterGravity(IEnumerable<ForceParticle> particles, double centerX, double centerY) {
+    private static void ApplyForceCenterGravity(IEnumerable<ForceParticle> particles, double centerX, double centerY, ForceSettings settings) {
         foreach (var particle in particles) {
-            particle.Dx += (centerX - particle.X) * 0.006;
-            particle.Dy += (centerY - particle.Y) * 0.006;
+            particle.Dx += (centerX - particle.X) * settings.CenterGravity;
+            particle.Dy += (centerY - particle.Y) * settings.CenterGravity;
         }
     }
 
-    private static void MoveForceParticles(IEnumerable<ForceParticle> particles, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, double left, double top, double right, double bottom, double temperature) {
+    private static void ApplyForceBoundaryGravity(IEnumerable<ForceParticle> particles, double left, double top, double right, double bottom, double spacing, ForceSettings settings) {
+        if (settings.BoundaryGravity <= 0) return;
+        var margin = Math.Min(Math.Min(right - left, bottom - top) * 0.18, Math.Max(54, spacing * 1.15));
+        foreach (var particle in particles) {
+            var leftDistance = particle.X - left;
+            var rightDistance = right - particle.X;
+            var topDistance = particle.Y - top;
+            var bottomDistance = bottom - particle.Y;
+            if (leftDistance < margin) particle.Dx += (margin - leftDistance) * settings.BoundaryGravity;
+            if (rightDistance < margin) particle.Dx -= (margin - rightDistance) * settings.BoundaryGravity;
+            if (topDistance < margin) particle.Dy += (margin - topDistance) * settings.BoundaryGravity;
+            if (bottomDistance < margin) particle.Dy -= (margin - bottomDistance) * settings.BoundaryGravity;
+        }
+    }
+
+    private static void MoveForceParticles(IEnumerable<ForceParticle> particles, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, double left, double top, double right, double bottom, double temperature, ForceSettings settings) {
         foreach (var particle in particles) {
             var length = Math.Sqrt(particle.Dx * particle.Dx + particle.Dy * particle.Dy);
             if (length > 0.001) {
@@ -455,7 +596,8 @@ internal static partial class TopologyLayoutEngine {
             var maxX = right - particle.Node.Width / 2;
             var minY = top + particle.Node.Height / 2;
             var maxY = bottom - particle.Node.Height / 2;
-            if (!string.IsNullOrWhiteSpace(particle.Node.GroupId) &&
+            if (settings.ConstrainToGroupAnchors &&
+                !string.IsNullOrWhiteSpace(particle.Node.GroupId) &&
                 groupAnchors.TryGetValue(particle.Node.GroupId!, out var anchor)) {
                 var anchorMinX = anchor.X - anchor.Width * 0.48 + particle.Node.Width / 2;
                 var anchorMaxX = anchor.X + anchor.Width * 0.48 - particle.Node.Width / 2;
@@ -465,9 +607,89 @@ internal static partial class TopologyLayoutEngine {
                 ApplyForceAnchorClamp(ref minY, ref maxY, anchorMinY, anchorMaxY, anchor.Y);
             }
 
-            particle.X = ClampForce(particle.X, minX, maxX);
-            particle.Y = ClampForce(particle.Y, minY, maxY);
+            ClampForceParticle(particle, minX, minY, maxX, maxY);
         }
+    }
+
+    private static void PolishForceCollisions(IReadOnlyList<ForceParticle> particles, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, double left, double top, double right, double bottom, double spacing, ForceSettings settings) {
+        if (settings.CollisionPolishPasses <= 0 || particles.Count < 2) return;
+        var temperature = Math.Max(4, Math.Min(26, spacing * 0.32));
+        for (var pass = 0; pass < settings.CollisionPolishPasses; pass++) {
+            foreach (var particle in particles) {
+                particle.Dx = 0;
+                particle.Dy = 0;
+            }
+
+            ApplyForceRepulsion(particles, spacing * 0.82, settings);
+            ApplyForceCenterGravity(particles, (left + right) / 2, (top + bottom) / 2, settings);
+            ApplyForceBoundaryGravity(particles, left, top, right, bottom, spacing, settings);
+            MoveForceParticles(particles, groupAnchors, left, top, right, bottom, temperature, settings);
+            ResolveForceCollisions(particles, groupAnchors, left, top, right, bottom, spacing, settings);
+            temperature *= 0.72;
+        }
+    }
+
+    private static void ResolveForceCollisions(IReadOnlyList<ForceParticle> particles, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, double left, double top, double right, double bottom, double spacing, ForceSettings settings) {
+        var padding = Math.Max(3, Math.Min(12, spacing * 0.12));
+        for (var i = 0; i < particles.Count; i++) {
+            for (var j = i + 1; j < particles.Count; j++) {
+                var a = particles[i];
+                var b = particles[j];
+                var dx = b.X - a.X;
+                var dy = b.Y - a.Y;
+                var overlapX = (a.Node.Width + b.Node.Width) / 2 + padding - Math.Abs(dx);
+                var overlapY = (a.Node.Height + b.Node.Height) / 2 + padding - Math.Abs(dy);
+                if (overlapX <= 0 || overlapY <= 0) continue;
+
+                if (Math.Abs(dx) < 0.001 && Math.Abs(dy) < 0.001) {
+                    var seed = StableUnit(a.Node.Id + "|" + b.Node.Id + ":collision");
+                    dx = Math.Cos(seed * Math.PI * 2);
+                    dy = Math.Sin(seed * Math.PI * 2);
+                }
+
+                var totalMass = settings.UseDegreeMass ? Math.Max(1, a.Mass + b.Mass) : 2;
+                var aShare = settings.UseDegreeMass ? b.Mass / totalMass : 0.5;
+                var bShare = settings.UseDegreeMass ? a.Mass / totalMass : 0.5;
+                if (overlapX < overlapY) {
+                    var direction = dx < 0 ? -1 : 1;
+                    var amount = overlapX + 0.8;
+                    a.X -= direction * amount * aShare;
+                    b.X += direction * amount * bShare;
+                } else {
+                    var direction = dy < 0 ? -1 : 1;
+                    var amount = overlapY + 0.8;
+                    a.Y -= direction * amount * aShare;
+                    b.Y += direction * amount * bShare;
+                }
+
+                ClampForceParticle(a, groupAnchors, left, top, right, bottom, settings);
+                ClampForceParticle(b, groupAnchors, left, top, right, bottom, settings);
+            }
+        }
+    }
+
+    private static void ClampForceParticle(ForceParticle particle, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, double left, double top, double right, double bottom, ForceSettings settings) {
+        var minX = left + particle.Node.Width / 2;
+        var maxX = right - particle.Node.Width / 2;
+        var minY = top + particle.Node.Height / 2;
+        var maxY = bottom - particle.Node.Height / 2;
+        if (settings.ConstrainToGroupAnchors &&
+            !string.IsNullOrWhiteSpace(particle.Node.GroupId) &&
+            groupAnchors.TryGetValue(particle.Node.GroupId!, out var anchor)) {
+            var anchorMinX = anchor.X - anchor.Width * 0.48 + particle.Node.Width / 2;
+            var anchorMaxX = anchor.X + anchor.Width * 0.48 - particle.Node.Width / 2;
+            var anchorMinY = anchor.Y - anchor.Height * 0.46 + particle.Node.Height / 2;
+            var anchorMaxY = anchor.Y + anchor.Height * 0.46 - particle.Node.Height / 2;
+            ApplyForceAnchorClamp(ref minX, ref maxX, anchorMinX, anchorMaxX, anchor.X);
+            ApplyForceAnchorClamp(ref minY, ref maxY, anchorMinY, anchorMaxY, anchor.Y);
+        }
+
+        ClampForceParticle(particle, minX, minY, maxX, maxY);
+    }
+
+    private static void ClampForceParticle(ForceParticle particle, double minX, double minY, double maxX, double maxY) {
+        particle.X = ClampForce(particle.X, minX, maxX);
+        particle.Y = ClampForce(particle.Y, minY, maxY);
     }
 
     private static void ApplyForceGroupBounds(TopologyChart chart, IReadOnlyList<ForceParticle> particles, IReadOnlyDictionary<string, ForceAnchor> groupAnchors, double left, double top, double right, double bottom) {
@@ -502,10 +724,11 @@ internal static partial class TopologyLayoutEngine {
         }
     }
 
-    private static void ApplyForceEdgeDefaults(TopologyChart chart) {
+    private static void ApplyForceEdgeDefaults(TopologyChart chart, ForceSettings settings) {
         foreach (var edge in chart.Edges) {
             if (edge.Waypoints.Count == 0 && edge.Routing == TopologyEdgeRouting.Orthogonal) edge.Routing = TopologyEdgeRouting.Straight;
             edge.Metadata["layout.force"] = "true";
+            edge.Metadata["layout.force.profile"] = settings.Profile.ToString();
         }
     }
 

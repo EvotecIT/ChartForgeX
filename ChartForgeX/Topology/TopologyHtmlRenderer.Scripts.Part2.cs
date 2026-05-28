@@ -29,6 +29,7 @@ public sealed partial class TopologyHtmlRenderer
         item.classList.remove('cfx-topology-html-selected', 'cfx-topology-html-muted', 'cfx-topology-html-related');
         item.removeAttribute('aria-selected');
       });
+      clearForceFocusLabels();
     };
     const clearHover = () => {
       wrapper.removeAttribute('data-cfx-hover-kind');
@@ -36,6 +37,7 @@ public sealed partial class TopologyHtmlRenderer
       wrapper.querySelectorAll('.cfx-topology-html-hovered,.cfx-topology-html-hover-muted,.cfx-topology-html-hover-related').forEach(item => {
         item.classList.remove('cfx-topology-html-hovered', 'cfx-topology-html-hover-muted', 'cfx-topology-html-hover-related');
       });
+      restoreForceFocusLabels();
     };
     const identity = element => {
       const role = element.getAttribute('data-cfx-role') || '';
@@ -199,6 +201,12 @@ public sealed partial class TopologyHtmlRenderer
         edge.classList.toggle(relatedClass, isRelated);
         edge.classList.toggle(mutedClass, !isRelated);
       });
+      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+        const isSelf = detail.kind === 'edge' && attr(label, 'data-edge-id') === detail.id;
+        const isRelated = isSelf || relatedEdges.has(attr(label, 'data-edge-id'));
+        label.classList.toggle(relatedClass, isRelated);
+        label.classList.toggle(mutedClass, !isRelated);
+      });
       wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
         const isSelf = detail.kind === 'node' && attr(node, 'data-node-id') === detail.id;
         const isRelated = isSelf || relatedNodes.has(attr(node, 'data-node-id'));
@@ -219,6 +227,7 @@ public sealed partial class TopologyHtmlRenderer
       wrapper.setAttribute('data-cfx-hover-kind', detail.kind);
       wrapper.setAttribute('data-cfx-hover-id', detail.id);
       applyRelatedClasses(detail, 'cfx-topology-html-hover-', 'cfx-topology-html-hovered');
+      applyForceFocusLabels(detail);
       delete detail.element;
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover', { bubbles: true, detail }));
     };
@@ -233,8 +242,94 @@ public sealed partial class TopologyHtmlRenderer
       element.classList.add('cfx-topology-html-selected');
       element.setAttribute('aria-selected', 'true');
       applyRelatedClasses({ ...detail, element }, 'cfx-topology-html-', '');
+      applyForceFocusLabels(detail);
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, detail }));
       emitSync('selection', { selection: { kind: detail.kind, id: detail.id, status: detail.status } });
+    };
+    const forceSearchText = element => [
+      attr(element, 'data-node-id'), attr(element, 'data-node-kind'), attr(element, 'data-group-id'),
+      attr(element, 'data-edge-id'), attr(element, 'data-edge-kind'), attr(element, 'data-source-node-id'), attr(element, 'data-target-node-id'),
+      attr(element, 'data-group-symbol'), element.textContent || ''
+    ].join(' ').toLowerCase();
+    const cssEscape = value => window.CSS && CSS.escape ? CSS.escape(value) : String(value).replace(/["\\]/g, '\\$&');
+    const forceGraphState = () => ({
+      query: ((forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-search]')) || {}).value || '',
+      status: ((forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-status]')) || {}).value || '',
+      group: ((forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-group]')) || {}).value || '',
+      edges: !!(forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-toggle="edges"]:checked')),
+      focus: !!(forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-toggle="focus"]:checked')),
+      labels: !!(forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-toggle="edge-labels"]:checked')),
+      groups: !!(forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-toggle="groups"]:checked')),
+      hideMovingEdges: !!(forceGraphPanel && forceGraphPanel.querySelector('[data-cfx-force-toggle="hide-moving-edges"]:checked'))
+    });
+    const setForceHidden = (selector, predicate) => {
+      wrapper.querySelectorAll(selector).forEach(element => element.classList.toggle('cfx-topology-html-force-hidden', predicate(element)));
+    };
+    const applyForceGraphFilters = () => {
+      if (!forceGraphControls || !forceGraphPanel) return;
+      const state = forceGraphState();
+      const query = state.query.trim().toLowerCase();
+      const visibleNodes = new Set();
+      wrapper.setAttribute('data-cfx-force-edges-visible', state.edges ? 'true' : 'false');
+      wrapper.setAttribute('data-cfx-force-focus', state.focus ? 'true' : 'false');
+      wrapper.setAttribute('data-cfx-force-edge-labels-visible', state.labels ? 'true' : 'false');
+      wrapper.setAttribute('data-cfx-force-groups-visible', state.groups ? 'true' : 'false');
+      wrapper.setAttribute('data-cfx-force-hide-moving-edges', state.hideMovingEdges ? 'true' : 'false');
+      wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
+        const groupOk = !state.group || attr(node, 'data-group-id') === state.group;
+        const statusOk = !state.status || attr(node, 'data-cfx-status') === state.status;
+        const queryOk = !query || forceSearchText(node).includes(query);
+        const visible = groupOk && statusOk && queryOk;
+        node.classList.toggle('cfx-topology-html-force-hidden', !visible);
+        wrapper.querySelectorAll('[data-cfx-role="topology-node-status"][data-node-id="' + cssEscape(attr(node, 'data-node-id')) + '"]').forEach(status => status.classList.toggle('cfx-topology-html-force-hidden', !visible));
+        if (visible) visibleNodes.add(attr(node, 'data-node-id'));
+      });
+      setForceHidden('[data-cfx-role="topology-edge"]', edge => !state.edges || !visibleNodes.has(attr(edge, 'data-source-node-id')) || !visibleNodes.has(attr(edge, 'data-target-node-id')));
+      setForceHidden('[data-cfx-role="topology-edge-label"]', label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
+      setForceHidden('[data-cfx-role="topology-group"]', group => !state.groups || (state.group && attr(group, 'data-group-id') !== state.group));
+      const nodeCount = visibleNodes.size;
+      const edgeCount = wrapper.querySelectorAll('[data-cfx-role="topology-edge"]:not(.cfx-topology-html-force-hidden)').length;
+      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
+      if (summary) summary.textContent = nodeCount + ' nodes / ' + edgeCount + ' edges visible';
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), nodes: nodeCount, edges: edgeCount, query: state.query, status: state.status, group: state.group } }));
+      restoreForceFocusLabels();
+    };
+    const clearForceFocusLabels = () => {
+      if (!forceGraphControls) return;
+      const state = forceGraphState();
+      wrapper.querySelectorAll('.cfx-topology-html-force-focus-label').forEach(label => {
+        label.classList.remove('cfx-topology-html-force-focus-label');
+        if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
+      });
+    };
+    const selectedFocusElement = () => {
+      const kind = wrapper.getAttribute('data-cfx-selection-kind') || '';
+      const id = wrapper.getAttribute('data-cfx-selection-id') || '';
+      return kind && id ? findSelection({ kind, id }) : null;
+    };
+    const restoreForceFocusLabels = () => {
+      if (!forceGraphControls || !forceGraphPanel) return;
+      const selected = selectedFocusElement();
+      if (selected) applyForceFocusLabels(identity(selected));
+      else clearForceFocusLabels();
+    };
+    const applyForceFocusLabels = detail => {
+      if (!forceGraphControls || !forceGraphPanel) return;
+      const state = forceGraphState();
+      if (!state.focus || !state.edges) return;
+      detail.related = detail.related || related(detail);
+      const edgeIds = new Set(detail.related.edgeIds || []);
+      if (detail.kind === 'edge') edgeIds.add(detail.id);
+      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+        const edgeId = attr(label, 'data-edge-id');
+        const edge = wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(edgeId) + '"]:not(.cfx-topology-html-force-hidden)');
+        const active = edgeIds.has(edgeId) && !!edge;
+        label.classList.toggle('cfx-topology-html-force-focus-label', active);
+        if (active) label.classList.remove('cfx-topology-html-force-hidden');
+        else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
+      });
+      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
+      if (summary && detail.kind === 'node') summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
@@ -280,6 +375,7 @@ public sealed partial class TopologyHtmlRenderer
         if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
           drag.moved = true;
           suppressClick = true;
+          markForceGraphMoving();
         }
         applyViewport({ zoom: viewportState().zoom, panX: drag.panX + dx, panY: drag.panY + dy });
       });
@@ -287,6 +383,8 @@ public sealed partial class TopologyHtmlRenderer
         if (!drag || drag.id !== event.pointerId) return;
         viewport.releasePointerCapture(event.pointerId);
         if (drag.moved) emitViewport();
+        wrapper.removeAttribute('data-cfx-force-moving-edges');
+        wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
         drag = null;
       });
       viewport.addEventListener('pointercancel', event => {
@@ -311,6 +409,20 @@ public sealed partial class TopologyHtmlRenderer
           else exportSvg();
         });
       });
+    }
+    if (forceGraphControls && forceGraphPanel) {
+      forceGraphPanel.querySelectorAll('input,select').forEach(control => {
+        control.addEventListener('input', applyForceGraphFilters);
+        control.addEventListener('change', applyForceGraphFilters);
+      });
+      wrapper.addEventListener('cfx-topology-force-filter-set', event => {
+        const detail = event.detail || {};
+        if (forceGraphPanel.querySelector('[data-cfx-force-search]') && detail.query !== undefined) forceGraphPanel.querySelector('[data-cfx-force-search]').value = detail.query || '';
+        if (forceGraphPanel.querySelector('[data-cfx-force-status]') && detail.status !== undefined) forceGraphPanel.querySelector('[data-cfx-force-status]').value = detail.status || '';
+        if (forceGraphPanel.querySelector('[data-cfx-force-group]') && detail.group !== undefined) forceGraphPanel.querySelector('[data-cfx-force-group]').value = detail.group || '';
+        applyForceGraphFilters();
+      });
+      applyForceGraphFilters();
     }
     if (scenarioControls) {
       wrapper.querySelectorAll('[data-cfx-topology-scenario]').forEach(button => {
