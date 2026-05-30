@@ -568,4 +568,63 @@ public static partial class ChartExtensions {
     /// <param name="path">The output file path.</param>
     /// <param name="options">Optional raster export options.</param>
     public static void SaveRasterImage(this VisualCanvas canvas, string path, RasterImageOptions? options = null) => canvas.SaveRasterImage(path, RasterImageFormatExtensions.FromFileExtension(path), options);
+
+    /// <summary>
+    /// Encodes RGBA pixels to PNG bytes.
+    /// </summary>
+    /// <param name="image">The image to encode.</param>
+    /// <returns>A PNG image.</returns>
+    public static byte[] ToPng(this RgbaImage image) => RasterImageEncoder.Encode(image, RasterImageFormat.Png);
+
+    /// <summary>
+    /// Encodes RGBA pixels to JPEG bytes after flattening transparent pixels against the configured background.
+    /// </summary>
+    /// <param name="image">The image to encode.</param>
+    /// <param name="options">Optional raster export options.</param>
+    /// <returns>A JPEG image.</returns>
+    public static byte[] ToJpeg(this RgbaImage image, RasterImageOptions? options = null) => RasterImageEncoder.Encode(image, RasterImageFormat.Jpeg, options);
+
+    /// <summary>
+    /// Encodes RGBA pixels to a dependency-free raster format.
+    /// </summary>
+    /// <param name="image">The image to encode.</param>
+    /// <param name="format">The raster image format.</param>
+    /// <param name="options">Optional raster export options.</param>
+    /// <returns>Encoded raster image bytes.</returns>
+    public static byte[] ToRasterImage(this RgbaImage image, RasterImageFormat format, RasterImageOptions? options = null) {
+        RasterImageEncoder.ThrowIfUnsupported(format);
+        return RasterImageEncoder.Encode(image, format, options);
+    }
+
+    /// <summary>
+    /// Writes RGBA pixels to a dependency-free raster stream.
+    /// </summary>
+    /// <param name="image">The image to encode.</param>
+    /// <param name="stream">The destination stream.</param>
+    /// <param name="format">The raster image format.</param>
+    /// <param name="options">Optional raster export options.</param>
+    public static void WriteRasterImage(this RgbaImage image, Stream stream, RasterImageFormat format, RasterImageOptions? options = null) {
+        RasterImageEncoder.ThrowIfNull(stream);
+        RasterImageEncoder.ThrowIfUnsupported(format);
+        RasterImageEncoder.WriteTo(stream, image, format, options);
+    }
+
+    /// <summary>
+    /// Saves RGBA pixels to a dependency-free raster file.
+    /// </summary>
+    /// <param name="image">The image to encode.</param>
+    /// <param name="path">The output file path.</param>
+    /// <param name="format">The raster image format.</param>
+    /// <param name="options">Optional raster export options.</param>
+    public static void SaveRasterImage(this RgbaImage image, string path, RasterImageFormat format, RasterImageOptions? options = null) {
+        File.WriteAllBytes(path, image.ToRasterImage(format, options));
+    }
+
+    /// <summary>
+    /// Saves RGBA pixels to a raster file using the output path extension to choose the format.
+    /// </summary>
+    /// <param name="image">The image to encode.</param>
+    /// <param name="path">The output file path.</param>
+    /// <param name="options">Optional raster export options.</param>
+    public static void SaveRasterImage(this RgbaImage image, string path, RasterImageOptions? options = null) => image.SaveRasterImage(path, RasterImageFormatExtensions.FromFileExtension(path), options);
 }

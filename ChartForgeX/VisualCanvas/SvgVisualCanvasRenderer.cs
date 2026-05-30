@@ -71,12 +71,12 @@ public sealed class SvgVisualCanvasRenderer {
             writer.StartElement("rect").Attribute("data-cfx-role", "visual-canvas-background").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", "url(#" + id + "-background)").EndEmptyElement().Line();
         }
         if (canvas.BackdropStyle == VisualCanvasBackdropStyle.TechHorizon) RenderTechBackdrop(writer, canvas, id, theme);
-        foreach (var layer in canvas.Layers) RenderLayer(writer, layer, id, theme);
+        for (var i = 0; i < canvas.Layers.Count; i++) RenderLayer(writer, canvas.Layers[i], id, theme, i);
         writer.EndElement().Line();
         return writer.Build();
     }
 
-    private static void RenderLayer(SvgMarkupWriter writer, VisualCanvasLayer layer, string id, VisualCanvasTheme theme) {
+    private static void RenderLayer(SvgMarkupWriter writer, VisualCanvasLayer layer, string id, VisualCanvasTheme theme, int layerIndex) {
         if (layer is VisualCanvasTextLayer text) {
             RenderText(writer, text);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
@@ -88,7 +88,7 @@ public sealed class SvgVisualCanvasRenderer {
         } else if (layer is VisualCanvasHeroBadgeLayer badge) {
             RenderHeroBadge(writer, badge, id, theme);
         } else if (layer is VisualCanvasImageLayer image) {
-            RenderImage(writer, image, theme);
+            RenderImage(writer, image, id, layerIndex, theme);
         } else if (layer is VisualCanvasFeatureStripLayer strip) {
             RenderFeatureStrip(writer, strip, theme);
         } else {
@@ -393,13 +393,22 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderImage(SvgMarkupWriter writer, VisualCanvasImageLayer image, VisualCanvasTheme theme) {
+    private static void RenderImage(SvgMarkupWriter writer, VisualCanvasImageLayer image, string id, int layerIndex, VisualCanvasTheme theme) {
         VisualCanvas.ValidateEnum(image.Fit, nameof(image.Fit));
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-image").EndStartElement().Line();
         if (image.Href.Length > 0) {
             var preserveAspectRatio = PreserveAspectRatio(image.Fit);
-            if (image.Fit == VisualCanvasImageFit.Center && image.SourceWidth > 0 && image.SourceHeight > 0) {
-                var clipId = NextScope() + "-image-clip";
+            var imageScope = id + "-image-" + layerIndex.ToString(CultureInfo.InvariantCulture);
+            if (image.Fit == VisualCanvasImageFit.Tile && image.SourceWidth > 0 && image.SourceHeight > 0) {
+                var patternId = imageScope + "-pattern";
+                writer.StartElement("defs").EndStartElement().Line()
+                    .StartElement("pattern").Attribute("id", patternId).Attribute("patternUnits", "userSpaceOnUse").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.SourceWidth).Attribute("height", image.SourceHeight).EndStartElement().Line()
+                    .StartElement("image").Attribute("x", 0).Attribute("y", 0).Attribute("width", image.SourceWidth).Attribute("height", image.SourceHeight).Attribute("href", image.Href).Attribute("preserveAspectRatio", "none").EndEmptyElement().Line()
+                    .EndElement().Line()
+                    .EndElement().Line();
+                writer.StartElement("rect").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.Width).Attribute("height", image.Height).Attribute("fill", "url(#" + patternId + ")").Attribute("opacity", image.Opacity).EndEmptyElement().Line();
+            } else if (image.Fit == VisualCanvasImageFit.Center && image.SourceWidth > 0 && image.SourceHeight > 0) {
+                var clipId = imageScope + "-clip";
                 writer.StartElement("clipPath").Attribute("id", clipId).EndStartElement()
                     .StartElement("rect").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.Width).Attribute("height", image.Height).EndEmptyElement()
                     .EndElement().Line();
@@ -430,6 +439,7 @@ public sealed class SvgVisualCanvasRenderer {
             case VisualCanvasImageFit.Cover:
                 return "xMidYMid slice";
             case VisualCanvasImageFit.Center:
+            case VisualCanvasImageFit.Tile:
             case VisualCanvasImageFit.Stretch:
             default:
                 return "none";

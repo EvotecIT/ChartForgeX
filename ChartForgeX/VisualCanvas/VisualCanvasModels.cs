@@ -142,7 +142,9 @@ public enum VisualCanvasImageFit {
     /// <summary>Scale and crop the image uniformly so the destination rectangle is fully covered.</summary>
     Cover,
     /// <summary>Draw the image at its source pixel size, centered inside the destination rectangle.</summary>
-    Center
+    Center,
+    /// <summary>Repeat the image at its source pixel size, clipped to the destination rectangle.</summary>
+    Tile
 }
 
 /// <summary>

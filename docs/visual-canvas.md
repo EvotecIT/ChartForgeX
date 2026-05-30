@@ -14,12 +14,12 @@ The first canvas primitives are intentionally generic:
 - key/value text blocks with measured label columns, wrapped value text, per-row color overrides, and anchor-based placement
 - information tiles for side rails, with glass, outline, or raised surfaces, text or built-in icons, progress rails, and compact right-side mini charts
 - hero badges for logos, terminal prompts, or product marks
-- image layers using SVG hrefs and host-provided RGBA pixels for raster output, with `Stretch`, `Contain`, `Cover`, and `Center` fit modes
-- dependency-free raster image input for baseline JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF files or byte arrays
+- image layers using SVG hrefs and host-provided RGBA pixels for raster output, with `Stretch`, `Contain`, `Cover`, `Center`, and `Tile` fit modes
+- dependency-free raster image input for baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF files or byte arrays
 - rendered ChartForgeX layers for charts, chart grids, visual blocks, visual grids, and topology diagrams
 - anchor-based placement for all built-in canvas layers and rendered ChartForgeX layers
 - feature strips for compact bottom rows
-- SVG, HTML, PNG, BMP, PPM, and TIFF export
+- SVG, HTML, PNG, JPEG, BMP, PPM, and TIFF export
 
 Example:
 
@@ -84,6 +84,7 @@ var canvas = VisualCanvas.CreateSocialPreview()
 
 canvas.SaveSvg("powerbginfo-social-preview.svg");
 canvas.SavePng("powerbginfo-social-preview.png");
+canvas.Save("powerbginfo-social-preview.jpg", new RasterImageOptions { JpegQuality = 92 });
 canvas.SaveBmp("powerbginfo-social-preview.bmp");
 ```
 
@@ -109,7 +110,25 @@ var canvas = background
 canvas.SavePng("wallpaper-with-info.png");
 ```
 
-`AddImageFile(...)` and `AddImageBytes(...)` are available when an image should be placed into an existing canvas region. The dependency-free decoder supports baseline JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF. Progressive JPEG remains outside the built-in decoder for now; hosts that need unsupported image variants can decode them before handing RGBA pixels to `AddRasterImage(...)`.
+`AddImageFile(...)` and `AddImageBytes(...)` are available when an image should be placed into an existing canvas region. The dependency-free decoder supports baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF. Hosts that need unsupported image variants can decode them before handing RGBA pixels to `AddRasterImage(...)`.
+
+For lower-level wallpaper and report generation where the host wants to work directly with RGBA pixels, use `ImageComposition`. It keeps the same anchor and fit model as `VisualCanvas`, but focuses on image-engine operations: load or create a background, alpha-blend overlays, draw text, place ChartForgeX layers, and save by extension without `System.Drawing`.
+
+```csharp
+using ChartForgeX.Composition;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+
+var wallpaper = ImageComposition
+    .FromFile("wallpaper.jpg")
+    .DrawImageFile("logo.png", VisualCanvasPlacement.At(VisualCanvasAnchor.TopRight, 32, 32), 220, 90, VisualCanvasImageFit.Contain, opacity: 0.92)
+    .DrawText(32, 32, 520, "DEV-WKS-01", 34, ChartColors.White, emphasized: true);
+
+wallpaper.Save("wallpaper-output.jpg", new RasterImageOptions {
+    Background = ChartColors.Black,
+    JpegQuality = 92
+});
+```
 
 For user-supplied files, use `RasterImageDecoder.TryRead(...)` or `TryDecode(...)` when unsupported or corrupt images should be handled as a normal validation result instead of an exception.
 

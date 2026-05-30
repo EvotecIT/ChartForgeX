@@ -17,7 +17,7 @@ internal static class RasterColorWriter {
         destination[offset + 2] = red;
     }
 
-    private static void Flatten(ref byte red, ref byte green, ref byte blue, byte alpha, ChartColor background) {
+    public static void Flatten(ref byte red, ref byte green, ref byte blue, byte alpha, ChartColor background) {
         if (alpha == 255) return;
 
         red = FlattenChannel(red, alpha, background.R);

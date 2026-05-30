@@ -15,6 +15,10 @@ internal static class RasterImageEncoder {
 
     internal static byte[] Encode(RgbaImage image, RasterImageFormat format, RasterImageOptions? options = null) {
         switch (format) {
+            case RasterImageFormat.Png:
+                return PngWriter.WriteRgba(image);
+            case RasterImageFormat.Jpeg:
+                return JpegWriter.WriteRgba(image, options);
             case RasterImageFormat.Bmp:
                 return BmpWriter.WriteRgba(image, options);
             case RasterImageFormat.Ppm:
@@ -29,6 +33,13 @@ internal static class RasterImageEncoder {
     internal static void WriteTo(Stream stream, RgbaImage image, RasterImageFormat format, RasterImageOptions? options = null) {
         ThrowIfNull(stream);
         switch (format) {
+            case RasterImageFormat.Png:
+                var png = PngWriter.WriteRgba(image);
+                stream.Write(png, 0, png.Length);
+                break;
+            case RasterImageFormat.Jpeg:
+                JpegWriter.WriteRgba(stream, image, options);
+                break;
             case RasterImageFormat.Bmp:
                 BmpWriter.WriteRgba(stream, image, options);
                 break;

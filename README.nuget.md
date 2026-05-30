@@ -103,7 +103,8 @@ When you do not need deferred host definitions, build directly with helpers such
 | SVG markup | `chart.ToSvg()` or `chart.SaveSvg("chart.svg")` |
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
-| Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.tiff")` |
+| JPEG and raster file output | `chart.Save("chart.jpg", rasterOptions)`, `chart.SaveRasterImage("chart.tiff")`, or `ImageComposition.FromFile("wallpaper.jpg").Save("wallpaper-output.jpg")` |
+| Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.jpg")`, `chart.Save("chart.tiff")` |
 
 ## Links
 

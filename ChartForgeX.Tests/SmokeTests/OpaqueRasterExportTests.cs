@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
         AssertPpmHeader(SampleChart().ToRasterImage(RasterImageFormat.Ppm), 640, 360);
         AssertTiffHeader(SampleChart().ToRasterImage(RasterImageFormat.Tiff), 640, 360);
         var supportedFormats = RasterImageFormatExtensions.GetSupportedFormats();
-        Assert(supportedFormats.SequenceEqual(new[] { RasterImageFormat.Bmp, RasterImageFormat.Ppm, RasterImageFormat.Tiff }), "Supported raster formats should be discoverable in stable order.");
+        Assert(supportedFormats.SequenceEqual(new[] { RasterImageFormat.Png, RasterImageFormat.Jpeg, RasterImageFormat.Bmp, RasterImageFormat.Ppm, RasterImageFormat.Tiff }), "Supported raster formats should be discoverable in stable order.");
         Assert(RasterImageFormat.Bmp.IsSupported(), "BMP should be reported as a supported raster format.");
         Assert(RasterImageFormat.Ppm.IsSupported(), "PPM should be reported as a supported raster format.");
         Assert(RasterImageFormat.Tiff.IsSupported(), "TIFF should be reported as a supported raster format.");

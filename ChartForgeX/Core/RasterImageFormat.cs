@@ -1,7 +1,7 @@
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Defines opaque dependency-free raster export formats.
+/// Defines dependency-free raster export formats.
 /// </summary>
 public enum RasterImageFormat {
     /// <summary>
@@ -17,5 +17,15 @@ public enum RasterImageFormat {
     /// <summary>
     /// Baseline uncompressed RGB TIFF.
     /// </summary>
-    Tiff
+    Tiff,
+
+    /// <summary>
+    /// Portable Network Graphics with RGBA alpha.
+    /// </summary>
+    Png,
+
+    /// <summary>
+    /// Baseline JPEG flattened against the configured raster background.
+    /// </summary>
+    Jpeg
 }

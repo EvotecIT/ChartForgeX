@@ -13,6 +13,8 @@ public static class RasterImageFormatExtensions {
     /// <returns>A new array containing the supported raster image formats.</returns>
     public static RasterImageFormat[] GetSupportedFormats() {
         return new[] {
+            RasterImageFormat.Png,
+            RasterImageFormat.Jpeg,
             RasterImageFormat.Bmp,
             RasterImageFormat.Ppm,
             RasterImageFormat.Tiff
@@ -26,6 +28,8 @@ public static class RasterImageFormatExtensions {
     /// <returns>True when the format can be encoded; otherwise, false.</returns>
     public static bool IsSupported(this RasterImageFormat format) {
         switch (format) {
+            case RasterImageFormat.Png:
+            case RasterImageFormat.Jpeg:
             case RasterImageFormat.Bmp:
             case RasterImageFormat.Ppm:
             case RasterImageFormat.Tiff:
@@ -53,6 +57,13 @@ public static class RasterImageFormatExtensions {
         }
 
         switch (extension) {
+            case ".png":
+                format = RasterImageFormat.Png;
+                return true;
+            case ".jpg":
+            case ".jpeg":
+                format = RasterImageFormat.Jpeg;
+                return true;
             case ".bmp":
                 format = RasterImageFormat.Bmp;
                 return true;
@@ -87,6 +98,10 @@ public static class RasterImageFormatExtensions {
     /// <returns>The lowercase file extension, including the leading dot.</returns>
     public static string GetFileExtension(this RasterImageFormat format) {
         switch (format) {
+            case RasterImageFormat.Png:
+                return ".png";
+            case RasterImageFormat.Jpeg:
+                return ".jpg";
             case RasterImageFormat.Bmp:
                 return ".bmp";
             case RasterImageFormat.Ppm:
@@ -105,6 +120,10 @@ public static class RasterImageFormatExtensions {
     /// <returns>Lowercase file extensions, including leading dots, with the conventional extension first.</returns>
     public static string[] GetFileExtensions(this RasterImageFormat format) {
         switch (format) {
+            case RasterImageFormat.Png:
+                return new[] { ".png" };
+            case RasterImageFormat.Jpeg:
+                return new[] { ".jpg", ".jpeg" };
             case RasterImageFormat.Bmp:
                 return new[] { ".bmp" };
             case RasterImageFormat.Ppm:
@@ -123,6 +142,10 @@ public static class RasterImageFormatExtensions {
     /// <returns>The MIME content type.</returns>
     public static string GetMimeType(this RasterImageFormat format) {
         switch (format) {
+            case RasterImageFormat.Png:
+                return "image/png";
+            case RasterImageFormat.Jpeg:
+                return "image/jpeg";
             case RasterImageFormat.Bmp:
                 return "image/bmp";
             case RasterImageFormat.Ppm:

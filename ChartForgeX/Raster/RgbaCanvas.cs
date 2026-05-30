@@ -38,7 +38,12 @@ internal sealed partial class RgbaCanvas {
     }
 
     public void Clear(ChartColor color) {
-        for (var y = 0; y < _pixelHeight; y++) for (var x = 0; x < _pixelWidth; x++) BlendPixel(x, y, color);
+        for (var i = 0; i < Pixels.Length; i += 4) {
+            Pixels[i] = color.R;
+            Pixels[i + 1] = color.G;
+            Pixels[i + 2] = color.B;
+            Pixels[i + 3] = color.A;
+        }
     }
 
     public void FillRect(double x, double y, double width, double height, ChartColor color) {

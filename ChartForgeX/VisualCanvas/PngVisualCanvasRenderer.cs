@@ -384,6 +384,9 @@ public sealed class PngVisualCanvasRenderer {
             case VisualCanvasImageFit.Center:
                 DrawCenteredImage(canvas, destinationX, destinationY, destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba);
                 return;
+            case VisualCanvasImageFit.Tile:
+                DrawTiledImage(canvas, destinationX, destinationY, destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba);
+                return;
             default:
                 canvas.DrawImageScaled(destinationX, destinationY, destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba);
                 return;
@@ -401,6 +404,16 @@ public sealed class PngVisualCanvasRenderer {
         var drawHeight = drawBottom - drawY;
         if (drawWidth <= 0 || drawHeight <= 0) return;
         canvas.DrawImageScaled(drawX, drawY, drawWidth, drawHeight, sourceWidth, sourceHeight, rgba, drawX - centeredX, drawY - centeredY, drawWidth, drawHeight);
+    }
+
+    private static void DrawTiledImage(RgbaCanvas canvas, int destinationX, int destinationY, int destinationWidth, int destinationHeight, int sourceWidth, int sourceHeight, byte[] rgba) {
+        for (var y = destinationY; y < destinationY + destinationHeight; y += sourceHeight) {
+            var drawHeight = Math.Min(sourceHeight, destinationY + destinationHeight - y);
+            for (var x = destinationX; x < destinationX + destinationWidth; x += sourceWidth) {
+                var drawWidth = Math.Min(sourceWidth, destinationX + destinationWidth - x);
+                canvas.DrawImageScaled(x, y, drawWidth, drawHeight, sourceWidth, sourceHeight, rgba, 0, 0, drawWidth, drawHeight);
+            }
+        }
     }
 
     private static void DrawFeatureStrip(RgbaCanvas canvas, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
