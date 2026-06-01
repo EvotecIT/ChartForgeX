@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using ChartForgeX.Html;
 
 namespace ChartForgeX.Topology;
@@ -201,134 +200,9 @@ public static class TopologyIconStencilBrowserExtensions {
             .EndElement().Line();
     }
 
-    private static string StyleSheet() {
-        return """
-body{margin:0;background:#f6f8fb;color:#0f172a;font-family:Inter,Segoe UI,system-ui,sans-serif}.cfx-icon-browser{min-height:100vh;padding:24px;box-sizing:border-box}.cfx-icon-browser__header{display:flex;gap:24px;align-items:flex-start;justify-content:space-between;max-width:1500px;margin:0 auto 18px}.cfx-icon-browser__eyebrow{margin:0 0 6px;color:#2563eb;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.cfx-icon-browser h1{margin:0;font-size:28px;letter-spacing:0}.cfx-icon-browser__subtitle{margin:6px 0 0;max-width:760px;color:#475569;font-size:14px}.cfx-icon-browser__search{display:grid;grid-template-columns:minmax(260px,360px) auto;gap:8px 12px;align-items:center}.cfx-icon-browser__search input{grid-column:1 / -1;height:40px;border:1px solid #cbd5e1;border-radius:8px;background:white;padding:0 12px;font:500 14px/1 Inter,Segoe UI,system-ui,sans-serif;color:#0f172a;box-shadow:0 8px 20px rgba(15,23,42,.05)}.cfx-icon-browser__search span{font-size:13px;font-weight:800;color:#0f172a}.cfx-icon-browser__search small{justify-self:end;color:#64748b}.cfx-icon-browser__shell{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:240px minmax(0,1fr) 280px;gap:16px;align-items:start}.cfx-icon-browser__sidebar,.cfx-icon-browser__inspector{background:#fff;border:1px solid #dbe3ef;border-radius:10px;box-shadow:0 12px 28px rgba(15,23,42,.06);padding:14px;position:sticky;top:16px}.cfx-icon-browser__sidebar section+section{margin-top:18px}.cfx-icon-browser h2{margin:0 0 10px;font-size:13px}.cfx-icon-browser button{width:100%;height:34px;border:1px solid transparent;border-radius:7px;background:transparent;color:#334155;font:700 12px/1 Inter,Segoe UI,system-ui,sans-serif;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 10px;cursor:pointer;text-align:left}.cfx-icon-browser button:hover,.cfx-icon-browser button[aria-pressed='true']{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.cfx-icon-browser button small{color:#64748b}.cfx-icon-browser__workspace{min-width:0}.cfx-icon-browser__filters{display:flex;gap:8px;align-items:center;overflow:auto;padding:0 0 10px}.cfx-icon-browser__filters button{width:auto;white-space:nowrap;background:#fff;border-color:#dbe3ef}.cfx-icon-browser__palette{background:#fff;border:1px solid #dbe3ef;border-radius:10px;padding:12px;box-shadow:0 12px 28px rgba(15,23,42,.06);overflow:auto}.cfx-icon-browser__palette svg{min-width:980px}.cfx-icon-browser__palette [data-cfx-role='topology-node']{cursor:pointer}.cfx-icon-browser__palette .cfx-icon-browser-hidden{display:none}.cfx-icon-browser__palette .cfx-icon-browser-selected{filter:drop-shadow(0 12px 18px rgba(37,99,235,.25))}.cfx-icon-browser__inspector h2{font-size:18px;margin:0 0 14px}.cfx-icon-browser__inspector dl{display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px 10px;margin:0}.cfx-icon-browser__inspector dt{color:#64748b;font-size:12px}.cfx-icon-browser__inspector dd{margin:0;color:#0f172a;font-size:12px;font-weight:700;overflow-wrap:anywhere}.cfx-icon-browser__hint{margin:16px 0 0;color:#64748b;font-size:12px;line-height:1.45}@media(max-width:1100px){.cfx-icon-browser__header{display:block}.cfx-icon-browser__search{margin-top:14px}.cfx-icon-browser__shell{grid-template-columns:1fr}.cfx-icon-browser__sidebar,.cfx-icon-browser__inspector{position:static}.cfx-icon-browser__sidebar{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cfx-icon-browser__sidebar section+section{margin-top:0}}@media(max-width:640px){.cfx-icon-browser{padding:16px}.cfx-icon-browser__sidebar{grid-template-columns:1fr}.cfx-icon-browser__search{grid-template-columns:1fr}.cfx-icon-browser h1{font-size:24px}}
-""";
-    }
+    private static string StyleSheet() => TopologyHtmlAssets.IconStencilBrowserStyle;
 
-    private static string Script() {
-        return """
-(() => {
-  const root = document.querySelector('[data-cfx-icon-browser="true"]');
-  if (!root) return;
-  const search = root.querySelector('[data-cfx-icon-search]');
-  const count = root.querySelector('[data-cfx-icon-count]');
-  const nodes = Array.from(root.querySelectorAll('[data-cfx-role="topology-node"]'));
-  const badges = Array.from(root.querySelectorAll('[data-cfx-role="topology-node-status"]'));
-  const groups = Array.from(root.querySelectorAll('[data-cfx-role="topology-group"]'));
-  const state = { vendor: '', pack: '', category: '', search: search ? search.value.toLowerCase().trim() : '' };
-  const attr = (element, name) => element.getAttribute(name) || '';
-  const meta = (element, key) => attr(element, 'data-cfx-meta-' + key);
-  const detail = name => root.querySelector('[data-cfx-icon-detail="' + name + '"]');
-  const setText = (name, value) => { const target = detail(name); if (target) target.textContent = value || '-'; };
-  const textFor = element => [
-    attr(element, 'data-node-icon-id'),
-    attr(element, 'data-node-icon-label'),
-    attr(element, 'data-node-icon-pack'),
-    attr(element, 'data-node-icon-shape'),
-    attr(element, 'data-node-kind'),
-    meta(element, 'category'),
-    meta(element, 'vendor'),
-    meta(element, 'pack-label'),
-    meta(element, 'icon-tags'),
-    meta(element, 'icon-source-path'),
-    meta(element, 'pack-source-url'),
-    meta(element, 'pack-source-license')
-  ].join(' ').toLowerCase();
-  const nodeVisible = node => {
-    if (state.vendor && meta(node, 'vendor') !== state.vendor) return false;
-    if (state.pack && attr(node, 'data-node-icon-pack') !== state.pack) return false;
-    if (state.category && meta(node, 'category') !== state.category) return false;
-    return !state.search || textFor(node).includes(state.search);
-  };
-  const syncButtons = kind => {
-    root.querySelectorAll('[data-cfx-icon-filter="' + kind + '"]').forEach(button => {
-      button.setAttribute('aria-pressed', attr(button, 'data-cfx-icon-filter-value') === state[kind] ? 'true' : 'false');
-    });
-  };
-  const apply = () => {
-    let visible = 0;
-    let firstVisible = null;
-    const visibleNodeIds = new Set();
-    const visibleByPack = new Set();
-    for (const node of nodes) {
-      const show = nodeVisible(node);
-      node.classList.toggle('cfx-icon-browser-hidden', !show);
-      if (show) {
-        visible++;
-        if (!firstVisible) firstVisible = node;
-        visibleNodeIds.add(attr(node, 'data-node-id'));
-        visibleByPack.add(attr(node, 'data-node-icon-pack'));
-      }
-    }
-    for (const badge of badges) badge.classList.toggle('cfx-icon-browser-hidden', !visibleNodeIds.has(attr(badge, 'data-node-id')));
-    for (const group of groups) {
-      const pack = attr(group, 'data-group-icon-id').split(':')[0] || meta(group, 'packid');
-      group.classList.toggle('cfx-icon-browser-hidden', pack && !visibleByPack.has(pack));
-    }
-    if (count) count.textContent = visible + ' icons';
-    if (firstVisible && (state.search || state.vendor || state.pack || state.category)) {
-      window.requestAnimationFrame(() => firstVisible.scrollIntoView({ block: 'nearest', inline: 'center' }));
-    }
-  };
-  const select = node => {
-    nodes.forEach(item => item.classList.toggle('cfx-icon-browser-selected', item === node));
-    const payload = {
-      iconId: attr(node, 'data-node-icon-id'),
-      iconPack: attr(node, 'data-node-icon-pack'),
-      iconLabel: attr(node, 'data-node-icon-label'),
-      iconShape: attr(node, 'data-node-icon-shape'),
-      iconArtwork: attr(node, 'data-node-icon-artwork') || meta(node, 'icon-artwork'),
-      nodeKind: attr(node, 'data-node-kind'),
-      category: meta(node, 'category'),
-      vendor: meta(node, 'vendor'),
-      packLabel: meta(node, 'pack-label'),
-      tags: meta(node, 'icon-tags'),
-      sourcePath: meta(node, 'icon-source-path'),
-      sourceUrl: meta(node, 'pack-source-url'),
-      sourceRevision: meta(node, 'icon-source-revision') || meta(node, 'pack-source-revision'),
-      sourceLicense: meta(node, 'pack-source-license'),
-      sourceLicenseUrl: meta(node, 'pack-source-licenseurl')
-    };
-    setText('label', payload.iconLabel);
-    setText('id', payload.iconId);
-    setText('pack', payload.packLabel || payload.iconPack);
-    setText('vendor', payload.vendor);
-    setText('category', payload.category);
-    setText('shape', payload.iconShape);
-    setText('artwork', payload.iconArtwork || 'fallback shape');
-    setText('source', payload.sourcePath || payload.sourceUrl);
-    setText('revision', payload.sourceRevision);
-    setText('license', payload.sourceLicense);
-    root.dispatchEvent(new CustomEvent('cfx-icon-browser-select', { bubbles: true, detail: payload }));
-  };
-  root.querySelectorAll('[data-cfx-icon-filter]').forEach(button => {
-    button.addEventListener('click', () => {
-      const kind = attr(button, 'data-cfx-icon-filter');
-      state[kind] = attr(button, 'data-cfx-icon-filter-value');
-      syncButtons(kind);
-      apply();
-    });
-  });
-  if (search) search.addEventListener('input', () => {
-    state.search = search.value.toLowerCase().trim();
-    apply();
-  });
-  nodes.forEach(node => {
-    node.setAttribute('tabindex', '0');
-    node.addEventListener('click', () => select(node));
-    node.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        select(node);
-      }
-    });
-  });
-  apply();
-})();
-""";
-    }
+    private static string Script() => TopologyHtmlAssets.IconStencilBrowserScript;
 
     private static TopologyIconCatalogQuery ToQuery(TopologyIconStencilBrowserOptions options) {
         var query = new TopologyIconCatalogQuery {

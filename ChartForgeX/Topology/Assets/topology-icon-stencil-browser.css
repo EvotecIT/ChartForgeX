@@ -1,0 +1,32 @@
+body{margin:0;background:#f6f8fb;color:#0f172a;font-family:Inter,Segoe UI,system-ui,sans-serif}
+.cfx-icon-browser{min-height:100vh;padding:24px;box-sizing:border-box}
+.cfx-icon-browser__header{display:flex;gap:24px;align-items:flex-start;justify-content:space-between;max-width:1500px;margin:0 auto 18px}
+.cfx-icon-browser__eyebrow{margin:0 0 6px;color:#2563eb;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.cfx-icon-browser h1{margin:0;font-size:28px;letter-spacing:0}
+.cfx-icon-browser__subtitle{margin:6px 0 0;max-width:760px;color:#475569;font-size:14px}
+.cfx-icon-browser__search{display:grid;grid-template-columns:minmax(260px,360px) auto;gap:8px 12px;align-items:center}
+.cfx-icon-browser__search input{grid-column:1 / -1;height:40px;border:1px solid #cbd5e1;border-radius:8px;background:white;padding:0 12px;font:500 14px/1 Inter,Segoe UI,system-ui,sans-serif;color:#0f172a;box-shadow:0 8px 20px rgba(15,23,42,.05)}
+.cfx-icon-browser__search span{font-size:13px;font-weight:800;color:#0f172a}
+.cfx-icon-browser__search small{justify-self:end;color:#64748b}
+.cfx-icon-browser__shell{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:240px minmax(0,1fr) 280px;gap:16px;align-items:start}
+.cfx-icon-browser__sidebar,.cfx-icon-browser__inspector{background:#fff;border:1px solid #dbe3ef;border-radius:10px;box-shadow:0 12px 28px rgba(15,23,42,.06);padding:14px;position:sticky;top:16px}
+.cfx-icon-browser__sidebar section+section{margin-top:18px}
+.cfx-icon-browser h2{margin:0 0 10px;font-size:13px}
+.cfx-icon-browser button{width:100%;height:34px;border:1px solid transparent;border-radius:7px;background:transparent;color:#334155;font:700 12px/1 Inter,Segoe UI,system-ui,sans-serif;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 10px;cursor:pointer;text-align:left}
+.cfx-icon-browser button:hover,.cfx-icon-browser button[aria-pressed='true']{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+.cfx-icon-browser button small{color:#64748b}
+.cfx-icon-browser__workspace{min-width:0}
+.cfx-icon-browser__filters{display:flex;gap:8px;align-items:center;overflow:auto;padding:0 0 10px}
+.cfx-icon-browser__filters button{width:auto;white-space:nowrap;background:#fff;border-color:#dbe3ef}
+.cfx-icon-browser__palette{background:#fff;border:1px solid #dbe3ef;border-radius:10px;padding:12px;box-shadow:0 12px 28px rgba(15,23,42,.06);overflow:auto}
+.cfx-icon-browser__palette svg{min-width:980px}
+.cfx-icon-browser__palette [data-cfx-role='topology-node']{cursor:pointer}
+.cfx-icon-browser__palette .cfx-icon-browser-hidden{display:none}
+.cfx-icon-browser__palette .cfx-icon-browser-selected{filter:drop-shadow(0 12px 18px rgba(37,99,235,.25))}
+.cfx-icon-browser__inspector h2{font-size:18px;margin:0 0 14px}
+.cfx-icon-browser__inspector dl{display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px 10px;margin:0}
+.cfx-icon-browser__inspector dt{color:#64748b;font-size:12px}
+.cfx-icon-browser__inspector dd{margin:0;color:#0f172a;font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.cfx-icon-browser__hint{margin:16px 0 0;color:#64748b;font-size:12px;line-height:1.45}
+@media(max-width:1100px){.cfx-icon-browser__header{display:block}.cfx-icon-browser__search{margin-top:14px}.cfx-icon-browser__shell{grid-template-columns:1fr}.cfx-icon-browser__sidebar,.cfx-icon-browser__inspector{position:static}.cfx-icon-browser__sidebar{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cfx-icon-browser__sidebar section+section{margin-top:0}}
+@media(max-width:640px){.cfx-icon-browser{padding:16px}.cfx-icon-browser__sidebar{grid-template-columns:1fr}.cfx-icon-browser__search{grid-template-columns:1fr}.cfx-icon-browser h1{font-size:24px}}

@@ -40,6 +40,9 @@
   <ItemGroup>
     <None Include="..\README.nuget.md" Pack="true" PackagePath="README.md" />
     <None Include="..\assets\ChartForgeX.png" Pack="true" PackagePath="\" />
+    <EmbeddedResource Include="Topology\Assets\topology.css" LogicalName="ChartForgeX.Topology.Assets.topology.css" />
     <EmbeddedResource Include="Topology\Assets\topology-interaction.js" LogicalName="ChartForgeX.Topology.Assets.topology-interaction.js" />
+    <EmbeddedResource Include="Topology\Assets\topology-icon-stencil-browser.css" LogicalName="ChartForgeX.Topology.Assets.topology-icon-stencil-browser.css" />
+    <EmbeddedResource Include="Topology\Assets\topology-icon-stencil-browser.js" LogicalName="ChartForgeX.Topology.Assets.topology-icon-stencil-browser.js" />
   </ItemGroup>
 </Project>
