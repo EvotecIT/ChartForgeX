@@ -38,7 +38,45 @@ public sealed class HtmlInteractiveChartRenderer {
         return writer.Build();
     }
 
+    /// <summary>
+    /// Renders the specified chart to a self-contained embeddable interactive HTML fragment.
+    /// </summary>
+    /// <param name="chart">The chart to render.</param>
+    /// <returns>An embeddable interactive HTML fragment.</returns>
+    public string RenderFragment(Chart chart) => RenderFragment(chart, null);
+
+    /// <summary>
+    /// Renders the specified chart to a self-contained embeddable interactive HTML fragment.
+    /// </summary>
+    /// <param name="chart">The chart to render.</param>
+    /// <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+    /// <returns>An embeddable interactive HTML fragment.</returns>
+    public string RenderFragment(Chart chart, Action<HtmlChartInteractionOptions>? configure) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        var options = new HtmlChartInteractionOptions();
+        configure?.Invoke(options);
+        var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("style")
+            .Attribute("data-cfx-interactive-assets", "true")
+            .RawTrusted(InteractiveFragmentStyle)
+            .EndElement()
+            .Line()
+            .RawTrusted(BuildChartSection(chart, options, title))
+            .Line()
+            .StartElement("script")
+            .Attribute("nonce", options.ScriptNonce)
+            .RawTrusted(HtmlInteractiveAssets.Script)
+            .EndElement();
+        return writer.Build();
+    }
+
     internal static string InteractiveStyle => HtmlInteractiveAssets.Style;
+
+    internal static string InteractiveFragmentStyle => HtmlInteractiveAssets.Style
+        .Replace(":root {", ".cfx-interactive-chart {")
+        .Replace("\n* {", "\n.cfx-interactive-chart, .cfx-interactive-chart * {")
+        .Replace("\nbody {", "\n.cfx-interactive-chart {");
 
     internal static string InteractiveScript => HtmlInteractiveAssets.Script;
 

@@ -327,6 +327,27 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Chooses how topology scenario controls are rendered in interactive HTML output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="mode">The scenario control mode.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlScenarioControlMode(this TopologyRenderOptions options, TopologyHtmlScenarioControlMode mode) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        TopologyModelGuards.EnumDefined(mode, nameof(mode));
+        options.HtmlScenarioControlMode = mode;
+        return options;
+    }
+
+    /// <summary>
+    /// Renders topology scenarios as independent route checkboxes.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlScenarioCheckboxes(this TopologyRenderOptions options) =>
+        options.WithHtmlScenarioControlMode(TopologyHtmlScenarioControlMode.Checkboxes);
+
+    /// <summary>
     /// Enables or disables the compact topology scenario detail panel in interactive HTML output.
     /// </summary>
     /// <param name="options">The render options.</param>
@@ -335,6 +356,45 @@ public static class TopologyRenderOptionsExtensions {
     public static TopologyRenderOptions WithHtmlScenarioPanel(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.EnableHtmlScenarioPanel = enabled;
+        return options;
+    }
+
+    /// <summary>
+    /// Enables or disables the built-in selected-record panel in interactive HTML output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render the selected-record panel.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlSelectionPanel(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlSelectionPanel = enabled;
+        if (enabled) options.EnableHtmlInteractions = true;
+        return options;
+    }
+
+    /// <summary>
+    /// Enables or disables the fullscreen viewport control in interactive HTML output.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render a fullscreen control.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlFullscreenControl(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlFullscreenControl = enabled;
+        if (enabled) options.EnableHtmlInteractions = true;
+        return options;
+    }
+
+    /// <summary>
+    /// Places viewport, fullscreen, and export controls inside the interactive HTML topology viewport.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="placement">The control placement.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlControlPlacement(this TopologyRenderOptions options, TopologyHtmlControlPlacement placement) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        TopologyModelGuards.EnumDefined(placement, nameof(placement));
+        options.HtmlControlPlacement = placement;
         return options;
     }
 

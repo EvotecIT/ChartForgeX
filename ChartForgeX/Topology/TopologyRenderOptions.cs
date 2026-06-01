@@ -105,8 +105,20 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether interactive HTML pages should render scenario picker controls when scenarios are present.</summary>
     public bool EnableHtmlScenarioControls { get; set; } = true;
 
+    /// <summary>Gets or sets how interactive HTML pages should render scenario controls.</summary>
+    public TopologyHtmlScenarioControlMode HtmlScenarioControlMode { get; set; } = TopologyHtmlScenarioControlMode.Buttons;
+
     /// <summary>Gets or sets whether interactive HTML pages should render a compact scenario detail panel when scenarios are present.</summary>
     public bool EnableHtmlScenarioPanel { get; set; } = true;
+
+    /// <summary>Gets or sets whether interactive HTML pages should render a compact selected-record panel for clicked nodes, edges, and groups.</summary>
+    public bool EnableHtmlSelectionPanel { get; set; }
+
+    /// <summary>Gets or sets whether interactive HTML pages should render a fullscreen viewport control.</summary>
+    public bool EnableHtmlFullscreenControl { get; set; }
+
+    /// <summary>Gets or sets where viewport, fullscreen, and export controls are placed in interactive HTML output.</summary>
+    public TopologyHtmlControlPlacement HtmlControlPlacement { get; set; } = TopologyHtmlControlPlacement.TopLeft;
 
     /// <summary>Gets or sets whether interactive HTML pages should read and update scenario state from the page query string.</summary>
     public bool EnableHtmlScenarioUrlState { get; set; }

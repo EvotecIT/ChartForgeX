@@ -1063,6 +1063,8 @@
     emitHostEvent(root, 'cfxscenariolink', { url });
   };
   document.querySelectorAll('.cfx-interactive-chart').forEach((root) => {
+    if (root.dataset.cfxRuntimeBound === 'true') return;
+    root.dataset.cfxRuntimeBound = 'true';
     const tip = root.querySelector('.cfx-tooltip');
     const stage = root.querySelector('.cfx-stage');
     const brush = root.querySelector('.cfx-brush-box');

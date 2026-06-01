@@ -172,6 +172,19 @@ internal static partial class SmokeTests {
         var withoutSvgNamespace = html.Replace("http://www.w3.org/2000/svg", string.Empty);
         Assert(!withoutSvgNamespace.Contains("http://", StringComparison.OrdinalIgnoreCase) && !withoutSvgNamespace.Contains("https://", StringComparison.OrdinalIgnoreCase), "Interactive HTML should remain self-contained.");
 
+        var fragment = SampleChart().ToInteractiveHtmlFragment(options => {
+            options.IdScope = "embedded-security-posture";
+            options.Interaction.ChartId = "embedded-security-posture";
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Export);
+        });
+        Assert(fragment.Contains("data-cfx-interactive-assets=\"true\"", StringComparison.Ordinal), "Interactive fragments should include embeddable CSS assets.");
+        Assert(!fragment.Contains("\n:root {", StringComparison.Ordinal) && !fragment.Contains("\nbody {", StringComparison.Ordinal) && !fragment.Contains("\n* {", StringComparison.Ordinal), "Interactive fragments should not inject page-level CSS selectors into host documents.");
+        Assert(fragment.Contains(".cfx-interactive-chart, .cfx-interactive-chart * {", StringComparison.Ordinal), "Interactive fragment CSS should scope reset rules to the embedded chart subtree.");
+        Assert(fragment.Contains("class=\"cfx-interactive-chart\"", StringComparison.Ordinal), "Interactive fragments should include the reusable interactive chart section.");
+        Assert(fragment.Contains("data-cfx-chart-id=\"embedded-security-posture\"", StringComparison.Ordinal), "Interactive fragments should preserve configured chart ids for host synchronization.");
+        Assert(fragment.Contains("cfxRuntimeBound", StringComparison.Ordinal), "Interactive fragments should guard chart roots against duplicate event binding when embedded several times.");
+        Assert(fragment.Contains("<script>", StringComparison.Ordinal), "Interactive fragments should include the dependency-free runtime script.");
+
         var noReset = SampleChart().ToInteractiveHtmlPage(options => {
             options.IncludeResetButton = false;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;

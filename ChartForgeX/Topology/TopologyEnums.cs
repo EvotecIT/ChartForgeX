@@ -118,6 +118,34 @@ public enum TopologyScenarioStepKind {
 }
 
 /// <summary>
+/// Defines where interactive HTML topology viewport controls are placed.
+/// </summary>
+public enum TopologyHtmlControlPlacement {
+    /// <summary>Place controls in the upper-left corner.</summary>
+    TopLeft,
+    /// <summary>Place controls in the upper-right corner.</summary>
+    TopRight,
+    /// <summary>Place controls as a compact rail on the left side of the viewport.</summary>
+    LeftRail,
+    /// <summary>Place controls as a compact rail on the right side of the viewport.</summary>
+    RightRail,
+    /// <summary>Place controls in the lower-left corner.</summary>
+    BottomLeft,
+    /// <summary>Place controls in the lower-right corner.</summary>
+    BottomRight
+}
+
+/// <summary>
+/// Defines how interactive HTML topology scenarios are exposed to users.
+/// </summary>
+public enum TopologyHtmlScenarioControlMode {
+    /// <summary>Render mutually exclusive route buttons.</summary>
+    Buttons,
+    /// <summary>Render independent route checkboxes so multiple routes can be enabled or disabled.</summary>
+    Checkboxes
+}
+
+/// <summary>
 /// Defines reusable topology visual treatments.
 /// </summary>
 public enum TopologyVisualStyle {

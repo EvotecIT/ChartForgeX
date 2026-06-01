@@ -1,0 +1,97 @@
+.cfx-topology-wrapper{margin:0 auto;overflow:visible}
+.cfx-topology-wrapper{--cfx-topology-control-bg:rgba(255,255,255,.94);--cfx-topology-control-bg-hover:#eff6ff;--cfx-topology-control-text:#1e3a8a;--cfx-topology-control-muted:#475569;--cfx-topology-control-border:rgba(37,99,235,.28);--cfx-topology-control-border-hover:var(--cfx-topology-accent,#2563eb);--cfx-topology-control-shadow:0 10px 24px rgba(15,23,42,.12);--cfx-topology-control-panel-bg:rgba(255,255,255,.78);--cfx-topology-control-focus:0 0 0 3px rgba(37,99,235,.18);--cfx-topology-accent:#2563eb}
+@media (prefers-color-scheme:dark){.cfx-topology-wrapper{--cfx-topology-control-bg:rgba(15,23,42,.9);--cfx-topology-control-bg-hover:rgba(37,99,235,.24);--cfx-topology-control-text:#dbeafe;--cfx-topology-control-muted:#a8b8cc;--cfx-topology-control-border:rgba(148,163,184,.32);--cfx-topology-control-shadow:0 12px 28px rgba(0,0,0,.35);--cfx-topology-control-panel-bg:rgba(15,23,42,.74);--cfx-topology-control-focus:0 0 0 3px rgba(96,165,250,.26);--cfx-topology-accent:#60a5fa}}
+.cfx-topology-viewport{position:relative}
+.cfx-topology-wrapper svg{max-width:100%;height:auto;display:block;overflow:visible}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport{overflow:hidden;touch-action:none}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport>svg{transform:translate(var(--cfx-topology-pan-x,0),var(--cfx-topology-pan-y,0)) scale(var(--cfx-topology-zoom,1));transform-origin:center center;transition:transform .12s ease;will-change:transform}
+.cfx-topology-controls{position:absolute;z-index:5;top:12px;left:12px;display:grid;gap:6px}
+.cfx-topology-wrapper[data-cfx-controls-placement='top-right'] .cfx-topology-controls{left:auto;right:12px}
+.cfx-topology-wrapper[data-cfx-controls-placement='bottom-left'] .cfx-topology-controls{top:auto;bottom:12px}
+.cfx-topology-wrapper[data-cfx-controls-placement='bottom-right'] .cfx-topology-controls{top:auto;right:12px;bottom:12px;left:auto}
+.cfx-topology-wrapper[data-cfx-controls-placement='left-rail'] .cfx-topology-controls,.cfx-topology-wrapper[data-cfx-controls-placement='right-rail'] .cfx-topology-controls{top:12px;bottom:auto;display:flex;flex-direction:column}
+.cfx-topology-wrapper[data-cfx-controls-placement='right-rail'] .cfx-topology-controls{right:12px;left:auto}
+.cfx-topology-controls button,.cfx-topology-scenarios button{min-width:34px;height:34px;border:1px solid rgba(37,99,235,.28);border-radius:6px;background:rgba(255,255,255,.92);color:#1e3a8a;cursor:pointer;font:700 12px/1 __CFX_FONT_FAMILY__;box-shadow:0 8px 18px rgba(15,23,42,.1)}
+.cfx-topology-scenarios{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;align-items:center}
+.cfx-topology-scenarios button{height:32px;padding:0 12px;border-color:color-mix(in srgb,var(--cfx-topology-scenario-color,#2563eb) 32%,transparent);color:#0f172a}
+.cfx-topology-scenarios button:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:var(--cfx-topology-scenario-color,#64748b)}
+.cfx-topology-scenarios label{display:inline-flex;align-items:center;gap:7px;min-height:30px;padding:0 10px;border:1px solid var(--cfx-topology-control-border);border-radius:6px;background:var(--cfx-topology-control-bg);color:var(--cfx-topology-control-text);cursor:pointer;font:700 12px/1 __CFX_FONT_FAMILY__}
+.cfx-topology-scenarios input[type='checkbox']{width:14px;height:14px;margin:0;accent-color:var(--cfx-topology-scenario-color,var(--cfx-topology-accent,#2563eb))}
+.cfx-topology-scenarios label:has(input:checked){border-color:var(--cfx-topology-scenario-color,var(--cfx-topology-accent,#2563eb));background:var(--cfx-topology-control-bg-hover)}
+.cfx-topology-scenario-panel{display:grid;gap:8px;max-width:760px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(148,163,184,.42);border-radius:8px;background:rgba(255,255,255,.88);box-shadow:0 10px 24px rgba(15,23,42,.07);color:#0f172a}
+.cfx-topology-scenario-panel__summary{display:grid;gap:2px}
+.cfx-topology-scenario-panel__title{font:700 14px/1.25 __CFX_FONT_FAMILY__;color:var(--cfx-topology-scenario-color,#0f172a)}
+.cfx-topology-scenario-panel__meta{font:500 12px/1.35 __CFX_FONT_FAMILY__;color:#475569}
+.cfx-topology-scenario-panel__controls{display:flex;flex-wrap:wrap;gap:6px}
+.cfx-topology-scenario-panel__controls button{min-height:28px;padding:4px 9px;border:1px solid rgba(148,163,184,.4);border-radius:6px;background:#fff;color:#0f172a;cursor:pointer;font:700 11px/1 __CFX_FONT_FAMILY__}
+.cfx-topology-scenario-panel__controls button:hover,.cfx-topology-scenario-panel__controls button:focus-visible,.cfx-topology-scenario-panel__controls button[aria-pressed='true']{border-color:var(--cfx-topology-scenario-color,#2563eb);color:var(--cfx-topology-scenario-color,#2563eb);background:#eff6ff}
+.cfx-topology-scenario-panel__steps{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.cfx-topology-scenario-panel__steps li{display:flex;align-items:center;gap:6px;min-height:24px;padding:3px 8px;border:1px solid rgba(148,163,184,.34);border-radius:6px;background:rgba(248,250,252,.82);cursor:pointer;font:700 11px/1.2 __CFX_FONT_FAMILY__;color:#0f172a}
+.cfx-topology-scenario-panel__steps li:before{content:attr(data-cfx-scenario-step-index);display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--cfx-topology-scenario-color,#2563eb);color:#fff;font-size:10px}
+.cfx-topology-scenario-panel__steps li[aria-current='step']{border-color:var(--cfx-topology-scenario-color,#2563eb);background:#eff6ff;color:#0f172a}
+.cfx-topology-force-controls{display:grid;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(148,163,184,.42);border-radius:8px;background:rgba(255,255,255,.9);box-shadow:0 10px 24px rgba(15,23,42,.07);color:#0f172a}
+.cfx-topology-force-controls__row{display:grid;grid-template-columns:minmax(180px,1fr) minmax(118px,.25fr) minmax(140px,.35fr);gap:8px}
+.cfx-topology-force-controls input[type='search'],.cfx-topology-force-controls select{min-width:0;height:32px;border:1px solid rgba(148,163,184,.48);border-radius:6px;background:#fff;color:#0f172a;padding:0 9px;font:600 12px/1 __CFX_FONT_FAMILY__}
+.cfx-topology-force-controls__toggles{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.cfx-topology-force-controls label{display:inline-flex;gap:6px;align-items:center;font:700 11px/1 __CFX_FONT_FAMILY__;color:#334155}
+.cfx-topology-force-controls output{font:600 11px/1.35 __CFX_FONT_FAMILY__;color:#64748b}
+.cfx-topology-controls{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px;border:1px solid var(--cfx-topology-control-border);border-radius:8px;background:var(--cfx-topology-control-panel-bg);box-shadow:var(--cfx-topology-control-shadow);backdrop-filter:blur(10px)}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport,.cfx-topology-wrapper[data-cfx-export-controls='true'] .cfx-topology-viewport,.cfx-topology-wrapper[data-cfx-fullscreen-control='true'] .cfx-topology-viewport{padding-top:48px}
+.cfx-topology-wrapper[data-cfx-controls-placement='left-rail'] .cfx-topology-viewport,.cfx-topology-wrapper[data-cfx-controls-placement='right-rail'] .cfx-topology-viewport,.cfx-topology-wrapper[data-cfx-controls-placement='bottom-left'] .cfx-topology-viewport,.cfx-topology-wrapper[data-cfx-controls-placement='bottom-right'] .cfx-topology-viewport{padding-top:0}
+.cfx-topology-wrapper[data-cfx-controls-placement='left-rail'] .cfx-topology-viewport{padding-left:48px}
+.cfx-topology-wrapper[data-cfx-controls-placement='right-rail'] .cfx-topology-viewport{padding-right:48px}
+.cfx-topology-controls button,.cfx-topology-scenarios button,.cfx-topology-scenario-panel__controls button{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:32px;height:32px;border:1px solid var(--cfx-topology-control-border);border-radius:6px;background:var(--cfx-topology-control-bg);color:var(--cfx-topology-control-text);box-shadow:none;cursor:pointer;font:700 12px/1 __CFX_FONT_FAMILY__;letter-spacing:0;transition:background-color .14s ease,border-color .14s ease,color .14s ease,box-shadow .14s ease,transform .14s ease}
+.cfx-topology-controls button svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.cfx-topology-controls button span{font-size:11px;line-height:1;pointer-events:none}
+.cfx-topology-controls button[data-cfx-topology-export],.cfx-topology-scenarios button{min-width:42px;padding:0 10px}
+.cfx-topology-controls button:hover,.cfx-topology-controls button:focus-visible,.cfx-topology-controls button[aria-pressed='true'],.cfx-topology-scenarios button:hover,.cfx-topology-scenarios button:focus-visible,.cfx-topology-scenarios button[aria-pressed='true'],.cfx-topology-scenario-panel__controls button:hover,.cfx-topology-scenario-panel__controls button:focus-visible,.cfx-topology-scenario-panel__controls button[aria-pressed='true']{border-color:var(--cfx-topology-control-border-hover);color:var(--cfx-topology-control-text);background:var(--cfx-topology-control-bg-hover);box-shadow:var(--cfx-topology-control-focus)}
+.cfx-topology-controls button:active,.cfx-topology-scenarios button:active,.cfx-topology-scenario-panel__controls button:active{transform:translateY(1px)}
+.cfx-topology-wrapper:fullscreen{width:100vw!important;max-width:none!important;height:100vh!important;margin:0!important;padding:16px;box-sizing:border-box;background:var(--cfx-topology-background,#fff);overflow:auto}
+.cfx-topology-wrapper:fullscreen .cfx-topology-viewport{min-height:calc(100vh - 32px)}
+.cfx-topology-scenario-panel,.cfx-topology-force-controls{border-color:var(--cfx-topology-control-border);background:var(--cfx-topology-control-panel-bg);color:var(--cfx-topology-control-text);box-shadow:var(--cfx-topology-control-shadow);backdrop-filter:blur(10px)}
+.cfx-topology-selection-panel{position:absolute;z-index:4;right:12px;top:12px;bottom:12px;width:min(320px,calc(100% - 24px));display:grid;align-content:start;gap:10px;padding:12px;border:1px solid var(--cfx-topology-control-border);border-radius:8px;background:var(--cfx-topology-control-panel-bg);color:var(--cfx-topology-control-text);box-shadow:var(--cfx-topology-control-shadow);backdrop-filter:blur(12px);overflow:auto}
+.cfx-topology-selection-panel[hidden]{display:none}
+.cfx-topology-selection-panel__head{display:grid;gap:5px;padding-bottom:8px;border-bottom:1px solid var(--cfx-topology-control-border)}
+.cfx-topology-selection-panel__eyebrow{font:700 10px/1 __CFX_FONT_FAMILY__;text-transform:uppercase;letter-spacing:.04em;color:var(--cfx-topology-control-muted)}
+.cfx-topology-selection-panel__title{font:700 14px/1.25 __CFX_FONT_FAMILY__;color:var(--cfx-topology-control-text)}
+.cfx-topology-selection-panel__status{justify-self:start;min-height:20px;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--cfx-topology-selection-status-color,var(--cfx-topology-accent,#2563eb)) 13%,transparent);color:var(--cfx-topology-selection-status-color,var(--cfx-topology-control-text));font:800 10px/1 __CFX_FONT_FAMILY__}
+.cfx-topology-selection-panel__facts{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;margin:0;font:600 11px/1.35 __CFX_FONT_FAMILY__;color:var(--cfx-topology-control-text)}
+.cfx-topology-selection-panel__facts dt{color:var(--cfx-topology-control-muted)}
+.cfx-topology-selection-panel__facts dd{margin:0;min-width:0;overflow-wrap:anywhere;text-align:right}
+.cfx-topology-selection-panel__meta,.cfx-topology-selection-panel__related{display:grid;gap:6px;font:600 11px/1.35 __CFX_FONT_FAMILY__;color:var(--cfx-topology-control-text)}
+.cfx-topology-selection-panel__meta:empty,.cfx-topology-selection-panel__related:empty{display:none}
+.cfx-topology-selection-panel__row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid color-mix(in srgb,var(--cfx-topology-control-border) 72%,transparent)}
+.cfx-topology-selection-panel__row span:first-child{color:var(--cfx-topology-control-muted)}
+.cfx-topology-selection-panel__row span:last-child{min-width:0;text-align:right;overflow-wrap:anywhere}
+.cfx-topology-scenario-panel__meta,.cfx-topology-force-controls label,.cfx-topology-force-controls output{color:var(--cfx-topology-control-muted)}
+.cfx-topology-force-controls input[type='search'],.cfx-topology-force-controls select{border-color:var(--cfx-topology-control-border);background:var(--cfx-topology-control-bg);color:var(--cfx-topology-control-text)}
+.cfx-topology-controls button:hover,.cfx-topology-controls button:focus-visible,.cfx-topology-controls button[aria-pressed='true'],.cfx-topology-scenarios button:hover,.cfx-topology-scenarios button:focus-visible,.cfx-topology-scenarios button[aria-pressed='true']{border-color:var(--cfx-topology-scenario-color,var(--cfx-topology-control-border-hover,#2563eb));color:var(--cfx-topology-control-text,#0f172a);background:var(--cfx-topology-control-bg-hover,#eff6ff)}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport{cursor:grab}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'][data-cfx-topology-dragging='true'] .cfx-topology-viewport{cursor:grabbing}
+.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge'],.cfx-topology-wrapper [data-cfx-role='topology-group']{cursor:pointer}
+.cfx-topology-wrapper .cfx-topology-html-selected{filter:drop-shadow(0 10px 18px rgba(37,99,235,.22))}
+.cfx-topology-wrapper .cfx-topology-html-muted{opacity:.32}
+.cfx-topology-wrapper .cfx-topology-html-related{opacity:1}
+.cfx-topology-wrapper .cfx-topology-html-hovered{filter:drop-shadow(0 8px 16px rgba(15,23,42,.16))}
+.cfx-topology-wrapper .cfx-topology-html-hover-muted{opacity:.42}
+.cfx-topology-wrapper .cfx-topology-html-hover-related{opacity:1}
+.cfx-topology-wrapper .cfx-topology-html-scenario-muted{opacity:.18}
+.cfx-topology-wrapper .cfx-topology-html-scenario-active{opacity:1;filter:drop-shadow(0 10px 18px rgba(37,99,235,.18))}
+.cfx-topology-wrapper .cfx-topology-html-scenario-active .cfx-topology__edge{stroke:var(--cfx-topology-active-scenario-color,#2563eb)!important;stroke-width:5!important}
+.cfx-topology-wrapper .cfx-topology-html-scenario-active .cfx-topology__node-card{stroke:var(--cfx-topology-active-scenario-color,#2563eb)!important;stroke-width:2.4!important}
+.cfx-topology-wrapper .cfx-topology-html-scenario-preview-muted{opacity:.34}
+.cfx-topology-wrapper .cfx-topology-html-scenario-preview{opacity:1;filter:drop-shadow(0 8px 14px rgba(15,23,42,.16))}
+.cfx-topology-wrapper .cfx-topology-html-scenario-preview .cfx-topology__edge{stroke:var(--cfx-topology-preview-scenario-color,#2563eb)!important;stroke-width:4!important}
+.cfx-topology-wrapper .cfx-topology-html-scenario-preview .cfx-topology__node-card{stroke:var(--cfx-topology-preview-scenario-color,#2563eb)!important;stroke-width:2!important}
+.cfx-topology-wrapper .cfx-topology-html-scenario-step-muted{opacity:.38}
+.cfx-topology-wrapper .cfx-topology-html-scenario-step-active{opacity:1;filter:drop-shadow(0 10px 18px rgba(15,23,42,.2))}
+.cfx-topology-wrapper .cfx-topology-html-scenario-step-active .cfx-topology__edge{stroke-width:6!important}
+.cfx-topology-wrapper .cfx-topology-html-scenario-step-active .cfx-topology__node-card{stroke-width:3!important}
+.cfx-topology-wrapper .cfx-topology-html-force-hidden{display:none!important}
+.cfx-topology-wrapper .cfx-topology-html-force-faded{opacity:.12!important}
+.cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-muted,.cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-hover-muted{opacity:.06!important}
+.cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-related .cfx-topology__edge,.cfx-topology-wrapper[data-cfx-force-focus='true'] .cfx-topology-html-hover-related .cfx-topology__edge{opacity:.92!important;stroke-width:3.2!important}
+.cfx-topology-wrapper[data-cfx-force-focus='true'] [data-cfx-role='topology-edge-label'].cfx-topology-html-force-focus-label{display:block!important;opacity:1!important}
+.cfx-topology-wrapper[data-cfx-force-moving-edges='true'] .cfx-topology-html-force-moving .cfx-topology__edge,.cfx-topology-wrapper[data-cfx-force-moving-edges='true'] .cfx-topology-html-force-moving .cfx-topology__edge--premium-layer{opacity:.08!important}
+.cfx-topology-wrapper[data-cfx-force-moving-edges='true'] [data-cfx-role='topology-edge-label']{display:none!important}
+@media (max-width:720px){.cfx-topology-force-controls__row{grid-template-columns:1fr}.cfx-topology-force-controls{padding:9px}.cfx-topology-selection-panel{top:auto;left:12px;max-height:42%;width:auto}}

@@ -4,8 +4,36 @@ using ChartForgeX.Html;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologyHtmlRenderer {
-    private static void WriteScenarioControls(HtmlMarkupWriter writer, string scenariosClass, TopologyChart chart, string? activeScenarioId) {
+    private static void WriteScenarioControls(HtmlMarkupWriter writer, string scenariosClass, TopologyChart chart, string? activeScenarioId, TopologyHtmlScenarioControlMode mode) {
         writer.StartElement("div").Attribute("class", scenariosClass).Attribute("aria-label", "Topology scenarios").EndStartElement();
+        if (mode == TopologyHtmlScenarioControlMode.Checkboxes) {
+            foreach (var scenario in chart.Scenarios) {
+                var active = string.Equals(activeScenarioId, scenario.Id, StringComparison.Ordinal);
+                writer.StartElement("label")
+                    .Attribute("data-cfx-topology-scenario-label", scenario.Id)
+                    .Attribute("style", string.IsNullOrWhiteSpace(scenario.Color) ? null : "--cfx-topology-scenario-color:" + scenario.Color!.Trim())
+                    .EndStartElement();
+                writer.StartElement("input")
+                    .Attribute("type", "checkbox")
+                    .Attribute("data-cfx-topology-scenario-toggle", scenario.Id)
+                    .Attribute("data-cfx-scenario-color", scenario.Color)
+                    .Attribute("data-cfx-scenario-label", scenario.Label)
+                    .Attribute("data-cfx-scenario-description", scenario.Description)
+                    .Attribute("data-cfx-scenario-step-count", scenario.Steps.Count)
+                    .Attribute("data-cfx-scenario-steps", TopologyScenarioJson.Steps(scenario))
+                    .Attribute("data-cfx-scenario-metadata", TopologyScenarioJson.Metadata(scenario))
+                    .Attribute("title", string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description)
+                    .Attribute("aria-label", scenario.Label)
+                    .Attribute("checked", active ? "checked" : null)
+                    .EndVoidElement();
+                writer.StartElement("span").EndStartElement().Text(scenario.Label).EndElement();
+                writer.EndElement();
+            }
+
+            writer.EndElement();
+            return;
+        }
+
         WriteButton(writer, "data-cfx-topology-scenario", string.Empty, "Show all", "Show all scenarios", string.IsNullOrWhiteSpace(activeScenarioId), "All");
         foreach (var scenario in chart.Scenarios) {
             var active = string.Equals(activeScenarioId, scenario.Id, StringComparison.Ordinal);
