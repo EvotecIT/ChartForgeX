@@ -28,6 +28,22 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Level-filtered hierarchy diagrams should render as PNG.");
     }
 
+    private static void TopologyHierarchyBuilderCopiesBackgroundColors() {
+        var chart = TopologyChart.Create()
+            .WithId("hierarchy-background")
+            .WithViewport(480, 300, 24)
+            .WithLegend(null)
+            .AddHierarchy(new[] {
+                new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team, BackgroundColor = "#F5F3FF" },
+                new TopologyHierarchyItem("child", "Child", "root") { Kind = TopologyNodeKind.Person, BackgroundColor = "#DCFCE7" }
+            });
+
+        Assert(chart.Nodes.Single(node => node.Id == "root").BackgroundColor == "#F5F3FF", "Hierarchy builders should copy caller root background colors.");
+        Assert(chart.Nodes.Single(node => node.Id == "child").BackgroundColor == "#DCFCE7", "Hierarchy builders should copy caller child background colors.");
+        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
+        Assert(svg.Contains("data-node-background-color=\"#DCFCE7\"", StringComparison.Ordinal), "Hierarchy background colors should reach rendered SVG metadata.");
+    }
+
     private static void TopologyLayeredLayoutWrapsCrowdedLevels() {
         var items = new List<TopologyHierarchyItem> { new("root", "Root") { Kind = TopologyNodeKind.Team, IconId = "team" } };
         for (var i = 0; i < 18; i++) items.Add(new TopologyHierarchyItem("member-" + i.ToString("00", CultureInfo.InvariantCulture), "Member " + i.ToString("00", CultureInfo.InvariantCulture), "root") { Kind = TopologyNodeKind.Person, IconId = "person" });

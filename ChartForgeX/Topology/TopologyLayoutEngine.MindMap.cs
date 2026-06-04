@@ -20,7 +20,7 @@ internal static partial class TopologyLayoutEngine {
             return;
         }
 
-        var children = MindMapChildren(chart, nodes);
+        var children = PruneMindMapChildren(root, MindMapChildren(chart, nodes));
         var levels = MindMapLevels(root, children);
         var maxWidthByLevel = MindMapMaxWidthByLevel(chart.Nodes, levels);
         var pad = Math.Max(24, chart.Viewport.Padding);
@@ -89,6 +89,30 @@ internal static partial class TopologyLayoutEngine {
         }
 
         list.Add(child);
+    }
+
+    private static Dictionary<string, List<TopologyNode>> PruneMindMapChildren(TopologyNode root, IReadOnlyDictionary<string, List<TopologyNode>> children) {
+        var result = new Dictionary<string, List<TopologyNode>>(StringComparer.Ordinal);
+        var path = new HashSet<string>(StringComparer.Ordinal);
+        var placed = new HashSet<string>(StringComparer.Ordinal) { root.Id };
+        PruneMindMapChildren(root, children, result, path, placed);
+        return result;
+    }
+
+    private static void PruneMindMapChildren(TopologyNode parent, IReadOnlyDictionary<string, List<TopologyNode>> children, Dictionary<string, List<TopologyNode>> result, HashSet<string> path, HashSet<string> placed) {
+        if (!path.Add(parent.Id)) return;
+        if (!children.TryGetValue(parent.Id, out var childNodes)) {
+            path.Remove(parent.Id);
+            return;
+        }
+
+        foreach (var child in childNodes) {
+            if (path.Contains(child.Id) || !placed.Add(child.Id)) continue;
+            AddMindMapChild(result, parent.Id, child);
+            PruneMindMapChildren(child, children, result, path, placed);
+        }
+
+        path.Remove(parent.Id);
     }
 
     private static Dictionary<string, int> MindMapLevels(TopologyNode root, IReadOnlyDictionary<string, List<TopologyNode>> children) {
@@ -173,16 +197,29 @@ internal static partial class TopologyLayoutEngine {
         foreach (var edge in chart.Edges) {
             if (!nodes.TryGetValue(edge.SourceNodeId, out var source) || !nodes.TryGetValue(edge.TargetNodeId, out var target)) continue;
             var targetSide = MindMapNodeSide(target);
+            TopologyEdgePort sourcePort;
+            TopologyEdgePort targetPort;
             if (targetSide < 0 || (targetSide == 0 && CenterX(target) < CenterX(source))) {
-                edge.SourcePort = TopologyEdgePort.Left;
-                edge.TargetPort = TopologyEdgePort.Right;
+                sourcePort = TopologyEdgePort.Left;
+                targetPort = TopologyEdgePort.Right;
             } else {
-                edge.SourcePort = TopologyEdgePort.Right;
-                edge.TargetPort = TopologyEdgePort.Left;
+                sourcePort = TopologyEdgePort.Right;
+                targetPort = TopologyEdgePort.Left;
+            }
+
+            var inference = TopologyEdgeLayoutInference.None;
+            if (edge.SourcePort == TopologyEdgePort.Auto) {
+                edge.SourcePort = sourcePort;
+                inference |= TopologyEdgeLayoutInference.SourcePort;
+            }
+
+            if (edge.TargetPort == TopologyEdgePort.Auto) {
+                edge.TargetPort = targetPort;
+                inference |= TopologyEdgeLayoutInference.TargetPort;
             }
 
             if (edge.Routing == TopologyEdgeRouting.Curved) edge.Routing = TopologyEdgeRouting.Orthogonal;
-            edge.LayoutInference |= TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort;
+            edge.LayoutInference |= inference;
         }
     }
 

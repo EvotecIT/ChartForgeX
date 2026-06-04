@@ -8,6 +8,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyMindMapBuilderCreatesBalancedBranches() {
         var chart = BuildMindMapFixture();
+        var explicitPortEdge = chart.Edges.First(edge => edge.SourceNodeId == "entra" && edge.TargetNodeId == "users");
+        explicitPortEdge.SourcePort = TopologyEdgePort.Bottom;
+        explicitPortEdge.TargetPort = TopologyEdgePort.Top;
         var options = new TopologyRenderOptions()
             .WithMindMapStyle()
             .WithRequiredIcons()
@@ -29,6 +32,8 @@ internal static partial class SmokeTests {
         Assert(users.Width >= 220, "Mind-map branch cards should preserve readable builder widths.");
         Assert(mfa.Width >= 220, "Mind-map leaf pills should preserve readable builder widths.");
         Assert(prepared.Edges.All(edge => edge.SourcePort != TopologyEdgePort.Auto && edge.TargetPort != TopologyEdgePort.Auto), "Mind-map branch routes should infer explicit source and target ports.");
+        var preparedExplicitPortEdge = prepared.Edges.First(edge => edge.SourceNodeId == "entra" && edge.TargetNodeId == "users");
+        Assert(preparedExplicitPortEdge.SourcePort == TopologyEdgePort.Bottom && preparedExplicitPortEdge.TargetPort == TopologyEdgePort.Top, "Mind-map layout should preserve caller-specified edge ports.");
 
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-layout-mode=\"MindMap\"", StringComparison.Ordinal), "Mind-map SVG should expose the layout mode.");
@@ -38,6 +43,20 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-route-strategy=\"Orthogonal\"", StringComparison.Ordinal), "Mind-map branch routes should use deterministic orthogonal routing.");
         Assert(!svg.Contains("data-cfx-role=\"topology-node-status\"", StringComparison.Ordinal), "Mind-map style should omit operational status badges.");
         Assert(chart.ToPng(options).Length > 64, "Mind-map layout should render as PNG with the same topology model.");
+    }
+
+    private static void TopologyMindMapDirectLayoutBreaksReachableCycles() {
+        var chart = TopologyChart.Create()
+            .WithId("direct-mindmap-cycle")
+            .WithViewport(640, 360, 24)
+            .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88, iconId: "cloud:cloud")
+            .AddNode("child", "Child", 0, 0, TopologyNodeKind.Application, width: 180, height: 64, iconId: "common:application")
+            .AddEdge("root-child", "root", "child")
+            .AddEdge("child-root", "child", "root")
+            .WithLayout(TopologyLayoutMode.MindMap);
+
+        var svg = chart.ToSvg(new TopologyRenderOptions().WithMindMapStyle().WithRequiredIcons());
+        Assert(svg.Contains("data-layout-mode=\"MindMap\"", StringComparison.Ordinal), "Direct mind-map layout should render cyclic input without unbounded recursion.");
     }
 
     private static void TopologyMindMapRequiresOneRoot() {

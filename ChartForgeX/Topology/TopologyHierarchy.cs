@@ -222,6 +222,7 @@ public static class TopologyHierarchyExtensions {
             if (!existing.Add(item.Id)) throw new ArgumentException("Topology node '" + item.Id + "' already exists.", nameof(items));
             chart.AddAutoNode(item.Id, item.Label, item.Kind, item.Status, item.GroupId, item.Subtitle, width: item.Width ?? options.NodeWidth, height: item.Height ?? options.NodeHeight, symbol: item.Symbol, color: item.Color, iconId: item.IconId);
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.BackgroundColor = item.BackgroundColor;
             if (options.NodeDisplayMode.HasValue) node.DisplayMode = options.NodeDisplayMode.Value;
             node.Metadata["layer"] = levels[item.Id].ToString(CultureInfo.InvariantCulture);
             node.Metadata["hierarchy.level"] = node.Metadata["layer"];
