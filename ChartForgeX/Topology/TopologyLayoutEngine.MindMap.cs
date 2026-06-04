@@ -224,9 +224,10 @@ internal static partial class TopologyLayoutEngine {
         foreach (var edge in chart.Edges) {
             if (!nodes.TryGetValue(edge.SourceNodeId, out var source) || !nodes.TryGetValue(edge.TargetNodeId, out var target)) continue;
             var targetSide = MindMapNodeSide(target);
+            var targetDelta = CenterX(target) - CenterX(source);
             TopologyEdgePort sourcePort;
             TopologyEdgePort targetPort;
-            if (targetSide < 0 || (targetSide == 0 && CenterX(target) < CenterX(source))) {
+            if (targetDelta < -0.001 || (Math.Abs(targetDelta) <= 0.001 && targetSide < 0)) {
                 sourcePort = TopologyEdgePort.Left;
                 targetPort = TopologyEdgePort.Right;
             } else {

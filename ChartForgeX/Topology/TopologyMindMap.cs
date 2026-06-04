@@ -102,7 +102,10 @@ public static class TopologyMindMapExtensions {
             node.Metadata["mindmap.level"] = node.Metadata["layer"];
             if (string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["mindmap.root"] = "true";
             if (!string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["mindmap.parentId"] = item.ParentId!;
-            foreach (var pair in item.Metadata) node.Metadata[pair.Key] = pair.Value;
+            foreach (var pair in item.Metadata) {
+                if (IsMindMapBuilderMetadata(pair.Key)) continue;
+                node.Metadata[pair.Key] = pair.Value;
+            }
         }
 
         foreach (var item in materialized.OrderBy(item => item.Id, StringComparer.Ordinal)) {
@@ -161,6 +164,12 @@ public static class TopologyMindMapExtensions {
 
     private static double NodeHeightForLevel(TopologyMindMapOptions options, int level) =>
         level <= 0 ? options.RootHeight : level == 1 ? options.BranchHeight : options.LeafHeight;
+
+    private static bool IsMindMapBuilderMetadata(string key) =>
+        string.Equals(key, "layer", StringComparison.Ordinal) ||
+        string.Equals(key, "mindmap.level", StringComparison.Ordinal) ||
+        string.Equals(key, "mindmap.parentId", StringComparison.Ordinal) ||
+        string.Equals(key, "mindmap.root", StringComparison.Ordinal);
 
     private static string EdgeId(string prefix, string parentId, string childId) =>
         TopologyHierarchyItem.Required(prefix, nameof(prefix)) + ":" + parentId + ":" + childId;

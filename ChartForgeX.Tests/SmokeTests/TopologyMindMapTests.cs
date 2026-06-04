@@ -170,6 +170,61 @@ internal static partial class SmokeTests {
         Assert(child.X > root.X + root.Width, "Metadata children should still be placed outward when cross-links point back at the root.");
     }
 
+    private static void TopologyMindMapBuilderPreservesValidatedHierarchyMetadata() {
+        var chart = TopologyChart.Create()
+            .WithId("validated-mindmap-metadata")
+            .WithViewport(720, 420, 24)
+            .AddMindMap(new[] {
+                new TopologyHierarchyItem("z-root", "Root"),
+                new TopologyHierarchyItem("b-parent", "Other Parent", "z-root"),
+                new TopologyHierarchyItem("a-child", "Child", "z-root") { Level = 2 }
+                    .WithMetadata("mindmap.root", "true")
+                    .WithMetadata("mindmap.parentId", "b-parent")
+                    .WithMetadata("mindmap.level", "0")
+                    .WithMetadata("layer", "0")
+            });
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var root = Node(prepared, "z-root");
+        var child = Node(prepared, "a-child");
+        Assert(root.Metadata["mindmap.side"] == "center", "Mind-map builder should preserve the validated parentless root even when item metadata contains reserved root keys.");
+        Assert(!child.Metadata.ContainsKey("mindmap.root"), "Mind-map builder should not allow item metadata to promote children to roots.");
+        Assert(child.Metadata["mindmap.parentId"] == "z-root", "Mind-map builder should preserve validated parent ids over reserved item metadata.");
+        Assert(child.Metadata["mindmap.level"] != "0" && child.Metadata["layer"] != "0", "Mind-map builder should preserve resolved level metadata over reserved item metadata.");
+    }
+
+    private static void TopologyMindMapCenterBannerClampsNarrowViewportWidth() {
+        var svg = TopologyChart.Create()
+            .WithId("narrow-banner")
+            .WithTitle("Narrow")
+            .WithViewport(120, 180, 80)
+            .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 64, height: 42)
+            .ToSvg(new TopologyRenderOptions { HeaderStyle = TopologyHeaderStyle.CenterBanner, IncludeLegend = false });
+
+        Assert(svg.Contains("data-header-style=\"CenterBanner\"", StringComparison.Ordinal), "Center banner header should still render for narrow padded viewports.");
+        Assert(!svg.Contains("width=\"-", StringComparison.Ordinal), "Center banner header should not emit negative SVG dimensions when padding consumes the viewport width.");
+    }
+
+    private static void TopologyMindMapInfersReverseSameBranchPortsFromPositions() {
+        var chart = TopologyChart.Create()
+            .WithId("reverse-branch-link")
+            .WithViewport(760, 420, 24)
+            .AddMindMap(new[] {
+                new TopologyHierarchyItem("root", "Root"),
+                new TopologyHierarchyItem("parent", "Parent", "root").WithMetadata("mindmap.side", "left"),
+                new TopologyHierarchyItem("child", "Child", "parent")
+            });
+
+        chart.AddEdge("child-parent-back", "child", "parent");
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var parent = Node(prepared, "parent");
+        var child = Node(prepared, "child");
+        var edge = prepared.Edges.First(item => item.Id == "child-parent-back");
+        Assert(child.X < parent.X, "Mind-map fixture should place the child farther left than its same-branch parent.");
+        Assert(edge.SourcePort == TopologyEdgePort.Right && edge.TargetPort == TopologyEdgePort.Left, "Reverse same-branch mind-map links should infer ports from source and target positions.");
+    }
+
     private static void TopologyMindMapRequiresOneRoot() {
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddMindMap(new[] {
             new TopologyHierarchyItem("one", "One"),

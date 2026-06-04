@@ -41,7 +41,8 @@ public sealed partial class TopologySvgRenderer {
 
     private static void AddCenterBannerHeader(SvgElement root, TopologyChart chart, string prefix, TopologyRenderOptions options) {
         var fontSize = 34.0;
-        var bannerWidth = Math.Min(chart.Viewport.Width - chart.Viewport.Padding * 2, Math.Max(360, chart.Title!.Length * 18.5 + 72));
+        var availableWidth = Math.Max(0, chart.Viewport.Width - chart.Viewport.Padding * 2);
+        var bannerWidth = Math.Min(availableWidth, Math.Max(360, chart.Title!.Length * 18.5 + 72));
         var bannerHeight = 58.0;
         var bannerX = (chart.Viewport.Width - bannerWidth) / 2;
         var bannerY = chart.Viewport.Padding + 2;
