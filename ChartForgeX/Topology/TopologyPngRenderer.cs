@@ -152,7 +152,8 @@ public sealed partial class TopologyPngRenderer {
         if (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle)) return;
         if (options.HeaderStyle == TopologyHeaderStyle.CenterBanner && !string.IsNullOrWhiteSpace(chart.Title)) {
             var fontSize = 34.0;
-            var bannerWidth = Math.Min(chart.Viewport.Width - chart.Viewport.Padding * 2, Math.Max(360, RgbaCanvas.MeasureTextEmphasizedWidth(chart.Title!, fontSize, null) + 72));
+            var availableWidth = Math.Max(0, chart.Viewport.Width - chart.Viewport.Padding * 2);
+            var bannerWidth = Math.Min(availableWidth, Math.Max(360, RgbaCanvas.MeasureTextEmphasizedWidth(chart.Title!, fontSize, null) + 72));
             var bannerHeight = 58.0;
             var bannerX = (chart.Viewport.Width - bannerWidth) / 2;
             var bannerY = chart.Viewport.Padding + 2;

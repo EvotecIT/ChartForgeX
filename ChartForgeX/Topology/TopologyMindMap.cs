@@ -91,16 +91,18 @@ public static class TopologyMindMapExtensions {
         foreach (var item in materialized.OrderBy(item => levels[item.Id]).ThenBy(item => item.Id, StringComparer.Ordinal)) {
             if (!existing.Add(item.Id)) throw new ArgumentException("Topology node '" + item.Id + "' already exists.", nameof(items));
             var level = levels[item.Id];
-            var kind = item.Kind == TopologyNodeKind.Generic && level == 0 ? TopologyNodeKind.Hub : item.Kind;
-            var width = item.Width ?? NodeWidthForLevel(options, level);
-            var height = item.Height ?? NodeHeightForLevel(options, level);
+            var isRoot = string.IsNullOrWhiteSpace(item.ParentId);
+            var defaultStyleLevel = isRoot ? 0 : level;
+            var kind = item.Kind == TopologyNodeKind.Generic && isRoot ? TopologyNodeKind.Hub : item.Kind;
+            var width = item.Width ?? NodeWidthForLevel(options, defaultStyleLevel);
+            var height = item.Height ?? NodeHeightForLevel(options, defaultStyleLevel);
             chart.AddAutoNode(item.Id, item.Label, kind, item.Status, item.GroupId, item.Subtitle, width: width, height: height, symbol: item.Symbol, color: item.Color, iconId: item.IconId);
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.BackgroundColor = item.BackgroundColor;
-            node.DisplayMode = NodeDisplayForLevel(options, level);
+            node.DisplayMode = NodeDisplayForLevel(options, defaultStyleLevel);
             node.Metadata["layer"] = level.ToString(CultureInfo.InvariantCulture);
             node.Metadata["mindmap.level"] = node.Metadata["layer"];
-            if (string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["mindmap.root"] = "true";
+            if (isRoot) node.Metadata["mindmap.root"] = "true";
             if (!string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["mindmap.parentId"] = item.ParentId!;
             foreach (var pair in item.Metadata) {
                 if (IsMindMapBuilderMetadata(pair.Key)) continue;

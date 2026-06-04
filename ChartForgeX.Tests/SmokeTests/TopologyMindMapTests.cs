@@ -170,6 +170,24 @@ internal static partial class SmokeTests {
         Assert(child.X > root.X + root.Width, "Metadata children should still be placed outward when cross-links point back at the root.");
     }
 
+    private static void TopologyMindMapDirectLayoutPrefersMetadataRootBeforeDetachedNodes() {
+        var chart = TopologyChart.Create()
+            .WithId("metadata-root-before-detached")
+            .WithViewport(760, 420, 24)
+            .AddNode("a-detached", "Detached", 0, 0, TopologyNodeKind.Service, width: 150, height: 52)
+            .AddNode("b-child", "Child", 0, 0, TopologyNodeKind.Application, width: 150, height: 52)
+            .AddNode("z-root", "Root", 0, 0, TopologyNodeKind.Cloud, width: 220, height: 88)
+            .WithLayout(TopologyLayoutMode.MindMap);
+
+        Node(chart, "b-child").Metadata["mindmap.parentId"] = "z-root";
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var root = Node(prepared, "z-root");
+        var detached = Node(prepared, "a-detached");
+        Assert(root.Metadata["mindmap.side"] == "center", "Direct mind-map root discovery should prefer the parentless metadata hierarchy root before sorted detached components.");
+        Assert(detached.Metadata.ContainsKey("mindmap.side"), "Detached source-free nodes should still be placed after the metadata root is selected.");
+    }
+
     private static void TopologyMindMapBuilderPreservesValidatedHierarchyMetadata() {
         var chart = TopologyChart.Create()
             .WithId("validated-mindmap-metadata")
@@ -193,16 +211,40 @@ internal static partial class SmokeTests {
         Assert(child.Metadata["mindmap.level"] != "0" && child.Metadata["layer"] != "0", "Mind-map builder should preserve resolved level metadata over reserved item metadata.");
     }
 
+    private static void TopologyMindMapBuilderStylesParentlessRootAsRoot() {
+        var chart = TopologyChart.Create()
+            .WithId("positive-level-root")
+            .WithViewport(720, 420, 24)
+            .AddMindMap(new[] {
+                new TopologyHierarchyItem("root", "Root") { Level = 2 },
+                new TopologyHierarchyItem("child", "Child", "root") { Level = 3 }
+            }, new TopologyMindMapOptions {
+                RootWidth = 280,
+                RootHeight = 120,
+                RootDisplayMode = TopologyNodeDisplayMode.Card,
+                BranchWidth = 180,
+                BranchHeight = 64,
+                BranchDisplayMode = TopologyNodeDisplayMode.Pill
+            });
+
+        var root = Node(chart, "root");
+        Assert(root.Width == 280 && root.Height == 120, "Parentless mind-map roots should use root size defaults even when explicit levels start above zero.");
+        Assert(root.DisplayMode == TopologyNodeDisplayMode.Card, "Parentless mind-map roots should use the root display default even when explicit levels start above zero.");
+        Assert(root.Metadata["mindmap.level"] == "2", "Explicit source levels should still be preserved as metadata.");
+    }
+
     private static void TopologyMindMapCenterBannerClampsNarrowViewportWidth() {
-        var svg = TopologyChart.Create()
+        var chart = TopologyChart.Create()
             .WithId("narrow-banner")
             .WithTitle("Narrow")
             .WithViewport(120, 180, 80)
-            .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 64, height: 42)
-            .ToSvg(new TopologyRenderOptions { HeaderStyle = TopologyHeaderStyle.CenterBanner, IncludeLegend = false });
+            .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 64, height: 42);
 
+        var options = new TopologyRenderOptions { HeaderStyle = TopologyHeaderStyle.CenterBanner, IncludeLegend = false };
+        var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-header-style=\"CenterBanner\"", StringComparison.Ordinal), "Center banner header should still render for narrow padded viewports.");
         Assert(!svg.Contains("width=\"-", StringComparison.Ordinal), "Center banner header should not emit negative SVG dimensions when padding consumes the viewport width.");
+        Assert(chart.ToPng(options).Length > 64, "Center banner PNG export should tolerate narrow padded viewports.");
     }
 
     private static void TopologyMindMapInfersReverseSameBranchPortsFromPositions() {
