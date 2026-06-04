@@ -53,6 +53,10 @@ internal static partial class TopologyLayoutEngine {
         var explicitRoot = chart.Nodes.FirstOrDefault(node => node.Metadata.TryGetValue("mindmap.root", out var value) && value.Equals("true", StringComparison.OrdinalIgnoreCase));
         if (explicitRoot != null) return explicitRoot;
         var targets = new HashSet<string>(chart.Edges.Select(edge => edge.TargetNodeId), StringComparer.Ordinal);
+        foreach (var node in chart.Nodes) {
+            if (node.Metadata.TryGetValue("mindmap.parentId", out var parentId) && nodes.ContainsKey(parentId)) targets.Add(node.Id);
+        }
+
         var roots = chart.Nodes.Where(node => !targets.Contains(node.Id)).OrderBy(node => node.Id, StringComparer.Ordinal).ToList();
         if (roots.Count > 0) return roots.FirstOrDefault(node => node.Kind == TopologyNodeKind.Hub) ?? roots[0];
         return nodes.Count == 0 ? null : chart.Nodes.OrderBy(node => node.Id, StringComparer.Ordinal).First();
@@ -218,7 +222,6 @@ internal static partial class TopologyLayoutEngine {
                 inference |= TopologyEdgeLayoutInference.TargetPort;
             }
 
-            if (edge.Routing == TopologyEdgeRouting.Curved) edge.Routing = TopologyEdgeRouting.Orthogonal;
             edge.LayoutInference |= inference;
         }
     }

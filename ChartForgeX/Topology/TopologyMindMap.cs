@@ -145,10 +145,9 @@ public static class TopologyMindMapExtensions {
     private static int ResolveLevel(TopologyHierarchyItem item, IReadOnlyDictionary<string, TopologyHierarchyItem> byId, Dictionary<string, int> levels, HashSet<string> visiting) {
         if (levels.TryGetValue(item.Id, out var cached)) return cached;
         if (!visiting.Add(item.Id)) throw new ArgumentException("Topology mind map contains a parent cycle at '" + item.Id + "'.");
-        int level;
-        if (item.Level.HasValue) level = item.Level.Value;
-        else if (string.IsNullOrWhiteSpace(item.ParentId)) level = 0;
-        else level = ResolveLevel(byId[item.ParentId!], byId, levels, visiting) + 1;
+        int? parentLevel = null;
+        if (!string.IsNullOrWhiteSpace(item.ParentId)) parentLevel = ResolveLevel(byId[item.ParentId!], byId, levels, visiting);
+        var level = item.Level ?? (parentLevel.HasValue ? parentLevel.Value + 1 : 0);
         visiting.Remove(item.Id);
         levels[item.Id] = level;
         return level;

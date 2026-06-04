@@ -59,6 +59,44 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-layout-mode=\"MindMap\"", StringComparison.Ordinal), "Direct mind-map layout should render cyclic input without unbounded recursion.");
     }
 
+    private static void TopologyMindMapRejectsExplicitLevelParentCycles() {
+        AssertThrows<ArgumentException>(() => TopologyChart.Create().AddMindMap(new[] {
+            new TopologyHierarchyItem("root", "Root"),
+            new TopologyHierarchyItem("cycle-a", "Cycle A", "cycle-b") { Level = 1 },
+            new TopologyHierarchyItem("cycle-b", "Cycle B", "cycle-a") { Level = 2 }
+        }), "Mind-map builder should reject parent cycles even when callers provide explicit levels.");
+    }
+
+    private static void TopologyMindMapDirectLayoutUsesMetadataParentRoot() {
+        var chart = TopologyChart.Create()
+            .WithId("metadata-parent-root")
+            .WithViewport(640, 360, 24)
+            .AddNode("a-child", "Child", 0, 0, TopologyNodeKind.Application, width: 160, height: 56)
+            .AddNode("z-root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88)
+            .WithLayout(TopologyLayoutMode.MindMap);
+
+        Node(chart, "a-child").Metadata["mindmap.parentId"] = "z-root";
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var root = Node(prepared, "z-root");
+        var child = Node(prepared, "a-child");
+        Assert(root.Metadata["mindmap.side"] == "center", "Direct mind-map layout should use metadata parent links when selecting the centered root.");
+        Assert(child.X > root.X + root.Width, "Metadata-only mind-map children should be placed outward from the metadata parent root.");
+    }
+
+    private static void TopologyMindMapPreservesCurvedRouting() {
+        var chart = TopologyChart.Create()
+            .WithId("curved-mindmap")
+            .WithViewport(640, 360, 24)
+            .AddMindMap(new[] {
+                new TopologyHierarchyItem("root", "Root"),
+                new TopologyHierarchyItem("child", "Child", "root")
+            }, new TopologyMindMapOptions { EdgeRouting = TopologyEdgeRouting.Curved });
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        Assert(prepared.Edges.Count == 1 && prepared.Edges[0].Routing == TopologyEdgeRouting.Curved, "Mind-map layout should preserve caller-selected curved routing.");
+    }
+
     private static void TopologyMindMapRequiresOneRoot() {
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddMindMap(new[] {
             new TopologyHierarchyItem("one", "One"),
