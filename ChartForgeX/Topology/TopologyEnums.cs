@@ -23,7 +23,9 @@ public enum TopologyLayoutMode {
     /// <summary>Place connected nodes with a deterministic force-directed simulation using repulsion, link attraction, and group gravity.</summary>
     ForceDirected = 7,
     /// <summary>Place a selected/root relationship as a radial ego graph with first-hop and second-hop conversations on expanding rings.</summary>
-    RelationshipRadial = 8
+    RelationshipRadial = 8,
+    /// <summary>Place a centered root with balanced left and right hierarchy branches for mind-map style diagrams.</summary>
+    MindMap = 9
 }
 
 /// <summary>
@@ -177,6 +179,16 @@ public enum TopologyCanvasSurfaceStyle {
     Panel,
     /// <summary>Render a framed dashboard panel with subtle guide lines.</summary>
     PanelGrid
+}
+
+/// <summary>
+/// Defines how topology chart headers are rendered.
+/// </summary>
+public enum TopologyHeaderStyle {
+    /// <summary>Render the standard left-aligned topology title and subtitle.</summary>
+    Standard,
+    /// <summary>Render the title in a centered high-contrast banner and omit the subtitle from the header.</summary>
+    CenterBanner
 }
 
 /// <summary>

@@ -12,6 +12,7 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("  \"baselineCandidates\": [");
         sb.AppendLine("    \"visual-topology-explorer\",");
         sb.AppendLine("    \"visual-entity-relationship-overview\",");
+        sb.AppendLine("    \"visual-identity-mind-map\",");
         sb.AppendLine("    \"visual-secure-access-arbitrary-icons\",");
         sb.AppendLine("    \"visual-mini-correlation-map\",");
         sb.AppendLine("    \"visual-evidence-timeline-relationship\",");

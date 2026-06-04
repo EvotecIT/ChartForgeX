@@ -91,7 +91,7 @@ public static partial class TopologyChartExtensions {
             if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
 
             var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
-            var validation = validator.Validate(prepared, validateScenarioReferences: false);
+            var validation = validator.Validate(prepared, validateScenarioReferences: false, options);
             if (!validation.IsValid) throw new TopologyValidationException(validation);
 
             var plan = TopologyMotionPlanner.Build(prepared, options);

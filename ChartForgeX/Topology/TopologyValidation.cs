@@ -75,6 +75,12 @@ public sealed class TopologyChartValidator {
         return result;
     }
 
+    internal TopologyValidationResult Validate(TopologyChart chart, bool validateScenarioReferences, TopologyRenderOptions options) {
+        var result = Validate(chart, validateScenarioReferences);
+        ValidateIconReferences(chart, result, options);
+        return result;
+    }
+
     internal TopologyValidationResult ValidateScenarioReferences(TopologyChart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var result = new TopologyValidationResult();
@@ -168,6 +174,26 @@ public sealed class TopologyChartValidator {
 
         foreach (var duplicate in chart.Scenarios.Where(scenario => !string.IsNullOrWhiteSpace(scenario.Id)).GroupBy(scenario => scenario.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
             Add(result, "duplicate-scenario-id", "Duplicate scenario id '" + duplicate.Key + "'.", duplicate.Key);
+        }
+    }
+
+    private static void ValidateIconReferences(TopologyChart chart, TopologyValidationResult result, TopologyRenderOptions options) {
+        if (!options.RequireResolvedIcons) return;
+        var catalog = options.IconCatalog ?? TopologyIconCatalog.Default();
+        foreach (var group in chart.Groups) {
+            if (string.IsNullOrWhiteSpace(group.IconId)) continue;
+            if (catalog.Resolve(group.IconId!) == null) Add(result, "missing-group-icon", "Group '" + group.Id + "' references missing icon '" + group.IconId + "'.", group.Id);
+        }
+
+        foreach (var node in chart.Nodes) {
+            if (string.IsNullOrWhiteSpace(node.IconId)) continue;
+            if (catalog.Resolve(node.IconId!) == null) Add(result, "missing-node-icon", "Node '" + node.Id + "' references missing icon '" + node.IconId + "'.", node.Id);
+        }
+
+        if (chart.Legend == null) return;
+        foreach (var item in chart.Legend.Items) {
+            if (string.IsNullOrWhiteSpace(item.IconId)) continue;
+            if (catalog.Resolve(item.IconId!) == null) Add(result, "missing-legend-icon", "Legend item '" + item.Label + "' references missing icon '" + item.IconId + "'.", null);
         }
     }
 

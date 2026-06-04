@@ -48,6 +48,10 @@ internal static partial class TopologyVisualExamples {
         var relationshipOverviewOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
             .WithSelectedNode("domain")
             .WithSelectedEdge("domain-finding");
+        var mindMapOptions = new TopologyRenderOptions()
+            .WithMindMapStyle()
+            .WithRequiredIcons()
+            .WithMultilineNodeLabels(maxLabelLines: 2, maxSubtitleLines: 1);
         var miniRelationshipOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
             .WithSelectedNode("domain")
             .WithSelectedEdge("finding-domain");
@@ -69,6 +73,7 @@ internal static partial class TopologyVisualExamples {
 
         SaveTopology(target, artifacts, "visual-topology-explorer", BuildTopologyExplorer(), "Topology Explorer", "Regional grouped topology with hubs, branches, bridgeheads, route ports, labels, links, tooltips, metadata hooks, SVG, HTML, and PNG.", topologyExplorerOptions);
         SaveTopology(target, artifacts, "visual-entity-relationship-overview", BuildEntityRelationshipOverview(), "Entity Relationship Overview", "Screenshot-inspired relationship map with reusable icon ids, color accents, multiline cards, stacked edge labels, dotted/dashed/solid links, selected-state metadata, SVG, HTML, and PNG.", relationshipOverviewOptions);
+        SaveTopology(target, artifacts, "visual-identity-mind-map", BuildIdentityMindMap(), "Identity Mind Map", "Centered mind-map topology with balanced left/right branches, required icon resolution, compact descendant pills, rounded branch routes, and SVG/HTML/PNG output.", mindMapOptions);
         SaveTopology(target, artifacts, "visual-secure-access-arbitrary-icons", BuildSecureAccessArbitraryIconTopology(), "Secure Access Arbitrary Icons", "Screenshot-inspired access topology using catalog-supplied inline SVG artwork, custom icon nodes, gateway bars, dashed policy tunnels, and static SVG/HTML/PNG output.", secureAccessOptions);
         SaveTopology(target, artifacts, "visual-mini-correlation-map", BuildMiniCorrelationMap(), "Mini Correlation Map", "Compact selected-asset relationship map for dashboard cards and drilldown panels with panel background, icon cards, and multiple arrow marker choices.", miniRelationshipOptions);
         SaveTopology(target, artifacts, "visual-evidence-timeline-relationship", BuildEvidenceTimelineRelationship(), "Evidence Timeline Relationship", "Timeline-like evidence stream mapped to one selected entity using topology nodes, circular markers, typed links, and multiline event cards.", evidenceTimelineOptions);

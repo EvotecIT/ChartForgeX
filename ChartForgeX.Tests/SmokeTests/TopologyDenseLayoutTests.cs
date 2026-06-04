@@ -511,6 +511,7 @@ internal static partial class SmokeTests {
         Assert((int)TopologyLayoutMode.Geographic == 6, "Geographic layout mode numeric value should remain stable after adding force-directed layout.");
         Assert((int)TopologyLayoutMode.ForceDirected == 7, "New topology layout modes should append numeric values.");
         Assert((int)TopologyLayoutMode.RelationshipRadial == 8, "New topology layout modes should continue to append numeric values.");
+        Assert((int)TopologyLayoutMode.MindMap == 9, "New topology layout modes should keep appending numeric values.");
     }
 
     private static void TopologyDenseGroupedLayoutSupportsRightToLeftFlow() {

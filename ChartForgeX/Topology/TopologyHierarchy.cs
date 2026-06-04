@@ -49,6 +49,9 @@ public sealed class TopologyHierarchyItem {
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
 
+    /// <summary>Gets or sets an optional node background color.</summary>
+    public string? BackgroundColor { get; set; }
+
     /// <summary>Gets or sets the preferred node width.</summary>
     public double? Width { get; set; }
 

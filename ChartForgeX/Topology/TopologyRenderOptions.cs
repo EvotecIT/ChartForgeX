@@ -192,6 +192,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets the dashboard-style canvas surface used behind non-geographic topology content.</summary>
     public TopologyCanvasSurfaceStyle CanvasSurfaceStyle { get; set; } = TopologyCanvasSurfaceStyle.Plain;
 
+    /// <summary>Gets or sets how the topology title area should be rendered.</summary>
+    public TopologyHeaderStyle HeaderStyle { get; set; } = TopologyHeaderStyle.Standard;
+
     /// <summary>Gets or sets the group card fill treatment.</summary>
     public TopologyGroupSurfaceStyle GroupSurfaceStyle { get; set; } = TopologyGroupSurfaceStyle.Auto;
 
@@ -218,6 +221,9 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets an optional icon catalog used to resolve node and group icon ids. When unset, the built-in catalog is used.</summary>
     public TopologyIconCatalog? IconCatalog { get; set; }
+
+    /// <summary>Gets or sets whether unresolved node, group, and legend icon ids should fail validation instead of using renderer-owned fallback glyphs.</summary>
+    public bool RequireResolvedIcons { get; set; }
 
     /// <summary>Gets or sets how the topology legend should be sourced.</summary>
     public TopologyLegendMode LegendMode { get; set; } = TopologyLegendMode.Explicit;

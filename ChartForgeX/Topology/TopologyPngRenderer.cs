@@ -32,7 +32,7 @@ public sealed partial class TopologyPngRenderer {
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
-        var validation = validator.Validate(prepared, validateScenarioReferences: false);
+        var validation = validator.Validate(prepared, validateScenarioReferences: false, options);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
         return RenderPreparedImage(prepared, options, requestedWidth, requestedHeight);
@@ -46,7 +46,7 @@ public sealed partial class TopologyPngRenderer {
         var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), null, Math.Max(1, options.PngOutputScale));
         canvas.Clear(Color(theme.Background));
         if (prepared.LayoutMode != TopologyLayoutMode.Geographic) DrawCanvasSurface(canvas, prepared, theme, options);
-        if (options.IncludeTitle) DrawHeader(canvas, prepared, theme);
+        if (options.IncludeTitle) DrawHeader(canvas, prepared, theme, options);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicFrame(canvas, prepared, theme, options);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic && options.IncludeGeographicRegionHulls) DrawGeographicRegionHulls(canvas, prepared, theme, options);
         if (options.IncludeGroups) DrawGroups(canvas, prepared, theme, options, highlight);
@@ -148,8 +148,19 @@ public sealed partial class TopologyPngRenderer {
         return Math.Min(options.GeographicRegionHullMaxRadius, Math.Max(options.GeographicRegionHullMinRadius, radius));
     }
 
-    private static void DrawHeader(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme) {
+    private static void DrawHeader(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options) {
         if (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle)) return;
+        if (options.HeaderStyle == TopologyHeaderStyle.CenterBanner && !string.IsNullOrWhiteSpace(chart.Title)) {
+            var fontSize = 34.0;
+            var bannerWidth = Math.Min(chart.Viewport.Width - chart.Viewport.Padding * 2, Math.Max(360, RgbaCanvas.MeasureTextEmphasizedWidth(chart.Title!, fontSize, null) + 72));
+            var bannerHeight = 58.0;
+            var bannerX = (chart.Viewport.Width - bannerWidth) / 2;
+            var bannerY = chart.Viewport.Padding + 2;
+            canvas.FillRoundedRect(bannerX, bannerY, bannerWidth, bannerHeight, 5, ChartColor.Black);
+            DrawCentered(canvas, chart.Viewport.Width / 2, bannerY + 12, chart.Title!, ChartColor.White, fontSize, true);
+            return;
+        }
+
         var x = chart.Viewport.Padding;
         var y = chart.Viewport.Padding + 8;
         if (!string.IsNullOrWhiteSpace(chart.Title)) canvas.DrawTextEmphasized(x, y, chart.Title!, Color(theme.Foreground), 22);

@@ -11,7 +11,7 @@ internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
         var copy = Clone(chart);
         if (options != null) {
-            ApplyNodeDisplayMode(copy, options.NodeDisplayMode);
+            ApplyNodeDisplayMode(copy, options.NodeDisplayMode, copy.LayoutMode == TopologyLayoutMode.MindMap);
         }
 
         if (view != null) ApplyView(copy, view);
@@ -38,6 +38,9 @@ internal static partial class TopologyLayoutEngine {
             case TopologyLayoutMode.RelationshipRadial:
                 ApplyRelationshipRadial(copy, options);
                 break;
+            case TopologyLayoutMode.MindMap:
+                ApplyMindMap(copy);
+                break;
             case TopologyLayoutMode.Geographic:
                 ApplyGeographic(copy);
                 break;
@@ -48,20 +51,24 @@ internal static partial class TopologyLayoutEngine {
         return copy;
     }
 
-    private static void ApplyNodeDisplayMode(TopologyChart chart, TopologyNodeDisplayMode displayMode) {
+    private static void ApplyNodeDisplayMode(TopologyChart chart, TopologyNodeDisplayMode displayMode, bool preserveMindMapSizes) {
         foreach (var node in chart.Nodes) {
             switch (node.DisplayMode ?? displayMode) {
                 case TopologyNodeDisplayMode.CompactCard:
-                    node.Width = Math.Min(node.Width, 108);
-                    node.Height = Math.Min(node.Height, 52);
+                    if (!preserveMindMapSizes) {
+                        node.Width = Math.Min(node.Width, 108);
+                        node.Height = Math.Min(node.Height, 52);
+                    }
                     break;
                 case TopologyNodeDisplayMode.Tile:
                     node.Width = Math.Min(node.Width, 64);
                     node.Height = Math.Min(node.Height, 46);
                     break;
                 case TopologyNodeDisplayMode.Pill:
-                    node.Width = Math.Min(node.Width, 112);
-                    node.Height = Math.Min(node.Height, 34);
+                    if (!preserveMindMapSizes) {
+                        node.Width = Math.Min(node.Width, 112);
+                        node.Height = Math.Min(node.Height, 34);
+                    }
                     break;
                 case TopologyNodeDisplayMode.Icon:
                     node.Width = 44;

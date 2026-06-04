@@ -161,6 +161,32 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Applies a clean informational treatment for centered mind maps.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithMindMapStyle(this TopologyRenderOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.IncludeLegend = false;
+        options.IncludeGroups = false;
+        options.IncludeEdgeLabels = false;
+        options.IncludeDirectionMarkers = false;
+        options.IncludeStatusBadges = false;
+        options.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Plain;
+        options.HeaderStyle = TopologyHeaderStyle.CenterBanner;
+        options.NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted;
+        options.CardSubtitleMode = TopologyCardSubtitleMode.Text;
+        options.EdgeCornerStyle = TopologyEdgeCornerStyle.Rounded;
+        options.EdgeCornerRadius = 24;
+        options.EdgeVisualStyle = ChartLineVisualStyle.Plain();
+        options.AllowMultilineNodeLabels = true;
+        options.WrapNodeLabels = true;
+        options.MaxNodeLabelLines = 2;
+        options.MaxNodeSubtitleLines = 1;
+        return options;
+    }
+
+    /// <summary>
     /// Applies a readable force-graph treatment for relationship-heavy topology clouds.
     /// </summary>
     /// <param name="options">The render options.</param>
@@ -263,6 +289,18 @@ public static class TopologyRenderOptionsExtensions {
         options.WrapNodeLabels = wrap;
         options.MaxNodeLabelLines = maxLabelLines;
         options.MaxNodeSubtitleLines = maxSubtitleLines;
+        return options;
+    }
+
+    /// <summary>
+    /// Requires all topology icon ids to resolve in the active icon catalog before rendering.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="required">Whether unresolved icon ids should fail validation.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithRequiredIcons(this TopologyRenderOptions options, bool required = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.RequireResolvedIcons = required;
         return options;
     }
 

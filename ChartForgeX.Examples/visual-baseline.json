@@ -1842,6 +1842,22 @@
       }
     },
     {
+      "name": "visual-identity-mind-map",
+      "width": 1648,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 77,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 741600,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "visual-impact-dependency-overview",
       "width": 1120,
       "height": 811,

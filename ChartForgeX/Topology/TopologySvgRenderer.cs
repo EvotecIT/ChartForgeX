@@ -39,7 +39,7 @@ public sealed partial class TopologySvgRenderer {
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
-        var validation = validator.Validate(prepared, validateScenarioReferences: false);
+        var validation = validator.Validate(prepared, validateScenarioReferences: false, options);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
         var theme = prepared.Theme ?? TopologyTheme.Light();
@@ -101,7 +101,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("height", "100%")
             .Attribute("fill", theme.Background));
         if (chart.LayoutMode != TopologyLayoutMode.Geographic) AddCanvasSurface(root, chart, prefix, theme, options);
-        if (options.IncludeTitle) AddHeader(root, chart, prefix, theme);
+        if (options.IncludeTitle) AddHeader(root, chart, prefix, theme, options);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicFrame(root, chart, prefix, theme, options);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic && options.IncludeGeographicRegionHulls) AddGeographicRegionHulls(root, chart, prefix, theme, options);
         if (options.IncludeGroups) AddGroups(root, chart, prefix, theme, options, highlight);
@@ -326,35 +326,6 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("flood-color", floodColor)
                 .Attribute("flood-opacity", floodOpacity));
         });
-    }
-
-    private static void AddHeader(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme) {
-        if (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle)) return;
-        var x = chart.Viewport.Padding;
-        var y = chart.Viewport.Padding + 8;
-        var header = new SvgElement("g")
-            .Class(prefix + "__header")
-            .Attribute("data-cfx-role", "topology-header");
-        if (!string.IsNullOrWhiteSpace(chart.Title)) {
-            header.Element("text", text => text
-                .Attribute("x", x)
-                .Attribute("y", y + 18)
-                .Attribute("fill", theme.Foreground)
-                .Attribute("font-size", 22)
-                .Attribute("font-weight", "700")
-                .Text(chart.Title!));
-        }
-
-        if (!string.IsNullOrWhiteSpace(chart.Subtitle)) {
-            header.Element("text", text => text
-                .Attribute("x", x)
-                .Attribute("y", y + 42)
-                .Attribute("fill", theme.MutedForeground)
-                .Attribute("font-size", 13)
-                .Text(chart.Subtitle!));
-        }
-
-        root.AddElement(header);
     }
 
     private static void AddGroups(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
