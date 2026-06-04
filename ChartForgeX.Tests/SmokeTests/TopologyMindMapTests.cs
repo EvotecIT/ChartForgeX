@@ -134,6 +134,26 @@ internal static partial class SmokeTests {
         Assert(detachedChild.Metadata.ContainsKey("mindmap.side"), "Direct mind-map forest layout should continue placing children under detached source-free roots.");
     }
 
+    private static void TopologyMindMapDirectLayoutPlacesDetachedCycles() {
+        var chart = TopologyChart.Create()
+            .WithId("direct-mindmap-detached-cycle")
+            .WithViewport(760, 420, 24)
+            .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 180, height: 72)
+            .AddNode("child", "Child", 0, 0, TopologyNodeKind.Application, width: 150, height: 52)
+            .AddNode("cycle-a", "Cycle A", 0, 0, TopologyNodeKind.Service, width: 150, height: 52)
+            .AddNode("cycle-b", "Cycle B", 0, 0, TopologyNodeKind.Queue, width: 150, height: 52)
+            .AddEdge("root-child", "root", "child")
+            .AddEdge("cycle-a-b", "cycle-a", "cycle-b")
+            .AddEdge("cycle-b-a", "cycle-b", "cycle-a")
+            .WithLayout(TopologyLayoutMode.MindMap);
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var cycleA = Node(prepared, "cycle-a");
+        var cycleB = Node(prepared, "cycle-b");
+        Assert(cycleA.Metadata.ContainsKey("mindmap.side"), "Direct mind-map layout should place detached cyclic components that have no source-free node.");
+        Assert(cycleB.Metadata.ContainsKey("mindmap.side"), "Direct mind-map layout should prune detached cycles after grafting the component under the selected root.");
+    }
+
     private static void TopologyMindMapDirectLayoutFallsBackFromStaleParentMetadata() {
         var chart = TopologyChart.Create()
             .WithId("stale-parent-metadata")

@@ -271,6 +271,7 @@ internal static partial class SmokeTests {
         ("Topology mind-map preserves curved routing", TopologyMindMapPreservesCurvedRouting),
         ("Topology mind-map marks only parentless root", TopologyMindMapMarksOnlyParentlessRoot),
         ("Topology mind-map direct layout places detached trees", TopologyMindMapDirectLayoutPlacesDetachedTrees),
+        ("Topology mind-map direct layout places detached cycles", TopologyMindMapDirectLayoutPlacesDetachedCycles),
         ("Topology mind-map direct layout falls back from stale parent metadata", TopologyMindMapDirectLayoutFallsBackFromStaleParentMetadata),
         ("Topology mind-map direct layout keeps metadata root with cross-links", TopologyMindMapDirectLayoutKeepsMetadataRootWithCrossLinks),
         ("Topology mind-map direct layout prefers metadata root before detached nodes", TopologyMindMapDirectLayoutPrefersMetadataRootBeforeDetachedNodes),

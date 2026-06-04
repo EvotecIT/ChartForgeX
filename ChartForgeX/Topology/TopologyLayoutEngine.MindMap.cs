@@ -125,6 +125,13 @@ internal static partial class TopologyLayoutEngine {
             if (string.Equals(sourceRoot.Id, root.Id, StringComparison.Ordinal)) continue;
             AddMindMapChild(children, root.Id, sourceRoot);
         }
+
+        var reachable = MindMapReachableNodeIds(root, children);
+        foreach (var detached in chart.Nodes.OrderBy(node => node.Id, StringComparer.Ordinal)) {
+            if (reachable.Contains(detached.Id)) continue;
+            AddMindMapChild(children, root.Id, detached);
+            foreach (var id in MindMapReachableNodeIds(detached, children)) reachable.Add(id);
+        }
     }
 
     private static void AddMindMapChild(IDictionary<string, List<TopologyNode>> children, string parentId, TopologyNode child) {
@@ -134,6 +141,23 @@ internal static partial class TopologyLayoutEngine {
         }
 
         list.Add(child);
+    }
+
+    private static HashSet<string> MindMapReachableNodeIds(TopologyNode root, IDictionary<string, List<TopologyNode>> children) {
+        var result = new HashSet<string>(StringComparer.Ordinal) { root.Id };
+        var stack = new Stack<TopologyNode>();
+        stack.Push(root);
+
+        while (stack.Count > 0) {
+            var parent = stack.Pop();
+            if (!children.TryGetValue(parent.Id, out var childNodes)) continue;
+            foreach (var child in childNodes) {
+                if (!result.Add(child.Id)) continue;
+                stack.Push(child);
+            }
+        }
+
+        return result;
     }
 
     private static Dictionary<string, List<TopologyNode>> PruneMindMapChildren(TopologyNode root, IReadOnlyDictionary<string, List<TopologyNode>> children) {
