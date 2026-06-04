@@ -60,9 +60,19 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private static List<TopologyNode> MindMapSourceFreeNodes(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
-        var targets = new HashSet<string>(chart.Edges.Select(edge => edge.TargetNodeId), StringComparer.Ordinal);
+        var targets = new HashSet<string>(StringComparer.Ordinal);
+        var metadataParticipants = new HashSet<string>(StringComparer.Ordinal);
         foreach (var node in chart.Nodes) {
-            if (node.Metadata.TryGetValue("mindmap.parentId", out var parentId) && nodes.ContainsKey(parentId)) targets.Add(node.Id);
+            if (!node.Metadata.TryGetValue("mindmap.parentId", out var parentId) || !nodes.ContainsKey(parentId)) continue;
+            targets.Add(node.Id);
+            metadataParticipants.Add(node.Id);
+            metadataParticipants.Add(parentId);
+        }
+
+        foreach (var edge in chart.Edges) {
+            if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
+            if (metadataParticipants.Contains(edge.SourceNodeId) || metadataParticipants.Contains(edge.TargetNodeId)) continue;
+            targets.Add(edge.TargetNodeId);
         }
 
         return chart.Nodes.Where(node => !targets.Contains(node.Id)).OrderBy(node => node.Id, StringComparer.Ordinal).ToList();

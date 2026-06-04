@@ -152,6 +152,24 @@ internal static partial class SmokeTests {
         Assert(child.X > root.X + root.Width, "Edge-derived children with stale parent metadata should be placed outward from the root.");
     }
 
+    private static void TopologyMindMapDirectLayoutKeepsMetadataRootWithCrossLinks() {
+        var chart = TopologyChart.Create()
+            .WithId("metadata-root-cross-link")
+            .WithViewport(640, 360, 24)
+            .AddNode("a-child", "Child", 0, 0, TopologyNodeKind.Application, width: 160, height: 56)
+            .AddNode("z-root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88)
+            .AddEdge("child-root-cross-link", "a-child", "z-root")
+            .WithLayout(TopologyLayoutMode.MindMap);
+
+        Node(chart, "a-child").Metadata["mindmap.parentId"] = "z-root";
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var root = Node(prepared, "z-root");
+        var child = Node(prepared, "a-child");
+        Assert(root.Metadata["mindmap.side"] == "center", "Direct mind-map root discovery should prefer resolved parent metadata over cross-link edge targets.");
+        Assert(child.X > root.X + root.Width, "Metadata children should still be placed outward when cross-links point back at the root.");
+    }
+
     private static void TopologyMindMapRequiresOneRoot() {
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddMindMap(new[] {
             new TopologyHierarchyItem("one", "One"),

@@ -272,6 +272,7 @@ internal static partial class SmokeTests {
         ("Topology mind-map marks only parentless root", TopologyMindMapMarksOnlyParentlessRoot),
         ("Topology mind-map direct layout places detached trees", TopologyMindMapDirectLayoutPlacesDetachedTrees),
         ("Topology mind-map direct layout falls back from stale parent metadata", TopologyMindMapDirectLayoutFallsBackFromStaleParentMetadata),
+        ("Topology mind-map direct layout keeps metadata root with cross-links", TopologyMindMapDirectLayoutKeepsMetadataRootWithCrossLinks),
         ("Topology mind-map requires one root", TopologyMindMapRequiresOneRoot),
         ("Topology required icons reject missing mind-map icons", TopologyRequiredIconsRejectMissingMindMapIcons),
         ("Topology monitoring style uses soft world map silhouette", TopologyMonitoringStyleUsesSoftWorldMapSilhouette),
