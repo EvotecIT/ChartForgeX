@@ -97,6 +97,61 @@ internal static partial class SmokeTests {
         Assert(prepared.Edges.Count == 1 && prepared.Edges[0].Routing == TopologyEdgeRouting.Curved, "Mind-map layout should preserve caller-selected curved routing.");
     }
 
+    private static void TopologyMindMapMarksOnlyParentlessRoot() {
+        var chart = TopologyChart.Create()
+            .WithId("explicit-level-root")
+            .WithViewport(640, 360, 24)
+            .AddMindMap(new[] {
+                new TopologyHierarchyItem("z-root", "Root"),
+                new TopologyHierarchyItem("a-child", "Child", "z-root") { Level = 0 }
+            });
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var root = Node(prepared, "z-root");
+        var child = Node(prepared, "a-child");
+        Assert(root.Metadata["mindmap.side"] == "center", "Mind-map builder should mark only the validated parentless item as the root.");
+        Assert(!child.Metadata.ContainsKey("mindmap.root"), "Explicit level zero should not make a child a second mind-map root.");
+    }
+
+    private static void TopologyMindMapDirectLayoutPlacesDetachedTrees() {
+        var chart = TopologyChart.Create()
+            .WithId("direct-mindmap-forest")
+            .WithViewport(760, 420, 24)
+            .AddNode("a-root", "Primary", 0, 0, TopologyNodeKind.Hub, width: 180, height: 72)
+            .AddNode("a-child", "Primary Child", 0, 0, TopologyNodeKind.Application, width: 150, height: 52)
+            .AddNode("z-root", "Detached", 0, 0, TopologyNodeKind.Service, width: 170, height: 58)
+            .AddNode("z-child", "Detached Child", 0, 0, TopologyNodeKind.Queue, width: 150, height: 52)
+            .AddEdge("a-root-child", "a-root", "a-child")
+            .AddEdge("z-root-child", "z-root", "z-child")
+            .WithLayout(TopologyLayoutMode.MindMap);
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var root = Node(prepared, "a-root");
+        var detached = Node(prepared, "z-root");
+        var detachedChild = Node(prepared, "z-child");
+        Assert(root.Metadata["mindmap.side"] == "center", "Direct mind-map forest layout should still center the selected root.");
+        Assert(detached.Metadata.ContainsKey("mindmap.side"), "Direct mind-map forest layout should place detached source-free trees instead of leaving them at default coordinates.");
+        Assert(detachedChild.Metadata.ContainsKey("mindmap.side"), "Direct mind-map forest layout should continue placing children under detached source-free roots.");
+    }
+
+    private static void TopologyMindMapDirectLayoutFallsBackFromStaleParentMetadata() {
+        var chart = TopologyChart.Create()
+            .WithId("stale-parent-metadata")
+            .WithViewport(640, 360, 24)
+            .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88)
+            .AddNode("child", "Child", 0, 0, TopologyNodeKind.Application, width: 160, height: 56)
+            .AddEdge("root-child", "root", "child")
+            .WithLayout(TopologyLayoutMode.MindMap);
+
+        Node(chart, "child").Metadata["mindmap.parentId"] = "missing-parent";
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var root = Node(prepared, "root");
+        var child = Node(prepared, "child");
+        Assert(child.Metadata.ContainsKey("mindmap.side"), "Direct mind-map layout should fall back to valid edges when parent metadata points at a missing node.");
+        Assert(child.X > root.X + root.Width, "Edge-derived children with stale parent metadata should be placed outward from the root.");
+    }
+
     private static void TopologyMindMapRequiresOneRoot() {
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddMindMap(new[] {
             new TopologyHierarchyItem("one", "One"),

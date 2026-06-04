@@ -20,7 +20,9 @@ internal static partial class TopologyLayoutEngine {
             return;
         }
 
-        var children = PruneMindMapChildren(root, MindMapChildren(chart, nodes));
+        var mindMapChildren = MindMapChildren(chart, nodes);
+        AddDetachedMindMapRoots(root, chart, nodes, mindMapChildren);
+        var children = PruneMindMapChildren(root, mindMapChildren);
         var levels = MindMapLevels(root, children);
         var maxWidthByLevel = MindMapMaxWidthByLevel(chart.Nodes, levels);
         var pad = Math.Max(24, chart.Viewport.Padding);
@@ -52,14 +54,18 @@ internal static partial class TopologyLayoutEngine {
     private static TopologyNode? MindMapRoot(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
         var explicitRoot = chart.Nodes.FirstOrDefault(node => node.Metadata.TryGetValue("mindmap.root", out var value) && value.Equals("true", StringComparison.OrdinalIgnoreCase));
         if (explicitRoot != null) return explicitRoot;
+        var roots = MindMapSourceFreeNodes(chart, nodes);
+        if (roots.Count > 0) return roots.FirstOrDefault(node => node.Kind == TopologyNodeKind.Hub) ?? roots[0];
+        return nodes.Count == 0 ? null : chart.Nodes.OrderBy(node => node.Id, StringComparer.Ordinal).First();
+    }
+
+    private static List<TopologyNode> MindMapSourceFreeNodes(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
         var targets = new HashSet<string>(chart.Edges.Select(edge => edge.TargetNodeId), StringComparer.Ordinal);
         foreach (var node in chart.Nodes) {
             if (node.Metadata.TryGetValue("mindmap.parentId", out var parentId) && nodes.ContainsKey(parentId)) targets.Add(node.Id);
         }
 
-        var roots = chart.Nodes.Where(node => !targets.Contains(node.Id)).OrderBy(node => node.Id, StringComparer.Ordinal).ToList();
-        if (roots.Count > 0) return roots.FirstOrDefault(node => node.Kind == TopologyNodeKind.Hub) ?? roots[0];
-        return nodes.Count == 0 ? null : chart.Nodes.OrderBy(node => node.Id, StringComparer.Ordinal).First();
+        return chart.Nodes.Where(node => !targets.Contains(node.Id)).OrderBy(node => node.Id, StringComparer.Ordinal).ToList();
     }
 
     private static Dictionary<string, List<TopologyNode>> MindMapChildren(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
@@ -70,7 +76,7 @@ internal static partial class TopologyLayoutEngine {
 
         foreach (var edge in chart.Edges) {
             if (!nodes.TryGetValue(edge.SourceNodeId, out _) || !nodes.TryGetValue(edge.TargetNodeId, out var target)) continue;
-            if (target.Metadata.TryGetValue("mindmap.parentId", out var parentId) && !string.Equals(parentId, edge.SourceNodeId, StringComparison.Ordinal)) continue;
+            if (target.Metadata.TryGetValue("mindmap.parentId", out var parentId) && nodes.ContainsKey(parentId) && !string.Equals(parentId, edge.SourceNodeId, StringComparison.Ordinal)) continue;
             AddMindMapChild(children, edge.SourceNodeId, target);
         }
 
@@ -84,6 +90,13 @@ internal static partial class TopologyLayoutEngine {
         }
 
         return children;
+    }
+
+    private static void AddDetachedMindMapRoots(TopologyNode root, TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, IDictionary<string, List<TopologyNode>> children) {
+        foreach (var sourceRoot in MindMapSourceFreeNodes(chart, nodes)) {
+            if (string.Equals(sourceRoot.Id, root.Id, StringComparison.Ordinal)) continue;
+            AddMindMapChild(children, root.Id, sourceRoot);
+        }
     }
 
     private static void AddMindMapChild(IDictionary<string, List<TopologyNode>> children, string parentId, TopologyNode child) {

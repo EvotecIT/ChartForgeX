@@ -100,7 +100,7 @@ public static class TopologyMindMapExtensions {
             node.DisplayMode = NodeDisplayForLevel(options, level);
             node.Metadata["layer"] = level.ToString(CultureInfo.InvariantCulture);
             node.Metadata["mindmap.level"] = node.Metadata["layer"];
-            if (level == 0) node.Metadata["mindmap.root"] = "true";
+            if (string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["mindmap.root"] = "true";
             if (!string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["mindmap.parentId"] = item.ParentId!;
             foreach (var pair in item.Metadata) node.Metadata[pair.Key] = pair.Value;
         }
