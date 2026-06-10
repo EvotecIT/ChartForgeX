@@ -102,7 +102,7 @@ internal static class MermaidStateParser {
 
     private static string NormalizeSpecial(string value, bool source, ref int specialIndex) {
         value = MermaidParserUtilities.Unquote(value);
-        if (value == "[*]") return source ? "mermaid-start" : "mermaid-end-" + (++specialIndex).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (value == "[*]") return (source ? "mermaid-start-" : "mermaid-end-") + (++specialIndex).ToString(System.Globalization.CultureInfo.InvariantCulture);
         var styleIndex = value.IndexOf(":::", StringComparison.Ordinal);
         return styleIndex > 0 ? value.Substring(0, styleIndex).Trim() : value;
     }

@@ -52,6 +52,30 @@ Processing --> [*]";
         Assert(document.ToPng().Length > 64, "Mermaid state PNG rendering should emit a valid PNG.");
     }
 
+    private static void MermaidParserCreatesDistinctStateStartMarkers() {
+        const string source = @"stateDiagram-v2
+state First {
+  [*] --> A
+}
+state Second {
+  [*] --> B
+}";
+
+        var result = new MermaidParser().ParseState(source);
+
+        Assert(!result.HasErrors, "State diagrams with repeated start markers should parse without errors: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid state parser should produce a document.");
+        var startCount = 0;
+        foreach (var state in document.States) {
+            if (state.Kind == "start") startCount++;
+        }
+
+        Assert(startCount == 2, "Repeated state start markers should create distinct start nodes.");
+        Assert(document.Transitions[0].SourceId != document.Transitions[1].SourceId, "Repeated state start transitions should not reuse the same source id.");
+        Assert(document.States.Exists(state => state.Kind == "start" && state.ParentId == "First"), "First composite should keep its own start node.");
+        Assert(document.States.Exists(state => state.Kind == "start" && state.ParentId == "Second"), "Second composite should keep its own start node.");
+    }
+
     private static void MermaidParserParsesEntityRelationshipDiagramsAndRenders() {
         const string source = @"erDiagram
 CUSTOMER ||--o{ ORDER : places

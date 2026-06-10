@@ -5,12 +5,13 @@ namespace ChartForgeX.Mermaid;
 
 internal static class MermaidSequenceParser {
     private static readonly string[] MessageOperators = {
-        "<<-->>", "<<->>", "-->>", "->>", "--)", "-)", "--x", "-x", "-->", "->", "--", "-"
+        "<<-->>", "<<->>", "-->>", "->>", "--)", "-)", "--x", "-x", "-->", "->", "--"
     };
 
-    public static void ParseStatements(MermaidSequenceDocument document, string[] lines, int firstBodyLine) {
+    public static void ParseStatements(MermaidSequenceDocument document, string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         if (lines == null) throw new ArgumentNullException(nameof(lines));
+        if (result == null) throw new ArgumentNullException(nameof(result));
 
         var participants = new Dictionary<string, MermaidSequenceParticipant>(StringComparer.Ordinal);
         var blockStack = new Stack<MermaidSequenceBlockKind>();
@@ -30,7 +31,8 @@ internal static class MermaidSequenceParser {
                 if (TryParseNote(document, participants, trimmed, span)) continue;
                 if (TryParseLink(document, participants, trimmed, span)) continue;
                 if (TryParseBlock(document, blockStack, trimmed, span)) continue;
-                TryParseMessage(document, participants, trimmed, span);
+                if (TryParseMessage(document, participants, trimmed, span)) continue;
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Unrecognized sequence diagram statement was not rendered: " + trimmed);
             }
         }
     }

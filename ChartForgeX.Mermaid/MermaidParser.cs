@@ -34,7 +34,7 @@ public sealed class MermaidParser {
         if (descriptor.Kind == MermaidDiagramKind.Flowchart) {
             document = ParseFlowchart(source, lines, frontMatter, header.Value, descriptor, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Sequence) {
-            document = ParseSequence(source, lines, frontMatter, header.Value);
+            document = ParseSequence(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Class) {
             document = ParseClass(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.State) {
@@ -281,12 +281,12 @@ public sealed class MermaidParser {
             Direction = ParseFlowchartDirection(descriptor.Direction)
         };
 
-        MermaidFlowchartParser.ParseStatements(document, lines, header.Line + 1);
+        MermaidFlowchartParser.ParseStatements(document, lines, header.Line + 1, result);
 
         return document;
     }
 
-    private static MermaidSequenceDocument ParseSequence(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header) {
+    private static MermaidSequenceDocument ParseSequence(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result) {
         var document = new MermaidSequenceDocument {
             SourceText = source,
             Kind = MermaidDiagramKind.Sequence,
@@ -295,7 +295,7 @@ public sealed class MermaidParser {
             FrontMatter = frontMatter.Text
         };
 
-        MermaidSequenceParser.ParseStatements(document, lines, header.Line + 1);
+        MermaidSequenceParser.ParseStatements(document, lines, header.Line + 1, result);
 
         return document;
     }

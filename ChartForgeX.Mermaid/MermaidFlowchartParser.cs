@@ -6,9 +6,10 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidFlowchartParser {
     private static readonly string[] LabelSuffixOperators = { "-.->", "-->", "==>", "---", "--o", "--x" };
 
-    public static void ParseStatements(MermaidFlowchartDocument document, string[] lines, int firstBodyLine) {
+    public static void ParseStatements(MermaidFlowchartDocument document, string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         if (lines == null) throw new ArgumentNullException(nameof(lines));
+        if (result == null) throw new ArgumentNullException(nameof(result));
 
         var nodes = new Dictionary<string, MermaidFlowchartNode>(StringComparer.Ordinal);
         var subgraphs = new Stack<MermaidFlowchartSubgraph>();
@@ -27,14 +28,14 @@ internal static class MermaidFlowchartParser {
             if (TryParseStyleAssignment(document, nodes, trimmed, span)) continue;
             if (TryParseClickAssignment(document, nodes, trimmed, span)) continue;
             if (TryParseLinkStyle(document, trimmed, span)) continue;
-            ParseStatement(document, nodes, trimmed, span, subgraphs.Count == 0 ? null : subgraphs.Peek());
+            ParseStatement(document, nodes, trimmed, span, subgraphs.Count == 0 ? null : subgraphs.Peek(), result);
         }
 
         ApplyClassDefinitions(document);
         ApplyLinkStyles(document);
     }
 
-    private static void ParseStatement(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span, MermaidFlowchartSubgraph? subgraph) {
+    private static void ParseStatement(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span, MermaidFlowchartSubgraph? subgraph, MermaidParseResult<MermaidDocument> result) {
         var position = 0;
         if (!TryParseNode(text, ref position, span, out var current)) return;
         if (subgraph != null && current.SubgraphId == null) current.SubgraphId = subgraph.Id;
@@ -42,7 +43,11 @@ internal static class MermaidFlowchartParser {
         if (subgraph != null) AddNodeToSubgraph(subgraph, current.Id);
 
         while (TryParseEdgeOperator(text, ref position, out var edgeOperator, out var label)) {
-            if (!TryParseNode(text, ref position, span, out var target)) break;
+            if (!TryParseNode(text, ref position, span, out var target)) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart edge operator '" + edgeOperator + "' is missing a target node.");
+                break;
+            }
+
             if (subgraph != null && target.SubgraphId == null) target.SubgraphId = subgraph.Id;
             AddOrUpdateNode(document, nodes, target);
             if (subgraph != null) AddNodeToSubgraph(subgraph, target.Id);
