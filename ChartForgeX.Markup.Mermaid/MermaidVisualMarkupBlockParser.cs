@@ -73,6 +73,7 @@ public sealed class MermaidVisualMarkupBlockParser : IVisualMarkupBlockParser {
         }
 
         if (mermaidResult.HasErrors || mermaidResult.Document == null) return;
+        try {
         if (mermaidResult.Document is MermaidClassDocument classDiagram) {
             AddTopologyArtifact(result, block, classDiagram.ToVisualArtifact(BuildTopologyOptions(block, _classRenderOptions)));
             return;
@@ -211,6 +212,13 @@ public sealed class MermaidVisualMarkupBlockParser : IVisualMarkupBlockParser {
             Severity = MarkupDiagnosticSeverity.Warning,
             Message = "Mermaid diagram kind '" + mermaidResult.Document.Kind + "' is recognized but cannot produce a ChartForgeX visual artifact yet."
         });
+        } catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException || ex is OverflowException) {
+            result.Diagnostics.Add(new MarkupDiagnostic {
+                Line = block.FenceLine,
+                Severity = MarkupDiagnosticSeverity.Error,
+                Message = ex.Message
+            });
+        }
     }
 
     private static void AddTopologyArtifact(VisualMarkupParseResult result, VisualMarkupBlock block, VisualArtifact artifact) {

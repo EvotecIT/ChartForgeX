@@ -381,6 +381,24 @@ capabilities search sort filter copy export
         Assert(result.Document.ToSvg().Contains("data-cfx-role=\"table-header\"", StringComparison.Ordinal), "Simple table artifacts should render static SVG previews.");
     }
 
+    private static void MarkupTableParserUsesFenceAttributesAsDefaults() {
+        const string source = @"```chartforgex table {#alerts title=""Open Alerts"" subtitle=""Native table"" capabilities=""search sort export"" totalrows=""12""}
+| Name | State |
+| ---- | ----- |
+| Mail | Warning |
+```";
+
+        var result = new MarkupTableParser().Parse(source);
+
+        Assert(!result.HasErrors, "Attribute-only table fences should parse without errors: " + Diagnostics(result));
+        var table = result.Document!;
+        Assert(table.Id == "alerts", "Table fence id attributes should seed artifact ids.");
+        Assert(table.Title == "Open Alerts", "Table fence title attributes should seed artifact titles.");
+        Assert(table.Subtitle == "Native table", "Table fence subtitle attributes should seed artifact subtitles.");
+        Assert(table.Supports(TableArtifactCapabilities.Search) && table.Supports(TableArtifactCapabilities.Sort) && table.Supports(TableArtifactCapabilities.Export), "Table fence capability attributes should seed declared host capabilities.");
+        Assert(table.TotalRowCount == 12, "Table fence total row attributes should seed row-count metadata.");
+    }
+
     private static void MarkupTableParserParsesTypedColumnsAndRows() {
         const string source = @"```chartforgex table
 id services
@@ -461,6 +479,24 @@ series ""Checks""
         Assert(result.Document.Chart.Series.Count == 1 && result.Document.Chart.Series[0].Kind == ChartSeriesKind.Pie, "Simple chart markup should build the requested chart kind.");
         Assert(result.Document.Chart.Options.XAxisLabels.Count == 3, "Simple chart markup should preserve labels.");
         Assert(result.Document.Chart.ToSvg().Contains("data-cfx-role=\"pie-slice\"", StringComparison.Ordinal), "Simple chart markup should render through ChartForgeX chart SVG.");
+    }
+
+    private static void MarkupChartParserUsesFenceAttributesAsDefaults() {
+        const string source = @"```chartforgex chart {#result-mix title=""Result Mix"" type=""pie"" series=""Checks"" width=""640"" height=""360""}
+| Label | Value |
+| ----- | ----- |
+| Passed | 1260 |
+| Failed | 10 |
+```";
+
+        var result = new MarkupChartParser().Parse(source);
+
+        Assert(!result.HasErrors, "Attribute-only chart fences should parse without errors: " + Diagnostics(result));
+        Assert(result.Document != null, "Attribute-only chart fences should produce a chart document.");
+        Assert(result.Document!.Id == "result-mix", "Chart fence id attributes should seed artifact ids.");
+        Assert(result.Document.Chart.Title == "Result Mix", "Chart fence title attributes should seed chart titles.");
+        Assert(result.Document.Chart.Series[0].Kind == ChartSeriesKind.Pie, "Chart fence type attributes should seed chart kind.");
+        Assert(result.Document.Chart.Options.Size.Width == 640 && result.Document.Chart.Options.Size.Height == 360, "Chart fence width and height attributes should seed chart size.");
     }
 
     private static void VisualMarkupParserMapsChartFencesToArtifacts() {

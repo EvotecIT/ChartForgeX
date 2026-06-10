@@ -20,6 +20,7 @@ public sealed class MarkupTableParser {
         if (text == null) throw new ArgumentNullException(nameof(text));
         var block = ExtractFirstTableBlock(text);
         var result = new MarkupParseResult<TableArtifact> { Document = TableArtifact.Create("table") };
+        ApplyFenceAttributes(result, result.Document, block);
         var lines = block.Payload.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var lineOffset = block.StartLine - 1;
         var section = string.Empty;
@@ -61,6 +62,37 @@ public sealed class MarkupTableParser {
         }
 
         return new VisualMarkupBlock(VisualMarkupKind.Table, "chartforgex table", string.Empty, text, 1, 1, Math.Max(1, text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Length), EmptyAttributes.Value);
+    }
+
+    private static void ApplyFenceAttributes(MarkupParseResult<TableArtifact> result, TableArtifact table, VisualMarkupBlock block) {
+        if (block.Attributes.Count == 0) return;
+        try {
+            if (TryGetAttribute(block, "id", out var id) && !string.IsNullOrWhiteSpace(id)) table.Id = id;
+            if (TryGetAttribute(block, "title", out var title) && !string.IsNullOrWhiteSpace(title)) table.Title = title;
+            if (TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) table.Subtitle = subtitle;
+            if (TryGetAttribute(block, "capabilities", out var capabilities) && !string.IsNullOrWhiteSpace(capabilities)) table.Capabilities = ParseCapabilities(Tokenize("capabilities " + capabilities.Replace(',', ' ')), 1);
+            if (TryGetAttribute(block, "totalRows", out var totalRows) && !string.IsNullOrWhiteSpace(totalRows)) table.TotalRowCount = long.Parse(totalRows, CultureInfo.InvariantCulture);
+        } catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException || ex is FormatException || ex is OverflowException) {
+            Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, ex.Message);
+        }
+    }
+
+    private static bool TryGetAttribute(VisualMarkupBlock block, string key, out string value) {
+        if (block.Attributes.TryGetValue(key, out var exact)) {
+            value = exact;
+            return true;
+        }
+
+        var normalized = NormalizeKey(key);
+        foreach (var item in block.Attributes) {
+            if (NormalizeKey(item.Key) == normalized) {
+                value = item.Value;
+                return true;
+            }
+        }
+
+        value = string.Empty;
+        return false;
     }
 
     private static void ParseCommand(MarkupParseResult<TableArtifact> result, TableArtifact table, string line, int lineNumber) {

@@ -216,10 +216,13 @@ public sealed partial class SvgChartRenderer {
         return categories.ToArray();
     }
 
-    private static double RadarMin(Chart chart) => chart.Options.YAxisMinimum ?? 0;
+    private static double RadarMin(Chart chart) {
+        if (chart.Options.YAxisMinimum.HasValue) return chart.Options.YAxisMinimum.Value;
+        return chart.Options.YAxisMaximum.HasValue && chart.Options.YAxisMaximum.Value <= 0 ? chart.Options.YAxisMaximum.Value - 1 : 0;
+    }
 
     private static double RadarMax(Chart chart, IEnumerable<ChartSeries> series, double min) {
-        if (chart.Options.YAxisMaximum.HasValue) return chart.Options.YAxisMaximum.Value;
+        if (chart.Options.YAxisMaximum.HasValue) return chart.Options.YAxisMaximum.Value > min ? chart.Options.YAxisMaximum.Value : min + 1;
         var max = 0.0;
         foreach (var item in series) foreach (var point in item.Points) max = Math.Max(max, point.Y);
         if (max <= min) max = min + 1;

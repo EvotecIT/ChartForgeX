@@ -61,6 +61,22 @@ journey
         Assert(result.Diagnostics[0].Message.Contains("not implemented", StringComparison.Ordinal), "Unsupported Mermaid diagnostics should be explicit.");
     }
 
+    private static void MermaidVisualMarkupParserReportsInvalidFenceSizeAttributes() {
+        const string source = @"# Visual
+
+```mermaid {#flow width=""0""}
+flowchart LR
+  A --> B
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(result.HasErrors, "Invalid Mermaid fence size attributes should produce parse diagnostics.");
+        Assert(result.Artifacts.Count == 0, "Invalid Mermaid render attributes should not emit a partial artifact.");
+        Assert(result.Diagnostics[0].Line == 3, "Invalid Mermaid fence size diagnostics should point at the opening fence.");
+        Assert(result.Diagnostics[0].Message.Contains("width", StringComparison.OrdinalIgnoreCase), "Invalid Mermaid fence size diagnostics should name the invalid option.");
+    }
+
     private static void MermaidVisualMarkupParserMapsSequenceFencesToArtifacts() {
         const string source = @"# Visual
 

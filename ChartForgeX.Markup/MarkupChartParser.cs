@@ -19,6 +19,7 @@ public sealed class MarkupChartParser {
         var block = ExtractFirstChartBlock(text);
         var state = new ChartState();
         var result = new MarkupParseResult<MarkupChartDocument>();
+        ApplyFenceAttributes(result, state, block);
         var lines = block.Payload.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var lineOffset = block.StartLine - 1;
         List<string>? headers = null;
@@ -48,6 +49,40 @@ public sealed class MarkupChartParser {
         }
 
         return new VisualMarkupBlock(VisualMarkupKind.Chart, "chartforgex chart", string.Empty, text, 1, 1, Math.Max(1, text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Length), EmptyAttributes.Value);
+    }
+
+    private static void ApplyFenceAttributes(MarkupParseResult<MarkupChartDocument> result, ChartState state, VisualMarkupBlock block) {
+        if (block.Attributes.Count == 0) return;
+        try {
+            if (TryGetAttribute(block, "id", out var id) && !string.IsNullOrWhiteSpace(id)) state.Id = id;
+            if (TryGetAttribute(block, "title", out var title) && !string.IsNullOrWhiteSpace(title)) state.Title = title;
+            if (TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) state.Subtitle = subtitle;
+            if (TryGetAttribute(block, "type", out var type) && !string.IsNullOrWhiteSpace(type)) state.Type = type;
+            if (TryGetAttribute(block, "series", out var series) && !string.IsNullOrWhiteSpace(series)) state.SeriesName = series;
+            if (TryGetAttribute(block, "size", out var size) && !string.IsNullOrWhiteSpace(size)) ParseSize(state, size);
+            if (TryGetAttribute(block, "width", out var width) && !string.IsNullOrWhiteSpace(width)) state.Width = int.Parse(width, CultureInfo.InvariantCulture);
+            if (TryGetAttribute(block, "height", out var height) && !string.IsNullOrWhiteSpace(height)) state.Height = int.Parse(height, CultureInfo.InvariantCulture);
+        } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
+            Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, ex.Message);
+        }
+    }
+
+    private static bool TryGetAttribute(VisualMarkupBlock block, string key, out string value) {
+        if (block.Attributes.TryGetValue(key, out var exact)) {
+            value = exact;
+            return true;
+        }
+
+        var normalized = NormalizeKey(key);
+        foreach (var item in block.Attributes) {
+            if (NormalizeKey(item.Key) == normalized) {
+                value = item.Value;
+                return true;
+            }
+        }
+
+        value = string.Empty;
+        return false;
     }
 
     private static Chart BuildChart(ChartState state) {
