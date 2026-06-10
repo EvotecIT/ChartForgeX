@@ -1,0 +1,7 @@
+classDiagram
+class User {
+  +string Name
+  +Login() bool
+}
+<<service>> User
+User <|-- Admin : extends

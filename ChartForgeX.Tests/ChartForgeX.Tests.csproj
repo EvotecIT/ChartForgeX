@@ -13,6 +13,8 @@
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
     <ProjectReference Include="..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
     <ProjectReference Include="..\ChartForgeX.Markup.Cli\ChartForgeX.Markup.Cli.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>

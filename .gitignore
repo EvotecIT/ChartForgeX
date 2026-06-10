@@ -1,13 +1,5 @@
+artifacts/
 bin/
 obj/
-.vs/
-*.user
-*.suo
-TestResults/
-artifacts/
-/.claude/
-/.playwright-mcp/
-/*.png
-Website/_reports/
-Website/_site/
-Website/_temp/
+node_modules/
+tests/mermaid-conformance/node_modules/

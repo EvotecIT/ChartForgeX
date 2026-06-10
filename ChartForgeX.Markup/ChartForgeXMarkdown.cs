@@ -48,92 +48,13 @@ public static class ChartForgeXMarkdown {
     /// <returns>Fenced topology blocks.</returns>
     public static List<ChartForgeXMarkdownBlock> ExtractTopologyBlocks(string text) {
         if (text == null) throw new ArgumentNullException(nameof(text));
+        var visualBlocks = VisualMarkupScanner.ExtractBlocks(text);
         var blocks = new List<ChartForgeXMarkdownBlock>();
-        var lines = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        var inFence = false;
-        var fence = string.Empty;
-        var include = false;
-        var payloadStartLine = 1;
-        var payload = new List<string>();
-
-        for (var index = 0; index < lines.Length; index++) {
-            var line = lines[index];
-            var indent = LeadingIndentColumns(line);
-            var trimmed = line.TrimStart();
-            if (!inFence) {
-                if (indent > 3) continue;
-                if (!trimmed.StartsWith("```", StringComparison.Ordinal) && !trimmed.StartsWith("~~~", StringComparison.Ordinal)) continue;
-                var marker = trimmed[0] == '`' ? "`" : "~";
-                var count = CountPrefix(trimmed, marker[0]);
-                fence = new string(marker[0], count);
-                var info = trimmed.Substring(count).Trim();
-                include = IsTopologyFence(info);
-                inFence = true;
-                payloadStartLine = index + 2;
-                payload.Clear();
-                continue;
-            }
-
-            if (indent <= 3 && IsClosingFence(trimmed, fence)) {
-                if (include) blocks.Add(new ChartForgeXMarkdownBlock(string.Join("\n", payload), payloadStartLine));
-                inFence = false;
-                include = false;
-                payload.Clear();
-                continue;
-            }
-
-            if (include) payload.Add(line);
+        foreach (var block in visualBlocks) {
+            if (block.Kind == VisualMarkupKind.Topology) blocks.Add(new ChartForgeXMarkdownBlock(block.Payload, block.StartLine));
         }
 
-        if (inFence && include) blocks.Add(new ChartForgeXMarkdownBlock(string.Join("\n", payload), payloadStartLine));
         return blocks;
-    }
-
-    private static bool IsTopologyFence(string info) {
-        if (string.IsNullOrWhiteSpace(info)) return false;
-        var normalized = info.Trim().ToLowerInvariant();
-        return IsFenceName(normalized, "chartforgex topology") ||
-            IsFenceName(normalized, "chartforgex-topology") ||
-            IsFenceName(normalized, "cfx topology") ||
-            IsFenceName(normalized, "cfx-topology");
-    }
-
-    private static bool IsFenceName(string info, string name) {
-        if (info == name) return true;
-        if (!info.StartsWith(name, StringComparison.Ordinal)) return false;
-        var next = info[name.Length];
-        return char.IsWhiteSpace(next) || next == '{';
-    }
-
-    private static int CountPrefix(string text, char value) {
-        var count = 0;
-        while (count < text.Length && text[count] == value) count++;
-        return count;
-    }
-
-    private static bool IsClosingFence(string text, string fence) {
-        var markerCount = CountPrefix(text, fence[0]);
-        if (markerCount < fence.Length) return false;
-        for (var i = markerCount; i < text.Length; i++) {
-            if (!char.IsWhiteSpace(text[i])) return false;
-        }
-
-        return true;
-    }
-
-    private static int LeadingIndentColumns(string text) {
-        var count = 0;
-        for (var i = 0; i < text.Length; i++) {
-            if (text[i] == ' ') {
-                count++;
-            } else if (text[i] == '\t') {
-                count += 4;
-            } else {
-                break;
-            }
-        }
-
-        return count;
     }
 }
 

@@ -351,6 +351,82 @@ function Invoke-DotNetCommand {
     }
 }
 
+function Invoke-NodeCommand {
+    param(
+        [Parameter(Mandatory = $true)] [string] $FileName,
+        [Parameter(Mandatory = $true)] [string[]] $Arguments,
+        [Parameter(Mandatory = $true)] [string] $WorkingDirectory,
+        [Parameter(Mandatory = $true)] [string] $Description,
+        [Parameter(Mandatory = $true)] [int] $TimeoutSeconds,
+        [switch] $Quiet
+    )
+
+    $command = Get-Command $FileName -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $command) {
+        throw "$Description requires '$FileName' to be available on PATH."
+    }
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $command.Source
+    $startInfo.WorkingDirectory = $WorkingDirectory
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = [bool]$Quiet
+    $startInfo.RedirectStandardError = [bool]$Quiet
+    if ($null -ne $startInfo.ArgumentList) {
+        foreach ($argument in $Arguments) {
+            [void] $startInfo.ArgumentList.Add($argument)
+        }
+    } else {
+        $startInfo.Arguments = Join-ProcessArguments -Arguments $Arguments
+    }
+
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    $standardOutput = $null
+    $standardError = $null
+    if ($Quiet) {
+        $standardOutput = $process.StandardOutput.ReadToEndAsync()
+        $standardError = $process.StandardError.ReadToEndAsync()
+    }
+
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        try {
+            $process.Kill($true)
+        } catch {
+            $process.Kill()
+        }
+
+        throw "$Description timed out after $TimeoutSeconds second(s): $FileName $($Arguments -join ' ')"
+    }
+
+    if ($process.ExitCode -ne 0) {
+        if ($Quiet) {
+            $output = $standardOutput.GetAwaiter().GetResult()
+            $errorOutput = $standardError.GetAwaiter().GetResult()
+            $tail = (($output, $errorOutput) -join [Environment]::NewLine).Trim()
+            if ($tail.Length -gt 0) {
+                throw "$Description failed with exit code $($process.ExitCode): $tail"
+            }
+        }
+
+        throw "$Description failed with exit code $($process.ExitCode)."
+    }
+}
+
+function Invoke-MermaidConformance {
+    param(
+        [Parameter(Mandatory = $true)] [string] $Root,
+        [Parameter(Mandatory = $true)] [int] $TimeoutSeconds
+    )
+
+    $conformanceRoot = Join-Path $Root 'tests/mermaid-conformance'
+    if (-not (Test-Path (Join-Path $conformanceRoot 'package.json'))) {
+        throw "Mermaid conformance package was not found: $conformanceRoot"
+    }
+
+    Invoke-NodeCommand -FileName 'npm' -Arguments @('ci', '--ignore-scripts', '--no-audit', '--no-fund') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance restore' -TimeoutSeconds $TimeoutSeconds -Quiet
+    Invoke-NodeCommand -FileName 'npm' -Arguments @('run', 'validate') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance validation' -TimeoutSeconds $TimeoutSeconds
+}
+
 function Get-NativeAotRuntimeIdentifier {
     if ($env:CHARTFORGEX_NATIVE_AOT_RID) {
         return $env:CHARTFORGEX_NATIVE_AOT_RID
@@ -461,6 +537,9 @@ try {
     $library = Join-Path $root 'ChartForgeX/ChartForgeX.csproj'
     $interactivityLibrary = Join-Path $root 'ChartForgeX.Interactivity/ChartForgeX.Interactivity.csproj'
     $htmlInteractivityLibrary = Join-Path $root 'ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj'
+    $markupLibrary = Join-Path $root 'ChartForgeX.Markup/ChartForgeX.Markup.csproj'
+    $mermaidLibrary = Join-Path $root 'ChartForgeX.Mermaid/ChartForgeX.Mermaid.csproj'
+    $markupMermaidLibrary = Join-Path $root 'ChartForgeX.Markup.Mermaid/ChartForgeX.Markup.Mermaid.csproj'
     if ($SkipExamples -and $UpdateVisualBaseline) {
         throw 'Visual baseline updates require examples to run. Remove -SkipExamples.'
     }
@@ -468,6 +547,7 @@ try {
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore') -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+    Invoke-MermaidConformance -Root $root -TimeoutSeconds $PackageConsumerTimeoutSeconds
 
     if (-not $SkipAot) {
         $nativeAotRid = Get-NativeAotRuntimeIdentifier
@@ -508,7 +588,10 @@ try {
         $packageProjects = @(
             [ordered]@{ Id = 'ChartForgeX'; Project = $library; Assembly = 'ChartForgeX'; Nuspec = 'ChartForgeX.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
             [ordered]@{ Id = 'ChartForgeX.Interactivity'; Project = $interactivityLibrary; Assembly = 'ChartForgeX.Interactivity'; Nuspec = 'ChartForgeX.Interactivity.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
-            [ordered]@{ Id = 'ChartForgeX.Interactivity.Html'; Project = $htmlInteractivityLibrary; Assembly = 'ChartForgeX.Interactivity.Html'; Nuspec = 'ChartForgeX.Interactivity.Html.nuspec'; DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity'); RequiresDependencyFreeNuspec = $false }
+            [ordered]@{ Id = 'ChartForgeX.Interactivity.Html'; Project = $htmlInteractivityLibrary; Assembly = 'ChartForgeX.Interactivity.Html'; Nuspec = 'ChartForgeX.Interactivity.Html.nuspec'; DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity'); RequiresDependencyFreeNuspec = $false },
+            [ordered]@{ Id = 'ChartForgeX.Markup'; Project = $markupLibrary; Assembly = 'ChartForgeX.Markup'; Nuspec = 'ChartForgeX.Markup.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
+            [ordered]@{ Id = 'ChartForgeX.Mermaid'; Project = $mermaidLibrary; Assembly = 'ChartForgeX.Mermaid'; Nuspec = 'ChartForgeX.Mermaid.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
+            [ordered]@{ Id = 'ChartForgeX.Markup.Mermaid'; Project = $markupMermaidLibrary; Assembly = 'ChartForgeX.Markup.Mermaid'; Nuspec = 'ChartForgeX.Markup.Mermaid.nuspec'; DependencyIds = @('ChartForgeX.Markup', 'ChartForgeX.Mermaid'); RequiresDependencyFreeNuspec = $false }
         )
 
         foreach ($packageProject in $packageProjects) {
@@ -526,6 +609,8 @@ try {
 
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         $htmlPackageVersion = $null
+        $mermaidPackageVersion = $null
+        $markupMermaidPackageVersion = $null
         foreach ($packageProject in $packageProjects) {
             [xml] $projectXml = Get-Content -Path $packageProject.Project
             $packageVersion = [string] $projectXml.Project.PropertyGroup.Version
@@ -584,6 +669,12 @@ try {
             if ($packageProject.Id -eq 'ChartForgeX.Interactivity.Html') {
                 $htmlPackageVersion = $packageVersion
             }
+            if ($packageProject.Id -eq 'ChartForgeX.Mermaid') {
+                $mermaidPackageVersion = $packageVersion
+            }
+            if ($packageProject.Id -eq 'ChartForgeX.Markup.Mermaid') {
+                $markupMermaidPackageVersion = $packageVersion
+            }
         }
 
         $consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) "ChartForgeX-package-consumer-$([Guid]::NewGuid().ToString('N'))"
@@ -617,12 +708,17 @@ try {
 </configuration>
 "@ | Set-Content -Path (Join-Path $consumerRoot 'NuGet.config') -Encoding UTF8
                 Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Mermaid', '--version', $mermaidPackageVersion) -Description 'Mermaid package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                 @"
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Markup.Mermaid;
+using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.VisualArtifacts;
 
 var chart = Chart.Create()
     .WithTitle("Package smoke")
@@ -645,6 +741,17 @@ var dashboard = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options =>
 });
 if (!dashboard.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard surface missing.");
 if (!dashboard.Contains("data-cfx-chart-id=\"package-dashboard-2\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard child chart IDs missing.");
+
+var mermaid = new MermaidParser().ParseFlowchart("flowchart LR\n  a[Start] --> b[Done]");
+if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");
+if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");
+var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid" });
+if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
+var mermaidClass = new MermaidParser().ParseClass("classDiagram\nclass User\nUser <|-- Admin");
+if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Document.Classes.Count != 2) throw new InvalidOperationException("Mermaid package class parser failed.");
+if (mermaidClass.Document.ToVisualArtifact().Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");
+var markupMermaid = new MermaidVisualMarkupParser().Parse("~~~mermaid {#package-flow}\nflowchart LR\n  a --> b\n~~~");
+if (markupMermaid.HasErrors || markupMermaid.Artifacts.Count != 1 || markupMermaid.Artifacts[0].Id != "package-flow") throw new InvalidOperationException("Mermaid markup package parser failed.");
 "@ | Set-Content -Path (Join-Path $consumerRoot 'Program.cs') -Encoding UTF8
                 Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
             } finally {

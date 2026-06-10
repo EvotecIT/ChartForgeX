@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;netstandard2.0;net8.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsAotCompatible Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
+    <PublishAot Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.0'">false</PublishAot>
+    <EnableTrimAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableSingleFileAnalyzer>
+    <EnableAotAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableAotAnalyzer>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageId>ChartForgeX.Markup.Mermaid</PackageId>
+    <Version>0.1.6</Version>
+    <Authors>Evotec</Authors>
+    <Description>Mermaid fenced-block adapter for ChartForgeX markup visual artifact pipelines.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>charts;markdown;markup;mermaid;diagrams;svg;png;html;topology;reports;dashboard;aot;nativeaot;trimming</PackageTags>
+    <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Copyright>Copyright (c) Evotec</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

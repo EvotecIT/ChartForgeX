@@ -1,0 +1,13 @@
+{
+  "name": "chartforgex-mermaid-conformance",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node validate-mermaid.mjs"
+  },
+  "dependencies": {
+    "dompurify": "3.3.1",
+    "jsdom": "27.3.0",
+    "mermaid": "11.15.0"
+  }
+}
