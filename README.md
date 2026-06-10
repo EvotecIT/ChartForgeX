@@ -148,14 +148,18 @@ dotnet add package ChartForgeX
 
 ChartForgeX targets `net472`, `netstandard2.0`, `net8.0`, and `net10.0`. The core package has no runtime package dependencies. The `net472` target uses `Microsoft.NETFramework.ReferenceAssemblies.net472` as a private build-time reference only.
 
-Optional interaction support is split into separate packages:
+Optional visual artifact, markup, Mermaid, and interaction support is split into separate packages:
 
 | Package | Purpose |
 | --- | --- |
 | `ChartForgeX` | Static SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering. |
+| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with first-class flowchart, sequence, class, state, ER, mindmap, kanban, pie, timeline, Gantt, XY chart, Sankey, radar, and treemap rendering. |
+| `ChartForgeX.Markup` | Markdown-friendly ChartForgeX visual fences for topology, chart, and table artifacts. |
+| `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
-| `ChartForgeX.Markup` | Markdown-friendly topology markup parser and C# emitter. |
+
+The core package also includes product-neutral visual artifact models for reusable visuals. `Chart` models can be wrapped as artifacts, `TableArtifact` declares capabilities such as search, sort, filter, selection, copy, export, and virtualization, and static previews render deterministically from the core package. Rich table interaction belongs in native hosts and adapter packages. See `docs/visual-artifacts.md`, `docs/markup.md`, and `docs/mermaid.md` for the current contracts.
 
 ## Native AOT and Trimming
 

@@ -1,0 +1,9 @@
+stateDiagram-v2
+direction LR
+[*] --> Idle
+Idle --> Processing : submit
+state Processing {
+  [*] --> Validating
+  Validating --> Done
+}
+Processing --> [*]

@@ -17,7 +17,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageId>ChartForgeX.Markup</PackageId>
-    <Version>0.1.4</Version>
+    <Version>0.1.6</Version>
     <Authors>Evotec</Authors>
     <Description>Markdown-friendly ChartForgeX markup parser and code emitter for charts and topology diagrams.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

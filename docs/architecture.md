@@ -38,6 +38,15 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Keep at least one generated example page for each adapter so interaction work remains visible in the local gallery.
 - Let adapter dashboards reuse the same per-chart section and script runtime as single-chart pages so interaction behavior stays consistent.
 
+## Visual Artifact Layout
+
+- Keep product-neutral artifact models such as `VisualArtifact` and `TableArtifact` in the core package when they can render deterministic static previews without runtime dependencies.
+- Keep rich interaction, keyboard behavior, clipboard, export workflows, virtualization, and native control binding in host or adapter packages.
+- Keep `ChartForgeX.Markup` generic. It owns Markdown fence scanning, built-in ChartForgeX visual parsers, diagnostics, and extension points.
+- Keep `ChartForgeX.Mermaid` separate from markup. It owns Mermaid source parsing, AST models, diagnostics, and Mermaid-to-ChartForgeX conversion.
+- Keep `ChartForgeX.Markup.Mermaid` thin. It should adapt Mermaid fences and attributes into markup results, not duplicate Mermaid parsing or rendering logic.
+- When a visual language cannot map naturally to an existing chart or topology model, introduce a reusable product-neutral artifact model instead of adding product-specific layout rules.
+
 ## Public API Layout
 
 - Keep user-facing chart configuration APIs close to `Core`.

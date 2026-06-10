@@ -44,6 +44,13 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Add reusable status palettes and compact infographic snippets that reuse shared primitive layout/styling instead of arbitrary markup.
 - Add more examples and visual-baseline candidates once layouts stabilize.
 
+## Mermaid
+
+- Continue expanding Mermaid support through typed AST models plus Mermaid.js-backed conformance fixtures before advertising a family as implemented.
+- Broaden class/state/ER/mindmap/kanban syntax coverage from Mermaid documentation examples, preserving raw statements where static CFX rendering cannot yet match Mermaid exactly.
+- Implement the next recognized families in order of IX value: journey, git graph, requirement, quadrant, block, packet, and architecture.
+- Keep runtime packages JavaScript-free; Mermaid.js belongs only in test-time compatibility fixtures.
+
 ## Formats
 
 - Keep SVG as the highest-fidelity static output.

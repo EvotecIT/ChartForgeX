@@ -24,6 +24,20 @@ internal static partial class SmokeTests {
         Assert(positionedLegend.ToPng().Length > 64, "Positioned radar legends should render valid PNG output.");
     }
 
+    private static void RadarNegativeExplicitMaximumInfersCompatibleMinimum() {
+        var chart = Chart.Create()
+            .WithSize(520, 360)
+            .WithXLabels("A", "B", "C")
+            .AddRadar("Debt", Points(-12, -10.5, -11));
+        chart.Options.YAxisMaximum = -10;
+
+        var svg = chart.ToSvg();
+
+        Assert(svg.Contains("data-cfx-role=\"radar-area\"", System.StringComparison.Ordinal), "Radar charts with negative explicit maximums should still render polygons.");
+        Assert(!svg.Contains("NaN", System.StringComparison.Ordinal) && !svg.Contains("Infinity", System.StringComparison.Ordinal), "Radar charts with negative explicit maximums should avoid invalid SVG coordinates.");
+        Assert(chart.ToPng().Length > 64, "Radar charts with negative explicit maximums should render valid PNG output.");
+    }
+
     private static Chart RadarSample() => Chart.Create()
         .WithSize(520, 360)
         .WithXLabels("Coverage", "Policy", "Alerts", "Response")
