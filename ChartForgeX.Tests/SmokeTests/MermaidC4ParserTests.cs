@@ -107,4 +107,22 @@ Person(user, ""99%% user"", ""Completion is 99%% ready"")";
         var document = result.Document ?? throw new InvalidOperationException("Mermaid C4 parser should produce a document.");
         Assert(document.Elements.Count == 1 && document.Elements[0].Label == "99%% user" && document.Elements[0].Description == "Completion is 99%% ready", "Mermaid C4 parser should preserve quoted percent text as element metadata.");
     }
+
+    private static void MermaidC4ParsesNamedOptionalArguments() {
+        const string source = @"C4Context
+Person(user, ""User"", ""Uses the system"", $tags=""v1.0"", $link=""https://example.test/user"")
+Container(api, ""API"", ""ASP.NET"", ""Serves traffic"", $sprite=""service"", $tags=""internal"", $link=""https://example.test/api"")
+Rel(user, api, ""Uses"", $tags=""sync"", $link=""https://example.test/rel"")";
+
+        var result = new MermaidParser().ParseC4(source);
+
+        Assert(!result.HasErrors, "Mermaid C4 parser should parse named optional arguments: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid C4 parser should produce a document.");
+        var person = document.Elements[0];
+        var container = document.Elements[1];
+        var relationship = document.Relationships[0];
+        Assert(person.Description == "Uses the system" && person.Sprite == null && person.Tags == "v1.0" && person.Link == "https://example.test/user", "Mermaid C4 parser should map named person tags and links without treating them as sprites.");
+        Assert(container.Technology == "ASP.NET" && container.Description == "Serves traffic" && container.Sprite == "service" && container.Tags == "internal" && container.Link == "https://example.test/api", "Mermaid C4 parser should map named container sprite, tags, and link metadata.");
+        Assert(relationship.Technology == null && relationship.Tags == "sync" && relationship.Link == "https://example.test/rel", "Mermaid C4 parser should map named relationship tags and links.");
+    }
 }

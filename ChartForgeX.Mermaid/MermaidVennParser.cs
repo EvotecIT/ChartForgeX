@@ -53,12 +53,18 @@ internal static class MermaidVennParser {
         }
 
         var id = setIds[0];
-        if (!ids.Add(id)) {
+        if (ids.Contains(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn set id was already declared: " + id + ".");
             return;
         }
 
+        if (document.Sets.Count >= 3) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn diagrams support no more than three sets.");
+            return;
+        }
+
         if (!TryParseSize(sizeText, 10, span, result, out var size)) return;
+        ids.Add(id);
         document.Sets.Add(new MermaidVennSet(id, label.Length == 0 ? id : label, size, span));
     }
 

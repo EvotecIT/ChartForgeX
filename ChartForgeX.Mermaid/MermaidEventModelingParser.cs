@@ -123,27 +123,72 @@ internal static class MermaidEventModelingParser {
 
         var dataType = ExtractDataType(header.Substring(tokens[0].Length).Trim(), out _);
         var firstContent = text.Substring(open + 1);
-        var inlineClose = firstContent.LastIndexOf('}');
-        if (inlineClose >= 0) {
-            document.DataBlocks.Add(new MermaidEventModelingDataBlock(tokens[0], dataType, firstContent.Substring(0, inlineClose).Trim(), span));
+        var builder = new StringBuilder();
+        var depth = 1;
+        if (AppendDataBlockContent(builder, firstContent, ref depth)) {
+            document.DataBlocks.Add(new MermaidEventModelingDataBlock(tokens[0], dataType, builder.ToString().Trim(), span));
             return currentLine;
         }
 
-        var builder = new StringBuilder();
-        if (firstContent.Trim().Length > 0) builder.AppendLine(firstContent.Trim());
+        if (builder.Length > 0) builder.AppendLine();
         for (var line = currentLine + 1; line <= lines.Length; line++) {
             var raw = lines[line - 1];
-            var trimmed = raw.Trim();
-            if (trimmed == "}") {
+            if (AppendDataBlockContent(builder, raw, ref depth)) {
                 document.DataBlocks.Add(new MermaidEventModelingDataBlock(tokens[0], dataType, builder.ToString().TrimEnd(), span));
                 return line;
             }
 
-            builder.AppendLine(raw);
+            builder.AppendLine();
         }
 
         MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Event Modeling data block '" + tokens[0] + "' must close with '}'.");
         return lines.Length;
+    }
+
+    private static bool AppendDataBlockContent(StringBuilder builder, string text, ref int depth) {
+        var quote = '\0';
+        var escaped = false;
+        for (var index = 0; index < text.Length; index++) {
+            var ch = text[index];
+            if (quote != '\0') {
+                builder.Append(ch);
+                if (escaped) {
+                    escaped = false;
+                    continue;
+                }
+
+                if (ch == '\\') {
+                    escaped = true;
+                    continue;
+                }
+
+                if (ch == quote) quote = '\0';
+                continue;
+            }
+
+            if (ch == '"' || ch == '\'' || ch == '`') {
+                quote = ch;
+                builder.Append(ch);
+                continue;
+            }
+
+            if (ch == '{') {
+                depth++;
+                builder.Append(ch);
+                continue;
+            }
+
+            if (ch == '}') {
+                depth--;
+                if (depth == 0) return true;
+                builder.Append(ch);
+                continue;
+            }
+
+            builder.Append(ch);
+        }
+
+        return false;
     }
 
     private static bool TryExtractInlineData(string text, out string? dataType, out string data, out string before, out string after) {

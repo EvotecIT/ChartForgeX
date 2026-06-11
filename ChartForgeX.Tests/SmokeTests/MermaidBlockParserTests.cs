@@ -107,4 +107,20 @@ api[""Calls --> service""]";
         Assert(document.Items.Count == 1 && document.Items[0].Id == "api" && document.Items[0].Label == "Calls --> service", "Mermaid block parser should preserve arrows inside quoted labels.");
         Assert(document.Edges.Count == 0, "Mermaid block parser should only parse edge operators outside shape labels.");
     }
+
+    private static void MermaidBlockPreservesDeclarationsAfterImplicitEdgeEndpoints() {
+        const string source = @"block-beta
+A --> B
+A[""Start""]
+B((""Done"")):2";
+
+        var result = new MermaidParser().ParseBlock(source);
+
+        Assert(!result.HasErrors, "Mermaid block parser should preserve later explicit declarations after implicit edge endpoints: " + MermaidDiagnostics(result));
+        Assert(!result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("already declared", StringComparison.Ordinal)), "Mermaid block parser should replace implicit placeholders without duplicate warnings.");
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid block parser should produce a document.");
+        Assert(document.Edges.Count == 1 && document.Edges[0].SourceId == "A" && document.Edges[0].TargetId == "B", "Mermaid block parser should retain edges declared before nodes.");
+        Assert(document.Items.Count == 2 && document.Items[0].Label == "Start", "Mermaid block parser should replace implicit source nodes with their explicit metadata.");
+        Assert(document.Items[1].Label == "Done" && document.Items[1].Shape == BlockLayoutShape.Circle && document.Items[1].ColumnSpan == 2, "Mermaid block parser should replace implicit target nodes with their explicit shape and span.");
+    }
 }

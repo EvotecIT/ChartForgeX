@@ -81,4 +81,25 @@ tf 01 evt CustomerUpdated `json`{ ""field"": ""[[customerId]]"" } [[Payload01]]"
         Assert(inlineData.Contains("[[customerId]]", StringComparison.Ordinal), "Mermaid Event Modeling parser should not remove data-reference-looking text from inline data.");
         Assert(frame.DataReference == "Payload01", "Mermaid Event Modeling parser should still parse suffix data references outside inline data.");
     }
+
+    private static void MermaidEventModelingPreservesNestedDataBlockBraces() {
+        const string source = @"eventmodeling
+tf 01 evt CustomerUpdated [[Payload01]]
+data Payload01 `json`{
+  {
+    ""customer"": {
+      ""id"": 42
+    }
+  }
+}";
+
+        var result = new MermaidParser().ParseEventModeling(source);
+
+        Assert(!result.HasErrors, "Mermaid Event Modeling parser should preserve nested data block braces: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Event Modeling parser should produce a document.");
+        Assert(document.DataBlocks.Count == 1, "Mermaid Event Modeling parser should keep nested data as a single data block.");
+        var content = document.DataBlocks[0].Content;
+        Assert(content.Contains(@"""customer"": {", StringComparison.Ordinal) && content.Contains(@"""id"": 42", StringComparison.Ordinal), "Mermaid Event Modeling parser should keep nested object content.");
+        Assert(content.TrimEnd().EndsWith("}", StringComparison.Ordinal), "Mermaid Event Modeling parser should keep the inner closing brace while excluding the outer data block brace.");
+    }
 }

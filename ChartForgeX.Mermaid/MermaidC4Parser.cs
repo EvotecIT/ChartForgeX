@@ -116,11 +116,11 @@ internal static class MermaidC4Parser {
         var kind = NormalizeKind(call.Name);
         var containerLike = kind.StartsWith("container", StringComparison.Ordinal) || kind.StartsWith("component", StringComparison.Ordinal);
         var element = new MermaidC4Element(alias, label.Length == 0 ? alias : label, kind, span) {
-            Technology = containerLike && call.Arguments.Count > 2 ? Clean(call.Arguments[2]) : null,
-            Description = containerLike ? Arg(call.Arguments, 3) : Arg(call.Arguments, 2),
-            Sprite = Arg(call.Arguments, containerLike ? 4 : 3),
-            Tags = Arg(call.Arguments, containerLike ? 5 : 4),
-            Link = Arg(call.Arguments, containerLike ? 6 : 5),
+            Technology = containerLike ? OptionalArg(call.Arguments, 2, 0, "techn", "technology") : null,
+            Description = containerLike ? OptionalArg(call.Arguments, 2, 1, "descr", "description") : OptionalArg(call.Arguments, 2, 0, "descr", "description"),
+            Sprite = OptionalArg(call.Arguments, 2, containerLike ? 2 : 1, "sprite"),
+            Tags = OptionalArg(call.Arguments, 2, containerLike ? 3 : 2, "tags"),
+            Link = OptionalArg(call.Arguments, 2, containerLike ? 4 : 3, "link"),
             BoundaryId = boundaryStack.Count == 0 ? null : boundaryStack.Peek()
         };
 
@@ -141,9 +141,9 @@ internal static class MermaidC4Parser {
 
         document.Relationships.Add(new MermaidC4Relationship(source, target, NormalizeKind(call.Name), span) {
             Label = Arg(call.Arguments, 2),
-            Technology = Arg(call.Arguments, 3),
-            Tags = Arg(call.Arguments, 4),
-            Link = Arg(call.Arguments, 5)
+            Technology = OptionalArg(call.Arguments, 3, 0, "techn", "technology"),
+            Tags = OptionalArg(call.Arguments, 3, 1, "tags"),
+            Link = OptionalArg(call.Arguments, 3, 2, "link")
         });
     }
 
@@ -203,9 +203,51 @@ internal static class MermaidC4Parser {
         return value.Length == 0 ? null : value;
     }
 
+    private static string? OptionalArg(IReadOnlyList<string> args, int firstOptionalIndex, int optionalIndex, params string[] names) {
+        for (var index = 0; index < names.Length; index++) {
+            var named = NamedArg(args, firstOptionalIndex, names[index]);
+            if (named != null) return named;
+        }
+
+        var position = 0;
+        for (var index = firstOptionalIndex; index < args.Count; index++) {
+            if (TrySplitNamedArgument(args[index], out _, out _)) continue;
+            if (position == optionalIndex) return Arg(args, index);
+            position++;
+        }
+
+        return null;
+    }
+
+    private static string? NamedArg(IReadOnlyList<string> args, int firstOptionalIndex, string name) {
+        var normalized = NormalizeName(name);
+        for (var index = firstOptionalIndex; index < args.Count; index++) {
+            if (!TrySplitNamedArgument(args[index], out var candidate, out var value)) continue;
+            if (!string.Equals(NormalizeName(candidate), normalized, StringComparison.Ordinal)) continue;
+            var clean = Clean(value);
+            return clean.Length == 0 ? null : clean;
+        }
+
+        return null;
+    }
+
     private static string Clean(string value) {
-        var clean = MermaidParserUtilities.Unquote(value.Trim());
-        return clean.StartsWith("$", StringComparison.Ordinal) ? clean.Substring(1) : clean;
+        var clean = value.Trim();
+        if (TrySplitNamedArgument(clean, out _, out var namedValue)) clean = namedValue.Trim();
+        else if (clean.StartsWith("$", StringComparison.Ordinal)) clean = clean.Substring(1);
+        return MermaidParserUtilities.Unquote(clean);
+    }
+
+    private static bool TrySplitNamedArgument(string value, out string name, out string rawValue) {
+        name = string.Empty;
+        rawValue = string.Empty;
+        var clean = value.Trim();
+        if (!clean.StartsWith("$", StringComparison.Ordinal)) return false;
+        var equal = clean.IndexOf('=');
+        if (equal <= 1) return false;
+        name = clean.Substring(1, equal - 1).Trim();
+        rawValue = clean.Substring(equal + 1).Trim();
+        return name.Length > 0;
     }
 
     private readonly struct CallStatement {

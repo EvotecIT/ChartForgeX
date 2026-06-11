@@ -85,4 +85,17 @@ style B,A fill:#FF0000,stroke:#990000,color:#111111";
         Assert(svg.Contains("#990000", StringComparison.OrdinalIgnoreCase), "Mermaid Venn SVG rendering should include styled union stroke colors.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid Venn PNG rendering should still emit a valid PNG for styled unions.");
     }
+
+    private static void MermaidVennRejectsMoreThanThreeSets() {
+        const string source = @"venn-beta
+set A [""A""] : 10
+set B [""B""] : 10
+set C [""C""] : 10
+set D [""D""] : 10";
+
+        var result = new MermaidParser().ParseVenn(source);
+
+        Assert(result.HasErrors, "Mermaid Venn parser should reject unsupported four-set diagrams.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("no more than three sets", StringComparison.Ordinal)), "Mermaid Venn parser should explain the renderable set limit.");
+    }
 }

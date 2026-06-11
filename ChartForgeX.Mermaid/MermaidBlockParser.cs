@@ -8,6 +8,7 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidBlockParser {
     public static void ParseStatements(MermaidBlockDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var ids = new HashSet<string>(StringComparer.Ordinal);
+        var implicitIds = new HashSet<string>(StringComparer.Ordinal);
         var spaceIndex = 0;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             var raw = lines[line - 1];
@@ -37,8 +38,8 @@ internal static class MermaidBlockParser {
                 continue;
             }
 
-            if (TryParseEdge(document, trimmed, span, ids, result)) continue;
-            ParseNodeLine(document, trimmed, span, ids, ref spaceIndex, result);
+            if (TryParseEdge(document, trimmed, span, ids, implicitIds, result)) continue;
+            ParseNodeLine(document, trimmed, span, ids, implicitIds, ref spaceIndex, result);
         }
 
         if (document.Items.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid block diagrams require at least one block item.");
@@ -59,7 +60,7 @@ internal static class MermaidBlockParser {
         document.Columns = columns;
     }
 
-    private static void ParseNodeLine(MermaidBlockDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, ref int spaceIndex, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseNodeLine(MermaidBlockDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, HashSet<string> implicitIds, ref int spaceIndex, MermaidParseResult<MermaidDocument> result) {
         var tokens = SplitTokens(text);
         if (tokens.Count == 0) return;
         for (var index = 0; index < tokens.Count; index++) {
@@ -69,6 +70,11 @@ internal static class MermaidBlockParser {
             }
 
             if (!item.IsSpace && !ids.Add(item.Id)) {
+                if (implicitIds.Remove(item.Id)) {
+                    ReplaceImplicitItem(document, item);
+                    continue;
+                }
+
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Mermaid block item '" + item.Id + "' was already declared; the duplicate declaration was retained but not added to the rendered layout.");
                 continue;
             }
@@ -77,7 +83,7 @@ internal static class MermaidBlockParser {
         }
     }
 
-    private static bool TryParseEdge(MermaidBlockDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {
+    private static bool TryParseEdge(MermaidBlockDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, HashSet<string> implicitIds, MermaidParseResult<MermaidDocument> result) {
         var arrows = new[] { "-->", "---", "==>", "===", "-.->", "-.-", "~~~" };
         for (var index = 0; index < arrows.Length; index++) {
             var arrow = arrows[index];
@@ -100,8 +106,8 @@ internal static class MermaidBlockParser {
                 return true;
             }
 
-            AddImplicitItem(document, source, ids);
-            AddImplicitItem(document, target, ids);
+            AddImplicitItem(document, source, ids, implicitIds);
+            AddImplicitItem(document, target, ids, implicitIds);
             document.Edges.Add(new MermaidBlockEdge(source.Id, target.Id, label, arrow.IndexOf('>') >= 0, span));
             return true;
         }
@@ -109,9 +115,20 @@ internal static class MermaidBlockParser {
         return false;
     }
 
-    private static void AddImplicitItem(MermaidBlockDocument document, MermaidBlockItem item, HashSet<string> ids) {
+    private static void AddImplicitItem(MermaidBlockDocument document, MermaidBlockItem item, HashSet<string> ids, HashSet<string> implicitIds) {
         if (ids.Contains(item.Id)) return;
         ids.Add(item.Id);
+        implicitIds.Add(item.Id);
+        document.Items.Add(item);
+    }
+
+    private static void ReplaceImplicitItem(MermaidBlockDocument document, MermaidBlockItem item) {
+        for (var index = 0; index < document.Items.Count; index++) {
+            if (document.Items[index].IsSpace || !string.Equals(document.Items[index].Id, item.Id, StringComparison.Ordinal)) continue;
+            document.Items[index] = item;
+            return;
+        }
+
         document.Items.Add(item);
     }
 
