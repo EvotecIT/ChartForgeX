@@ -50,4 +50,14 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("Source Tree", StringComparison.Ordinal) || svg.Contains("src", StringComparison.Ordinal), "Mermaid TreeView SVG rendering should include tree labels.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid TreeView PNG rendering should emit a valid PNG.");
     }
+
+    private static void MermaidTreeViewPreservesEscapedQuotesBeforePercentText() {
+        const string source = "treeView-beta\n    \"Root \\\"%% marker\\\"\"\n        \"Child\"";
+
+        var result = new MermaidParser().ParseTreeView(source);
+
+        Assert(!result.HasErrors, "Mermaid TreeView parser should not strip percent text after escaped quotes: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid TreeView parser should produce a document.");
+        Assert(document.Nodes.Count == 2 && document.Nodes[0].Label == "Root \"%% marker\"", "Mermaid TreeView parser should preserve escaped quotes and literal percent text inside labels.");
+    }
 }

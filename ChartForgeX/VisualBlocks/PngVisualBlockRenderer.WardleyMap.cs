@@ -47,8 +47,34 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawWardleyLink(RgbaCanvas canvas, WardleyMapLink link, VisualBlockRendering.WardleyMapLayout layout) {
         if (!layout.NodeLookup.TryGetValue(link.FromId, out var from) || !layout.NodeLookup.TryGetValue(link.ToId, out var to)) return;
         var color = ApplyOpacity(ChartColor.Black, 0.44);
-        canvas.DrawLine(from.X, from.Y, to.X, to.Y, color, 1.2);
+        if (link.Dashed) canvas.DrawDashedLine(from.X, from.Y, to.X, to.Y, color, 1.2, 5, 5);
+        else canvas.DrawLine(from.X, from.Y, to.X, to.Y, color, 1.2);
+        DrawWardleyFlowHint(canvas, link, from.X, from.Y, to.X, to.Y, color);
         if (link.Label.Length > 0) DrawAlignedText(canvas, link.Label, (from.X + to.X) / 2 - 50, (from.Y + to.Y) / 2 - 11, 100, VisualTextAlignment.Center, color, 8.5, true);
+    }
+
+    private static void DrawWardleyFlowHint(RgbaCanvas canvas, WardleyMapLink link, double fromX, double fromY, double toX, double toY, ChartColor color) {
+        if (link.Flow == WardleyMapFlow.None) return;
+        var dx = toX - fromX;
+        var dy = toY - fromY;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        if (length <= 0.000001) return;
+        var ux = dx / length;
+        var uy = dy / length;
+        var midX = (fromX + toX) / 2;
+        var midY = (fromY + toY) / 2;
+        if (link.Flow == WardleyMapFlow.Forward || link.Flow == WardleyMapFlow.Bidirectional) DrawWardleyFlowArrow(canvas, midX + ux * 9, midY + uy * 9, ux, uy, color);
+        if (link.Flow == WardleyMapFlow.Backward || link.Flow == WardleyMapFlow.Bidirectional) DrawWardleyFlowArrow(canvas, midX - ux * 9, midY - uy * 9, -ux, -uy, color);
+    }
+
+    private static void DrawWardleyFlowArrow(RgbaCanvas canvas, double centerX, double centerY, double ux, double uy, ChartColor color) {
+        var px = -uy;
+        var py = ux;
+        canvas.FillPolygon(new[] {
+            new ChartPoint(centerX + ux * 7, centerY + uy * 7),
+            new ChartPoint(centerX - ux * 5 + px * 4, centerY - uy * 5 + py * 4),
+            new ChartPoint(centerX - ux * 5 - px * 4, centerY - uy * 5 - py * 4)
+        }, color);
     }
 
     private static void DrawWardleyEvolution(RgbaCanvas canvas, WardleyMapEvolution evolution, VisualBlockRendering.WardleyMapLayout layout) {

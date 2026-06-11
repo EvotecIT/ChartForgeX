@@ -9,8 +9,19 @@ internal static class MermaidParserUtilities {
 
     public static string StripInlineComment(string text) {
         var quote = '\0';
+        var escaped = false;
         for (var index = 0; index < text.Length - 1; index++) {
             var ch = text[index];
+            if (quote != '\0' && escaped) {
+                escaped = false;
+                continue;
+            }
+
+            if (quote != '\0' && ch == '\\') {
+                escaped = true;
+                continue;
+            }
+
             if ((ch == '"' || ch == '\'' || ch == '`') && quote == '\0') {
                 quote = ch;
                 continue;

@@ -44,10 +44,39 @@ public sealed partial class SvgVisualBlockRenderer {
 
     private static void WriteWardleyLink(SvgMarkupWriter writer, WardleyMapLink link, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
         if (!layout.NodeLookup.TryGetValue(link.FromId, out var from) || !layout.NodeLookup.TryGetValue(link.ToId, out var to)) return;
-        writer.StartElement("line").Attribute("data-cfx-role", "wardley-link").Attribute("x1", F(from.X)).Attribute("y1", F(from.Y)).Attribute("x2", F(to.X)).Attribute("y2", F(to.Y)).Attribute("stroke", theme.Axis.WithAlpha(155).ToCss()).Attribute("stroke-width", 1.2);
+        var color = theme.Axis.WithAlpha(155);
+        writer.StartElement("line").Attribute("data-cfx-role", "wardley-link").Attribute("x1", F(from.X)).Attribute("y1", F(from.Y)).Attribute("x2", F(to.X)).Attribute("y2", F(to.Y)).Attribute("stroke", color.ToCss()).Attribute("stroke-width", 1.2);
         if (link.Dashed) writer.Attribute("stroke-dasharray", "5 5");
         writer.EndEmptyElement().Line();
+        WriteWardleyFlowHint(writer, link, from.X, from.Y, to.X, to.Y, color);
         if (link.Label.Length > 0) WriteText(writer, link.Label, (from.X + to.X) / 2 - 50, (from.Y + to.Y) / 2 - 5, 100, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(8, theme.SubtitleFontSize - 3), "600");
+    }
+
+    private static void WriteWardleyFlowHint(SvgMarkupWriter writer, WardleyMapLink link, double fromX, double fromY, double toX, double toY, ChartColor color) {
+        if (link.Flow == WardleyMapFlow.None) return;
+        var dx = toX - fromX;
+        var dy = toY - fromY;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        if (length <= 0.000001) return;
+        var ux = dx / length;
+        var uy = dy / length;
+        var midX = (fromX + toX) / 2;
+        var midY = (fromY + toY) / 2;
+        if (link.Flow == WardleyMapFlow.Forward || link.Flow == WardleyMapFlow.Bidirectional) WriteWardleyFlowArrow(writer, midX + ux * 9, midY + uy * 9, ux, uy, color, "wardley-flow-forward");
+        if (link.Flow == WardleyMapFlow.Backward || link.Flow == WardleyMapFlow.Bidirectional) WriteWardleyFlowArrow(writer, midX - ux * 9, midY - uy * 9, -ux, -uy, color, "wardley-flow-backward");
+    }
+
+    private static void WriteWardleyFlowArrow(SvgMarkupWriter writer, double centerX, double centerY, double ux, double uy, ChartColor color, string role) {
+        var px = -uy;
+        var py = ux;
+        var tipX = centerX + ux * 7;
+        var tipY = centerY + uy * 7;
+        var leftX = centerX - ux * 5 + px * 4;
+        var leftY = centerY - uy * 5 + py * 4;
+        var rightX = centerX - ux * 5 - px * 4;
+        var rightY = centerY - uy * 5 - py * 4;
+        var path = "M " + F(tipX) + " " + F(tipY) + " L " + F(leftX) + " " + F(leftY) + " L " + F(rightX) + " " + F(rightY) + " Z";
+        writer.StartElement("path").Attribute("data-cfx-role", role).Attribute("d", path).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
     }
 
     private static void WriteWardleyEvolution(SvgMarkupWriter writer, WardleyMapEvolution evolution, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
