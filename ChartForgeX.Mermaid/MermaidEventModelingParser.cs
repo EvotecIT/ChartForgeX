@@ -25,6 +25,7 @@ internal static class MermaidEventModelingParser {
             }
 
             if (TryParseFrame(trimmed, span, result, out var frame)) {
+                if (frame == null) continue;
                 if (framesByNumber.ContainsKey(frame.Number)) {
                     MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Event Modeling timeframe numbers must be unique: " + frame.Number + ".");
                     continue;

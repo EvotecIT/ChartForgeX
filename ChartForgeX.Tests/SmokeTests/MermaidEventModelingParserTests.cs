@@ -67,6 +67,17 @@ tf 02 rmo CartView ->> 99";
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("existing timeframe", StringComparison.Ordinal)), "Mermaid Event Modeling relation diagnostics should explain the timeframe contract.");
     }
 
+    private static void MermaidEventModelingRejectsUnknownEntityTypesWithoutThrowing() {
+        const string source = @"eventmodeling
+tf 01 widget Checkout";
+
+        var result = new MermaidParser().ParseEventModeling(source);
+
+        Assert(result.HasErrors, "Mermaid Event Modeling parser should reject unknown entity types.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("entity type is not recognized", StringComparison.Ordinal)), "Mermaid Event Modeling unknown entity diagnostics should explain the invalid type.");
+        Assert(result.Document != null && result.Document.Frames.Count == 0, "Mermaid Event Modeling parser should skip invalid frames without throwing or adding null frame entries.");
+    }
+
     private static void MermaidEventModelingPreservesInlineDataBeforeReferences() {
         const string source = @"eventmodeling
 tf 01 evt CustomerUpdated `json`{ ""field"": ""[[customerId]]"" } [[Payload01]]";

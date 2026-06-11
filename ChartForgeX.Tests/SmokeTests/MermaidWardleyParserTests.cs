@@ -75,6 +75,24 @@ evolve API 0.75";
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid Wardley PNG rendering should emit a valid PNG.");
     }
 
+    private static void MermaidWardleyUsesSourceSizeByDefault() {
+        const string source = @"wardley-beta
+size [1200, 800]
+anchor User [0.95, 0.05]
+component API [0.70, 0.45]
+User -> API";
+
+        var result = new MermaidParser().ParseWardley(source);
+
+        Assert(!result.HasErrors, "Mermaid Wardley parser should parse source size statements: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Wardley parser should produce a document.");
+        var block = document.ToWardleyMapBlock();
+        var artifact = document.ToVisualArtifact();
+        var naturalSize = artifact.NaturalSize ?? throw new InvalidOperationException("Mermaid Wardley artifacts should expose a natural size.");
+        Assert(block.Options.Size.Width == 1200 && block.Options.Size.Height == 800, "Mermaid Wardley conversion should use source size when render options do not override it.");
+        Assert(naturalSize.Width == 1200 && naturalSize.Height == 800, "Mermaid Wardley artifacts should expose source size as their natural size by default.");
+    }
+
     private static void MermaidWardleyRejectsLinksToUnknownNodes() {
         const string source = @"wardley-beta
 component API [0.70, 0.45]
