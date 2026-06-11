@@ -81,7 +81,7 @@ internal static class MermaidBlockParser {
         var arrows = new[] { "-->", "---", "==>", "===", "-.->", "-.-", "~~~" };
         for (var index = 0; index < arrows.Length; index++) {
             var arrow = arrows[index];
-            var position = text.IndexOf(arrow, StringComparison.Ordinal);
+            var position = FindTopLevel(text, arrow);
             if (position <= 0) continue;
             var left = text.Substring(0, position).Trim();
             var right = text.Substring(position + arrow.Length).Trim();
@@ -160,11 +160,50 @@ internal static class MermaidBlockParser {
     }
 
     private static int ExtractSpan(ref string token) {
-        var colon = token.LastIndexOf(':');
+        var colon = LastTopLevelColon(token);
         if (colon <= 0 || colon == token.Length - 1) return 1;
         if (!int.TryParse(token.Substring(colon + 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out var span)) return 1;
         token = token.Substring(0, colon);
         return Math.Max(1, Math.Min(24, span));
+    }
+
+    private static int FindTopLevel(string text, string value) {
+        for (var index = 0; index <= text.Length - value.Length; index++) {
+            if (!IsTopLevel(text, index)) continue;
+            if (string.CompareOrdinal(text, index, value, 0, value.Length) == 0) return index;
+        }
+
+        return -1;
+    }
+
+    private static int LastTopLevelColon(string text) {
+        for (var index = text.Length - 1; index >= 0; index--) {
+            if (text[index] == ':' && IsTopLevel(text, index)) return index;
+        }
+
+        return -1;
+    }
+
+    private static bool IsTopLevel(string text, int position) {
+        var depth = 0;
+        var quote = '\0';
+        for (var index = 0; index < position; index++) {
+            var c = text[index];
+            if ((c == '"' || c == '\'' || c == '`') && quote == '\0') {
+                quote = c;
+                continue;
+            }
+
+            if (quote != '\0') {
+                if (c == quote) quote = '\0';
+                continue;
+            }
+
+            if (c == '[' || c == '(' || c == '{' || c == '<') depth++;
+            else if ((c == ']' || c == ')' || c == '}' || c == '>') && depth > 0) depth--;
+        }
+
+        return depth == 0 && quote == '\0';
     }
 
     private static int FirstShapeIndex(string token) {

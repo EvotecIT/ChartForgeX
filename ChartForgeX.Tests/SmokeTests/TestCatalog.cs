@@ -530,6 +530,8 @@ internal static partial class SmokeTests {
         ("Mermaid block converts to visual block artifact and renders", MermaidBlockConvertsToVisualBlockArtifactAndRenders),
         ("Mermaid block warns for retained style statements", MermaidBlockWarnsForRetainedStyleStatements),
         ("Mermaid block parses ids starting with space as blocks", MermaidBlockParsesIdsStartingWithSpaceAsBlocks),
+        ("Mermaid block ignores span suffixes inside quoted labels", MermaidBlockIgnoresSpanSuffixesInsideQuotedLabels),
+        ("Mermaid block ignores arrows inside quoted labels", MermaidBlockIgnoresArrowsInsideQuotedLabels),
         ("Venn diagram block renders static SVG and PNG", VennDiagramBlockRendersStaticSvgAndPng),
         ("Venn diagram block rejects unknown intersections", VennDiagramBlockRejectsUnknownIntersections),
         ("Mermaid parser parses Venn sets, unions, text, and styles", MermaidParserParsesVennSetsUnionsTextAndStyles),

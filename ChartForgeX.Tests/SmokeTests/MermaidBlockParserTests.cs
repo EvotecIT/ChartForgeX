@@ -83,4 +83,28 @@ spaceService[""Space service""] space:2";
         Assert(!document.Items[0].IsSpace && document.Items[0].Id == "spaceService" && document.Items[0].Label == "Space service", "Mermaid block parser should only treat exact space tokens as spacers.");
         Assert(document.Items[1].IsSpace && document.Items[1].ColumnSpan == 2, "Mermaid block parser should still parse explicit space:num spacer tokens.");
     }
+
+    private static void MermaidBlockIgnoresSpanSuffixesInsideQuotedLabels() {
+        const string source = @"block-beta
+service[""HTTP:2""]";
+
+        var result = new MermaidParser().ParseBlock(source);
+
+        Assert(!result.HasErrors, "Mermaid block parser should not treat label colons as span suffixes: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid block parser should produce a document.");
+        Assert(document.Items.Count == 1 && document.Items[0].Label == "HTTP:2", "Mermaid block parser should preserve colon-number text inside quoted labels.");
+        Assert(document.Items[0].ColumnSpan == 1, "Mermaid block parser should only consume column spans outside shape labels.");
+    }
+
+    private static void MermaidBlockIgnoresArrowsInsideQuotedLabels() {
+        const string source = @"block-beta
+api[""Calls --> service""]";
+
+        var result = new MermaidParser().ParseBlock(source);
+
+        Assert(!result.HasErrors, "Mermaid block parser should not treat label arrows as edge operators: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid block parser should produce a document.");
+        Assert(document.Items.Count == 1 && document.Items[0].Id == "api" && document.Items[0].Label == "Calls --> service", "Mermaid block parser should preserve arrows inside quoted labels.");
+        Assert(document.Edges.Count == 0, "Mermaid block parser should only parse edge operators outside shape labels.");
+    }
 }
