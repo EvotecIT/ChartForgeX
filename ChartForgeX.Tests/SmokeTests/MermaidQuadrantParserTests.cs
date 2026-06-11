@@ -67,4 +67,15 @@ Outlier: [2, 0.5]";
         Assert(result.HasErrors, "Mermaid quadrant parser should reject normalized coordinates outside zero to one.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("between zero and one", StringComparison.Ordinal)), "Mermaid quadrant coordinate diagnostics should explain the normalized range.");
     }
+
+    private static void MermaidQuadrantStripsInlineCommentsBeforeParsingPoints() {
+        const string source = @"quadrantChart
+Campaign A: [0.2, 0.3] %% note";
+
+        var result = new MermaidParser().ParseQuadrant(source);
+
+        Assert(!result.HasErrors, "Mermaid quadrant parser should ignore trailing Mermaid comments after points: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid quadrant parser should produce a document.");
+        Assert(document.Points.Count == 1 && document.Points[0].Label == "Campaign A" && Math.Abs(document.Points[0].X - 0.2) < 0.001, "Mermaid quadrant parser should parse point coordinates before trailing comments.");
+    }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -65,5 +66,29 @@ Only effect";
 
         Assert(result.HasErrors, "Mermaid Ishikawa parser should reject an effect without causes.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("at least one cause", StringComparison.Ordinal)), "Mermaid Ishikawa errors should explain the missing cause contract.");
+    }
+
+    private static void MermaidIshikawaRejectsOversizedTreesDuringParsing() {
+        var builder = new StringBuilder();
+        builder.AppendLine("ishikawa");
+        builder.AppendLine("Effect");
+        for (var index = 0; index < 512; index++) builder.AppendLine("  Cause " + index.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        var result = new MermaidParser().ParseIshikawa(builder.ToString());
+
+        Assert(result.HasErrors, "Mermaid Ishikawa parser should reject trees that exceed the fishbone renderer node limit.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("no more than 512 nodes", StringComparison.Ordinal)), "Mermaid Ishikawa oversized tree diagnostics should explain the node limit.");
+    }
+
+    private static void MermaidIshikawaRejectsTooDeepTreesDuringParsing() {
+        var builder = new StringBuilder();
+        builder.AppendLine("ishikawa");
+        builder.AppendLine("Effect");
+        for (var level = 1; level <= 13; level++) builder.AppendLine(new string(' ', level * 2) + "Cause " + level.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        var result = new MermaidParser().ParseIshikawa(builder.ToString());
+
+        Assert(result.HasErrors, "Mermaid Ishikawa parser should reject trees that exceed the fishbone renderer depth limit.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("depth must not exceed 12", StringComparison.Ordinal)), "Mermaid Ishikawa depth diagnostics should explain the depth limit.");
     }
 }

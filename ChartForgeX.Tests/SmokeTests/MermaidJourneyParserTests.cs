@@ -68,4 +68,17 @@ section Start
         Assert(result.HasErrors, "Mermaid journey parser should reject non-finite scores before chart conversion.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("numeric score", StringComparison.Ordinal)), "Mermaid journey score diagnostics should explain the numeric score contract.");
     }
+
+    private static void MermaidJourneyStripsInlineCommentsBeforeParsingTasks() {
+        const string source = @"journey
+section Start
+  Login: 5: User %% happy path";
+
+        var result = new MermaidParser().ParseJourney(source);
+
+        Assert(!result.HasErrors, "Mermaid journey parser should ignore trailing Mermaid comments after tasks: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid journey parser should produce a document.");
+        Assert(document.Tasks.Count == 1 && document.Tasks[0].Text == "Login" && document.Tasks[0].Score == 5, "Mermaid journey parser should parse task scores before trailing comments.");
+        Assert(document.Tasks[0].Actors.Count == 1 && document.Tasks[0].Actors[0] == "User", "Mermaid journey parser should not include trailing comments in actor names.");
+    }
 }

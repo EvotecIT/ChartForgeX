@@ -9,7 +9,7 @@ internal static class MermaidJourneyParser {
 
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
             var raw = lines[index];
-            var trimmed = raw.Trim();
+            var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
 
             var span = new MermaidSourceSpan(index + 1, MermaidParserUtilities.LeadingWhitespace(raw) + 1, trimmed.Length);
