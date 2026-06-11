@@ -112,11 +112,13 @@ internal static class MermaidArchitectureParser {
         id = string.Empty;
         icon = null;
         title = string.Empty;
-        parentId = ReadParent(ref body);
-
+        parentId = null;
         var bracketStart = body.IndexOf('[');
         var bracketEnd = body.LastIndexOf(']');
         if (bracketStart <= 0 || bracketEnd <= bracketStart) return false;
+        parentId = ReadParentAfterTitle(ref body, bracketEnd);
+        bracketStart = body.IndexOf('[');
+        bracketEnd = body.LastIndexOf(']');
         title = MermaidParserUtilities.Unquote(body.Substring(bracketStart + 1, bracketEnd - bracketStart - 1));
         var prefix = body.Substring(0, bracketStart).Trim();
         if (prefix.EndsWith(")", StringComparison.Ordinal)) {
@@ -139,6 +141,16 @@ internal static class MermaidArchitectureParser {
         var parent = Clean(body.Substring(index + marker.Length));
         body = body.Substring(0, index).Trim();
         return parent.Length == 0 ? null : parent;
+    }
+
+    private static string? ReadParentAfterTitle(ref string body, int titleEnd) {
+        if (titleEnd >= body.Length - 1) return null;
+        var suffix = body.Substring(titleEnd + 1).Trim();
+        if (!suffix.StartsWith("in ", StringComparison.OrdinalIgnoreCase)) return null;
+        var parent = Clean(suffix.Substring(3));
+        if (parent.Length == 0) return null;
+        body = body.Substring(0, titleEnd + 1).Trim();
+        return parent;
     }
 
     private static bool TryParseEdge(string text, MermaidSourceSpan span, out MermaidArchitectureEdge edge) {

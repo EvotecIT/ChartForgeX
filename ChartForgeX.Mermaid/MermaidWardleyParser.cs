@@ -162,7 +162,7 @@ internal static class MermaidWardleyParser {
         }
 
         var rest = text.Substring(comma + 1).Trim();
-        if (!TryExtractCoordinatePair(rest, allowIntegers: false, out var visibility, out var evolution, out var suffix) || !IsQuoted(suffix)) {
+        if (!TryExtractCoordinatePair(rest, allowIntegers: true, out var visibility, out var evolution, out var suffix) || !IsQuoted(suffix)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Mermaid Wardley annotation statement was retained but is not rendered by ChartForgeX yet.");
             return;
         }
@@ -208,7 +208,8 @@ internal static class MermaidWardleyParser {
                 continue;
             }
 
-            pipeline.AddComponent(component!);
+            if (component == null) continue;
+            pipeline.AddComponent(component);
         }
 
         MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley pipeline block was not closed.");
@@ -233,7 +234,7 @@ internal static class MermaidWardleyParser {
         if (start < 0 || end <= start) return false;
         prefix = text.Substring(0, start).Trim();
         suffix = text.Substring(end + 1).Trim();
-        return prefix.Length > 0 && TryParseCoordinatePair(text.Substring(start, end - start + 1), allowIntegers: false, out first, out second);
+        return prefix.Length > 0 && TryParseCoordinatePair(text.Substring(start, end - start + 1), allowIntegers: true, out first, out second);
     }
 
     private static bool TryExtractSingleCoordinate(string text, out string prefix, out double value, out string suffix) {

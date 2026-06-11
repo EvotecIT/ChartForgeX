@@ -37,6 +37,7 @@ public static class MermaidC4Rendering {
             node.Metadata["mermaid.kind"] = element.Kind;
             if (!string.IsNullOrWhiteSpace(element.Description)) node.Metadata["mermaid.description"] = element.Description!;
             if (!string.IsNullOrWhiteSpace(element.Technology)) node.Metadata["mermaid.technology"] = element.Technology!;
+            if (!string.IsNullOrWhiteSpace(element.Sprite)) node.Metadata["mermaid.sprite"] = element.Sprite!;
             if (!string.IsNullOrWhiteSpace(element.Tags)) node.Metadata["mermaid.tags"] = element.Tags!;
             if (!string.IsNullOrWhiteSpace(element.Link)) node.Metadata["mermaid.link"] = element.Link!;
             if (!string.IsNullOrWhiteSpace(element.BoundaryId)) node.Metadata["mermaid.boundary"] = element.BoundaryId!;

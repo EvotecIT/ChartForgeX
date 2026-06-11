@@ -118,8 +118,9 @@ internal static class MermaidC4Parser {
         var element = new MermaidC4Element(alias, label.Length == 0 ? alias : label, kind, span) {
             Technology = containerLike && call.Arguments.Count > 2 ? Clean(call.Arguments[2]) : null,
             Description = containerLike ? Arg(call.Arguments, 3) : Arg(call.Arguments, 2),
-            Tags = Arg(call.Arguments, containerLike ? 4 : 3),
-            Link = Arg(call.Arguments, containerLike ? 5 : 4),
+            Sprite = Arg(call.Arguments, containerLike ? 4 : 3),
+            Tags = Arg(call.Arguments, containerLike ? 5 : 4),
+            Link = Arg(call.Arguments, containerLike ? 6 : 5),
             BoundaryId = boundaryStack.Count == 0 ? null : boundaryStack.Peek()
         };
 

@@ -85,4 +85,35 @@ API -> Missing";
         Assert(result.HasErrors, "Mermaid Wardley parser should reject links to unknown nodes.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("previously declared nodes", StringComparison.Ordinal)), "Mermaid Wardley link diagnostics should explain the current declaration contract.");
     }
+
+    private static void MermaidWardleyAcceptsIntegerAndPercentageCoordinates() {
+        const string source = @"wardley-beta
+anchor User [1, 0]
+component API [95, 5]
+note ""Boundary"" [100, 0]
+annotation 1, [60, 50] ""Improve automation""
+accelerator Faster [42, 62]";
+
+        var result = new MermaidParser().ParseWardley(source);
+
+        Assert(!result.HasErrors, "Mermaid Wardley parser should accept integer and percentage-style coordinates: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Wardley parser should produce a document.");
+        Assert(document.Nodes.Count == 2 && document.Nodes[0].Visibility == 1 && document.Nodes[0].Evolution == 0, "Mermaid Wardley parser should normalize boundary integer coordinates.");
+        Assert(Math.Abs(document.Nodes[1].Visibility - 0.95) < 0.001 && Math.Abs(document.Nodes[1].Evolution - 0.05) < 0.001, "Mermaid Wardley parser should normalize percentage coordinates.");
+        Assert(document.Notes.Count == 1 && document.Annotations.Count == 1 && document.Markers.Count == 1, "Mermaid Wardley parser should allow integer coordinates for overlays.");
+    }
+
+    private static void MermaidWardleyPipelineReportsInvalidChildCoordinates() {
+        const string source = @"wardley-beta
+component Platform [0.70, 0.45]
+pipeline Platform {
+  component Build [150]
+}";
+
+        var result = new MermaidParser().ParseWardley(source);
+
+        Assert(result.HasErrors, "Mermaid Wardley parser should report invalid pipeline child coordinates instead of throwing.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("between 0-1 or 0-100", StringComparison.Ordinal)), "Mermaid Wardley invalid pipeline diagnostics should explain the coordinate range.");
+        Assert(result.Document != null && result.Document.Pipelines.Count == 1 && result.Document.Pipelines[0].Components.Count == 0, "Mermaid Wardley parser should keep the pipeline and skip the invalid child component.");
+    }
 }

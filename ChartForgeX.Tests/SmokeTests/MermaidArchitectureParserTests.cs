@@ -56,4 +56,17 @@ server:R --> L:database";
         Assert(svg.Contains("data-node-id=\"server\"", StringComparison.Ordinal), "Mermaid architecture SVG rendering should include service nodes.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid architecture PNG rendering should emit a valid PNG.");
     }
+
+    private static void MermaidArchitecturePreservesTitlesContainingIn() {
+        const string source = @"architecture-beta
+group memory(server)[Memory]
+service cache(database)[Data in memory] in memory";
+
+        var result = new MermaidParser().ParseArchitecture(source);
+
+        Assert(!result.HasErrors, "Mermaid architecture parser should preserve titles containing 'in': " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid architecture parser should produce a document.");
+        Assert(document.Services.Count == 1 && document.Services[0].Title == "Data in memory", "Mermaid architecture parser should not treat title text as a parent clause.");
+        Assert(document.Services[0].GroupId == "memory", "Mermaid architecture parser should still parse the trailing parent group.");
+    }
 }

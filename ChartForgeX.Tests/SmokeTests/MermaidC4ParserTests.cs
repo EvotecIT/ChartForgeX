@@ -77,4 +77,23 @@ Rel(customer, missing, ""Uses"")";
         Assert(result.HasErrors, "Mermaid C4 parser should reject relationships that reference unknown elements.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("target 'missing'", StringComparison.Ordinal)), "Invalid C4 relationships should identify the missing endpoint.");
     }
+
+    private static void MermaidC4PreservesSpriteTagsAndLinks() {
+        const string source = @"C4Context
+Person(user, ""User"", ""Uses the system"", ""person"", ""external"", ""https://example.test/user"")
+Container(api, ""API"", ""ASP.NET"", ""Serves traffic"", ""service"", ""internal"", ""https://example.test/api"")";
+
+        var result = new MermaidParser().ParseC4(source);
+
+        Assert(!result.HasErrors, "Mermaid C4 parser should parse elements with optional sprite, tags, and link arguments: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid C4 parser should produce a document.");
+        var person = document.Elements[0];
+        var container = document.Elements[1];
+        Assert(person.Description == "Uses the system" && person.Sprite == "person" && person.Tags == "external" && person.Link == "https://example.test/user", "Mermaid C4 parser should preserve person sprite, tags, and link metadata.");
+        Assert(container.Technology == "ASP.NET" && container.Description == "Serves traffic" && container.Sprite == "service" && container.Tags == "internal" && container.Link == "https://example.test/api", "Mermaid C4 parser should preserve container sprite, tags, and link metadata.");
+
+        var topology = document.ToTopologyChart(new MermaidTopologyRenderOptions { Id = "c4-sprite-metadata" });
+        Assert(topology.Nodes[0].Metadata["mermaid.sprite"] == "person" && topology.Nodes[0].Metadata["mermaid.tags"] == "external" && topology.Nodes[0].Metadata["mermaid.link"] == "https://example.test/user", "Mermaid C4 conversion should expose person sprite, tags, and link metadata.");
+        Assert(topology.Nodes[1].Metadata["mermaid.sprite"] == "service" && topology.Nodes[1].Metadata["mermaid.tags"] == "internal" && topology.Nodes[1].Metadata["mermaid.link"] == "https://example.test/api", "Mermaid C4 conversion should expose container sprite, tags, and link metadata.");
+    }
 }

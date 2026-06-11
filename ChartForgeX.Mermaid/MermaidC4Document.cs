@@ -93,6 +93,9 @@ public sealed class MermaidC4Element : MermaidAstNode {
     /// <summary>Gets or sets the optional technology token for containers and components.</summary>
     public string? Technology { get; set; }
 
+    /// <summary>Gets or sets optional Mermaid sprite metadata.</summary>
+    public string? Sprite { get; set; }
+
     /// <summary>Gets or sets optional Mermaid tags.</summary>
     public string? Tags { get; set; }
 

@@ -4,6 +4,8 @@ using System.Globalization;
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidPacketParser {
+    private const int MaximumPacketBits = 10000;
+
     public static void ParseStatements(MermaidPacketDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var expectedStart = 0;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
@@ -26,6 +28,11 @@ internal static class MermaidPacketParser {
 
             if (field.StartBit != expectedStart) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid packet fields must be contiguous from bit zero. Expected bit " + expectedStart.ToString(CultureInfo.InvariantCulture) + " but found bit " + field.StartBit.ToString(CultureInfo.InvariantCulture) + ".");
+                continue;
+            }
+
+            if (field.EndBit == int.MaxValue) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid packet bit ranges are too large.");
                 continue;
             }
 
@@ -86,6 +93,11 @@ internal static class MermaidPacketParser {
 
         if (end < start) {
             diagnostic = "Mermaid packet field end bit must be greater than or equal to the start bit.";
+            return false;
+        }
+
+        if ((long)end - start + 1 > MaximumPacketBits) {
+            diagnostic = "Mermaid packet bit ranges are too large.";
             return false;
         }
 

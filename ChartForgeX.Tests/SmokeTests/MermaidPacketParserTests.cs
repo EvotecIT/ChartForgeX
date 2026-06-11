@@ -63,4 +63,15 @@ title TCP Header
         Assert(result.HasErrors, "Mermaid packet parser should reject non-contiguous packet fields.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("contiguous", StringComparison.Ordinal)), "Invalid packet diagnostics should explain the contiguous-bit contract.");
     }
+
+    private static void MermaidParserRejectsOversizedPacketRanges() {
+        const string source = @"packet-beta
+0-2147483647: ""payload""";
+
+        var result = new MermaidParser().ParsePacket(source);
+
+        Assert(result.HasErrors, "Mermaid packet parser should reject oversized explicit bit ranges.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("too large", StringComparison.Ordinal)), "Oversized packet diagnostics should explain the bit-range guard.");
+        Assert(result.Document != null && result.Document.Fields.Count == 0, "Mermaid packet parser should not retain oversized packet fields.");
+    }
 }
