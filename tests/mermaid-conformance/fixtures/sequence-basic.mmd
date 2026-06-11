@@ -1,0 +1,13 @@
+sequenceDiagram
+autonumber 10 0.5
+participant U as User
+actor API as Native API
+participant DB as Data Store
+U->>+API: Request
+activate API
+API->>DB: Store
+Note right of API: Processing
+loop Every minute
+  API-->>-U: Done
+end
+link API: Dashboard @ https://example.com/api

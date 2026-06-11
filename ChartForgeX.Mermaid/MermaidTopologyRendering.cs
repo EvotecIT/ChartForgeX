@@ -103,6 +103,25 @@ public static class MermaidTopologyRendering {
         return chart;
     }
 
+    /// <summary>Converts a Mermaid tree view to a topology chart.</summary>
+    public static TopologyChart ToTopologyChart(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) {
+        if (document == null) throw new ArgumentNullException(nameof(document));
+        options ??= new MermaidTopologyRenderOptions();
+        var title = document.Roots.Count == 1 ? ResolveTitle(options, document.Roots[0].Label) : ResolveTitle(options, "Mermaid tree view");
+        var chart = CreateTopology(options, "mermaid-treeview", title, document.Header, TopologyLayoutMode.MindMap, TopologyLayoutDirection.LeftToRight);
+        foreach (var item in document.Nodes) {
+            var kind = item.Parent == null ? TopologyNodeKind.Hub : item.IsBranch ? TopologyNodeKind.Branch : TopologyNodeKind.Process;
+            chart.AddAutoNode(item.Id, item.Label, kind, TopologyHealthStatus.Unknown, width: item.Parent == null ? 150 : 126, height: 54, symbol: item.Parent == null ? "T" : item.IsBranch ? "D" : null, cssClass: "cfx-mermaid-treeview-node");
+            var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.Metadata["mermaid.level"] = item.Level.ToString(CultureInfo.InvariantCulture);
+            node.Metadata["mermaid.indent"] = item.Indent.ToString(CultureInfo.InvariantCulture);
+            node.Metadata["mermaid.kind"] = item.IsBranch ? "branch" : "leaf";
+            if (item.Parent != null) chart.AddEdge("treeview-edge-" + item.Id, item.Parent.Id, item.Id, null, TopologyEdgeKind.Ownership, TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Curved);
+        }
+
+        return chart;
+    }
+
     /// <summary>Converts a Mermaid kanban board to a topology chart.</summary>
     public static TopologyChart ToTopologyChart(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
@@ -134,6 +153,9 @@ public static class MermaidTopologyRendering {
     /// <summary>Wraps a Mermaid mindmap in a visual artifact envelope.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) => ToArtifact(document, document.ToTopologyChart(options), "nodes", document.Nodes.Count, "roots", CountMindMapRoots(document));
 
+    /// <summary>Wraps a Mermaid tree view in a visual artifact envelope.</summary>
+    public static VisualArtifact ToVisualArtifact(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) => ToArtifact(document, document.ToTopologyChart(options), "nodes", document.Nodes.Count, "roots", document.Roots.Count);
+
     /// <summary>Wraps a Mermaid kanban board in a visual artifact envelope.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => ToArtifact(document, document.ToTopologyChart(options), "columns", document.Columns.Count, "tasks", CountKanbanTasks(document));
 
@@ -149,6 +171,9 @@ public static class MermaidTopologyRendering {
     /// <summary>Renders a Mermaid mindmap to SVG.</summary>
     public static string ToSvg(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToSvg();
 
+    /// <summary>Renders a Mermaid tree view to SVG.</summary>
+    public static string ToSvg(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToSvg();
+
     /// <summary>Renders a Mermaid kanban board to SVG.</summary>
     public static string ToSvg(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToSvg();
 
@@ -163,6 +188,9 @@ public static class MermaidTopologyRendering {
 
     /// <summary>Renders a Mermaid mindmap to PNG.</summary>
     public static byte[] ToPng(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
+
+    /// <summary>Renders a Mermaid tree view to PNG.</summary>
+    public static byte[] ToPng(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
 
     /// <summary>Renders a Mermaid kanban board to PNG.</summary>
     public static byte[] ToPng(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();

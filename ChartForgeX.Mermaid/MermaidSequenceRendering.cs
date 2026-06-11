@@ -220,6 +220,8 @@ public static class MermaidSequenceRendering {
                 return SequenceArtifactBlockKind.Critical;
             case MermaidSequenceBlockKind.Rect:
                 return SequenceArtifactBlockKind.Rect;
+            case MermaidSequenceBlockKind.Break:
+                return SequenceArtifactBlockKind.Break;
             default:
                 return null;
         }

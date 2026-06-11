@@ -249,7 +249,9 @@ internal static class MermaidSequenceParser {
         foreach (var item in new[] {
             Tuple.Create("critical", MermaidSequenceBlockKind.Critical),
             Tuple.Create("option", MermaidSequenceBlockKind.Option),
+            Tuple.Create("break", MermaidSequenceBlockKind.Break),
             Tuple.Create("loop", MermaidSequenceBlockKind.Loop),
+            Tuple.Create("alt", MermaidSequenceBlockKind.Alt),
             Tuple.Create("else", MermaidSequenceBlockKind.Else),
             Tuple.Create("opt", MermaidSequenceBlockKind.Opt),
             Tuple.Create("par", MermaidSequenceBlockKind.Par),

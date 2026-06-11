@@ -30,6 +30,36 @@ internal static partial class VisualBlockRendering {
             return;
         }
 
+        if (block is PacketLayoutBlock packet) {
+            ValidatePacketLayout(packet);
+            return;
+        }
+
+        if (block is BlockLayoutBlock blockLayout) {
+            ValidateBlockLayout(blockLayout);
+            return;
+        }
+
+        if (block is GitGraphBlock gitGraph) {
+            ValidateGitGraph(gitGraph);
+            return;
+        }
+
+        if (block is VennDiagramBlock venn) {
+            ValidateVennDiagram(venn);
+            return;
+        }
+
+        if (block is FishboneDiagramBlock fishbone) {
+            ValidateFishboneDiagram(fishbone);
+            return;
+        }
+
+        if (block is WardleyMapBlock wardleyMap) {
+            ValidateWardleyMap(wardleyMap);
+            return;
+        }
+
         if (block is MetricCard card) {
             if (card.Label.Length == 0) throw new InvalidOperationException("Metric cards must define a label.");
             if (card.Value.Length == 0) throw new InvalidOperationException("Metric cards must define a value.");

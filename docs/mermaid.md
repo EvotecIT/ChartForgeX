@@ -28,11 +28,13 @@ Reference rendering tools can be useful in tests and compatibility checks, but t
 
 ## Current Scope
 
-Flowchart, sequence, class, state, entity relationship, mindmap, kanban, pie, timeline, Gantt, XY chart, Sankey, radar, and treemap diagrams have semantic implementations with static ChartForgeX rendering. Flowcharts, class diagrams, state diagrams, entity relationship diagrams, mindmaps, and kanban boards render through `TopologyChart`; sequence diagrams render through `SequenceArtifact`; pie, timeline, Gantt, XY chart, Sankey, radar, and treemap diagrams render through native `Chart` models.
+Flowchart, sequence, class, state, entity relationship, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams have semantic implementations with static ChartForgeX rendering. Flowcharts, class diagrams, state diagrams, entity relationship diagrams, requirement diagrams, architecture diagrams, C4 diagrams, mindmaps, tree views, event modeling diagrams, and kanban boards render through `TopologyChart`; sequence diagrams render through `SequenceArtifact`; git graph diagrams render through `GitGraphBlock`; block diagrams render through `BlockLayoutBlock`; packet diagrams render through `PacketLayoutBlock`; Venn diagrams render through `VennDiagramBlock`; Ishikawa diagrams render through `FishboneDiagramBlock`; Wardley maps render through `WardleyMapBlock`; pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams render through native `Chart` models.
 
-Recognized but not yet semantically parsed families include journey, git graph, requirement, quadrant, block, packet, and architecture. These produce an inspectable `MermaidDocument` plus a warning that the family is not implemented yet.
+Recognized but not yet semantically parsed families include ZenUML. These produce an inspectable `MermaidDocument` with retained raw body statements plus a warning that the family is not implemented yet.
 
 Unknown diagram families produce a parser error.
+
+For the family-by-family completion status, evidence, and priority order, see `mermaid-support-matrix.md`.
 
 ## Flowcharts
 
@@ -185,6 +187,124 @@ var artifact = document!.ToVisualArtifact();
 
 The conversion target for ER diagrams is `TopologyChart`. Entities become database-like topology nodes. Relationships become bidirectional mapping edges with Mermaid cardinality retained as metadata.
 
+## Requirement Diagrams
+
+Requirement diagrams are parsed into `MermaidRequirementDocument` and converted to topology previews.
+
+Supported requirement parsing includes:
+
+- `requirementDiagram` headers.
+- Optional `direction` statements.
+- Requirement blocks including `requirement`, `functionalRequirement`, `interfaceRequirement`, `performanceRequirement`, `physicalRequirement`, and `designConstraint`.
+- Requirement fields for `id`, `text`, `risk`, and `verifymethod`.
+- Element blocks with `type` and `docref`.
+- Relationship rows such as `element - satisfies -> requirement` and reverse-arrow variants.
+- `classDef`, `class`, `style`, and inline `:::class` statements retained for future richer style mapping.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+requirementDiagram
+direction LR
+functionalRequirement auth_req {
+  id: "AUTH-1"
+  text: Users must authenticate.
+  risk: Medium
+  verifymethod: Test
+}
+element auth_service {
+  type: service
+  docref: "Auth service"
+}
+auth_service - satisfies -> auth_req
+""";
+
+var result = new MermaidParser().ParseRequirement(source);
+var document = result.Document;
+var artifact = document!.ToVisualArtifact(new MermaidTopologyRenderOptions {
+    Id = "requirements"
+});
+```
+
+The conversion target for requirement diagrams is `TopologyChart`. Requirements and elements become topology nodes, relationships become directed topology edges, and requirement ids, types, risk, verification method, document references, classes, and source spans are retained in the AST or topology metadata.
+
+## Architecture Diagrams
+
+Architecture diagrams are parsed into `MermaidArchitectureDocument` and converted to topology previews.
+
+Supported architecture parsing includes:
+
+- `architecture-beta` headers.
+- `group id(icon)[Title]` and `group id[Title]` declarations.
+- `service id(icon)[Title]` and `service id[Title]` declarations.
+- Optional `in parent` placement for services, junctions, and nested groups.
+- `junction id` declarations.
+- Edges using `-->`, `<--`, `<-->`, and `--`.
+- Endpoint side metadata such as `service:R --> L:database`.
+- Group-boundary edge modifiers such as `database{group}`.
+- Source spans and raw statements for diagnostics and future fidelity work.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+architecture-beta
+group api(cloud)[API]
+group private(server)[Private API] in api
+service gateway(internet)[Gateway] in api
+service db(database)[Database] in private
+junction split in api
+gateway:R --> L:split
+split:R --> L:db{group}
+""";
+
+var result = new MermaidParser().ParseArchitecture(source);
+var document = result.Document;
+var artifact = document!.ToVisualArtifact(new MermaidTopologyRenderOptions {
+    Id = "service-architecture"
+});
+```
+
+The conversion target for architecture diagrams is `TopologyChart`. Services and junctions become topology nodes, groups become topology groups, and edges become topology edges. Mermaid icon names, endpoint sides, group membership, nested group parent ids, group-boundary modifiers, operators, and source spans are retained in topology metadata so renderer fidelity can improve without losing source semantics.
+
+## C4 Diagrams
+
+C4 diagrams are parsed into `MermaidC4Document` and converted to topology previews.
+
+Supported C4 parsing includes:
+
+- `C4Context`, `C4Container`, `C4Component`, `C4Dynamic`, and `C4Deployment` headers.
+- `title` and `direction` statements.
+- People, systems, containers, components, database variants, queue variants, and external variants.
+- Enterprise, system, container, generic boundary, and deployment-node boundary calls with nested block membership.
+- Relationship calls including `Rel`, `BiRel`, directional `Rel_U`/`Rel_D`/`Rel_L`/`Rel_R` aliases, and `Rel_Back`.
+- Source spans, raw statements, and explicit retained warnings for update/layout/style calls that are not rendered exactly yet.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+C4Container
+title Container View
+System_Boundary(bank, "Bank") {
+  Person(customer, "Customer", "Uses online banking")
+  Container(web, "Web Application", "ASP.NET", "Provides banking features")
+  ContainerDb(db, "Database", "SQL", "Stores account data")
+}
+Rel(customer, web, "Uses", "HTTPS")
+Rel_D(web, db, "Reads and writes", "SQL")
+""";
+
+var result = new MermaidParser().ParseC4(source);
+var document = result.Document;
+var artifact = document!.ToVisualArtifact(new MermaidTopologyRenderOptions {
+    Id = "c4-container"
+});
+```
+
+The conversion target for C4 diagrams is `TopologyChart`. Boundaries become topology groups, C4 elements become topology nodes, and relationships become topology edges. C4 kinds, descriptions, technology labels, tags, links, boundary membership, direction hints, and source spans are retained in the AST or topology metadata. Mermaid update/style/layout calls currently produce warnings and retained statements rather than silent visual degradation.
+
 ## Mindmaps
 
 Mindmaps are parsed into `MermaidMindMapDocument` and converted to ChartForgeX's native mind-map topology layout.
@@ -216,6 +336,81 @@ var png = document!.ToPng();
 
 The conversion target for mindmaps is `TopologyChart` with `TopologyLayoutMode.MindMap`. Nodes retain hierarchy, shape tokens, classes, icon markers, source spans, and generated stable ids.
 
+## Tree View Diagrams
+
+Tree view diagrams are parsed into `MermaidTreeViewDocument` and converted to deterministic hierarchy previews.
+
+Supported tree view parsing includes:
+
+- `treeView-beta` and `treeView` headers.
+- Indentation-based hierarchy using spaces or tabs.
+- Quoted labels with escaped quotes and backslashes.
+- Unquoted labels for tolerant parsing of existing simple sources.
+- Source spans and retained raw statements for diagnostics.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+treeView-beta
+    "src"
+        "ChartForgeX.Mermaid"
+            "MermaidParser.cs"
+            "MermaidTreeViewParser.cs"
+    "README.md"
+""";
+
+var result = new MermaidParser().ParseTreeView(source);
+var document = result.Document;
+var artifact = document!.ToVisualArtifact(new MermaidTopologyRenderOptions {
+    Id = "source-tree",
+    Title = "Source Tree"
+});
+```
+
+The conversion target for tree view diagrams is `TopologyChart`. Tree roots become hubs, intermediate nodes become branches, leaves become process nodes, and parent-child relationships become ownership edges. Static rendering is a ChartForgeX hierarchy preview, not a browser-pixel-perfect Mermaid clone.
+
+## Event Modeling Diagrams
+
+Event Modeling diagrams are parsed into `MermaidEventModelingDocument` and converted to deterministic topology swimlane previews.
+
+Supported Event Modeling parsing includes:
+
+- `eventmodeling` headers.
+- Compact `tf` and relaxed `timeframe` statements.
+- Compact `rf` and relaxed `resetframe` statements that break inferred flow.
+- Entity type aliases for UI, processor, command, read model, and event frames.
+- Namespace prefixes such as `Cart.ItemAdded` for swimlane grouping.
+- Inline data such as `` `json`{ "cartId": 42 } ``.
+- Data references in `[[identifier]]` form and ``data identifier `type`{ ... }`` blocks.
+- Explicit `->>` source-frame relations, plus default inferred relations between adjacent non-reset frames.
+- Source spans and retained raw statements for diagnostics.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+eventmodeling
+tf 01 ui CartUI
+tf 02 cmd AddItem
+tf 03 evt Cart.ItemAdded [[ItemAdded01]]
+tf 04 rmo Cart.CartView ->> 03
+data ItemAdded01 `json`{
+  "sku": "ABC",
+  "quantity": 1
+}
+""";
+
+var result = new MermaidParser().ParseEventModeling(source);
+var document = result.Document;
+var artifact = document!.ToVisualArtifact(new MermaidTopologyRenderOptions {
+    Id = "cart-event-model",
+    Title = "Cart Event Model"
+});
+```
+
+The conversion target for Event Modeling diagrams is `TopologyChart`. Entity types map into UI/Automation, Command/Read Model, and Events swimlanes, with namespace-specific swimlanes when the source uses namespace prefixes. Static rendering preserves frame ids, entity identifiers, reset markers, data references, inline data, and inferred versus explicit relation metadata, but it is not a browser-pixel-perfect Event Modeling renderer.
+
 ## Kanban
 
 Kanban diagrams are parsed into `MermaidKanbanDocument` and converted to grouped topology previews.
@@ -245,6 +440,76 @@ var artifact = document!.ToVisualArtifact();
 ```
 
 The conversion target for kanban boards is `TopologyChart`. Columns become topology groups, tasks become process nodes, and task metadata is retained on the nodes.
+
+## Journey Diagrams
+
+Journey diagrams are parsed into `MermaidJourneyDocument` and converted to native ChartForgeX score charts.
+
+Supported journey parsing includes:
+
+- `journey` headers.
+- Optional `title` statements.
+- `section` groups.
+- Scored task rows in `task: score: actor, actor` form.
+- Source spans for sections and tasks.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+journey
+title User Journey
+section Start
+  Open app: 5: User
+  Find dashboard: 4: User, Analyst
+""";
+
+var result = new MermaidParser().ParseJourney(source);
+var document = result.Document;
+var artifact = document!.ToVisualArtifact(new MermaidJourneyRenderOptions {
+    Id = "user-journey",
+    Width = 960,
+    Height = 560
+});
+```
+
+The conversion target for journey diagrams is `Chart`. Sections, task scores, actors, task counts, actor counts, and source spans are retained in the AST or artifact metadata. Static rendering maps journey scores to deterministic ChartForgeX bars.
+
+## Quadrant Charts
+
+Quadrant charts are parsed into `MermaidQuadrantDocument` and converted to native ChartForgeX scatter charts.
+
+Supported quadrant parsing includes:
+
+- `quadrantChart` headers.
+- Optional `title` statements.
+- `x-axis low --> high` and `y-axis low --> high` labels.
+- `quadrant-1` through `quadrant-4` labels.
+- Point rows in `label: [x, y]` form.
+- Source spans for labels and points.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+quadrantChart
+title Reach and Engagement
+x-axis Low Reach --> High Reach
+y-axis Low Engagement --> High Engagement
+Campaign A: [0.3, 0.6]
+Campaign B: [0.7, 0.8]
+""";
+
+var result = new MermaidParser().ParseQuadrant(source);
+var document = result.Document;
+var artifact = document!.ToVisualArtifact(new MermaidQuadrantRenderOptions {
+    Id = "reach-engagement",
+    Width = 960,
+    Height = 560
+});
+```
+
+The conversion target for quadrant charts is `Chart`. Axis labels, quadrant labels, point counts, source spans, and point labels are retained in the AST or artifact metadata. Static rendering maps Mermaid points to deterministic ChartForgeX scatter marks.
 
 ## Sequence Diagrams
 
@@ -589,6 +854,254 @@ var png = document.ToPng();
 ```
 
 The conversion target for treemap diagrams is `Chart`. The typed AST preserves the hierarchy and class suffixes. The current static ChartForgeX preview renders valued leaves as native treemap tiles using full hierarchy paths as labels, while node counts, leaf counts, root counts, and class usage are retained in artifact metadata for hosts that need the original tree.
+
+## Git Graph Diagrams
+
+Git graph diagrams are parsed into `MermaidGitGraphDocument` and converted to the reusable `GitGraphBlock` visual block.
+
+Supported git graph parsing includes:
+
+- `gitGraph` headers, including orientation tokens such as `LR:`.
+- `commit` statements with `id`, `tag`, and `type` attributes.
+- `branch` statements with optional `order` attributes.
+- `checkout` branch switching.
+- `merge` statements with generated or explicit merge commit ids.
+- `cherry-pick` statements that retain the source commit id.
+- Source spans and retained unsupported statements for diagnostics.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+gitGraph LR:
+  commit id: "base" tag: "v1"
+  branch develop order: 1
+  checkout develop
+  commit id: "work" type: HIGHLIGHT
+  checkout main
+  merge develop id: "merge" tag: "v2"
+""";
+
+var result = new MermaidParser().ParseGitGraph(source);
+var document = result.Document;
+
+var artifact = document!.ToVisualArtifact(new MermaidGitGraphRenderOptions {
+    Id = "release-history",
+    Title = "Release History",
+    Width = 980,
+    Height = 460
+});
+```
+
+The conversion target for git graph diagrams is `GitGraphBlock`. Branches become lanes, commits become typed markers, and parent/merge/cherry-pick relationships become static connector lines. Mermaid config/theme details and alternate orientation-specific layout are retained or represented as metadata for future support; they are not silently treated as pixel-perfect Mermaid rendering.
+
+## Block Diagrams
+
+Block diagrams are parsed into `MermaidBlockDocument` and converted to the reusable `BlockLayoutBlock` visual block.
+
+Supported block parsing includes:
+
+- `block-beta` headers.
+- `columns` statements, including `columns auto` with renderer defaults.
+- Block ids, quoted labels, simple shape hints, and `:N` column spans.
+- `space` and `space:N` layout gaps.
+- Basic directed and undirected edges between blocks.
+- Style/class and nested/composite block statements retained with warnings until the static renderer can apply them deliberately.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+block-beta
+columns 3
+frontend["Frontend"] api["API"] database[("Database")]
+frontend --> api
+api --> database
+""";
+
+var result = new MermaidParser().ParseBlock(source);
+var document = result.Document;
+
+var artifact = document!.ToVisualArtifact(new MermaidBlockRenderOptions {
+    Id = "service-path",
+    Title = "Service Path",
+    Width = 900,
+    Height = 420
+});
+```
+
+The conversion target for block diagrams is `BlockLayoutBlock`. Mermaid block items become deterministic grid cells, spaces occupy grid columns without drawing, and edges render as static connectors. Nested/composite blocks, full Mermaid shape fidelity, and style/class application are preserved for future support but are not silently rendered as if complete.
+
+## Packet Diagrams
+
+Packet diagrams are parsed into `MermaidPacketDocument` and converted to the reusable `PacketLayoutBlock` visual block.
+
+Supported packet parsing includes:
+
+- `packet-beta` headers.
+- Optional `title` statements.
+- Explicit bit ranges such as `0-15: "Source Port"`.
+- Single-bit fields such as `16: "Reserved"`.
+- Relative bit-count fields such as `+32: "Payload"`.
+- Contiguous-field validation from bit zero, matching Mermaid packet semantics.
+- Source spans and retained statements for diagnostics.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+packet-beta
+title TCP Header
+0-15: "Source Port"
++16: "Destination Port"
+32-63: "Sequence Number"
++32: "Acknowledgment Number"
+""";
+
+var result = new MermaidParser().ParsePacket(source);
+var document = result.Document;
+
+var artifact = document!.ToVisualArtifact(new MermaidPacketRenderOptions {
+    Id = "tcp-header",
+    Width = 900,
+    Height = 420,
+    BitsPerRow = 32
+});
+
+var svg = document.ToSvg();
+var png = document.ToPng();
+```
+
+The conversion target for packet diagrams is `PacketLayoutBlock`. Packet fields become contiguous labeled bit rectangles with start/end bit metadata in SVG output. The same reusable block can be used directly from ChartForgeX without Mermaid.
+
+## Venn Diagrams
+
+Venn diagrams are parsed into `MermaidVennDocument` and converted to the reusable `VennDiagramBlock` visual block.
+
+Supported Venn parsing includes:
+
+- `venn-beta` headers.
+- `title` statements.
+- `set id [label] : size` declarations.
+- `union id,id [label] : size` intersections for two or three sets.
+- `text id,id textId [label]` statements.
+- `style` statements for renderable `fill`, `stroke`, and `color` values.
+- Source spans and retained statements for diagnostics.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+venn-beta
+title Capability overlap
+set API ["API"] : 60
+set UI ["UI"] : 55
+set Ops ["Operations"] : 45
+union API,UI ["Shared UX"] : 18
+union API,UI,Ops ["Platform"] : 5
+""";
+
+var result = new MermaidParser().ParseVenn(source);
+var document = result.Document;
+
+var artifact = document!.ToVisualArtifact(new MermaidVennRenderOptions {
+    Id = "capability-overlap",
+    Width = 780,
+    Height = 460
+});
+
+var svg = document.ToSvg();
+var png = document.ToPng();
+```
+
+The conversion target for Venn diagrams is `VennDiagramBlock`. Sets render as deterministic overlapping circles with set and intersection labels. Mermaid size values are retained in the AST and artifact metadata, but current static rendering is not area-proportional Euler layout and is intentionally limited to one, two, or three sets.
+
+## Ishikawa Diagrams
+
+Ishikawa diagrams are parsed into `MermaidIshikawaDocument` and converted to the reusable `FishboneDiagramBlock` visual block.
+
+Supported Ishikawa parsing includes:
+
+- `ishikawa` and `ishikawa-beta` headers.
+- A root effect statement on the first body line.
+- Indentation-based cause and sub-cause hierarchy.
+- Source spans for the effect and each cause node.
+- Retained raw statements for diagnostics.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+ishikawa-beta
+Delayed release
+  People
+    Handoffs
+      Timezone gaps
+  Process
+    Late review
+  Platform
+    Slow build
+""";
+
+var result = new MermaidParser().ParseIshikawa(source);
+var document = result.Document;
+
+var artifact = document!.ToVisualArtifact(new MermaidIshikawaRenderOptions {
+    Id = "release-root-cause",
+    Width = 900,
+    Height = 520
+});
+
+var svg = document.ToSvg();
+var png = document.ToPng();
+```
+
+The conversion target for Ishikawa diagrams is `FishboneDiagramBlock`. The static renderer produces a deterministic fishbone preview with the effect head, alternating primary causes, and nested sub-cause labels. It is not Mermaid's browser hand-drawn layout, and dense nested cause trees still need additional layout hardening.
+
+## Wardley Maps
+
+Wardley maps are parsed into `MermaidWardleyDocument` and converted to the reusable `WardleyMapBlock` visual block.
+
+Supported Wardley parsing includes:
+
+- `wardley-beta` headers.
+- `title` and `size` statements.
+- Custom evolution stage labels.
+- Anchors and components with visibility/evolution coordinates.
+- Node suffixes for inertia, sourcing strategy, and label offsets.
+- Dependency links, dashed links, flow labels, and semicolon labels.
+- `evolve`, `note`, `annotation`, `accelerator`, `deaccelerator`, and `pipeline` statements.
+- Source spans and retained raw statements for diagnostics.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+wardley-beta
+title Platform map
+evolution Genesis -> Custom Built -> Product -> Commodity
+anchor User [0.95, 0.05]
+component Portal [0.80, 0.35]
+component API [0.70, 0.45] (build)
+User -> Portal
+Portal +'uses'> API
+evolve API 0.75
+""";
+
+var result = new MermaidParser().ParseWardley(source);
+var document = result.Document;
+
+var artifact = document!.ToVisualArtifact(new MermaidWardleyRenderOptions {
+    Id = "platform-map",
+    Width = 900,
+    Height = 560
+});
+
+var svg = document.ToSvg();
+var png = document.ToPng();
+```
+
+The conversion target for Wardley maps is `WardleyMapBlock`. The static renderer produces a deterministic map with axes, evolution stages, nodes, dependencies, evolutions, notes, annotations, markers, and pipelines. It is not Mermaid's browser layout, and advanced styling, annotation-box rendering, pipeline styling, and browser visual parity still need hardening.
 
 ## Visual Fidelity
 

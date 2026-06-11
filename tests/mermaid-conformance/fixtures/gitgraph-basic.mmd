@@ -1,0 +1,12 @@
+gitGraph LR:
+  commit id: "base" tag: "v1"
+  branch develop order: 1
+  checkout develop
+  commit id: "work" type: HIGHLIGHT
+  checkout main
+  merge develop id: "merge" tag: "v2"
+  branch hotfix order: 2
+  checkout hotfix
+  cherry-pick id: "work"
+  checkout main
+  merge hotfix

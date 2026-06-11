@@ -1,0 +1,11 @@
+sequenceDiagram
+participant Alice
+participant Bob
+links Bob: { "Dashboard": "https://example.com/bob" }
+alt successful case
+  Alice->>Bob: Request
+else failure case
+  break something failed
+    Bob-->>Alice: Error
+  end
+end

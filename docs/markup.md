@@ -186,7 +186,7 @@ flowchart LR
 ```
 ````
 
-Current Mermaid support is described in `mermaid.md`. Flowcharts, sequence diagrams, class diagrams, state diagrams, entity relationship diagrams, mindmaps, kanban boards, pie charts, timelines, Gantt diagrams, XY charts, Sankey diagrams, radar diagrams, and treemap diagrams render through ChartForgeX today. Other recognized Mermaid families are detected and reported as not-yet-implemented instead of being treated as generic text.
+Current Mermaid support is described in `mermaid.md`. Flowcharts, sequence diagrams, class diagrams, state diagrams, entity relationship diagrams, requirement diagrams, architecture diagrams, C4 diagrams, git graph diagrams, block diagrams, packet diagrams, Venn diagrams, Ishikawa diagrams, Wardley maps, mindmaps, tree views, event modeling diagrams, kanban boards, pie charts, journeys, timelines, quadrant charts, Gantt diagrams, XY charts, Sankey diagrams, radar diagrams, and treemap diagrams render through ChartForgeX today. Other recognized Mermaid families are detected and reported as not-yet-implemented instead of being treated as generic text.
 
 Mermaid chart syntax remains Mermaid syntax. Use `xychart-beta` when authors want Mermaid-compatible line and bar charts:
 
@@ -256,13 +256,142 @@ Ship : milestone, ship, after impl, 0d
 ```
 ````
 
-Class, state, ER, mindmap, and kanban fences render through native ChartForgeX topology previews:
+Git graph fences use Mermaid's `gitGraph` syntax and render through the reusable ChartForgeX git graph block:
+
+````markdown
+```mermaid {#release-history title="Release History" width=980 height=460}
+gitGraph LR:
+  commit id: "base" tag: "v1"
+  branch develop order: 1
+  checkout develop
+  commit id: "work" type: HIGHLIGHT
+  checkout main
+  merge develop id: "merge" tag: "v2"
+```
+````
+
+Packet fences use Mermaid's `packet-beta` syntax and render through the reusable ChartForgeX packet layout block:
+
+````markdown
+```mermaid {#tcp-header title="TCP Header" width=900 height=420 bitsPerRow=32}
+packet-beta
+0-15: "Source Port"
++16: "Destination Port"
+32-63: "Sequence Number"
++32: "Acknowledgment Number"
+```
+````
+
+Block fences use Mermaid's `block-beta` syntax and render through the reusable ChartForgeX block layout block:
+
+````markdown
+```mermaid {#service-path title="Service Path" width=900 height=420 columns=3}
+block-beta
+columns 3
+frontend["Frontend"] api["API"] database[("Database")]
+frontend --> api
+api --> database
+```
+````
+
+Venn fences use Mermaid's `venn-beta` syntax and render through the reusable ChartForgeX Venn diagram block:
+
+````markdown
+```mermaid {#capability-overlap title="Capability Overlap" width=780 height=460}
+venn-beta
+title Capability overlap
+set API ["API"] : 60
+set UI ["UI"] : 55
+set Ops ["Operations"] : 45
+union API,UI ["Shared UX"] : 18
+union API,UI,Ops ["Platform"] : 5
+```
+````
+
+Ishikawa fences use Mermaid's `ishikawa` and `ishikawa-beta` syntax and render through the reusable ChartForgeX fishbone block:
+
+````markdown
+```mermaid {#root-cause title="Root Cause" width=900 height=520}
+ishikawa-beta
+Delayed release
+  People
+    Handoffs
+  Process
+    Late review
+```
+````
+
+Wardley fences use Mermaid's `wardley-beta` syntax and render through the reusable ChartForgeX Wardley map block:
+
+````markdown
+```mermaid {#platform-map title="Platform Map" width=900 height=560}
+wardley-beta
+anchor User [0.95, 0.05]
+component Portal [0.80, 0.35]
+component API [0.70, 0.45]
+User -> Portal
+Portal -> API
+```
+````
+
+TreeView fences use Mermaid's `treeView-beta` syntax and render through native ChartForgeX topology previews:
+
+````markdown
+```mermaid {#source-tree title="Source Tree" width=900 height=560}
+treeView-beta
+    "src"
+        "ChartForgeX.Mermaid"
+            "MermaidParser.cs"
+        "ChartForgeX.Tests"
+```
+````
+
+Event Modeling fences use Mermaid's `eventmodeling` syntax and render through native ChartForgeX topology previews:
+
+````markdown
+```mermaid {#cart-event-model title="Cart Event Model" width=960 height=560}
+eventmodeling
+tf 01 ui CartUI
+tf 02 cmd AddItem
+tf 03 evt ItemAdded
+tf 04 rmo CartView ->> 03
+```
+````
+
+Class, state, ER, requirement, architecture, C4, mindmap, and kanban fences render through native ChartForgeX topology previews:
 
 ````markdown
 ```mermaid {#class-map title="Class Map" width=960 height=560}
 classDiagram
 class User
 User <|-- Admin
+```
+````
+
+````markdown
+```mermaid {#c4-context title="System Context" width=960 height=560}
+C4Context
+Person(customer, "Customer", "Uses online banking")
+System(system, "Internet Banking System", "Allows balance checks")
+Rel(customer, system, "Uses", "HTTPS")
+```
+````
+
+````markdown
+```mermaid {#requirements title="Requirement Map" width=960 height=560}
+requirementDiagram
+direction LR
+requirement auth_req {
+  id: "AUTH-1"
+  text: Users must authenticate.
+  risk: Medium
+  verifymethod: Test
+}
+element auth_service {
+  type: service
+  docref: "Auth service"
+}
+auth_service - satisfies -> auth_req
 ```
 ````
 

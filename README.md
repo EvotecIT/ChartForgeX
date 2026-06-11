@@ -153,7 +153,7 @@ Optional visual artifact, markup, Mermaid, and interaction support is split into
 | Package | Purpose |
 | --- | --- |
 | `ChartForgeX` | Static SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering. |
-| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with first-class flowchart, sequence, class, state, ER, mindmap, kanban, pie, timeline, Gantt, XY chart, Sankey, radar, and treemap rendering. |
+| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with first-class flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap rendering. |
 | `ChartForgeX.Markup` | Markdown-friendly ChartForgeX visual fences for topology, chart, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |

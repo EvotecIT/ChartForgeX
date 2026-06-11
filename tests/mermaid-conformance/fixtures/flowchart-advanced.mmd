@@ -1,0 +1,10 @@
+flowchart LR
+classDef alert fill:#fee,stroke:#c00,color:#111
+subgraph cluster[Cluster]
+  api[API]:::alert --> db[(Database)]
+end
+api -- renders --> ui{Dashboard}
+ui -.-> report((Report))
+style db fill:#eef,stroke:#00c
+click api href "https://example.com/api" "Open API"
+linkStyle 0 stroke:#f00,stroke-dasharray: 5 5

@@ -62,7 +62,9 @@ public enum SequenceArtifactBlockKind {
     /// <summary>A critical block.</summary>
     Critical,
     /// <summary>A background highlight block.</summary>
-    Rect
+    Rect,
+    /// <summary>A break or exception-flow block.</summary>
+    Break
 }
 
 /// <summary>

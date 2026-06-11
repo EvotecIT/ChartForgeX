@@ -10,7 +10,19 @@ internal static partial class SmokeTests {
     private static void SourceFilesStayUnderArchitectureLineBudget() {
         const int lineBudget = 800;
         var root = FindRepositoryRoot();
-        var oversized = new[] { "ChartForgeX", "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.Html", "ChartForgeX.Examples", "ChartForgeX.Tests" }
+        var oversized = new[] {
+                "ChartForgeX",
+                "ChartForgeX.AotSmoke",
+                "ChartForgeX.Examples",
+                "ChartForgeX.Interactivity",
+                "ChartForgeX.Interactivity.Html",
+                "ChartForgeX.Markup",
+                "ChartForgeX.Markup.Cli",
+                "ChartForgeX.Markup.Mermaid",
+                "ChartForgeX.Mermaid",
+                "ChartForgeX.Tests",
+                "ChartForgeX.Tools.IconImport"
+            }
             .Where(sourceRoot => Directory.Exists(Path.Combine(root, sourceRoot)))
             .SelectMany(sourceRoot => Directory.EnumerateFiles(Path.Combine(root, sourceRoot), "*.cs", SearchOption.AllDirectories))
             .Where(file => !IsGeneratedPath(file))

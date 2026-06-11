@@ -7,7 +7,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>
 /// Parses Mermaid source into source-preserving document models.
 /// </summary>
-public sealed class MermaidParser {
+public sealed partial class MermaidParser {
     /// <summary>
     /// Parses Mermaid source and detects the diagram family.
     /// </summary>
@@ -43,12 +43,20 @@ public sealed class MermaidParser {
             document = ParseEntityRelationship(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Pie) {
             document = ParsePie(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Journey) {
+            document = ParseJourney(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.GitGraph) {
+            document = ParseGitGraph(source, lines, frontMatter, header.Value, descriptor, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Gantt) {
             document = ParseGantt(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.MindMap) {
             document = ParseMindMap(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Timeline) {
             document = ParseTimeline(source, lines, frontMatter, header.Value, descriptor, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Requirement) {
+            document = ParseRequirement(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Quadrant) {
+            document = ParseQuadrant(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.XYChart) {
             document = ParseXYChart(source, lines, frontMatter, header.Value, descriptor, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Sankey) {
@@ -59,6 +67,24 @@ public sealed class MermaidParser {
             document = ParseTreemap(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Kanban) {
             document = ParseKanban(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Architecture) {
+            document = ParseArchitecture(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.C4) {
+            document = ParseC4(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Block) {
+            document = ParseBlock(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Packet) {
+            document = ParsePacket(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Venn) {
+            document = ParseVenn(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Ishikawa) {
+            document = ParseIshikawa(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Wardley) {
+            document = ParseWardley(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.TreeView) {
+            document = ParseTreeView(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.EventModeling) {
+            document = ParseEventModeling(source, lines, frontMatter, header.Value, result);
         } else {
             document = new MermaidDocument {
                 SourceText = source,
@@ -67,207 +93,12 @@ public sealed class MermaidParser {
                 HeaderSpan = new MermaidSourceSpan(header.Value.Line, header.Value.Column, header.Value.Text.Length),
                 FrontMatter = frontMatter.Text
             };
+            ReadRawBodyStatements(document, lines, header.Value.Line + 1);
             Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Warning, "Mermaid diagram kind '" + descriptor.HeaderKind + "' is recognized but not implemented yet.");
         }
 
         AddDirectives(document, lines, frontMatter.EndLine + 1, header.Value.Line - 1);
         result.Document = document;
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a sequence diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidSequenceDocument> ParseSequence(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidSequenceDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidSequenceDocument sequence) result.Document = sequence;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a sequence diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a flowchart document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidFlowchartDocument> ParseFlowchart(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidFlowchartDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidFlowchartDocument flowchart) result.Document = flowchart;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a flowchart diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a pie chart document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidPieDocument> ParsePie(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidPieDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidPieDocument pie) result.Document = pie;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a pie chart diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a class diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidClassDocument> ParseClass(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidClassDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidClassDocument classDiagram) result.Document = classDiagram;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a class diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a state diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidStateDocument> ParseState(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidStateDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidStateDocument state) result.Document = state;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a state diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as an entity relationship diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidEntityRelationshipDocument> ParseEntityRelationship(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidEntityRelationshipDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidEntityRelationshipDocument er) result.Document = er;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not an entity relationship diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a Gantt diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidGanttDocument> ParseGantt(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidGanttDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidGanttDocument gantt) result.Document = gantt;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a Gantt diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a timeline diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidTimelineDocument> ParseTimeline(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidTimelineDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidTimelineDocument timeline) result.Document = timeline;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a timeline diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a mindmap document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidMindMapDocument> ParseMindMap(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidMindMapDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidMindMapDocument mindMap) result.Document = mindMap;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a mindmap diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as an XY chart document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidXYChartDocument> ParseXYChart(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidXYChartDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidXYChartDocument xyChart) result.Document = xyChart;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not an XY chart diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a Sankey diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidSankeyDocument> ParseSankey(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidSankeyDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidSankeyDocument sankey) result.Document = sankey;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a Sankey diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a radar diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidRadarDocument> ParseRadar(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidRadarDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidRadarDocument radar) result.Document = radar;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a radar diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a treemap diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidTreemapDocument> ParseTreemap(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidTreemapDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidTreemapDocument treemap) result.Document = treemap;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a treemap diagram.");
-        return result;
-    }
-
-    /// <summary>
-    /// Parses Mermaid source as a kanban diagram document.
-    /// </summary>
-    /// <param name="source">The Mermaid source text.</param>
-    /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidKanbanDocument> ParseKanban(string source) {
-        var generic = Parse(source);
-        var result = new MermaidParseResult<MermaidKanbanDocument>();
-        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
-        if (generic.Document is MermaidKanbanDocument kanban) result.Document = kanban;
-        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a kanban diagram.");
         return result;
     }
 
@@ -317,6 +148,19 @@ public sealed class MermaidParser {
         }
 
         MermaidPieParser.ParseStatements(document, lines, header.Line + 1, result);
+        return document;
+    }
+
+    private static MermaidJourneyDocument ParseJourney(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result) {
+        var document = new MermaidJourneyDocument {
+            SourceText = source,
+            Kind = MermaidDiagramKind.Journey,
+            Header = header.Text,
+            HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
+            FrontMatter = frontMatter.Text
+        };
+
+        MermaidJourneyParser.ParseStatements(document, lines, header.Line + 1, result);
         return document;
     }
 
@@ -383,6 +227,32 @@ public sealed class MermaidParser {
         };
 
         MermaidTimelineParser.ParseStatements(document, lines, header.Line + 1, result);
+        return document;
+    }
+
+    private static MermaidQuadrantDocument ParseQuadrant(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result) {
+        var document = new MermaidQuadrantDocument {
+            SourceText = source,
+            Kind = MermaidDiagramKind.Quadrant,
+            Header = header.Text,
+            HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
+            FrontMatter = frontMatter.Text
+        };
+
+        MermaidQuadrantParser.ParseStatements(document, lines, header.Line + 1, result);
+        return document;
+    }
+
+    private static MermaidRequirementDocument ParseRequirement(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result) {
+        var document = new MermaidRequirementDocument {
+            SourceText = source,
+            Kind = MermaidDiagramKind.Requirement,
+            Header = header.Text,
+            HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
+            FrontMatter = frontMatter.Text
+        };
+
+        MermaidRequirementParser.ParseStatements(document, lines, header.Line + 1, result);
         return document;
     }
 
@@ -465,6 +335,19 @@ public sealed class MermaidParser {
         return document;
     }
 
+    private static MermaidArchitectureDocument ParseArchitecture(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result) {
+        var document = new MermaidArchitectureDocument {
+            SourceText = source,
+            Kind = MermaidDiagramKind.Architecture,
+            Header = header.Text,
+            HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
+            FrontMatter = frontMatter.Text
+        };
+
+        MermaidArchitectureParser.ParseStatements(document, lines, header.Line + 1, result);
+        return document;
+    }
+
     private static FrontMatterResult ReadFrontMatter(string[] lines, MermaidParseResult<MermaidDocument> result) {
         if (lines.Length == 0 || lines[0].Trim() != "---") return new FrontMatterResult(null, 0);
         var content = new List<string>();
@@ -498,6 +381,15 @@ public sealed class MermaidParser {
         }
     }
 
+    private static void ReadRawBodyStatements(MermaidDocument document, string[] lines, int startLine) {
+        for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            var raw = lines[line - 1];
+            var trimmed = raw.Trim();
+            if (trimmed.Length == 0 || IsComment(trimmed)) continue;
+            document.RawStatements.Add(new MermaidRawStatement(trimmed, new MermaidSourceSpan(line, LeadingWhitespace(raw) + 1, trimmed.Length)));
+        }
+    }
+
     private static DiagramDescriptor ResolveDiagramKind(string header) {
         var tokens = Tokenize(header);
         if (tokens.Count == 0) return new DiagramDescriptor(MermaidDiagramKind.Unknown, string.Empty, string.Empty);
@@ -523,7 +415,7 @@ public sealed class MermaidParser {
             case "journey":
                 return new DiagramDescriptor(MermaidDiagramKind.Journey, tokens[0], string.Empty);
             case "gitgraph":
-                return new DiagramDescriptor(MermaidDiagramKind.GitGraph, tokens[0], string.Empty);
+                return new DiagramDescriptor(MermaidDiagramKind.GitGraph, tokens[0], direction);
             case "mindmap":
                 return new DiagramDescriptor(MermaidDiagramKind.MindMap, tokens[0], string.Empty);
             case "timeline":
@@ -549,6 +441,27 @@ public sealed class MermaidParser {
                 return new DiagramDescriptor(MermaidDiagramKind.Radar, tokens[0], string.Empty);
             case "treemapbeta":
                 return new DiagramDescriptor(MermaidDiagramKind.Treemap, tokens[0], string.Empty);
+            case "c4context":
+            case "c4container":
+            case "c4component":
+            case "c4dynamic":
+            case "c4deployment":
+                return new DiagramDescriptor(MermaidDiagramKind.C4, tokens[0], string.Empty);
+            case "venn":
+            case "vennbeta":
+                return new DiagramDescriptor(MermaidDiagramKind.Venn, tokens[0], string.Empty);
+            case "ishikawa":
+            case "ishikawabeta":
+                return new DiagramDescriptor(MermaidDiagramKind.Ishikawa, tokens[0], string.Empty);
+            case "wardleybeta":
+                return new DiagramDescriptor(MermaidDiagramKind.Wardley, tokens[0], string.Empty);
+            case "eventmodeling":
+                return new DiagramDescriptor(MermaidDiagramKind.EventModeling, tokens[0], string.Empty);
+            case "treeview":
+            case "treeviewbeta":
+                return new DiagramDescriptor(MermaidDiagramKind.TreeView, tokens[0], string.Empty);
+            case "zenuml":
+                return new DiagramDescriptor(MermaidDiagramKind.ZenUml, tokens[0], string.Empty);
             default:
                 return new DiagramDescriptor(MermaidDiagramKind.Unknown, tokens[0], string.Empty);
         }

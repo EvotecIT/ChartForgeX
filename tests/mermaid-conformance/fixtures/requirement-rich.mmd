@@ -1,0 +1,13 @@
+requirementDiagram
+direction TB
+functionalRequirement auth_req {
+  id: "AUTH-1"
+  text: Users must authenticate.
+  risk: Medium
+  verifymethod: Inspection
+}
+element auth_service {
+  type: service
+  docref: "Auth service"
+}
+auth_req <- verifies - auth_service

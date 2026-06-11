@@ -29,6 +29,12 @@ public sealed partial class PngVisualBlockRenderer {
 
         if (block is ChartTable table) DrawTable(canvas, table);
         else if (block is ChartList list) DrawList(canvas, list);
+        else if (block is PacketLayoutBlock packet) DrawPacketLayout(canvas, packet);
+        else if (block is BlockLayoutBlock blockLayout) DrawBlockLayout(canvas, blockLayout);
+        else if (block is GitGraphBlock gitGraph) DrawGitGraph(canvas, gitGraph);
+        else if (block is VennDiagramBlock venn) DrawVennDiagram(canvas, venn);
+        else if (block is FishboneDiagramBlock fishbone) DrawFishboneDiagram(canvas, fishbone);
+        else if (block is WardleyMapBlock wardleyMap) DrawWardleyMap(canvas, wardleyMap);
         else if (block is MetricCard card) DrawMetric(canvas, card);
         else if (block is RadialMetricCard radialCard) DrawRadialMetric(canvas, radialCard);
         else if (block is SegmentedMetricBlock segmentedMetric) DrawSegmentedMetric(canvas, segmentedMetric);

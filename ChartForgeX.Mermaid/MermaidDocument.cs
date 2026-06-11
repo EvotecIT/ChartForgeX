@@ -50,7 +50,21 @@ public enum MermaidDiagramKind {
     /// <summary>A radar diagram.</summary>
     Radar,
     /// <summary>A treemap diagram.</summary>
-    Treemap
+    Treemap,
+    /// <summary>A C4 diagram.</summary>
+    C4,
+    /// <summary>A Venn diagram.</summary>
+    Venn,
+    /// <summary>An Ishikawa diagram.</summary>
+    Ishikawa,
+    /// <summary>A Wardley map diagram.</summary>
+    Wardley,
+    /// <summary>An event modeling diagram.</summary>
+    EventModeling,
+    /// <summary>A tree view diagram.</summary>
+    TreeView,
+    /// <summary>A ZenUML diagram.</summary>
+    ZenUml
 }
 
 /// <summary>
@@ -77,6 +91,9 @@ public class MermaidDocument {
 
     /// <summary>Gets parsed Mermaid directives.</summary>
     public List<MermaidDirective> Directives { get; } = new();
+
+    /// <summary>Gets unclassified body statements retained for recognized families that do not have a semantic parser yet.</summary>
+    public List<MermaidRawStatement> RawStatements { get; } = new();
 }
 
 /// <summary>

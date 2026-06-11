@@ -1,0 +1,7 @@
+C4Context
+title System Context
+Person(customer, "Banking Customer", "A customer of the bank")
+System(system, "Internet Banking System", "Allows customers to view balances")
+System_Ext(mail, "E-mail System", "Sends notifications")
+Rel(customer, system, "Uses", "HTTPS")
+Rel(system, mail, "Sends e-mails", "SMTP")

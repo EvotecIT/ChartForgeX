@@ -64,6 +64,12 @@ public sealed partial class SvgVisualBlockRenderer {
 
         if (block is ChartTable table) RenderTable(writer, table, id);
         else if (block is ChartList list) RenderList(writer, list);
+        else if (block is PacketLayoutBlock packet) RenderPacketLayout(writer, packet);
+        else if (block is BlockLayoutBlock blockLayout) RenderBlockLayout(writer, blockLayout);
+        else if (block is GitGraphBlock gitGraph) RenderGitGraph(writer, gitGraph);
+        else if (block is VennDiagramBlock venn) RenderVennDiagram(writer, venn);
+        else if (block is FishboneDiagramBlock fishbone) RenderFishboneDiagram(writer, fishbone);
+        else if (block is WardleyMapBlock wardleyMap) RenderWardleyMap(writer, wardleyMap);
         else if (block is MetricCard card) RenderMetric(writer, card, id);
         else if (block is RadialMetricCard radialCard) RenderRadialMetric(writer, radialCard);
         else if (block is SegmentedMetricBlock segmentedMetric) RenderSegmentedMetric(writer, segmentedMetric);

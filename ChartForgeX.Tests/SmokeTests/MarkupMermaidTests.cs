@@ -6,6 +6,7 @@ using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
 
@@ -46,10 +47,9 @@ title ""People""
         const string source = @"# Visual
 
 ```mermaid
-journey
-  title User Journey
-  section Start
-    Open app: 5: User
+zenuml
+  title Order
+  A.method()
 ```";
 
         var result = new MermaidVisualMarkupParser().Parse(source);
@@ -59,6 +59,120 @@ journey
         Assert(result.Diagnostics.Count >= 1, "Unsupported Mermaid families should produce diagnostics.");
         Assert(result.Diagnostics[0].Line == 4, "Mermaid diagnostics should map to Markdown payload source lines.");
         Assert(result.Diagnostics[0].Message.Contains("not implemented", StringComparison.Ordinal), "Unsupported Mermaid diagnostics should be explicit.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsEventModelingFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#cart-event-model title=""Cart Event Model"" width=""960"" height=""560""}
+eventmodeling
+tf 01 ui CartUI
+tf 02 cmd AddItem
+tf 03 evt ItemAdded
+tf 04 rmo CartView ->> 03
+```
+";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse Event Modeling fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid Event Modeling fences should emit one visual artifact.");
+        Assert(result.Artifacts[0].Id == "cart-event-model", "Mermaid Event Modeling fence id attributes should map to artifact ids.");
+        Assert(result.Artifacts[0].Title == "Cart Event Model", "Mermaid Event Modeling fence title attributes should override generated titles.");
+        Assert(result.Artifacts[0].Model is TopologyChart, "Mermaid Event Modeling visual artifacts should carry a topology model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(TopologyChart), "Mermaid Event Modeling visual artifacts should expose the render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.frames"] == "4", "Mermaid Event Modeling visual artifacts should expose frame counts.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsWardleyFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#platform-map title=""Platform Map"" width=""840"" height=""520""}
+wardley-beta
+anchor User [0.95, 0.05]
+component Portal [0.80, 0.35]
+component API [0.70, 0.45]
+User -> Portal
+Portal -> API
+```
+";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse Wardley fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid Wardley fences should emit one visual artifact.");
+        Assert(result.Artifacts[0].Id == "platform-map", "Mermaid Wardley fence id attributes should map to artifact ids.");
+        Assert(result.Artifacts[0].Title == "Platform Map", "Mermaid Wardley fence title attributes should override generated titles.");
+        Assert(result.Artifacts[0].Model is WardleyMapBlock, "Mermaid Wardley visual artifacts should carry a Wardley map block model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(WardleyMapBlock), "Mermaid Wardley visual artifacts should expose the render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.nodes"] == "3", "Mermaid Wardley visual artifacts should expose node counts.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsTreeViewFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#source-tree title=""Source Tree"" width=""840"" height=""520""}
+treeView-beta
+    ""src""
+        ""ChartForgeX.Mermaid""
+            ""MermaidParser.cs""
+        ""ChartForgeX.Tests""
+```
+";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse TreeView fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid TreeView fences should emit one visual artifact.");
+        Assert(result.Artifacts[0].Id == "source-tree", "Mermaid TreeView fence id attributes should map to artifact ids.");
+        Assert(result.Artifacts[0].Title == "Source Tree", "Mermaid TreeView fence title attributes should override generated titles.");
+        Assert(result.Artifacts[0].Model is TopologyChart, "Mermaid TreeView visual artifacts should carry a topology model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(TopologyChart), "Mermaid TreeView visual artifacts should expose the render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.nodes"] == "4", "Mermaid TreeView visual artifacts should expose node counts.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsIshikawaFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#root-cause title=""Root Cause"" width=""840"" height=""460""}
+ishikawa-beta
+Delayed release
+  People
+    Handoffs
+  Process
+    Late review
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse Ishikawa fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid Ishikawa fences should emit one visual artifact.");
+        Assert(result.Artifacts[0].Id == "root-cause", "Mermaid Ishikawa fence id attributes should map to artifact ids.");
+        Assert(result.Artifacts[0].Title == "Root Cause", "Mermaid Ishikawa fence title attributes should override generated titles.");
+        Assert(result.Artifacts[0].Model is FishboneDiagramBlock, "Mermaid Ishikawa visual artifacts should carry a fishbone block model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(FishboneDiagramBlock), "Mermaid Ishikawa visual artifacts should expose the render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.causes"] == "2", "Mermaid Ishikawa visual artifacts should expose cause counts.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsVennFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#venn title=""Capability Overlap"" width=""720"" height=""420""}
+venn-beta
+set API [""API""] : 60
+set UI [""UI""] : 55
+union API,UI [""Shared UX""] : 18
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse Venn fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid Venn fences should emit one visual artifact.");
+        Assert(result.Artifacts[0].Id == "venn", "Mermaid Venn fence id attributes should map to artifact ids.");
+        Assert(result.Artifacts[0].Title == "Capability Overlap", "Mermaid Venn fence title attributes should override generated titles.");
+        Assert(result.Artifacts[0].Model is VennDiagramBlock, "Mermaid Venn visual artifacts should carry a Venn block model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(VennDiagramBlock), "Mermaid Venn visual artifacts should expose the render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.sets"] == "2", "Mermaid Venn visual artifacts should expose set counts.");
     }
 
     private static void MermaidVisualMarkupParserReportsInvalidFenceSizeAttributes() {
@@ -121,6 +235,53 @@ pie showData
         Assert(naturalSize.Width == 640 && naturalSize.Height == 360, "Mermaid pie fence size attributes should map to artifact natural size.");
     }
 
+    private static void MermaidVisualMarkupParserMapsJourneyFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#journey title=""User Journey"" width=""720"" height=""420""}
+journey
+section Start
+  Open app: 5: User
+  Find dashboard: 4: User, Analyst
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse journey fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid journey fences should emit a visual artifact.");
+        Assert(result.Artifacts[0].Kind == VisualArtifactKind.Mermaid, "Mermaid journey fences should emit Mermaid visual artifacts.");
+        Assert(result.Artifacts[0].Model is Chart, "Mermaid journey fences should carry a renderable chart model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(Chart), "Mermaid journey fence artifacts should expose the chart render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.tasks"] == "2", "Mermaid journey fence artifacts should expose task counts.");
+        var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid journey artifacts should expose natural size.");
+        Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid journey fence size attributes should map to artifact natural size.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsGitGraphFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#release-history title=""Release History"" width=""760"" height=""340""}
+gitGraph
+  commit id: ""base""
+  branch develop
+  checkout develop
+  commit id: ""work""
+  checkout main
+  merge develop id: ""merge""
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse gitGraph fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid gitGraph fences should emit a visual artifact.");
+        Assert(result.Artifacts[0].Kind == VisualArtifactKind.Mermaid, "Mermaid gitGraph fences should emit Mermaid visual artifacts.");
+        Assert(result.Artifacts[0].Model is GitGraphBlock, "Mermaid gitGraph fences should carry a renderable git graph block.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(GitGraphBlock), "Mermaid gitGraph fence artifacts should expose the git graph render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.commits"] == "3", "Mermaid gitGraph fence artifacts should expose commit counts.");
+        var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid gitGraph artifacts should expose natural size.");
+        Assert(naturalSize.Width == 760 && naturalSize.Height == 340, "Mermaid gitGraph fence size attributes should map to artifact natural size.");
+    }
+
     private static void MermaidVisualMarkupParserMapsTimelineFencesToArtifacts() {
         const string source = @"# Visual
 
@@ -142,6 +303,29 @@ Artifacts : SVG preview : PNG preview
         Assert(result.Artifacts[0].Metadata["mermaid.events"] == "3", "Mermaid timeline fence artifacts should expose event counts.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid timeline artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid timeline fence size attributes should map to artifact natural size.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsQuadrantFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#quadrant title=""Reach"" width=""720"" height=""420""}
+quadrantChart
+x-axis Low --> High
+y-axis Low --> High
+Campaign A: [0.3, 0.6]
+Campaign B: [0.7, 0.8]
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse quadrant fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid quadrant fences should emit a visual artifact.");
+        Assert(result.Artifacts[0].Kind == VisualArtifactKind.Mermaid, "Mermaid quadrant fences should emit Mermaid visual artifacts.");
+        Assert(result.Artifacts[0].Model is Chart, "Mermaid quadrant fences should carry a renderable chart model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(Chart), "Mermaid quadrant fence artifacts should expose the chart render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.points"] == "2", "Mermaid quadrant fence artifacts should expose point counts.");
+        var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid quadrant artifacts should expose natural size.");
+        Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid quadrant fence size attributes should map to artifact natural size.");
     }
 
     private static void MermaidVisualMarkupParserMapsXYChartFencesToArtifacts() {
@@ -268,6 +452,51 @@ Ship : milestone, ship, after impl, 0d
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid Gantt fence size attributes should map to artifact natural size.");
     }
 
+    private static void MermaidVisualMarkupParserMapsPacketFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#packet title=""TCP Header"" width=""720"" height=""260"" bitsPerRow=""32""}
+packet-beta
+0-15: ""Source Port""
++16: ""Destination Port""
+32-63: ""Sequence Number""
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse packet fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid packet fences should emit a visual artifact.");
+        Assert(result.Artifacts[0].Kind == VisualArtifactKind.Mermaid, "Mermaid packet fences should emit Mermaid visual artifacts.");
+        Assert(result.Artifacts[0].Model is PacketLayoutBlock, "Mermaid packet fences should carry a renderable packet layout block.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(PacketLayoutBlock), "Mermaid packet fence artifacts should expose the packet render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.fields"] == "3", "Mermaid packet fence artifacts should expose packet field counts.");
+        var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid packet artifacts should expose natural size.");
+        Assert(naturalSize.Width == 720 && naturalSize.Height == 260, "Mermaid packet fence size attributes should map to artifact natural size.");
+    }
+
+    private static void MermaidVisualMarkupParserMapsBlockFencesToArtifacts() {
+        const string source = @"# Visual
+
+```mermaid {#block title=""Service Path"" width=""720"" height=""320"" columns=""3""}
+block-beta
+columns 3
+frontend[""Frontend""] api[""API""] database[(""Database"")]
+frontend --> api
+api --> database
+```";
+
+        var result = new MermaidVisualMarkupParser().Parse(source);
+
+        Assert(!result.HasErrors, "Mermaid visual markup parser should parse block fences without errors: " + Diagnostics(result));
+        Assert(result.Artifacts.Count == 1, "Mermaid block fences should emit a visual artifact.");
+        Assert(result.Artifacts[0].Kind == VisualArtifactKind.Mermaid, "Mermaid block fences should emit Mermaid visual artifacts.");
+        Assert(result.Artifacts[0].Model is BlockLayoutBlock, "Mermaid block fences should carry a renderable block layout block.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(BlockLayoutBlock), "Mermaid block fence artifacts should expose the block render model.");
+        Assert(result.Artifacts[0].Metadata["mermaid.blocks"] == "3", "Mermaid block fence artifacts should expose block counts.");
+        var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid block artifacts should expose natural size.");
+        Assert(naturalSize.Width == 720 && naturalSize.Height == 320, "Mermaid block fence size attributes should map to artifact natural size.");
+    }
+
     private static void MermaidVisualMarkupParserMapsTopologyBackedFencesToArtifacts() {
         const string source = @"# Visual
 
@@ -288,6 +517,36 @@ erDiagram
 CUSTOMER ||--o{ ORDER : places
 ```
 
+```mermaid {#req-map title=""Requirement Map""}
+requirementDiagram
+requirement test_req {
+  id: REQ-1
+  text: Users must authenticate.
+  risk: Medium
+  verifymethod: Test
+}
+element auth_service {
+  type: service
+  docref: Auth service
+}
+auth_service - satisfies -> test_req
+```
+
+```mermaid {#architecture title=""Architecture""}
+architecture-beta
+group api(cloud)[API]
+service gateway(internet)[Gateway] in api
+service db(database)[Database] in api
+gateway:R --> L:db
+```
+
+```mermaid {#c4 title=""C4 Context""}
+C4Context
+Person(customer, ""Customer"", ""Uses online banking"")
+System(system, ""Internet Banking System"", ""Allows balance checks"")
+Rel(customer, system, ""Uses"", ""HTTPS"")
+```
+
 ```mermaid {#mind-map title=""Mind Map""}
 mindmap
   Root
@@ -303,12 +562,15 @@ todo[Todo]
         var result = new MermaidVisualMarkupParser().Parse(source);
 
         Assert(!result.HasErrors, "Mermaid visual markup parser should parse topology-backed Mermaid fences without errors: " + Diagnostics(result));
-        Assert(result.Artifacts.Count == 5, "Topology-backed Mermaid fences should emit visual artifacts.");
+        Assert(result.Artifacts.Count == 8, "Topology-backed Mermaid fences should emit visual artifacts.");
         Assert(result.Artifacts[0].Id == "class-map" && result.Artifacts[0].Model is TopologyChart && result.Artifacts[0].Metadata["mermaid.classes"] == "2", "Class diagram fences should map to topology artifacts.");
         Assert(result.Artifacts[1].Id == "state-map" && result.Artifacts[1].Model is TopologyChart && result.Artifacts[1].Metadata["mermaid.transitions"] == "2", "State diagram fences should map to topology artifacts.");
         Assert(result.Artifacts[2].Id == "er-map" && result.Artifacts[2].Model is TopologyChart && result.Artifacts[2].Metadata["mermaid.entities"] == "2", "ER diagram fences should map to topology artifacts.");
-        Assert(result.Artifacts[3].Id == "mind-map" && result.Artifacts[3].Model is TopologyChart && result.Artifacts[3].Metadata["mermaid.nodes"] == "2", "Mindmap fences should map to topology artifacts.");
-        Assert(result.Artifacts[4].Id == "kanban" && result.Artifacts[4].Model is TopologyChart && result.Artifacts[4].Metadata["mermaid.tasks"] == "1", "Kanban fences should map to topology artifacts.");
+        Assert(result.Artifacts[3].Id == "req-map" && result.Artifacts[3].Model is TopologyChart && result.Artifacts[3].Metadata["mermaid.requirements"] == "1", "Requirement diagram fences should map to topology artifacts.");
+        Assert(result.Artifacts[4].Id == "architecture" && result.Artifacts[4].Model is TopologyChart && result.Artifacts[4].Metadata["mermaid.services"] == "2", "Architecture diagram fences should map to topology artifacts.");
+        Assert(result.Artifacts[5].Id == "c4" && result.Artifacts[5].Model is TopologyChart && result.Artifacts[5].Metadata["mermaid.elements"] == "2", "C4 diagram fences should map to topology artifacts.");
+        Assert(result.Artifacts[6].Id == "mind-map" && result.Artifacts[6].Model is TopologyChart && result.Artifacts[6].Metadata["mermaid.nodes"] == "2", "Mindmap fences should map to topology artifacts.");
+        Assert(result.Artifacts[7].Id == "kanban" && result.Artifacts[7].Model is TopologyChart && result.Artifacts[7].Metadata["mermaid.tasks"] == "1", "Kanban fences should map to topology artifacts.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Topology-backed Mermaid artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Topology-backed Mermaid fence size attributes should map to artifact natural size.");
     }

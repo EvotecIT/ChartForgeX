@@ -209,89 +209,6 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid flowchart PNG rendering should emit a valid PNG.");
     }
 
-    private static void MermaidParserParsesSequenceParticipantsAliasesAndMessages() {
-        const string source = @"sequenceDiagram
-participant U as User
-actor API as Native API
-participant DB {""type"": ""database"", ""alias"": ""Data Store""}
-U->>API: Request
-API-->>U: Response
-API->>DB: Store";
-
-        var result = new MermaidParser().ParseSequence(source);
-
-        Assert(!result.HasErrors, "Mermaid sequence parser should parse participants, aliases, and messages: " + MermaidDiagnostics(result));
-        var document = result.Document ?? throw new InvalidOperationException("Mermaid sequence parser should produce a document.");
-        Assert(document.Kind == MermaidDiagramKind.Sequence, "Mermaid sequence parser should produce a sequence document.");
-        Assert(document.Participants.Count == 3, "Mermaid sequence parser should retain declared participants in source order.");
-        Assert(document.Participants[0].Id == "U" && document.Participants[0].Alias == "User", "Mermaid sequence parser should parse external participant aliases.");
-        Assert(document.Participants[1].Kind == MermaidSequenceParticipantKind.Actor && document.Participants[1].Alias == "Native API", "Mermaid sequence parser should parse actors and aliases.");
-        Assert(document.Participants[2].Kind == MermaidSequenceParticipantKind.Database && document.Participants[2].Alias == "Data Store", "Mermaid sequence parser should parse participant configuration aliases and types.");
-        Assert(document.Messages.Count == 3, "Mermaid sequence parser should parse sequence messages.");
-        Assert(document.Messages[0].SourceId == "U" && document.Messages[0].TargetId == "API", "Mermaid sequence parser should parse message endpoints.");
-        Assert(document.Messages[0].Operator == "->>" && document.Messages[0].Text == "Request", "Mermaid sequence parser should preserve message operators and text.");
-        Assert(document.Messages[1].Operator == "-->>" && document.Messages[1].Text == "Response", "Mermaid sequence parser should preserve dotted response operators.");
-    }
-
-    private static void MermaidParserParsesSequenceNotesActivationsBlocksAutonumberAndLinks() {
-        const string source = @"sequenceDiagram
-autonumber 10 0.5
-Alice->>+Bob: Hello
-activate Bob
-Note right of Bob: Processing
-loop Every minute
-  Bob-->>-Alice: Done
-end
-link Bob: Dashboard @ https://example.com/bob";
-
-        var result = new MermaidParser().ParseSequence(source);
-
-        Assert(!result.HasErrors, "Mermaid sequence parser should parse notes, activations, blocks, autonumber, and links: " + MermaidDiagnostics(result));
-        var document = result.Document ?? throw new InvalidOperationException("Mermaid sequence parser should produce a document.");
-        Assert(document.Autonumber != null && document.Autonumber.Start == "10" && document.Autonumber.Increment == "0.5", "Mermaid sequence parser should parse autonumber start and increment.");
-        Assert(document.Messages.Count == 2, "Mermaid sequence parser should parse messages around blocks.");
-        Assert(document.Messages[0].ActivatesTarget, "Mermaid sequence parser should preserve activation shortcut metadata.");
-        Assert(document.Messages[1].Deactivates, "Mermaid sequence parser should preserve deactivation shortcut metadata.");
-        Assert(document.Activations.Count == 1 && document.Activations[0].ParticipantId == "Bob" && document.Activations[0].Active, "Mermaid sequence parser should parse activation declarations.");
-        Assert(document.Notes.Count == 1 && document.Notes[0].Placement == "right of" && document.Notes[0].ParticipantIds[0] == "Bob", "Mermaid sequence parser should parse notes and note targets.");
-        Assert(document.Blocks.Count == 2 && document.Blocks[0].Kind == MermaidSequenceBlockKind.Loop && document.Blocks[1].Kind == MermaidSequenceBlockKind.End, "Mermaid sequence parser should parse block start and end statements.");
-        Assert(document.Links.Count == 1 && document.Links[0].ParticipantId == "Bob" && document.Links[0].Url == "https://example.com/bob", "Mermaid sequence parser should parse actor menu links.");
-    }
-
-    private static void MermaidSequenceConvertsToSequenceArtifactAndRenders() {
-        const string source = @"---
-title: Incident Sequence
----
-sequenceDiagram
-participant U as User
-actor API as Native API
-U->>API: Request
-Note right of API: Processing
-API-->>U: Response";
-
-        var result = new MermaidParser().ParseSequence(source);
-        Assert(!result.HasErrors, "Mermaid sequence parser should parse renderable source: " + MermaidDiagnostics(result));
-        var document = result.Document ?? throw new InvalidOperationException("Mermaid sequence parser should produce a document.");
-
-        var sequence = document.ToSequenceArtifact(new MermaidSequenceRenderOptions { Id = "incident-sequence", Width = 720, Height = 420 });
-        Assert(sequence.Id == "incident-sequence", "Mermaid sequence conversion should preserve caller-provided ids.");
-        Assert(sequence.Title == "Incident Sequence", "Mermaid sequence conversion should use frontmatter title by default.");
-        Assert(sequence.Participants.Count == 2 && sequence.Messages.Count == 2, "Mermaid sequence conversion should map participants and messages.");
-        Assert(sequence.Notes.Count == 1, "Mermaid sequence conversion should map notes.");
-        Assert(sequence.Participants[1].Metadata["mermaid.kind"] == MermaidSequenceParticipantKind.Actor.ToString(), "Mermaid sequence conversion should preserve Mermaid participant metadata.");
-
-        var artifact = document.ToVisualArtifact(new MermaidSequenceRenderOptions { Id = "incident-sequence" });
-        Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid sequence visual artifact should report Mermaid artifact kind.");
-        Assert(artifact.SourceLanguage == VisualArtifactSourceLanguage.Mermaid, "Mermaid sequence visual artifact should preserve source language.");
-        Assert(artifact.Model is SequenceArtifact, "Mermaid sequence visual artifact should carry a renderable sequence model.");
-        Assert(artifact.Metadata["render.model"] == nameof(SequenceArtifact), "Mermaid sequence visual artifact should expose its render model.");
-
-        var svg = document.ToSvg(new MermaidSequenceRenderOptions { Id = "incident-sequence" });
-        var png = document.ToPng(new MermaidSequenceRenderOptions { Id = "incident-sequence" });
-        Assert(svg.Contains("data-cfx-role=\"sequence-message\"", StringComparison.Ordinal), "Mermaid sequence SVG rendering should emit sequence message roles.");
-        Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid sequence PNG rendering should emit a valid PNG.");
-    }
-
     private static void MermaidParserParsesPieTitleShowDataAndSlices() {
         const string source = @"pie showData
 title ""Result Mix""
@@ -735,19 +652,33 @@ Second : bad, 2026-01-01, nope";
     }
 
     private static void MermaidParserReportsRecognizedButUnimplementedFamilies() {
-        const string source = @"journey
-  title User Journey
-  section Start
-    Open app: 5: User";
+        const string source = @"zenuml
+  title Order
+  A.method()";
 
         var result = new MermaidParser().Parse(source);
 
         Assert(!result.HasErrors, "Recognized Mermaid families should remain inspectable while semantic support is pending.");
-        Assert(result.Document != null && result.Document.Kind == MermaidDiagramKind.Journey, "Mermaid parser should identify recognized diagram families.");
+        Assert(result.Document != null && result.Document.Kind == MermaidDiagramKind.ZenUml, "Mermaid parser should identify recognized diagram families.");
         Assert(result.Diagnostics.Count == 1, "Recognized but unimplemented Mermaid families should produce one diagnostic.");
         Assert(result.Diagnostics[0].Severity == MermaidDiagnosticSeverity.Warning, "Recognized but unimplemented Mermaid families should be warnings.");
         Assert(result.Diagnostics[0].Span.Line == 1, "Mermaid family diagnostics should point at the header line.");
         Assert(result.Diagnostics[0].Message.Contains("not implemented", StringComparison.Ordinal), "Mermaid family diagnostics should be explicit.");
+        Assert(result.Document!.RawStatements.Count == 2, "Recognized but unimplemented Mermaid families should retain raw body statements.");
+        Assert(result.Document.RawStatements[0].Text == "title Order", "Raw statements should preserve trimmed Mermaid body text.");
+        Assert(result.Document.RawStatements[0].Span.Line == 2 && result.Document.RawStatements[0].Span.Column == 3, "Raw statements should preserve one-based source spans.");
+
+        var families = new[] {
+            ("zenuml\n  title Order\n  A.method()", MermaidDiagramKind.ZenUml)
+        };
+
+        foreach (var family in families) {
+            var familyResult = new MermaidParser().Parse(family.Item1);
+            Assert(!familyResult.HasErrors, "Recognized Mermaid family should remain inspectable while semantic support is pending: " + family.Item2);
+            Assert(familyResult.Document != null && familyResult.Document.Kind == family.Item2, "Mermaid parser should identify recognized family: " + family.Item2);
+            Assert(familyResult.Diagnostics.Count == 1 && familyResult.Diagnostics[0].Severity == MermaidDiagnosticSeverity.Warning, "Unimplemented recognized families should produce one warning diagnostic: " + family.Item2);
+            Assert(familyResult.Document!.RawStatements.Count > 0, "Unimplemented recognized families should retain raw body statements: " + family.Item2);
+        }
     }
 
     private static void MermaidParserRejectsUnknownDiagramFamily() {

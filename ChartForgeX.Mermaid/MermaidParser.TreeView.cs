@@ -1,0 +1,29 @@
+namespace ChartForgeX.Mermaid;
+
+public sealed partial class MermaidParser {
+    /// <summary>
+    /// Parses Mermaid source as a tree view document.
+    /// </summary>
+    /// <param name="source">The Mermaid source text.</param>
+    /// <returns>The parse result.</returns>
+    public MermaidParseResult<MermaidTreeViewDocument> ParseTreeView(string source) {
+        var generic = Parse(source);
+        var result = new MermaidParseResult<MermaidTreeViewDocument>();
+        foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
+        if (generic.Document is MermaidTreeViewDocument treeView) result.Document = treeView;
+        else if (!generic.HasErrors) Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source is not a tree view diagram.");
+        return result;
+    }
+
+    private static MermaidTreeViewDocument ParseTreeView(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result) {
+        var document = new MermaidTreeViewDocument {
+            SourceText = source,
+            Kind = MermaidDiagramKind.TreeView,
+            Header = header.Text,
+            HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
+            FrontMatter = frontMatter.Text
+        };
+        MermaidTreeViewParser.ParseStatements(document, lines, header.Line + 1, result);
+        return document;
+    }
+}

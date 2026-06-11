@@ -1,0 +1,8 @@
+architecture-beta
+group api(cloud)[API]
+group private(server)[Private API] in api
+service gateway(internet)[Gateway] in api
+service db(database)[Database] in private
+junction split in api
+gateway:R --> L:split
+split:R --> L:db{group}

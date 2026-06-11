@@ -41,6 +41,8 @@ public enum MermaidSequenceBlockKind {
     Critical,
     /// <summary>A background rectangle block.</summary>
     Rect,
+    /// <summary>A break or exception-flow block.</summary>
+    Break,
     /// <summary>An else branch inside an alternative block.</summary>
     Else,
     /// <summary>An and branch inside a parallel block.</summary>

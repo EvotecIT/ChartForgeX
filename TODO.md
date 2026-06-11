@@ -46,9 +46,19 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Mermaid
 
+- Keep `docs/mermaid-support-matrix.md` current as the family-by-family completion contract.
 - Continue expanding Mermaid support through typed AST models plus Mermaid.js-backed conformance fixtures before advertising a family as implemented.
 - Broaden class/state/ER/mindmap/kanban syntax coverage from Mermaid documentation examples, preserving raw statements where static CFX rendering cannot yet match Mermaid exactly.
-- Implement the next recognized families in order of IX value: journey, git graph, requirement, quadrant, block, packet, and architecture.
+- Harden C4 with richer boundary/deployment examples and deliberate handling for Mermaid update style/layout statements now that a typed C4-to-topology model exists.
+- Harden Venn with area-proportional/Euler layout research and broader style fidelity while keeping the current one-to-three-set `VennDiagramBlock` deterministic and dependency-free.
+- Harden Ishikawa/fishbone rendering with Mermaid layout/style parity and richer nested cause examples while keeping `FishboneDiagramBlock` product-neutral.
+- Harden Wardley map rendering with Mermaid browser visual parity, annotation-box rendering, pipeline styling, sourcing-strategy overlays, and broader grammar examples while keeping `WardleyMapBlock` product-neutral.
+- Harden TreeView rendering with Mermaid browser visual parity, row indentation fidelity, directory/file styling, and configuration/theme mapping while keeping the implementation on reusable topology contracts.
+- Harden Event Modeling rendering with Mermaid browser visual parity, richer relation syntax, data block display, and Event Modeling-specific swimlane styling while keeping the implementation on reusable topology contracts.
+- Keep recognized diagnostic-only handling current with Mermaid families before adding renderers.
+- Harden git graph rendering with Mermaid config/theme support, alternate orientation rendering, and more docs examples now that the reusable git graph model exists.
+- Harden block rendering with nested/composite blocks, full shape fidelity, and style/class application now that the reusable block layout model exists.
+- Harden architecture rendering with richer nested-group boundaries, endpoint-side routing, and icon-specific visual styling now that the typed model exists.
 - Keep runtime packages JavaScript-free; Mermaid.js belongs only in test-time compatibility fixtures.
 
 ## Formats

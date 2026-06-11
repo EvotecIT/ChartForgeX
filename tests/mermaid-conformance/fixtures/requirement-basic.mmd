@@ -1,0 +1,13 @@
+requirementDiagram
+direction LR
+requirement test_req {
+  id: 1
+  text: the test text.
+  risk: High
+  verifymethod: Test
+}
+element test_entity {
+  type: simulation
+  docref: "Test entity"
+}
+test_entity - satisfies -> test_req
