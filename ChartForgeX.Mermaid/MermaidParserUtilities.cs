@@ -8,8 +8,23 @@ internal static class MermaidParserUtilities {
     public static bool IsSkippable(string text) => text.Length == 0 || text.StartsWith("%%", StringComparison.Ordinal);
 
     public static string StripInlineComment(string text) {
-        var index = text.IndexOf("%%", StringComparison.Ordinal);
-        return index < 0 ? text : text.Substring(0, index).TrimEnd();
+        var quote = '\0';
+        for (var index = 0; index < text.Length - 1; index++) {
+            var ch = text[index];
+            if ((ch == '"' || ch == '\'' || ch == '`') && quote == '\0') {
+                quote = ch;
+                continue;
+            }
+
+            if (quote != '\0' && ch == quote) {
+                quote = '\0';
+                continue;
+            }
+
+            if (quote == '\0' && ch == '%' && text[index + 1] == '%') return text.Substring(0, index).TrimEnd();
+        }
+
+        return text;
     }
 
     public static int LeadingWhitespace(string text) {

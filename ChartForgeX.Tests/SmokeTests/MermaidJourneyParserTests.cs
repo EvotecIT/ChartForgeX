@@ -57,4 +57,15 @@ section Resolve
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Mermaid journey SVG rendering should emit ChartForgeX bar marks.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid journey PNG rendering should emit a valid PNG.");
     }
+
+    private static void MermaidJourneyRejectsNonFiniteScores() {
+        const string source = @"journey
+section Start
+  Impossible score: NaN: User";
+
+        var result = new MermaidParser().ParseJourney(source);
+
+        Assert(result.HasErrors, "Mermaid journey parser should reject non-finite scores before chart conversion.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("numeric score", StringComparison.Ordinal)), "Mermaid journey score diagnostics should explain the numeric score contract.");
+    }
 }

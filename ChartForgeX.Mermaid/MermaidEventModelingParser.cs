@@ -85,6 +85,12 @@ internal static class MermaidEventModelingParser {
         var rest = suffix.Trim();
         if (rest.Length == 0) return;
 
+        if (TryExtractInlineData(rest, out var dataType, out var data, out var before, out var after)) {
+            frame.DataType = dataType;
+            frame.InlineData = data;
+            rest = (before + " " + after).Trim();
+        }
+
         var relationIndex = rest.IndexOf("->>", StringComparison.Ordinal);
         if (relationIndex >= 0) {
             var relationText = rest.Substring(relationIndex + 3).Trim();
@@ -96,12 +102,6 @@ internal static class MermaidEventModelingParser {
         if (dataRef.Success) {
             frame.DataReference = dataRef.Groups["id"].Value.Trim();
             rest = (rest.Substring(0, dataRef.Index) + rest.Substring(dataRef.Index + dataRef.Length)).Trim();
-        }
-
-        if (TryExtractInlineData(rest, out var dataType, out var data, out var before, out var after)) {
-            frame.DataType = dataType;
-            frame.InlineData = data;
-            rest = (before + " " + after).Trim();
         }
 
         if (rest.Length > 0) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Mermaid Event Modeling timeframe suffix was retained but is not rendered exactly: " + rest);

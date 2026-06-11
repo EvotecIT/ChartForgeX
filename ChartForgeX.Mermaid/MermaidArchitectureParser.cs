@@ -23,12 +23,12 @@ internal static class MermaidArchitectureParser {
             }
 
             if (StartsWithKeyword(trimmed, "service")) {
-                ParseService(document, services, groups, trimmed, span, result);
+                ParseService(document, services, junctions, groups, trimmed, span, result);
                 continue;
             }
 
             if (StartsWithKeyword(trimmed, "junction")) {
-                ParseJunction(document, junctions, groups, trimmed, span, result);
+                ParseJunction(document, services, junctions, groups, trimmed, span, result);
                 continue;
             }
 
@@ -65,14 +65,14 @@ internal static class MermaidArchitectureParser {
         document.Groups.Add(group);
     }
 
-    private static void ParseService(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureService> services, Dictionary<string, MermaidArchitectureGroup> groups, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseService(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureService> services, Dictionary<string, MermaidArchitectureJunction> junctions, Dictionary<string, MermaidArchitectureGroup> groups, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (!TryParseComponent(text.Substring(7).Trim(), out var id, out var icon, out var title, out var parentId)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture services must use Mermaid syntax 'service id(icon)[Title]' or 'service id[Title]'.");
             return;
         }
 
         var service = new MermaidArchitectureService(id, title, span) { Icon = icon, GroupId = parentId };
-        if (services.ContainsKey(id)) {
+        if (services.ContainsKey(id) || junctions.ContainsKey(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture service id '" + id + "' is already defined.");
             return;
         }
@@ -85,7 +85,7 @@ internal static class MermaidArchitectureParser {
         document.Services.Add(service);
     }
 
-    private static void ParseJunction(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureJunction> junctions, Dictionary<string, MermaidArchitectureGroup> groups, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseJunction(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureService> services, Dictionary<string, MermaidArchitectureJunction> junctions, Dictionary<string, MermaidArchitectureGroup> groups, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         var body = text.Substring(8).Trim();
         var parentId = ReadParent(ref body);
         var id = Clean(body);
@@ -94,7 +94,7 @@ internal static class MermaidArchitectureParser {
             return;
         }
 
-        if (junctions.ContainsKey(id)) {
+        if (junctions.ContainsKey(id) || services.ContainsKey(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture junction id '" + id + "' is already defined.");
             return;
         }

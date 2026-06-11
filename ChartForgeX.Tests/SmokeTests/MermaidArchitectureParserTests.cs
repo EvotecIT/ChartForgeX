@@ -69,4 +69,15 @@ service cache(database)[Data in memory] in memory";
         Assert(document.Services.Count == 1 && document.Services[0].Title == "Data in memory", "Mermaid architecture parser should not treat title text as a parent clause.");
         Assert(document.Services[0].GroupId == "memory", "Mermaid architecture parser should still parse the trailing parent group.");
     }
+
+    private static void MermaidArchitectureRejectsServiceJunctionIdCollisions() {
+        const string source = @"architecture-beta
+service api(server)[API]
+junction api";
+
+        var result = new MermaidParser().ParseArchitecture(source);
+
+        Assert(result.HasErrors, "Mermaid architecture parser should reject service and junction id collisions before topology conversion.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("junction id 'api' is already defined", StringComparison.Ordinal)), "Architecture collision diagnostics should identify the duplicate junction id.");
+    }
 }

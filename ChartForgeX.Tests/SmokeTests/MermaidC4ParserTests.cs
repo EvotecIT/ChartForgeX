@@ -96,4 +96,15 @@ Container(api, ""API"", ""ASP.NET"", ""Serves traffic"", ""service"", ""internal
         Assert(topology.Nodes[0].Metadata["mermaid.sprite"] == "person" && topology.Nodes[0].Metadata["mermaid.tags"] == "external" && topology.Nodes[0].Metadata["mermaid.link"] == "https://example.test/user", "Mermaid C4 conversion should expose person sprite, tags, and link metadata.");
         Assert(topology.Nodes[1].Metadata["mermaid.sprite"] == "service" && topology.Nodes[1].Metadata["mermaid.tags"] == "internal" && topology.Nodes[1].Metadata["mermaid.link"] == "https://example.test/api", "Mermaid C4 conversion should expose container sprite, tags, and link metadata.");
     }
+
+    private static void MermaidC4PreservesPercentSignsInsideQuotedLabels() {
+        const string source = @"C4Context
+Person(user, ""99%% user"", ""Completion is 99%% ready"")";
+
+        var result = new MermaidParser().ParseC4(source);
+
+        Assert(!result.HasErrors, "Mermaid C4 parser should not strip percent signs inside quoted arguments: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid C4 parser should produce a document.");
+        Assert(document.Elements.Count == 1 && document.Elements[0].Label == "99%% user" && document.Elements[0].Description == "Completion is 99%% ready", "Mermaid C4 parser should preserve quoted percent text as element metadata.");
+    }
 }

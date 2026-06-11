@@ -90,4 +90,19 @@ req - verifies -> absent";
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("source 'missing'", StringComparison.Ordinal)), "Requirement relationship diagnostics should identify missing source endpoints.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("target 'absent'", StringComparison.Ordinal)), "Requirement relationship diagnostics should identify missing target endpoints.");
     }
+
+    private static void MermaidRequirementRejectsRequirementElementNameCollisions() {
+        const string source = @"requirementDiagram
+requirement shared {
+  id: 1
+}
+element shared {
+  type: service
+}";
+
+        var result = new MermaidParser().ParseRequirement(source);
+
+        Assert(result.HasErrors, "Mermaid requirement parser should reject requirement and element name collisions.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("already defined as a requirement", StringComparison.Ordinal)), "Requirement collision diagnostics should identify the shared namespace.");
+    }
 }

@@ -57,4 +57,14 @@ Campaign B: [0.7, 0.8]";
         Assert(svg.Contains("data-cfx-role=\"mermaid-quadrant-point\"", StringComparison.Ordinal), "Mermaid quadrant SVG rendering should emit ChartForgeX scatter marks with Mermaid semantic roles.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid quadrant PNG rendering should emit a valid PNG.");
     }
+
+    private static void MermaidQuadrantRejectsOutOfRangePoints() {
+        const string source = @"quadrantChart
+Outlier: [2, 0.5]";
+
+        var result = new MermaidParser().ParseQuadrant(source);
+
+        Assert(result.HasErrors, "Mermaid quadrant parser should reject normalized coordinates outside zero to one.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("between zero and one", StringComparison.Ordinal)), "Mermaid quadrant coordinate diagnostics should explain the normalized range.");
+    }
 }

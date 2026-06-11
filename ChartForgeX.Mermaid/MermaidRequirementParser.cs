@@ -40,6 +40,14 @@ internal static class MermaidRequirementParser {
             }
 
             if (TryParseRequirementStart(trimmed, out var requirementType, out var requirementName, out var requirementClasses)) {
+                if (elements.ContainsKey(requirementName)) {
+                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Requirement name '" + requirementName + "' is already defined as an element.");
+                    var shadow = new MermaidRequirementNode(requirementName, requirementType, span);
+                    AddClasses(shadow.Classes, requirementClasses);
+                    line = ReadRequirementBlock(document, lines, line + 1, shadow, result);
+                    continue;
+                }
+
                 var requirement = EnsureRequirement(document, requirements, requirementName, requirementType, span);
                 AddClasses(requirement.Classes, requirementClasses);
                 line = ReadRequirementBlock(document, lines, line + 1, requirement, result);
@@ -47,6 +55,14 @@ internal static class MermaidRequirementParser {
             }
 
             if (TryParseElementStart(trimmed, out var elementName, out var elementClasses)) {
+                if (requirements.ContainsKey(elementName)) {
+                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Requirement element name '" + elementName + "' is already defined as a requirement.");
+                    var shadow = new MermaidRequirementElement(elementName, span);
+                    AddClasses(shadow.Classes, elementClasses);
+                    line = ReadElementBlock(document, lines, line + 1, shadow, result);
+                    continue;
+                }
+
                 var element = EnsureElement(document, elements, elementName, span);
                 AddClasses(element.Classes, elementClasses);
                 line = ReadElementBlock(document, lines, line + 1, element, result);

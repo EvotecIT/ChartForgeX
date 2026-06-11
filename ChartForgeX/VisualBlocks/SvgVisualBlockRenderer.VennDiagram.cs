@@ -36,8 +36,26 @@ public sealed partial class SvgVisualBlockRenderer {
             WriteText(writer, placement.Set.Label, placement.X - placement.Radius * 0.58, labelY, placement.Radius * 1.16, VisualTextAlignment.Center, placement.Set.TextColor ?? theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize + 1), "800");
         }
 
+        foreach (var intersection in block.Intersections) WriteVennIntersectionStyle(writer, placements, intersection);
         foreach (var intersection in block.Intersections) WriteVennRegionText(writer, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "700");
         foreach (var textNode in block.TextNodes) WriteVennRegionText(writer, placements, textNode.SetIds, textNode.Label, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "600");
+    }
+
+    private static void WriteVennIntersectionStyle(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {
+        if (!intersection.Fill.HasValue && !intersection.Stroke.HasValue) return;
+        var center = VisualBlockRendering.VennRegionCenter(placements, intersection.SetIds);
+        var radius = Math.Max(18, placements[0].Radius * (intersection.SetIds.Count == 2 ? 0.34 : 0.24));
+        writer.StartElement("circle")
+            .Attribute("data-cfx-role", "venn-intersection-style")
+            .Attribute("data-set-ids", string.Join(",", intersection.SetIds))
+            .Attribute("cx", F(center.X))
+            .Attribute("cy", F(center.Y))
+            .Attribute("r", F(radius))
+            .Attribute("fill", (intersection.Fill ?? ChartColor.Transparent).WithAlpha(intersection.Fill.HasValue ? (byte)88 : (byte)0).ToCss())
+            .Attribute("stroke", (intersection.Stroke ?? intersection.Fill ?? ChartColor.Transparent).ToCss())
+            .Attribute("stroke-width", intersection.Stroke.HasValue ? 2 : 0)
+            .EndEmptyElement()
+            .Line();
     }
 
     private static void WriteVennRegionText(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, IReadOnlyList<string> setIds, string label, ChartColor color, string fontFamily, double fontSize, string weight) {

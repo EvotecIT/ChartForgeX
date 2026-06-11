@@ -66,4 +66,23 @@ union API,Missing [""Shared""] : 4";
         Assert(result.HasErrors, "Mermaid Venn parser should reject unknown union ids.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("unknown set id", StringComparison.Ordinal)), "Mermaid Venn union errors should name unknown set id references.");
     }
+
+    private static void MermaidVennStylesUnionTargetsIndependentOfOrderAndRenders() {
+        const string source = @"venn-beta
+set A [""A""] : 60
+set B [""B""] : 55
+union A,B [""Overlap""] : 20
+style B,A fill:#FF0000,stroke:#990000,color:#111111";
+
+        var result = new MermaidParser().ParseVenn(source);
+
+        Assert(!result.HasErrors, "Mermaid Venn parser should match union style targets independent of set order: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Venn parser should produce a document.");
+        Assert(document.Intersections.Count == 1 && document.Intersections[0].Fill.HasValue && document.Intersections[0].Stroke.HasValue && document.Intersections[0].TextColor.HasValue, "Mermaid Venn parser should apply fill, stroke, and text styles to union targets.");
+        var svg = document.ToSvg(new MermaidVennRenderOptions { Id = "styled-venn" });
+        var png = document.ToPng(new MermaidVennRenderOptions { Id = "styled-venn" });
+        Assert(svg.Contains("data-cfx-role=\"venn-intersection-style\"", StringComparison.Ordinal), "Mermaid Venn SVG rendering should make styled union fills and strokes visible.");
+        Assert(svg.Contains("#990000", StringComparison.OrdinalIgnoreCase), "Mermaid Venn SVG rendering should include styled union stroke colors.");
+        Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid Venn PNG rendering should still emit a valid PNG for styled unions.");
+    }
 }

@@ -221,7 +221,8 @@ internal static class MermaidVennParser {
 
     private static bool SameIds(IReadOnlyList<string> left, IReadOnlyList<string> right) {
         if (left.Count != right.Count) return false;
-        for (var index = 0; index < left.Count; index++) if (!string.Equals(left[index], right[index], StringComparison.Ordinal)) return false;
+        var remaining = new HashSet<string>(left, StringComparer.Ordinal);
+        foreach (var id in right) if (!remaining.Remove(id)) return false;
         return true;
     }
 

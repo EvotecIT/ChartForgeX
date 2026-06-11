@@ -81,6 +81,11 @@ internal static class MermaidQuadrantParser {
             return;
         }
 
+        if (x < 0 || x > 1 || y < 0 || y > 1) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Quadrant point coordinates must be normalized values between zero and one.");
+            return;
+        }
+
         document.Points.Add(new MermaidQuadrantPoint(label, x, y, span));
     }
 

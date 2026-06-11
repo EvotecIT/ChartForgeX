@@ -66,4 +66,19 @@ tf 02 rmo CartView ->> 99";
         Assert(result.HasErrors, "Mermaid Event Modeling parser should reject explicit relations to unknown timeframes.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("existing timeframe", StringComparison.Ordinal)), "Mermaid Event Modeling relation diagnostics should explain the timeframe contract.");
     }
+
+    private static void MermaidEventModelingPreservesInlineDataBeforeReferences() {
+        const string source = @"eventmodeling
+tf 01 evt CustomerUpdated `json`{ ""field"": ""[[customerId]]"" } [[Payload01]]";
+
+        var result = new MermaidParser().ParseEventModeling(source);
+
+        Assert(!result.HasErrors, "Mermaid Event Modeling parser should preserve inline data that contains reference-looking text: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Event Modeling parser should produce a document.");
+        Assert(document.Frames.Count == 1, "Mermaid Event Modeling parser should retain the frame.");
+        var frame = document.Frames[0];
+        var inlineData = frame.InlineData ?? throw new InvalidOperationException("Mermaid Event Modeling parser should preserve inline data.");
+        Assert(inlineData.Contains("[[customerId]]", StringComparison.Ordinal), "Mermaid Event Modeling parser should not remove data-reference-looking text from inline data.");
+        Assert(frame.DataReference == "Payload01", "Mermaid Event Modeling parser should still parse suffix data references outside inline data.");
+    }
 }

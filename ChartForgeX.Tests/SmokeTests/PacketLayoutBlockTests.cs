@@ -30,4 +30,12 @@ internal static partial class SmokeTests {
 
         AssertThrows<InvalidOperationException>(() => block.ToSvg(), "Packet layout blocks should reject gaps instead of silently hiding missing bits.");
     }
+
+    private static void PacketLayoutBlockRejectsOversizedTotalBits() {
+        var block = PacketLayoutBlock.Create()
+            .WithBitsPerRow(1)
+            .AddField(0, VisualBlockRendering.MaximumPacketBits, "Too large");
+
+        AssertThrows<InvalidOperationException>(() => block.ToSvg(), "Packet layout blocks should reject oversized total bit lengths before materializing slices.");
+    }
 }

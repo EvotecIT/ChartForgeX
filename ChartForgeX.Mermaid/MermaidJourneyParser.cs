@@ -43,7 +43,7 @@ internal static class MermaidJourneyParser {
 
         var taskText = colonParts[0].Trim();
         var scoreText = colonParts[1].Trim();
-        if (taskText.Length == 0 || !double.TryParse(scoreText, NumberStyles.Float, CultureInfo.InvariantCulture, out var score)) {
+        if (taskText.Length == 0 || !double.TryParse(scoreText, NumberStyles.Float, CultureInfo.InvariantCulture, out var score) || double.IsNaN(score) || double.IsInfinity(score)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Journey tasks require non-empty task text and a numeric score.");
             return;
         }
