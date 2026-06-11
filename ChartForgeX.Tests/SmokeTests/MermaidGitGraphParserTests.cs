@@ -74,4 +74,29 @@ internal static partial class SmokeTests {
         Assert(result.HasErrors, "Mermaid gitGraph parser should reject unknown checkouts.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("unknown branch", StringComparison.Ordinal)), "Invalid gitGraph checkout diagnostics should name the missing branch contract.");
     }
+
+    private static void MermaidGitGraphSupportsSwitchAlias() {
+        const string source = @"gitGraph
+  commit id: ""base""
+  branch develop
+  switch develop
+  commit id: ""work""";
+
+        var result = new MermaidParser().ParseGitGraph(source);
+
+        Assert(!result.HasErrors, "Mermaid gitGraph parser should treat switch as a checkout alias: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid gitGraph parser should produce a document.");
+        Assert(document.Commits.Count == 2 && document.Commits[1].BranchName == "develop", "Mermaid gitGraph switch statements should move the current branch before later commits.");
+    }
+
+    private static void MermaidGitGraphRejectsSameBranchCherryPicks() {
+        const string source = @"gitGraph
+  commit id: ""base""
+  cherry-pick id: ""base""";
+
+        var result = new MermaidParser().ParseGitGraph(source);
+
+        Assert(result.HasErrors, "Mermaid gitGraph parser should reject cherry-picks from the current branch.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("different branch", StringComparison.Ordinal)), "Invalid gitGraph cherry-pick diagnostics should explain the source branch contract.");
+    }
 }

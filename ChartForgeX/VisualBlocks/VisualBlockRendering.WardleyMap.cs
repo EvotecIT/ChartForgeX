@@ -33,6 +33,23 @@ internal static partial class VisualBlockRendering {
             ValidateWardleyCoordinate(evolution.TargetEvolution, "evolution target");
         }
 
+        foreach (var note in map.Notes) {
+            if (note.Text.Trim().Length == 0) throw new InvalidOperationException("Wardley map notes must define text.");
+            ValidateWardleyCoordinate(note.Visibility, "note visibility");
+            ValidateWardleyCoordinate(note.Evolution, "note evolution");
+        }
+
+        foreach (var annotation in map.Annotations) {
+            ValidateWardleyCoordinate(annotation.Visibility, "annotation visibility");
+            ValidateWardleyCoordinate(annotation.Evolution, "annotation evolution");
+        }
+
+        foreach (var marker in map.Markers) {
+            if (marker.Label.Trim().Length == 0) throw new InvalidOperationException("Wardley map markers must define labels.");
+            ValidateWardleyCoordinate(marker.Visibility, "marker visibility");
+            ValidateWardleyCoordinate(marker.Evolution, "marker evolution");
+        }
+
         foreach (var pipeline in map.Pipelines) {
             if (!ids.Contains(pipeline.ParentId)) throw new InvalidOperationException("Wardley map pipelines reference unknown parent node: " + pipeline.ParentId + ".");
             foreach (var component in pipeline.Components) {

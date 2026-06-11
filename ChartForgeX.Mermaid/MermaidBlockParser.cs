@@ -124,7 +124,7 @@ internal static class MermaidBlockParser {
             return false;
         }
 
-        if (token.StartsWith("space", StringComparison.OrdinalIgnoreCase)) {
+        if (IsSpaceToken(token)) {
             var width = 1;
             var colon = token.IndexOf(':');
             if (colon >= 0 && (!int.TryParse(token.Substring(colon + 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out width) || width < 1 || width > 24)) {
@@ -224,4 +224,8 @@ internal static class MermaidBlockParser {
 
     private static bool IsStyleStatement(string text) =>
         StartsWithKeyword(text, "style") || StartsWithKeyword(text, "class") || StartsWithKeyword(text, "classDef");
+
+    private static bool IsSpaceToken(string token) =>
+        string.Equals(token, "space", StringComparison.OrdinalIgnoreCase) ||
+        token.StartsWith("space:", StringComparison.OrdinalIgnoreCase);
 }

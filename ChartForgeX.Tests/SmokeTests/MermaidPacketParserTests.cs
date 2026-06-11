@@ -74,4 +74,16 @@ title TCP Header
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("too large", StringComparison.Ordinal)), "Oversized packet diagnostics should explain the bit-range guard.");
         Assert(result.Document != null && result.Document.Fields.Count == 0, "Mermaid packet parser should not retain oversized packet fields.");
     }
+
+    private static void MermaidParserRejectsOversizedPacketTotals() {
+        const string source = @"packet-beta
++10000: ""first""
++1: ""second""";
+
+        var result = new MermaidParser().ParsePacket(source);
+
+        Assert(result.HasErrors, "Mermaid packet parser should reject oversized total bit lengths.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("total bit length", StringComparison.Ordinal)), "Oversized packet total diagnostics should explain the total-bit guard.");
+        Assert(result.Document != null && result.Document.Fields.Count == 1, "Mermaid packet parser should keep valid prefix fields and reject only the field that exceeds the total bit cap.");
+    }
 }

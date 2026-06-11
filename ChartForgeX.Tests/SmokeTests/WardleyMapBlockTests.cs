@@ -34,4 +34,26 @@ internal static partial class SmokeTests {
 
         AssertThrows<InvalidOperationException>(() => map.ToSvg(), "Wardley maps should reject links to unknown nodes instead of rendering misleading dependencies.");
     }
+
+    private static void WardleyMapBlockRejectsInvalidOverlayCoordinates() {
+        var noteMap = WardleyMapBlock.Create();
+        noteMap.AddNode("A", "A", 0.5, 0.5);
+        noteMap.AddNote("Bad note", double.NaN, 0.5);
+        AssertThrows<InvalidOperationException>(() => noteMap.ToSvg(), "Wardley maps should reject invalid note coordinates.");
+
+        var annotationMap = WardleyMapBlock.Create();
+        annotationMap.AddNode("A", "A", 0.5, 0.5);
+        annotationMap.AddAnnotation(1, "Bad annotation", 0.5, 2);
+        AssertThrows<InvalidOperationException>(() => annotationMap.ToSvg(), "Wardley maps should reject invalid annotation coordinates.");
+
+        var markerMap = WardleyMapBlock.Create();
+        markerMap.AddNode("A", "A", 0.5, 0.5);
+        markerMap.AddMarker("Bad marker", 0.5, double.PositiveInfinity, WardleyMapMarkerKind.Accelerator);
+        AssertThrows<InvalidOperationException>(() => markerMap.ToSvg(), "Wardley maps should reject invalid marker coordinates.");
+    }
+
+    private static void WardleyMapPngStageLabelsUseCenteredSlots() {
+        var source = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX", "VisualBlocks", "PngVisualBlockRenderer.WardleyMap.cs"));
+        Assert(source.Contains("(index + 0.5) / stages.Count", StringComparison.Ordinal), "Wardley map PNG stage labels should use the same centered stage slots as SVG rendering.");
+    }
 }

@@ -36,6 +36,11 @@ internal static class MermaidPacketParser {
                 continue;
             }
 
+            if (field.EndBit + 1 > MaximumPacketBits) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid packet total bit length is too large.");
+                continue;
+            }
+
             document.Fields.Add(field);
             expectedStart = field.EndBit + 1;
         }

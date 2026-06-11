@@ -27,6 +27,8 @@ internal static class MermaidGitGraphParser {
                 ParseBranchStatement(document, trimmed.Substring(6).Trim(), span, branches, branchHeads, ref currentBranch, result);
             } else if (StartsWithKeyword(trimmed, "checkout")) {
                 ParseCheckoutStatement(trimmed.Substring(8).Trim(), span, branches, ref currentBranch, result);
+            } else if (StartsWithKeyword(trimmed, "switch")) {
+                ParseCheckoutStatement(trimmed.Substring(6).Trim(), span, branches, ref currentBranch, result);
             } else if (StartsWithKeyword(trimmed, "merge")) {
                 ParseMergeStatement(document, trimmed.Substring(5).Trim(), span, currentBranch, branchHeads, commits, ref commitIndex, result);
             } else if (StartsWithKeyword(trimmed, "cherry-pick")) {
@@ -110,6 +112,12 @@ internal static class MermaidGitGraphParser {
 
         if (!commits.Contains(sourceId)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid gitGraph cherry-pick references an unknown commit id: " + sourceId + ".");
+            return;
+        }
+
+        var sourceCommit = document.Commits.Find(commit => string.Equals(commit.Id, sourceId, StringComparison.Ordinal));
+        if (sourceCommit != null && string.Equals(sourceCommit.BranchName, currentBranch, StringComparison.Ordinal)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid gitGraph cherry-pick source commits must come from a different branch.");
             return;
         }
 

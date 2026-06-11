@@ -54,6 +54,8 @@ internal static class MermaidRequirementParser {
             }
 
             if (TryParseRelationship(trimmed, span, out var relationship)) {
+                ValidateRelationshipEndpoint(relationship.SourceName, requirements, elements, span, "source", result);
+                ValidateRelationshipEndpoint(relationship.TargetName, requirements, elements, span, "target", result);
                 document.Relationships.Add(relationship);
                 continue;
             }
@@ -212,6 +214,11 @@ internal static class MermaidRequirementParser {
     private static bool IsStyleStatement(string text) =>
         text.StartsWith("style ", StringComparison.OrdinalIgnoreCase) ||
         text.StartsWith("classDef ", StringComparison.OrdinalIgnoreCase);
+
+    private static void ValidateRelationshipEndpoint(string name, Dictionary<string, MermaidRequirementNode> requirements, Dictionary<string, MermaidRequirementElement> elements, MermaidSourceSpan span, string role, MermaidParseResult<MermaidDocument> result) {
+        if (requirements.ContainsKey(name) || elements.ContainsKey(name)) return;
+        MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Requirement relationship " + role + " '" + name + "' must refer to a declared requirement or element.");
+    }
 
     private static bool TryParseField(string text, out string key, out string value) {
         key = string.Empty;

@@ -39,8 +39,8 @@ public sealed partial class PngVisualBlockRenderer {
         DrawAlignedText(canvas, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + 28, plot.Width * 0.24, VisualTextAlignment.Center, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 1), true);
         var stages = map.Stages.Count == 0 ? new[] { "Genesis", "Custom", "Product", "Commodity" } : map.Stages;
         for (var index = 0; index < stages.Count; index++) {
-            var x = plot.X + plot.Width * index / stages.Count;
-            DrawAlignedText(canvas, stages[index], x + 4, plot.Bottom + 10, plot.Width / stages.Count - 8, VisualTextAlignment.Center, theme.MutedText, Math.Max(8, theme.SubtitleFontSize - 2), true);
+            var x = plot.X + plot.Width * (index + 0.5) / stages.Count;
+            DrawAlignedText(canvas, stages[index], x - plot.Width / stages.Count * 0.5 + 4, plot.Bottom + 10, plot.Width / stages.Count - 8, VisualTextAlignment.Center, theme.MutedText, Math.Max(8, theme.SubtitleFontSize - 2), true);
         }
     }
 

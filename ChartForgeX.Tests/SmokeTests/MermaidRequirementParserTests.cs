@@ -75,4 +75,19 @@ auth_service - satisfies -> auth_req";
         Assert(svg.Contains("data-node-id=\"auth_req\"", StringComparison.Ordinal), "Mermaid requirement SVG rendering should include requirement nodes.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid requirement PNG rendering should emit a valid PNG.");
     }
+
+    private static void MermaidRequirementRejectsUnknownRelationshipEndpoints() {
+        const string source = @"requirementDiagram
+requirement req {
+  id: 1
+}
+missing - satisfies -> req
+req - verifies -> absent";
+
+        var result = new MermaidParser().ParseRequirement(source);
+
+        Assert(result.HasErrors, "Mermaid requirement parser should reject relationship endpoints that were not declared.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("source 'missing'", StringComparison.Ordinal)), "Requirement relationship diagnostics should identify missing source endpoints.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("target 'absent'", StringComparison.Ordinal)), "Requirement relationship diagnostics should identify missing target endpoints.");
+    }
 }

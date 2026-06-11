@@ -70,4 +70,17 @@ style a fill:#f9f";
         var document = result.Document ?? throw new InvalidOperationException("Mermaid block parser should produce a document.");
         Assert(document.StyleStatements.Count == 1, "Mermaid block parser should retain style statements for future support.");
     }
+
+    private static void MermaidBlockParsesIdsStartingWithSpaceAsBlocks() {
+        const string source = @"block-beta
+spaceService[""Space service""] space:2";
+
+        var result = new MermaidParser().ParseBlock(source);
+
+        Assert(!result.HasErrors, "Mermaid block parser should parse normal ids that start with space: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid block parser should produce a document.");
+        Assert(document.Items.Count == 2, "Mermaid block parser should parse one visible block and one spacer.");
+        Assert(!document.Items[0].IsSpace && document.Items[0].Id == "spaceService" && document.Items[0].Label == "Space service", "Mermaid block parser should only treat exact space tokens as spacers.");
+        Assert(document.Items[1].IsSpace && document.Items[1].ColumnSpan == 2, "Mermaid block parser should still parse explicit space:num spacer tokens.");
+    }
 }
