@@ -15,6 +15,8 @@ internal static partial class SmokeTests {
         Assert(script.Contains("$packages.Count -ne $packageProjects.Count", StringComparison.Ordinal), "Build script should reject stale or duplicate packages.");
         Assert(script.Contains("ChartForgeX.Interactivity.Html", StringComparison.Ordinal), "Build script should package the HTML interactivity adapter.");
         Assert(script.Contains("DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity')", StringComparison.Ordinal), "Build script should verify adapter package dependencies.");
+        Assert(script.Contains("ChartForgeX.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid adapter.");
+        Assert(script.Contains("ChartForgeX.Markup.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid markup adapter.");
         Assert(script.Contains("README.md", StringComparison.Ordinal), "Build script should verify README package inclusion.");
         Assert(script.Contains("@('README.md')", StringComparison.Ordinal), "Build script should verify README package inclusion without requiring separate changelog packaging.");
         Assert(script.Contains("lib/$framework/$($packageProject.Assembly).$extension", StringComparison.Ordinal), "Build script should verify package framework assets.");
@@ -76,6 +78,21 @@ internal static partial class SmokeTests {
         Assert(script.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Build script should verify topology visual coverage manifest generation.");
         Assert(script.Contains("visual-geographic-topology-map", StringComparison.Ordinal), "Build script should verify topology-native geographic visual coverage.");
         Assert(script.Contains("data-route-curve=\"geographic\"", StringComparison.Ordinal), "Build script should verify geographic topology route-arc metadata.");
+
+        using var projectBuild = JsonDocument.Parse(File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Build", "project.build.json")));
+        var projectBuildRoot = projectBuild.RootElement;
+        Assert(projectBuildRoot.GetProperty("ExpectedVersionMapAsInclude").GetBoolean(), "Build-Project manifest should treat ExpectedVersionMap as the tracked package include list.");
+        var expectedVersionMap = projectBuildRoot.GetProperty("ExpectedVersionMap");
+        foreach (var packageProject in new[] {
+            "ChartForgeX",
+            "ChartForgeX.Interactivity",
+            "ChartForgeX.Interactivity.Html",
+            "ChartForgeX.Markup",
+            "ChartForgeX.Mermaid",
+            "ChartForgeX.Markup.Mermaid"
+        }) {
+            Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), "0.1.X", StringComparison.Ordinal), "Build-Project manifest should track package project: " + packageProject + ".");
+        }
 
         var qualityWorkflow = File.ReadAllText(Path.Combine(FindRepositoryRoot(), ".github", "workflows", "quality.yml"));
         Assert(qualityWorkflow.Contains("Install Native AOT prerequisites", StringComparison.Ordinal), "Quality workflow should install Native AOT prerequisites before running the release gate.");
