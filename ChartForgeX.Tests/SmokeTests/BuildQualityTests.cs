@@ -17,6 +17,9 @@ internal static partial class SmokeTests {
         Assert(script.Contains("DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity')", StringComparison.Ordinal), "Build script should verify adapter package dependencies.");
         Assert(script.Contains("ChartForgeX.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid adapter.");
         Assert(script.Contains("ChartForgeX.Markup.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid markup adapter.");
+        Assert(script.Contains("DependencyIds = @('ChartForgeX.Markup', 'ChartForgeX.Mermaid')", StringComparison.Ordinal), "Build script should verify the Mermaid markup package depends on both core markup and Mermaid packages.");
+        Assert(script.Contains("'add', 'package', 'ChartForgeX.Markup.Mermaid'", StringComparison.Ordinal), "Build script should install the Mermaid markup package from the built artifacts in the consumer smoke test.");
+        Assert(script.Contains("new MermaidVisualMarkupParser().Parse", StringComparison.Ordinal), "Build script should verify one package consumer parser handles Mermaid markup fences.");
         Assert(script.Contains("README.md", StringComparison.Ordinal), "Build script should verify README package inclusion.");
         Assert(script.Contains("@('README.md')", StringComparison.Ordinal), "Build script should verify README package inclusion without requiring separate changelog packaging.");
         Assert(script.Contains("lib/$framework/$($packageProject.Assembly).$extension", StringComparison.Ordinal), "Build script should verify package framework assets.");
