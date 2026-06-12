@@ -508,7 +508,7 @@ public sealed partial class MarkupChartParser {
     private static Dictionary<string, string> Attributes(List<string> tokens, int start) {
         var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         for (var i = start; i < tokens.Count; i++) {
-            var split = tokens[i].IndexOf(':');
+            var split = AttributeSplitIndex(tokens[i]);
             if (split <= 0) continue;
             attributes[NormalizeKey(tokens[i].Substring(0, split))] = tokens[i].Substring(split + 1);
         }
@@ -516,7 +516,28 @@ public sealed partial class MarkupChartParser {
         return attributes;
     }
 
-    private static bool IsAttribute(string token) => token.IndexOf(':') > 0;
+    private static bool IsAttribute(string token) => AttributeSplitIndex(token) > 0;
+
+    private static bool TrySplitAttribute(string token, out string key, out string value) {
+        var split = AttributeSplitIndex(token);
+        if (split <= 0) {
+            key = string.Empty;
+            value = string.Empty;
+            return false;
+        }
+
+        key = token.Substring(0, split);
+        value = token.Substring(split + 1);
+        return true;
+    }
+
+    private static int AttributeSplitIndex(string token) {
+        var colon = token.IndexOf(':');
+        var equals = token.IndexOf('=');
+        if (colon <= 0) return equals;
+        if (equals <= 0) return colon;
+        return Math.Min(colon, equals);
+    }
 
     private static int FindHeader(List<string> headers, params string[] names) {
         for (var index = 0; index < headers.Count; index++) {
@@ -558,41 +579,6 @@ public sealed partial class MarkupChartParser {
     }
 
     private static double ParseDouble(string value) => double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
-
-    private static int ParseTickCount(string value, string name) {
-        var count = VisualMarkupFenceOptions.ParseInt32(value, name);
-        if (count < 2) throw new ArgumentException("Chart tickCount must be at least 2.");
-        return count;
-    }
-
-    private static string ValidateChartType(string type) {
-        switch (NormalizeKey(type)) {
-            case "line":
-            case "smoothline":
-            case "stepline":
-            case "area":
-            case "smootharea":
-            case "steparea":
-            case "stackedarea":
-            case "smoothstackedarea":
-            case "scatter":
-            case "lollipop":
-            case "radar":
-            case "funnel":
-            case "polararea":
-            case "polar":
-            case "donut":
-            case "pie":
-            case "horizontalbar":
-            case "hbar":
-            case "waterfall":
-            case "bar":
-            case "column":
-                return type;
-            default:
-                throw new ArgumentException("Unknown chart type '" + type + "'.");
-        }
-    }
 
     private static void ApplyChartOptions(Chart chart, ChartState state) {
         if (!string.IsNullOrWhiteSpace(state.XAxisTitle)) chart.WithXAxis(state.XAxisTitle!);

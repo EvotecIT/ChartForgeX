@@ -3,6 +3,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Markup;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
 
@@ -15,6 +16,7 @@ internal static partial class SmokeTests {
 | Feb | 18 | 9 |
 | Mar | 16 | 8 |
 annotation hLine 15 ""Target"" color:#16A34A
+annotation hBand 4 6 color=#F59E0B opacity=0.25
 ```";
 
         var result = new MarkupChartParser().Parse(source);
@@ -25,7 +27,8 @@ annotation hLine 15 ""Target"" color:#16A34A
         Assert(chart.Series[0].Name == "Revenue" && chart.Series[1].Name == "Cost", "Multi-series chart tables should preserve value column names as series names.");
         Assert(chart.Series[0].Kind == ChartSeriesKind.Line && chart.Series[1].Kind == ChartSeriesKind.Line, "Multi-series chart tables should inherit the requested chart kind.");
         Assert(chart.Options.XAxisLabels.Count == 3 && chart.Options.XAxisLabels[2].Text == "Mar", "Multi-series chart tables should use the label column as x-axis labels.");
-        Assert(chart.Annotations.Count == 1 && chart.Annotations[0].Kind == ChartAnnotationKind.HorizontalLine, "Chart markup should parse reusable annotation commands.");
+        Assert(chart.Annotations.Count == 2 && chart.Annotations[0].Kind == ChartAnnotationKind.HorizontalLine, "Chart markup should parse reusable annotation commands.");
+        Assert(chart.Annotations[1].Kind == ChartAnnotationKind.HorizontalBand && chart.Annotations[1].Color.ToHex() == "#F59E0B" && IsClose(chart.Annotations[1].Opacity, 0.25), "Chart markup annotations should accept documented key=value attributes.");
         Assert(chart.ToSvg().Contains("data-cfx-role=\"annotation-line\"", StringComparison.Ordinal), "Chart markup annotations should render through the shared SVG annotation layer.");
     }
 
@@ -59,7 +62,7 @@ series Revenue type line
         const string invalidColor = @"```chartforgex chart v1
 labels Jan Feb
 series Revenue color nope values 1 2
-annotation hLine 1 ""Target"" color:nope
+annotation hLine 1 ""Target"" color=nope
 ```";
         var invalidColorResult = new MarkupChartParser().Parse(invalidColor);
 
@@ -68,7 +71,7 @@ annotation hLine 1 ""Target"" color:nope
 
         const string unknownTypes = @"```chartforgex chart v1
 type spline
-series Revenue type ribbon values 1 2
+series Revenue type=ribbon values 1 2
 ```";
         var unknownTypesResult = new MarkupChartParser().Parse(unknownTypes);
 
@@ -95,9 +98,9 @@ id pipeline
 title ""Processing Flow""
 layout layered lr
 lane ops ""Operations""
-start intake ""Intake"" lane:ops status:healthy
-decision review ""Review"" lane:ops status:warning
-connect intake -> review ""handoff"" status:healthy
+start intake ""Intake"" lane=ops status=healthy
+decision review ""Review"" lane=ops status=warning
+connect intake -> review ""handoff"" status=healthy color=#EF4444
 ```";
 
         var result = new MarkupFlowParser().Parse(source);
@@ -108,6 +111,8 @@ connect intake -> review ""handoff"" status:healthy
         Assert(result.Document.Lanes.Count == 1, "Flow markup should preserve lanes.");
         Assert(result.Document.Steps.Count == 2 && result.Document.Connectors.Count == 1, "Flow markup should preserve steps and connectors.");
         Assert(result.Document.Steps[1].Kind == FlowArtifactStepKind.Decision, "Flow markup should preserve flow-specific step kinds.");
+        Assert(result.Document.Steps[0].LaneId == "ops" && result.Document.Steps[0].Status == VisualStatus.Positive, "Flow markup should accept documented key=value step attributes.");
+        Assert(result.Document.Connectors[0].Color == "#EF4444" && result.Document.Connectors[0].Status == VisualStatus.Positive, "Flow markup should accept documented key=value connector attributes.");
     }
 
     private static void VisualMarkupParserMapsFlowFencesToArtifacts() {
@@ -229,6 +234,7 @@ milestone Release 11 dependsOn=1 color=#059669
 
         Assert(!commandGanttResult.HasErrors, "Timeline command attributes using '=' should parse without errors: " + Diagnostics(commandGanttResult));
         var commandGanttChart = commandGanttResult.Document!.Chart;
+        Assert(IsClose(commandGanttChart.Series[0].Points[0].X, 1) && IsClose(commandGanttChart.Series[0].Points[0].Y, 5), "Numeric timeline command values should stay numeric axis positions.");
         Assert(IsClose(commandGanttChart.Series[1].Points[1].X, 0.72) && IsClose(commandGanttChart.Series[1].Points[1].Y, 0), "Timeline command '=' attributes should preserve task progress and dependencies.");
         Assert(commandGanttChart.Series[1].Color.HasValue, "Timeline command color= attributes should preserve task colors.");
     }
@@ -242,6 +248,27 @@ item ""Design"" 2026-01-01 2026-01-07 color:nope
 
         Assert(result.HasErrors, "Invalid timeline item colors should produce parse diagnostics.");
         Assert(Diagnostics(result).Contains("valid hex color", StringComparison.Ordinal), "Invalid timeline colors should be reported as markup diagnostics.");
+
+        const string invalidSize = @"```chartforgex timeline v1 {#bad width=-1 height=0}
+item ""Design"" 1 2
+```";
+        var invalidSizeResult = new MarkupTimelineParser().Parse(invalidSize);
+
+        Assert(invalidSizeResult.HasErrors, "Invalid timeline dimensions should produce parse diagnostics instead of throwing during chart construction.");
+        Assert(Diagnostics(invalidSizeResult).Contains("positive", StringComparison.Ordinal), "Invalid timeline dimension diagnostics should explain positive-size validation.");
+    }
+
+    private static void MarkupSequenceParserReportsMalformedArrowMessages() {
+        const string source = @"```chartforgex sequence v1
+participant user ""User""
+participant api ""API""
+message user ->
+```";
+
+        var result = new MarkupSequenceParser().Parse(source);
+
+        Assert(result.HasErrors, "Sequence messages using arrow syntax without a target should produce parse diagnostics.");
+        Assert(Diagnostics(result).Contains("target participant", StringComparison.Ordinal), "Malformed sequence arrow diagnostics should explain the missing target.");
     }
 
     private static void VisualMarkupParserMapsTimelineFencesToArtifacts() {

@@ -14,6 +14,22 @@ public sealed partial class MarkupChartParser {
             var valueCountBefore = series.Values.Count;
             var readingValues = false;
             for (var i = 2; i < tokens.Count; i++) {
+                if (TrySplitAttribute(tokens[i], out var attributeKey, out var attributeValue)) {
+                    var normalizedAttributeKey = NormalizeKey(attributeKey);
+                    if (normalizedAttributeKey == "type" || normalizedAttributeKey == "kind") {
+                        series.Type = ValidateChartType(attributeValue);
+                        readingValues = false;
+                        continue;
+                    }
+
+                    if (normalizedAttributeKey == "color") {
+                        series.Color = attributeValue;
+                        ValidateColor(series.Color, "Series color");
+                        readingValues = false;
+                        continue;
+                    }
+                }
+
                 var key = NormalizeKey(tokens[i].TrimEnd(':'));
                 if (key == "type" || key == "kind") {
                     if (i + 1 >= tokens.Count) throw new ArgumentException("Series type requires a value.");

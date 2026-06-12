@@ -80,8 +80,8 @@ public sealed class MarkupTimelineParser {
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) state.Subtitle = subtitle;
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "mode", out var mode) && !string.IsNullOrWhiteSpace(mode)) state.Mode = ParseMode(mode);
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "type", out var type) && !string.IsNullOrWhiteSpace(type)) state.Mode = ParseMode(type);
-            if (VisualMarkupFenceOptions.TryGetAttribute(block, "width", out var width) && !string.IsNullOrWhiteSpace(width)) state.Width = VisualMarkupFenceOptions.ParseInt32(width, "width");
-            if (VisualMarkupFenceOptions.TryGetAttribute(block, "height", out var height) && !string.IsNullOrWhiteSpace(height)) state.Height = VisualMarkupFenceOptions.ParseInt32(height, "height");
+            if (VisualMarkupFenceOptions.TryGetAttribute(block, "width", out var width) && !string.IsNullOrWhiteSpace(width)) state.Width = ParsePositiveInt32(width, "width");
+            if (VisualMarkupFenceOptions.TryGetAttribute(block, "height", out var height) && !string.IsNullOrWhiteSpace(height)) state.Height = ParsePositiveInt32(height, "height");
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "today", out var today) && !string.IsNullOrWhiteSpace(today)) state.Today = ParseTimelineValue(today);
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
             Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, ex.Message);
@@ -251,6 +251,7 @@ public sealed class MarkupTimelineParser {
     }
 
     private static TimelineValue ParseTimelineValue(string value) {
+        if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)) return new TimelineValue(number);
         if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date)) return new TimelineValue(date);
         return new TimelineValue(VisualMarkupFenceOptions.ParseDouble(value, "timeline value"));
     }
@@ -258,8 +259,14 @@ public sealed class MarkupTimelineParser {
     private static void ParseSize(TimelineState state, string value) {
         var parts = value.Split(new[] { 'x', 'X', ',' }, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 2) throw new ArgumentException("Timeline size must use WIDTHxHEIGHT syntax.");
-        state.Width = int.Parse(parts[0], CultureInfo.InvariantCulture);
-        state.Height = int.Parse(parts[1], CultureInfo.InvariantCulture);
+        state.Width = ParsePositiveInt32(parts[0], "width");
+        state.Height = ParsePositiveInt32(parts[1], "height");
+    }
+
+    private static int ParsePositiveInt32(string value, string name) {
+        var parsed = VisualMarkupFenceOptions.ParseInt32(value, name);
+        if (parsed <= 0) throw new ArgumentException("Timeline " + name + " must be positive.");
+        return parsed;
     }
 
     private static void ValidateColor(string? value, string name) {

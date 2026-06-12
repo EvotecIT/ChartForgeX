@@ -368,8 +368,14 @@
           "filter",
           "search",
           "select",
-          "paginate",
-          "export"
+          "singleSelection",
+          "multiselect",
+          "multiSelection",
+          "cellselect",
+          "cellSelection",
+          "copy",
+          "export",
+          "virtualization"
         ]
       },
       "interactionBoundary": "Static ChartForgeX output renders a deterministic table preview. Production rich table interaction belongs in a future host or adapter package driven by real application requirements."

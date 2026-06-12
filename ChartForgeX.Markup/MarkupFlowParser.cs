@@ -435,17 +435,25 @@ public sealed class MarkupFlowParser {
 
     private static bool IsArrow(string value) => value == "->" || value == "-->" || value == "=>" || value == "--";
 
-    private static bool IsAttribute(string token) => token.IndexOf(':') > 0;
+    private static bool IsAttribute(string token) => AttributeSplitIndex(token) > 0;
 
     private static Dictionary<string, string> Attributes(List<string> tokens, int start) {
         var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         for (var i = start; i < tokens.Count; i++) {
-            var split = tokens[i].IndexOf(':');
+            var split = AttributeSplitIndex(tokens[i]);
             if (split <= 0) continue;
             attributes[NormalizeKey(tokens[i].Substring(0, split))] = tokens[i].Substring(split + 1);
         }
 
         return attributes;
+    }
+
+    private static int AttributeSplitIndex(string token) {
+        var colon = token.IndexOf(':');
+        var equals = token.IndexOf('=');
+        if (colon <= 0) return equals;
+        if (equals <= 0) return colon;
+        return Math.Min(colon, equals);
     }
 
     private static bool IsSection(string line) {
