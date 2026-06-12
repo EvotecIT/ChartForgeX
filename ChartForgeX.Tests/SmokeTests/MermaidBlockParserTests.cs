@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -122,5 +123,23 @@ B((""Done"")):2";
         Assert(document.Edges.Count == 1 && document.Edges[0].SourceId == "A" && document.Edges[0].TargetId == "B", "Mermaid block parser should retain edges declared before nodes.");
         Assert(document.Items.Count == 2 && document.Items[0].Label == "Start", "Mermaid block parser should replace implicit source nodes with their explicit metadata.");
         Assert(document.Items[1].Label == "Done" && document.Items[1].Shape == BlockLayoutShape.Circle && document.Items[1].ColumnSpan == 2, "Mermaid block parser should replace implicit target nodes with their explicit shape and span.");
+    }
+
+    private static void MermaidBlockRejectsRenderLimitOverflowDuringParsing() {
+        var items = new StringBuilder("block-beta\n");
+        for (var index = 0; index <= 10000; index++) items.Append('n').Append(index).Append(' ');
+
+        var itemResult = new MermaidParser().ParseBlock(items.ToString());
+
+        Assert(itemResult.HasErrors, "Mermaid block parser should reject item counts beyond the renderer limit.");
+        Assert(itemResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("10000", StringComparison.Ordinal) && diagnostic.Message.Contains("items", StringComparison.Ordinal)), "Oversized block item diagnostics should name the renderable item cap.");
+
+        var edges = new StringBuilder("block-beta\nA B\n");
+        for (var index = 0; index <= 20000; index++) edges.Append("A --> B\n");
+
+        var edgeResult = new MermaidParser().ParseBlock(edges.ToString());
+
+        Assert(edgeResult.HasErrors, "Mermaid block parser should reject edge counts beyond the renderer limit.");
+        Assert(edgeResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("20000", StringComparison.Ordinal) && diagnostic.Message.Contains("edges", StringComparison.Ordinal)), "Oversized block edge diagnostics should name the renderable edge cap.");
     }
 }

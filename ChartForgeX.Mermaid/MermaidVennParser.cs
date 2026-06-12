@@ -6,6 +6,9 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidVennParser {
+    private const int MaximumVennIntersections = 32;
+    private const int MaximumVennTextNodes = 64;
+
     public static void ParseStatements(MermaidVennDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var ids = new HashSet<string>(StringComparer.Ordinal);
         IReadOnlyList<string>? currentRegion = null;
@@ -77,6 +80,11 @@ internal static class MermaidVennParser {
         }
 
         if (!ValidateKnownIds(setIds, ids, span, result)) return null;
+        if (document.Intersections.Count >= MaximumVennIntersections) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn diagrams support no more than " + MaximumVennIntersections.ToString(CultureInfo.InvariantCulture) + " intersections.");
+            return null;
+        }
+
         if (!TryParseSize(sizeText, 10 / Math.Pow(Math.Max(1, setIds.Count), 2), span, result, out var size)) return null;
         document.Intersections.Add(new MermaidVennIntersection(setIds, label, size, span));
         return setIds;
@@ -85,6 +93,7 @@ internal static class MermaidVennParser {
     private static void ParseText(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, IReadOnlyList<string>? currentRegion, MermaidParseResult<MermaidDocument> result) {
         var label = ExtractBracketedLabel(ref text);
         if (text.Trim().Length == 0 && currentRegion != null) {
+            if (!CanAddTextNode(document, span, result)) return;
             document.TextNodes.Add(new MermaidVennTextNode(currentRegion, MermaidParserUtilities.StableId("venn-text", document.TextNodes.Count), label, span));
             return;
         }
@@ -107,7 +116,14 @@ internal static class MermaidVennParser {
             return;
         }
 
+        if (!CanAddTextNode(document, span, result)) return;
         document.TextNodes.Add(new MermaidVennTextNode(setIds, id, label.Length == 0 ? id : label, span));
+    }
+
+    private static bool CanAddTextNode(MermaidVennDocument document, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        if (document.TextNodes.Count < MaximumVennTextNodes) return true;
+        MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn diagrams support no more than " + MaximumVennTextNodes.ToString(CultureInfo.InvariantCulture) + " text nodes.");
+        return false;
     }
 
     private static void ParseStyle(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {

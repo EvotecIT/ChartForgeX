@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -133,5 +134,23 @@ pipeline Platform {
         Assert(result.HasErrors, "Mermaid Wardley parser should report invalid pipeline child coordinates instead of throwing.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("between 0-1 or 0-100", StringComparison.Ordinal)), "Mermaid Wardley invalid pipeline diagnostics should explain the coordinate range.");
         Assert(result.Document != null && result.Document.Pipelines.Count == 1 && result.Document.Pipelines[0].Components.Count == 0, "Mermaid Wardley parser should keep the pipeline and skip the invalid child component.");
+    }
+
+    private static void MermaidWardleyRejectsRenderLimitOverflowDuringParsing() {
+        var nodes = new StringBuilder("wardley-beta\n");
+        for (var index = 0; index <= 256; index++) nodes.Append("component C").Append(index).Append(" [0.5, 0.5]\n");
+
+        var nodeResult = new MermaidParser().ParseWardley(nodes.ToString());
+
+        Assert(nodeResult.HasErrors, "Mermaid Wardley parser should reject node counts beyond the renderer limit.");
+        Assert(nodeResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("256", StringComparison.Ordinal) && diagnostic.Message.Contains("nodes", StringComparison.Ordinal)), "Oversized Wardley node diagnostics should name the renderable node cap.");
+
+        var links = new StringBuilder("wardley-beta\ncomponent A [0.5, 0.4]\ncomponent B [0.4, 0.6]\n");
+        for (var index = 0; index <= 512; index++) links.Append("A -> B\n");
+
+        var linkResult = new MermaidParser().ParseWardley(links.ToString());
+
+        Assert(linkResult.HasErrors, "Mermaid Wardley parser should reject link counts beyond the renderer limit.");
+        Assert(linkResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("512", StringComparison.Ordinal) && diagnostic.Message.Contains("links", StringComparison.Ordinal)), "Oversized Wardley link diagnostics should name the renderable link cap.");
     }
 }

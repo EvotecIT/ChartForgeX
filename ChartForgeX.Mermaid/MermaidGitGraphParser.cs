@@ -6,6 +6,9 @@ using ChartForgeX.VisualBlocks;
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidGitGraphParser {
+    private const int MaximumGitGraphBranches = 128;
+    private const int MaximumGitGraphCommits = 10000;
+
     public static void ParseStatements(MermaidGitGraphDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var branches = new HashSet<string>(StringComparer.Ordinal);
         var branchHeads = new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -50,6 +53,11 @@ internal static class MermaidGitGraphParser {
 
         if (branches.Contains(name)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid gitGraph branch names must be unique: " + name + ".");
+            return;
+        }
+
+        if (document.Branches.Count >= MaximumGitGraphBranches) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid gitGraph diagrams support no more than " + MaximumGitGraphBranches.ToString(CultureInfo.InvariantCulture) + " branches.");
             return;
         }
 
@@ -140,6 +148,11 @@ internal static class MermaidGitGraphParser {
     }
 
     private static void AddCommit(MermaidGitGraphDocument document, HashSet<string> commits, Dictionary<string, string?> branchHeads, string branchName, string id, IEnumerable<string> parentIds, GitGraphCommitType type, string label, string tag, string sourceCommitId, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        if (document.Commits.Count >= MaximumGitGraphCommits) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid gitGraph diagrams support no more than " + MaximumGitGraphCommits.ToString(CultureInfo.InvariantCulture) + " commits.");
+            return;
+        }
+
         if (!commits.Add(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid gitGraph commit ids must be unique: " + id + ".");
             return;

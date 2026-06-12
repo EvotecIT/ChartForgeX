@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -137,5 +138,23 @@ style note color:#FF0000";
         Assert(document.TextNodes.Count == 1 && document.TextNodes[0].TextColor.HasValue, "Mermaid Venn parser should apply color styles to text node targets.");
         var svg = document.ToSvg();
         Assert(svg.Contains("#FF0000", StringComparison.OrdinalIgnoreCase), "Mermaid Venn SVG rendering should include styled text node color.");
+    }
+
+    private static void MermaidVennRejectsRenderLimitOverflowDuringParsing() {
+        var intersections = new StringBuilder("venn-beta\nset A [\"A\"] : 10\nset B [\"B\"] : 10\nset C [\"C\"] : 10\n");
+        for (var index = 0; index <= 32; index++) intersections.Append("union A,B [\"AB\"] : 1\n");
+
+        var intersectionResult = new MermaidParser().ParseVenn(intersections.ToString());
+
+        Assert(intersectionResult.HasErrors, "Mermaid Venn parser should reject intersection counts beyond the renderer limit.");
+        Assert(intersectionResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("32", StringComparison.Ordinal) && diagnostic.Message.Contains("intersections", StringComparison.Ordinal)), "Oversized Venn intersection diagnostics should name the renderable intersection cap.");
+
+        var textNodes = new StringBuilder("venn-beta\nset A [\"A\"] : 10\n");
+        for (var index = 0; index <= 64; index++) textNodes.Append("text A note").Append(index).Append(" [\"Only A\"]\n");
+
+        var textResult = new MermaidParser().ParseVenn(textNodes.ToString());
+
+        Assert(textResult.HasErrors, "Mermaid Venn parser should reject text node counts beyond the renderer limit.");
+        Assert(textResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("64", StringComparison.Ordinal) && diagnostic.Message.Contains("text nodes", StringComparison.Ordinal)), "Oversized Venn text diagnostics should name the renderable text-node cap.");
     }
 }

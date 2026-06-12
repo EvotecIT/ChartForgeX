@@ -6,6 +6,9 @@ using ChartForgeX.VisualBlocks;
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidBlockParser {
+    private const int MaximumBlockLayoutItems = 10000;
+    private const int MaximumBlockLayoutEdges = 20000;
+
     public static void ParseStatements(MermaidBlockDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var ids = new HashSet<string>(StringComparer.Ordinal);
         var implicitIds = new HashSet<string>(StringComparer.Ordinal);
@@ -79,6 +82,11 @@ internal static class MermaidBlockParser {
                 continue;
             }
 
+            if (document.Items.Count >= MaximumBlockLayoutItems) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid block diagrams support no more than " + MaximumBlockLayoutItems.ToString(CultureInfo.InvariantCulture) + " items.");
+                continue;
+            }
+
             document.Items.Add(item);
         }
     }
@@ -106,8 +114,12 @@ internal static class MermaidBlockParser {
                 return true;
             }
 
-            AddImplicitItem(document, source, ids, implicitIds);
-            AddImplicitItem(document, target, ids, implicitIds);
+            if (document.Edges.Count >= MaximumBlockLayoutEdges) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid block diagrams support no more than " + MaximumBlockLayoutEdges.ToString(CultureInfo.InvariantCulture) + " edges.");
+                return true;
+            }
+
+            if (!AddImplicitItem(document, source, ids, implicitIds, span, result) || !AddImplicitItem(document, target, ids, implicitIds, span, result)) return true;
             document.Edges.Add(new MermaidBlockEdge(source.Id, target.Id, label, arrow.IndexOf('>') >= 0, span));
             return true;
         }
@@ -115,11 +127,17 @@ internal static class MermaidBlockParser {
         return false;
     }
 
-    private static void AddImplicitItem(MermaidBlockDocument document, MermaidBlockItem item, HashSet<string> ids, HashSet<string> implicitIds) {
-        if (ids.Contains(item.Id)) return;
+    private static bool AddImplicitItem(MermaidBlockDocument document, MermaidBlockItem item, HashSet<string> ids, HashSet<string> implicitIds, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        if (ids.Contains(item.Id)) return true;
+        if (document.Items.Count >= MaximumBlockLayoutItems) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid block diagrams support no more than " + MaximumBlockLayoutItems.ToString(CultureInfo.InvariantCulture) + " items.");
+            return false;
+        }
+
         ids.Add(item.Id);
         implicitIds.Add(item.Id);
         document.Items.Add(item);
+        return true;
     }
 
     private static void ReplaceImplicitItem(MermaidBlockDocument document, MermaidBlockItem item) {

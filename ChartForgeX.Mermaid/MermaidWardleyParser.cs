@@ -7,6 +7,9 @@ using ChartForgeX.VisualBlocks;
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidWardleyParser {
+    private const int MaximumWardleyNodes = 256;
+    private const int MaximumWardleyLinks = 512;
+
     private static readonly Regex LinkPattern = new(@"\s(?<arrow>-\.\->|-->|->|\+'[^']*'<>|\+'[^']*'<|\+'[^']*'>|\+<>|\+<|\+>)\s", RegexOptions.Compiled);
 
     public static void ParseStatements(MermaidWardleyDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
@@ -64,6 +67,11 @@ internal static class MermaidWardleyParser {
         }
 
         if (!TryNormalizeCoordinate(visibility, span, result, out var normalizedVisibility) || !TryNormalizeCoordinate(evolution, span, result, out var normalizedEvolution)) return;
+        if (document.Nodes.Count >= MaximumWardleyNodes) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley maps support no more than " + MaximumWardleyNodes.ToString(CultureInfo.InvariantCulture) + " nodes.");
+            return;
+        }
+
         if (!nodeIds.Add(name)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley node names must be unique: " + name + ".");
             return;
@@ -123,6 +131,11 @@ internal static class MermaidWardleyParser {
             flow = FlowFromSymbol(flowMatch.Groups["direction"].Value);
         } else if (arrow.StartsWith("+", StringComparison.Ordinal)) {
             flow = FlowFromSymbol(arrow.Substring(1));
+        }
+
+        if (document.Links.Count >= MaximumWardleyLinks) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley maps support no more than " + MaximumWardleyLinks.ToString(CultureInfo.InvariantCulture) + " links.");
+            return true;
         }
 
         document.Links.Add(new MermaidWardleyLink(from, to, label, arrow.IndexOf(".", StringComparison.Ordinal) >= 0, flow, span));

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -98,5 +99,23 @@ internal static partial class SmokeTests {
 
         Assert(result.HasErrors, "Mermaid gitGraph parser should reject cherry-picks from the current branch.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("different branch", StringComparison.Ordinal)), "Invalid gitGraph cherry-pick diagnostics should explain the source branch contract.");
+    }
+
+    private static void MermaidGitGraphRejectsRenderLimitOverflowDuringParsing() {
+        var branches = new StringBuilder("gitGraph\n  commit id: \"base\"\n");
+        for (var index = 0; index < 128; index++) branches.Append("  branch b").Append(index).Append('\n');
+
+        var branchResult = new MermaidParser().ParseGitGraph(branches.ToString());
+
+        Assert(branchResult.HasErrors, "Mermaid gitGraph parser should reject branch counts beyond the renderer limit.");
+        Assert(branchResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("128", StringComparison.Ordinal) && diagnostic.Message.Contains("branches", StringComparison.Ordinal)), "Oversized gitGraph branch diagnostics should name the renderable branch cap.");
+
+        var commits = new StringBuilder("gitGraph\n");
+        for (var index = 0; index <= 10000; index++) commits.Append("  commit id: \"c").Append(index).Append("\"\n");
+
+        var commitResult = new MermaidParser().ParseGitGraph(commits.ToString());
+
+        Assert(commitResult.HasErrors, "Mermaid gitGraph parser should reject commit counts beyond the renderer limit.");
+        Assert(commitResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("10000", StringComparison.Ordinal) && diagnostic.Message.Contains("commits", StringComparison.Ordinal)), "Oversized gitGraph commit diagnostics should name the renderable commit cap.");
     }
 }
