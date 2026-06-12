@@ -80,4 +80,20 @@ junction api";
         Assert(result.HasErrors, "Mermaid architecture parser should reject service and junction id collisions before topology conversion.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("junction id 'api' is already defined", StringComparison.Ordinal)), "Architecture collision diagnostics should identify the duplicate junction id.");
     }
+
+    private static void MermaidArchitectureHonorsGroupEdgeAnchors() {
+        const string source = @"architecture-beta
+group subnet(server)[Subnet]
+service server(server)[Server] in subnet
+service api(server)[API]
+server{group}:B --> T:api";
+
+        var result = new MermaidParser().ParseArchitecture(source);
+
+        Assert(!result.HasErrors, "Mermaid architecture parser should parse group-boundary edges: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid architecture parser should produce a document.");
+        var topology = document.ToTopologyChart();
+        Assert(topology.Nodes.Exists(node => node.Metadata.TryGetValue("mermaid.kind", out var kind) && kind == "group-boundary-anchor"), "Mermaid architecture conversion should create hidden topology anchors for group-boundary endpoints.");
+        Assert(topology.Edges.Count == 1 && topology.Edges[0].SourceNodeId.StartsWith("mermaid-architecture-group-anchor-subnet", StringComparison.Ordinal), "Mermaid architecture conversion should route group-boundary endpoints through the group anchor node.");
+    }
 }

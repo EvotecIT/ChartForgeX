@@ -130,4 +130,7 @@ public sealed class MermaidVennTextNode {
 
     /// <summary>Gets the source span.</summary>
     public MermaidSourceSpan Span { get; }
+
+    /// <summary>Gets or sets the optional text color.</summary>
+    public ChartColor? TextColor { get; set; }
 }

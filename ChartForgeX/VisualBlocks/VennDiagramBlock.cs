@@ -137,4 +137,7 @@ public sealed class VennTextNode {
 
     /// <summary>Gets or sets the display label.</summary>
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the optional text color.</summary>
+    public ChartColor? TextColor { get; set; }
 }

@@ -8,6 +8,7 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidVennParser {
     public static void ParseStatements(MermaidVennDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var ids = new HashSet<string>(StringComparer.Ordinal);
+        IReadOnlyList<string>? currentRegion = null;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
@@ -21,17 +22,17 @@ internal static class MermaidVennParser {
             }
 
             if (StartsWithKeyword(trimmed, "set")) {
-                ParseSet(document, trimmed.Substring(3).Trim(), span, ids, result);
+                currentRegion = ParseSet(document, trimmed.Substring(3).Trim(), span, ids, result);
                 continue;
             }
 
             if (StartsWithKeyword(trimmed, "union")) {
-                ParseUnion(document, trimmed.Substring(5).Trim(), span, ids, result);
+                currentRegion = ParseUnion(document, trimmed.Substring(5).Trim(), span, ids, result);
                 continue;
             }
 
             if (StartsWithKeyword(trimmed, "text")) {
-                ParseText(document, trimmed.Substring(4).Trim(), span, ids, result);
+                ParseText(document, trimmed.Substring(4).Trim(), span, ids, currentRegion, result);
                 continue;
             }
 
@@ -46,50 +47,61 @@ internal static class MermaidVennParser {
         if (document.Sets.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid Venn diagrams require at least one set.");
     }
 
-    private static void ParseSet(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {
+    private static IReadOnlyList<string>? ParseSet(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {
         if (!TryParseRegionPayload(text, singleId: true, out var setIds, out var label, out var sizeText)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn set statements must use 'set <id> [label] : <size>'.");
-            return;
+            return null;
         }
 
         var id = setIds[0];
         if (ids.Contains(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn set id was already declared: " + id + ".");
-            return;
+            return null;
         }
 
         if (document.Sets.Count >= 3) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn diagrams support no more than three sets.");
-            return;
+            return null;
         }
 
-        if (!TryParseSize(sizeText, 10, span, result, out var size)) return;
+        if (!TryParseSize(sizeText, 10, span, result, out var size)) return null;
         ids.Add(id);
         document.Sets.Add(new MermaidVennSet(id, label.Length == 0 ? id : label, size, span));
+        return setIds;
     }
 
-    private static void ParseUnion(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {
+    private static IReadOnlyList<string>? ParseUnion(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {
         if (!TryParseRegionPayload(text, singleId: false, out var setIds, out var label, out var sizeText)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn union statements must use 'union <id,id> [label] : <size>'.");
+            return null;
+        }
+
+        if (!ValidateKnownIds(setIds, ids, span, result)) return null;
+        if (!TryParseSize(sizeText, 10 / Math.Pow(Math.Max(1, setIds.Count), 2), span, result, out var size)) return null;
+        document.Intersections.Add(new MermaidVennIntersection(setIds, label, size, span));
+        return setIds;
+    }
+
+    private static void ParseText(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, IReadOnlyList<string>? currentRegion, MermaidParseResult<MermaidDocument> result) {
+        var label = ExtractBracketedLabel(ref text);
+        if (text.Trim().Length == 0 && currentRegion != null) {
+            document.TextNodes.Add(new MermaidVennTextNode(currentRegion, MermaidParserUtilities.StableId("venn-text", document.TextNodes.Count), label, span));
             return;
         }
 
-        if (!ValidateKnownIds(setIds, ids, span, result)) return;
-        if (!TryParseSize(sizeText, 10 / Math.Pow(Math.Max(1, setIds.Count), 2), span, result, out var size)) return;
-        document.Intersections.Add(new MermaidVennIntersection(setIds, label, size, span));
-    }
-
-    private static void ParseText(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {
-        var label = ExtractBracketedLabel(ref text);
-        var pieces = text.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-        if (pieces.Length < 2) {
+        if (!TryReadIdentifierListToken(text, out var setToken, out var rest) || rest.Length == 0) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn text statements must use 'text <id,id> <textId> [label]'.");
             return;
         }
 
-        var setIds = ParseIdentifierList(pieces[0]);
+        var setIds = ParseIdentifierList(setToken);
         if (!ValidateKnownIds(setIds, ids, span, result)) return;
-        var id = pieces[1].Trim();
+        if (!TryReadIdentifierListToken(rest, out var idToken, out _)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn text statements must define a text id.");
+            return;
+        }
+
+        var id = MermaidParserUtilities.Unquote(idToken.Trim());
         if (id.Length == 0) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn text statements must define a text id.");
             return;
@@ -107,7 +119,14 @@ internal static class MermaidVennParser {
             return;
         }
 
-        var setIds = ParseIdentifierList(body.Substring(0, split));
+        var target = body.Substring(0, split).Trim();
+        var textNode = document.TextNodes.Find(candidate => string.Equals(candidate.Id, MermaidParserUtilities.Unquote(target), StringComparison.Ordinal));
+        if (textNode != null) {
+            ApplyTextNodeStyle(textNode, body.Substring(split + 1), span, result);
+            return;
+        }
+
+        var setIds = ParseIdentifierList(target);
         if (!ValidateKnownIds(setIds, ids, span, result)) return;
         if (!TryFindStyleTarget(document, setIds, out var set, out var intersection)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Mermaid Venn style target does not match a rendered set or union.");
@@ -133,9 +152,13 @@ internal static class MermaidVennParser {
             text = text.Substring(0, colon).Trim();
         }
 
-        var parts = text.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-        setIds = parts.Length == 0 ? new List<string>() : ParseIdentifierList(parts[0]);
-        if (sizeText.Length == 0 && parts.Length > 1) sizeText = parts[1];
+        if (!TryReadIdentifierListToken(text, out var idsToken, out var rest)) {
+            setIds = new List<string>();
+            return false;
+        }
+
+        setIds = ParseIdentifierList(idsToken);
+        if (sizeText.Length == 0) sizeText = rest.Trim();
         return setIds.Count > 0 && (!singleId || setIds.Count == 1);
     }
 
@@ -152,11 +175,54 @@ internal static class MermaidVennParser {
     private static List<string> ParseIdentifierList(string text) {
         var result = new List<string>();
         foreach (var part in MermaidParserUtilities.SplitCsvLike(text)) {
-            var id = part.Trim();
+            var id = MermaidParserUtilities.Unquote(part.Trim());
             if (id.Length > 0) result.Add(id);
         }
 
         return result;
+    }
+
+    private static bool TryReadIdentifierListToken(string text, out string token, out string rest) {
+        token = string.Empty;
+        rest = string.Empty;
+        var quote = '\0';
+        var escaped = false;
+        for (var index = 0; index < text.Length; index++) {
+            var ch = text[index];
+            if (quote != '\0' && escaped) {
+                escaped = false;
+                continue;
+            }
+
+            if (quote != '\0' && ch == '\\') {
+                escaped = true;
+                continue;
+            }
+
+            if ((ch == '"' || ch == '\'' || ch == '`') && quote == '\0') {
+                quote = ch;
+                continue;
+            }
+
+            if (quote != '\0' && ch == quote) {
+                quote = '\0';
+                continue;
+            }
+
+            if (quote == '\0' && char.IsWhiteSpace(ch) && PreviousNonWhitespace(text, index) != ',') {
+                token = text.Substring(0, index).Trim();
+                rest = text.Substring(index + 1).Trim();
+                return token.Length > 0;
+            }
+        }
+
+        token = text.Trim();
+        return token.Length > 0;
+    }
+
+    private static char PreviousNonWhitespace(string text, int before) {
+        for (var index = before - 1; index >= 0; index--) if (!char.IsWhiteSpace(text[index])) return text[index];
+        return '\0';
     }
 
     private static bool TryParseSize(string value, double fallback, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, out double size) {
@@ -223,6 +289,21 @@ internal static class MermaidVennParser {
         }
 
         return false;
+    }
+
+    private static void ApplyTextNodeStyle(MermaidVennTextNode textNode, string styleText, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        foreach (var entry in MermaidParserUtilities.SplitCsvLike(styleText)) {
+            var colon = entry.IndexOf(':');
+            if (colon <= 0 || colon == entry.Length - 1) continue;
+            var key = NormalizeStyleKey(entry.Substring(0, colon));
+            var value = entry.Substring(colon + 1).Trim();
+            if (key == "color" && ChartColor.TryParse(value, out var color)) {
+                textNode.TextColor = color;
+                continue;
+            }
+
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Mermaid Venn text style key '" + key + "' is retained but is not rendered by ChartForgeX yet.");
+        }
     }
 
     private static bool SameIds(IReadOnlyList<string> left, IReadOnlyList<string> right) {

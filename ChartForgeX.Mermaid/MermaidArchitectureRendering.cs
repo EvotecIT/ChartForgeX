@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 
@@ -46,11 +48,17 @@ public static class MermaidArchitectureRendering {
             if (!string.IsNullOrWhiteSpace(junction.GroupId)) node.Metadata["mermaid.group"] = junction.GroupId!;
         }
 
+        var groupLookup = document.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
+        var serviceGroups = document.Services.ToDictionary(service => service.Id, service => service.GroupId, StringComparer.Ordinal);
+        var junctionGroups = document.Junctions.ToDictionary(junction => junction.Id, junction => junction.GroupId, StringComparer.Ordinal);
+        var boundaryAnchors = new Dictionary<string, string>(StringComparer.Ordinal);
         for (var index = 0; index < document.Edges.Count; index++) {
             var item = document.Edges[index];
             var source = ResolveSource(item);
             var target = ResolveTarget(item);
-            chart.AddEdge("mermaid-architecture-edge-" + index.ToString(CultureInfo.InvariantCulture), source.Id, target.Id, null, TopologyEdgeKind.Connectivity, TopologyHealthStatus.Unknown, Direction(item.Operator), TopologyEdgeRouting.Orthogonal);
+            var sourceId = ResolveEndpointNodeId(chart, source, groupLookup, serviceGroups, junctionGroups, boundaryAnchors);
+            var targetId = ResolveEndpointNodeId(chart, target, groupLookup, serviceGroups, junctionGroups, boundaryAnchors);
+            chart.AddEdge("mermaid-architecture-edge-" + index.ToString(CultureInfo.InvariantCulture), sourceId, targetId, null, TopologyEdgeKind.Connectivity, TopologyHealthStatus.Unknown, Direction(item.Operator), TopologyEdgeRouting.Orthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
             edge.Metadata["mermaid.operator"] = item.Operator;
             ApplyEndpointMetadata(edge.Metadata, "source", source);
@@ -101,6 +109,25 @@ public static class MermaidArchitectureRendering {
     private static void ApplyEndpointMetadata(System.Collections.Generic.IDictionary<string, string> metadata, string prefix, MermaidArchitectureEndpoint endpoint) {
         if (!string.IsNullOrWhiteSpace(endpoint.Side)) metadata["mermaid." + prefix + ".side"] = endpoint.Side!;
         if (endpoint.GroupBoundary) metadata["mermaid." + prefix + ".groupBoundary"] = "true";
+    }
+
+    private static string ResolveEndpointNodeId(TopologyChart chart, MermaidArchitectureEndpoint endpoint, IReadOnlyDictionary<string, MermaidArchitectureGroup> groups, IReadOnlyDictionary<string, string?> serviceGroups, IReadOnlyDictionary<string, string?> junctionGroups, Dictionary<string, string> boundaryAnchors) {
+        if (!endpoint.GroupBoundary) return endpoint.Id;
+        if (!serviceGroups.TryGetValue(endpoint.Id, out var groupId) && !junctionGroups.TryGetValue(endpoint.Id, out groupId)) return endpoint.Id;
+        if (string.IsNullOrWhiteSpace(groupId) || !groups.ContainsKey(groupId!)) return endpoint.Id;
+        var side = string.IsNullOrWhiteSpace(endpoint.Side) ? "boundary" : endpoint.Side!.Trim();
+        var key = groupId + "|" + side;
+        if (boundaryAnchors.TryGetValue(key, out var existing)) return existing;
+
+        var anchorId = "mermaid-architecture-group-anchor-" + groupId + "-" + side.ToLowerInvariant();
+        chart.AddAutoNode(anchorId, groups[groupId!].Title + " boundary", TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, groupId: groupId, width: 1, height: 1, symbol: string.Empty, cssClass: "cfx-mermaid-architecture-group-anchor");
+        var node = chart.Nodes[chart.Nodes.Count - 1];
+        node.DisplayMode = TopologyNodeDisplayMode.Hidden;
+        node.Metadata["mermaid.kind"] = "group-boundary-anchor";
+        node.Metadata["mermaid.group"] = groupId!;
+        node.Metadata["mermaid.side"] = side;
+        boundaryAnchors[key] = anchorId;
+        return anchorId;
     }
 
     private static TopologyNodeKind ServiceKind(string? icon) {

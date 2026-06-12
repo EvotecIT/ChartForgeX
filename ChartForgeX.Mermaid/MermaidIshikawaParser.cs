@@ -28,8 +28,8 @@ internal static class MermaidIshikawaParser {
             }
 
             if (!baseIndent.HasValue) baseIndent = indent;
-            var level = indent - baseIndent.Value + 1;
-            if (level <= 0) level = 1;
+            while (stack.Count > 1 && stack[stack.Count - 1].Indent >= indent) stack.RemoveAt(stack.Count - 1);
+            var level = stack.Count;
             if (level > MaximumFishboneDepth) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Ishikawa cause depth must not exceed " + MaximumFishboneDepth.ToString(CultureInfo.InvariantCulture) + ".");
                 continue;
@@ -40,11 +40,10 @@ internal static class MermaidIshikawaParser {
                 continue;
             }
 
-            while (stack.Count > 1 && stack[stack.Count - 1].Level >= level) stack.RemoveAt(stack.Count - 1);
             var parent = stack[stack.Count - 1].Node;
             var node = new MermaidIshikawaNode(trimmed, level, span);
             parent.AddChild(node);
-            stack.Add(new StackEntry(level, node));
+            stack.Add(new StackEntry(indent, node));
             nodeCount++;
         }
 
@@ -53,12 +52,12 @@ internal static class MermaidIshikawaParser {
     }
 
     private readonly struct StackEntry {
-        public StackEntry(int level, MermaidIshikawaNode node) {
-            Level = level;
+        public StackEntry(int indent, MermaidIshikawaNode node) {
+            Indent = indent;
             Node = node;
         }
 
-        public int Level { get; }
+        public int Indent { get; }
         public MermaidIshikawaNode Node { get; }
     }
 }

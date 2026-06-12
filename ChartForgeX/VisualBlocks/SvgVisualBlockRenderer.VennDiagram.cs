@@ -38,7 +38,7 @@ public sealed partial class SvgVisualBlockRenderer {
 
         foreach (var intersection in block.Intersections) WriteVennIntersectionStyle(writer, placements, intersection);
         foreach (var intersection in block.Intersections) WriteVennRegionText(writer, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "700");
-        foreach (var textNode in block.TextNodes) WriteVennRegionText(writer, placements, textNode.SetIds, textNode.Label, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "600");
+        foreach (var textNode in block.TextNodes) WriteVennRegionText(writer, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "600");
     }
 
     private static void WriteVennIntersectionStyle(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {

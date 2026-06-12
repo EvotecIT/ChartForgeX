@@ -28,7 +28,7 @@ public sealed partial class PngVisualBlockRenderer {
 
         foreach (var intersection in block.Intersections) DrawVennIntersectionStyle(canvas, placements, intersection);
         foreach (var intersection in block.Intersections) DrawVennRegionText(canvas, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, Math.Max(10, theme.SubtitleFontSize), true);
-        foreach (var textNode in block.TextNodes) DrawVennRegionText(canvas, placements, textNode.SetIds, textNode.Label, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 1), true);
+        foreach (var textNode in block.TextNodes) DrawVennRegionText(canvas, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 1), true);
     }
 
     private static void DrawVennIntersectionStyle(RgbaCanvas canvas, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {

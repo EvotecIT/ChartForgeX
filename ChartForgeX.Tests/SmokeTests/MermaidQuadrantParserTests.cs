@@ -78,4 +78,20 @@ Campaign A: [0.2, 0.3] %% note";
         var document = result.Document ?? throw new InvalidOperationException("Mermaid quadrant parser should produce a document.");
         Assert(document.Points.Count == 1 && document.Points[0].Label == "Campaign A" && Math.Abs(document.Points[0].X - 0.2) < 0.001, "Mermaid quadrant parser should parse point coordinates before trailing comments.");
     }
+
+    private static void MermaidQuadrantRendersQuadrantLabels() {
+        const string source = @"quadrantChart
+quadrant-1 Expand
+quadrant-2 Promote
+Campaign A: [0.3, 0.6]";
+
+        var result = new MermaidParser().ParseQuadrant(source);
+
+        Assert(!result.HasErrors, "Mermaid quadrant parser should parse quadrant labels: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid quadrant parser should produce a document.");
+        var chart = document.ToChart();
+        var svg = document.ToSvg();
+        Assert(chart.Subtitle != null && chart.Subtitle.Contains("Q1: Expand", StringComparison.Ordinal) && chart.Subtitle.Contains("Q2: Promote", StringComparison.Ordinal), "Mermaid quadrant conversion should keep quadrant labels visible in rendered chart text.");
+        Assert(svg.Contains("Expand", StringComparison.Ordinal) && svg.Contains("Promote", StringComparison.Ordinal), "Mermaid quadrant SVG rendering should include quadrant labels.");
+    }
 }

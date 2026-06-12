@@ -98,4 +98,44 @@ set D [""D""] : 10";
         Assert(result.HasErrors, "Mermaid Venn parser should reject unsupported four-set diagrams.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("no more than three sets", StringComparison.Ordinal)), "Mermaid Venn parser should explain the renderable set limit.");
     }
+
+    private static void MermaidVennPreservesQuotedIdentifiers() {
+        const string source = @"venn-beta
+set ""Foo Bar"" [""Foo""] : 10
+set Baz [""Baz""] : 8
+union ""Foo Bar"",Baz [""Overlap""] : 3";
+
+        var result = new MermaidParser().ParseVenn(source);
+
+        Assert(!result.HasErrors, "Mermaid Venn parser should preserve quoted set identifiers: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Venn parser should produce a document.");
+        Assert(document.Sets[0].Id == "Foo Bar" && document.Intersections[0].SetIds[0] == "Foo Bar", "Mermaid Venn parser should use unquoted identifiers consistently for sets and unions.");
+    }
+
+    private static void MermaidVennAcceptsIndentedTextNodes() {
+        const string source = @"venn-beta
+set A [""A""] : 10
+  text [""Only A""]";
+
+        var result = new MermaidParser().ParseVenn(source);
+
+        Assert(!result.HasErrors, "Mermaid Venn parser should attach indented text nodes to the current region: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Venn parser should produce a document.");
+        Assert(document.TextNodes.Count == 1 && document.TextNodes[0].SetIds[0] == "A" && document.TextNodes[0].Label == "Only A", "Mermaid Venn parser should preserve indented text labels on the current region.");
+    }
+
+    private static void MermaidVennStylesTextNodeTargets() {
+        const string source = @"venn-beta
+set A [""A""] : 10
+text A note [""Only A""]
+style note color:#FF0000";
+
+        var result = new MermaidParser().ParseVenn(source);
+
+        Assert(!result.HasErrors, "Mermaid Venn parser should style text node targets: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Venn parser should produce a document.");
+        Assert(document.TextNodes.Count == 1 && document.TextNodes[0].TextColor.HasValue, "Mermaid Venn parser should apply color styles to text node targets.");
+        var svg = document.ToSvg();
+        Assert(svg.Contains("#FF0000", StringComparison.OrdinalIgnoreCase), "Mermaid Venn SVG rendering should include styled text node color.");
+    }
 }

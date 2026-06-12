@@ -72,7 +72,11 @@ public static class MermaidQuadrantRendering {
 
     private static string ResolveSubtitle(MermaidQuadrantDocument document, MermaidQuadrantRenderOptions options) {
         if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        if (document.QuadrantLabels.Count == 0) return document.Header;
+        var labels = document.QuadrantLabels
+            .OrderBy(item => item.Key)
+            .Select(item => "Q" + item.Key.ToString(CultureInfo.InvariantCulture) + ": " + item.Value);
+        return document.Header + " | " + string.Join(" | ", labels);
     }
 
     private static string FormatAxis(string? start, string? end, string fallback) {

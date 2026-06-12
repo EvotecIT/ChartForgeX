@@ -91,4 +91,17 @@ Only effect";
         Assert(result.HasErrors, "Mermaid Ishikawa parser should reject trees that exceed the fishbone renderer depth limit.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("depth must not exceed 12", StringComparison.Ordinal)), "Mermaid Ishikawa depth diagnostics should explain the depth limit.");
     }
+
+    private static void MermaidIshikawaCountsNestingLevelsInsteadOfSpaces() {
+        var builder = new StringBuilder();
+        builder.AppendLine("ishikawa");
+        builder.AppendLine("Effect");
+        for (var level = 1; level <= 7; level++) builder.AppendLine(new string(' ', level * 2) + "Cause " + level.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        var result = new MermaidParser().ParseIshikawa(builder.ToString());
+
+        Assert(!result.HasErrors, "Mermaid Ishikawa parser should accept renderable two-space nested cause levels: " + MermaidDiagnostics(result));
+        var document = result.Document ?? throw new InvalidOperationException("Mermaid Ishikawa parser should produce a document.");
+        Assert(document.Root != null && document.Root.Children[0].Children[0].Children[0].Text == "Cause 3", "Mermaid Ishikawa parser should preserve hierarchy depth from indentation stack.");
+    }
 }

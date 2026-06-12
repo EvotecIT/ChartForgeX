@@ -37,7 +37,11 @@ public static class MermaidVennRendering {
             intersection.TextColor = item.TextColor;
         }
 
-        foreach (var textNode in document.TextNodes) block.AddText(textNode.SetIds, textNode.Id, textNode.Label);
+        foreach (var textNode in document.TextNodes) {
+            block.AddText(textNode.SetIds, textNode.Id, textNode.Label);
+            var target = (VennTextNode)block.TextNodes[block.TextNodes.Count - 1];
+            target.TextColor = textNode.TextColor;
+        }
         return block;
     }
 
