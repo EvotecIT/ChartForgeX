@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Primitives;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
@@ -211,7 +212,7 @@ public sealed class MarkupFlowParser {
             var row = Row(headers, cells);
             if (section == "lanes") {
                 var id = Required(row, "id");
-                flow.AddLane(id, Value(row, "label", id), ParseStatus(Value(row, "status", string.Empty)), ValueOrNull(row, "color"));
+                flow.AddLane(id, Value(row, "label", id), ParseStatus(Value(row, "status", string.Empty)), ValidatedColorOrNull(row, "Flow lane color"));
                 return headers;
             }
 
@@ -242,7 +243,7 @@ public sealed class MarkupFlowParser {
         var label = tokens.Count > 2 && !IsAttribute(tokens[2]) ? tokens[2] : id;
         var attributeStart = label == id ? 2 : 3;
         var attributes = Attributes(tokens, attributeStart);
-        flow.AddLane(id, label, ParseStatus(Value(attributes, "status", string.Empty)), ValueOrNull(attributes, "color"));
+        flow.AddLane(id, label, ParseStatus(Value(attributes, "status", string.Empty)), ValidatedColorOrNull(attributes, "Flow lane color"));
     }
 
     private static void ParseStep(FlowArtifact flow, List<string> tokens, FlowArtifactStepKind defaultKind) {
@@ -260,7 +261,10 @@ public sealed class MarkupFlowParser {
         if (attributes.TryGetValue("subtitle", out var subtitle)) step.Subtitle = subtitle;
         if (attributes.TryGetValue("icon", out var icon)) step.Icon = icon;
         if (attributes.TryGetValue("symbol", out var symbol)) step.Symbol = symbol;
-        if (attributes.TryGetValue("color", out var color)) step.Color = color;
+        if (attributes.TryGetValue("color", out var color)) {
+            ValidateColor(color, "Flow step color");
+            step.Color = color;
+        }
         if (attributes.TryGetValue("badge", out var badge)) step.Badge = badge;
         if (attributes.TryGetValue("width", out var width)) step.Width = VisualMarkupFenceOptions.ParseDouble(width, "width");
         if (attributes.TryGetValue("height", out var height)) step.Height = VisualMarkupFenceOptions.ParseDouble(height, "height");
@@ -282,7 +286,7 @@ public sealed class MarkupFlowParser {
         var kind = attributes.TryGetValue("kind", out var kindValue) || attributes.TryGetValue("type", out kindValue) ? ParseConnectorKind(kindValue) : FlowArtifactConnectorKind.Flow;
         var direction = attributes.TryGetValue("direction", out var directionValue) ? ParseConnectorDirection(directionValue) : FlowArtifactConnectorDirection.Forward;
         var status = ParseStatus(Value(attributes, "status", string.Empty));
-        flow.AddConnector(source, target, label, kind, direction, status, ValueOrNull(attributes, "color"));
+        flow.AddConnector(source, target, label, kind, direction, status, ValidatedColorOrNull(attributes, "Flow connector color"));
     }
 
     private static void ParseViewport(FlowArtifact flow, List<string> tokens) {
@@ -527,6 +531,21 @@ public sealed class MarkupFlowParser {
 
     private static string? ValueOrNull(Dictionary<string, string> values, string key) =>
         values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;
+
+    private static string? ValidatedColorOrNull(Dictionary<string, string> values, string name) {
+        var color = ValueOrNull(values, "color");
+        ValidateColor(color, name);
+        return color;
+    }
+
+    private static void ValidateColor(string? value, string name) {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        try {
+            ChartColor.FromHex(value!);
+        } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
+            throw new ArgumentException(name + " must be a valid hex color.", ex);
+        }
+    }
 
     private static void RequireTokenCount(List<string> tokens, int count, string command) {
         if (tokens.Count < count) throw new ArgumentException("Flow command '" + command + "' requires more values.");

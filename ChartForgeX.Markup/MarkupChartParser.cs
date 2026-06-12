@@ -101,8 +101,8 @@ public sealed partial class MarkupChartParser {
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "type", out var type) && !string.IsNullOrWhiteSpace(type)) state.Type = ValidateChartType(type);
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "series", out var series) && !string.IsNullOrWhiteSpace(series)) state.SeriesName = series;
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "size", out var size) && !string.IsNullOrWhiteSpace(size)) ParseSize(state, size);
-            if (VisualMarkupFenceOptions.TryGetAttribute(block, "width", out var width) && !string.IsNullOrWhiteSpace(width)) state.Width = VisualMarkupFenceOptions.ParseInt32(width, "width");
-            if (VisualMarkupFenceOptions.TryGetAttribute(block, "height", out var height) && !string.IsNullOrWhiteSpace(height)) state.Height = VisualMarkupFenceOptions.ParseInt32(height, "height");
+            if (VisualMarkupFenceOptions.TryGetAttribute(block, "width", out var width) && !string.IsNullOrWhiteSpace(width)) state.Width = ParsePositiveInt32(width, "width");
+            if (VisualMarkupFenceOptions.TryGetAttribute(block, "height", out var height) && !string.IsNullOrWhiteSpace(height)) state.Height = ParsePositiveInt32(height, "height");
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
             Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, ex.Message);
         }
@@ -307,17 +307,19 @@ public sealed partial class MarkupChartParser {
                     break;
                 case "xaxisbounds":
                     RequireTokenCount(tokens, 3, tokens[0]);
-                    state.XAxisMinimum = ParseDouble(tokens[1]);
-                    state.XAxisMaximum = ParseDouble(tokens[2]);
+                    ParseAxisBounds(tokens[1], tokens[2], "X-axis", out var xMinimum, out var xMaximum);
+                    state.XAxisMinimum = xMinimum;
+                    state.XAxisMaximum = xMaximum;
                     break;
                 case "yaxisbounds":
                     RequireTokenCount(tokens, 3, tokens[0]);
-                    state.YAxisMinimum = ParseDouble(tokens[1]);
-                    state.YAxisMaximum = ParseDouble(tokens[2]);
+                    ParseAxisBounds(tokens[1], tokens[2], "Y-axis", out var yMinimum, out var yMaximum);
+                    state.YAxisMinimum = yMinimum;
+                    state.YAxisMaximum = yMaximum;
                     break;
                 case "padding":
                     RequireTokenCount(tokens, 2, tokens[0]);
-                    state.Padding = ParseDouble(tokens[1]);
+                    state.Padding = ParseNonNegativeFiniteDouble(tokens[1], "padding");
                     break;
                 case "sparkline":
                     state.Sparkline = tokens.Count == 1 || VisualMarkupFenceOptions.ParseBoolean(tokens[1], tokens[0]);
@@ -574,8 +576,8 @@ public sealed partial class MarkupChartParser {
     private static void ParseSize(ChartState state, string value) {
         var parts = value.Split(new[] { 'x', 'X', ',' }, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 2) throw new ArgumentException("Chart size must use WIDTHxHEIGHT syntax.");
-        state.Width = int.Parse(parts[0], CultureInfo.InvariantCulture);
-        state.Height = int.Parse(parts[1], CultureInfo.InvariantCulture);
+        state.Width = ParsePositiveInt32(parts[0], "width");
+        state.Height = ParsePositiveInt32(parts[1], "height");
     }
 
     private static double ParseDouble(string value) => double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);

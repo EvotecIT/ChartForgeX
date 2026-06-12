@@ -90,6 +90,25 @@ options:
 
         Assert(tickCountResult.HasErrors, "Invalid chart tick counts should produce parser errors.");
         Assert(Diagnostics(tickCountResult).Contains("tickCount", StringComparison.Ordinal), "Invalid tick count diagnostics should name the option.");
+
+        const string invalidFenceSize = @"```chartforgex chart v1 {width=-1 height=0}
+values 1 2
+```";
+        var invalidFenceSizeResult = new MarkupChartParser().Parse(invalidFenceSize);
+
+        Assert(invalidFenceSizeResult.HasErrors, "Invalid chart fence dimensions should produce parse diagnostics.");
+        Assert(Diagnostics(invalidFenceSizeResult).Contains("positive", StringComparison.Ordinal), "Invalid chart fence dimensions should explain positive-size validation.");
+
+        const string invalidAxisBounds = @"```chartforgex chart v1
+values 1 2
+xAxisBounds 10 5
+yAxisBounds NaN 5
+padding -1
+```";
+        var invalidAxisBoundsResult = new MarkupChartParser().Parse(invalidAxisBounds);
+
+        Assert(invalidAxisBoundsResult.HasErrors, "Invalid chart bounds and padding should produce parse diagnostics.");
+        Assert(Diagnostics(invalidAxisBoundsResult).Contains("maximum must be greater than minimum", StringComparison.Ordinal) && Diagnostics(invalidAxisBoundsResult).Contains("non-negative finite", StringComparison.Ordinal), "Invalid chart option diagnostics should report bad bounds and padding.");
     }
 
     private static void MarkupFlowParserParsesTopologyCompatibleFlow() {
@@ -147,6 +166,19 @@ start intake ""Intake""
 
         Assert(result.HasErrors, "Invalid flow viewport dimensions should produce parse diagnostics instead of throwing during artifact conversion.");
         Assert(Diagnostics(result).Contains("finite", StringComparison.Ordinal), "Invalid flow dimensions should report finite/positive validation.");
+    }
+
+    private static void MarkupFlowParserReportsInvalidColors() {
+        const string source = @"```chartforgex flow v1
+lane ops ""Operations"" color=nope
+start intake ""Intake"" color:nope
+connect intake -> done ""handoff"" color:nope
+```";
+
+        var result = new MarkupFlowParser().Parse(source);
+
+        Assert(result.HasErrors, "Invalid flow colors should produce parse diagnostics before preview export.");
+        Assert(Diagnostics(result).Contains("valid hex color", StringComparison.Ordinal), "Invalid flow colors should be reported as markup diagnostics.");
     }
 
     private static void MarkupSequenceParserParsesSequenceMarkup() {
@@ -256,6 +288,15 @@ item ""Design"" 1 2
 
         Assert(invalidSizeResult.HasErrors, "Invalid timeline dimensions should produce parse diagnostics instead of throwing during chart construction.");
         Assert(Diagnostics(invalidSizeResult).Contains("positive", StringComparison.Ordinal), "Invalid timeline dimension diagnostics should explain positive-size validation.");
+
+        const string invalidRangeAndProgress = @"```chartforgex timeline v1 {type=gantt}
+task Build 1 5 progress=2
+task Deploy 5 1
+```";
+        var invalidRangeAndProgressResult = new MarkupTimelineParser().Parse(invalidRangeAndProgress);
+
+        Assert(invalidRangeAndProgressResult.HasErrors, "Invalid timeline ranges and progress values should produce parse diagnostics.");
+        Assert(Diagnostics(invalidRangeAndProgressResult).Contains("between 0 and 1", StringComparison.Ordinal) && Diagnostics(invalidRangeAndProgressResult).Contains("end must be greater than or equal to start", StringComparison.Ordinal), "Timeline diagnostics should report bad progress and reversed ranges.");
     }
 
     private static void MarkupSequenceParserReportsMalformedArrowMessages() {

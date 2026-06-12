@@ -171,13 +171,14 @@ public sealed class MarkupTimelineParser {
             End = kind == TimelineItemKind.Milestone ? ParseTimelineValue(tokens[2]) : ParseTimelineValue(tokens[3])
         };
         var attributes = Attributes(tokens, minimum);
-        if (attributes.TryGetValue("progress", out var progress)) item.Progress = VisualMarkupFenceOptions.ParseDouble(progress, "progress");
+        if (attributes.TryGetValue("progress", out var progress)) item.Progress = ParseProgress(progress);
         if (attributes.TryGetValue("dependson", out var dependsOn)) item.DependsOn = VisualMarkupFenceOptions.ParseInt32(dependsOn, "dependsOn");
         if (attributes.TryGetValue("color", out var color)) {
             ValidateColor(color, "Timeline item color");
             item.Color = color;
         }
 
+        ValidateTimelineItem(item);
         return item;
     }
 
@@ -196,15 +197,17 @@ public sealed class MarkupTimelineParser {
             var end = kind == TimelineItemKind.Milestone ? start : Value(row, "end", start);
             var color = Value(row, "color", null!);
             ValidateColor(color, "Timeline item color");
-            state.Items.Add(new TimelineItem {
+            var item = new TimelineItem {
                 Kind = kind,
                 Label = label,
                 Start = ParseTimelineValue(start),
                 End = ParseTimelineValue(end),
-                Progress = row.TryGetValue("progress", out var progress) && !string.IsNullOrWhiteSpace(progress) ? VisualMarkupFenceOptions.ParseDouble(progress, "progress") : 0,
+                Progress = row.TryGetValue("progress", out var progress) && !string.IsNullOrWhiteSpace(progress) ? ParseProgress(progress) : 0,
                 DependsOn = row.TryGetValue("dependson", out var dependsOn) && !string.IsNullOrWhiteSpace(dependsOn) ? VisualMarkupFenceOptions.ParseInt32(dependsOn, "dependsOn") : -1,
                 Color = color
-            });
+            };
+            ValidateTimelineItem(item);
+            state.Items.Add(item);
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
             Add(result, lineNumber, MarkupDiagnosticSeverity.Error, ex.Message);
         }
@@ -254,6 +257,16 @@ public sealed class MarkupTimelineParser {
         if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)) return new TimelineValue(number);
         if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date)) return new TimelineValue(date);
         return new TimelineValue(VisualMarkupFenceOptions.ParseDouble(value, "timeline value"));
+    }
+
+    private static double ParseProgress(string value) {
+        var progress = VisualMarkupFenceOptions.ParseDouble(value, "progress");
+        if (double.IsNaN(progress) || double.IsInfinity(progress) || progress < 0 || progress > 1) throw new ArgumentException("Timeline progress must be between 0 and 1.");
+        return progress;
+    }
+
+    private static void ValidateTimelineItem(TimelineItem item) {
+        if (item.Kind != TimelineItemKind.Milestone && item.End.ToAxisValue() < item.Start.ToAxisValue()) throw new ArgumentException("Timeline item end must be greater than or equal to start.");
     }
 
     private static void ParseSize(TimelineState state, string value) {
