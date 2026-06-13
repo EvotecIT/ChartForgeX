@@ -1,0 +1,2127 @@
+{
+  "UpdatedCount": 414,
+  "UpdatedFiles": [
+    "404.html",
+    "asset-manifest.json",
+    "assets/social/generated/examples-ff777d7d15.webp",
+    "assets/social/generated/gallery-7fe011b367.webp",
+    "assets/social/generated/index-9b52ea6167.webp",
+    "css/app.2ffdf09e.css",
+    "docs/deployment/index.html",
+    "docs/index.html",
+    "examples/generated/annotation-edge-dark.html",
+    "examples/generated/annotation-edge-dark.png",
+    "examples/generated/annotation-edge-dark.webp",
+    "examples/generated/audience-pictorial-candy.html",
+    "examples/generated/audience-pictorial-candy.png",
+    "examples/generated/audience-pictorial-candy.webp",
+    "examples/generated/brand-kit-showcase-grid.html",
+    "examples/generated/brand-kit-showcase-grid.png",
+    "examples/generated/brand-kit-showcase-grid.webp",
+    "examples/generated/catalog.html",
+    "examples/generated/control-contribution-polar-area-light.html",
+    "examples/generated/control-contribution-polar-area-light.png",
+    "examples/generated/control-contribution-polar-area-light.webp",
+    "examples/generated/control-coverage-heatmap-dark.html",
+    "examples/generated/control-coverage-heatmap-dark.png",
+    "examples/generated/control-coverage-heatmap-dark.webp",
+    "examples/generated/control-coverage-radialbar-dark.html",
+    "examples/generated/control-coverage-radialbar-dark.webp",
+    "examples/generated/control-hierarchy-tree-light.html",
+    "examples/generated/control-hierarchy-tree-light.png",
+    "examples/generated/control-hierarchy-tree-light.webp",
+    "examples/generated/control-improvement-slope-light.html",
+    "examples/generated/control-improvement-slope-light.png",
+    "examples/generated/control-improvement-slope-light.webp",
+    "examples/generated/control-partition-sunburst-aurora.html",
+    "examples/generated/control-partition-sunburst-aurora.png",
+    "examples/generated/control-partition-sunburst-aurora.webp",
+    "examples/generated/control-readiness-lollipop-dark.html",
+    "examples/generated/control-readiness-lollipop-dark.png",
+    "examples/generated/control-readiness-lollipop-dark.webp",
+    "examples/generated/control-scorecards-grid.html",
+    "examples/generated/control-scorecards-grid.png",
+    "examples/generated/control-scorecards-grid.webp",
+    "examples/generated/control-targets-bullet-dark.html",
+    "examples/generated/control-targets-bullet-dark.png",
+    "examples/generated/control-targets-bullet-dark.webp",
+    "examples/generated/ct-regional-light.html",
+    "examples/generated/ct-regional-light.png",
+    "examples/generated/ct-regional-light.webp",
+    "examples/generated/ct-volume-light.html",
+    "examples/generated/ct-volume-light.png",
+    "examples/generated/ct-volume-light.webp",
+    "examples/generated/dashboard-appointment-operations-grid.html",
+    "examples/generated/dashboard-appointment-operations-grid.png",
+    "examples/generated/dashboard-appointment-operations-grid.webp",
+    "examples/generated/dashboard-attendance-hexbin-heatmap.html",
+    "examples/generated/dashboard-attendance-hexbin-heatmap.png",
+    "examples/generated/dashboard-attendance-hexbin-heatmap.webp",
+    "examples/generated/dashboard-chart-portfolio-grid.html",
+    "examples/generated/dashboard-chart-portfolio-grid.png",
+    "examples/generated/dashboard-chart-portfolio-grid.webp",
+    "examples/generated/dashboard-device-progress-bars.html",
+    "examples/generated/dashboard-device-progress-bars.webp",
+    "examples/generated/dashboard-hr-operations-grid.html",
+    "examples/generated/dashboard-hr-operations-grid.png",
+    "examples/generated/dashboard-hr-operations-grid.webp",
+    "examples/generated/dashboard-hr-overview-grid.html",
+    "examples/generated/dashboard-hr-overview-grid.png",
+    "examples/generated/dashboard-hr-overview-grid.webp",
+    "examples/generated/dashboard-kpi-bar-sparkline.html",
+    "examples/generated/dashboard-kpi-bar-sparkline.png",
+    "examples/generated/dashboard-kpi-bar-sparkline.webp",
+    "examples/generated/dashboard-mrr-driver-bars.html",
+    "examples/generated/dashboard-mrr-driver-bars.png",
+    "examples/generated/dashboard-mrr-driver-bars.webp",
+    "examples/generated/dashboard-mrr-trend-card.html",
+    "examples/generated/dashboard-mrr-trend-card.png",
+    "examples/generated/dashboard-mrr-trend-card.webp",
+    "examples/generated/dashboard-payment-analytics-grid.html",
+    "examples/generated/dashboard-payment-analytics-grid.png",
+    "examples/generated/dashboard-payment-analytics-grid.webp",
+    "examples/generated/dashboard-premium-trend-style.html",
+    "examples/generated/dashboard-premium-trend-style.png",
+    "examples/generated/dashboard-premium-trend-style.webp",
+    "examples/generated/dashboard-project-activity-sparkline.html",
+    "examples/generated/dashboard-project-activity-sparkline.png",
+    "examples/generated/dashboard-project-activity-sparkline.webp",
+    "examples/generated/dashboard-project-progress-card.html",
+    "examples/generated/dashboard-project-progress-card.webp",
+    "examples/generated/dashboard-project-schedule-timeline.html",
+    "examples/generated/dashboard-project-schedule-timeline.png",
+    "examples/generated/dashboard-project-schedule-timeline.webp",
+    "examples/generated/dashboard-project-task-composition-card.html",
+    "examples/generated/dashboard-project-task-composition-card.png",
+    "examples/generated/dashboard-project-task-composition-card.webp",
+    "examples/generated/dashboard-project-track-card.html",
+    "examples/generated/dashboard-project-track-card.png",
+    "examples/generated/dashboard-project-track-card.webp",
+    "examples/generated/dashboard-restaurant-customers-hexbin.html",
+    "examples/generated/dashboard-restaurant-customers-hexbin.webp",
+    "examples/generated/dashboard-restaurant-occupation-bars.html",
+    "examples/generated/dashboard-restaurant-occupation-bars.webp",
+    "examples/generated/dashboard-restaurant-order-status.html",
+    "examples/generated/dashboard-restaurant-order-status.png",
+    "examples/generated/dashboard-restaurant-order-status.webp",
+    "examples/generated/dashboard-restaurant-overview-grid.html",
+    "examples/generated/dashboard-restaurant-overview-grid.png",
+    "examples/generated/dashboard-restaurant-overview-grid.webp",
+    "examples/generated/dashboard-restaurant-reports-range-strip.html",
+    "examples/generated/dashboard-restaurant-reports-range-strip.webp",
+    "examples/generated/dashboard-restaurant-weekly-summary.html",
+    "examples/generated/dashboard-restaurant-weekly-summary.webp",
+    "examples/generated/dashboard-saas-mrr-grid.html",
+    "examples/generated/dashboard-saas-mrr-grid.png",
+    "examples/generated/dashboard-saas-mrr-grid.webp",
+    "examples/generated/dashboard-segmented-column-style.html",
+    "examples/generated/dashboard-segmented-column-style.png",
+    "examples/generated/dashboard-segmented-column-style.webp",
+    "examples/generated/dashboard-segmented-horizontal-style.html",
+    "examples/generated/dashboard-segmented-horizontal-style.png",
+    "examples/generated/dashboard-segmented-horizontal-style.webp",
+    "examples/generated/dashboard-shipment-activity-panel.html",
+    "examples/generated/dashboard-shipment-activity-panel.webp",
+    "examples/generated/dashboard-ticketing-analytics-grid.html",
+    "examples/generated/dashboard-ticketing-analytics-grid.png",
+    "examples/generated/dashboard-ticketing-analytics-grid.webp",
+    "examples/generated/dashboard-ticketing-guest-funnel.html",
+    "examples/generated/dashboard-ticketing-guest-funnel.webp",
+    "examples/generated/dashboard-ticketing-package-mix.html",
+    "examples/generated/dashboard-ticketing-package-mix.webp",
+    "examples/generated/dashboard-ticketing-promoter-attribution.html",
+    "examples/generated/dashboard-ticketing-promoter-attribution.png",
+    "examples/generated/dashboard-ticketing-promoter-attribution.webp",
+    "examples/generated/dashboard-ticketing-revenue-trend.html",
+    "examples/generated/dashboard-ticketing-revenue-trend.png",
+    "examples/generated/dashboard-ticketing-revenue-trend.webp",
+    "examples/generated/data-label-placement-showcase-grid.html",
+    "examples/generated/data-label-placement-showcase-grid.png",
+    "examples/generated/data-label-placement-showcase-grid.webp",
+    "examples/generated/data-label-readability-dark.html",
+    "examples/generated/data-label-readability-dark.png",
+    "examples/generated/data-label-readability-dark.webp",
+    "examples/generated/dc-connectivity.html",
+    "examples/generated/dc-connectivity.webp",
+    "examples/generated/detection-confidence-errorbar-dark.html",
+    "examples/generated/detection-confidence-errorbar-dark.png",
+    "examples/generated/detection-confidence-errorbar-dark.webp",
+    "examples/generated/developer-consistency-calendar-light.html",
+    "examples/generated/developer-consistency-calendar-light.png",
+    "examples/generated/developer-consistency-calendar-light.webp",
+    "examples/generated/domain-control-horizontal-light.html",
+    "examples/generated/domain-control-horizontal-light.png",
+    "examples/generated/domain-control-horizontal-light.webp",
+    "examples/generated/domain-findings-stacked-dark.html",
+    "examples/generated/domain-findings-stacked-dark.png",
+    "examples/generated/domain-findings-stacked-dark.webp",
+    "examples/generated/domain-remediation-funnel-dark.html",
+    "examples/generated/domain-remediation-funnel-dark.png",
+    "examples/generated/domain-remediation-funnel-dark.webp",
+    "examples/generated/domain-remediation-gantt-light.html",
+    "examples/generated/domain-remediation-gantt-light.png",
+    "examples/generated/domain-remediation-gantt-light.webp",
+    "examples/generated/domain-remediation-timeline-light.html",
+    "examples/generated/domain-remediation-timeline-light.png",
+    "examples/generated/domain-remediation-timeline-light.webp",
+    "examples/generated/domain-security-dark.html",
+    "examples/generated/domain-security-dark.png",
+    "examples/generated/domain-security-dark.webp",
+    "examples/generated/domain-security-interactive.html",
+    "examples/generated/domain-signal-mix-stacked-area-dark.html",
+    "examples/generated/domain-signal-mix-stacked-area-dark.png",
+    "examples/generated/domain-signal-mix-stacked-area-dark.webp",
+    "examples/generated/endpoint-latency-boxplot-dark.html",
+    "examples/generated/endpoint-latency-boxplot-dark.png",
+    "examples/generated/endpoint-latency-boxplot-dark.webp",
+    "examples/generated/endpoint-latency-histogram-light.html",
+    "examples/generated/endpoint-latency-histogram-light.png",
+    "examples/generated/endpoint-latency-histogram-light.webp",
+    "examples/generated/endpoint-latency-light.html",
+    "examples/generated/endpoint-latency-light.png",
+    "examples/generated/endpoint-latency-light.webp",
+    "examples/generated/endpoint-latency-range-light.html",
+    "examples/generated/endpoint-latency-range-light.png",
+    "examples/generated/endpoint-latency-range-light.webp",
+    "examples/generated/executive-interactive-dashboard.html",
+    "examples/generated/exposure-clusters-bubble-light.html",
+    "examples/generated/exposure-clusters-bubble-light.png",
+    "examples/generated/exposure-clusters-bubble-light.webp",
+    "examples/generated/finding-flow-sankey-light.html",
+    "examples/generated/finding-flow-sankey-light.png",
+    "examples/generated/finding-flow-sankey-light.webp",
+    "examples/generated/findings-composition-treemap-light.html",
+    "examples/generated/findings-composition-treemap-light.png",
+    "examples/generated/findings-composition-treemap-light.webp",
+    "examples/generated/findings-pareto-dark.html",
+    "examples/generated/findings-pareto-dark.png",
+    "examples/generated/findings-pareto-dark.webp",
+    "examples/generated/forecast-envelope-rangeband-dark.html",
+    "examples/generated/forecast-envelope-rangeband-dark.png",
+    "examples/generated/forecast-envelope-rangeband-dark.webp",
+    "examples/generated/forecast-interval-rangearea-light.html",
+    "examples/generated/forecast-interval-rangearea-light.png",
+    "examples/generated/forecast-interval-rangearea-light.webp",
+    "examples/generated/geographic-topology.html",
+    "examples/generated/geographic-topology.webp",
+    "examples/generated/icon-palette.html",
+    "examples/generated/icon-palette.webp",
+    "examples/generated/icon-stencil-browser.html",
+    "examples/generated/index.html",
+    "examples/generated/industrial-births-region-map-us-states-light.html",
+    "examples/generated/industrial-births-region-map-us-states-light.webp",
+    "examples/generated/license-cost-light.html",
+    "examples/generated/license-cost-light.png",
+    "examples/generated/license-cost-light.webp",
+    "examples/generated/map-africa-route-light.html",
+    "examples/generated/map-africa-route-light.png",
+    "examples/generated/map-africa-route-light.webp",
+    "examples/generated/map-asia-route-light.html",
+    "examples/generated/map-asia-route-light.webp",
+    "examples/generated/map-europe-route-light.html",
+    "examples/generated/map-europe-route-light.png",
+    "examples/generated/map-europe-route-light.webp",
+    "examples/generated/map-north-america-route-light.html",
+    "examples/generated/map-north-america-route-light.webp",
+    "examples/generated/map-oceania-route-light.html",
+    "examples/generated/map-oceania-route-light.png",
+    "examples/generated/map-oceania-route-light.webp",
+    "examples/generated/map-poland-route-light.html",
+    "examples/generated/map-poland-route-light.png",
+    "examples/generated/map-poland-route-light.webp",
+    "examples/generated/map-south-america-route-light.html",
+    "examples/generated/map-south-america-route-light.png",
+    "examples/generated/map-south-america-route-light.webp",
+    "examples/generated/map-viewport-showcase-grid.html",
+    "examples/generated/map-viewport-showcase-grid.png",
+    "examples/generated/map-viewport-showcase-grid.webp",
+    "examples/generated/map-world-route-light.html",
+    "examples/generated/map-world-route-light.webp",
+    "examples/generated/monthly-posture-dark.html",
+    "examples/generated/monthly-posture-dark.png",
+    "examples/generated/monthly-posture-dark.webp",
+    "examples/generated/observed-remediation-trend-light.html",
+    "examples/generated/observed-remediation-trend-light.png",
+    "examples/generated/observed-remediation-trend-light.webp",
+    "examples/generated/palette-swatch-showcase-grid.html",
+    "examples/generated/palette-swatch-showcase-grid.png",
+    "examples/generated/palette-swatch-showcase-grid.webp",
+    "examples/generated/people-infographic-showcase-grid.html",
+    "examples/generated/people-infographic-showcase-grid.png",
+    "examples/generated/people-infographic-showcase-grid.webp",
+    "examples/generated/pictorial-isotype-showcase-grid.html",
+    "examples/generated/pictorial-isotype-showcase-grid.png",
+    "examples/generated/pictorial-isotype-showcase-grid.webp",
+    "examples/generated/pictorial-symbol-showcase-grid.html",
+    "examples/generated/pictorial-symbol-showcase-grid.png",
+    "examples/generated/pictorial-symbol-showcase-grid.webp",
+    "examples/generated/point-color-customization-showcase-grid.html",
+    "examples/generated/point-color-customization-showcase-grid.png",
+    "examples/generated/point-color-customization-showcase-grid.webp",
+    "examples/generated/policy-backlog-step-area-light.html",
+    "examples/generated/policy-backlog-step-area-light.png",
+    "examples/generated/policy-backlog-step-area-light.webp",
+    "examples/generated/policy-readiness-circle-light.html",
+    "examples/generated/policy-readiness-circle-light.png",
+    "examples/generated/policy-readiness-circle-light.webp",
+    "examples/generated/policy-state-step-line-dark.html",
+    "examples/generated/policy-state-step-line-dark.png",
+    "examples/generated/policy-state-step-line-dark.webp",
+    "examples/generated/powerbginfo-endpoint-snapshot.html",
+    "examples/generated/powerbginfo-endpoint-snapshot.png",
+    "examples/generated/powerbginfo-endpoint-snapshot.webp",
+    "examples/generated/quality-dashboard.html",
+    "examples/generated/remediation-impact-waterfall-dark.html",
+    "examples/generated/remediation-impact-waterfall-dark.png",
+    "examples/generated/remediation-impact-waterfall-dark.webp",
+    "examples/generated/remediation-lift-dumbbell-light.html",
+    "examples/generated/remediation-lift-dumbbell-light.png",
+    "examples/generated/remediation-lift-dumbbell-light.webp",
+    "examples/generated/replication-mesh-critical-view.html",
+    "examples/generated/replication-mesh-critical-view.webp",
+    "examples/generated/replication-mesh-dc-view.html",
+    "examples/generated/replication-mesh-dc-view.webp",
+    "examples/generated/replication-mesh-offenders-view.html",
+    "examples/generated/replication-mesh-offenders-view.webp",
+    "examples/generated/replication-mesh.html",
+    "examples/generated/replication-mesh.webp",
+    "examples/generated/report-summary-metric-strip.html",
+    "examples/generated/report-summary-metric-strip.png",
+    "examples/generated/report-summary-metric-strip.webp",
+    "examples/generated/result-mix-donut.html",
+    "examples/generated/result-mix-donut.png",
+    "examples/generated/result-mix-donut.webp",
+    "examples/generated/revenue-europe-country-map-light.html",
+    "examples/generated/revenue-europe-country-map-light.webp",
+    "examples/generated/revenue-region-map-us-states-light.html",
+    "examples/generated/revenue-region-map-us-states-light.webp",
+    "examples/generated/revenue-tile-map-us-states-light.html",
+    "examples/generated/revenue-tile-map-us-states-light.png",
+    "examples/generated/revenue-tile-map-us-states-light.webp",
+    "examples/generated/security-findings-grouped-light.html",
+    "examples/generated/security-findings-grouped-light.png",
+    "examples/generated/security-findings-grouped-light.webp",
+    "examples/generated/security-posture-gauge-dark.html",
+    "examples/generated/security-posture-gauge-dark.png",
+    "examples/generated/security-posture-gauge-dark.webp",
+    "examples/generated/security-posture-radar-dark.html",
+    "examples/generated/security-posture-radar-dark.webp",
+    "examples/generated/service-dependency-api-neighbors-view.html",
+    "examples/generated/service-dependency-api-neighbors-view.webp",
+    "examples/generated/service-dependency-compact-view.html",
+    "examples/generated/service-dependency-compact-view.webp",
+    "examples/generated/service-dependency-critical-dependencies-view.html",
+    "examples/generated/service-dependency-critical-dependencies-view.webp",
+    "examples/generated/service-dependency.html",
+    "examples/generated/service-dependency.webp",
+    "examples/generated/shared-axis-coverage-grid.html",
+    "examples/generated/shared-axis-coverage-grid.png",
+    "examples/generated/shared-axis-coverage-grid.webp",
+    "examples/generated/signal-windows-candlestick-light.html",
+    "examples/generated/signal-windows-candlestick-light.png",
+    "examples/generated/signal-windows-candlestick-light.webp",
+    "examples/generated/signal-windows-ohlc-dark.html",
+    "examples/generated/signal-windows-ohlc-dark.png",
+    "examples/generated/signal-windows-ohlc-dark.webp",
+    "examples/generated/site-topology-emea-view.html",
+    "examples/generated/site-topology-emea-view.webp",
+    "examples/generated/site-topology.html",
+    "examples/generated/site-topology.webp",
+    "examples/generated/subnets-site-links.html",
+    "examples/generated/subnets-site-links.webp",
+    "examples/generated/support-themes-word-cloud-editorial.html",
+    "examples/generated/support-themes-word-cloud-editorial.webp",
+    "examples/generated/svg-png-comparison.html",
+    "examples/generated/text-style-showcase-editorial.html",
+    "examples/generated/text-style-showcase-editorial.png",
+    "examples/generated/text-style-showcase-editorial.webp",
+    "examples/generated/theme-font-showcase-grid.html",
+    "examples/generated/theme-font-showcase-grid.png",
+    "examples/generated/theme-font-showcase-grid.webp",
+    "examples/generated/transparent-report-summary-metric-strip.html",
+    "examples/generated/transparent-report-summary-metric-strip.png",
+    "examples/generated/transparent-report-summary-metric-strip.webp",
+    "examples/generated/travel-dotted-map-dark.html",
+    "examples/generated/travel-dotted-map-dark.webp",
+    "examples/generated/visual-ad-sites-hierarchy.html",
+    "examples/generated/visual-ad-sites-hierarchy.webp",
+    "examples/generated/visual-coverage.html",
+    "examples/generated/visual-dc-connectivity-map.html",
+    "examples/generated/visual-dc-connectivity-map.webp",
+    "examples/generated/visual-directory-health-replication.html",
+    "examples/generated/visual-directory-health-replication.webp",
+    "examples/generated/visual-directory-level-window.html",
+    "examples/generated/visual-directory-level-window.webp",
+    "examples/generated/visual-geographic-region-map.html",
+    "examples/generated/visual-geographic-region-map.webp",
+    "examples/generated/visual-geographic-topology-map.html",
+    "examples/generated/visual-geographic-topology-map.webp",
+    "examples/generated/visual-nested-user-hierarchy-bottom-top.html",
+    "examples/generated/visual-nested-user-hierarchy-bottom-top.webp",
+    "examples/generated/visual-nested-user-hierarchy-left-right.html",
+    "examples/generated/visual-nested-user-hierarchy-left-right.webp",
+    "examples/generated/visual-nested-user-hierarchy-right-left.html",
+    "examples/generated/visual-nested-user-hierarchy-right-left.webp",
+    "examples/generated/visual-nested-user-hierarchy.html",
+    "examples/generated/visual-nested-user-hierarchy.webp",
+    "examples/generated/visual-replication-health-hub.html",
+    "examples/generated/visual-replication-health-hub.webp",
+    "examples/generated/visual-replication-mesh-explorer.html",
+    "examples/generated/visual-replication-mesh-explorer.webp",
+    "examples/generated/visual-reusable-regional-topology.html",
+    "examples/generated/visual-reusable-regional-topology.webp",
+    "examples/generated/visual-service-dependency-map.html",
+    "examples/generated/visual-service-dependency-map.webp",
+    "examples/generated/visual-site-distribution-map.html",
+    "examples/generated/visual-site-distribution-map.webp",
+    "examples/generated/visual-subnets-site-links-map.html",
+    "examples/generated/visual-subnets-site-links-map.webp",
+    "examples/generated/visual-team-hierarchy-builder.html",
+    "examples/generated/visual-team-hierarchy-builder.webp",
+    "examples/generated/visual-topology-explorer.html",
+    "examples/generated/visual-topology-explorer.webp",
+    "examples/generated/visual-wan-latency-map.html",
+    "examples/generated/visual-wan-latency-map.png",
+    "examples/generated/visual-wan-latency-map.webp",
+    "examples/generated/warnings-sparkline.html",
+    "examples/generated/warnings-sparkline.png",
+    "examples/generated/warnings-sparkline.webp",
+    "examples/generated/wellness-calories-intake-dashboard.html",
+    "examples/generated/wellness-calories-intake-dashboard.png",
+    "examples/generated/wellness-calories-intake-dashboard.webp",
+    "examples/generated/wellness-layered-radial-progress.html",
+    "examples/generated/wellness-layered-radial-progress.webp",
+    "examples/generated/wellness-weekly-progress-dashboard.html",
+    "examples/generated/wellness-weekly-progress-dashboard.png",
+    "examples/generated/wellness-weekly-progress-dashboard.webp",
+    "examples/generated/wellness-weight-data-gauge.html",
+    "examples/generated/wellness-weight-data-gauge.webp",
+    "examples/generated/word-cloud-control-showcase-grid.html",
+    "examples/generated/word-cloud-control-showcase-grid.png",
+    "examples/generated/word-cloud-control-showcase-grid.webp",
+    "examples/generated/zero-value-donut-light.html",
+    "examples/generated/zero-value-donut-light.png",
+    "examples/generated/zero-value-donut-light.webp",
+    "examples/generated/zero-value-funnel-stage-light.html",
+    "examples/generated/zero-value-funnel-stage-light.png",
+    "examples/generated/zero-value-funnel-stage-light.webp",
+    "examples/generated/zero-value-polar-area-light.html",
+    "examples/generated/zero-value-polar-area-light.webp",
+    "examples/index.html",
+    "gallery/index.html",
+    "index.html",
+    "js/site.f947b733.js",
+    "search/index.html",
+    "sitemap.3e2c477a.css",
+    "sitemap/index.html",
+    "_headers"
+  ],
+  "HtmlFileCount": 164,
+  "HtmlSelectedFileCount": 164,
+  "CssFileCount": 2,
+  "JsFileCount": 1,
+  "ImageFileCount": 152,
+  "CriticalCssInlinedCount": 8,
+  "HtmlMinifiedCount": 164,
+  "HtmlBytesSaved": 764173,
+  "CssMinifiedCount": 2,
+  "CssBytesSaved": 3537,
+  "JsMinifiedCount": 1,
+  "JsBytesSaved": 4096,
+  "ImageOptimizedCount": 95,
+  "ImageBytesBefore": 28996281,
+  "ImageBytesAfter": 25992296,
+  "ImageBytesSaved": 3003985,
+  "ImageFailedCount": 0,
+  "OptimizedImages": [
+    {
+      "Path": "examples/generated/dashboard-hr-operations-grid.png",
+      "BytesBefore": 1310612,
+      "BytesAfter": 1048513,
+      "BytesSaved": 262099
+    },
+    {
+      "Path": "examples/generated/map-viewport-showcase-grid.png",
+      "BytesBefore": 1139305,
+      "BytesAfter": 933558,
+      "BytesSaved": 205747
+    },
+    {
+      "Path": "examples/generated/dashboard-appointment-operations-grid.png",
+      "BytesBefore": 1100679,
+      "BytesAfter": 907233,
+      "BytesSaved": 193446
+    },
+    {
+      "Path": "examples/generated/dashboard-saas-mrr-grid.png",
+      "BytesBefore": 738574,
+      "BytesAfter": 589510,
+      "BytesSaved": 149064
+    },
+    {
+      "Path": "examples/generated/people-infographic-showcase-grid.png",
+      "BytesBefore": 906822,
+      "BytesAfter": 758980,
+      "BytesSaved": 147842
+    },
+    {
+      "Path": "examples/generated/dashboard-ticketing-analytics-grid.png",
+      "BytesBefore": 967172,
+      "BytesAfter": 821659,
+      "BytesSaved": 145513
+    },
+    {
+      "Path": "examples/generated/dashboard-chart-portfolio-grid.png",
+      "BytesBefore": 1200226,
+      "BytesAfter": 1090337,
+      "BytesSaved": 109889
+    },
+    {
+      "Path": "examples/generated/dashboard-restaurant-overview-grid.png",
+      "BytesBefore": 629924,
+      "BytesAfter": 530523,
+      "BytesSaved": 99401
+    },
+    {
+      "Path": "examples/generated/dashboard-payment-analytics-grid.png",
+      "BytesBefore": 1038461,
+      "BytesAfter": 951984,
+      "BytesSaved": 86477
+    },
+    {
+      "Path": "examples/generated/dashboard-hr-overview-grid.png",
+      "BytesBefore": 758194,
+      "BytesAfter": 676685,
+      "BytesSaved": 81509
+    },
+    {
+      "Path": "examples/generated/control-scorecards-grid.png",
+      "BytesBefore": 603832,
+      "BytesAfter": 523302,
+      "BytesSaved": 80530
+    },
+    {
+      "Path": "examples/generated/brand-kit-showcase-grid.png",
+      "BytesBefore": 384072,
+      "BytesAfter": 311345,
+      "BytesSaved": 72727
+    },
+    {
+      "Path": "examples/generated/domain-security-dark.png",
+      "BytesBefore": 225271,
+      "BytesAfter": 153705,
+      "BytesSaved": 71566
+    },
+    {
+      "Path": "examples/generated/theme-font-showcase-grid.png",
+      "BytesBefore": 349329,
+      "BytesAfter": 279608,
+      "BytesSaved": 69721
+    },
+    {
+      "Path": "examples/generated/point-color-customization-showcase-grid.png",
+      "BytesBefore": 589393,
+      "BytesAfter": 521787,
+      "BytesSaved": 67606
+    },
+    {
+      "Path": "examples/generated/palette-swatch-showcase-grid.png",
+      "BytesBefore": 342417,
+      "BytesAfter": 275226,
+      "BytesSaved": 67191
+    },
+    {
+      "Path": "examples/generated/wellness-weekly-progress-dashboard.png",
+      "BytesBefore": 373391,
+      "BytesAfter": 311886,
+      "BytesSaved": 61505
+    },
+    {
+      "Path": "examples/generated/pictorial-symbol-showcase-grid.png",
+      "BytesBefore": 331737,
+      "BytesAfter": 270961,
+      "BytesSaved": 60776
+    },
+    {
+      "Path": "examples/generated/ct-volume-light.png",
+      "BytesBefore": 177030,
+      "BytesAfter": 120504,
+      "BytesSaved": 56526
+    },
+    {
+      "Path": "examples/generated/domain-signal-mix-stacked-area-dark.png",
+      "BytesBefore": 190689,
+      "BytesAfter": 140414,
+      "BytesSaved": 50275
+    },
+    {
+      "Path": "examples/generated/finding-flow-sankey-light.png",
+      "BytesBefore": 246687,
+      "BytesAfter": 205528,
+      "BytesSaved": 41159
+    },
+    {
+      "Path": "examples/generated/wellness-calories-intake-dashboard.png",
+      "BytesBefore": 317726,
+      "BytesAfter": 281144,
+      "BytesSaved": 36582
+    },
+    {
+      "Path": "examples/generated/domain-findings-stacked-dark.png",
+      "BytesBefore": 122677,
+      "BytesAfter": 90876,
+      "BytesSaved": 31801
+    },
+    {
+      "Path": "examples/generated/dashboard-segmented-column-style.png",
+      "BytesBefore": 115840,
+      "BytesAfter": 84394,
+      "BytesSaved": 31446
+    },
+    {
+      "Path": "examples/generated/security-findings-grouped-light.png",
+      "BytesBefore": 114239,
+      "BytesAfter": 84757,
+      "BytesSaved": 29482
+    },
+    {
+      "Path": "examples/generated/findings-composition-treemap-light.png",
+      "BytesBefore": 121558,
+      "BytesAfter": 94929,
+      "BytesSaved": 26629
+    },
+    {
+      "Path": "examples/generated/shared-axis-coverage-grid.png",
+      "BytesBefore": 167097,
+      "BytesAfter": 141066,
+      "BytesSaved": 26031
+    },
+    {
+      "Path": "examples/generated/forecast-interval-rangearea-light.png",
+      "BytesBefore": 160429,
+      "BytesAfter": 137536,
+      "BytesSaved": 22893
+    },
+    {
+      "Path": "examples/generated/monthly-posture-dark.png",
+      "BytesBefore": 182762,
+      "BytesAfter": 160040,
+      "BytesSaved": 22722
+    },
+    {
+      "Path": "examples/generated/dashboard-mrr-driver-bars.png",
+      "BytesBefore": 88689,
+      "BytesAfter": 66723,
+      "BytesSaved": 21966
+    },
+    {
+      "Path": "examples/generated/domain-remediation-gantt-light.png",
+      "BytesBefore": 155420,
+      "BytesAfter": 134781,
+      "BytesSaved": 20639
+    },
+    {
+      "Path": "examples/generated/dashboard-project-track-card.png",
+      "BytesBefore": 66546,
+      "BytesAfter": 46097,
+      "BytesSaved": 20449
+    },
+    {
+      "Path": "examples/generated/forecast-envelope-rangeband-dark.png",
+      "BytesBefore": 122486,
+      "BytesAfter": 102607,
+      "BytesSaved": 19879
+    },
+    {
+      "Path": "examples/generated/remediation-impact-waterfall-dark.png",
+      "BytesBefore": 107969,
+      "BytesAfter": 88938,
+      "BytesSaved": 19031
+    },
+    {
+      "Path": "examples/generated/dashboard-premium-trend-style.png",
+      "BytesBefore": 142824,
+      "BytesAfter": 124696,
+      "BytesSaved": 18128
+    },
+    {
+      "Path": "examples/generated/word-cloud-control-showcase-grid.png",
+      "BytesBefore": 204431,
+      "BytesAfter": 186634,
+      "BytesSaved": 17797
+    },
+    {
+      "Path": "examples/generated/text-style-showcase-editorial.png",
+      "BytesBefore": 139597,
+      "BytesAfter": 122756,
+      "BytesSaved": 16841
+    },
+    {
+      "Path": "examples/generated/data-label-placement-showcase-grid.png",
+      "BytesBefore": 253631,
+      "BytesAfter": 236853,
+      "BytesSaved": 16778
+    },
+    {
+      "Path": "examples/generated/domain-remediation-timeline-light.png",
+      "BytesBefore": 124208,
+      "BytesAfter": 107560,
+      "BytesSaved": 16648
+    },
+    {
+      "Path": "examples/generated/ct-regional-light.png",
+      "BytesBefore": 110509,
+      "BytesAfter": 93889,
+      "BytesSaved": 16620
+    },
+    {
+      "Path": "examples/generated/powerbginfo-endpoint-snapshot.png",
+      "BytesBefore": 196661,
+      "BytesAfter": 180303,
+      "BytesSaved": 16358
+    },
+    {
+      "Path": "examples/generated/dashboard-mrr-trend-card.png",
+      "BytesBefore": 206618,
+      "BytesAfter": 190575,
+      "BytesSaved": 16043
+    },
+    {
+      "Path": "examples/generated/signal-windows-candlestick-light.png",
+      "BytesBefore": 83512,
+      "BytesAfter": 67757,
+      "BytesSaved": 15755
+    },
+    {
+      "Path": "examples/generated/signal-windows-ohlc-dark.png",
+      "BytesBefore": 91683,
+      "BytesAfter": 76458,
+      "BytesSaved": 15225
+    },
+    {
+      "Path": "examples/generated/license-cost-light.png",
+      "BytesBefore": 103119,
+      "BytesAfter": 88403,
+      "BytesSaved": 14716
+    },
+    {
+      "Path": "examples/generated/findings-pareto-dark.png",
+      "BytesBefore": 112695,
+      "BytesAfter": 97992,
+      "BytesSaved": 14703
+    },
+    {
+      "Path": "examples/generated/control-hierarchy-tree-light.png",
+      "BytesBefore": 248601,
+      "BytesAfter": 234040,
+      "BytesSaved": 14561
+    },
+    {
+      "Path": "examples/generated/zero-value-funnel-stage-light.png",
+      "BytesBefore": 118296,
+      "BytesAfter": 104000,
+      "BytesSaved": 14296
+    },
+    {
+      "Path": "examples/generated/annotation-edge-dark.png",
+      "BytesBefore": 114801,
+      "BytesAfter": 101631,
+      "BytesSaved": 13170
+    },
+    {
+      "Path": "examples/generated/dashboard-attendance-hexbin-heatmap.png",
+      "BytesBefore": 141210,
+      "BytesAfter": 128382,
+      "BytesSaved": 12828
+    },
+    {
+      "Path": "examples/generated/report-summary-metric-strip.png",
+      "BytesBefore": 143915,
+      "BytesAfter": 132121,
+      "BytesSaved": 11794
+    },
+    {
+      "Path": "examples/generated/pictorial-isotype-showcase-grid.png",
+      "BytesBefore": 187849,
+      "BytesAfter": 176968,
+      "BytesSaved": 10881
+    },
+    {
+      "Path": "examples/generated/domain-control-horizontal-light.png",
+      "BytesBefore": 164104,
+      "BytesAfter": 153402,
+      "BytesSaved": 10702
+    },
+    {
+      "Path": "examples/generated/endpoint-latency-boxplot-dark.png",
+      "BytesBefore": 97252,
+      "BytesAfter": 86624,
+      "BytesSaved": 10628
+    },
+    {
+      "Path": "examples/generated/domain-remediation-funnel-dark.png",
+      "BytesBefore": 142447,
+      "BytesAfter": 132017,
+      "BytesSaved": 10430
+    },
+    {
+      "Path": "examples/generated/control-coverage-heatmap-dark.png",
+      "BytesBefore": 168698,
+      "BytesAfter": 158651,
+      "BytesSaved": 10047
+    },
+    {
+      "Path": "examples/generated/endpoint-latency-histogram-light.png",
+      "BytesBefore": 85724,
+      "BytesAfter": 75787,
+      "BytesSaved": 9937
+    },
+    {
+      "Path": "examples/generated/detection-confidence-errorbar-dark.png",
+      "BytesBefore": 97361,
+      "BytesAfter": 88174,
+      "BytesSaved": 9187
+    },
+    {
+      "Path": "examples/generated/data-label-readability-dark.png",
+      "BytesBefore": 126751,
+      "BytesAfter": 117621,
+      "BytesSaved": 9130
+    },
+    {
+      "Path": "examples/generated/endpoint-latency-light.png",
+      "BytesBefore": 110446,
+      "BytesAfter": 101322,
+      "BytesSaved": 9124
+    },
+    {
+      "Path": "examples/generated/policy-state-step-line-dark.png",
+      "BytesBefore": 93792,
+      "BytesAfter": 84881,
+      "BytesSaved": 8911
+    },
+    {
+      "Path": "examples/generated/control-readiness-lollipop-dark.png",
+      "BytesBefore": 99816,
+      "BytesAfter": 91041,
+      "BytesSaved": 8775
+    },
+    {
+      "Path": "examples/generated/audience-pictorial-candy.png",
+      "BytesBefore": 96784,
+      "BytesAfter": 88073,
+      "BytesSaved": 8711
+    },
+    {
+      "Path": "examples/generated/exposure-clusters-bubble-light.png",
+      "BytesBefore": 85133,
+      "BytesAfter": 77334,
+      "BytesSaved": 7799
+    },
+    {
+      "Path": "examples/generated/map-south-america-route-light.png",
+      "BytesBefore": 128617,
+      "BytesAfter": 120935,
+      "BytesSaved": 7682
+    },
+    {
+      "Path": "examples/generated/dashboard-segmented-horizontal-style.png",
+      "BytesBefore": 56155,
+      "BytesAfter": 48667,
+      "BytesSaved": 7488
+    },
+    {
+      "Path": "examples/generated/result-mix-donut.png",
+      "BytesBefore": 80871,
+      "BytesAfter": 74224,
+      "BytesSaved": 6647
+    },
+    {
+      "Path": "examples/generated/map-oceania-route-light.png",
+      "BytesBefore": 128562,
+      "BytesAfter": 122047,
+      "BytesSaved": 6515
+    },
+    {
+      "Path": "examples/generated/visual-wan-latency-map.png",
+      "BytesBefore": 190299,
+      "BytesAfter": 184066,
+      "BytesSaved": 6233
+    },
+    {
+      "Path": "examples/generated/control-partition-sunburst-aurora.png",
+      "BytesBefore": 177625,
+      "BytesAfter": 171926,
+      "BytesSaved": 5699
+    },
+    {
+      "Path": "examples/generated/zero-value-donut-light.png",
+      "BytesBefore": 82974,
+      "BytesAfter": 77813,
+      "BytesSaved": 5161
+    },
+    {
+      "Path": "examples/generated/map-poland-route-light.png",
+      "BytesBefore": 121017,
+      "BytesAfter": 115873,
+      "BytesSaved": 5144
+    },
+    {
+      "Path": "examples/generated/remediation-lift-dumbbell-light.png",
+      "BytesBefore": 93590,
+      "BytesAfter": 88845,
+      "BytesSaved": 4745
+    },
+    {
+      "Path": "examples/generated/transparent-report-summary-metric-strip.png",
+      "BytesBefore": 115182,
+      "BytesAfter": 110777,
+      "BytesSaved": 4405
+    },
+    {
+      "Path": "examples/generated/map-africa-route-light.png",
+      "BytesBefore": 165212,
+      "BytesAfter": 160841,
+      "BytesSaved": 4371
+    },
+    {
+      "Path": "examples/generated/policy-backlog-step-area-light.png",
+      "BytesBefore": 104971,
+      "BytesAfter": 100645,
+      "BytesSaved": 4326
+    },
+    {
+      "Path": "examples/generated/security-posture-gauge-dark.png",
+      "BytesBefore": 86268,
+      "BytesAfter": 82150,
+      "BytesSaved": 4118
+    },
+    {
+      "Path": "examples/generated/policy-readiness-circle-light.png",
+      "BytesBefore": 79613,
+      "BytesAfter": 75762,
+      "BytesSaved": 3851
+    },
+    {
+      "Path": "examples/generated/dashboard-restaurant-order-status.png",
+      "BytesBefore": 30708,
+      "BytesAfter": 27883,
+      "BytesSaved": 2825
+    },
+    {
+      "Path": "examples/generated/dashboard-project-schedule-timeline.png",
+      "BytesBefore": 281556,
+      "BytesAfter": 278740,
+      "BytesSaved": 2816
+    },
+    {
+      "Path": "examples/generated/dashboard-ticketing-revenue-trend.png",
+      "BytesBefore": 181406,
+      "BytesAfter": 178737,
+      "BytesSaved": 2669
+    },
+    {
+      "Path": "examples/generated/control-improvement-slope-light.png",
+      "BytesBefore": 129628,
+      "BytesAfter": 127225,
+      "BytesSaved": 2403
+    },
+    {
+      "Path": "examples/generated/dashboard-ticketing-promoter-attribution.png",
+      "BytesBefore": 76717,
+      "BytesAfter": 74351,
+      "BytesSaved": 2366
+    },
+    {
+      "Path": "examples/generated/endpoint-latency-range-light.png",
+      "BytesBefore": 97914,
+      "BytesAfter": 95673,
+      "BytesSaved": 2241
+    },
+    {
+      "Path": "examples/generated/warnings-sparkline.png",
+      "BytesBefore": 15455,
+      "BytesAfter": 13334,
+      "BytesSaved": 2121
+    },
+    {
+      "Path": "examples/generated/control-targets-bullet-dark.png",
+      "BytesBefore": 127901,
+      "BytesAfter": 125839,
+      "BytesSaved": 2062
+    },
+    {
+      "Path": "examples/generated/observed-remediation-trend-light.png",
+      "BytesBefore": 121080,
+      "BytesAfter": 119058,
+      "BytesSaved": 2022
+    },
+    {
+      "Path": "examples/generated/dashboard-project-task-composition-card.png",
+      "BytesBefore": 61408,
+      "BytesAfter": 59459,
+      "BytesSaved": 1949
+    },
+    {
+      "Path": "examples/generated/dashboard-kpi-bar-sparkline.png",
+      "BytesBefore": 38058,
+      "BytesAfter": 36263,
+      "BytesSaved": 1795
+    },
+    {
+      "Path": "examples/generated/dashboard-project-activity-sparkline.png",
+      "BytesBefore": 38475,
+      "BytesAfter": 37055,
+      "BytesSaved": 1420
+    },
+    {
+      "Path": "examples/generated/revenue-tile-map-us-states-light.png",
+      "BytesBefore": 151146,
+      "BytesAfter": 149729,
+      "BytesSaved": 1417
+    },
+    {
+      "Path": "examples/generated/visual-reusable-regional-topology.webp",
+      "BytesBefore": 44026,
+      "BytesAfter": 42814,
+      "BytesSaved": 1212
+    },
+    {
+      "Path": "examples/generated/developer-consistency-calendar-light.png",
+      "BytesBefore": 160592,
+      "BytesAfter": 159655,
+      "BytesSaved": 937
+    },
+    {
+      "Path": "examples/generated/map-europe-route-light.png",
+      "BytesBefore": 160588,
+      "BytesAfter": 160018,
+      "BytesSaved": 570
+    },
+    {
+      "Path": "examples/generated/control-contribution-polar-area-light.png",
+      "BytesBefore": 106462,
+      "BytesAfter": 106329,
+      "BytesSaved": 133
+    }
+  ],
+  "ImageFailures": [],
+  "TopOptimizedImages": [
+    {
+      "Path": "examples/generated/dashboard-hr-operations-grid.png",
+      "BytesBefore": 1310612,
+      "BytesAfter": 1048513,
+      "BytesSaved": 262099
+    },
+    {
+      "Path": "examples/generated/map-viewport-showcase-grid.png",
+      "BytesBefore": 1139305,
+      "BytesAfter": 933558,
+      "BytesSaved": 205747
+    },
+    {
+      "Path": "examples/generated/dashboard-appointment-operations-grid.png",
+      "BytesBefore": 1100679,
+      "BytesAfter": 907233,
+      "BytesSaved": 193446
+    },
+    {
+      "Path": "examples/generated/dashboard-saas-mrr-grid.png",
+      "BytesBefore": 738574,
+      "BytesAfter": 589510,
+      "BytesSaved": 149064
+    },
+    {
+      "Path": "examples/generated/people-infographic-showcase-grid.png",
+      "BytesBefore": 906822,
+      "BytesAfter": 758980,
+      "BytesSaved": 147842
+    }
+  ],
+  "TopImageFailures": [],
+  "ImageVariantCount": 151,
+  "GeneratedImageVariants": [
+    {
+      "SourcePath": "assets/social/generated/examples-ff777d7d15.png",
+      "VariantPath": "assets/social/generated/examples-ff777d7d15.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 19184
+    },
+    {
+      "SourcePath": "assets/social/generated/gallery-7fe011b367.png",
+      "VariantPath": "assets/social/generated/gallery-7fe011b367.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 17060
+    },
+    {
+      "SourcePath": "assets/social/generated/index-9b52ea6167.png",
+      "VariantPath": "assets/social/generated/index-9b52ea6167.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 28854
+    },
+    {
+      "SourcePath": "examples/generated/annotation-edge-dark.png",
+      "VariantPath": "examples/generated/annotation-edge-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 39830
+    },
+    {
+      "SourcePath": "examples/generated/audience-pictorial-candy.png",
+      "VariantPath": "examples/generated/audience-pictorial-candy.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 44532
+    },
+    {
+      "SourcePath": "examples/generated/brand-kit-showcase-grid.png",
+      "VariantPath": "examples/generated/brand-kit-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 63112
+    },
+    {
+      "SourcePath": "examples/generated/control-contribution-polar-area-light.png",
+      "VariantPath": "examples/generated/control-contribution-polar-area-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36700
+    },
+    {
+      "SourcePath": "examples/generated/control-coverage-heatmap-dark.png",
+      "VariantPath": "examples/generated/control-coverage-heatmap-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 55686
+    },
+    {
+      "SourcePath": "examples/generated/control-coverage-radialbar-dark.png",
+      "VariantPath": "examples/generated/control-coverage-radialbar-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 41506
+    },
+    {
+      "SourcePath": "examples/generated/control-hierarchy-tree-light.png",
+      "VariantPath": "examples/generated/control-hierarchy-tree-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 71078
+    },
+    {
+      "SourcePath": "examples/generated/control-improvement-slope-light.png",
+      "VariantPath": "examples/generated/control-improvement-slope-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 47146
+    },
+    {
+      "SourcePath": "examples/generated/control-partition-sunburst-aurora.png",
+      "VariantPath": "examples/generated/control-partition-sunburst-aurora.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 55134
+    },
+    {
+      "SourcePath": "examples/generated/control-readiness-lollipop-dark.png",
+      "VariantPath": "examples/generated/control-readiness-lollipop-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 35372
+    },
+    {
+      "SourcePath": "examples/generated/control-scorecards-grid.png",
+      "VariantPath": "examples/generated/control-scorecards-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 163306
+    },
+    {
+      "SourcePath": "examples/generated/control-targets-bullet-dark.png",
+      "VariantPath": "examples/generated/control-targets-bullet-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 42856
+    },
+    {
+      "SourcePath": "examples/generated/ct-regional-light.png",
+      "VariantPath": "examples/generated/ct-regional-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 38728
+    },
+    {
+      "SourcePath": "examples/generated/ct-volume-light.png",
+      "VariantPath": "examples/generated/ct-volume-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 51892
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-appointment-operations-grid.png",
+      "VariantPath": "examples/generated/dashboard-appointment-operations-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 160374
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-attendance-hexbin-heatmap.png",
+      "VariantPath": "examples/generated/dashboard-attendance-hexbin-heatmap.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 33380
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-chart-portfolio-grid.png",
+      "VariantPath": "examples/generated/dashboard-chart-portfolio-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 243656
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-device-progress-bars.png",
+      "VariantPath": "examples/generated/dashboard-device-progress-bars.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 17160
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-hr-operations-grid.png",
+      "VariantPath": "examples/generated/dashboard-hr-operations-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 171584
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-hr-overview-grid.png",
+      "VariantPath": "examples/generated/dashboard-hr-overview-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 117044
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-kpi-bar-sparkline.png",
+      "VariantPath": "examples/generated/dashboard-kpi-bar-sparkline.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 14904
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-mrr-driver-bars.png",
+      "VariantPath": "examples/generated/dashboard-mrr-driver-bars.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 25648
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-mrr-trend-card.png",
+      "VariantPath": "examples/generated/dashboard-mrr-trend-card.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 55422
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-payment-analytics-grid.png",
+      "VariantPath": "examples/generated/dashboard-payment-analytics-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 168596
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-premium-trend-style.png",
+      "VariantPath": "examples/generated/dashboard-premium-trend-style.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36740
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-project-activity-sparkline.png",
+      "VariantPath": "examples/generated/dashboard-project-activity-sparkline.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 16374
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-project-progress-card.png",
+      "VariantPath": "examples/generated/dashboard-project-progress-card.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 41530
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-project-schedule-timeline.png",
+      "VariantPath": "examples/generated/dashboard-project-schedule-timeline.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 104566
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-project-task-composition-card.png",
+      "VariantPath": "examples/generated/dashboard-project-task-composition-card.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29428
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-project-track-card.png",
+      "VariantPath": "examples/generated/dashboard-project-track-card.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 17396
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-restaurant-customers-hexbin.png",
+      "VariantPath": "examples/generated/dashboard-restaurant-customers-hexbin.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 19856
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-restaurant-occupation-bars.png",
+      "VariantPath": "examples/generated/dashboard-restaurant-occupation-bars.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 15648
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-restaurant-order-status.png",
+      "VariantPath": "examples/generated/dashboard-restaurant-order-status.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 15510
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-restaurant-overview-grid.png",
+      "VariantPath": "examples/generated/dashboard-restaurant-overview-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 88284
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-restaurant-reports-range-strip.png",
+      "VariantPath": "examples/generated/dashboard-restaurant-reports-range-strip.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29308
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-restaurant-weekly-summary.png",
+      "VariantPath": "examples/generated/dashboard-restaurant-weekly-summary.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 22694
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-saas-mrr-grid.png",
+      "VariantPath": "examples/generated/dashboard-saas-mrr-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 106572
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-segmented-column-style.png",
+      "VariantPath": "examples/generated/dashboard-segmented-column-style.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29420
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-segmented-horizontal-style.png",
+      "VariantPath": "examples/generated/dashboard-segmented-horizontal-style.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 15374
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-shipment-activity-panel.png",
+      "VariantPath": "examples/generated/dashboard-shipment-activity-panel.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 28842
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-ticketing-analytics-grid.png",
+      "VariantPath": "examples/generated/dashboard-ticketing-analytics-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 144470
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-ticketing-guest-funnel.png",
+      "VariantPath": "examples/generated/dashboard-ticketing-guest-funnel.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 18958
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-ticketing-package-mix.png",
+      "VariantPath": "examples/generated/dashboard-ticketing-package-mix.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 17506
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-ticketing-promoter-attribution.png",
+      "VariantPath": "examples/generated/dashboard-ticketing-promoter-attribution.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 25256
+    },
+    {
+      "SourcePath": "examples/generated/dashboard-ticketing-revenue-trend.png",
+      "VariantPath": "examples/generated/dashboard-ticketing-revenue-trend.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 58414
+    },
+    {
+      "SourcePath": "examples/generated/data-label-placement-showcase-grid.png",
+      "VariantPath": "examples/generated/data-label-placement-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 51736
+    },
+    {
+      "SourcePath": "examples/generated/data-label-readability-dark.png",
+      "VariantPath": "examples/generated/data-label-readability-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 37596
+    },
+    {
+      "SourcePath": "examples/generated/dc-connectivity.png",
+      "VariantPath": "examples/generated/dc-connectivity.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 33648
+    },
+    {
+      "SourcePath": "examples/generated/detection-confidence-errorbar-dark.png",
+      "VariantPath": "examples/generated/detection-confidence-errorbar-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29204
+    },
+    {
+      "SourcePath": "examples/generated/developer-consistency-calendar-light.png",
+      "VariantPath": "examples/generated/developer-consistency-calendar-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 60474
+    },
+    {
+      "SourcePath": "examples/generated/domain-control-horizontal-light.png",
+      "VariantPath": "examples/generated/domain-control-horizontal-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 52640
+    },
+    {
+      "SourcePath": "examples/generated/domain-findings-stacked-dark.png",
+      "VariantPath": "examples/generated/domain-findings-stacked-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 39516
+    },
+    {
+      "SourcePath": "examples/generated/domain-remediation-funnel-dark.png",
+      "VariantPath": "examples/generated/domain-remediation-funnel-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 47258
+    },
+    {
+      "SourcePath": "examples/generated/domain-remediation-gantt-light.png",
+      "VariantPath": "examples/generated/domain-remediation-gantt-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 50642
+    },
+    {
+      "SourcePath": "examples/generated/domain-remediation-timeline-light.png",
+      "VariantPath": "examples/generated/domain-remediation-timeline-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 41660
+    },
+    {
+      "SourcePath": "examples/generated/domain-security-dark.png",
+      "VariantPath": "examples/generated/domain-security-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 63864
+    },
+    {
+      "SourcePath": "examples/generated/domain-signal-mix-stacked-area-dark.png",
+      "VariantPath": "examples/generated/domain-signal-mix-stacked-area-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 52574
+    },
+    {
+      "SourcePath": "examples/generated/endpoint-latency-boxplot-dark.png",
+      "VariantPath": "examples/generated/endpoint-latency-boxplot-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 31022
+    },
+    {
+      "SourcePath": "examples/generated/endpoint-latency-histogram-light.png",
+      "VariantPath": "examples/generated/endpoint-latency-histogram-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 30582
+    },
+    {
+      "SourcePath": "examples/generated/endpoint-latency-light.png",
+      "VariantPath": "examples/generated/endpoint-latency-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 39310
+    },
+    {
+      "SourcePath": "examples/generated/endpoint-latency-range-light.png",
+      "VariantPath": "examples/generated/endpoint-latency-range-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 34168
+    },
+    {
+      "SourcePath": "examples/generated/exposure-clusters-bubble-light.png",
+      "VariantPath": "examples/generated/exposure-clusters-bubble-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29142
+    },
+    {
+      "SourcePath": "examples/generated/finding-flow-sankey-light.png",
+      "VariantPath": "examples/generated/finding-flow-sankey-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 60454
+    },
+    {
+      "SourcePath": "examples/generated/findings-composition-treemap-light.png",
+      "VariantPath": "examples/generated/findings-composition-treemap-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36246
+    },
+    {
+      "SourcePath": "examples/generated/findings-pareto-dark.png",
+      "VariantPath": "examples/generated/findings-pareto-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 35190
+    },
+    {
+      "SourcePath": "examples/generated/forecast-envelope-rangeband-dark.png",
+      "VariantPath": "examples/generated/forecast-envelope-rangeband-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36302
+    },
+    {
+      "SourcePath": "examples/generated/forecast-interval-rangearea-light.png",
+      "VariantPath": "examples/generated/forecast-interval-rangearea-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 52600
+    },
+    {
+      "SourcePath": "examples/generated/geographic-topology.png",
+      "VariantPath": "examples/generated/geographic-topology.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 44440
+    },
+    {
+      "SourcePath": "examples/generated/icon-palette.png",
+      "VariantPath": "examples/generated/icon-palette.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 66592
+    },
+    {
+      "SourcePath": "examples/generated/industrial-births-region-map-us-states-light.png",
+      "VariantPath": "examples/generated/industrial-births-region-map-us-states-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 64848
+    },
+    {
+      "SourcePath": "examples/generated/license-cost-light.png",
+      "VariantPath": "examples/generated/license-cost-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 34868
+    },
+    {
+      "SourcePath": "examples/generated/map-africa-route-light.png",
+      "VariantPath": "examples/generated/map-africa-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 33088
+    },
+    {
+      "SourcePath": "examples/generated/map-asia-route-light.png",
+      "VariantPath": "examples/generated/map-asia-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 34238
+    },
+    {
+      "SourcePath": "examples/generated/map-europe-route-light.png",
+      "VariantPath": "examples/generated/map-europe-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 34262
+    },
+    {
+      "SourcePath": "examples/generated/map-north-america-route-light.png",
+      "VariantPath": "examples/generated/map-north-america-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 35754
+    },
+    {
+      "SourcePath": "examples/generated/map-oceania-route-light.png",
+      "VariantPath": "examples/generated/map-oceania-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 28680
+    },
+    {
+      "SourcePath": "examples/generated/map-poland-route-light.png",
+      "VariantPath": "examples/generated/map-poland-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 30934
+    },
+    {
+      "SourcePath": "examples/generated/map-south-america-route-light.png",
+      "VariantPath": "examples/generated/map-south-america-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 30592
+    },
+    {
+      "SourcePath": "examples/generated/map-viewport-showcase-grid.png",
+      "VariantPath": "examples/generated/map-viewport-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 131632
+    },
+    {
+      "SourcePath": "examples/generated/map-world-route-light.png",
+      "VariantPath": "examples/generated/map-world-route-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 32192
+    },
+    {
+      "SourcePath": "examples/generated/monthly-posture-dark.png",
+      "VariantPath": "examples/generated/monthly-posture-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 59896
+    },
+    {
+      "SourcePath": "examples/generated/observed-remediation-trend-light.png",
+      "VariantPath": "examples/generated/observed-remediation-trend-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 40502
+    },
+    {
+      "SourcePath": "examples/generated/palette-swatch-showcase-grid.png",
+      "VariantPath": "examples/generated/palette-swatch-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 62242
+    },
+    {
+      "SourcePath": "examples/generated/people-infographic-showcase-grid.png",
+      "VariantPath": "examples/generated/people-infographic-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 150804
+    },
+    {
+      "SourcePath": "examples/generated/pictorial-isotype-showcase-grid.png",
+      "VariantPath": "examples/generated/pictorial-isotype-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 45250
+    },
+    {
+      "SourcePath": "examples/generated/pictorial-symbol-showcase-grid.png",
+      "VariantPath": "examples/generated/pictorial-symbol-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 74376
+    },
+    {
+      "SourcePath": "examples/generated/point-color-customization-showcase-grid.png",
+      "VariantPath": "examples/generated/point-color-customization-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 98024
+    },
+    {
+      "SourcePath": "examples/generated/policy-backlog-step-area-light.png",
+      "VariantPath": "examples/generated/policy-backlog-step-area-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36424
+    },
+    {
+      "SourcePath": "examples/generated/policy-readiness-circle-light.png",
+      "VariantPath": "examples/generated/policy-readiness-circle-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 26936
+    },
+    {
+      "SourcePath": "examples/generated/policy-state-step-line-dark.png",
+      "VariantPath": "examples/generated/policy-state-step-line-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 32274
+    },
+    {
+      "SourcePath": "examples/generated/powerbginfo-endpoint-snapshot.png",
+      "VariantPath": "examples/generated/powerbginfo-endpoint-snapshot.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 43156
+    },
+    {
+      "SourcePath": "examples/generated/remediation-impact-waterfall-dark.png",
+      "VariantPath": "examples/generated/remediation-impact-waterfall-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 32854
+    },
+    {
+      "SourcePath": "examples/generated/remediation-lift-dumbbell-light.png",
+      "VariantPath": "examples/generated/remediation-lift-dumbbell-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 30220
+    },
+    {
+      "SourcePath": "examples/generated/replication-mesh-critical-view.png",
+      "VariantPath": "examples/generated/replication-mesh-critical-view.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 27560
+    },
+    {
+      "SourcePath": "examples/generated/replication-mesh-dc-view.png",
+      "VariantPath": "examples/generated/replication-mesh-dc-view.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 26672
+    },
+    {
+      "SourcePath": "examples/generated/replication-mesh-offenders-view.png",
+      "VariantPath": "examples/generated/replication-mesh-offenders-view.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 31602
+    },
+    {
+      "SourcePath": "examples/generated/replication-mesh.png",
+      "VariantPath": "examples/generated/replication-mesh.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36162
+    },
+    {
+      "SourcePath": "examples/generated/report-summary-metric-strip.png",
+      "VariantPath": "examples/generated/report-summary-metric-strip.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 33298
+    },
+    {
+      "SourcePath": "examples/generated/result-mix-donut.png",
+      "VariantPath": "examples/generated/result-mix-donut.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 28848
+    },
+    {
+      "SourcePath": "examples/generated/revenue-europe-country-map-light.png",
+      "VariantPath": "examples/generated/revenue-europe-country-map-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 53082
+    },
+    {
+      "SourcePath": "examples/generated/revenue-region-map-us-states-light.png",
+      "VariantPath": "examples/generated/revenue-region-map-us-states-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 76026
+    },
+    {
+      "SourcePath": "examples/generated/revenue-tile-map-us-states-light.png",
+      "VariantPath": "examples/generated/revenue-tile-map-us-states-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 62952
+    },
+    {
+      "SourcePath": "examples/generated/security-findings-grouped-light.png",
+      "VariantPath": "examples/generated/security-findings-grouped-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 40106
+    },
+    {
+      "SourcePath": "examples/generated/security-posture-gauge-dark.png",
+      "VariantPath": "examples/generated/security-posture-gauge-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29390
+    },
+    {
+      "SourcePath": "examples/generated/security-posture-radar-dark.png",
+      "VariantPath": "examples/generated/security-posture-radar-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 44660
+    },
+    {
+      "SourcePath": "examples/generated/service-dependency-api-neighbors-view.png",
+      "VariantPath": "examples/generated/service-dependency-api-neighbors-view.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 27682
+    },
+    {
+      "SourcePath": "examples/generated/service-dependency-compact-view.png",
+      "VariantPath": "examples/generated/service-dependency-compact-view.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 35234
+    },
+    {
+      "SourcePath": "examples/generated/service-dependency-critical-dependencies-view.png",
+      "VariantPath": "examples/generated/service-dependency-critical-dependencies-view.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 18550
+    },
+    {
+      "SourcePath": "examples/generated/service-dependency.png",
+      "VariantPath": "examples/generated/service-dependency.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36118
+    },
+    {
+      "SourcePath": "examples/generated/shared-axis-coverage-grid.png",
+      "VariantPath": "examples/generated/shared-axis-coverage-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 43392
+    },
+    {
+      "SourcePath": "examples/generated/signal-windows-candlestick-light.png",
+      "VariantPath": "examples/generated/signal-windows-candlestick-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 26950
+    },
+    {
+      "SourcePath": "examples/generated/signal-windows-ohlc-dark.png",
+      "VariantPath": "examples/generated/signal-windows-ohlc-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 26970
+    },
+    {
+      "SourcePath": "examples/generated/site-topology-emea-view.png",
+      "VariantPath": "examples/generated/site-topology-emea-view.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 17010
+    },
+    {
+      "SourcePath": "examples/generated/site-topology.png",
+      "VariantPath": "examples/generated/site-topology.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36370
+    },
+    {
+      "SourcePath": "examples/generated/subnets-site-links.png",
+      "VariantPath": "examples/generated/subnets-site-links.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 35104
+    },
+    {
+      "SourcePath": "examples/generated/support-themes-word-cloud-editorial.png",
+      "VariantPath": "examples/generated/support-themes-word-cloud-editorial.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 55324
+    },
+    {
+      "SourcePath": "examples/generated/text-style-showcase-editorial.png",
+      "VariantPath": "examples/generated/text-style-showcase-editorial.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 49490
+    },
+    {
+      "SourcePath": "examples/generated/theme-font-showcase-grid.png",
+      "VariantPath": "examples/generated/theme-font-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 60704
+    },
+    {
+      "SourcePath": "examples/generated/transparent-report-summary-metric-strip.png",
+      "VariantPath": "examples/generated/transparent-report-summary-metric-strip.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 55954
+    },
+    {
+      "SourcePath": "examples/generated/travel-dotted-map-dark.png",
+      "VariantPath": "examples/generated/travel-dotted-map-dark.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 64870
+    },
+    {
+      "SourcePath": "examples/generated/visual-ad-sites-hierarchy.png",
+      "VariantPath": "examples/generated/visual-ad-sites-hierarchy.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 28782
+    },
+    {
+      "SourcePath": "examples/generated/visual-dc-connectivity-map.png",
+      "VariantPath": "examples/generated/visual-dc-connectivity-map.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29390
+    },
+    {
+      "SourcePath": "examples/generated/visual-directory-health-replication.png",
+      "VariantPath": "examples/generated/visual-directory-health-replication.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 26788
+    },
+    {
+      "SourcePath": "examples/generated/visual-directory-level-window.png",
+      "VariantPath": "examples/generated/visual-directory-level-window.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 29252
+    },
+    {
+      "SourcePath": "examples/generated/visual-geographic-region-map.png",
+      "VariantPath": "examples/generated/visual-geographic-region-map.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 59370
+    },
+    {
+      "SourcePath": "examples/generated/visual-geographic-topology-map.png",
+      "VariantPath": "examples/generated/visual-geographic-topology-map.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 49422
+    },
+    {
+      "SourcePath": "examples/generated/visual-nested-user-hierarchy-bottom-top.png",
+      "VariantPath": "examples/generated/visual-nested-user-hierarchy-bottom-top.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 89818
+    },
+    {
+      "SourcePath": "examples/generated/visual-nested-user-hierarchy-left-right.png",
+      "VariantPath": "examples/generated/visual-nested-user-hierarchy-left-right.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 86318
+    },
+    {
+      "SourcePath": "examples/generated/visual-nested-user-hierarchy-right-left.png",
+      "VariantPath": "examples/generated/visual-nested-user-hierarchy-right-left.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 86208
+    },
+    {
+      "SourcePath": "examples/generated/visual-nested-user-hierarchy.png",
+      "VariantPath": "examples/generated/visual-nested-user-hierarchy.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 88478
+    },
+    {
+      "SourcePath": "examples/generated/visual-replication-health-hub.png",
+      "VariantPath": "examples/generated/visual-replication-health-hub.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 34962
+    },
+    {
+      "SourcePath": "examples/generated/visual-replication-mesh-explorer.png",
+      "VariantPath": "examples/generated/visual-replication-mesh-explorer.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 49010
+    },
+    {
+      "SourcePath": "examples/generated/visual-reusable-regional-topology.png",
+      "VariantPath": "examples/generated/visual-reusable-regional-topology.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 44026
+    },
+    {
+      "SourcePath": "examples/generated/visual-service-dependency-map.png",
+      "VariantPath": "examples/generated/visual-service-dependency-map.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 28884
+    },
+    {
+      "SourcePath": "examples/generated/visual-site-distribution-map.png",
+      "VariantPath": "examples/generated/visual-site-distribution-map.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 61430
+    },
+    {
+      "SourcePath": "examples/generated/visual-subnets-site-links-map.png",
+      "VariantPath": "examples/generated/visual-subnets-site-links-map.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 45512
+    },
+    {
+      "SourcePath": "examples/generated/visual-team-hierarchy-builder.png",
+      "VariantPath": "examples/generated/visual-team-hierarchy-builder.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 36694
+    },
+    {
+      "SourcePath": "examples/generated/visual-topology-explorer.png",
+      "VariantPath": "examples/generated/visual-topology-explorer.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 56210
+    },
+    {
+      "SourcePath": "examples/generated/visual-wan-latency-map.png",
+      "VariantPath": "examples/generated/visual-wan-latency-map.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 51018
+    },
+    {
+      "SourcePath": "examples/generated/warnings-sparkline.png",
+      "VariantPath": "examples/generated/warnings-sparkline.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 7072
+    },
+    {
+      "SourcePath": "examples/generated/wellness-calories-intake-dashboard.png",
+      "VariantPath": "examples/generated/wellness-calories-intake-dashboard.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 49506
+    },
+    {
+      "SourcePath": "examples/generated/wellness-layered-radial-progress.png",
+      "VariantPath": "examples/generated/wellness-layered-radial-progress.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 33850
+    },
+    {
+      "SourcePath": "examples/generated/wellness-weekly-progress-dashboard.png",
+      "VariantPath": "examples/generated/wellness-weekly-progress-dashboard.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 54518
+    },
+    {
+      "SourcePath": "examples/generated/wellness-weight-data-gauge.png",
+      "VariantPath": "examples/generated/wellness-weight-data-gauge.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 20424
+    },
+    {
+      "SourcePath": "examples/generated/word-cloud-control-showcase-grid.png",
+      "VariantPath": "examples/generated/word-cloud-control-showcase-grid.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 44886
+    },
+    {
+      "SourcePath": "examples/generated/zero-value-donut-light.png",
+      "VariantPath": "examples/generated/zero-value-donut-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 27754
+    },
+    {
+      "SourcePath": "examples/generated/zero-value-funnel-stage-light.png",
+      "VariantPath": "examples/generated/zero-value-funnel-stage-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 35724
+    },
+    {
+      "SourcePath": "examples/generated/zero-value-polar-area-light.png",
+      "VariantPath": "examples/generated/zero-value-polar-area-light.webp",
+      "Format": "webp",
+      "Width": null,
+      "Bytes": 31882
+    }
+  ],
+  "ImageHtmlRewriteCount": 1,
+  "ImageHintedCount": 920,
+  "ImageBudgetExceeded": false,
+  "ImageBudgetWarnings": [],
+  "HashedAssetCount": 3,
+  "HashedAssets": [
+    {
+      "OriginalPath": "/sitemap.css",
+      "HashedPath": "/sitemap.3e2c477a.css"
+    },
+    {
+      "OriginalPath": "/css/app.css",
+      "HashedPath": "/css/app.2ffdf09e.css"
+    },
+    {
+      "OriginalPath": "/js/site.js",
+      "HashedPath": "/js/site.f947b733.js"
+    }
+  ],
+  "HtmlHashRewriteCount": 8,
+  "CssHashRewriteCount": 0,
+  "HashManifestPath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\_site\\asset-manifest.json",
+  "CacheHeadersWritten": true,
+  "CacheHeadersPath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\_site\\_headers",
+  "ReportPath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\_site\\_reports\\optimize-report.json"
+}

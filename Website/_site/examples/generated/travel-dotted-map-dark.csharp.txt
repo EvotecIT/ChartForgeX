@@ -1,0 +1,24 @@
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+var travelMap = Chart.Create()
+    .WithTitle("Travel Map")
+    .WithSubtitle("Dotted world layer with highlighted longitude and latitude points")
+    .WithTheme(ChartTheme.ReportDark())
+    .WithSize(980, 560)
+    .WithLegend(false)
+    .WithDataLabels()
+    .AddDottedMap("Visited", new[] {
+        new ChartMapPoint("Indonesia", 113.9213, -0.7893, ChartColor.FromRgb(34, 197, 94)),
+        new ChartMapPoint("Spain", -3.7038, 40.4168, ChartColor.FromRgb(34, 197, 94)),
+        new ChartMapPoint("United States", -98.5795, 39.8283, ChartColor.FromRgb(34, 197, 94)),
+        new ChartMapPoint("Norway", 8.4689, 60.4720, ChartColor.FromRgb(59, 130, 246))
+    })
+    .AddMapRouteBetweenPoints("United States to Spain", "United States", "Spain", ChartColor.FromRgb(34, 197, 94))
+    .AddMapRouteBetweenPoints("Spain to Indonesia", "Spain", "Indonesia", ChartColor.FromRgb(59, 130, 246));
+
+travelMap.SaveSvg("travel-dotted-map-dark.svg");
+travelMap.SavePng("travel-dotted-map-dark.png");
+travelMap.SaveHtml("travel-dotted-map-dark.html");

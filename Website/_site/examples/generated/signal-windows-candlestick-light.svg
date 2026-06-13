@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="460" viewBox="0 0 760 460" role="img" aria-labelledby="cfxcddab02b-title cfxcddab02b-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+<title id="cfxcddab02b-title">Signal Windows</title>
+<desc id="cfxcddab02b-desc">Signal Windows with 1 data series: Signal.</desc>
+<defs>
+<style>#cfxcddab02b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxcddab02b .cfx-crisp-stroke,#cfxcddab02b .cfx-guide-stroke,#cfxcddab02b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxcddab02b .cfx-guide-stroke{shape-rendering:crispEdges} #cfxcddab02b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxcddab02b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxcddab02b .cfx-interactive-region:hover,#cfxcddab02b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfxcddab02b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxcddab02b .cfx-crisp-stroke,#cfxcddab02b .cfx-guide-stroke,#cfxcddab02b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxcddab02b .cfx-guide-stroke{shape-rendering:crispEdges} #cfxcddab02b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxcddab02b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxcddab02b .cfx-interactive-region:hover,#cfxcddab02b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxcddab02b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxcddab02b-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxcddab02b-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxcddab02b-plotClip"><rect x="76" y="112" width="648" height="236.5" rx="8"/></clipPath>
+<linearGradient id="cfxcddab02b-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxcddab02b-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxcddab02b-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+</defs>
+<g id="cfxcddab02b">
+<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="url(#cfxcddab02b-cardSurface)" filter="url(#cfxcddab02b-softShadow)"/>
+<rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="731" height="431" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="729" height="429" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76" y="112" width="648" height="236.5" rx="8" fill="url(#cfxcddab02b-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="647" height="235.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="646" height="234.5" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Signal Windows</text>
+<text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Candlesticks summarize open, high, low, and close values</text>
+<line class="cfx-guide-stroke" x1="76" y1="348.5" x2="724" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64" y="352.5" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">0</text>
+<line class="cfx-guide-stroke" x1="76" y1="301.5" x2="724" y2="301.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64" y="305.2" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">20</text>
+<line class="cfx-guide-stroke" x1="76" y1="253.5" x2="724" y2="253.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64" y="257.9" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">40</text>
+<line class="cfx-guide-stroke" x1="76" y1="206.5" x2="724" y2="206.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64" y="210.6" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">60</text>
+<line class="cfx-guide-stroke" x1="76" y1="159.5" x2="724" y2="159.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64" y="163.3" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">80</text>
+<line class="cfx-guide-stroke" x1="76" y1="112.5" x2="724" y2="112.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64" y="116" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">100</text>
+<line class="cfx-guide-stroke" x1="130.5" y1="112" x2="130.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="130" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">W1</text>
+<line class="cfx-guide-stroke" x1="238.5" y1="112" x2="238.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="238" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">W2</text>
+<line class="cfx-guide-stroke" x1="346.5" y1="112" x2="346.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="346" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">W3</text>
+<line class="cfx-guide-stroke" x1="454.5" y1="112" x2="454.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="454" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">W4</text>
+<line class="cfx-guide-stroke" x1="562.5" y1="112" x2="562.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="562" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">W5</text>
+<line class="cfx-guide-stroke" x1="670.5" y1="112" x2="670.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="670" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">W6</text>
+<line class="cfx-guide-stroke" x1="76" y1="348.5" x2="724" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<text x="400" y="392.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Window</text>
+<line class="cfx-guide-stroke" x1="76.5" y1="112" x2="76.5" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<text transform="translate(26 230.25) rotate(-90)" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Signal</text>
+<g clip-path="url(#cfxcddab02b-plotClip)">
+<g data-cfx-role="candlestick" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-open="42" data-cfx-high="51" data-cfx-low="35" data-cfx-close="48" data-cfx-status="rising" role="img" aria-label="open 42, high 51, low 35, close 48">
+<title>open 42, high 51, low 35, close 48</title>
+<line data-cfx-role="candlestick-wick" x1="130" y1="227.885" x2="130" y2="265.725" stroke="#10B981" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<rect data-cfx-role="candlestick-body" x="119.2" y="234.98" width="21.6" height="14.19" rx="2.5" fill="#10B981" fill-opacity="0.23" stroke="#10B981" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="130" y="220.48" text-anchor="middle" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">48</text>
+<g data-cfx-role="candlestick" data-cfx-series="0" data-cfx-point="1" data-cfx-x="2" data-cfx-open="58" data-cfx-high="66" data-cfx-low="49" data-cfx-close="54" data-cfx-status="falling" role="img" aria-label="open 58, high 66, low 49, close 54">
+<title>open 58, high 66, low 49, close 54</title>
+<line data-cfx-role="candlestick-wick" x1="238" y1="192.41" x2="238" y2="232.615" stroke="#EF4444" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<rect data-cfx-role="candlestick-body" x="227.2" y="211.33" width="21.6" height="9.46" rx="2.5" fill="#EF4444" fill-opacity="0.84" stroke="#EF4444" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="238" y="196.83" text-anchor="middle" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">54</text>
+<g data-cfx-role="candlestick" data-cfx-series="0" data-cfx-point="2" data-cfx-x="3" data-cfx-open="63" data-cfx-high="78" data-cfx-low="54" data-cfx-close="72" data-cfx-status="rising" role="img" aria-label="open 63, high 78, low 54, close 72">
+<title>open 63, high 78, low 54, close 72</title>
+<line data-cfx-role="candlestick-wick" x1="346" y1="164.03" x2="346" y2="220.79" stroke="#10B981" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<rect data-cfx-role="candlestick-body" x="335.2" y="178.22" width="21.6" height="21.285" rx="2.5" fill="#10B981" fill-opacity="0.23" stroke="#10B981" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="346" y="163.72" text-anchor="middle" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">72</text>
+<g data-cfx-role="candlestick" data-cfx-series="0" data-cfx-point="3" data-cfx-x="4" data-cfx-open="72" data-cfx-high="84" data-cfx-low="67" data-cfx-close="76" data-cfx-status="rising" role="img" aria-label="open 72, high 84, low 67, close 76">
+<title>open 72, high 84, low 67, close 76</title>
+<line data-cfx-role="candlestick-wick" x1="454" y1="149.84" x2="454" y2="190.045" stroke="#10B981" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<rect data-cfx-role="candlestick-body" x="443.2" y="168.76" width="21.6" height="9.46" rx="2.5" fill="#10B981" fill-opacity="0.23" stroke="#10B981" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="454" y="154.26" text-anchor="middle" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">76</text>
+<g data-cfx-role="candlestick" data-cfx-series="0" data-cfx-point="4" data-cfx-x="5" data-cfx-open="76" data-cfx-high="82" data-cfx-low="68" data-cfx-close="71" data-cfx-status="falling" role="img" aria-label="open 76, high 82, low 68, close 71">
+<title>open 76, high 82, low 68, close 71</title>
+<line data-cfx-role="candlestick-wick" x1="562" y1="154.57" x2="562" y2="187.68" stroke="#EF4444" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<rect data-cfx-role="candlestick-body" x="551.2" y="168.76" width="21.6" height="11.825" rx="2.5" fill="#EF4444" fill-opacity="0.84" stroke="#EF4444" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="562" y="154.26" text-anchor="middle" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">71</text>
+<g data-cfx-role="candlestick" data-cfx-series="0" data-cfx-point="5" data-cfx-x="6" data-cfx-open="71" data-cfx-high="88" data-cfx-low="69" data-cfx-close="83" data-cfx-status="rising" role="img" aria-label="open 71, high 88, low 69, close 83">
+<title>open 71, high 88, low 69, close 83</title>
+<line data-cfx-role="candlestick-wick" x1="670" y1="140.38" x2="670" y2="185.315" stroke="#10B981" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<rect data-cfx-role="candlestick-body" x="659.2" y="152.205" width="21.6" height="28.38" rx="2.5" fill="#10B981" fill-opacity="0.23" stroke="#10B981" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="670" y="137.705" text-anchor="middle" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">83</text>
+</g>
+<g data-cfx-role="legend" data-cfx-position="Bottom">
+<g data-cfx-role="legend-row" transform="translate(334.91 432)">
+<g data-cfx-role="legend-item" data-cfx-series="0" data-cfx-kind="Candlestick" data-cfx-label="Signal">
+<line x1="9" y1="-10" x2="9" y2="2" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>
+<rect x="4" y="-7" width="10" height="6" rx="1.5" fill="#2563EB"/>
+<text data-cfx-role="legend-label" data-cfx-series="0" x="26" y="0" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Signal</text>
+</g>
+</g>
+</g>
+</g>
+</svg>

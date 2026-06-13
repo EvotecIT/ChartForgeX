@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="560" viewBox="0 0 880 560" role="img" aria-labelledby="cfx0b3e2c18-title cfx0b3e2c18-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+<title id="cfx0b3e2c18-title">Certificate Transparency by Region</title>
+<desc id="cfx0b3e2c18-desc">Certificate Transparency by Region with 1 data series: Logged certificates.</desc>
+<defs>
+<style>#cfx0b3e2c18 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx0b3e2c18 .cfx-crisp-stroke,#cfx0b3e2c18 .cfx-guide-stroke,#cfx0b3e2c18 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx0b3e2c18 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx0b3e2c18 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx0b3e2c18 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx0b3e2c18 .cfx-interactive-region:hover,#cfx0b3e2c18 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfx0b3e2c18 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx0b3e2c18 .cfx-crisp-stroke,#cfx0b3e2c18 .cfx-guide-stroke,#cfx0b3e2c18 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx0b3e2c18 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx0b3e2c18 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx0b3e2c18 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx0b3e2c18 .cfx-interactive-region:hover,#cfx0b3e2c18 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx0b3e2c18-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfx0b3e2c18-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx0b3e2c18-plotClip"><rect x="136.96" y="112" width="707.04" height="336.5" rx="8"/></clipPath>
+<linearGradient id="cfx0b3e2c18-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx0b3e2c18-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+</defs>
+<g id="cfx0b3e2c18">
+<rect data-cfx-role="card-surface" x="14" y="14" width="852" height="532" rx="12" fill="url(#cfx0b3e2c18-cardSurface)" filter="url(#cfx0b3e2c18-softShadow)"/>
+<rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="851" height="531" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="849" height="529" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="136.96" y="112" width="707.04" height="336.5" rx="8" fill="url(#cfx0b3e2c18-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="137.46" y="112.5" width="706.04" height="335.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="137.96" y="113" width="705.04" height="334.5" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Certificate Transparency by Region</text>
+<text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Horizontal bars keep region names readable at catalog size</text>
+<line class="cfx-guide-stroke" x1="136.5" y1="112" x2="136.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="144.96" y="469.5" text-anchor="start" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">0</text>
+<line class="cfx-guide-stroke" x1="237.5" y1="112" x2="237.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="237.966" y="469.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">500k</text>
+<line class="cfx-guide-stroke" x1="338.5" y1="112" x2="338.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="338.971" y="469.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">1M</text>
+<line class="cfx-guide-stroke" x1="439.5" y1="112" x2="439.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="439.977" y="469.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">1.5M</text>
+<line class="cfx-guide-stroke" x1="540.5" y1="112" x2="540.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="540.983" y="469.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">2M</text>
+<line class="cfx-guide-stroke" x1="641.5" y1="112" x2="641.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="641.989" y="469.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">2.5M</text>
+<line class="cfx-guide-stroke" x1="742.5" y1="112" x2="742.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="742.994" y="469.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">3M</text>
+<line class="cfx-guide-stroke" x1="844.5" y1="112" x2="844.5" y2="448.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.72"/>
+<text x="836" y="469.5" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">3.5M</text>
+<line class="cfx-guide-stroke" x1="136.96" y1="420.5" x2="844" y2="420.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.28"/>
+<text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="124.96" y="424.458" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">North America</text>
+<line class="cfx-guide-stroke" x1="136.96" y1="364.5" x2="844" y2="364.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.28"/>
+<text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="124.96" y="368.375" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Western Europe</text>
+<line class="cfx-guide-stroke" x1="136.96" y1="308.5" x2="844" y2="308.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.28"/>
+<text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="124.96" y="312.292" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Central Europe</text>
+<line class="cfx-guide-stroke" x1="136.96" y1="252.5" x2="844" y2="252.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.28"/>
+<text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="124.96" y="256.208" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Asia Pacific</text>
+<line class="cfx-guide-stroke" x1="136.96" y1="196.5" x2="844" y2="196.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.28"/>
+<text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="124.96" y="200.125" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Latin America</text>
+<line class="cfx-guide-stroke" x1="136.96" y1="140.5" x2="844" y2="140.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.28"/>
+<text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="124.96" y="144.042" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Middle East</text>
+<line class="cfx-guide-stroke" x1="136.96" y1="448.5" x2="844" y2="448.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<text x="490.48" y="492.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Certificates</text>
+<line class="cfx-guide-stroke" x1="136.5" y1="112" x2="136.5" y2="448.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<text transform="translate(26 280.25) rotate(-90)" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Region</text>
+<g clip-path="url(#cfx0b3e2c18-plotClip)">
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="0" data-cfx-category="1" data-cfx-value="1200000" data-cfx-base="0" data-cfx-color="#2563EB" x="136.96" y="405.458" width="242.414" height="30" rx="7" fill="url(#cfx0b3e2c18-seriesFill0)" opacity="0.94"/>
+<line data-cfx-role="bar-highlight" x1="137.96" y1="406.458" x2="378.374" y2="406.458" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="1" data-cfx-category="2" data-cfx-value="2350000" data-cfx-base="0" data-cfx-color="#2563EB" x="136.96" y="349.375" width="474.727" height="30" rx="7" fill="url(#cfx0b3e2c18-seriesFill0)" opacity="0.94"/>
+<line data-cfx-role="bar-highlight" x1="137.96" y1="350.375" x2="610.687" y2="350.375" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="2" data-cfx-category="3" data-cfx-value="1840000" data-cfx-base="0" data-cfx-color="#2563EB" x="136.96" y="293.292" width="371.701" height="30" rx="7" fill="url(#cfx0b3e2c18-seriesFill0)" opacity="0.94"/>
+<line data-cfx-role="bar-highlight" x1="137.96" y1="294.292" x2="507.661" y2="294.292" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="3" data-cfx-category="4" data-cfx-value="3120000" data-cfx-base="0" data-cfx-color="#2563EB" x="136.96" y="237.208" width="630.276" height="30" rx="7" fill="url(#cfx0b3e2c18-seriesFill0)" opacity="0.94"/>
+<line data-cfx-role="bar-highlight" x1="137.96" y1="238.208" x2="766.236" y2="238.208" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="4" data-cfx-category="5" data-cfx-value="980000" data-cfx-base="0" data-cfx-color="#2563EB" x="136.96" y="181.125" width="197.971" height="30" rx="7" fill="url(#cfx0b3e2c18-seriesFill0)" opacity="0.94"/>
+<line data-cfx-role="bar-highlight" x1="137.96" y1="182.125" x2="333.931" y2="182.125" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="5" data-cfx-category="6" data-cfx-value="760000" data-cfx-base="0" data-cfx-color="#2563EB" x="136.96" y="125.042" width="153.529" height="30" rx="7" fill="url(#cfx0b3e2c18-seriesFill0)" opacity="0.94"/>
+<line data-cfx-role="bar-highlight" x1="137.96" y1="126.042" x2="289.489" y2="126.042" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
+</g>
+<g data-cfx-role="legend" data-cfx-position="Bottom">
+<g data-cfx-role="legend-row" transform="translate(355.695 532)">
+<g data-cfx-role="legend-item" data-cfx-series="0" data-cfx-kind="HorizontalBar" data-cfx-label="Logged certificates">
+<rect x="0" y="-9" width="10" height="10" rx="2" fill="#2563EB"/>
+<text data-cfx-role="legend-label" data-cfx-series="0" x="26" y="0" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Logged certificates</text>
+</g>
+</g>
+</g>
+</g>
+</svg>

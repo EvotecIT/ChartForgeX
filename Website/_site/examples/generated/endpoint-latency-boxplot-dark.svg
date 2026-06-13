@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="460" viewBox="0 0 760 460" role="img" aria-labelledby="cfxfe8a6574-title cfxfe8a6574-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+<title id="cfxfe8a6574-title">Endpoint Latency Spread</title>
+<desc id="cfxfe8a6574-desc">Endpoint Latency Spread with 1 data series: Latency.</desc>
+<defs>
+<style>#cfxfe8a6574 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxfe8a6574 .cfx-crisp-stroke,#cfxfe8a6574 .cfx-guide-stroke,#cfxfe8a6574 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxfe8a6574 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxfe8a6574 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxfe8a6574 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxfe8a6574 .cfx-interactive-region:hover,#cfxfe8a6574 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfxfe8a6574 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxfe8a6574 .cfx-crisp-stroke,#cfxfe8a6574 .cfx-guide-stroke,#cfxfe8a6574 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxfe8a6574 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxfe8a6574 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxfe8a6574 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxfe8a6574 .cfx-interactive-region:hover,#cfxfe8a6574 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxfe8a6574-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.097"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.22"/></filter>
+<linearGradient id="cfxfe8a6574-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxfe8a6574-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxfe8a6574-plotClip"><rect x="85.92" y="112" width="638.08" height="236.5" rx="8"/></clipPath>
+<linearGradient id="cfxfe8a6574-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#60A5FA" stop-opacity="0.32"/><stop offset="100%" stop-color="#60A5FA" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxfe8a6574-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#73B0FB" stop-opacity="1"/><stop offset="100%" stop-color="#5A9BEB" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#60A5FA" stop-opacity="1"/><stop offset="100%" stop-color="#60A5FA" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#22D3EE" stop-opacity="1"/><stop offset="100%" stop-color="#22D3EE" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#34D399" stop-opacity="1"/><stop offset="100%" stop-color="#34D399" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FBBF24" stop-opacity="1"/><stop offset="100%" stop-color="#FBBF24" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F87171" stop-opacity="1"/><stop offset="100%" stop-color="#F87171" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#A78BFA" stop-opacity="1"/><stop offset="100%" stop-color="#A78BFA" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F472B6" stop-opacity="1"/><stop offset="100%" stop-color="#F472B6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxfe8a6574-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2DD4BF" stop-opacity="1"/><stop offset="100%" stop-color="#2DD4BF" stop-opacity="0.78"/></linearGradient>
+</defs>
+<g id="cfxfe8a6574">
+<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="url(#cfxfe8a6574-cardSurface)" filter="url(#cfxfe8a6574-softShadow)"/>
+<rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="731" height="431" rx="11.5" fill="none" stroke="rgba(148,163,184,0.133)"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="729" height="429" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="85.92" y="112" width="638.08" height="236.5" rx="8" fill="url(#cfxfe8a6574-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="86.42" y="112.5" width="637.08" height="235.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.11)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="86.92" y="113" width="636.08" height="234.5" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<text data-cfx-role="chart-title" x="40" y="52" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Endpoint Latency Spread</text>
+<text data-cfx-role="chart-subtitle" x="40" y="79" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Box plots summarize min, quartiles, median, and max</text>
+<line class="cfx-guide-stroke" x1="85.92" y1="348.5" x2="724" y2="348.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="73.92" y="352.5" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">0 ms</text>
+<line class="cfx-guide-stroke" x1="85.92" y1="301.5" x2="724" y2="301.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="73.92" y="305.2" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">50 ms</text>
+<line class="cfx-guide-stroke" x1="85.92" y1="253.5" x2="724" y2="253.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="73.92" y="257.9" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">100 ms</text>
+<line class="cfx-guide-stroke" x1="85.92" y1="206.5" x2="724" y2="206.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="73.92" y="210.6" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">150 ms</text>
+<line class="cfx-guide-stroke" x1="85.92" y1="159.5" x2="724" y2="159.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="73.92" y="163.3" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">200 ms</text>
+<line class="cfx-guide-stroke" x1="85.92" y1="112.5" x2="724" y2="112.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="1"/>
+<text x="73.92" y="116" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">250 ms</text>
+<line class="cfx-guide-stroke" x1="165.5" y1="112" x2="165.5" y2="348.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="165.68" y="369.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">DNS</text>
+<line class="cfx-guide-stroke" x1="325.5" y1="112" x2="325.5" y2="348.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="325.2" y="369.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">TCP</text>
+<line class="cfx-guide-stroke" x1="484.5" y1="112" x2="484.5" y2="348.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="484.72" y="369.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">TLS</text>
+<line class="cfx-guide-stroke" x1="644.5" y1="112" x2="644.5" y2="348.5" stroke="rgba(148,163,184,0.176)" stroke-width="1" opacity="0.42"/>
+<text x="644.24" y="369.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">HTTP</text>
+<line class="cfx-guide-stroke" x1="85.92" y1="348.5" x2="724" y2="348.5" stroke="rgba(203,213,225,0.412)" stroke-width="1.2"/>
+<text x="404.96" y="392.5" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Probe</text>
+<line class="cfx-guide-stroke" x1="85.5" y1="112" x2="85.5" y2="348.5" stroke="rgba(203,213,225,0.412)" stroke-width="1.2"/>
+<text transform="translate(26 230.25) rotate(-90)" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Response time</text>
+<g clip-path="url(#cfxfe8a6574-plotClip)">
+<g data-cfx-role="box-plot" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-min="18" data-cfx-q1="24" data-cfx-median="31" data-cfx-q3="38" data-cfx-max="48" role="img" aria-label="18 ms-48 ms, median 31 ms">
+<title>18 ms-48 ms, median 31 ms</title>
+<line data-cfx-role="box-whisker" x1="165.68" y1="303.092" x2="165.68" y2="331.472" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<line data-cfx-role="box-cap" x1="153.876" y1="331.472" x2="177.484" y2="331.472" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<line data-cfx-role="box-cap" x1="153.876" y1="303.092" x2="177.484" y2="303.092" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<rect data-cfx-role="box-body" x="149.728" y="312.552" width="31.904" height="13.244" rx="5" fill="#60A5FA" opacity="0.22" stroke="#60A5FA" stroke-width="2"/>
+<line data-cfx-role="box-median" x1="149.728" y1="319.174" x2="181.632" y2="319.174" stroke="#60A5FA" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<text data-cfx-role="data-label" x="165.68" y="301.552" text-anchor="middle" dominant-baseline="middle" fill="#F8FAFC" stroke="#101827" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">31 ms</text>
+<g data-cfx-role="box-plot" data-cfx-series="0" data-cfx-point="1" data-cfx-x="2" data-cfx-min="42" data-cfx-q1="56" data-cfx-median="64" data-cfx-q3="82" data-cfx-max="104" role="img" aria-label="42 ms-104 ms, median 64 ms">
+<title>42 ms-104 ms, median 64 ms</title>
+<line data-cfx-role="box-whisker" x1="325.2" y1="250.116" x2="325.2" y2="308.768" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<line data-cfx-role="box-cap" x1="313.396" y1="308.768" x2="337.004" y2="308.768" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<line data-cfx-role="box-cap" x1="313.396" y1="250.116" x2="337.004" y2="250.116" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<rect data-cfx-role="box-body" x="309.248" y="270.928" width="31.904" height="24.596" rx="5" fill="#60A5FA" opacity="0.22" stroke="#60A5FA" stroke-width="2"/>
+<line data-cfx-role="box-median" x1="309.248" y1="287.956" x2="341.152" y2="287.956" stroke="#60A5FA" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<text data-cfx-role="data-label" x="325.2" y="259.928" text-anchor="middle" dominant-baseline="middle" fill="#F8FAFC" stroke="#101827" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">64 ms</text>
+<g data-cfx-role="box-plot" data-cfx-series="0" data-cfx-point="2" data-cfx-x="3" data-cfx-min="86" data-cfx-q1="102" data-cfx-median="118" data-cfx-q3="146" data-cfx-max="188" role="img" aria-label="86 ms-188 ms, median 118 ms">
+<title>86 ms-188 ms, median 118 ms</title>
+<line data-cfx-role="box-whisker" x1="484.72" y1="170.652" x2="484.72" y2="267.144" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<line data-cfx-role="box-cap" x1="472.916" y1="267.144" x2="496.524" y2="267.144" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<line data-cfx-role="box-cap" x1="472.916" y1="170.652" x2="496.524" y2="170.652" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<rect data-cfx-role="box-body" x="468.768" y="210.384" width="31.904" height="41.624" rx="5" fill="#60A5FA" opacity="0.22" stroke="#60A5FA" stroke-width="2"/>
+<line data-cfx-role="box-median" x1="468.768" y1="236.872" x2="500.672" y2="236.872" stroke="#60A5FA" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<text data-cfx-role="data-label" x="484.72" y="199.384" text-anchor="middle" dominant-baseline="middle" fill="#F8FAFC" stroke="#101827" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">118 ms</text>
+<g data-cfx-role="box-plot" data-cfx-series="0" data-cfx-point="3" data-cfx-x="4" data-cfx-min="112" data-cfx-q1="128" data-cfx-median="146" data-cfx-q3="184" data-cfx-max="228" role="img" aria-label="112 ms-228 ms, median 146 ms">
+<title>112 ms-228 ms, median 146 ms</title>
+<line data-cfx-role="box-whisker" x1="644.24" y1="132.812" x2="644.24" y2="242.548" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" opacity="1"/>
+<line data-cfx-role="box-cap" x1="632.436" y1="242.548" x2="656.044" y2="242.548" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<line data-cfx-role="box-cap" x1="632.436" y1="132.812" x2="656.044" y2="132.812" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+<rect data-cfx-role="box-body" x="628.288" y="174.436" width="31.904" height="52.976" rx="5" fill="#60A5FA" opacity="0.22" stroke="#60A5FA" stroke-width="2"/>
+<line data-cfx-role="box-median" x1="628.288" y1="210.384" x2="660.192" y2="210.384" stroke="#60A5FA" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<text data-cfx-role="data-label" x="644.24" y="163.436" text-anchor="middle" dominant-baseline="middle" fill="#F8FAFC" stroke="#101827" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">146 ms</text>
+</g>
+<g data-cfx-role="legend" data-cfx-position="Bottom">
+<g data-cfx-role="legend-row" transform="translate(331.805 432)">
+<g data-cfx-role="legend-item" data-cfx-series="0" data-cfx-kind="BoxPlot" data-cfx-label="Latency">
+<rect x="0" y="-9" width="10" height="10" rx="2" fill="#60A5FA"/>
+<text data-cfx-role="legend-label" data-cfx-series="0" x="26" y="0" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Latency</text>
+</g>
+</g>
+</g>
+</g>
+</svg>

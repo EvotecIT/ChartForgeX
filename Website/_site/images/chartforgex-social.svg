@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="ChartForgeX social card">
+  <rect width="1200" height="630" fill="#080a10"/>
+  <circle cx="1040" cy="120" r="220" fill="#202058" opacity=".55"/>
+  <circle cx="220" cy="580" r="280" fill="#164d48" opacity=".45"/>
+  <text x="90" y="220" fill="#55d6be" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="8">CHARTFORGEX</text>
+  <text x="90" y="330" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="86" font-weight="800">Dependency-free</text>
+  <text x="90" y="430" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="86" font-weight="800">chart rendering</text>
+  <path d="M790 440h270" stroke="#55d6be" stroke-width="8" stroke-linecap="round"/>
+  <path d="M820 400V270m90 130V210m90 190V250" stroke="#8b8cff" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="820" cy="270" r="18" fill="#ffb86b"/>
+  <circle cx="910" cy="210" r="18" fill="#55d6be"/>
+  <circle cx="1000" cy="250" r="18" fill="#8b8cff"/>
+</svg>

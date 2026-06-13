@@ -1,0 +1,72 @@
+{
+  "site": "ChartForgeX",
+  "templates": {},
+  "pages": [
+    {
+      "sourcePath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\pages\\index.md",
+      "outputPath": "/",
+      "canonicalUrl": "https://chartforgex.evotec.xyz/",
+      "collection": "pages",
+      "language": "en",
+      "title": "ChartForgeX - dependency-free chart rendering for .NET",
+      "seoTitle": "ChartForgeX - dependency-free chart rendering for .NET",
+      "description": "Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites.",
+      "seoDescription": "Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites."
+    },
+    {
+      "sourcePath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\pages\\404.md",
+      "outputPath": "/404/",
+      "canonicalUrl": "https://chartforgex.evotec.xyz/404/",
+      "collection": "pages",
+      "language": "en",
+      "title": "Page not found",
+      "seoTitle": "Page not found",
+      "description": "The requested ChartForgeX page could not be found.",
+      "seoDescription": "The requested ChartForgeX page could not be found."
+    },
+    {
+      "sourcePath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\docs\\index.md",
+      "outputPath": "/docs/",
+      "canonicalUrl": "https://chartforgex.evotec.xyz/docs/",
+      "collection": "docs",
+      "language": "en",
+      "title": "ChartForgeX documentation",
+      "seoTitle": "ChartForgeX documentation",
+      "description": "Documentation entry point for the ChartForgeX dedicated project site pilot.",
+      "seoDescription": "Documentation entry point for the ChartForgeX dedicated project site pilot."
+    },
+    {
+      "sourcePath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\docs\\deployment.md",
+      "outputPath": "/docs/deployment/",
+      "canonicalUrl": "https://chartforgex.evotec.xyz/docs/deployment/",
+      "collection": "docs",
+      "language": "en",
+      "title": "Deployment",
+      "seoTitle": "Deployment",
+      "description": "Deployment and local validation shape for the ChartForgeX dedicated project site.",
+      "seoDescription": "Deployment and local validation shape for the ChartForgeX dedicated project site."
+    },
+    {
+      "sourcePath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\pages\\examples.md",
+      "outputPath": "/examples/",
+      "canonicalUrl": "https://chartforgex.evotec.xyz/examples/",
+      "collection": "pages",
+      "language": "en",
+      "title": "ChartForgeX examples",
+      "seoTitle": "ChartForgeX examples",
+      "description": "Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs.",
+      "seoDescription": "Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs."
+    },
+    {
+      "sourcePath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\pages\\gallery.md",
+      "outputPath": "/gallery/",
+      "canonicalUrl": "https://chartforgex.evotec.xyz/gallery/",
+      "collection": "pages",
+      "language": "en",
+      "title": "ChartForgeX gallery",
+      "seoTitle": "ChartForgeX gallery",
+      "description": "Browse the generated ChartForgeX visual catalog by chart family, theme, and output type.",
+      "seoDescription": "Browse the generated ChartForgeX visual catalog by chart family, theme, and output type."
+    }
+  ]
+}

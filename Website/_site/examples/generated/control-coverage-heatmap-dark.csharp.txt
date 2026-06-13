@@ -1,0 +1,31 @@
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+static IEnumerable<ChartPoint> Points(params double[] values) {
+    for (var index = 0; index < values.Length; index++) {
+        yield return new ChartPoint(index + 1, values[index]);
+    }
+}
+
+var heatmap = Chart.Create()
+    .WithTitle("Control Coverage Matrix")
+    .WithSubtitle("Heatmap rows for comparing domain groups across security controls")
+    .WithXAxis("Control")
+    .WithYAxis("Domain group")
+    .WithTheme(ChartTheme.ReportDark())
+    .WithSize(980, 560)
+    .WithLegend(false)
+    .WithDataLabels()
+    .WithHeatmapScale(ChartHeatmapScale.Semantic)
+    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT", "CT")
+    .AddHeatmapRow("Primary domains", Points(96, 88, 74, 63, 58, 92))
+    .AddHeatmapRow("Parked domains", Points(74, 62, 51, 42, 38, 66))
+    .AddHeatmapRow("Regional domains", Points(82, 77, 68, 54, 49, 80))
+    .AddHeatmapRow("Acquired domains", Points(58, 43, 36, 28, 25, 52));
+
+heatmap.SaveSvg("control-coverage-heatmap-dark.svg");
+heatmap.SavePng("control-coverage-heatmap-dark.png");
+heatmap.SaveHtml("control-coverage-heatmap-dark.html");

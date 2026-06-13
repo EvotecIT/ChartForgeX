@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "site": "ChartForgeX",
+  "noIndexTrusted": true,
+  "htmlRoutesTrusted": true,
+  "entries": [
+    {
+      "path": "/",
+      "title": "ChartForgeX - dependency-free chart rendering for .NET",
+      "description": "Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites.",
+      "section": "pages",
+      "alternates": [],
+      "imageUrls": [],
+      "videoUrls": [],
+      "noIndex": false
+    },
+    {
+      "path": "/404/",
+      "title": "Page not found",
+      "description": "The requested ChartForgeX page could not be found.",
+      "section": "pages",
+      "alternates": [],
+      "imageUrls": [],
+      "videoUrls": [],
+      "noIndex": false
+    },
+    {
+      "path": "/docs/",
+      "title": "ChartForgeX documentation",
+      "description": "Documentation entry point for the ChartForgeX dedicated project site pilot.",
+      "section": "docs",
+      "alternates": [],
+      "imageUrls": [],
+      "videoUrls": [],
+      "noIndex": false
+    },
+    {
+      "path": "/docs/deployment/",
+      "title": "Deployment",
+      "description": "Deployment and local validation shape for the ChartForgeX dedicated project site.",
+      "section": "docs",
+      "alternates": [],
+      "imageUrls": [],
+      "videoUrls": [],
+      "noIndex": false
+    },
+    {
+      "path": "/examples/",
+      "title": "ChartForgeX examples",
+      "description": "Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs.",
+      "section": "pages",
+      "alternates": [],
+      "imageUrls": [],
+      "videoUrls": [],
+      "noIndex": false
+    },
+    {
+      "path": "/gallery/",
+      "title": "ChartForgeX gallery",
+      "description": "Browse the generated ChartForgeX visual catalog by chart family, theme, and output type.",
+      "section": "pages",
+      "alternates": [],
+      "imageUrls": [],
+      "videoUrls": [],
+      "noIndex": false
+    }
+  ]
+}

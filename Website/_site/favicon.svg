@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ChartForgeX">
+  <rect width="64" height="64" rx="14" fill="#080a10"/>
+  <path d="M14 45h36" stroke="#55d6be" stroke-width="4" stroke-linecap="round"/>
+  <path d="M18 40V27m14 13V18m14 22V25" stroke="#8b8cff" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="18" cy="27" r="4" fill="#ffb86b"/>
+  <circle cx="32" cy="18" r="4" fill="#55d6be"/>
+  <circle cx="46" cy="25" r="4" fill="#8b8cff"/>
+</svg>

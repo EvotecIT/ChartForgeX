@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chartforgex.evotec.xyz/sitemap.xml
+Sitemap: https://chartforgex.evotec.xyz/sitemap-index.xml

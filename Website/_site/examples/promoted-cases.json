@@ -1,0 +1,85 @@
+{
+  "$schema": "https://chartforgex.evotec.xyz/schemas/promoted-cases.schema.json",
+  "project": "ChartForgeX",
+  "generatedAtSource": "Website/static/examples/promoted-cases.json",
+  "cases": [
+    {
+      "id": "dashboard-chart-portfolio-grid",
+      "title": "Dashboard Chart Portfolio",
+      "category": "dashboard",
+      "summary": "Reusable KPI, attendance, restaurant, and MRR patterns composed into a single report-ready visual grid.",
+      "tags": ["dashboard", "grid", "kpi", "mrr", "restaurant", "attendance", "portfolio"],
+      "source": {
+        "path": "ChartForgeX.Examples/DashboardPortfolioExamples.cs",
+        "entry": "DashboardPortfolioExamples.Write(output, pngOutputScale)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/DashboardPortfolioExamples.cs#L73-L75"
+      },
+      "build": {
+        "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release",
+        "outputPath": "ChartForgeX.Examples\\bin\\Release\\net8.0\\output\\dashboard-chart-portfolio-grid.html"
+      },
+      "artifacts": {
+        "svg": "/examples/generated/dashboard-chart-portfolio-grid.svg"
+      }
+    },
+    {
+      "id": "control-coverage-heatmap-dark",
+      "title": "Control Coverage Matrix",
+      "category": "matrix",
+      "summary": "Heatmap rows for comparing domain groups across security controls with semantic scale and data labels.",
+      "tags": ["matrix", "heatmap", "controls", "domain", "security", "coverage"],
+      "source": {
+        "path": "ChartForgeX.Examples/Program.cs",
+        "entry": "SaveChart(heatmap, \"control-coverage-heatmap-dark\")",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Program.cs#L116-L130"
+      },
+      "build": {
+        "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release",
+        "outputPath": "ChartForgeX.Examples\\bin\\Release\\net8.0\\output\\control-coverage-heatmap-dark.html"
+      },
+      "artifacts": {
+        "html": "/examples/generated/control-coverage-heatmap-dark.html",
+        "svg": "/examples/generated/control-coverage-heatmap-dark.svg",
+        "png": "/examples/generated/control-coverage-heatmap-dark.png"
+      }
+    },
+    {
+      "id": "revenue-europe-country-map-light",
+      "title": "Europe Revenue Dotted Map",
+      "category": "map",
+      "summary": "Dotted regional map output with value-colored points, labels, and report-friendly static export.",
+      "tags": ["map", "europe", "revenue", "dotted", "geography", "route"],
+      "source": {
+        "path": "ChartForgeX.Examples/MapExamples.cs",
+        "entry": "CreateEuropeRevenueDottedMap()",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/MapExamples.cs#L10"
+      },
+      "build": {
+        "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release",
+        "outputPath": "ChartForgeX.Examples\\bin\\Release\\net8.0\\output\\revenue-europe-country-map-light.html"
+      },
+      "artifacts": {
+        "svg": "/examples/generated/revenue-europe-country-map-light.svg"
+      }
+    },
+    {
+      "id": "visual-geographic-topology-map",
+      "title": "Geographic Topology Map",
+      "category": "topology",
+      "summary": "Topology-native geographic layout with site markers, curved WAN route arcs, callouts, and metadata hooks.",
+      "tags": ["topology", "geographic", "wan", "route", "site", "markers", "callouts"],
+      "source": {
+        "path": "ChartForgeX.Examples/TopologyVisualExamples.cs",
+        "entry": "BuildGeographicTopologyMap()",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/TopologyVisualExamples.cs#L40"
+      },
+      "build": {
+        "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release -- --topology-only",
+        "outputPath": "ChartForgeX.Examples\\bin\\Release\\net8.0\\output\\topology-demo\\visual-geographic-topology-map.html"
+      },
+      "artifacts": {
+        "svg": "/examples/generated/visual-geographic-topology-map.svg"
+      }
+    }
+  ]
+}

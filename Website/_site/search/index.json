@@ -1,0 +1,138 @@
+[
+  {
+    "title": "ChartForgeX - dependency-free chart rendering for .NET",
+    "url": "/",
+    "description": "Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites.",
+    "snippet": "Create polished SVG, PNG, and static HTML visuals for .NET reports, dashboards, documentation, and generated websites without shipping a JavaScript chart runtime. The dedicated site owns the Evotec-aligned chrome, navigation, search, docs,...",
+    "collection": "pages",
+    "kind": "home",
+    "weight": 6,
+    "searchText": "ChartForgeX - dependency-free chart rendering for .NET Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites. Create polished SVG, PNG, and static HTML visuals for .NET reports, dashboards, documentation, and generated websites without shipping a JavaScript chart runtime. The dedicated site owns the Evotec-aligned chrome, navigation, search, docs,... pages Home ChartForgeX - dependency-free chart rendering for .NET Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites. index pages home https://chartforgex.evotec.xyz/",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:index",
+    "meta": {
+      "title": "ChartForgeX - dependency-free chart rendering for .NET",
+      "description": "Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites.",
+      "slug": "index",
+      "collection": "pages",
+      "layout": "home",
+      "canonical": "https://chartforgex.evotec.xyz/"
+    }
+  },
+  {
+    "title": "ChartForgeX documentation",
+    "url": "/docs/",
+    "description": "Documentation entry point for the ChartForgeX dedicated project site pilot.",
+    "snippet": "This dedicated site starts as a visual/demo pilot. The goal is to prove a repeatable model for Evotec projects that need more than a catalog card, without turning the main hub into a giant per-project documentation app. Use the same deploym...",
+    "collection": "docs",
+    "kind": "page",
+    "weight": 3.9,
+    "searchText": "ChartForgeX documentation Documentation entry point for the ChartForgeX dedicated project site pilot. This dedicated site starts as a visual/demo pilot. The goal is to prove a repeatable model for Evotec projects that need more than a catalog card, without turning the main hub into a giant per-project documentation app. Use the same deploym... docs Page ChartForgeX documentation Documentation entry point for the ChartForgeX dedicated project site pilot. index docs docs https://chartforgex.evotec.xyz/docs/ \u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css\u0022 media=\u0022(prefers-color-scheme: light)\u0022 /\u003E\r\n\u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css\u0022 media=\u0022(prefers-color-scheme: dark)\u0022 /\u003E \u003Cscript\u003E(function(){window.Prism=window.Prism||{};window.Prism.manual=true;})();\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript\u003E(function(){var targetPath=\u0027https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/\u0027;var attempts=0;var maxAttempts=8;var delayMs=40;var warned=false;var hasCode=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022]\u0027));};var hasTokens=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022] .token\u0027));};var run=function(){attempts\u002B\u002B;var root=document;var p=window.Prism;if(!p||!hasCode(root)){return;}if(p.plugins\u0026\u0026p.plugins.autoloader){p.plugins.autoloader.languages_path=targetPath;}if(hasTokens(root)){return;}try{if(p.highlightAll){p.highlightAll();}}catch(e){if(!warned\u0026\u0026window.console\u0026\u0026console.warn){warned=true;console.warn(\u0027Prism highlighting failed.\u0027,e);}}if(!hasTokens(root)\u0026\u0026attempts\u003CmaxAttempts){setTimeout(run,delayMs);}};if(document.readyState===\u0027loading\u0027){document.addEventListener(\u0027DOMContentLoaded\u0027,run);}else{run();}})();\u003C/script\u003E",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "docs:index",
+    "meta": {
+      "title": "ChartForgeX documentation",
+      "description": "Documentation entry point for the ChartForgeX dedicated project site pilot.",
+      "slug": "index",
+      "collection": "docs",
+      "layout": "docs",
+      "canonical": "https://chartforgex.evotec.xyz/docs/",
+      "extra_css": "\u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css\u0022 media=\u0022(prefers-color-scheme: light)\u0022 /\u003E\r\n\u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css\u0022 media=\u0022(prefers-color-scheme: dark)\u0022 /\u003E",
+      "extra_scripts": "\u003Cscript\u003E(function(){window.Prism=window.Prism||{};window.Prism.manual=true;})();\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript\u003E(function(){var targetPath=\u0027https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/\u0027;var attempts=0;var maxAttempts=8;var delayMs=40;var warned=false;var hasCode=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022]\u0027));};var hasTokens=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022] .token\u0027));};var run=function(){attempts\u002B\u002B;var root=document;var p=window.Prism;if(!p||!hasCode(root)){return;}if(p.plugins\u0026\u0026p.plugins.autoloader){p.plugins.autoloader.languages_path=targetPath;}if(hasTokens(root)){return;}try{if(p.highlightAll){p.highlightAll();}}catch(e){if(!warned\u0026\u0026window.console\u0026\u0026console.warn){warned=true;console.warn(\u0027Prism highlighting failed.\u0027,e);}}if(!hasTokens(root)\u0026\u0026attempts\u003CmaxAttempts){setTimeout(run,delayMs);}};if(document.readyState===\u0027loading\u0027){document.addEventListener(\u0027DOMContentLoaded\u0027,run);}else{run();}})();\u003C/script\u003E"
+    }
+  },
+  {
+    "title": "Deployment",
+    "url": "/docs/deployment/",
+    "description": "Deployment and local validation shape for the ChartForgeX dedicated project site.",
+    "snippet": "ChartForgeX uses the dedicated project-site model: the Evotec hub keeps the catalog page, while this folder publishes the richer demo surface for https://chartforgex.evotec.xyz/ . Run the library build from the repository root when the gene...",
+    "collection": "docs",
+    "kind": "page",
+    "weight": 3.9,
+    "searchText": "Deployment Deployment and local validation shape for the ChartForgeX dedicated project site. ChartForgeX uses the dedicated project-site model: the Evotec hub keeps the catalog page, while this folder publishes the richer demo surface for https://chartforgex.evotec.xyz/ . Run the library build from the repository root when the gene... docs Page Deployment Deployment and local validation shape for the ChartForgeX dedicated project site. deployment docs docs https://chartforgex.evotec.xyz/docs/deployment/ \u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css\u0022 media=\u0022(prefers-color-scheme: light)\u0022 /\u003E\r\n\u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css\u0022 media=\u0022(prefers-color-scheme: dark)\u0022 /\u003E \u003Cscript\u003E(function(){window.Prism=window.Prism||{};window.Prism.manual=true;})();\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript\u003E(function(){var targetPath=\u0027https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/\u0027;var attempts=0;var maxAttempts=8;var delayMs=40;var warned=false;var hasCode=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022]\u0027));};var hasTokens=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022] .token\u0027));};var run=function(){attempts\u002B\u002B;var root=document;var p=window.Prism;if(!p||!hasCode(root)){return;}if(p.plugins\u0026\u0026p.plugins.autoloader){p.plugins.autoloader.languages_path=targetPath;}if(hasTokens(root)){return;}try{if(p.highlightAll){p.highlightAll();}}catch(e){if(!warned\u0026\u0026window.console\u0026\u0026console.warn){warned=true;console.warn(\u0027Prism highlighting failed.\u0027,e);}}if(!hasTokens(root)\u0026\u0026attempts\u003CmaxAttempts){setTimeout(run,delayMs);}};if(document.readyState===\u0027loading\u0027){document.addEventListener(\u0027DOMContentLoaded\u0027,run);}else{run();}})();\u003C/script\u003E",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "docs:deployment",
+    "meta": {
+      "title": "Deployment",
+      "description": "Deployment and local validation shape for the ChartForgeX dedicated project site.",
+      "slug": "deployment",
+      "collection": "docs",
+      "layout": "docs",
+      "canonical": "https://chartforgex.evotec.xyz/docs/deployment/",
+      "extra_css": "\u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css\u0022 media=\u0022(prefers-color-scheme: light)\u0022 /\u003E\r\n\u003Clink rel=\u0022stylesheet\u0022 href=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css\u0022 media=\u0022(prefers-color-scheme: dark)\u0022 /\u003E",
+      "extra_scripts": "\u003Cscript\u003E(function(){window.Prism=window.Prism||{};window.Prism.manual=true;})();\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript src=\u0022https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js\u0022\u003E\u003C/script\u003E\r\n\u003Cscript\u003E(function(){var targetPath=\u0027https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/\u0027;var attempts=0;var maxAttempts=8;var delayMs=40;var warned=false;var hasCode=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022]\u0027));};var hasTokens=function(root){return !!(root\u0026\u0026root.querySelector\u0026\u0026root.querySelector(\u0027code[class*=\\\u0022language-\\\u0022] .token\u0027));};var run=function(){attempts\u002B\u002B;var root=document;var p=window.Prism;if(!p||!hasCode(root)){return;}if(p.plugins\u0026\u0026p.plugins.autoloader){p.plugins.autoloader.languages_path=targetPath;}if(hasTokens(root)){return;}try{if(p.highlightAll){p.highlightAll();}}catch(e){if(!warned\u0026\u0026window.console\u0026\u0026console.warn){warned=true;console.warn(\u0027Prism highlighting failed.\u0027,e);}}if(!hasTokens(root)\u0026\u0026attempts\u003CmaxAttempts){setTimeout(run,delayMs);}};if(document.readyState===\u0027loading\u0027){document.addEventListener(\u0027DOMContentLoaded\u0027,run);}else{run();}})();\u003C/script\u003E"
+    }
+  },
+  {
+    "title": "ChartForgeX examples",
+    "url": "/examples/",
+    "description": "Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs.",
+    "snippet": "",
+    "collection": "pages",
+    "kind": "page",
+    "weight": 3.5,
+    "searchText": "ChartForgeX examples Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs. pages Page ChartForgeX examples Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs. examples pages examples https://chartforgex.evotec.xyz/examples/",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:examples",
+    "meta": {
+      "title": "ChartForgeX examples",
+      "description": "Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs.",
+      "slug": "examples",
+      "collection": "pages",
+      "layout": "examples",
+      "canonical": "https://chartforgex.evotec.xyz/examples/"
+    }
+  },
+  {
+    "title": "ChartForgeX gallery",
+    "url": "/gallery/",
+    "description": "Browse the generated ChartForgeX visual catalog by chart family, theme, and output type.",
+    "snippet": "",
+    "collection": "pages",
+    "kind": "page",
+    "weight": 3.5,
+    "searchText": "ChartForgeX gallery Browse the generated ChartForgeX visual catalog by chart family, theme, and output type. pages Page ChartForgeX gallery Browse the generated ChartForgeX visual catalog by chart family, theme, and output type. gallery pages gallery https://chartforgex.evotec.xyz/gallery/",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:gallery",
+    "meta": {
+      "title": "ChartForgeX gallery",
+      "description": "Browse the generated ChartForgeX visual catalog by chart family, theme, and output type.",
+      "slug": "gallery",
+      "collection": "pages",
+      "layout": "gallery",
+      "canonical": "https://chartforgex.evotec.xyz/gallery/"
+    }
+  },
+  {
+    "title": "Page not found",
+    "url": "/404/",
+    "description": "The requested ChartForgeX page could not be found.",
+    "snippet": "The page is not available. Use the examples gallery or documentation to find the current ChartForgeX material. Browse examples",
+    "collection": "pages",
+    "kind": "page",
+    "weight": 3.5,
+    "searchText": "Page not found The requested ChartForgeX page could not be found. The page is not available. Use the examples gallery or documentation to find the current ChartForgeX material. Browse examples pages Page Page not found The requested ChartForgeX page could not be found. 404 pages page noindex,follow",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:404",
+    "meta": {
+      "title": "Page not found",
+      "description": "The requested ChartForgeX page could not be found.",
+      "slug": "404",
+      "collection": "pages",
+      "layout": "page",
+      "robots": "noindex,follow"
+    }
+  }
+]

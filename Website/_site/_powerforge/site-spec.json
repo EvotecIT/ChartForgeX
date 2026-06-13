@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "name": "ChartForgeX",
+  "baseUrl": "https://chartforgex.evotec.xyz",
+  "defaultTheme": "chartforgex",
+  "trailingSlash": "always",
+  "contentRoot": "content",
+  "contentRoots": [],
+  "sources": [],
+  "themesRoot": "themes",
+  "dataRoot": "data",
+  "staticAssets": [
+    {
+      "source": "static"
+    }
+  ],
+  "collections": [
+    {
+      "name": "pages",
+      "input": "content/pages",
+      "output": "/",
+      "defaultLayout": "page",
+      "useToc": false,
+      "include": [
+        "*.md",
+        "**/*.md"
+      ],
+      "exclude": [],
+      "outputs": [],
+      "expectedTranslationLanguages": [],
+      "localizedLanguages": [],
+      "fallbackLanguages": [],
+      "autoGenerateSectionIndex": false
+    },
+    {
+      "name": "docs",
+      "input": "content/docs",
+      "output": "/docs",
+      "defaultLayout": "docs",
+      "useToc": false,
+      "include": [
+        "*.md",
+        "**/*.md"
+      ],
+      "exclude": [],
+      "outputs": [],
+      "expectedTranslationLanguages": [],
+      "localizedLanguages": [],
+      "fallbackLanguages": [],
+      "autoGenerateSectionIndex": false
+    }
+  ],
+  "taxonomies": [],
+  "head": {
+    "links": [
+      {
+        "rel": "icon",
+        "href": "/favicon.svg",
+        "type": "image/svg\u002Bxml",
+        "booleanAttributes": []
+      }
+    ],
+    "meta": [
+      {
+        "name": "robots",
+        "content": "index,follow,max-snippet:-1,max-image-preview:large"
+      }
+    ]
+  },
+  "social": {
+    "enabled": true,
+    "siteName": "ChartForgeX",
+    "image": "/images/chartforgex-social.svg",
+    "twitterCard": "summary_large_image",
+    "autoGenerateCards": true,
+    "generatedCardsPath": "/assets/social/generated",
+    "generatedCardWidth": 1200,
+    "generatedCardHeight": 630,
+    "generatedCardAllowRemoteMediaFetch": false
+  },
+  "structuredData": {
+    "enabled": true,
+    "breadcrumbs": true,
+    "website": true,
+    "organization": true,
+    "organizationLegalName": "Evotec Services sp. z o.o.",
+    "organizationDescription": "Dependency-free chart rendering for .NET reports, dashboards, documentation, and static HTML output.",
+    "organizationLogo": "https://chartforgex.evotec.xyz/favicon.svg",
+    "organizationSameAs": [
+      "https://github.com/EvotecIT/ChartForgeX",
+      "https://evotec.xyz"
+    ],
+    "article": true,
+    "faqPage": false,
+    "howTo": false,
+    "softwareApplication": false,
+    "product": false,
+    "newsArticle": false
+  },
+  "editLinks": {
+    "enabled": true,
+    "template": "https://github.com/EvotecIT/ChartForgeX/edit/main/{path}",
+    "pathBase": "Website"
+  },
+  "routeOverrides": [],
+  "redirects": [],
+  "enableLegacyAmpRedirects": false,
+  "assetRegistry": {
+    "bundles": [
+      {
+        "name": "global",
+        "css": [
+          "/css/app.css"
+        ],
+        "js": [
+          "/js/site.js"
+        ]
+      },
+      {
+        "name": "docs",
+        "css": [
+          "/css/app.css"
+        ],
+        "js": [
+          "/js/site.js"
+        ]
+      }
+    ],
+    "routeBundles": [
+      {
+        "match": "/docs/**",
+        "bundles": [
+          "docs"
+        ]
+      },
+      {
+        "match": "/**",
+        "bundles": [
+          "global"
+        ]
+      }
+    ],
+    "preloads": [],
+    "criticalCss": [
+      {
+        "name": "chartforgex",
+        "path": "themes/chartforgex/critical.css"
+      }
+    ],
+    "cssStrategy": "blocking"
+  },
+  "assetPolicy": {
+    "mode": "local",
+    "hashing": {
+      "enabled": true,
+      "extensions": [
+        ".css",
+        ".js"
+      ],
+      "exclude": []
+    },
+    "cacheHeaders": {
+      "enabled": true,
+      "outputPath": "_headers",
+      "immutablePaths": []
+    },
+    "rewrites": []
+  },
+  "prism": {
+    "mode": "auto",
+    "source": "cdn",
+    "defaultLanguage": "csharp"
+  },
+  "a11y": {
+    "skipLinkLabel": "Skip to content",
+    "externalLinkLabel": "Opens in a new tab",
+    "navToggleLabel": "Toggle navigation",
+    "searchLabel": "Search"
+  },
+  "linkRules": {
+    "externalRel": "noopener",
+    "externalTarget": "_blank",
+    "addExternalIcon": true
+  },
+  "navigation": {
+    "autoDefaults": true,
+    "menus": [
+      {
+        "name": "main",
+        "items": [
+          {
+            "title": "Home",
+            "url": "/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Examples",
+            "url": "/examples/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Gallery",
+            "url": "/gallery/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Docs",
+            "url": "/docs/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Releases",
+            "url": "https://github.com/EvotecIT/ChartForgeX/releases",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      {
+        "name": "docs",
+        "items": [
+          {
+            "title": "Overview",
+            "url": "/docs/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Deployment",
+            "url": "/docs/deployment/",
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      {
+        "name": "footer-product",
+        "items": [
+          {
+            "title": "Examples",
+            "url": "/examples/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Generated Gallery",
+            "url": "/gallery/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Topology Examples",
+            "url": "/examples/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Documentation",
+            "url": "/docs/",
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Deployment",
+            "url": "/docs/deployment/",
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      {
+        "name": "footer-resources",
+        "items": [
+          {
+            "title": "GitHub Repository",
+            "url": "https://github.com/EvotecIT/ChartForgeX",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "NuGet Package",
+            "url": "https://www.nuget.org/packages/ChartForgeX",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "title": "Evotec Project Hub",
+            "url": "https://evotec.xyz/projects/chartforgex/",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "title": "GitHub",
+        "url": "https://github.com/EvotecIT/ChartForgeX",
+        "cssClass": "nav-link",
+        "ariaLabel": "ChartForgeX on GitHub",
+        "external": true,
+        "sections": [],
+        "items": []
+      },
+      {
+        "title": "Install",
+        "text": "Install",
+        "url": "https://www.nuget.org/packages/ChartForgeX",
+        "cssClass": "nav-cta",
+        "ariaLabel": "Install ChartForgeX",
+        "external": true,
+        "sections": [],
+        "items": []
+      }
+    ],
+    "regions": [],
+    "surfaces": [
+      {
+        "name": "main",
+        "path": "/",
+        "primaryMenu": "main"
+      },
+      {
+        "name": "examples",
+        "path": "/examples/",
+        "primaryMenu": "main"
+      },
+      {
+        "name": "gallery",
+        "path": "/gallery/",
+        "primaryMenu": "main"
+      },
+      {
+        "name": "docs",
+        "path": "/docs/",
+        "collection": "docs",
+        "layout": "docs",
+        "primaryMenu": "main",
+        "sidebarMenu": "docs"
+      },
+      {
+        "name": "notFound",
+        "path": "/404/",
+        "primaryMenu": "main"
+      }
+    ],
+    "profiles": [],
+    "auto": []
+  },
+  "features": [
+    "docs",
+    "search",
+    "notFound"
+  ]
+}

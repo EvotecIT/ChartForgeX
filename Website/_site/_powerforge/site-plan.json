@@ -1,0 +1,26 @@
+{
+  "name": "ChartForgeX",
+  "baseUrl": "https://chartforgex.evotec.xyz",
+  "configPath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\site.json",
+  "rootPath": "C:\\Support\\GitHub\\ChartForgeX\\Website",
+  "contentRoot": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content",
+  "contentRoots": [],
+  "themesRoot": "C:\\Support\\GitHub\\ChartForgeX\\Website\\themes",
+  "collections": [
+    {
+      "name": "pages",
+      "inputPath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\pages",
+      "outputPath": "/",
+      "fileCount": 4
+    },
+    {
+      "name": "docs",
+      "inputPath": "C:\\Support\\GitHub\\ChartForgeX\\Website\\content\\docs",
+      "outputPath": "/docs",
+      "fileCount": 2
+    }
+  ],
+  "projects": [],
+  "redirectCount": 0,
+  "routeOverrideCount": 0
+}

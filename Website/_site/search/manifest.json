@@ -1,0 +1,24 @@
+{
+  "entryCount": 6,
+  "searchIndexPath": "/search/index.json",
+  "languageShards": [
+    {
+      "language": "en",
+      "path": "/search/en/index.json",
+      "count": 6
+    }
+  ],
+  "collectionShards": [
+    {
+      "collection": "pages",
+      "path": "/search/collections/pages/index.json",
+      "count": 4
+    },
+    {
+      "collection": "docs",
+      "path": "/search/collections/docs/index.json",
+      "count": 2
+    }
+  ],
+  "searchPagePath": "/search/"
+}

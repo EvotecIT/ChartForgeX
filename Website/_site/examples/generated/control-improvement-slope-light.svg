@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="460" viewBox="0 0 760 460" role="img" aria-labelledby="cfxd2e3a453-title cfxd2e3a453-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+<title id="cfxd2e3a453-title">Control Improvement Slope</title>
+<desc id="cfxd2e3a453-desc">Control Improvement Slope with 3 data series: DMARC enforcement, DNSSEC coverage, MTA-STS deployment.</desc>
+<defs>
+<style>#cfxd2e3a453 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxd2e3a453 .cfx-crisp-stroke,#cfxd2e3a453 .cfx-guide-stroke,#cfxd2e3a453 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxd2e3a453 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxd2e3a453 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxd2e3a453 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxd2e3a453 .cfx-interactive-region:hover,#cfxd2e3a453 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}#cfxd2e3a453 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxd2e3a453 .cfx-crisp-stroke,#cfxd2e3a453 .cfx-guide-stroke,#cfxd2e3a453 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxd2e3a453 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxd2e3a453 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxd2e3a453 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxd2e3a453 .cfx-interactive-region:hover,#cfxd2e3a453 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxd2e3a453-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxd2e3a453-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxd2e3a453-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxd2e3a453-plotClip"><rect x="76.68" y="112" width="647.32" height="236.5" rx="8"/></clipPath>
+<linearGradient id="cfxd2e3a453-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxd2e3a453-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxd2e3a453-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.32"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxd2e3a453-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2DC190" stop-opacity="1"/><stop offset="100%" stop-color="#0FAE79" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxd2e3a453-area2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="0.32"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxd2e3a453-seriesFill2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6AA28" stop-opacity="1"/><stop offset="100%" stop-color="#E6950A" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd2e3a453-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+</defs>
+<g id="cfxd2e3a453">
+<rect data-cfx-role="card-surface" x="14" y="14" width="732" height="432" rx="12" fill="url(#cfxd2e3a453-cardSurface)" filter="url(#cfxd2e3a453-softShadow)"/>
+<rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="731" height="431" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="729" height="429" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76.68" y="112" width="647.32" height="236.5" rx="8" fill="url(#cfxd2e3a453-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="77.18" y="112.5" width="646.32" height="235.5" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77.68" y="113" width="645.32" height="234.5" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Control Improvement Slope</text>
+<text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Endpoint comparisons make before/after movement easy to scan</text>
+<line class="cfx-guide-stroke" x1="76.68" y1="348.5" x2="724" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="352.5" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">0%</text>
+<line class="cfx-guide-stroke" x1="76.68" y1="301.5" x2="724" y2="301.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="305.2" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">20%</text>
+<line class="cfx-guide-stroke" x1="76.68" y1="253.5" x2="724" y2="253.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="257.9" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">40%</text>
+<line class="cfx-guide-stroke" x1="76.68" y1="206.5" x2="724" y2="206.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="210.6" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">60%</text>
+<line class="cfx-guide-stroke" x1="76.68" y1="159.5" x2="724" y2="159.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="163.3" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">80%</text>
+<line class="cfx-guide-stroke" x1="76.68" y1="112.5" x2="724" y2="112.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="1"/>
+<text x="64.68" y="116" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">100%</text>
+<line class="cfx-guide-stroke" x1="238.5" y1="112" x2="238.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="238.51" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">Before</text>
+<line class="cfx-guide-stroke" x1="562.5" y1="112" x2="562.5" y2="348.5" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.42"/>
+<text x="562.17" y="369.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5">After</text>
+<line class="cfx-guide-stroke" x1="76.68" y1="348.5" x2="724" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<text x="400.34" y="392.5" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Review</text>
+<line class="cfx-guide-stroke" x1="76.5" y1="112" x2="76.5" y2="348.5" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<text transform="translate(26 230.25) rotate(-90)" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">Coverage</text>
+<g clip-path="url(#cfxd2e3a453-plotClip)">
+<g data-cfx-role="slope" data-cfx-series="0" data-cfx-start="58" data-cfx-end="88" data-cfx-delta="30" role="img" aria-label="DMARC enforcement: 58% to 88%">
+<line data-cfx-role="slope-line-ambient-halo" data-cfx-series="0" x1="238.51" y1="211.33" x2="562.17" y2="140.38" class="cfx-premium-stroke" stroke="#2563EB" stroke-width="13" stroke-linecap="round" opacity="0.055"/>
+<line data-cfx-role="slope-line-halo" data-cfx-series="0" x1="238.51" y1="211.33" x2="562.17" y2="140.38" class="cfx-premium-stroke" stroke="#2563EB" stroke-width="8" stroke-linecap="round" opacity="0.14"/>
+<line data-cfx-role="slope-line" data-cfx-series="0" x1="238.51" y1="211.33" x2="562.17" y2="140.38" class="cfx-premium-stroke" stroke="#2563EB" stroke-width="3" stroke-linecap="round"/>
+<line data-cfx-role="slope-line-highlight" data-cfx-series="0" x1="238.51" y1="211.33" x2="562.17" y2="140.38" class="cfx-premium-stroke" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity="0.13"/>
+<circle data-cfx-role="slope-start" data-cfx-series="0" data-cfx-value="58" cx="238.51" cy="211.33" r="4.45" fill="#2563EB" stroke="#FFFFFF" stroke-width="2"/><circle data-cfx-role="slope-end" data-cfx-series="0" data-cfx-value="88" cx="562.17" cy="140.38" r="4.45" fill="#2563EB" stroke="#FFFFFF" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="226.06" y="211.33" text-anchor="end" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">58%</text>
+<text data-cfx-role="data-label" x="574.62" y="140.38" text-anchor="start" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">88%</text>
+<g data-cfx-role="slope" data-cfx-series="1" data-cfx-start="42" data-cfx-end="74" data-cfx-delta="32" role="img" aria-label="DNSSEC coverage: 42% to 74%">
+<line data-cfx-role="slope-line-ambient-halo" data-cfx-series="1" x1="238.51" y1="249.17" x2="562.17" y2="173.49" class="cfx-premium-stroke" stroke="#10B981" stroke-width="13" stroke-linecap="round" opacity="0.055"/>
+<line data-cfx-role="slope-line-halo" data-cfx-series="1" x1="238.51" y1="249.17" x2="562.17" y2="173.49" class="cfx-premium-stroke" stroke="#10B981" stroke-width="8" stroke-linecap="round" opacity="0.14"/>
+<line data-cfx-role="slope-line" data-cfx-series="1" x1="238.51" y1="249.17" x2="562.17" y2="173.49" class="cfx-premium-stroke" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+<line data-cfx-role="slope-line-highlight" data-cfx-series="1" x1="238.51" y1="249.17" x2="562.17" y2="173.49" class="cfx-premium-stroke" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity="0.13"/>
+<circle data-cfx-role="slope-start" data-cfx-series="1" data-cfx-value="42" cx="238.51" cy="249.17" r="4.45" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/><circle data-cfx-role="slope-end" data-cfx-series="1" data-cfx-value="74" cx="562.17" cy="173.49" r="4.45" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="226.06" y="249.17" text-anchor="end" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">42%</text>
+<text data-cfx-role="data-label" x="574.62" y="173.49" text-anchor="start" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">74%</text>
+<g data-cfx-role="slope" data-cfx-series="2" data-cfx-start="37" data-cfx-end="63" data-cfx-delta="26" role="img" aria-label="MTA-STS deployment: 37% to 63%">
+<line data-cfx-role="slope-line-ambient-halo" data-cfx-series="2" x1="238.51" y1="260.995" x2="562.17" y2="199.505" class="cfx-premium-stroke" stroke="#F59E0B" stroke-width="13" stroke-linecap="round" opacity="0.055"/>
+<line data-cfx-role="slope-line-halo" data-cfx-series="2" x1="238.51" y1="260.995" x2="562.17" y2="199.505" class="cfx-premium-stroke" stroke="#F59E0B" stroke-width="8" stroke-linecap="round" opacity="0.14"/>
+<line data-cfx-role="slope-line" data-cfx-series="2" x1="238.51" y1="260.995" x2="562.17" y2="199.505" class="cfx-premium-stroke" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+<line data-cfx-role="slope-line-highlight" data-cfx-series="2" x1="238.51" y1="260.995" x2="562.17" y2="199.505" class="cfx-premium-stroke" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity="0.13"/>
+<circle data-cfx-role="slope-start" data-cfx-series="2" data-cfx-value="37" cx="238.51" cy="260.995" r="4.45" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2"/><circle data-cfx-role="slope-end" data-cfx-series="2" data-cfx-value="63" cx="562.17" cy="199.505" r="4.45" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2"/>
+</g>
+<text data-cfx-role="data-label" x="226.06" y="260.995" text-anchor="end" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">37%</text>
+<text data-cfx-role="data-label" x="574.62" y="199.505" text-anchor="start" dominant-baseline="middle" fill="#0F172A" stroke="#FFFFFF" stroke-width="3" paint-order="stroke fill" stroke-linejoin="round" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">63%</text>
+</g>
+<g data-cfx-role="legend" data-cfx-position="Bottom">
+<g data-cfx-role="legend-row" transform="translate(142.38 432)">
+<g data-cfx-role="legend-item" data-cfx-series="0" data-cfx-kind="Slope" data-cfx-label="DMARC enforcement">
+<line x1="0" y1="-4" x2="18" y2="-4" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="9" cy="-4" r="4" fill="#2563EB" stroke="#FFFFFF" stroke-width="1.6"/>
+<text data-cfx-role="legend-label" data-cfx-series="0" x="26" y="0" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">DMARC enforcement</text>
+</g>
+<g data-cfx-role="legend-item" data-cfx-series="1" data-cfx-kind="Slope" data-cfx-label="DNSSEC coverage">
+<line x1="159.87" y1="-4" x2="177.87" y2="-4" stroke="#10B981" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="168.87" cy="-4" r="4" fill="#10B981" stroke="#FFFFFF" stroke-width="1.6"/>
+<text data-cfx-role="legend-label" data-cfx-series="1" x="185.87" y="0" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">DNSSEC coverage</text>
+</g>
+<g data-cfx-role="legend-item" data-cfx-series="2" data-cfx-kind="Slope" data-cfx-label="MTA-STS deployment">
+<line x1="308.24" y1="-4" x2="326.24" y2="-4" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="317.24" cy="-4" r="4" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.6"/>
+<text data-cfx-role="legend-label" data-cfx-series="2" x="334.24" y="0" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">MTA-STS deployment</text>
+</g>
+</g>
+</g>
+</g>
+</svg>

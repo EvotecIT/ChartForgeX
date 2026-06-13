@@ -1,0 +1,90 @@
+[
+  {
+    "title": "ChartForgeX - dependency-free chart rendering for .NET",
+    "url": "/",
+    "description": "Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites.",
+    "snippet": "Create polished SVG, PNG, and static HTML visuals for .NET reports, dashboards, documentation, and generated websites without shipping a JavaScript chart runtime. The dedicated site owns the Evotec-aligned chrome, navigation, search, docs,...",
+    "collection": "pages",
+    "kind": "home",
+    "weight": 6,
+    "searchText": "ChartForgeX - dependency-free chart rendering for .NET Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites. Create polished SVG, PNG, and static HTML visuals for .NET reports, dashboards, documentation, and generated websites without shipping a JavaScript chart runtime. The dedicated site owns the Evotec-aligned chrome, navigation, search, docs,... pages Home ChartForgeX - dependency-free chart rendering for .NET Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites. index pages home https://chartforgex.evotec.xyz/",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:index",
+    "meta": {
+      "title": "ChartForgeX - dependency-free chart rendering for .NET",
+      "description": "Build polished SVG, PNG, and static HTML chart outputs for reports, dashboards, documentation, and generated sites.",
+      "slug": "index",
+      "collection": "pages",
+      "layout": "home",
+      "canonical": "https://chartforgex.evotec.xyz/"
+    }
+  },
+  {
+    "title": "ChartForgeX examples",
+    "url": "/examples/",
+    "description": "Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs.",
+    "snippet": "",
+    "collection": "pages",
+    "kind": "page",
+    "weight": 3.5,
+    "searchText": "ChartForgeX examples Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs. pages Page ChartForgeX examples Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs. examples pages examples https://chartforgex.evotec.xyz/examples/",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:examples",
+    "meta": {
+      "title": "ChartForgeX examples",
+      "description": "Browse rendered ChartForgeX examples with matching C# source snippets and SVG, PNG, and HTML outputs.",
+      "slug": "examples",
+      "collection": "pages",
+      "layout": "examples",
+      "canonical": "https://chartforgex.evotec.xyz/examples/"
+    }
+  },
+  {
+    "title": "ChartForgeX gallery",
+    "url": "/gallery/",
+    "description": "Browse the generated ChartForgeX visual catalog by chart family, theme, and output type.",
+    "snippet": "",
+    "collection": "pages",
+    "kind": "page",
+    "weight": 3.5,
+    "searchText": "ChartForgeX gallery Browse the generated ChartForgeX visual catalog by chart family, theme, and output type. pages Page ChartForgeX gallery Browse the generated ChartForgeX visual catalog by chart family, theme, and output type. gallery pages gallery https://chartforgex.evotec.xyz/gallery/",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:gallery",
+    "meta": {
+      "title": "ChartForgeX gallery",
+      "description": "Browse the generated ChartForgeX visual catalog by chart family, theme, and output type.",
+      "slug": "gallery",
+      "collection": "pages",
+      "layout": "gallery",
+      "canonical": "https://chartforgex.evotec.xyz/gallery/"
+    }
+  },
+  {
+    "title": "Page not found",
+    "url": "/404/",
+    "description": "The requested ChartForgeX page could not be found.",
+    "snippet": "The page is not available. Use the examples gallery or documentation to find the current ChartForgeX material. Browse examples",
+    "collection": "pages",
+    "kind": "page",
+    "weight": 3.5,
+    "searchText": "Page not found The requested ChartForgeX page could not be found. The page is not available. Use the examples gallery or documentation to find the current ChartForgeX material. Browse examples pages Page Page not found The requested ChartForgeX page could not be found. 404 pages page noindex,follow",
+    "tags": [],
+    "categories": [],
+    "language": "en",
+    "translationKey": "pages:404",
+    "meta": {
+      "title": "Page not found",
+      "description": "The requested ChartForgeX page could not be found.",
+      "slug": "404",
+      "collection": "pages",
+      "layout": "page",
+      "robots": "noindex,follow"
+    }
+  }
+]

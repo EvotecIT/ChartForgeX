@@ -1,0 +1,1609 @@
+{
+  "schemaVersion": 2,
+  "format": "powerforge.site-nav",
+  "surfaceCanonicalNames": [
+    "main",
+    "docs",
+    "apidocs",
+    "products"
+  ],
+  "surfaceAliases": {
+    "api": "apidocs",
+    "apiDocs": "apidocs"
+  },
+  "generated": true,
+  "primary": [
+    {
+      "href": "/",
+      "text": "Home",
+      "title": "Home",
+      "sections": [],
+      "items": []
+    },
+    {
+      "href": "/examples/",
+      "text": "Examples",
+      "title": "Examples",
+      "sections": [],
+      "items": []
+    },
+    {
+      "href": "/gallery/",
+      "text": "Gallery",
+      "title": "Gallery",
+      "sections": [],
+      "items": []
+    },
+    {
+      "href": "/docs/",
+      "text": "Docs",
+      "title": "Docs",
+      "sections": [],
+      "items": []
+    },
+    {
+      "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+      "text": "Releases",
+      "title": "Releases",
+      "external": true,
+      "sections": [],
+      "items": []
+    }
+  ],
+  "menus": {
+    "main": [
+      {
+        "href": "/",
+        "text": "Home",
+        "title": "Home",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/examples/",
+        "text": "Examples",
+        "title": "Examples",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/gallery/",
+        "text": "Gallery",
+        "title": "Gallery",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/docs/",
+        "text": "Docs",
+        "title": "Docs",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+        "text": "Releases",
+        "title": "Releases",
+        "external": true,
+        "sections": [],
+        "items": []
+      }
+    ],
+    "docs": [
+      {
+        "href": "/docs/",
+        "text": "Overview",
+        "title": "Overview",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/docs/deployment/",
+        "text": "Deployment",
+        "title": "Deployment",
+        "sections": [],
+        "items": []
+      }
+    ],
+    "footer-product": [
+      {
+        "href": "/examples/",
+        "text": "Examples",
+        "title": "Examples",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/gallery/",
+        "text": "Generated Gallery",
+        "title": "Generated Gallery",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/examples/",
+        "text": "Topology Examples",
+        "title": "Topology Examples",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/docs/",
+        "text": "Documentation",
+        "title": "Documentation",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/docs/deployment/",
+        "text": "Deployment",
+        "title": "Deployment",
+        "sections": [],
+        "items": []
+      }
+    ],
+    "footer-resources": [
+      {
+        "href": "https://github.com/EvotecIT/ChartForgeX",
+        "text": "GitHub Repository",
+        "title": "GitHub Repository",
+        "external": true,
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "https://www.nuget.org/packages/ChartForgeX",
+        "text": "NuGet Package",
+        "title": "NuGet Package",
+        "external": true,
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "https://evotec.xyz/projects/chartforgex/",
+        "text": "Evotec Project Hub",
+        "title": "Evotec Project Hub",
+        "external": true,
+        "sections": [],
+        "items": []
+      }
+    ]
+  },
+  "menuModels": [
+    {
+      "name": "main",
+      "items": [
+        {
+          "href": "/",
+          "text": "Home",
+          "title": "Home",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/examples/",
+          "text": "Examples",
+          "title": "Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/gallery/",
+          "text": "Gallery",
+          "title": "Gallery",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/",
+          "text": "Docs",
+          "title": "Docs",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+          "text": "Releases",
+          "title": "Releases",
+          "external": true,
+          "sections": [],
+          "items": []
+        }
+      ]
+    },
+    {
+      "name": "docs",
+      "items": [
+        {
+          "href": "/docs/",
+          "text": "Overview",
+          "title": "Overview",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/deployment/",
+          "text": "Deployment",
+          "title": "Deployment",
+          "sections": [],
+          "items": []
+        }
+      ]
+    },
+    {
+      "name": "footer-product",
+      "items": [
+        {
+          "href": "/examples/",
+          "text": "Examples",
+          "title": "Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/gallery/",
+          "text": "Generated Gallery",
+          "title": "Generated Gallery",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/examples/",
+          "text": "Topology Examples",
+          "title": "Topology Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/",
+          "text": "Documentation",
+          "title": "Documentation",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/deployment/",
+          "text": "Deployment",
+          "title": "Deployment",
+          "sections": [],
+          "items": []
+        }
+      ]
+    },
+    {
+      "name": "footer-resources",
+      "items": [
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX",
+          "text": "GitHub Repository",
+          "title": "GitHub Repository",
+          "external": true,
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://www.nuget.org/packages/ChartForgeX",
+          "text": "NuGet Package",
+          "title": "NuGet Package",
+          "external": true,
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://evotec.xyz/projects/chartforgex/",
+          "text": "Evotec Project Hub",
+          "title": "Evotec Project Hub",
+          "external": true,
+          "sections": [],
+          "items": []
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "footer-product": [
+      {
+        "href": "/examples/",
+        "text": "Examples",
+        "title": "Examples",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/gallery/",
+        "text": "Generated Gallery",
+        "title": "Generated Gallery",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/examples/",
+        "text": "Topology Examples",
+        "title": "Topology Examples",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/docs/",
+        "text": "Documentation",
+        "title": "Documentation",
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "/docs/deployment/",
+        "text": "Deployment",
+        "title": "Deployment",
+        "sections": [],
+        "items": []
+      }
+    ],
+    "footer-resources": [
+      {
+        "href": "https://github.com/EvotecIT/ChartForgeX",
+        "text": "GitHub Repository",
+        "title": "GitHub Repository",
+        "external": true,
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "https://www.nuget.org/packages/ChartForgeX",
+        "text": "NuGet Package",
+        "title": "NuGet Package",
+        "external": true,
+        "sections": [],
+        "items": []
+      },
+      {
+        "href": "https://evotec.xyz/projects/chartforgex/",
+        "text": "Evotec Project Hub",
+        "title": "Evotec Project Hub",
+        "external": true,
+        "sections": [],
+        "items": []
+      }
+    ]
+  },
+  "actions": [
+    {
+      "href": "https://github.com/EvotecIT/ChartForgeX",
+      "text": "GitHub",
+      "title": "GitHub",
+      "external": true,
+      "class": "nav-link",
+      "ariaLabel": "ChartForgeX on GitHub",
+      "sections": [],
+      "items": []
+    },
+    {
+      "href": "https://www.nuget.org/packages/ChartForgeX",
+      "text": "Install",
+      "title": "Install",
+      "external": true,
+      "class": "nav-cta",
+      "ariaLabel": "Install ChartForgeX",
+      "sections": [],
+      "items": []
+    }
+  ],
+  "regions": [],
+  "profiles": [],
+  "surfaces": {
+    "main": {
+      "name": "main",
+      "context": {
+        "path": "/"
+      },
+      "primaryMenu": "main",
+      "primary": [
+        {
+          "href": "/",
+          "text": "Home",
+          "title": "Home",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/examples/",
+          "text": "Examples",
+          "title": "Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/gallery/",
+          "text": "Gallery",
+          "title": "Gallery",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/",
+          "text": "Docs",
+          "title": "Docs",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+          "text": "Releases",
+          "title": "Releases",
+          "external": true,
+          "sections": [],
+          "items": []
+        }
+      ],
+      "menus": {
+        "main": [
+          {
+            "href": "/",
+            "text": "Home",
+            "title": "Home",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Gallery",
+            "title": "Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Docs",
+            "title": "Docs",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+            "text": "Releases",
+            "title": "Releases",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "footer": {
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "actions": [
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX",
+          "text": "GitHub",
+          "title": "GitHub",
+          "external": true,
+          "class": "nav-link",
+          "ariaLabel": "ChartForgeX on GitHub",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://www.nuget.org/packages/ChartForgeX",
+          "text": "Install",
+          "title": "Install",
+          "external": true,
+          "class": "nav-cta",
+          "ariaLabel": "Install ChartForgeX",
+          "sections": [],
+          "items": []
+        }
+      ],
+      "regions": []
+    },
+    "examples": {
+      "name": "examples",
+      "context": {
+        "path": "/examples/"
+      },
+      "primaryMenu": "main",
+      "primary": [
+        {
+          "href": "/",
+          "text": "Home",
+          "title": "Home",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/examples/",
+          "text": "Examples",
+          "title": "Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/gallery/",
+          "text": "Gallery",
+          "title": "Gallery",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/",
+          "text": "Docs",
+          "title": "Docs",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+          "text": "Releases",
+          "title": "Releases",
+          "external": true,
+          "sections": [],
+          "items": []
+        }
+      ],
+      "menus": {
+        "main": [
+          {
+            "href": "/",
+            "text": "Home",
+            "title": "Home",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Gallery",
+            "title": "Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Docs",
+            "title": "Docs",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+            "text": "Releases",
+            "title": "Releases",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "footer": {
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "actions": [
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX",
+          "text": "GitHub",
+          "title": "GitHub",
+          "external": true,
+          "class": "nav-link",
+          "ariaLabel": "ChartForgeX on GitHub",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://www.nuget.org/packages/ChartForgeX",
+          "text": "Install",
+          "title": "Install",
+          "external": true,
+          "class": "nav-cta",
+          "ariaLabel": "Install ChartForgeX",
+          "sections": [],
+          "items": []
+        }
+      ],
+      "regions": []
+    },
+    "gallery": {
+      "name": "gallery",
+      "context": {
+        "path": "/gallery/"
+      },
+      "primaryMenu": "main",
+      "primary": [
+        {
+          "href": "/",
+          "text": "Home",
+          "title": "Home",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/examples/",
+          "text": "Examples",
+          "title": "Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/gallery/",
+          "text": "Gallery",
+          "title": "Gallery",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/",
+          "text": "Docs",
+          "title": "Docs",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+          "text": "Releases",
+          "title": "Releases",
+          "external": true,
+          "sections": [],
+          "items": []
+        }
+      ],
+      "menus": {
+        "main": [
+          {
+            "href": "/",
+            "text": "Home",
+            "title": "Home",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Gallery",
+            "title": "Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Docs",
+            "title": "Docs",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+            "text": "Releases",
+            "title": "Releases",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "footer": {
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "actions": [
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX",
+          "text": "GitHub",
+          "title": "GitHub",
+          "external": true,
+          "class": "nav-link",
+          "ariaLabel": "ChartForgeX on GitHub",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://www.nuget.org/packages/ChartForgeX",
+          "text": "Install",
+          "title": "Install",
+          "external": true,
+          "class": "nav-cta",
+          "ariaLabel": "Install ChartForgeX",
+          "sections": [],
+          "items": []
+        }
+      ],
+      "regions": []
+    },
+    "docs": {
+      "name": "docs",
+      "context": {
+        "path": "/docs/",
+        "collection": "docs",
+        "layout": "docs"
+      },
+      "primaryMenu": "main",
+      "sidebarMenu": "docs",
+      "primary": [
+        {
+          "href": "/",
+          "text": "Home",
+          "title": "Home",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/examples/",
+          "text": "Examples",
+          "title": "Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/gallery/",
+          "text": "Gallery",
+          "title": "Gallery",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/",
+          "text": "Docs",
+          "title": "Docs",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+          "text": "Releases",
+          "title": "Releases",
+          "external": true,
+          "sections": [],
+          "items": []
+        }
+      ],
+      "sidebar": [
+        {
+          "href": "/docs/",
+          "text": "Overview",
+          "title": "Overview",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/deployment/",
+          "text": "Deployment",
+          "title": "Deployment",
+          "sections": [],
+          "items": []
+        }
+      ],
+      "menus": {
+        "main": [
+          {
+            "href": "/",
+            "text": "Home",
+            "title": "Home",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Gallery",
+            "title": "Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Docs",
+            "title": "Docs",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+            "text": "Releases",
+            "title": "Releases",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ],
+        "docs": [
+          {
+            "href": "/docs/",
+            "text": "Overview",
+            "title": "Overview",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "footer": {
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "actions": [
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX",
+          "text": "GitHub",
+          "title": "GitHub",
+          "external": true,
+          "class": "nav-link",
+          "ariaLabel": "ChartForgeX on GitHub",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://www.nuget.org/packages/ChartForgeX",
+          "text": "Install",
+          "title": "Install",
+          "external": true,
+          "class": "nav-cta",
+          "ariaLabel": "Install ChartForgeX",
+          "sections": [],
+          "items": []
+        }
+      ],
+      "regions": []
+    },
+    "notfound": {
+      "name": "notfound",
+      "context": {
+        "path": "/404/"
+      },
+      "primaryMenu": "main",
+      "primary": [
+        {
+          "href": "/",
+          "text": "Home",
+          "title": "Home",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/examples/",
+          "text": "Examples",
+          "title": "Examples",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/gallery/",
+          "text": "Gallery",
+          "title": "Gallery",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "/docs/",
+          "text": "Docs",
+          "title": "Docs",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+          "text": "Releases",
+          "title": "Releases",
+          "external": true,
+          "sections": [],
+          "items": []
+        }
+      ],
+      "menus": {
+        "main": [
+          {
+            "href": "/",
+            "text": "Home",
+            "title": "Home",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Gallery",
+            "title": "Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Docs",
+            "title": "Docs",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX/releases",
+            "text": "Releases",
+            "title": "Releases",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "footer": {
+        "footer-product": [
+          {
+            "href": "/examples/",
+            "text": "Examples",
+            "title": "Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/gallery/",
+            "text": "Generated Gallery",
+            "title": "Generated Gallery",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/examples/",
+            "text": "Topology Examples",
+            "title": "Topology Examples",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/",
+            "text": "Documentation",
+            "title": "Documentation",
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "/docs/deployment/",
+            "text": "Deployment",
+            "title": "Deployment",
+            "sections": [],
+            "items": []
+          }
+        ],
+        "footer-resources": [
+          {
+            "href": "https://github.com/EvotecIT/ChartForgeX",
+            "text": "GitHub Repository",
+            "title": "GitHub Repository",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://www.nuget.org/packages/ChartForgeX",
+            "text": "NuGet Package",
+            "title": "NuGet Package",
+            "external": true,
+            "sections": [],
+            "items": []
+          },
+          {
+            "href": "https://evotec.xyz/projects/chartforgex/",
+            "text": "Evotec Project Hub",
+            "title": "Evotec Project Hub",
+            "external": true,
+            "sections": [],
+            "items": []
+          }
+        ]
+      },
+      "actions": [
+        {
+          "href": "https://github.com/EvotecIT/ChartForgeX",
+          "text": "GitHub",
+          "title": "GitHub",
+          "external": true,
+          "class": "nav-link",
+          "ariaLabel": "ChartForgeX on GitHub",
+          "sections": [],
+          "items": []
+        },
+        {
+          "href": "https://www.nuget.org/packages/ChartForgeX",
+          "text": "Install",
+          "title": "Install",
+          "external": true,
+          "class": "nav-cta",
+          "ariaLabel": "Install ChartForgeX",
+          "sections": [],
+          "items": []
+        }
+      ],
+      "regions": []
+    }
+  }
+}
