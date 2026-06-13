@@ -17,7 +17,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageId>ChartForgeX.Mermaid</PackageId>
-    <Version>0.1.6</Version>
+    <Version>0.1.0</Version>
     <Authors>Evotec</Authors>
     <Description>Native Mermaid compatibility parsing foundations for ChartForgeX visual artifact pipelines.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
