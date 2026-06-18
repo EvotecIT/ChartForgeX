@@ -3,3 +3,6 @@ bin/
 obj/
 node_modules/
 tests/mermaid-conformance/node_modules/
+Website/_site/
+Website/_temp/
+Website/_reports/
