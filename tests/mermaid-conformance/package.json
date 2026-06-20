@@ -6,7 +6,7 @@
     "validate": "node validate-mermaid.mjs"
   },
   "dependencies": {
-    "dompurify": "3.4.9",
+    "dompurify": "3.4.11",
     "jsdom": "27.3.0",
     "mermaid": "11.15.0"
   }
