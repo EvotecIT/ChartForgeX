@@ -155,6 +155,8 @@ internal static partial class SmokeTests {
         ("Interactive HTML wraps SVG without external dependencies", InteractiveHtmlWrapsSvgWithoutExternalDependencies),
         ("Interactive HTML escapes host provided attributes", InteractiveHtmlEscapesHostProvidedAttributes),
         ("Interactive HTML dashboard synchronizes multiple charts", InteractiveHtmlDashboardSynchronizesMultipleCharts),
+        ("Graph scene contracts model explorer physics and LOD", GraphSceneContractsModelExplorerPhysicsAndLod),
+        ("Graph explorer HTML adapter renders self-contained scene", GraphExplorerHtmlAdapterRendersSelfContainedScene),
         ("Typography uses a native font stack and escapes custom families", TypographyUsesNativeFontStackAndEscapesCustomFamilies),
         ("Brand kits apply reusable tokens", BrandKitsApplyReusableTokens),
         ("Rendering uses invariant culture", RenderingUsesInvariantCulture),

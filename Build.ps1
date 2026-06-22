@@ -536,6 +536,7 @@ try {
     $aotSmoke = Join-Path $root 'ChartForgeX.AotSmoke/ChartForgeX.AotSmoke.csproj'
     $library = Join-Path $root 'ChartForgeX/ChartForgeX.csproj'
     $interactivityLibrary = Join-Path $root 'ChartForgeX.Interactivity/ChartForgeX.Interactivity.csproj'
+    $graphHtmlInteractivityLibrary = Join-Path $root 'ChartForgeX.Interactivity.Graph.Html/ChartForgeX.Interactivity.Graph.Html.csproj'
     $htmlInteractivityLibrary = Join-Path $root 'ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj'
     $markupLibrary = Join-Path $root 'ChartForgeX.Markup/ChartForgeX.Markup.csproj'
     $mermaidLibrary = Join-Path $root 'ChartForgeX.Mermaid/ChartForgeX.Mermaid.csproj'
@@ -588,6 +589,7 @@ try {
         $packageProjects = @(
             [ordered]@{ Id = 'ChartForgeX'; Project = $library; Assembly = 'ChartForgeX'; Nuspec = 'ChartForgeX.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
             [ordered]@{ Id = 'ChartForgeX.Interactivity'; Project = $interactivityLibrary; Assembly = 'ChartForgeX.Interactivity'; Nuspec = 'ChartForgeX.Interactivity.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
+            [ordered]@{ Id = 'ChartForgeX.Interactivity.Graph.Html'; Project = $graphHtmlInteractivityLibrary; Assembly = 'ChartForgeX.Interactivity.Graph.Html'; Nuspec = 'ChartForgeX.Interactivity.Graph.Html.nuspec'; DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity'); RequiresDependencyFreeNuspec = $false },
             [ordered]@{ Id = 'ChartForgeX.Interactivity.Html'; Project = $htmlInteractivityLibrary; Assembly = 'ChartForgeX.Interactivity.Html'; Nuspec = 'ChartForgeX.Interactivity.Html.nuspec'; DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity'); RequiresDependencyFreeNuspec = $false },
             [ordered]@{ Id = 'ChartForgeX.Markup'; Project = $markupLibrary; Assembly = 'ChartForgeX.Markup'; Nuspec = 'ChartForgeX.Markup.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
             [ordered]@{ Id = 'ChartForgeX.Mermaid'; Project = $mermaidLibrary; Assembly = 'ChartForgeX.Mermaid'; Nuspec = 'ChartForgeX.Mermaid.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
@@ -608,6 +610,7 @@ try {
         }
 
         Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $graphHtmlPackageVersion = $null
         $htmlPackageVersion = $null
         $mermaidPackageVersion = $null
         $markupMermaidPackageVersion = $null
@@ -666,6 +669,9 @@ try {
                 $archive.Dispose()
             }
 
+            if ($packageProject.Id -eq 'ChartForgeX.Interactivity.Graph.Html') {
+                $graphHtmlPackageVersion = $packageVersion
+            }
             if ($packageProject.Id -eq 'ChartForgeX.Interactivity.Html') {
                 $htmlPackageVersion = $packageVersion
             }
@@ -707,6 +713,7 @@ try {
   </packageSourceMapping>
 </configuration>
 "@ | Set-Content -Path (Join-Path $consumerRoot 'NuGet.config') -Encoding UTF8
+                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Graph.Html', '--version', $graphHtmlPackageVersion) -Description 'Graph explorer package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                 Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                 Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Mermaid', '--version', $mermaidPackageVersion) -Description 'Mermaid package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                 Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
@@ -714,6 +721,7 @@ try {
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Graph.Html;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
@@ -741,6 +749,22 @@ var dashboard = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options =>
 });
 if (!dashboard.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard surface missing.");
 if (!dashboard.Contains("data-cfx-chart-id=\"package-dashboard-2\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard child chart IDs missing.");
+
+var graph = GraphScene.Create("package-graph", "Package graph")
+    .AddNode("api", "API", node => {
+        node.Kind = "service";
+        node.Status = "healthy";
+    })
+    .AddNode("db", "Database", node => {
+        node.Kind = "database";
+        node.Status = "warning";
+    })
+    .AddEdge("api-db", "api", "db", "queries", edge => edge.Kind = "dependency");
+graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization);
+graph.Options.Physics.Solver = GraphPhysicsSolver.ForceDirected;
+var graphHtml = graph.ToGraphExplorerHtmlPage();
+if (!graphHtml.Contains("data-cfx-graph-id=\"package-graph\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer package surface missing.");
+if (!graphHtml.Contains("data-cfx-graph-physics=\"ForceDirected\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
 
 var mermaid = new MermaidParser().ParseFlowchart("flowchart LR\n  a[Start] --> b[Done]");
 if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");

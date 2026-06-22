@@ -14,6 +14,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("artifacts/packages/$Configuration", StringComparison.Ordinal), "Build script should put all release packages in a shared ignored artifact folder.");
         Assert(script.Contains("$packages.Count -ne $packageProjects.Count", StringComparison.Ordinal), "Build script should reject stale or duplicate packages.");
         Assert(script.Contains("ChartForgeX.Interactivity.Html", StringComparison.Ordinal), "Build script should package the HTML interactivity adapter.");
+        Assert(script.Contains("ChartForgeX.Interactivity.Graph.Html", StringComparison.Ordinal), "Build script should package the graph explorer HTML adapter.");
         Assert(script.Contains("DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity')", StringComparison.Ordinal), "Build script should verify adapter package dependencies.");
         Assert(script.Contains("ChartForgeX.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid adapter.");
         Assert(script.Contains("ChartForgeX.Markup.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid markup adapter.");
@@ -46,10 +47,13 @@ internal static partial class SmokeTests {
         Assert(script.Contains("Package consumer validation", StringComparison.Ordinal), "Build script should name package consumer validation errors.");
         Assert(script.Contains("TimeoutSeconds $PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Build script should use the shorter package consumer timeout for the final smoke run.");
         Assert(script.Contains("'add', 'package', 'ChartForgeX.Interactivity.Html'", StringComparison.Ordinal), "Build script should install the freshest adapter package in the consumer smoke test.");
+        Assert(script.Contains("'add', 'package', 'ChartForgeX.Interactivity.Graph.Html'", StringComparison.Ordinal), "Build script should install the freshest graph explorer package in the consumer smoke test.");
         Assert(script.Contains("function Join-ProcessArguments", StringComparison.Ordinal), "Build script should keep a Windows PowerShell compatible argument fallback.");
         Assert(script.Contains("$startInfo.Arguments = Join-ProcessArguments", StringComparison.Ordinal), "Build script should support ProcessStartInfo on runtimes without ArgumentList.");
         Assert(script.Contains("ToInteractiveHtmlPage", StringComparison.Ordinal), "Build script should verify interactive HTML package consumption from a clean project.");
         Assert(script.Contains("ToInteractiveHtmlDashboardPage", StringComparison.Ordinal), "Build script should verify interactive dashboard package consumption from a clean project.");
+        Assert(script.Contains("GraphScene.Create", StringComparison.Ordinal), "Build script should verify graph scene package consumption from a clean project.");
+        Assert(script.Contains("ToGraphExplorerHtmlPage", StringComparison.Ordinal), "Build script should verify graph explorer adapter package consumption from a clean project.");
         Assert(script.Contains("<dependency\\s", StringComparison.Ordinal), "Build script should verify dependency-free package invariants.");
         Assert(script.Contains("svg-png-comparison.json", StringComparison.Ordinal), "Build script should verify generated SVG/PNG comparison health.");
         Assert(script.Contains("function Assert-VisualComparisonHealth", StringComparison.Ordinal), "Build script should keep visual comparison health checks isolated.");
@@ -89,6 +93,7 @@ internal static partial class SmokeTests {
         foreach (var packageProject in new[] {
             "ChartForgeX",
             "ChartForgeX.Interactivity",
+            "ChartForgeX.Interactivity.Graph.Html",
             "ChartForgeX.Interactivity.Html",
             "ChartForgeX.Markup",
             "ChartForgeX.Mermaid",

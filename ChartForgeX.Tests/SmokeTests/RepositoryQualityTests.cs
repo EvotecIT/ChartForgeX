@@ -15,6 +15,7 @@ internal static partial class SmokeTests {
                 "ChartForgeX.AotSmoke",
                 "ChartForgeX.Examples",
                 "ChartForgeX.Interactivity",
+                "ChartForgeX.Interactivity.Graph.Html",
                 "ChartForgeX.Interactivity.Html",
                 "ChartForgeX.Markup",
                 "ChartForgeX.Markup.Cli",
@@ -288,7 +289,20 @@ internal static partial class SmokeTests {
         Assert(program.Contains("Directory.Delete(output, recursive: true)", StringComparison.Ordinal), "Example generation should wipe stale output before writing comparison artifacts.");
         Assert(program.Contains("SaveInteractiveHtml", StringComparison.Ordinal), "Example generation should include a visible interactive HTML adapter demo.");
         Assert(program.Contains("SaveInteractiveHtmlDashboard", StringComparison.Ordinal), "Example generation should include a visible synchronized dashboard adapter demo.");
+        Assert(program.Contains("GraphExplorerExamples.Write", StringComparison.Ordinal), "Example generation should include a visible graph explorer adapter demo.");
         Assert(program.Contains("ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts", StringComparison.Ordinal), "Interactive example should exercise the competitive review toolbar features.");
+        var graphExamples = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "GraphExplorerExamples.cs"));
+        Assert(graphExamples.Contains("Identity Risk Graph Explorer", StringComparison.Ordinal) && graphExamples.Contains("GraphPhysicsSolver.ForceAtlas2", StringComparison.Ordinal) && graphExamples.Contains("CollapseClustersOnLoad = true", StringComparison.Ordinal), "Graph explorer examples should exercise product-real clustered runtime physics.");
+        Assert(graphExamples.Contains("CanvasPreferredNodeThreshold = 42", StringComparison.Ordinal) && graphExamples.Contains("MaxInteractiveCanvasNodes = 2000", StringComparison.Ordinal), "Graph explorer examples should exercise the Canvas fallback path and Canvas-specific performance budget.");
+        Assert(graphExamples.Contains("Enterprise Access Graph Benchmark", StringComparison.Ordinal) && graphExamples.Contains("360 nodes, 720 directed edges", StringComparison.Ordinal) && graphExamples.Contains("CanvasPreferredNodeThreshold = 160", StringComparison.Ordinal), "Graph explorer examples should include a large-object benchmark beyond toy scenes.");
+        Assert(graphExamples.Contains("xmlns='http://www.w3.org/2000/svg'", StringComparison.Ordinal), "Graph explorer image-node examples should use portable self-contained SVG data URLs.");
+        var graphAssetPath = Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Graph.Html", "Assets");
+        Assert(!File.Exists(Path.Combine(graphAssetPath, "graph-explorer.js")), "Graph explorer runtime source should stay split by responsibility instead of returning to one large asset file.");
+        var graphScriptParts = Directory.EnumerateFiles(graphAssetPath, "graph-explorer.*.js").OrderBy(Path.GetFileName, StringComparer.Ordinal).ToArray();
+        Assert(graphScriptParts.Length == 4 && graphScriptParts[0].EndsWith("00-core.js", StringComparison.Ordinal) && graphScriptParts[3].EndsWith("30-bindings.js", StringComparison.Ordinal), "Graph explorer runtime should be assembled from ordered script fragments.");
+        foreach (var part in graphScriptParts) Assert(File.ReadLines(part).Count() <= 350, "Graph explorer script fragments should stay below the maintainable file-size review threshold: " + Path.GetFileName(part));
+        var graphAssets = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Graph.Html", "HtmlGraphExplorerAssets.cs"));
+        Assert(graphAssets.Contains("ScriptResourceNames", StringComparison.Ordinal) && graphAssets.Contains("graph-explorer.20-physics.js", StringComparison.Ordinal), "Graph explorer asset loader should concatenate the ordered script fragments into one inline runtime.");
         var scenarios = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "ExampleInteractiveScenarios.cs"));
         Assert(program.Contains("ExampleInteractiveScenarios.ConfigureDomainSecurity", StringComparison.Ordinal) && scenarios.Contains(".AddScenario(\"healthy-trend\"", StringComparison.Ordinal) && scenarios.Contains(".WithDeepLinkState()", StringComparison.Ordinal), "Interactive example should visibly exercise reusable scenario and deep-link controls.");
         var topologyExamples = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "TopologyExamples.cs"));
@@ -296,6 +310,8 @@ internal static partial class SmokeTests {
         Assert(topologyExamples.Contains("topology-demo.html", StringComparison.Ordinal), "Topology examples should copy their focused demo index into the root generated artifact set.");
         var catalog = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "GalleryWriter.Catalog.cs"));
         Assert(catalog.Contains("Topology Interactive Demos", StringComparison.Ordinal), "Catalog should separate topology-first interactive demos from regular chart interactivity examples.");
+        Assert(catalog.Contains("\"identity-risk-graph-explorer\"", StringComparison.Ordinal), "Catalog should include the generated product-real graph explorer example.");
+        Assert(catalog.Contains("\"enterprise-access-graph-benchmark\"", StringComparison.Ordinal), "Catalog should include the generated large graph benchmark example.");
         Assert(CountOccurrences(catalog, "\"visual-replication-mesh-explorer\"") == 1, "Scenario topology demo should live in one catalog family instead of being duplicated across topology visual groups.");
     }
 
@@ -358,6 +374,7 @@ internal static partial class SmokeTests {
         foreach (var packageProject in new[] {
             libraryProject,
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.csproj"),
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Graph.Html", "ChartForgeX.Interactivity.Graph.Html.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj")
         }) {
             Assert(HasXmlProperty(packageProject, "PackageLicenseExpression", "MIT"), "Package should declare the MIT license: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));
