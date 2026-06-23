@@ -210,7 +210,12 @@
   const centerLayout = (root, state) => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 2) return;
-    const boundsNodes = state.nodes.some(node => node.fixed) ? state.nodes : movable;
+    const hasFixedAnchors = state.nodes.some(node => node.fixed);
+    if (hasFixedAnchors) {
+      root.dataset.cfxGraphLayoutRecentering = 'fixed-anchors-skipped';
+      return;
+    }
+    const boundsNodes = movable;
     const size = sceneSize(root);
     const minX = Math.min(...boundsNodes.map(node => node.x));
     const maxX = Math.max(...boundsNodes.map(node => node.x));
