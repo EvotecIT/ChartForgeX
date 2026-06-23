@@ -83,6 +83,23 @@
       y: inv ** 3 * curve.start.y + 3 * inv * inv * t * curve.c1.y + 3 * inv * t * t * curve.c2.y + t ** 3 * curve.end.y
     };
   };
+  const quadraticPoint = (start, control, end, t) => {
+    const inv = 1 - t;
+    return {
+      x: inv * inv * start.x + 2 * inv * t * control.x + t * t * end.x,
+      y: inv * inv * start.y + 2 * inv * t * control.y + t * t * end.y
+    };
+  };
+  const distanceToQuadratic = (point, start, control, end) => {
+    let best = Number.POSITIVE_INFINITY;
+    let previous = start;
+    for (let index = 1; index <= 18; index++) {
+      const current = quadraticPoint(start, control, end, index / 18);
+      best = Math.min(best, distanceToSegment(point, previous, current));
+      previous = current;
+    }
+    return best;
+  };
   const distanceToSelfLoop = (point, node) => {
     const loop = selfLoopGeometry(node);
     let best = Number.POSITIVE_INFINITY;
@@ -104,7 +121,7 @@
       const distance = edge.source === edge.target
         ? distanceToSelfLoop(point, edge.source)
         : control
-        ? Math.min(distanceToSegment(point, edge.source, control), distanceToSegment(point, control, edge.target))
+        ? distanceToQuadratic(point, edge.source, control, edgeRenderTarget(edge, control))
         : distanceToSegment(point, edge.source, edge.target);
       if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {
         best = edge;

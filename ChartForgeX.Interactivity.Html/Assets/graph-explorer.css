@@ -9,8 +9,9 @@
 .cfx-graph-search,.cfx-graph-filter,.cfx-graph-tool{height:34px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#0f172a;padding:0 10px;font:inherit}
 .cfx-graph-tool{cursor:pointer}
 .cfx-graph-tool[aria-pressed=true]{background:#0f172a;color:#fff;border-color:#0f172a}
-.cfx-graph-stage{position:relative;overflow:hidden;aspect-ratio:12/7;border:1px solid #dbe3ef;border-radius:8px;background:#fff;box-shadow:0 16px 34px rgba(15,23,42,.08);touch-action:none;cursor:grab}
-.cfx-graph-stage:active,.cfx-graph-panning .cfx-graph-stage{cursor:grabbing}
+.cfx-graph-stage{position:relative;overflow:hidden;aspect-ratio:12/7;border:1px solid #dbe3ef;border-radius:8px;background:#fff;box-shadow:0 16px 34px rgba(15,23,42,.08);touch-action:auto;cursor:default}
+.cfx-graph-interactive-touch .cfx-graph-stage{touch-action:none;cursor:grab}
+.cfx-graph-interactive-touch .cfx-graph-stage:active,.cfx-graph-panning .cfx-graph-stage{cursor:grabbing}
 .cfx-graph-canvas{position:absolute;inset:0;display:none;width:100%;height:100%;background:#fff;cursor:inherit}
 .cfx-graph-overview{position:absolute;right:12px;bottom:12px;z-index:2;display:none;width:168px;height:98px;border:1px solid #cbd5e1;border-radius:6px;background:rgba(248,250,252,.96);box-shadow:0 12px 26px rgba(15,23,42,.16);cursor:crosshair}
 .cfx-graph-has-overview .cfx-graph-overview{display:block}

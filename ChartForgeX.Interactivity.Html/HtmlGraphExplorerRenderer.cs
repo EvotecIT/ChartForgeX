@@ -78,7 +78,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var positions = ComputePositions(scene);
         var graphId = SafeId(scene.Id);
         var writer = new StringBuilder();
-        writer.Append("<section class=\"cfx-graph-explorer\"");
+        writer.Append("<section class=\"cfx-graph-explorer");
+        if (ConsumesTouchMovement(scene)) writer.Append(" cfx-graph-interactive-touch");
+        writer.Append('"');
         Attribute(writer, "data-cfx-graph-id", scene.Id);
         Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
         Attribute(writer, "data-cfx-graph-renderer", Backend(options.RenderBackend));
@@ -144,7 +146,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             WriteButton(writer, "zoom-out", "-");
         }
 
-        if (options.IncludePhysicsControls && scene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics)) {
+        if (options.IncludePhysicsControls && CanRunRuntimePhysics(scene)) {
             WriteButton(writer, "physics", "Physics");
             if (scene.Options.HasFeature(GraphSceneFeatures.Stabilization)) WriteButton(writer, "stabilize", "Stabilize");
         }
@@ -201,7 +203,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cluster-label", cluster.Label);
             Attribute(writer, "data-cluster-kind", cluster.Kind);
             Attribute(writer, "data-cluster-node-ids", string.Join(",", cluster.NodeIds));
-            Attribute(writer, "data-cluster-collapsed", cluster.Collapsed ? "true" : "false");
+            Attribute(writer, "data-cluster-collapsed", collapsed ? "true" : "false");
             Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
@@ -285,6 +287,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static void WriteNodes(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, HashSet<string> collapsedNodeIds, bool focusableGraphItems) {
         foreach (var node in scene.Nodes) {
             var point = positions[node.Id];
+            var size = SafeNodeSize(node);
             writer.Append("<g class=\"cfx-graph-node");
             if (collapsedNodeIds.Contains(node.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" tabindex=\"");
@@ -296,7 +299,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-group", node.GroupId);
             Attribute(writer, "data-node-cluster", NodeClusterId(node, clusterMembership));
             Attribute(writer, "data-cfx-status", node.Status);
-            Attribute(writer, "data-node-size", Number(node.Size));
+            Attribute(writer, "data-node-size", Number(size));
             Attribute(writer, "data-node-fixed", node.Fixed ? "true" : "false");
             Attribute(writer, "data-node-shape", NodeShape(node.Shape));
             Attribute(writer, "data-node-image-url", node.ImageUrl);
@@ -309,7 +312,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append('>');
             WriteNodeMark(writer, node);
             writer.Append("<text y=\"");
-            writer.Append(Number(node.Size + 18));
+            writer.Append(Number(size + 18));
             writer.Append("\">");
             writer.Append(Text(node.Label));
             writer.Append("</text></g>");
@@ -317,7 +320,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteNodeMark(StringBuilder writer, GraphSceneNode node) {
-        var size = Math.Max(4, node.Size);
+        var size = SafeNodeSize(node);
         if (node.Shape == GraphNodeShape.Box) {
             writer.Append("<rect x=\"");
             writer.Append(Number(-size * 1.45));
@@ -505,6 +508,18 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
+
+    private static bool CanRunRuntimePhysics(GraphScene scene) {
+        return scene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics)
+            && scene.Options.Physics.Solver != GraphPhysicsSolver.None
+            && scene.Options.Physics.Solver != GraphPhysicsSolver.StaticPrepared;
+    }
+
+    private static bool ConsumesTouchMovement(GraphScene scene) {
+        return scene.Options.HasFeature(GraphSceneFeatures.Viewport) || scene.Options.HasFeature(GraphSceneFeatures.DragNodes);
+    }
+
+    private static double SafeNodeSize(GraphSceneNode node) => Math.Max(4, node.Size);
 
     private static void AppendScript(StringBuilder writer, HtmlGraphExplorerOptions options) {
         writer.Append("<script");
