@@ -1,3 +1,60 @@
+  const indexHitTesting = (root, state) => {
+    const cellSize = 48;
+    const grid = new Map();
+    state.nodes.forEach(node => {
+      const key = `${Math.floor(node.x / cellSize)}:${Math.floor(node.y / cellSize)}`;
+      const bucket = grid.get(key) || [];
+      bucket.push(node);
+      grid.set(key, bucket);
+    });
+    root.__cfxGraphState = state;
+    root.__cfxGraphHitGrid = { cellSize, grid };
+    root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
+  };
+  const hitTestNodes = (root, point) => {
+    const state = root.__cfxGraphState || graphState(root);
+    if (state.nodes.length < 160) return state.nodes;
+    const index = root.__cfxGraphHitGrid || (indexHitTesting(root, state), root.__cfxGraphHitGrid);
+    const cx = Math.floor(point.x / index.cellSize);
+    const cy = Math.floor(point.y / index.cellSize);
+    const candidates = [];
+    for (let x = cx - 1; x <= cx + 1; x++) for (let y = cy - 1; y <= cy + 1; y++) candidates.push(...index.grid.get(`${x}:${y}`) || []);
+    return candidates.length ? candidates : state.nodes;
+  };
+  const domHitNodeAt = (root, point) => {
+    let best = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    items(root, '[data-cfx-role="graph-node"]').forEach(el => {
+      if (!visible(el)) return;
+      const size = Math.max(4, num(el, 'data-node-size', 8));
+      const x = num(el, 'data-node-x', 0);
+      const y = num(el, 'data-node-y', 0);
+      const dx = x - point.x;
+      const dy = y - point.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance <= size + 10 && distance < bestDistance) {
+        best = { el, id: attr(el, 'data-node-id'), x, y, size };
+        bestDistance = distance;
+      }
+    });
+    if (!best) return null;
+    return root.__cfxGraphState?.byId?.get(best.id) || best;
+  };
+  const hitNodeAt = (root, point) => {
+    let best = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    hitTestNodes(root, point).forEach(node => {
+      if (!visible(node.el)) return;
+      const dx = node.x - point.x;
+      const dy = node.y - point.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance <= node.size + 10 && distance < bestDistance) {
+        best = node;
+        bestDistance = distance;
+      }
+    });
+    return best || domHitNodeAt(root, point);
+  };
   const distanceToSegment = (point, a, b) => {
     const dx = b.x - a.x;
     const dy = b.y - a.y;

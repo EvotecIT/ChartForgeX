@@ -1,3 +1,31 @@
+  const imageCache = new Map();
+  const imageLoadCallbacks = new Map();
+  const graphImage = (url, onload) => {
+    if (!url) return null;
+    if (imageCache.has(url)) {
+      const cached = imageCache.get(url);
+      if (onload && cached && !cached.complete) {
+        const callbacks = imageLoadCallbacks.get(url) || new Set();
+        callbacks.add(onload);
+        imageLoadCallbacks.set(url, callbacks);
+      }
+      return cached;
+    }
+    const notify = () => {
+      const callbacks = imageLoadCallbacks.get(url);
+      imageLoadCallbacks.delete(url);
+      if (callbacks) callbacks.forEach(callback => callback());
+    };
+    const callbacks = new Set();
+    if (onload) callbacks.add(onload);
+    imageLoadCallbacks.set(url, callbacks);
+    const image = new Image();
+    image.addEventListener('load', notify, { once: true });
+    image.addEventListener('error', notify, { once: true });
+    image.src = url;
+    imageCache.set(url, image);
+    return image;
+  };
   const clusterMetrics = (cluster, byId) => {
     const members = cluster.nodeIds.map(id => byId.get(id)).filter(Boolean);
     if (!members.length) return null;

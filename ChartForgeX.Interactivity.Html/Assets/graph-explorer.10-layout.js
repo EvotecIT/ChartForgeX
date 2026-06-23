@@ -1,72 +1,25 @@
-  const indexHitTesting = (root, state) => {
-    const cellSize = 48;
-    const grid = new Map();
-    state.nodes.forEach(node => {
-      const key = `${Math.floor(node.x / cellSize)}:${Math.floor(node.y / cellSize)}`;
-      const bucket = grid.get(key) || [];
-      bucket.push(node);
-      grid.set(key, bucket);
-    });
-    root.__cfxGraphState = state;
-    root.__cfxGraphHitGrid = { cellSize, grid };
-    root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
-  };
-  const hitTestNodes = (root, point) => {
-    const state = root.__cfxGraphState || graphState(root);
-    if (state.nodes.length < 160) return state.nodes;
-    const index = root.__cfxGraphHitGrid || (indexHitTesting(root, state), root.__cfxGraphHitGrid);
-    const cx = Math.floor(point.x / index.cellSize);
-    const cy = Math.floor(point.y / index.cellSize);
-    const candidates = [];
-    for (let x = cx - 1; x <= cx + 1; x++) for (let y = cy - 1; y <= cy + 1; y++) candidates.push(...index.grid.get(`${x}:${y}`) || []);
-    return candidates.length ? candidates : state.nodes;
-  };
-  const domHitNodeAt = (root, point) => {
-    let best = null;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    items(root, '[data-cfx-role="graph-node"]').forEach(el => {
-      if (!visible(el)) return;
-      const size = Math.max(4, num(el, 'data-node-size', 8));
-      const x = num(el, 'data-node-x', 0);
-      const y = num(el, 'data-node-y', 0);
-      const dx = x - point.x;
-      const dy = y - point.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance <= size + 10 && distance < bestDistance) {
-        best = { el, id: attr(el, 'data-node-id'), x, y, size };
-        bestDistance = distance;
-      }
-    });
-    if (!best) return null;
-    return root.__cfxGraphState?.byId?.get(best.id) || best;
-  };
-  const hitNodeAt = (root, point) => {
-    let best = null;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    hitTestNodes(root, point).forEach(node => {
-      if (!visible(node.el)) return;
-      const dx = node.x - point.x;
-      const dy = node.y - point.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance <= node.size + 10 && distance < bestDistance) {
-        best = node;
-        bestDistance = distance;
-      }
-    });
-    return best || domHitNodeAt(root, point);
-  };
   const setNodePosition = (node) => {
     node.el.setAttribute('transform', `translate(${node.x.toFixed(3)} ${node.y.toFixed(3)})`);
     node.el.setAttribute('data-node-x', node.x.toFixed(3));
     node.el.setAttribute('data-node-y', node.y.toFixed(3));
   };
+  const edgeRenderTarget = (edge, control) => {
+    if (!edge.directed) return edge.target;
+    const from = control || edge.source;
+    const dx = edge.target.x - from.x;
+    const dy = edge.target.y - from.y;
+    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    const inset = Math.max(6, edge.target.size + 7);
+    return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
+  };
   const updateEdges = (root, edges) => {
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     edges.forEach(edge => {
       const control = edgeControl(edge);
+      const target = edgeRenderTarget(edge, control);
       const d = control
-        ? `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${edge.target.x.toFixed(3)} ${edge.target.y.toFixed(3)}`
-        : `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} L ${edge.target.x.toFixed(3)} ${edge.target.y.toFixed(3)}`;
+        ? `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${target.x.toFixed(3)} ${target.y.toFixed(3)}`
+        : `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} L ${target.x.toFixed(3)} ${target.y.toFixed(3)}`;
       edge.el.setAttribute('d', d);
       const label = labels.get(attr(edge.el, 'data-edge-id'));
       if (label) {
@@ -295,7 +248,7 @@
     const filters = {};
     items(root, '[data-cfx-graph-filter]').forEach(filter => { filters[attr(filter, 'data-cfx-graph-filter')] = filter.value || ''; });
     const visibleNodes = new Set();
-    const memberSearchHits = new Set();
+    const hiddenMemberHits = new Set();
     const nodeMatches = new Map();
     items(root, '[data-cfx-role="graph-node"]').forEach(node => {
       const queryOk = !query || searchable(node).includes(query);
@@ -304,7 +257,7 @@
       const id = attr(node, 'data-node-id');
       const collapsedMember = node.classList.contains('cfx-graph-cluster-collapsed-member');
       const matches = queryOk && statusOk && kindOk && !collapsedMember;
-      if (query && queryOk && statusOk && kindOk && collapsedMember) memberSearchHits.add(id);
+      if (queryOk && statusOk && kindOk && collapsedMember) hiddenMemberHits.add(id);
       nodeMatches.set(id, { node, matches });
       if (matches) visibleNodes.add(id);
     });
@@ -312,7 +265,13 @@
       const edgeQueryOk = !query || searchable(edge).includes(query);
       const edgeStatusOk = !filters.status || attr(edge, 'data-cfx-status') === filters.status;
       const edgeKindOk = !filters.kind || attr(edge, 'data-edge-kind') === filters.kind;
-      const matches = edgeQueryOk && edgeStatusOk && edgeKindOk && !edge.classList.contains('cfx-graph-cluster-collapsed-member');
+      const collapsedMember = edge.classList.contains('cfx-graph-cluster-collapsed-member');
+      const edgeMatchesFacet = edgeQueryOk && edgeStatusOk && edgeKindOk;
+      const matches = edgeMatchesFacet && !collapsedMember;
+      if (edgeMatchesFacet && collapsedMember) {
+        hiddenMemberHits.add(attr(edge, 'data-source-node-id'));
+        hiddenMemberHits.add(attr(edge, 'data-target-node-id'));
+      }
       if (matches) {
         visibleNodes.add(attr(edge, 'data-source-node-id'));
         visibleNodes.add(attr(edge, 'data-target-node-id'));
@@ -337,8 +296,8 @@
       const kindOk = !filters.kind || attr(cluster, 'data-cluster-kind') === filters.kind;
       const memberIds = idList(attr(cluster, 'data-cluster-node-ids'));
       const memberVisible = memberIds.some(id => visibleNodes.has(id));
-      const memberSearchHit = memberIds.some(id => memberSearchHits.has(id));
-      cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !memberSearchHit);
+      const hiddenMemberHit = memberIds.some(id => hiddenMemberHits.has(id));
+      cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !hiddenMemberHit);
     });
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: visibleNodes.size });

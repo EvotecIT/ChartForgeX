@@ -270,7 +270,9 @@ self.onmessage = event => {
         if (message.type === 'done') {
           root.dataset.cfxGraphPhysicsState = 'stabilized';
           stopWorkerPhysics(root, true);
-          if (root.__cfxGraphAutoFitOnStabilize) fitViewport(root);
+          if (root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true) fitViewport(root);
+          root.__cfxGraphAutoFitOnStabilize = false;
+          if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root);
           emit(root, 'cfxgraphstabilized', { graphId: attr(root, 'data-cfx-graph-id'), ticks: message.tick, maxVelocity: message.maxVelocity, thread: 'worker' });
         }
       };
@@ -302,7 +304,9 @@ self.onmessage = event => {
         root.__cfxGraphMainPhysics = null;
         balanceLayoutAspect(root, state);
         applyLayout(root, state);
-        if (root.__cfxGraphAutoFitOnStabilize) fitViewport(root);
+        if (root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true) fitViewport(root);
+        root.__cfxGraphAutoFitOnStabilize = false;
+        if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root);
         emit(root, 'cfxgraphstabilized', { graphId: attr(root, 'data-cfx-graph-id'), ticks: tick, maxVelocity: velocity });
         return;
       }

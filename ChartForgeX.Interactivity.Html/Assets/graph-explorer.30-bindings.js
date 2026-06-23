@@ -145,7 +145,8 @@
     ['cfx-graph-lod-compact', 'cfx-graph-lod-hide-edge-labels', 'cfx-graph-neighborhood-active', 'cfx-graph-performance-gated'].forEach(name => {
       if (root.classList.contains(name)) clone.classList.add(name);
     });
-    const styleSource = root.ownerDocument.querySelector('style[data-cfx-graph-assets="true"]') || root.ownerDocument.querySelector('style');
+    const styleSource = root.ownerDocument.querySelector('style[data-cfx-graph-assets="true"]')
+      || Array.from(root.ownerDocument.querySelectorAll('style')).find(style => (style.textContent || '').includes('.cfx-graph-explorer'));
     if (styleSource?.textContent) {
       const style = root.ownerDocument.createElementNS('http:' + '//www.w3.org/2000/svg', 'style');
       style.setAttribute('data-cfx-export-style', 'true');
@@ -155,6 +156,10 @@
       else clone.insertBefore(style, clone.firstChild);
     }
     return new XMLSerializer().serializeToString(clone);
+  };
+  const syncPhysicsControls = (root) => {
+    const pressed = root.dataset.cfxGraphPhysicsState === 'running' ? 'true' : 'false';
+    items(root, '[data-cfx-graph-action="physics"]').forEach(button => button.setAttribute('aria-pressed', pressed));
   };
   const exportGraphJson = (root) => ({
     graphId: attr(root, 'data-cfx-graph-id'),
@@ -284,14 +289,17 @@
             stopMainPhysics(root, true);
           }
           if (!running) startPhysics(root);
+          syncPhysicsControls(root);
         }
         if (action === 'stabilize' && hasFeature(root, 'Stabilization')) startPhysics(root);
-        button.setAttribute('aria-pressed', attr(button, 'aria-pressed') === 'true' ? 'false' : 'true');
+        if (action === 'physics') syncPhysicsControls(root);
+        else button.setAttribute('aria-pressed', attr(button, 'aria-pressed') === 'true' ? 'false' : 'true');
         emit(root, 'cfxgraphaction', { graphId: attr(root, 'data-cfx-graph-id'), action, physics: attr(root, 'data-cfx-graph-physics') });
       });
     });
     updateSelectionState(root);
     if (hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization')) startPhysics(root);
+    syncPhysicsControls(root);
     emit(root, 'cfxgraphready', {
       graphId: attr(root, 'data-cfx-graph-id'),
       renderer: root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer'),

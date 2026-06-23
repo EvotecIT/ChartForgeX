@@ -99,7 +99,6 @@
     return { nodes, edges, clusters, byId };
   };
   const visible = (el) => !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member');
-  const imageCache = new Map();
   const viewport = (root) => ({
     x: num(root, 'data-cfx-viewport-x', 0),
     y: num(root, 'data-cfx-viewport-y', 0),
@@ -338,13 +337,3 @@
       context.fillText(node.icon, node.x, node.y + 1);
     }
   };
-  const graphImage = (url, onload) => {
-    if (!url) return null;
-    if (imageCache.has(url)) return imageCache.get(url);
-    const image = new Image();
-    image.onload = onload;
-    image.src = url;
-    imageCache.set(url, image);
-    return image;
-  };
-
