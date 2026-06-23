@@ -54,6 +54,7 @@ public sealed class GraphScene {
         var nodeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var node in Nodes) {
             ValidateRequiredId(node.Id, "node");
+            ValidateRequiredText(node.Label, "node");
             if (node.HasExplicitPosition) {
                 ValidateFiniteCoordinate(node.X, node.Id, "x");
                 ValidateFiniteCoordinate(node.Y, node.Id, "y");
@@ -74,6 +75,7 @@ public sealed class GraphScene {
         var clusterIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var cluster in Clusters) {
             ValidateRequiredId(cluster.Id, "cluster");
+            ValidateRequiredText(cluster.Label, "cluster");
             if (!clusterIds.Add(cluster.Id)) throw new InvalidOperationException("Graph scene contains a duplicate cluster id: " + cluster.Id);
             foreach (var nodeId in cluster.NodeIds) {
                 ValidateRequiredId(nodeId, "cluster member node");
@@ -84,6 +86,10 @@ public sealed class GraphScene {
 
     private static void ValidateRequiredId(string? id, string itemKind) {
         if (string.IsNullOrWhiteSpace(id)) throw new InvalidOperationException("Graph scene contains a blank " + itemKind + " id.");
+    }
+
+    private static void ValidateRequiredText(string? text, string itemKind) {
+        if (string.IsNullOrWhiteSpace(text)) throw new InvalidOperationException("Graph scene contains a blank " + itemKind + " label.");
     }
 
     private static void ValidateFiniteCoordinate(double value, string nodeId, string axis) {

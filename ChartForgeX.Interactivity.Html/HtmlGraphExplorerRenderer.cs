@@ -166,6 +166,7 @@ public sealed class HtmlGraphExplorerRenderer {
         writer.Append("</title><defs><marker");
         Attribute(writer, "id", graphId + "-arrow");
         writer.Append(" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\"></path></marker></defs>");
+        writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
         WriteClusters(writer, scene, positions);
         WriteEdges(writer, scene, positions, graphId + "-arrow");
@@ -187,6 +188,7 @@ public sealed class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cluster-collapsed", cluster.Collapsed ? "true" : "false");
             Attribute(writer, "data-cfx-status", cluster.Kind);
             Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
+            Attribute(writer, "data-cfx-metadata", MetadataJson(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
             writer.Append("><circle r=\"42\"></circle><text y=\"5\">");
             writer.Append(Text(cluster.Label));
@@ -215,6 +217,7 @@ public sealed class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-dashed", edge.Dashed ? "true" : "false");
             Attribute(writer, "data-edge-show-label", edge.ShowLabel ? "true" : "false");
             Attribute(writer, "data-cfx-search", SearchText(edge.Metadata));
+            Attribute(writer, "data-cfx-metadata", MetadataJson(edge.Metadata));
             Attribute(writer, "d", path);
             if (edge.Directed) Attribute(writer, "marker-end", "url(#" + markerId + ")");
             writer.Append("></path>");
@@ -251,6 +254,7 @@ public sealed class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-image-url", node.ImageUrl);
             Attribute(writer, "data-node-icon", node.IconText);
             Attribute(writer, "data-cfx-search", SearchText(node.Metadata));
+            Attribute(writer, "data-cfx-metadata", MetadataJson(node.Metadata));
             Attribute(writer, "data-node-x", Number(point.X));
             Attribute(writer, "data-node-y", Number(point.Y));
             Attribute(writer, "transform", "translate(" + Number(point.X) + " " + Number(point.Y) + ")");
@@ -330,6 +334,60 @@ public sealed class HtmlGraphExplorerRenderer {
     private static string SearchText(IReadOnlyDictionary<string, string> metadata) {
         if (metadata.Count == 0) return string.Empty;
         return string.Join(" ", metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + " " + pair.Value));
+    }
+
+    private static string MetadataJson(IReadOnlyDictionary<string, string> metadata) {
+        if (metadata.Count == 0) return string.Empty;
+        var writer = new StringBuilder();
+        writer.Append('{');
+        var first = true;
+        foreach (var pair in metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal)) {
+            if (!first) writer.Append(',');
+            first = false;
+            writer.Append(JsonString(pair.Key));
+            writer.Append(':');
+            writer.Append(JsonString(pair.Value));
+        }
+
+        writer.Append('}');
+        return writer.ToString();
+    }
+
+    private static string JsonString(string value) {
+        var writer = new StringBuilder(value.Length + 2);
+        writer.Append('"');
+        foreach (var ch in value) {
+            switch (ch) {
+                case '\\':
+                    writer.Append("\\\\");
+                    break;
+                case '"':
+                    writer.Append("\\\"");
+                    break;
+                case '\b':
+                    writer.Append("\\b");
+                    break;
+                case '\f':
+                    writer.Append("\\f");
+                    break;
+                case '\n':
+                    writer.Append("\\n");
+                    break;
+                case '\r':
+                    writer.Append("\\r");
+                    break;
+                case '\t':
+                    writer.Append("\\t");
+                    break;
+                default:
+                    if (char.IsControl(ch)) writer.Append("\\u").Append(((int)ch).ToString("x4", CultureInfo.InvariantCulture));
+                    else writer.Append(ch);
+                    break;
+            }
+        }
+
+        writer.Append('"');
+        return writer.ToString();
     }
 
     private static IReadOnlyDictionary<string, Point> ComputePositions(GraphScene scene) {
@@ -603,7 +661,7 @@ public sealed class HtmlGraphExplorerRenderer {
 
     private static string SafeId(string value) {
         var builder = new StringBuilder(value.Length);
-        foreach (var ch in value) builder.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' ? ch : '-');
+        foreach (var ch in value) builder.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.' ? ch : '-');
         return builder.Length == 0 ? "graph" : builder.ToString();
     }
 

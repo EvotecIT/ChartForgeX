@@ -68,6 +68,16 @@ internal static partial class SmokeTests {
         blankPublicNode.Nodes.Add(new GraphSceneNode());
         AssertThrows<InvalidOperationException>(() => blankPublicNode.Validate(), "Graph scenes should reject blank public node ids before adapters render empty keys.");
 
+        var blankPublicNodeLabel = GraphScene.Create("blank-node-label", "Blank node label");
+        blankPublicNodeLabel.Nodes.Add(new GraphSceneNode { Id = "node" });
+        AssertThrows<InvalidOperationException>(() => blankPublicNodeLabel.Validate(), "Graph scenes should reject blank public node labels before adapters render invisible nodes.");
+
+        var blankPublicClusterLabel = GraphScene.Create("blank-cluster-label", "Blank cluster label")
+            .AddNode("node", "Node");
+        blankPublicClusterLabel.Clusters.Add(new GraphSceneCluster { Id = "cluster" });
+        blankPublicClusterLabel.Clusters[0].NodeIds.Add("node");
+        AssertThrows<InvalidOperationException>(() => blankPublicClusterLabel.Validate(), "Graph scenes should reject blank public cluster labels before adapters render invisible cluster summaries.");
+
         var nonFinitePosition = GraphScene.Create("bad-position", "Bad position")
             .AddNode("bad", "Bad", node => node.X = double.NaN);
         AssertThrows<InvalidOperationException>(() => nonFinitePosition.Validate(), "Graph scenes should reject non-finite explicit node coordinates before adapters serialize invalid geometry.");
@@ -108,6 +118,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-performance-frame-budget=\"10\"", StringComparison.Ordinal) && html.Contains("data-cfx-performance-max-svg-nodes=\"1000\"", StringComparison.Ordinal) && html.Contains("data-cfx-performance-max-canvas-nodes=\"6000\"", StringComparison.Ordinal) && html.Contains("data-cfx-performance-telemetry-interval=\"7\"", StringComparison.Ordinal), "Graph explorer pages should expose SVG and Canvas performance budgets.");
         Assert(html.Contains("data-cfx-role=\"graph-canvas\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-canvas\"", StringComparison.Ordinal), "Graph explorer pages should include a real Canvas rendering target for large-object fallback.");
         Assert(html.Contains("class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\"", StringComparison.Ordinal), "Graph explorer SVG output should preserve intrinsic dimensions for standalone exports and host-registered CSS.");
+        Assert(html.Contains("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>", StringComparison.Ordinal), "Graph explorer SVG output should include an explicit background rectangle so inline and exported SVG match the Canvas page background.");
         Assert(html.Contains("data-cfx-graph-search=\"true\"", StringComparison.Ordinal), "Graph explorer pages should include search controls.");
         Assert(html.Contains("data-cfx-graph-filter=\"status\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-filter=\"kind\"", StringComparison.Ordinal), "Graph explorer pages should include reusable status and kind filters.");
         Assert(html.Contains("data-cfx-graph-action=\"clusters\"", StringComparison.Ordinal), "Graph explorer pages should include cluster controls when clusters are present.");
@@ -119,6 +130,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-node-size=\"11\"", StringComparison.Ordinal) && html.Contains("data-node-fixed=\"true\"", StringComparison.Ordinal), "Graph explorer SVG should expose node size and fixed-position hints for physics adapters.");
         Assert(html.Contains("data-node-shape=\"image\"", StringComparison.Ordinal) && html.Contains("data-node-image-url=\"data:image/svg+xml", StringComparison.Ordinal) && html.Contains("data-node-icon=\"A\"", StringComparison.Ordinal), "Graph explorer SVG should expose image and icon node metadata.");
         Assert(html.Contains("data-cfx-search=\"owner identity\"", StringComparison.Ordinal) && html.Contains("evidence privileged-path", StringComparison.Ordinal) && html.Contains("tier core\"", StringComparison.Ordinal), "Graph explorer SVG should serialize node, edge, and cluster metadata into searchable attributes.");
+        Assert(html.Contains("data-cfx-metadata=\"{&quot;owner&quot;:&quot;identity&quot;}\"", StringComparison.Ordinal) && html.Contains("data-cfx-metadata=\"{&quot;evidence&quot;:&quot;privileged-path&quot;}\"", StringComparison.Ordinal) && html.Contains("data-cfx-metadata=\"{&quot;tier&quot;:&quot;core&quot;}\"", StringComparison.Ordinal), "Graph explorer SVG should serialize structured metadata for host inspectors and selection events.");
         Assert(html.Contains("<image href=\"data:image/svg+xml", StringComparison.Ordinal), "Graph explorer SVG should render image-backed nodes without external dependencies.");
         Assert(html.Contains("data-cfx-role=\"graph-edge\"", StringComparison.Ordinal) && html.Contains("data-source-node-id=\"api\"", StringComparison.Ordinal) && html.Contains("data-target-node-id=\"db\"", StringComparison.Ordinal), "Graph explorer SVG should expose graph edge metadata.");
         Assert(html.Contains("data-edge-weight=\"2\"", StringComparison.Ordinal) && html.Contains("data-edge-length=\"140\"", StringComparison.Ordinal), "Graph explorer SVG should expose edge physics hints.");
@@ -179,7 +191,9 @@ internal static partial class SmokeTests {
         Assert(html.Contains("adaptivePhysicsLayout", StringComparison.Ordinal) && html.Contains("balanceLayoutAspect", StringComparison.Ordinal) && html.Contains("root.__cfxGraphAutoFitOnStabilize", StringComparison.Ordinal), "Graph explorer runtime physics should settle in an adaptive layout space, balance dense graph aspect ratio, and refit after stabilization when the user has not manually moved the viewport.");
         Assert(html.Contains("homeX", StringComparison.Ordinal) && html.Contains("homeY", StringComparison.Ordinal), "Graph explorer runtime should preserve prepared node homes for post-physics layout quality passes.");
         Assert(html.Contains("compactStabilizedLayout", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCompaction", StringComparison.Ordinal), "Graph explorer runtime physics should compact oversized stabilized layouts back into a readable viewport envelope.");
-        Assert(html.Contains("restoreClusterAnchors", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutClusterGravity", StringComparison.Ordinal), "Graph explorer runtime physics should pull stabilized communities back toward their prepared cluster regions instead of blending all clusters into one mass.");
+        Assert(html.Contains("runLayoutQualityPass", StringComparison.Ordinal) && html.Contains("spreadHubNeighborhoods", StringComparison.Ordinal) && html.Contains("separateOverlaps", StringComparison.Ordinal), "Graph explorer runtime physics should run a structured quality pass after stabilization instead of only fitting whatever the force solver produced.");
+        Assert(html.Contains("restoreClusterAnchors", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutClusterGravity", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCommunityGravity", StringComparison.Ordinal), "Graph explorer runtime physics should pull stabilized communities back toward their prepared regions instead of blending all clusters into one mass.");
+        Assert(html.Contains("cfxGraphLayoutQualityScore", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutOverlapCount", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutHubSpread", StringComparison.Ordinal), "Graph explorer runtime should publish layout quality diagnostics for dense graph QA.");
         Assert(html.Contains("root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true", StringComparison.Ordinal), "Graph explorer runtime physics should re-check user viewport touches before auto-fitting after stabilization.");
         Assert(html.Contains("if (dx === 0 && dy === 0)", StringComparison.Ordinal), "Graph explorer pairwise physics should force a non-zero deterministic jitter vector for perfectly overlapping node pairs.");
         Assert(!html.Contains("node.x = Math.max(24, Math.min(936, point.x))", StringComparison.Ordinal), "Graph explorer dragging should not force nodes back into the old fixed viewport box.");
@@ -215,6 +229,7 @@ internal static partial class SmokeTests {
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("selection: {", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("selectionCount", StringComparison.Ordinal), "Host-registered graph explorer runtime should export multi-selection state.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("featureGroups", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("Explorer: ['Selection', 'MultiSelection', 'Search', 'Filtering', 'Viewport'", StringComparison.Ordinal), "Graph explorer runtime should expand grouped feature flags so Explorer enables multi-selection, viewport, filtering, and clustering behavior in the browser.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("data-cfx-search", StringComparison.Ordinal), "Graph explorer runtime search should include serialized metadata attributes.");
+        Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("metadataDetail", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("metadata: metadataDetail(node)", StringComparison.Ordinal), "Graph explorer runtime selection events should include structured metadata for host inspectors.");
         Assert(!HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("<script>", StringComparison.Ordinal), "Host-registered graph explorer runtime should return raw JavaScript.");
 
         var canvasHtml = scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.Canvas);
@@ -256,6 +271,20 @@ internal static partial class SmokeTests {
             Assert(right.X >= 75 && right.X <= 885 && right.Y >= 65 && right.Y <= 495, "Graph explorer prepared layout should fit generated right-community nodes inside the opening scene.");
             Assert(Distance(hub, left) > 35 && Distance(hub, right) > 35, "Graph explorer prepared layout should push non-hub nodes outward from the centered hub.");
         }
+
+        var dottedIdHtml = GraphScene.Create("graph.with.dot", "Graph with dot").AddNode("a", "A").ToGraphExplorerHtmlFragment();
+        var dashedIdHtml = GraphScene.Create("graph-with-dot", "Graph with dash").AddNode("a", "A").ToGraphExplorerHtmlFragment();
+        Assert(dottedIdHtml.Contains("id=\"graph.with.dot-title\"", StringComparison.Ordinal) && dottedIdHtml.Contains("id=\"graph.with.dot-arrow\"", StringComparison.Ordinal), "Graph explorer SVG ids should preserve valid dots in scene ids.");
+        Assert(dashedIdHtml.Contains("id=\"graph-with-dot-title\"", StringComparison.Ordinal) && dashedIdHtml.Contains("id=\"graph-with-dot-arrow\"", StringComparison.Ordinal), "Graph explorer SVG ids should keep dashed scene ids distinct from dotted scene ids.");
+
+        var scaleScene = BuildScaleConfidenceScene(1000, 1800);
+        scaleScene.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 500;
+        scaleScene.Options.Performance.MaxInteractiveCanvasNodes = 10000;
+        scaleScene.Options.Performance.MaxInteractiveCanvasEdges = 24000;
+        var scaleHtml = scaleScene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.Canvas);
+        Assert(scaleHtml.Contains("data-cfx-graph-node-count=\"1000\"", StringComparison.Ordinal) && scaleHtml.Contains("data-cfx-graph-edge-count=\"1800\"", StringComparison.Ordinal), "Graph explorer should render a 1k-node scale-confidence artifact instead of only toy and 360-node scenes.");
+        Assert(scaleHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal) && scaleHtml.Contains("data-cfx-lod-canvas-threshold=\"500\"", StringComparison.Ordinal), "Graph explorer should expose Canvas LOD for larger graph counts.");
+        Assert(scaleHtml.Contains("data-cfx-performance-max-canvas-nodes=\"10000\"", StringComparison.Ordinal) && scaleHtml.Contains("data-cfx-performance-max-canvas-edges=\"24000\"", StringComparison.Ordinal), "Graph explorer should carry explicit 10k-object Canvas performance budgets for large-scene QA.");
     }
 
     private static (double X, double Y) AveragePoint(string html, string prefix, int count) {
@@ -344,5 +373,37 @@ internal static partial class SmokeTests {
                 cluster.Collapsed = true;
                 cluster.Metadata["tier"] = "core";
             });
+    }
+
+    private static GraphScene BuildScaleConfidenceScene(int nodeCount, int edgeCount) {
+        var scene = GraphScene.Create("scale-confidence", "Scale confidence");
+        scene.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry);
+        scene.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
+        for (var index = 0; index < nodeCount; index++) {
+            var current = index;
+            scene.AddNode("n" + current.ToString(CultureInfo.InvariantCulture), "Node " + current.ToString(CultureInfo.InvariantCulture), node => {
+                node.Kind = current % 5 == 0 ? "service" : current % 5 == 1 ? "identity" : current % 5 == 2 ? "endpoint" : current % 5 == 3 ? "data" : "network";
+                node.ClusterId = "c" + (current % 12).ToString(CultureInfo.InvariantCulture);
+                node.Size = current % 17 == 0 ? 12 : 8;
+            });
+        }
+
+        for (var index = 0; index < edgeCount; index++) {
+            var source = index % nodeCount;
+            var target = (index * 37 + 11) % nodeCount;
+            if (target == source) target = (target + 1) % nodeCount;
+            scene.AddEdge("e" + index.ToString(CultureInfo.InvariantCulture), "n" + source.ToString(CultureInfo.InvariantCulture), "n" + target.ToString(CultureInfo.InvariantCulture), configure: edge => {
+                edge.Directed = true;
+                edge.Weight = index % 9 == 0 ? 1.8 : 1;
+                edge.Length = 80 + index % 5 * 14;
+            });
+        }
+
+        for (var index = 0; index < 12; index++) {
+            var clusterId = "c" + index.ToString(CultureInfo.InvariantCulture);
+            scene.AddCluster(clusterId, "Cluster " + index.ToString(CultureInfo.InvariantCulture), scene.Nodes.Where(node => string.Equals(node.ClusterId, clusterId, StringComparison.Ordinal)).Select(node => node.Id).ToArray());
+        }
+
+        return scene;
     }
 }

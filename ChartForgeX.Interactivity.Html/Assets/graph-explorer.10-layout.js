@@ -133,13 +133,24 @@
     if (gated) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'gated', renderer: root.dataset.cfxGraphRendererActive, nodeCount, edgeCount, nodeLimit, edgeLimit });
     return gated;
   };
+  const metadataDetail = (node) => {
+    const raw = attr(node, 'data-cfx-metadata');
+    if (!raw) return {};
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
   const selectionDetail = (root, node) => ({
       graphId: attr(root, 'data-cfx-graph-id'),
       id: attr(node, 'data-node-id') || attr(node, 'data-edge-id') || attr(node, 'data-cluster-id'),
       label: attr(node, 'data-node-label') || attr(node, 'data-edge-label') || attr(node, 'data-cluster-label'),
       kind: attr(node, 'data-node-kind') || attr(node, 'data-edge-kind') || attr(node, 'data-cluster-kind'),
       status: attr(node, 'data-cfx-status'),
-      role: attr(node, 'data-cfx-role')
+      role: attr(node, 'data-cfx-role'),
+      metadata: metadataDetail(node)
     });
   const selectedItems = (root) => items(root, '.cfx-graph-selected').map(node => selectionDetail(root, node));
   const updateSelectionState = (root) => {

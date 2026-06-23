@@ -66,6 +66,8 @@
       el,
       id: attr(el, 'data-node-id'),
       cluster: attr(el, 'data-node-cluster'),
+      groupId: attr(el, 'data-node-group'),
+      kind: attr(el, 'data-node-kind'),
       shape: attr(el, 'data-node-shape') || 'circle',
       imageUrl: attr(el, 'data-node-image-url'),
       icon: attr(el, 'data-node-icon'),
