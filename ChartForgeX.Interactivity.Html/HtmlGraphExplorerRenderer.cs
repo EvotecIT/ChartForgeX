@@ -334,9 +334,9 @@ public sealed class HtmlGraphExplorerRenderer {
         var radius = Math.Min(Width, Height) * 0.36;
         for (var i = 0; i < nodes.Count; i++) {
             var node = nodes[i];
-            var hasPosition = Math.Abs(node.X) > 0.001 || Math.Abs(node.Y) > 0.001 || node.Fixed;
+            var hasPosition = node.HasExplicitPosition || node.Fixed;
             if (hasPosition) {
-                positions[node.Id] = new Point(Clamp(node.X, 24, Width - 24), Clamp(node.Y, 24, Height - 24));
+                positions[node.Id] = new Point(node.X, node.Y);
                 continue;
             }
 

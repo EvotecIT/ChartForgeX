@@ -35,6 +35,14 @@ internal static partial class SmokeTests {
         Assert(scene.Nodes[0].Shape == GraphNodeShape.Image && scene.Nodes[0].ImageUrl != null && scene.Nodes[0].IconText == "A", "Graph scenes should model image and icon nodes without binding to an adapter.");
         Assert(scene.Edges[0].Directed && scene.Edges[0].Shape == GraphEdgeShape.Curve && scene.Edges[0].Dashed, "Graph scenes should model directional rich edges for adapters that support arrows, curves, and dashed strokes.");
 
+        var originScene = GraphScene.Create("origin", "Origin")
+            .AddNode("origin-node", "Origin node", node => {
+                node.X = 0;
+                node.Y = 0;
+            });
+        var originHtml = originScene.ToGraphExplorerHtmlFragment();
+        Assert(originScene.Nodes[0].HasExplicitPosition && originHtml.Contains("data-node-x=\"0\"", StringComparison.Ordinal) && originHtml.Contains("data-node-y=\"0\"", StringComparison.Ordinal), "Graph scenes should preserve caller-supplied origin positions instead of treating zero coordinates as unset.");
+
         var duplicateNode = GraphScene.Create("duplicate-node", "Duplicate node")
             .AddNode("api", "API")
             .AddNode("api", "API copy");
@@ -126,6 +134,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("const labels = new Map(items(root, '[data-cfx-role=\"graph-edge-label\"]')", StringComparison.Ordinal), "Graph explorer runtime should update edge labels from a per-layout label index.");
         Assert(html.Contains("return best || domHitNodeAt(root, point)", StringComparison.Ordinal) && html.Contains("items(root, '[data-cfx-role=\"graph-node\"]')", StringComparison.Ordinal) && html.Contains("data-node-x", StringComparison.Ordinal) && html.Contains("data-node-y", StringComparison.Ordinal), "Graph explorer Canvas hit testing should use indexed state first and current DOM coordinates as recovery.");
         Assert(html.Contains("hitGraphItemAt", StringComparison.Ordinal) && html.Contains("hitClusterAt", StringComparison.Ordinal) && html.Contains("hitEdgeAt", StringComparison.Ordinal), "Graph explorer Canvas hit testing should preserve node, edge, and cluster selection.");
+        Assert(html.Contains("const metrics = clusterMetrics(cluster, state.byId)", StringComparison.Ordinal), "Graph explorer Canvas cluster hit testing should reuse drawn cluster bounds.");
         Assert(html.Contains("bindPointerInteractions", StringComparison.Ordinal) && html.Contains("cfxgraphdragstart", StringComparison.Ordinal) && html.Contains("cfxgraphviewport", StringComparison.Ordinal), "Graph explorer runtime should expose drag/drop node movement and viewport events.");
         Assert(html.Contains("toggleNeighborhoodFocus", StringComparison.Ordinal) && html.Contains("cfxgraphfocus", StringComparison.Ordinal) && html.Contains("cfxGraphFocusNode", StringComparison.Ordinal), "Graph explorer runtime should expose selected-node neighborhood focus and host events.");
         Assert(html.Contains("exportGraph", StringComparison.Ordinal) && html.Contains("cfxgraphexport", StringComparison.Ordinal) && html.Contains("exportGraphJson", StringComparison.Ordinal), "Graph explorer runtime should expose cancelable SVG, PNG, and JSON export events.");
@@ -142,7 +151,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("label: attr(node.el, 'data-node-label')", StringComparison.Ordinal) && html.Contains("groupId: attr(node.el, 'data-node-group')", StringComparison.Ordinal) && html.Contains("imageUrl: attr(node.el, 'data-node-image-url')", StringComparison.Ordinal), "Graph explorer JSON export should include node labels, grouping, and image/icon details needed to reconstruct reviewed graphs.");
         Assert(html.Contains("kind: attr(edge, 'data-edge-kind')", StringComparison.Ordinal) && html.Contains("showLabel: attr(edge, 'data-edge-show-label') !== 'false'", StringComparison.Ordinal), "Graph explorer JSON export should include edge facets needed to reconstruct reviewed graphs.");
         Assert(html.Contains("clusters: items(root, '[data-cfx-role=\"graph-cluster\"]')", StringComparison.Ordinal), "Graph explorer JSON export should include cluster membership and collapsed state.");
-        Assert(html.Contains("cfxGraphClusterLod", StringComparison.Ordinal) && html.Contains("collapseByThreshold", StringComparison.Ordinal), "Graph explorer binding should apply the advertised cluster LOD threshold.");
+        Assert(html.Contains("cfxGraphClusterLod", StringComparison.Ordinal) && html.Contains("data-cfx-lod-collapse-clusters", StringComparison.Ordinal), "Graph explorer binding should report cluster LOD while honoring the explicit collapse-on-load option.");
+        Assert(html.Contains("data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true)", StringComparison.Ordinal), "Graph explorer binding should honor CollapseClustersOnLoad regardless of the cluster LOD threshold.");
         Assert(html.Contains("dragThreshold", StringComparison.Ordinal) && html.Contains("if (!active.moved) {", StringComparison.Ordinal) && html.Contains("data-node-fixed', active.fixed", StringComparison.Ordinal), "Graph explorer node selection should only pin nodes and pause physics after an actual drag.");
         Assert(html.Contains("if (hasFeature(root, 'Viewport')) fitViewport(root)", StringComparison.Ordinal), "Graph explorer binding should not fit or emit viewport changes when hosts disable viewport behavior.");
         Assert(html.Contains("image.naturalWidth > 0", StringComparison.Ordinal) && html.Contains("malformed host-supplied images", StringComparison.Ordinal), "Graph explorer Canvas runtime should tolerate broken image-node URLs without breaking interaction.");

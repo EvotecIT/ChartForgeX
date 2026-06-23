@@ -31,14 +31,11 @@
     const state = root.__cfxGraphState || graphState(root);
     state.clusters.forEach(cluster => {
       if (!visible(cluster.el)) return;
-      const members = cluster.nodeIds.map(id => state.byId.get(id)).filter(Boolean);
-      if (!members.length) return;
-      const x = members.reduce((sum, node) => sum + node.x, 0) / members.length;
-      const y = members.reduce((sum, node) => sum + node.y, 0) / members.length;
-      const radius = Math.max(22, 12 + members.length * 3);
-      const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
-      if (distance <= radius + 6 && distance < bestDistance) {
-        best = { ...cluster, x, y, size: radius };
+      const metrics = clusterMetrics(cluster, state.byId);
+      if (!metrics) return;
+      const distance = Math.sqrt((point.x - metrics.x) ** 2 + (point.y - metrics.y) ** 2);
+      if (distance <= metrics.radius + 6 && distance < bestDistance) {
+        best = { ...cluster, x: metrics.x, y: metrics.y, size: metrics.radius };
         bestDistance = distance;
       }
     });

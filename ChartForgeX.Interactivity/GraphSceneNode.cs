@@ -14,6 +14,9 @@ public sealed class GraphSceneNode {
     private string? _imageUrl;
     private string? _imageAlt;
     private string? _iconText;
+    private double _x;
+    private double _y;
+    private bool _hasExplicitPosition;
 
     /// <summary>Gets or sets the stable node identifier.</summary>
     public string Id { get => _id; set => _id = ChartInteractionText.RequiredToken(value, nameof(value), "Graph node ids"); }
@@ -46,10 +49,25 @@ public sealed class GraphSceneNode {
     public string? IconText { get => _iconText; set => _iconText = ChartInteractionText.OptionalText(value, nameof(value), "Graph node icon text"); }
 
     /// <summary>Gets or sets the current x-coordinate in graph scene space.</summary>
-    public double X { get; set; }
+    public double X {
+        get => _x;
+        set {
+            _x = value;
+            _hasExplicitPosition = true;
+        }
+    }
 
     /// <summary>Gets or sets the current y-coordinate in graph scene space.</summary>
-    public double Y { get; set; }
+    public double Y {
+        get => _y;
+        set {
+            _y = value;
+            _hasExplicitPosition = true;
+        }
+    }
+
+    /// <summary>Gets whether a caller explicitly supplied scene coordinates, including the origin.</summary>
+    public bool HasExplicitPosition => _hasExplicitPosition;
 
     /// <summary>Gets or sets the node radius or half-size used by lightweight adapters.</summary>
     public double Size { get; set; } = 8;

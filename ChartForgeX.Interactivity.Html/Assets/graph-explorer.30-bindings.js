@@ -199,8 +199,7 @@
     }
     performanceGate(root);
     if (hasFeature(root, 'Clustering')) {
-      const collapseByThreshold = root.dataset.cfxGraphClusterLod === 'threshold';
-      if (attr(root, 'data-cfx-lod-collapse-clusters') === 'true' && collapseByThreshold) applyClusterState(root, true);
+      if (attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true);
       else applyClusterState(root, undefined);
     } else {
       items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
