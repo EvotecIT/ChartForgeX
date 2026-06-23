@@ -36,7 +36,7 @@
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-edge-label{fill:#0f766e;font-weight:700}
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node circle,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node rect{stroke:#5eead4;stroke-width:4}
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary circle,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary rect{stroke:#0f766e;stroke-width:6}
-.cfx-graph-node.cfx-graph-hidden,.cfx-graph-edge.cfx-graph-hidden,.cfx-graph-node.cfx-graph-cluster-collapsed-member,.cfx-graph-edge.cfx-graph-cluster-collapsed-member{display:none}
+.cfx-graph-node.cfx-graph-hidden,.cfx-graph-edge.cfx-graph-hidden,.cfx-graph-edge-label.cfx-graph-hidden,.cfx-graph-cluster.cfx-graph-hidden,.cfx-graph-node.cfx-graph-cluster-collapsed-member,.cfx-graph-edge.cfx-graph-cluster-collapsed-member,.cfx-graph-edge-label.cfx-graph-cluster-collapsed-member{display:none}
 .cfx-graph-lod-compact .cfx-graph-node text{display:none}
 .cfx-graph-lod-compact .cfx-graph-node circle{stroke-width:1.5}
 .cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label{display:none}
@@ -588,7 +588,11 @@
       tip.textContent = details.length === 1 ? [detail.label || detail.id, detail.kind, detail.status].filter(Boolean).join(' / ') : `${details.length} selected`;
       tip.hidden = details.length === 0;
     }
-    if (hasFeature(root, 'NeighborhoodFocus') && root.dataset.cfxGraphFocus === 'active' && detail.role === 'graph-node' && node.classList.contains('cfx-graph-selected')) applyNeighborhoodFocus(root, detail.id);
+    if (hasFeature(root, 'NeighborhoodFocus') && root.dataset.cfxGraphFocus === 'active') {
+      const primary = details.find(item => item.role === 'graph-node');
+      if (primary) applyNeighborhoodFocus(root, primary.id);
+      else clearNeighborhoodFocus(root);
+    }
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphselect', { ...detail, selected: node.classList.contains('cfx-graph-selected'), selectionCount: details.length });
   };
@@ -699,6 +703,53 @@
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: visibleNodes.size });
   };
+  const distanceToSegment = (point, a, b) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const length = dx * dx + dy * dy;
+    if (length <= 0.001) return Math.sqrt((point.x - a.x) ** 2 + (point.y - a.y) ** 2);
+    const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / length));
+    const x = a.x + t * dx;
+    const y = a.y + t * dy;
+    return Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
+  };
+  const hitEdgeAt = (root, point) => {
+    let best = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    const state = root.__cfxGraphState || graphState(root);
+    state.edges.forEach(edge => {
+      if (!visible(edge.el) || !visible(edge.source.el) || !visible(edge.target.el)) return;
+      const control = edgeControl(edge);
+      const distance = control
+        ? Math.min(distanceToSegment(point, edge.source, control), distanceToSegment(point, control, edge.target))
+        : distanceToSegment(point, edge.source, edge.target);
+      if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {
+        best = edge;
+        bestDistance = distance;
+      }
+    });
+    return best;
+  };
+  const hitClusterAt = (root, point) => {
+    let best = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    const state = root.__cfxGraphState || graphState(root);
+    state.clusters.forEach(cluster => {
+      if (!visible(cluster.el)) return;
+      const members = cluster.nodeIds.map(id => state.byId.get(id)).filter(Boolean);
+      if (!members.length) return;
+      const x = members.reduce((sum, node) => sum + node.x, 0) / members.length;
+      const y = members.reduce((sum, node) => sum + node.y, 0) / members.length;
+      const radius = Math.max(22, 12 + members.length * 3);
+      const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
+      if (distance <= radius + 6 && distance < bestDistance) {
+        best = { ...cluster, x, y, size: radius };
+        bestDistance = distance;
+      }
+    });
+    return best;
+  };
+  const hitGraphItemAt = (root, point) => hitNodeAt(root, point) || hitClusterAt(root, point) || hitEdgeAt(root, point);
   const pairwiseRepulsion = (nodes, settings) => {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) repelPair(nodes[i], nodes[j], settings, i, j);
@@ -958,30 +1009,29 @@ self.onmessage = event => {
   };
   const startPhysics = (root) => {
     const settings = profile(root);
-    if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return;
+    if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return false;
     stopWorkerPhysics(root);
     stopMainPhysics(root);
     const state = graphState(root);
     root.dataset.cfxGraphPhysicsState = 'running';
-    if (canUseWorkerPhysics(root, state, settings) && startWorkerPhysics(root, state, settings)) return;
+    if (canUseWorkerPhysics(root, state, settings) && startWorkerPhysics(root, state, settings)) return true;
     startMainPhysics(root, state, settings);
+    return true;
   };
   const bindCanvasHitTesting = (root) => {
     const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
     if (!canvas) return;
     const selectCanvasNode = (event) => {
       if (!root.classList.contains('cfx-graph-render-canvas')) return;
-      const best = hitNodeAt(root, scenePoint(root, event));
+      const best = hitGraphItemAt(root, scenePoint(root, event));
       if (!best) return false;
       select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
       root.__cfxGraphCanvasSelectionTick = Date.now();
       return true;
     };
-    canvas.addEventListener('mousedown', event => {
-      selectCanvasNode(event);
-    });
     canvas.addEventListener('click', event => {
       if (Date.now() - (root.__cfxGraphCanvasSelectionTick || 0) < 250) return;
+      if (Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       selectCanvasNode(event);
     });
   };
@@ -1064,7 +1114,13 @@ self.onmessage = event => {
     } else if (format === 'png') {
       const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
       drawCanvas(root, graphState(root), { force: true });
-      content = canvas ? canvas.toDataURL('image/png') : '';
+      try {
+        content = canvas ? canvas.toDataURL('image/png') : '';
+      } catch (error) {
+        root.dataset.cfxGraphLastExportError = error?.name || 'export-error';
+        emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
+        return;
+      }
       mime = 'image/png';
     }
     if (!content) return;
@@ -1178,8 +1234,11 @@ self.onmessage = event => {
         if (action === 'export-json') exportGraph(root, 'json');
         if (action === 'physics') {
           const running = root.dataset.cfxGraphPhysicsState === 'running';
-          root.dataset.cfxGraphPhysicsState = running ? 'paused' : 'running';
-          if (running) stopWorkerPhysics(root, true);
+          if (running) {
+            root.dataset.cfxGraphPhysicsState = 'paused';
+            stopWorkerPhysics(root, true);
+            stopMainPhysics(root, true);
+          }
           if (!running) startPhysics(root);
         }
         if (action === 'stabilize') startPhysics(root);

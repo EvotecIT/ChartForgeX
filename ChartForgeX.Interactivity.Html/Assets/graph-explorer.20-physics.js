@@ -257,11 +257,12 @@ self.onmessage = event => {
   };
   const startPhysics = (root) => {
     const settings = profile(root);
-    if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return;
+    if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return false;
     stopWorkerPhysics(root);
     stopMainPhysics(root);
     const state = graphState(root);
     root.dataset.cfxGraphPhysicsState = 'running';
-    if (canUseWorkerPhysics(root, state, settings) && startWorkerPhysics(root, state, settings)) return;
+    if (canUseWorkerPhysics(root, state, settings) && startWorkerPhysics(root, state, settings)) return true;
     startMainPhysics(root, state, settings);
+    return true;
   };

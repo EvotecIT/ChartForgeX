@@ -8,6 +8,7 @@ internal static class HtmlGraphExplorerAssets {
     private static readonly string[] ScriptResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-layout.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js"
     };

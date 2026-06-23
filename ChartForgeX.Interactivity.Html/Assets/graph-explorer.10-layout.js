@@ -220,7 +220,11 @@
       tip.textContent = details.length === 1 ? [detail.label || detail.id, detail.kind, detail.status].filter(Boolean).join(' / ') : `${details.length} selected`;
       tip.hidden = details.length === 0;
     }
-    if (hasFeature(root, 'NeighborhoodFocus') && root.dataset.cfxGraphFocus === 'active' && detail.role === 'graph-node' && node.classList.contains('cfx-graph-selected')) applyNeighborhoodFocus(root, detail.id);
+    if (hasFeature(root, 'NeighborhoodFocus') && root.dataset.cfxGraphFocus === 'active') {
+      const primary = details.find(item => item.role === 'graph-node');
+      if (primary) applyNeighborhoodFocus(root, primary.id);
+      else clearNeighborhoodFocus(root);
+    }
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphselect', { ...detail, selected: node.classList.contains('cfx-graph-selected'), selectionCount: details.length });
   };

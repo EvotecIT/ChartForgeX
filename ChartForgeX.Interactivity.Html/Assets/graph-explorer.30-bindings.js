@@ -3,17 +3,15 @@
     if (!canvas) return;
     const selectCanvasNode = (event) => {
       if (!root.classList.contains('cfx-graph-render-canvas')) return;
-      const best = hitNodeAt(root, scenePoint(root, event));
+      const best = hitGraphItemAt(root, scenePoint(root, event));
       if (!best) return false;
       select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
       root.__cfxGraphCanvasSelectionTick = Date.now();
       return true;
     };
-    canvas.addEventListener('mousedown', event => {
-      selectCanvasNode(event);
-    });
     canvas.addEventListener('click', event => {
       if (Date.now() - (root.__cfxGraphCanvasSelectionTick || 0) < 250) return;
+      if (Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       selectCanvasNode(event);
     });
   };
@@ -96,7 +94,13 @@
     } else if (format === 'png') {
       const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
       drawCanvas(root, graphState(root), { force: true });
-      content = canvas ? canvas.toDataURL('image/png') : '';
+      try {
+        content = canvas ? canvas.toDataURL('image/png') : '';
+      } catch (error) {
+        root.dataset.cfxGraphLastExportError = error?.name || 'export-error';
+        emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
+        return;
+      }
       mime = 'image/png';
     }
     if (!content) return;
@@ -210,8 +214,11 @@
         if (action === 'export-json') exportGraph(root, 'json');
         if (action === 'physics') {
           const running = root.dataset.cfxGraphPhysicsState === 'running';
-          root.dataset.cfxGraphPhysicsState = running ? 'paused' : 'running';
-          if (running) stopWorkerPhysics(root, true);
+          if (running) {
+            root.dataset.cfxGraphPhysicsState = 'paused';
+            stopWorkerPhysics(root, true);
+            stopMainPhysics(root, true);
+          }
           if (!running) startPhysics(root);
         }
         if (action === 'stabilize') startPhysics(root);
