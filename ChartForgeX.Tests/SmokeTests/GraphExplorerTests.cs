@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 
@@ -97,6 +98,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("<script nonce=\"nonce-graph\">", StringComparison.Ordinal), "Graph explorer pages should support CSP nonces.");
         Assert(html.Contains("data-cfx-graph-id=\"service-map\"", StringComparison.Ordinal), "Graph explorer pages should expose a stable scene id.");
         Assert(html.Contains("data-cfx-graph-renderer=\"svg\"", StringComparison.Ordinal), "Graph explorer pages should default to a dependency-free SVG renderer.");
+        Assert(html.Contains("data-cfx-graph-layout=\"structured-prepared\"", StringComparison.Ordinal), "Graph explorer pages should expose the graph-aware prepared layout path used before runtime physics starts.");
         Assert(html.Contains("data-cfx-graph-canvas-fallback=\"true\"", StringComparison.Ordinal), "Graph explorer pages should allow threshold-based Canvas fallback by default.");
         Assert(html.Contains("data-cfx-graph-physics=\"ForceAtlas2\"", StringComparison.Ordinal), "Graph explorer pages should expose the requested physics profile.");
         Assert(html.Contains("data-cfx-graph-stabilization-iterations=\"900\"", StringComparison.Ordinal), "Graph explorer pages should expose stabilization budgets.");
@@ -175,6 +177,9 @@ internal static partial class SmokeTests {
         Assert(html.Contains("const hitItem = node || graphItem || hitGraphItemAt(root, point)", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Viewport') && !hitItem", StringComparison.Ordinal), "Graph explorer viewport panning should start only from graph background, not from selectable nodes, clusters, or edges.");
         Assert(html.Contains("if (hasFeature(root, 'Viewport')) {", StringComparison.Ordinal) && html.Contains("fitViewport(root);", StringComparison.Ordinal), "Graph explorer binding should not fit or emit viewport changes when hosts disable viewport behavior.");
         Assert(html.Contains("adaptivePhysicsLayout", StringComparison.Ordinal) && html.Contains("balanceLayoutAspect", StringComparison.Ordinal) && html.Contains("root.__cfxGraphAutoFitOnStabilize", StringComparison.Ordinal), "Graph explorer runtime physics should settle in an adaptive layout space, balance dense graph aspect ratio, and refit after stabilization when the user has not manually moved the viewport.");
+        Assert(html.Contains("homeX", StringComparison.Ordinal) && html.Contains("homeY", StringComparison.Ordinal), "Graph explorer runtime should preserve prepared node homes for post-physics layout quality passes.");
+        Assert(html.Contains("compactStabilizedLayout", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCompaction", StringComparison.Ordinal), "Graph explorer runtime physics should compact oversized stabilized layouts back into a readable viewport envelope.");
+        Assert(html.Contains("restoreClusterAnchors", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutClusterGravity", StringComparison.Ordinal), "Graph explorer runtime physics should pull stabilized communities back toward their prepared cluster regions instead of blending all clusters into one mass.");
         Assert(html.Contains("root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true", StringComparison.Ordinal), "Graph explorer runtime physics should re-check user viewport touches before auto-fitting after stabilization.");
         Assert(html.Contains("if (dx === 0 && dy === 0)", StringComparison.Ordinal), "Graph explorer pairwise physics should force a non-zero deterministic jitter vector for perfectly overlapping node pairs.");
         Assert(!html.Contains("node.x = Math.max(24, Math.min(936, point.x))", StringComparison.Ordinal), "Graph explorer dragging should not force nodes back into the old fixed viewport box.");
@@ -214,6 +219,80 @@ internal static partial class SmokeTests {
 
         var canvasHtml = scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.Canvas);
         Assert(canvasHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal), "Graph explorer fragments should allow hosts to request Canvas as the initial renderer.");
+
+        var layoutScene = GraphScene.Create("layout-quality", "Layout quality");
+        layoutScene.AddNode("hub", "Hub", node => {
+            node.Kind = "service";
+            node.Size = 14;
+        });
+        for (var index = 0; index < 4; index++) {
+            var id = "left-" + index.ToString(CultureInfo.InvariantCulture);
+            layoutScene.AddNode(id, "Left " + index.ToString(CultureInfo.InvariantCulture), node => {
+                node.Kind = "identity";
+                node.ClusterId = "left";
+            });
+            layoutScene.AddEdge("hub-" + id, "hub", id);
+        }
+        for (var index = 0; index < 4; index++) {
+            var id = "right-" + index.ToString(CultureInfo.InvariantCulture);
+            layoutScene.AddNode(id, "Right " + index.ToString(CultureInfo.InvariantCulture), node => {
+                node.Kind = "database";
+                node.ClusterId = "right";
+            });
+            layoutScene.AddEdge("hub-" + id, "hub", id);
+        }
+
+        var layoutHtml = layoutScene.ToGraphExplorerHtmlFragment();
+        var hub = ExtractGraphNodePoint(layoutHtml, "hub");
+        Assert(Math.Abs(hub.X - 480) < 1 && Math.Abs(hub.Y - 280) < 1, "Graph explorer prepared layout should seed the strongest hub in the middle before runtime physics starts.");
+        var leftAverage = AveragePoint(layoutHtml, "left-", 4);
+        var rightAverage = AveragePoint(layoutHtml, "right-", 4);
+        var communityDistance = Distance(leftAverage, rightAverage);
+        Assert(communityDistance > 120, "Graph explorer prepared layout should open connected communities into visibly different areas instead of stacking them together.");
+        for (var index = 0; index < 4; index++) {
+            var left = ExtractGraphNodePoint(layoutHtml, "left-" + index.ToString(CultureInfo.InvariantCulture));
+            var right = ExtractGraphNodePoint(layoutHtml, "right-" + index.ToString(CultureInfo.InvariantCulture));
+            Assert(left.X >= 75 && left.X <= 885 && left.Y >= 65 && left.Y <= 495, "Graph explorer prepared layout should fit generated left-community nodes inside the opening scene.");
+            Assert(right.X >= 75 && right.X <= 885 && right.Y >= 65 && right.Y <= 495, "Graph explorer prepared layout should fit generated right-community nodes inside the opening scene.");
+            Assert(Distance(hub, left) > 35 && Distance(hub, right) > 35, "Graph explorer prepared layout should push non-hub nodes outward from the centered hub.");
+        }
+    }
+
+    private static (double X, double Y) AveragePoint(string html, string prefix, int count) {
+        double x = 0;
+        double y = 0;
+        for (var index = 0; index < count; index++) {
+            var point = ExtractGraphNodePoint(html, prefix + index.ToString(CultureInfo.InvariantCulture));
+            x += point.X;
+            y += point.Y;
+        }
+
+        return (x / count, y / count);
+    }
+
+    private static (double X, double Y) ExtractGraphNodePoint(string html, string id) {
+        var nodeIndex = html.IndexOf("data-node-id=\"" + id + "\"", StringComparison.Ordinal);
+        if (nodeIndex < 0) throw new InvalidOperationException("Missing graph node: " + id);
+        var nodeEnd = html.IndexOf('>', nodeIndex);
+        if (nodeEnd < nodeIndex) throw new InvalidOperationException("Malformed graph node: " + id);
+        var nodeMarkup = html.Substring(nodeIndex, nodeEnd - nodeIndex);
+        return (ExtractDoubleAttribute(nodeMarkup, "data-node-x"), ExtractDoubleAttribute(nodeMarkup, "data-node-y"));
+    }
+
+    private static double ExtractDoubleAttribute(string markup, string name) {
+        var marker = name + "=\"";
+        var start = markup.IndexOf(marker, StringComparison.Ordinal);
+        if (start < 0) throw new InvalidOperationException("Missing graph node attribute: " + name);
+        start += marker.Length;
+        var end = markup.IndexOf('"', start);
+        if (end < start) throw new InvalidOperationException("Malformed graph node attribute: " + name);
+        return double.Parse(markup.Substring(start, end - start), CultureInfo.InvariantCulture);
+    }
+
+    private static double Distance((double X, double Y) a, (double X, double Y) b) {
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
     }
 
     private static GraphScene SampleGraphScene() {

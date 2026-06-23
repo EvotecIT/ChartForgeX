@@ -268,7 +268,12 @@ self.onmessage = event => {
         }
         const message = event.data || {};
         updatePhysicsNodes(state, message.nodes || []);
-        if (message.type === 'done') balanceLayoutAspect(root, state);
+        if (message.type === 'done') {
+          balanceLayoutAspect(root, state);
+          compactStabilizedLayout(root, state);
+          restoreClusterAnchors(root, state);
+          compactStabilizedLayout(root, state);
+        }
         applyLayout(root, state);
         publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
         if (message.type === 'done') {
@@ -307,6 +312,9 @@ self.onmessage = event => {
         root.dataset.cfxGraphPhysicsState = 'stabilized';
         root.__cfxGraphMainPhysics = null;
         balanceLayoutAspect(root, state);
+        compactStabilizedLayout(root, state);
+        restoreClusterAnchors(root, state);
+        compactStabilizedLayout(root, state);
         applyLayout(root, state);
         if (root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true) fitViewport(root);
         root.__cfxGraphAutoFitOnStabilize = false;

@@ -49,17 +49,11 @@ internal static class GraphExplorerExamples {
             for (var index = 0; index < nodesPerCluster; index++) {
                 var kind = KindFor(index);
                 graph.AddNode(NodeId(cluster, index), Label(kind, cluster, index), node => {
-                    var column = cluster % 4;
-                    var row = cluster / 4;
-                    var angle = Math.PI * 2 * index / nodesPerCluster;
-                    var ring = 34 + (index % 5) * 7;
                     node.Kind = kind;
                     node.ClusterId = clusterId;
                     node.GroupId = clusterId;
                     node.Status = index % 17 == 0 ? "critical" : index % 7 == 0 ? "warning" : "healthy";
                     node.Size = 7 + index % 5;
-                    node.X = 130 + column * 230 + Math.Cos(angle) * ring;
-                    node.Y = 100 + row * 165 + Math.Sin(angle) * ring * 0.8;
                     node.Shape = index % 5 == 0 ? GraphNodeShape.Image : index % 5 == 1 ? GraphNodeShape.Box : GraphNodeShape.Circle;
                     node.IconText = IconFor(kind);
                     if (node.Shape == GraphNodeShape.Image) {

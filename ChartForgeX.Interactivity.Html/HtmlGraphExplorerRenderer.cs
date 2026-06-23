@@ -75,7 +75,7 @@ public sealed class HtmlGraphExplorerRenderer {
 
     private static string RenderGraph(GraphScene scene, HtmlGraphExplorerOptions options) {
         scene.Validate();
-        var positions = ComputePositions(scene.Nodes);
+        var positions = ComputePositions(scene);
         var graphId = SafeId(scene.Id);
         var writer = new StringBuilder();
         writer.Append("<section class=\"cfx-graph-explorer\"");
@@ -84,6 +84,7 @@ public sealed class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-graph-canvas-fallback", options.AllowCanvasFallback ? "true" : "false");
         Attribute(writer, "data-cfx-graph-features", scene.Options.Features.ToString());
         Attribute(writer, "data-cfx-graph-physics", scene.Options.Physics.Solver.ToString());
+        Attribute(writer, "data-cfx-graph-layout", "structured-prepared");
         Attribute(writer, "data-cfx-graph-stabilization-iterations", scene.Options.Physics.StabilizationIterations.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-graph-min-velocity", Number(scene.Options.Physics.MinVelocity));
         Attribute(writer, "data-cfx-graph-max-velocity", Number(scene.Options.Physics.MaxVelocity));
@@ -331,22 +332,215 @@ public sealed class HtmlGraphExplorerRenderer {
         return string.Join(" ", metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + " " + pair.Value));
     }
 
-    private static IReadOnlyDictionary<string, Point> ComputePositions(IReadOnlyList<GraphSceneNode> nodes) {
+    private static IReadOnlyDictionary<string, Point> ComputePositions(GraphScene scene) {
         var positions = new Dictionary<string, Point>(StringComparer.Ordinal);
-        var radius = Math.Min(Width, Height) * 0.36;
+        var nodes = scene.Nodes;
         for (var i = 0; i < nodes.Count; i++) {
             var node = nodes[i];
-            var hasPosition = node.HasExplicitPosition;
-            if (hasPosition) {
+            if (node.HasExplicitPosition) {
                 positions[node.Id] = new Point(node.X, node.Y);
+            }
+        }
+
+        var generated = nodes.Where(node => !node.HasExplicitPosition).ToArray();
+        if (generated.Length == 0) return positions;
+
+        var adjacency = BuildAdjacency(scene);
+        var components = ConnectedComponents(nodes, adjacency);
+        var centers = ComponentCenters(components);
+        for (var i = 0; i < components.Count; i++) {
+            PlaceComponent(components[i], centers[i], adjacency, positions);
+        }
+
+        if (positions.Count == generated.Length) NormalizeGeneratedPositions(positions, generated);
+        return positions;
+    }
+
+    private static Dictionary<string, List<string>> BuildAdjacency(GraphScene scene) {
+        var adjacency = scene.Nodes.ToDictionary(node => node.Id, _ => new List<string>(), StringComparer.Ordinal);
+        foreach (var edge in scene.Edges) {
+            if (!adjacency.ContainsKey(edge.SourceNodeId) || !adjacency.ContainsKey(edge.TargetNodeId)) continue;
+            adjacency[edge.SourceNodeId].Add(edge.TargetNodeId);
+            adjacency[edge.TargetNodeId].Add(edge.SourceNodeId);
+        }
+
+        return adjacency;
+    }
+
+    private static List<List<GraphSceneNode>> ConnectedComponents(IReadOnlyList<GraphSceneNode> nodes, IReadOnlyDictionary<string, List<string>> adjacency) {
+        var byId = nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var components = new List<List<GraphSceneNode>>();
+        foreach (var start in nodes.OrderByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal)) {
+            if (!visited.Add(start.Id)) continue;
+            var component = new List<GraphSceneNode>();
+            var queue = new Queue<string>();
+            queue.Enqueue(start.Id);
+            while (queue.Count > 0) {
+                var id = queue.Dequeue();
+                if (!byId.TryGetValue(id, out var node)) continue;
+                component.Add(node);
+                if (!adjacency.TryGetValue(id, out var neighbors)) continue;
+                foreach (var neighbor in neighbors.OrderBy(value => value, StringComparer.Ordinal)) {
+                    if (visited.Add(neighbor)) queue.Enqueue(neighbor);
+                }
+            }
+
+            components.Add(component);
+        }
+
+        return components
+            .OrderByDescending(component => component.Count)
+            .ThenBy(component => component[0].Id, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private static List<Point> ComponentCenters(IReadOnlyList<List<GraphSceneNode>> components) {
+        var centers = new List<Point>(components.Count);
+        for (var i = 0; i < components.Count; i++) {
+            if (i == 0) {
+                centers.Add(new Point(Width / 2, Height / 2));
                 continue;
             }
 
-            var angle = nodes.Count <= 1 ? 0 : (Math.PI * 2 * i) / nodes.Count;
-            positions[node.Id] = new Point(Width / 2 + Math.Cos(angle) * radius, Height / 2 + Math.Sin(angle) * radius * 0.72);
+            var angle = GoldenAngle(i - 1) - Math.PI / 2;
+            var ring = 135 + 76 * Math.Sqrt(i);
+            centers.Add(new Point(Width / 2 + Math.Cos(angle) * ring, Height / 2 + Math.Sin(angle) * ring * 0.66));
         }
 
-        return positions;
+        return centers;
+    }
+
+    private static void PlaceComponent(IReadOnlyList<GraphSceneNode> component, Point fallbackCenter, IReadOnlyDictionary<string, List<string>> adjacency, IDictionary<string, Point> positions) {
+        if (component.Count == 0) return;
+        var explicitMembers = component.Where(node => node.HasExplicitPosition && positions.ContainsKey(node.Id)).ToArray();
+        var center = explicitMembers.Length == 0
+            ? fallbackCenter
+            : new Point(explicitMembers.Average(node => positions[node.Id].X), explicitMembers.Average(node => positions[node.Id].Y));
+        var generated = component.Where(node => !node.HasExplicitPosition).ToArray();
+        if (generated.Length == 0) return;
+        if (generated.Length == 1) {
+            positions[generated[0].Id] = new Point(center.X + StableOffset(generated[0].Id, 13), center.Y + StableOffset(generated[0].Id + ":y", 10));
+            return;
+        }
+
+        var depths = NodeDepths(component, adjacency);
+        var maxDegree = Math.Max(1, component.Max(node => Degree(node.Id, adjacency)));
+        var hubLimit = Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(component.Count) / 2)));
+        var hubs = component
+            .Where(node => Degree(node.Id, adjacency) >= Math.Max(2, maxDegree * 0.68))
+            .OrderByDescending(node => Degree(node.Id, adjacency))
+            .ThenBy(node => node.Id, StringComparer.Ordinal)
+            .Take(hubLimit)
+            .ToArray();
+        if (hubs.Length == 0) hubs = component.OrderByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal).Take(1).ToArray();
+
+        var communityAngles = CommunityAngles(component);
+        var communityCounts = component.GroupBy(CommunityKey, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        var communityRanks = new Dictionary<string, int>(StringComparer.Ordinal);
+        var componentRadius = Math.Max(72, Math.Sqrt(component.Count) * 38);
+        foreach (var node in generated.OrderByDescending(node => hubs.Any(hub => string.Equals(hub.Id, node.Id, StringComparison.Ordinal))).ThenBy(node => depths[node.Id]).ThenByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal)) {
+            var hubIndex = Array.FindIndex(hubs, hub => string.Equals(hub.Id, node.Id, StringComparison.Ordinal));
+            if (hubIndex >= 0) {
+                var hubRadius = hubs.Length == 1 ? 0 : 22 + hubIndex * 7;
+                var hubAngle = GoldenAngle(hubIndex);
+                positions[node.Id] = new Point(center.X + Math.Cos(hubAngle) * hubRadius, center.Y + Math.Sin(hubAngle) * hubRadius * 0.72);
+                continue;
+            }
+
+            var key = CommunityKey(node);
+            communityRanks.TryGetValue(key, out var rank);
+            communityRanks[key] = rank + 1;
+            var count = Math.Max(1, communityCounts[key]);
+            var depth = Math.Max(1, depths[node.Id]);
+            var sectorWidth = communityAngles.Count <= 1 ? Math.PI * 1.75 : Math.Min(Math.PI * 0.82, Math.PI * 2 / communityAngles.Count * 0.72);
+            var rankOffset = ((rank + 0.5) / count - 0.5) * sectorWidth;
+            var angle = communityAngles[key] + rankOffset + StableOffset(node.Id + ":angle", 0.11);
+            var radius = Math.Min(componentRadius, 48 + depth * 46 + Math.Sqrt(rank + 1) * 16 + StableOffset(node.Id + ":radius", 9));
+            positions[node.Id] = new Point(center.X + Math.Cos(angle) * radius, center.Y + Math.Sin(angle) * radius * 0.74);
+        }
+    }
+
+    private static Dictionary<string, int> NodeDepths(IReadOnlyList<GraphSceneNode> component, IReadOnlyDictionary<string, List<string>> adjacency) {
+        var componentIds = new HashSet<string>(component.Select(node => node.Id), StringComparer.Ordinal);
+        var ordered = component.OrderByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal).ToArray();
+        var depths = component.ToDictionary(node => node.Id, _ => int.MaxValue, StringComparer.Ordinal);
+        var queue = new Queue<string>();
+        foreach (var node in ordered.Take(Math.Max(1, Math.Min(3, (int)Math.Ceiling(Math.Sqrt(component.Count) / 3))))) {
+            depths[node.Id] = 0;
+            queue.Enqueue(node.Id);
+        }
+
+        while (queue.Count > 0) {
+            var id = queue.Dequeue();
+            if (!adjacency.TryGetValue(id, out var neighbors)) continue;
+            foreach (var neighbor in neighbors.OrderBy(value => value, StringComparer.Ordinal)) {
+                if (!componentIds.Contains(neighbor) || depths[neighbor] <= depths[id] + 1) continue;
+                depths[neighbor] = depths[id] + 1;
+                queue.Enqueue(neighbor);
+            }
+        }
+
+        foreach (var node in component) if (depths[node.Id] == int.MaxValue) depths[node.Id] = 2;
+        return depths;
+    }
+
+    private static Dictionary<string, double> CommunityAngles(IReadOnlyList<GraphSceneNode> component) {
+        var groups = component
+            .GroupBy(CommunityKey, StringComparer.Ordinal)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.Ordinal)
+            .ToArray();
+        var angles = new Dictionary<string, double>(StringComparer.Ordinal);
+        for (var i = 0; i < groups.Length; i++) {
+            var angle = groups.Length == 1 ? -Math.PI / 2 : -Math.PI / 2 + Math.PI * 2 * i / groups.Length;
+            angles[groups[i].Key] = angle;
+        }
+
+        return angles;
+    }
+
+    private static void NormalizeGeneratedPositions(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated) {
+        var points = generated.Select(node => positions[node.Id]).ToArray();
+        var minX = points.Min(point => point.X);
+        var maxX = points.Max(point => point.X);
+        var minY = points.Min(point => point.Y);
+        var maxY = points.Max(point => point.Y);
+        var width = Math.Max(1, maxX - minX);
+        var height = Math.Max(1, maxY - minY);
+        var targetWidth = Width - 150;
+        var targetHeight = Height - 130;
+        var scale = Math.Min(1, Math.Min(targetWidth / width, targetHeight / height));
+        if (scale >= 1) return;
+        foreach (var node in generated) {
+            var point = positions[node.Id];
+            positions[node.Id] = new Point(Width / 2 + (point.X - Width / 2) * scale, Height / 2 + (point.Y - Height / 2) * scale);
+        }
+    }
+
+    private static string CommunityKey(GraphSceneNode node) {
+        if (!string.IsNullOrWhiteSpace(node.ClusterId)) return "cluster:" + node.ClusterId;
+        if (!string.IsNullOrWhiteSpace(node.GroupId)) return "group:" + node.GroupId;
+        if (!string.IsNullOrWhiteSpace(node.Kind)) return "kind:" + node.Kind;
+        return "graph";
+    }
+
+    private static int Degree(string nodeId, IReadOnlyDictionary<string, List<string>> adjacency) => adjacency.TryGetValue(nodeId, out var neighbors) ? neighbors.Count : 0;
+
+    private static double GoldenAngle(int index) => index * 2.39996322972865332;
+
+    private static double StableOffset(string value, double amplitude) => (StableUnit(value) - 0.5) * 2 * amplitude;
+
+    private static double StableUnit(string value) {
+        unchecked {
+            var hash = 2166136261u;
+            foreach (var ch in value) {
+                hash ^= ch;
+                hash *= 16777619u;
+            }
+
+            return (hash & 0x00ffffff) / 16777215.0;
+        }
     }
 
     private static string EdgePath(GraphSceneEdge edge, Point source, Point target, double targetSize) {

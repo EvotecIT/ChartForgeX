@@ -73,6 +73,8 @@
       fixed: attr(el, 'data-node-fixed') === 'true',
       x: num(el, 'data-node-x', 160 + index * 22),
       y: num(el, 'data-node-y', 160 + index * 17),
+      homeX: num(el, 'data-node-x', 160 + index * 22),
+      homeY: num(el, 'data-node-y', 160 + index * 17),
       vx: 0,
       vy: 0
     }));
