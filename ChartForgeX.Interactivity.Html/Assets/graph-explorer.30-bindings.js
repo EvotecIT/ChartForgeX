@@ -259,6 +259,7 @@
     }
     bindCanvasHitTesting(root);
     bindPointerInteractions(root);
+    bindOverview(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
       item.addEventListener('click', event => {
         const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');

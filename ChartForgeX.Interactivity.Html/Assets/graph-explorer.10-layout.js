@@ -45,6 +45,7 @@
     updateClusters(state.clusters, byId);
     indexHitTesting(root, state);
     drawCanvas(root, state);
+    if (typeof updateOverview === 'function') updateOverview(root, state);
   };
   const applyLod = (root) => {
     const nodes = Number(attr(root, 'data-cfx-graph-node-count'));
@@ -179,7 +180,11 @@
     const tip = root.querySelector('.cfx-graph-tooltip');
     if (tip) tip.hidden = true;
     if (root.dataset.cfxGraphFocus === 'active') clearNeighborhoodFocus(root);
-    else drawCanvas(root, graphState(root));
+    else {
+      const state = graphState(root);
+      drawCanvas(root, state);
+      if (typeof updateOverview === 'function') updateOverview(root, state);
+    }
   };
   const select = (root, node, options) => {
     if (!hasFeature(root, 'Selection')) return;
@@ -201,7 +206,9 @@
       if (primary) applyNeighborhoodFocus(root, primary.id);
       else clearNeighborhoodFocus(root);
     }
-    drawCanvas(root, graphState(root));
+    const state = graphState(root);
+    drawCanvas(root, state);
+    if (typeof updateOverview === 'function') updateOverview(root, state);
     emit(root, 'cfxgraphselect', { ...detail, selected: node.classList.contains('cfx-graph-selected'), selectionCount: details.length });
   };
   const selectedGraphNodeId = (root) => {
@@ -215,7 +222,9 @@
     items(root, '.cfx-graph-neighborhood-dim,.cfx-graph-neighborhood-related,.cfx-graph-neighborhood-primary').forEach(item => {
       item.classList.remove('cfx-graph-neighborhood-dim', 'cfx-graph-neighborhood-related', 'cfx-graph-neighborhood-primary');
     });
-    drawCanvas(root, graphState(root));
+    const state = graphState(root);
+    drawCanvas(root, state);
+    if (typeof updateOverview === 'function') updateOverview(root, state);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: false, nodeId: '', neighborNodeCount: 0, edgeCount: 0 });
   };
   const applyNeighborhoodFocus = (root, nodeId) => {
@@ -253,6 +262,7 @@
     root.dataset.cfxGraphFocus = 'active';
     root.dataset.cfxGraphFocusNode = nodeId;
     drawCanvas(root, state);
+    if (typeof updateOverview === 'function') updateOverview(root, state);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: true, nodeId, neighborNodeCount: relatedNodes.size - 1, edgeCount: relatedEdges.size });
   };
   const toggleNeighborhoodFocus = (root) => {
