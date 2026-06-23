@@ -30,15 +30,11 @@
       if (node && hasFeature(root, 'DragNodes')) {
         event.preventDefault();
         stage.setPointerCapture?.(event.pointerId);
-        root.dataset.cfxGraphPhysicsState = 'paused';
-        stopWorkerPhysics(root, true);
-        root.classList.add('cfx-graph-dragging-node');
         root.dataset.cfxGraphLastPointerMode = 'node';
         active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, fixed: attr(node.el, 'data-node-fixed'), moved: false };
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now();
         root.__cfxGraphPointerSelectionId = node.id;
-        emit(root, 'cfxgraphdragstart', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: node.id, x: node.x, y: node.y });
       } else if (hasFeature(root, 'Viewport')) {
         event.preventDefault();
         stage.setPointerCapture?.(event.pointerId);
@@ -58,7 +54,14 @@
         if (!node) return;
         const dragThreshold = 3;
         if (!active.moved && Math.hypot(point.x - active.startX, point.y - active.startY) < dragThreshold) return;
-        active.moved = true;
+        if (!active.moved) {
+          active.moved = true;
+          root.dataset.cfxGraphPhysicsState = 'paused';
+          stopWorkerPhysics(root, true);
+          stopMainPhysics(root, true);
+          root.classList.add('cfx-graph-dragging-node');
+          emit(root, 'cfxgraphdragstart', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: node.id, x: node.x, y: node.y });
+        }
         node.el.setAttribute('data-node-fixed', 'true');
         node.x = Math.max(24, Math.min(936, point.x));
         node.y = Math.max(24, Math.min(536, point.y));
@@ -71,7 +74,7 @@
     const finish = (event) => {
       if (!active || active.pointerId !== event.pointerId) return;
       stage.releasePointerCapture?.(event.pointerId);
-      if (active.mode === 'node') emit(root, 'cfxgraphdragend', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: active.nodeId });
+      if (active.mode === 'node' && active.moved) emit(root, 'cfxgraphdragend', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: active.nodeId });
       if (active.mode === 'node' && !active.moved) {
         const node = graphState(root).nodes.find(item => item.id === active.nodeId);
         if (node) node.el.setAttribute('data-node-fixed', active.fixed || 'false');
@@ -88,7 +91,7 @@
       zoomViewport(root, event.deltaY < 0 ? 1.12 : 0.88, { x: point.screenX, y: point.screenY });
     }, { passive: false });
   };
-  const exportGraph = (root, format) => {
+  const exportGraph = async (root, format) => {
     const name = `${attr(root, 'data-cfx-graph-id') || 'graph'}.${format}`;
     let content = '';
     let mime = 'application/octet-stream';
@@ -100,7 +103,9 @@
       mime = 'application/json';
     } else if (format === 'png') {
       const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
-      drawCanvas(root, graphState(root), { force: true });
+      const state = graphState(root);
+      await preloadCanvasImages(root, state);
+      drawCanvas(root, state, { force: true });
       try {
         content = canvas ? canvas.toDataURL('image/png') : '';
       } catch (error) {
@@ -115,6 +120,22 @@
     if (!emit(root, 'cfxgraphexport', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, mimeType: mime, content }, { cancelable: true })) return;
     downloadExport(name, mime, content);
   };
+  const preloadCanvasImages = (root, state) => Promise.all(state.nodes.filter(node => node.shape === 'image' && node.imageUrl).map(node => new Promise(resolve => {
+    const image = graphImage(node.imageUrl, () => resolve());
+    if (!image || image.complete) {
+      resolve();
+      return;
+    }
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    image.addEventListener?.('load', done, { once: true });
+    image.addEventListener?.('error', done, { once: true });
+    setTimeout(done, 1500);
+  })));
   const exportSvgContent = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
     if (!svg) return '';
@@ -153,7 +174,7 @@
       thread: root.dataset.cfxGraphPerformanceThread || '',
       acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
     },
-    nodes: graphState(root).nodes.map(node => ({ id: node.id, x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', kind: attr(node.el, 'data-node-kind'), status: attr(node.el, 'data-cfx-status') })),
+    nodes: graphState(root).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el.querySelector('image'), 'aria-label'), hidden: node.el.classList.contains('cfx-graph-hidden') || node.el.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(node.el, 'data-cfx-search') })),
     edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', search: attr(edge, 'data-cfx-search') })),
     clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: cluster.classList.contains('cfx-graph-hidden'), search: attr(cluster, 'data-cfx-search') }))
   });
@@ -191,7 +212,7 @@
       applyFilters(root);
       drawCanvas(root, graphState(root));
     }
-    fitViewport(root);
+    if (hasFeature(root, 'Viewport')) fitViewport(root);
     bindCanvasHitTesting(root);
     bindPointerInteractions(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
@@ -216,12 +237,12 @@
         if (action === 'clusters') applyClusterState(root, root.dataset.cfxGraphClusters !== 'collapsed');
         if (action === 'focus') toggleNeighborhoodFocus(root);
         if (action === 'clear-selection') clearSelection(root);
-        if (action === 'fit') fitViewport(root);
-        if (action === 'zoom-in') zoomViewport(root, 1.18);
-        if (action === 'zoom-out') zoomViewport(root, 0.84);
-        if (action === 'export-svg') exportGraph(root, 'svg');
-        if (action === 'export-png') exportGraph(root, 'png');
-        if (action === 'export-json') exportGraph(root, 'json');
+        if (action === 'fit' && hasFeature(root, 'Viewport')) fitViewport(root);
+        if (action === 'zoom-in' && hasFeature(root, 'Viewport')) zoomViewport(root, 1.18);
+        if (action === 'zoom-out' && hasFeature(root, 'Viewport')) zoomViewport(root, 0.84);
+        if (action === 'export-svg') void exportGraph(root, 'svg');
+        if (action === 'export-png') void exportGraph(root, 'png');
+        if (action === 'export-json') void exportGraph(root, 'json');
         if (action === 'physics') {
           const running = root.dataset.cfxGraphPhysicsState === 'running';
           if (running) {
