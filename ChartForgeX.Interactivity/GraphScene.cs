@@ -54,6 +54,10 @@ public sealed class GraphScene {
         var nodeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var node in Nodes) {
             ValidateRequiredId(node.Id, "node");
+            if (node.HasExplicitPosition) {
+                ValidateFiniteCoordinate(node.X, node.Id, "x");
+                ValidateFiniteCoordinate(node.Y, node.Id, "y");
+            }
             if (!nodeIds.Add(node.Id)) throw new InvalidOperationException("Graph scene contains a duplicate node id: " + node.Id);
         }
 
@@ -80,5 +84,9 @@ public sealed class GraphScene {
 
     private static void ValidateRequiredId(string? id, string itemKind) {
         if (string.IsNullOrWhiteSpace(id)) throw new InvalidOperationException("Graph scene contains a blank " + itemKind + " id.");
+    }
+
+    private static void ValidateFiniteCoordinate(double value, string nodeId, string axis) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) throw new InvalidOperationException("Graph scene node has a non-finite " + axis + "-coordinate: " + nodeId);
     }
 }

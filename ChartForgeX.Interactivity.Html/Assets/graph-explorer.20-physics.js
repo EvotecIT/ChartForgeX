@@ -8,9 +8,13 @@
     let dy = b.y - a.y;
     let distanceSq = dx * dx + dy * dy;
     if (distanceSq < 1) {
-      dx = ((i + 1) * 17 % 7) - 3;
-      dy = ((j + 1) * 19 % 7) - 3;
-      distanceSq = dx * dx + dy * dy + 1;
+      dx = (((i + 1) * 17 + (j + 1) * 31) % 11) - 5;
+      dy = (((i + 1) * 37 + (j + 1) * 13) % 11) - 5;
+      if (dx === 0 && dy === 0) {
+        dx = i % 2 === 0 ? 1 : -1;
+        dy = j % 2 === 0 ? 1 : -1;
+      }
+      distanceSq = dx * dx + dy * dy;
     }
     const distance = Math.sqrt(distanceSq);
     const force = settings.repulsion / distanceSq;

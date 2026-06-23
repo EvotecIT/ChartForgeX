@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Identity Risk Graph Explorer</title><style>.cfx-graph-shell{box-sizing:border-box;min-height:100vh;margin:0;padding:24px;background:#f8fafc;color:#0f172a;font-family:Segoe UI,Arial,sans-serif}
 .cfx-graph-shell *,.cfx-graph-shell *:before,.cfx-graph-shell *:after{box-sizing:inherit}
-.cfx-graph-explorer{display:grid;gap:12px;max-width:1180px;margin:0 auto}
+.cfx-graph-explorer{position:relative;display:grid;gap:12px;max-width:1180px;margin:0 auto}
 .cfx-graph-header{display:grid;gap:4px}
 .cfx-graph-title{margin:0;font-size:22px;font-weight:700;line-height:1.16}
 .cfx-graph-subtitle{margin:0;color:#64748b;font-size:14px;line-height:1.45}
@@ -889,9 +889,13 @@
     let dy = b.y - a.y;
     let distanceSq = dx * dx + dy * dy;
     if (distanceSq < 1) {
-      dx = ((i + 1) * 17 % 7) - 3;
-      dy = ((j + 1) * 19 % 7) - 3;
-      distanceSq = dx * dx + dy * dy + 1;
+      dx = (((i + 1) * 17 + (j + 1) * 31) % 11) - 5;
+      dy = (((i + 1) * 37 + (j + 1) * 13) % 11) - 5;
+      if (dx === 0 && dy === 0) {
+        dx = i % 2 === 0 ? 1 : -1;
+        dy = j % 2 === 0 ? 1 : -1;
+      }
+      distanceSq = dx * dx + dy * dy;
     }
     const distance = Math.sqrt(distanceSq);
     const force = settings.repulsion / distanceSq;
@@ -1233,6 +1237,8 @@ self.onmessage = event => {
       const point = scenePoint(root, event);
       const targetNode = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"]') : null;
       const node = targetNode ? graphState(root).nodes.find(item => item.el === targetNode) : hitNodeAt(root, point);
+      const graphItem = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-edge-label"],[data-cfx-role="graph-cluster"]') : null;
+      const hitItem = node || graphItem || hitGraphItemAt(root, point);
       root.dataset.cfxGraphLastPointerX = point.x.toFixed(3);
       root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
       root.dataset.cfxGraphLastPointerHit = node?.id || '';
@@ -1244,7 +1250,7 @@ self.onmessage = event => {
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now();
         root.__cfxGraphPointerSelectionId = node.id;
-      } else if (hasFeature(root, 'Viewport')) {
+      } else if (hasFeature(root, 'Viewport') && !hitItem) {
         event.preventDefault();
         stage.setPointerCapture?.(event.pointerId);
         root.classList.add('cfx-graph-panning');

@@ -24,6 +24,8 @@
       const point = scenePoint(root, event);
       const targetNode = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"]') : null;
       const node = targetNode ? graphState(root).nodes.find(item => item.el === targetNode) : hitNodeAt(root, point);
+      const graphItem = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-edge-label"],[data-cfx-role="graph-cluster"]') : null;
+      const hitItem = node || graphItem || hitGraphItemAt(root, point);
       root.dataset.cfxGraphLastPointerX = point.x.toFixed(3);
       root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
       root.dataset.cfxGraphLastPointerHit = node?.id || '';
@@ -35,7 +37,7 @@
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now();
         root.__cfxGraphPointerSelectionId = node.id;
-      } else if (hasFeature(root, 'Viewport')) {
+      } else if (hasFeature(root, 'Viewport') && !hitItem) {
         event.preventDefault();
         stage.setPointerCapture?.(event.pointerId);
         root.classList.add('cfx-graph-panning');
