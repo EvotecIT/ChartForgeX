@@ -194,9 +194,11 @@ public sealed class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, string markerId) {
+        var nodeSizes = scene.Nodes.ToDictionary(node => node.Id, node => node.Size, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
-            var path = EdgePath(edge, source, target);
+            var targetSize = nodeSizes.TryGetValue(edge.TargetNodeId, out var size) ? size : 8;
+            var path = EdgePath(edge, source, target, targetSize);
             writer.Append("<path class=\"cfx-graph-edge\" tabindex=\"0\" data-cfx-role=\"graph-edge\"");
             Attribute(writer, "data-edge-id", edge.Id);
             Attribute(writer, "data-edge-label", edge.Label);
@@ -347,11 +349,12 @@ public sealed class HtmlGraphExplorerRenderer {
         return positions;
     }
 
-    private static string EdgePath(GraphSceneEdge edge, Point source, Point target) {
+    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, double targetSize) {
         var control = EdgeControl(edge, source, target);
+        var renderTarget = DirectedTargetPoint(edge, source, target, control, targetSize);
         return control.HasValue
-            ? "M " + Number(source.X) + " " + Number(source.Y) + " Q " + Number(control.Value.X) + " " + Number(control.Value.Y) + " " + Number(target.X) + " " + Number(target.Y)
-            : "M " + Number(source.X) + " " + Number(source.Y) + " L " + Number(target.X) + " " + Number(target.Y);
+            ? "M " + Number(source.X) + " " + Number(source.Y) + " Q " + Number(control.Value.X) + " " + Number(control.Value.Y) + " " + Number(renderTarget.X) + " " + Number(renderTarget.Y)
+            : "M " + Number(source.X) + " " + Number(source.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
     }
 
     private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target) {
@@ -368,6 +371,16 @@ public sealed class HtmlGraphExplorerRenderer {
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
         var offset = Math.Abs(edge.Curvature) < 0.001 ? 34 : edge.Curvature;
         return new Point((source.X + target.X) / 2 - dy / length * offset, (source.Y + target.Y) / 2 + dx / length * offset);
+    }
+
+    private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, double targetSize) {
+        if (!edge.Directed) return target;
+        var from = control ?? source;
+        var dx = target.X - from.X;
+        var dy = target.Y - from.Y;
+        var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
+        var inset = Math.Max(6, targetSize + 7);
+        return new Point(target.X - dx / length * inset, target.Y - dy / length * inset);
     }
 
     private static void AppendScript(StringBuilder writer, HtmlGraphExplorerOptions options) {

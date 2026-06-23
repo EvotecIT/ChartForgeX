@@ -21,7 +21,7 @@ internal static class GraphExplorerExamples {
         const int nodesPerCluster = 30;
         var graph = GraphScene.Create("enterprise-access-graph-benchmark", "Enterprise Access Graph Benchmark");
         graph.Subtitle = "Large dependency-free Canvas fallback benchmark with 360 nodes, 720 directed edges, image/icon nodes, drag, pan, zoom, LOD, and performance telemetry.";
-        graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry);
+        graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry);
         graph.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
         graph.Options.Physics.StabilizationIterations = 90;
         graph.Options.Physics.LinkDistance = 58;
@@ -86,7 +86,7 @@ internal static class GraphExplorerExamples {
     private static GraphScene BuildIdentityRiskGraph() {
         var graph = GraphScene.Create("identity-risk-graph-explorer", "Identity Risk Graph Explorer");
         graph.Subtitle = "Product-real service, identity, owner, finding, and evidence relationships with runtime physics, clusters, LOD, and performance telemetry.";
-        graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry);
+        graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry);
         graph.Options.Physics.Solver = GraphPhysicsSolver.ForceAtlas2;
         graph.Options.Physics.StabilizationIterations = 700;
         graph.Options.Physics.LinkDistance = 92;
