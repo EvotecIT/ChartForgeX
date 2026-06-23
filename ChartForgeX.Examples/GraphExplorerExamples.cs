@@ -30,7 +30,7 @@ internal static class GraphExplorerExamples {
         graph.Options.LevelOfDetail.HideEdgeLabelsThreshold = 260;
         graph.Options.LevelOfDetail.CompactNodeThreshold = 180;
         graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 160;
-        graph.Options.LevelOfDetail.CollapseClustersOnLoad = true;
+        graph.Options.LevelOfDetail.CollapseClustersOnLoad = false;
         graph.Options.Performance.FrameBudgetMilliseconds = 16;
         graph.Options.Performance.MaxInteractiveSvgNodes = 150;
         graph.Options.Performance.MaxInteractiveSvgEdges = 320;
@@ -43,17 +43,23 @@ internal static class GraphExplorerExamples {
             var nodeIds = Enumerable.Range(0, nodesPerCluster).Select(index => NodeId(cluster, index)).ToArray();
             graph.AddCluster(clusterId, "Access zone " + (cluster + 1).ToString("00"), nodeIds, item => {
                 item.Kind = "community";
-                item.Collapsed = true;
+                item.Collapsed = false;
             });
 
             for (var index = 0; index < nodesPerCluster; index++) {
                 var kind = KindFor(index);
                 graph.AddNode(NodeId(cluster, index), Label(kind, cluster, index), node => {
+                    var column = cluster % 4;
+                    var row = cluster / 4;
+                    var angle = Math.PI * 2 * index / nodesPerCluster;
+                    var ring = 34 + (index % 5) * 7;
                     node.Kind = kind;
                     node.ClusterId = clusterId;
                     node.GroupId = clusterId;
                     node.Status = index % 17 == 0 ? "critical" : index % 7 == 0 ? "warning" : "healthy";
                     node.Size = 7 + index % 5;
+                    node.X = 130 + column * 230 + Math.Cos(angle) * ring;
+                    node.Y = 100 + row * 165 + Math.Sin(angle) * ring * 0.8;
                     node.Shape = index % 5 == 0 ? GraphNodeShape.Image : index % 5 == 1 ? GraphNodeShape.Box : GraphNodeShape.Circle;
                     node.IconText = IconFor(kind);
                     if (node.Shape == GraphNodeShape.Image) {
@@ -89,7 +95,7 @@ internal static class GraphExplorerExamples {
         graph.Options.LevelOfDetail.HideEdgeLabelsThreshold = 70;
         graph.Options.LevelOfDetail.CompactNodeThreshold = 42;
         graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 42;
-        graph.Options.LevelOfDetail.CollapseClustersOnLoad = true;
+        graph.Options.LevelOfDetail.CollapseClustersOnLoad = false;
         graph.Options.Performance.FrameBudgetMilliseconds = 16;
         graph.Options.Performance.MaxInteractiveSvgNodes = 180;
         graph.Options.Performance.MaxInteractiveSvgEdges = 420;
@@ -146,7 +152,7 @@ internal static class GraphExplorerExamples {
     private static void AddCluster(GraphScene graph, string id, string label, string kind, params string[] nodeIds) {
         graph.AddCluster(id, label, nodeIds, cluster => {
             cluster.Kind = "community";
-            cluster.Collapsed = true;
+            cluster.Collapsed = false;
         });
 
         for (var index = 0; index < nodeIds.Length; index++) {

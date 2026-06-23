@@ -34,8 +34,7 @@
         stopWorkerPhysics(root, true);
         root.classList.add('cfx-graph-dragging-node');
         root.dataset.cfxGraphLastPointerMode = 'node';
-        node.el.setAttribute('data-node-fixed', 'true');
-        active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id };
+        active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, fixed: attr(node.el, 'data-node-fixed'), moved: false };
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now();
         root.__cfxGraphPointerSelectionId = node.id;
@@ -57,6 +56,10 @@
         const state = graphState(root);
         const node = state.nodes.find(item => item.id === active.nodeId);
         if (!node) return;
+        const dragThreshold = 3;
+        if (!active.moved && Math.hypot(point.x - active.startX, point.y - active.startY) < dragThreshold) return;
+        active.moved = true;
+        node.el.setAttribute('data-node-fixed', 'true');
         node.x = Math.max(24, Math.min(936, point.x));
         node.y = Math.max(24, Math.min(536, point.y));
         applyLayout(root, state);
@@ -69,6 +72,10 @@
       if (!active || active.pointerId !== event.pointerId) return;
       stage.releasePointerCapture?.(event.pointerId);
       if (active.mode === 'node') emit(root, 'cfxgraphdragend', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: active.nodeId });
+      if (active.mode === 'node' && !active.moved) {
+        const node = graphState(root).nodes.find(item => item.id === active.nodeId);
+        if (node) node.el.setAttribute('data-node-fixed', active.fixed || 'false');
+      }
       root.classList.remove('cfx-graph-dragging-node', 'cfx-graph-panning');
       active = null;
     };
@@ -147,7 +154,8 @@
       acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
     },
     nodes: graphState(root).nodes.map(node => ({ id: node.id, x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', kind: attr(node.el, 'data-node-kind'), status: attr(node.el, 'data-cfx-status') })),
-    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', search: attr(edge, 'data-cfx-search') }))
+    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', search: attr(edge, 'data-cfx-search') })),
+    clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: cluster.classList.contains('cfx-graph-hidden'), search: attr(cluster, 'data-cfx-search') }))
   });
   const downloadExport = (name, mime, content) => {
     const isDataUrl = content.startsWith('data:');
@@ -170,7 +178,8 @@
     }
     performanceGate(root);
     if (hasFeature(root, 'Clustering')) {
-      if (attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true);
+      const collapseByThreshold = root.dataset.cfxGraphClusterLod === 'threshold';
+      if (attr(root, 'data-cfx-lod-collapse-clusters') === 'true' && collapseByThreshold) applyClusterState(root, true);
       else applyClusterState(root, undefined);
     } else {
       items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
@@ -182,6 +191,7 @@
       applyFilters(root);
       drawCanvas(root, graphState(root));
     }
+    fitViewport(root);
     bindCanvasHitTesting(root);
     bindPointerInteractions(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
@@ -221,7 +231,7 @@
           }
           if (!running) startPhysics(root);
         }
-        if (action === 'stabilize') startPhysics(root);
+        if (action === 'stabilize' && hasFeature(root, 'Stabilization')) startPhysics(root);
         button.setAttribute('aria-pressed', attr(button, 'aria-pressed') === 'true' ? 'false' : 'true');
         emit(root, 'cfxgraphaction', { graphId: attr(root, 'data-cfx-graph-id'), action, physics: attr(root, 'data-cfx-graph-physics') });
       });

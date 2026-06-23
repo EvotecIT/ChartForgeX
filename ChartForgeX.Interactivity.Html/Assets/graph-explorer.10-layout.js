@@ -104,6 +104,7 @@
     root.classList.toggle('cfx-graph-render-canvas', useCanvas);
     root.classList.toggle('cfx-graph-render-svg', !useCanvas);
     root.dataset.cfxGraphLod = preferCanvas ? 'canvas-preferred' : compact ? 'compact' : hideEdgeLabels ? 'edge-labels-hidden' : 'full';
+    root.dataset.cfxGraphClusterLod = nodes >= num(root, 'data-cfx-lod-cluster-threshold', Number.POSITIVE_INFINITY) ? 'threshold' : 'none';
     root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg';
     emit(root, 'cfxgraphlod', { graphId: attr(root, 'data-cfx-graph-id'), mode: root.dataset.cfxGraphLod, renderer: root.dataset.cfxGraphRendererActive, nodes, edges });
   };
@@ -131,6 +132,7 @@
     drawCanvas(root, graphState(root));
   };
   const publishPerformance = (root, detail) => {
+    if (!hasFeature(root, 'PerformanceTelemetry')) return;
     const summary = root.__cfxGraphPerformanceSummary || {
       samples: 0,
       budgetMisses: 0,

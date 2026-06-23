@@ -113,7 +113,6 @@
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphviewport', { graphId: attr(root, 'data-cfx-graph-id'), ...state });
   };
-  const fitViewport = (root) => setViewport(root, { x: 0, y: 0, scale: 1 });
   const zoomViewport = (root, factor, anchor) => {
     const current = viewport(root);
     const scale = Math.min(4, Math.max(0.2, current.scale * factor));
@@ -161,22 +160,33 @@
     context.save();
     context.transform(view.scale, 0, 0, view.scale, view.x, view.y);
     context.lineCap = 'round';
+    const compact = root.classList.contains('cfx-graph-lod-compact');
+    const dense = compact || state.edges.length > 250;
     state.clusters.forEach(cluster => {
       if (!visible(cluster.el)) return;
-      const members = cluster.nodeIds.map(id => byId.get(id)).filter(Boolean);
-      if (!members.length) return;
-      const x = members.reduce((sum, node) => sum + node.x, 0) / members.length;
-      const y = members.reduce((sum, node) => sum + node.y, 0) / members.length;
-      const radius = Math.max(22, 12 + members.length * 3);
+      const metrics = clusterMetrics(cluster, byId);
+      if (!metrics) return;
+      const label = attr(cluster.el, 'data-cluster-label') || cluster.id;
       context.beginPath();
-      context.arc(x, y, radius, 0, Math.PI * 2);
-      context.fillStyle = 'rgba(224,242,254,.74)';
+      context.arc(metrics.x, metrics.y, metrics.radius, 0, Math.PI * 2);
+      context.globalAlpha = metrics.expanded ? .18 : .86;
+      context.fillStyle = 'rgba(224,242,254,.86)';
       context.strokeStyle = cluster.el.classList.contains('cfx-graph-selected') ? '#f59e0b' : '#0284c7';
       context.lineWidth = cluster.el.classList.contains('cfx-graph-selected') ? 4 : 2;
       context.setLineDash([6, 4]);
       context.fill();
       context.stroke();
       context.setLineDash([]);
+      context.globalAlpha = metrics.expanded ? .42 : 1;
+      context.font = '700 12px Segoe UI, Arial, sans-serif';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.lineWidth = 4;
+      context.strokeStyle = '#ffffff';
+      context.fillStyle = '#075985';
+      context.strokeText(label, metrics.x, metrics.y);
+      context.fillText(label, metrics.x, metrics.y);
+      context.globalAlpha = 1;
     });
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !visible(edge.source.el) || !visible(edge.target.el)) return;
@@ -189,14 +199,15 @@
       if (control) context.quadraticCurveTo(control.x, control.y, edge.target.x, edge.target.y);
       else context.lineTo(edge.target.x, edge.target.y);
       context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : '#94a3b8';
-      context.globalAlpha = dimmed ? .12 : selected ? .95 : .58;
-      context.lineWidth = Math.max(1.2, Math.min(selected ? 6 : related ? 5 : 4, edge.weight + (selected ? 1.6 : related ? 1.2 : 0)));
+      context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
+      const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
+      context.lineWidth = Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, baseWidth + (selected ? 1.6 : related ? 1.2 : 0)));
       context.setLineDash(edge.dashed ? [8, 6] : []);
       context.stroke();
       context.setLineDash([]);
       context.globalAlpha = 1;
       if (edge.directed) {
-        context.globalAlpha = dimmed ? .16 : 1;
+        context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
         drawArrow(context, edge, control);
         context.globalAlpha = 1;
       }
@@ -214,7 +225,6 @@
         context.globalAlpha = 1;
       }
     });
-    const compact = root.classList.contains('cfx-graph-lod-compact');
     state.nodes.forEach(node => {
       if (!visible(node.el)) return;
       const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');

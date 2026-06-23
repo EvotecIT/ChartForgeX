@@ -30,7 +30,7 @@ public sealed class HtmlGraphExplorerRenderer {
         writer.Append(Text(title));
         writer.Append("</title><style>");
         writer.Append(BuildFragmentStyle());
-        writer.Append("</style></head><body>");
+        writer.Append("</style></head><body class=\"cfx-graph-shell\">");
         writer.Append(RenderGraph(scene, options));
         AppendScript(writer, options);
         writer.Append("</body></html>");
@@ -115,17 +115,17 @@ public sealed class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteHeader(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options) {
-        writer.Append("<header class=\"cfx-graph-header\"><div><h1>");
+        writer.Append("<header class=\"cfx-graph-header\"><div><h1 class=\"cfx-graph-title\">");
         writer.Append(Text(scene.Title));
         writer.Append("</h1>");
         if (!string.IsNullOrWhiteSpace(scene.Subtitle)) {
-            writer.Append("<p>");
+            writer.Append("<p class=\"cfx-graph-subtitle\">");
             writer.Append(Text(scene.Subtitle!));
             writer.Append("</p>");
         }
 
         writer.Append("</div><div class=\"cfx-graph-toolbar\">");
-        if (options.IncludeSearch && scene.Options.HasFeature(GraphSceneFeatures.Search)) writer.Append("<input type=\"search\" data-cfx-graph-search=\"true\" placeholder=\"Search\">");
+        if (options.IncludeSearch && scene.Options.HasFeature(GraphSceneFeatures.Search)) writer.Append("<input class=\"cfx-graph-search\" type=\"search\" data-cfx-graph-search=\"true\" placeholder=\"Search\">");
         if (options.IncludeFilters && scene.Options.HasFeature(GraphSceneFeatures.Filtering)) {
             WriteFilter(writer, "status", scene.Nodes.Select(node => node.Status).Concat(scene.Edges.Select(edge => edge.Status)).Concat(scene.Clusters.Select(cluster => cluster.Kind)));
             WriteFilter(writer, "kind", scene.Nodes.Select(node => node.Kind).Concat(scene.Edges.Select(edge => edge.Kind)).Concat(scene.Clusters.Select(cluster => cluster.Kind)));
@@ -142,7 +142,7 @@ public sealed class HtmlGraphExplorerRenderer {
 
         if (options.IncludePhysicsControls && scene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics)) {
             WriteButton(writer, "physics", "Physics");
-            WriteButton(writer, "stabilize", "Stabilize");
+            if (scene.Options.HasFeature(GraphSceneFeatures.Stabilization)) WriteButton(writer, "stabilize", "Stabilize");
         }
 
         if (scene.Options.HasFeature(GraphSceneFeatures.Export)) {
@@ -300,7 +300,7 @@ public sealed class HtmlGraphExplorerRenderer {
     private static void WriteFilter(StringBuilder writer, string name, IEnumerable<string?> values) {
         var options = values.Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value!).Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal).ToArray();
         if (options.Length == 0) return;
-        writer.Append("<select");
+        writer.Append("<select class=\"cfx-graph-filter\"");
         Attribute(writer, "data-cfx-graph-filter", name);
         writer.Append("><option value=\"\">");
         writer.Append(Text(name));
@@ -317,7 +317,7 @@ public sealed class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteButton(StringBuilder writer, string action, string label) {
-        writer.Append("<button type=\"button\"");
+        writer.Append("<button class=\"cfx-graph-tool\" type=\"button\"");
         Attribute(writer, "data-cfx-graph-action", action);
         writer.Append(" aria-pressed=\"false\">");
         writer.Append(Text(label));
