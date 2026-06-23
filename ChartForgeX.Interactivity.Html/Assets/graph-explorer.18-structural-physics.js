@@ -15,15 +15,63 @@
     const spread = Math.min(layout.width, layout.height) * (ordered.length <= 2 ? 0.22 : 0.34);
     ordered.forEach((group, index) => {
       const angle = ordered.length === 1 ? -Math.PI / 2 : -Math.PI / 2 + Math.PI * 2 * index / ordered.length;
+      const homeX = group.homeX / Math.max(1, group.count);
+      const homeY = group.homeY / Math.max(1, group.count);
+      const ringX = ordered.length === 1 ? layout.centerX : layout.centerX + Math.cos(angle) * spread;
+      const ringY = ordered.length === 1 ? layout.centerY : layout.centerY + Math.sin(angle) * spread * 0.72;
       anchors.set(group.key, {
-        x: ordered.length === 1 ? layout.centerX : layout.centerX + Math.cos(angle) * spread,
-        y: ordered.length === 1 ? layout.centerY : layout.centerY + Math.sin(angle) * spread * 0.72,
-        homeX: group.homeX / Math.max(1, group.count),
-        homeY: group.homeY / Math.max(1, group.count),
+        x: homeX * 0.62 + ringX * 0.38,
+        y: homeY * 0.62 + ringY * 0.38,
+        homeX,
+        homeY,
         count: group.count
       });
     });
     return anchors;
+  };
+  const applyCommunityPacking = (state, settings) => {
+    if (!settings.communitySeparation || state.nodes.length < 8) return 0;
+    const groups = new Map();
+    state.nodes.forEach(node => {
+      const key = physicsCommunityKey(node);
+      const group = groups.get(key) || { key, nodes: [], x: 0, y: 0, radius: 0 };
+      group.nodes.push(node);
+      group.x += node.x;
+      group.y += node.y;
+      groups.set(key, group);
+    });
+    const ordered = Array.from(groups.values()).filter(group => group.nodes.length > 1);
+    if (ordered.length < 2 || ordered.length > 96) return 0;
+    ordered.forEach(group => {
+      group.x /= group.nodes.length;
+      group.y /= group.nodes.length;
+      group.radius = Math.max(44, Math.min(210, Math.sqrt(group.nodes.length) * 20 + group.nodes.reduce((sum, node) => sum + (node.size || 8), 0) / group.nodes.length));
+    });
+    let pushes = 0;
+    for (let i = 0; i < ordered.length; i++) {
+      for (let j = i + 1; j < ordered.length; j++) {
+        const a = ordered[i];
+        const b = ordered[j];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let distance = Math.hypot(dx, dy);
+        const minDistance = Math.min(360, (a.radius + b.radius) * 0.94);
+        if (distance >= minDistance) continue;
+        if (distance < 0.001) {
+          const seed = (a.key.length * 17 + b.key.length * 31) % 360;
+          dx = Math.cos(seed);
+          dy = Math.sin(seed);
+          distance = 1;
+        }
+        const force = (minDistance - distance) / distance * settings.communitySeparation;
+        const fx = dx * force;
+        const fy = dy * force;
+        a.nodes.forEach(node => { if (!node.fixed) { node.vx -= fx / Math.sqrt(a.nodes.length); node.vy -= fy / Math.sqrt(a.nodes.length); } });
+        b.nodes.forEach(node => { if (!node.fixed) { node.vx += fx / Math.sqrt(b.nodes.length); node.vy += fy / Math.sqrt(b.nodes.length); } });
+        pushes += 1;
+      }
+    }
+    return pushes;
   };
   const applyStructuralForces = (state, settings, layout) => {
     const anchors = physicsCommunityAnchors(state, layout);
@@ -54,6 +102,7 @@
         }
       }
     });
+    return applyCommunityPacking(state, settings);
   };
   const applyOverlapPressure = (nodes, settings) => {
     if (!settings.overlapPressure || nodes.length < 2) return 0;

@@ -94,6 +94,7 @@
       maxSampleMs: 0,
       maxVelocity: 0,
       overlapPressureEvents: 0,
+      communityPackingEvents: 0,
       lastTick: 0,
       frameBudget: num(root, 'data-cfx-performance-frame-budget', 16)
     };
@@ -104,6 +105,7 @@
     summary.lastTick = Number.isFinite(detail.tick) ? detail.tick : summary.lastTick;
     summary.maxVelocity = Math.max(summary.maxVelocity, Number.isFinite(detail.maxVelocity) ? detail.maxVelocity : 0);
     summary.overlapPressureEvents += Math.max(0, Number.isFinite(detail.overlaps) ? detail.overlaps : 0);
+    summary.communityPackingEvents += Math.max(0, Number.isFinite(detail.communityPushes) ? detail.communityPushes : 0);
     summary.maxSampleMs = Math.max(summary.maxSampleMs, sampleMs);
     summary.lastSampleMs = sampleMs;
     summary.lastSampleTicks = sampleTicks;
@@ -118,6 +120,7 @@
     root.dataset.cfxGraphPerformanceLastSampleMs = sampleMs.toFixed(3);
     root.dataset.cfxGraphPerformanceMaxSampleMs = summary.maxSampleMs.toFixed(3);
     root.dataset.cfxGraphPerformanceOverlapPressureEvents = String(summary.overlapPressureEvents);
+    root.dataset.cfxGraphPerformanceCommunityPackingEvents = String(summary.communityPackingEvents);
     root.dataset.cfxGraphPerformanceSampleTicks = String(sampleTicks);
     root.dataset.cfxGraphPerformanceSampleBudgetMs = sampleBudgetMs.toFixed(3);
     root.dataset.cfxGraphPerformanceBudgetMisses = String(summary.budgetMisses);

@@ -66,6 +66,51 @@
     if (moved) root.dataset.cfxGraphLayoutHubSpread = String(moved);
   };
 
+  const spreadCommunityAreas = (root, state) => {
+    const groups = new Map();
+    state.nodes.forEach(node => {
+      const key = layoutCommunityKey(node);
+      const group = groups.get(key) || { key, nodes: [], x: 0, y: 0, radius: 0 };
+      group.nodes.push(node);
+      group.x += node.x;
+      group.y += node.y;
+      groups.set(key, group);
+    });
+    const ordered = Array.from(groups.values()).filter(group => group.nodes.length > 1);
+    if (ordered.length < 2 || ordered.length > 96) return 0;
+    ordered.forEach(group => {
+      group.x /= group.nodes.length;
+      group.y /= group.nodes.length;
+      group.radius = Math.max(48, Math.min(220, Math.sqrt(group.nodes.length) * 22));
+    });
+    let moved = 0;
+    for (let i = 0; i < ordered.length; i++) {
+      for (let j = i + 1; j < ordered.length; j++) {
+        const a = ordered[i];
+        const b = ordered[j];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let distance = Math.hypot(dx, dy);
+        const minDistance = Math.min(380, (a.radius + b.radius) * 0.88);
+        if (distance >= minDistance) continue;
+        if (distance < 0.001) {
+          const seed = (a.key.length * 19 + b.key.length * 29) % 360;
+          dx = Math.cos(seed);
+          dy = Math.sin(seed);
+          distance = 1;
+        }
+        const push = (minDistance - distance) / distance * 0.24;
+        const fx = dx * push;
+        const fy = dy * push;
+        a.nodes.forEach(node => { if (!node.fixed) { node.x -= fx; node.y -= fy; } });
+        b.nodes.forEach(node => { if (!node.fixed) { node.x += fx; node.y += fy; } });
+        moved += 1;
+      }
+    }
+    if (moved) root.dataset.cfxGraphLayoutCommunitySpread = String(moved);
+    return moved;
+  };
+
   const nodeRadius = (node) => Math.max(6, node.size + (node.shape === 'box' ? 7 : node.shape === 'image' ? 6 : 5));
 
   const separateOverlaps = (root, state, passes) => {
@@ -186,6 +231,11 @@
     const maxY = Math.max(...movable.map(node => node.y));
     const width = Math.max(1, maxX - minX);
     const height = Math.max(1, maxY - minY);
+    const overlaps = countOverlaps(movable);
+    if (overlaps > movable.length * 0.45) {
+      root.dataset.cfxGraphLayoutCompactionSkipped = String(overlaps);
+      return;
+    }
     const targetWidth = size.width * 0.86;
     const targetHeight = size.height * 0.8;
     const scale = Math.min(1.08, targetWidth / width, targetHeight / height);
@@ -215,8 +265,9 @@
     const maxY = Math.max(...movable.map(node => node.y));
     const width = Math.max(1, maxX - minX);
     const height = Math.max(1, maxY - minY);
-    const maxScale = Math.min(size.width * 0.92 / width, size.height * 0.88 / height);
-    const factor = Math.min(1.22, Math.max(1, maxScale), 1 + Math.min(0.2, overlaps / Math.max(1, movable.length * 18)));
+    const viewportScale = Math.min(size.width * 0.92 / width, size.height * 0.88 / height);
+    const spatialHeadroom = movable.length >= 300 ? Math.min(1.62, Math.sqrt(movable.length / 180)) : Math.max(1, viewportScale);
+    const factor = Math.min(spatialHeadroom, 1 + Math.min(0.55, overlaps / Math.max(1, movable.length * 8)));
     if (factor <= 1.01) return;
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
@@ -235,6 +286,7 @@
     separateOverlaps(root, state, overlapPasses(state, 6));
     balanceLayoutAspect(root, state);
     restoreClusterAnchors(root, state);
+    spreadCommunityAreas(root, state);
     compactStabilizedLayout(root, state);
     expandDenseLayout(root, state);
     separateOverlaps(root, state, overlapPasses(state, 14));

@@ -140,7 +140,7 @@
     const acceleration = physicsAcceleration(state, settings);
     if (acceleration === 'barnes-hut') barnesHutRepulsion(state.nodes, settings);
     else pairwiseRepulsion(state.nodes, settings);
-    applyStructuralForces(state, settings, layout);
+    const communityPushes = applyStructuralForces(state, settings, layout);
     const overlaps = applyOverlapPressure(state.nodes, settings);
     state.edges.forEach(edge => {
       const dx = edge.target.x - edge.source.x;
@@ -178,7 +178,7 @@
       }
       maxVelocity = Math.max(maxVelocity, Math.sqrt(node.vx * node.vx + node.vy * node.vy));
     });
-    return { maxVelocity, acceleration, overlaps };
+    return { maxVelocity, acceleration, overlaps, communityPushes };
   };
   const physicsTick = (root, state, settings, tick) => {
     const started = Date.now();
@@ -186,7 +186,7 @@
     root.dataset.cfxGraphPhysicsAcceleration = result.acceleration;
     applyLayout(root, state);
     const interval = Math.max(1, num(root, 'data-cfx-performance-telemetry-interval', 30));
-    if (tick % interval === 0) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'main', sampleMs: Date.now() - started, sampleTicks: 1 });
+    if (tick % interval === 0) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, communityPushes: result.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'main', sampleMs: Date.now() - started, sampleTicks: 1 });
     return result.maxVelocity;
   };
   const canUseWorkerPhysics = (root, state, settings) =>
@@ -222,6 +222,7 @@ const physicsAcceleration = ${physicsAcceleration.toString()};
 const physicsLayout = ${physicsLayout.toString()};
 const physicsCommunityKey = ${physicsCommunityKey.toString()};
 const physicsCommunityAnchors = ${physicsCommunityAnchors.toString()};
+const applyCommunityPacking = ${applyCommunityPacking.toString()};
 const applyStructuralForces = ${applyStructuralForces.toString()};
 const applyOverlapPressure = ${applyOverlapPressure.toString()};
 const simulatePhysicsStep = ${simulatePhysicsStep.toString()};
@@ -235,7 +236,7 @@ self.onmessage = event => {
     const result = simulatePhysicsStep(state, data.settings);
     const done = tick >= data.settings.iterations || result.maxVelocity <= data.settings.minVelocity;
     if (done || tick % interval === 0) {
-      self.postMessage({ type: done ? 'done' : 'progress', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, sampleMs: Date.now() - batchStarted, sampleTicks: tick - batchTick, nodes: state.nodes });
+      self.postMessage({ type: done ? 'done' : 'progress', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, communityPushes: result.communityPushes, sampleMs: Date.now() - batchStarted, sampleTicks: tick - batchTick, nodes: state.nodes });
       batchStarted = Date.now();
       batchTick = tick;
     }
@@ -278,7 +279,7 @@ self.onmessage = event => {
           runLayoutQualityPass(root, state);
         }
         applyLayout(root, state);
-        publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
+        publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, communityPushes: message.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
         if (message.type === 'done') {
           root.dataset.cfxGraphPhysicsState = 'stabilized';
           stopWorkerPhysics(root, true);
@@ -336,6 +337,7 @@ self.onmessage = event => {
       layout: adaptivePhysicsLayout(root, state),
       homeGravity: Math.max(0.0005, Math.min(0.012, base.centerGravity * (state.nodes.length >= 1000 ? 0.55 : 0.9) + 0.0018)),
       communityGravity: Math.max(0.0002, Math.min(0.006, base.centerGravity * (state.nodes.length >= 1000 ? 0.35 : 0.6) + 0.0007)),
+      communitySeparation: state.nodes.length >= 3000 ? 0.0022 : state.nodes.length >= 1000 ? 0.0032 : 0.005,
       hubSpread: state.nodes.length >= 1000 ? 0.0008 : 0.0014,
       overlapPressure: state.nodes.length >= 3000 ? 0.015 : state.nodes.length >= 1000 ? 0.024 : 0.04
     };
