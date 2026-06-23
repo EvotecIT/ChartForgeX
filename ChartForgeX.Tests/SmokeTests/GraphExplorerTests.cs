@@ -181,6 +181,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("if (raw === '') return fallback", StringComparison.Ordinal), "Graph explorer runtime should preserve numeric defaults for absent viewport and performance attributes.");
         Assert(html.Contains("body class=\"cfx-graph-shell\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-search\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-tool\"", StringComparison.Ordinal), "Graph explorer pages should emit the styled page shell and toolbar classes.");
         Assert(html.Contains("contentBounds", StringComparison.Ordinal) && html.Contains("fitViewport(root)", StringComparison.Ordinal), "Graph explorer runtime should fit visible content into the opening viewport.");
+        Assert(html.Contains("nodeHalfWidth(node)", StringComparison.Ordinal) && html.Contains("edgeLabelPoint(edge, control)", StringComparison.Ordinal) && html.Contains("selfLoopGeometry(edge.source)", StringComparison.Ordinal), "Graph explorer fit bounds should include shape-aware node extents plus curved edge and self-loop geometry.");
         Assert(html.Contains("sceneSize(root)", StringComparison.Ordinal) && html.Contains("cfxGraphFitScale", StringComparison.Ordinal), "Graph explorer fit should use the live graph viewport and expose repeatable fit diagnostics instead of relying on fixed pixel guesses.");
         Assert(html.Contains("clusterMetrics", StringComparison.Ordinal) && html.Contains("Math.min(54", StringComparison.Ordinal), "Graph explorer Canvas clusters should use bounded readable hulls instead of member-count-sized bubbles.");
         Assert(html.Contains("sampleTicks", StringComparison.Ordinal) && html.Contains("cfxGraphPerformanceSampleBudgetMs", StringComparison.Ordinal), "Graph explorer runtime should compare performance samples against the effective sampled-tick budget.");
@@ -296,6 +297,9 @@ internal static partial class SmokeTests {
 
         var canvasHtml = scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.Canvas);
         Assert(canvasHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal), "Graph explorer fragments should allow hosts to request Canvas as the initial renderer.");
+        var webGlHtml = scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.WebGl);
+        Assert(webGlHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal) && !webGlHtml.Contains("data-cfx-graph-renderer=\"webgl\"", StringComparison.Ordinal), "Graph explorer should route explicit WebGL requests to the supported Canvas backend until a real WebGL renderer exists.");
+        Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("configured === 'webgl' ? 'canvas' : configured", StringComparison.Ordinal), "Graph explorer runtime should also route host-authored WebGL backend attributes to Canvas instead of silently falling back to SVG.");
 
         var expandedClusterHtml = GraphScene.Create("expanded-cluster", "Expanded cluster")
             .AddNode("a", "A")
@@ -340,6 +344,7 @@ internal static partial class SmokeTests {
         Assert(!declaredClusterHtml.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"0\" aria-hidden=\"false\" data-cluster-id=\"declared\" data-cluster-label=\"Declared\" data-cluster-kind=\"\" data-cluster-node-ids=\"a,b\" data-cluster-collapsed=\"false\" data-cfx-status=", StringComparison.Ordinal), "Graph explorer renderer should not serialize cluster kind as status.");
         Assert(layoutSource.Contains("BuildClusterMembership", StringComparison.Ordinal) && rendererSource.Contains("NodeClusterId(node, clusterMembership)", StringComparison.Ordinal) && layoutSource.Contains("CommunityCenters", StringComparison.Ordinal), "Graph explorer prepared layout should use declared cluster membership as a community key and assign deterministic community areas.");
         Assert(layoutSource.Contains("SeparatePreparedOverlaps", StringComparison.Ordinal) && layoutSource.Contains("GridKey", StringComparison.Ordinal), "Graph explorer prepared layout should resolve opening overlaps with a scalable spatial grid before runtime physics starts.");
+        Assert(layoutSource.Contains("if (pairs > maxPairs) return moved;", StringComparison.Ordinal), "Graph explorer prepared layout should stop scanning overlap pairs once the static layout budget is exhausted.");
 
         var loadCollapsedHtml = GraphScene.Create("load-collapsed", "Load collapsed")
             .AddNode("a", "A")

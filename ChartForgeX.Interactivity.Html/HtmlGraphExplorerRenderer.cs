@@ -533,7 +533,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string Backend(HtmlGraphRenderBackend backend) => backend switch {
         HtmlGraphRenderBackend.Canvas => "canvas",
-        HtmlGraphRenderBackend.WebGl => "webgl",
+        HtmlGraphRenderBackend.WebGl => "canvas",
         _ => "svg"
     };
 

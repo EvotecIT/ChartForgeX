@@ -54,7 +54,8 @@
     const hideEdgeLabels = edges >= num(root, 'data-cfx-lod-hide-edge-labels-threshold', 250);
     const preferCanvas = nodes >= num(root, 'data-cfx-lod-canvas-threshold', 1200);
     const configured = attr(root, 'data-cfx-graph-renderer');
-    const useCanvas = configured === 'canvas' || (configured === 'svg' && preferCanvas && attr(root, 'data-cfx-graph-canvas-fallback') !== 'false');
+    const normalizedRenderer = configured === 'webgl' ? 'canvas' : configured;
+    const useCanvas = normalizedRenderer === 'canvas' || (normalizedRenderer === 'svg' && preferCanvas && attr(root, 'data-cfx-graph-canvas-fallback') !== 'false');
     root.classList.toggle('cfx-graph-lod-compact', compact);
     root.classList.toggle('cfx-graph-lod-hide-edge-labels', hideEdgeLabels);
     root.classList.toggle('cfx-graph-render-canvas', useCanvas);

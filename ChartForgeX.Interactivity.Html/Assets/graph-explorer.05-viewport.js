@@ -43,10 +43,34 @@
   const contentBounds = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     const bounds = [];
+    const pushPoint = (point, pad) => {
+      if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+      const padding = Number.isFinite(pad) ? pad : 0;
+      bounds.push({ minX: point.x - padding, minY: point.y - padding, maxX: point.x + padding, maxY: point.y + padding });
+    };
     state.nodes.forEach(node => {
       if (!visible(node.el)) return;
-      const radius = node.size + 26;
-      bounds.push({ minX: node.x - radius, minY: node.y - radius, maxX: node.x + radius, maxY: node.y + radius });
+      const pad = 30;
+      bounds.push({ minX: node.x - nodeHalfWidth(node) - pad, minY: node.y - nodeHalfHeight(node) - pad, maxX: node.x + nodeHalfWidth(node) + pad, maxY: node.y + nodeHalfHeight(node) + pad });
+    });
+    state.edges.forEach(edge => {
+      if (!visible(edge.el) || !edge.source || !edge.target || !visible(edge.source.el) || !visible(edge.target.el)) return;
+      const pad = Math.max(12, Math.min(34, (edge.weight || 1) * 3 + 10));
+      if (edge.source === edge.target) {
+        const loop = selfLoopGeometry(edge.source);
+        pushPoint(loop.start, pad);
+        pushPoint(loop.c1, pad);
+        pushPoint(loop.c2, pad);
+        pushPoint(loop.end, pad);
+        pushPoint(loop.label, pad + 10);
+        return;
+      }
+
+      const control = edgeControl(edge);
+      pushPoint(edge.source, pad);
+      pushPoint(edge.target, pad);
+      pushPoint(control, pad);
+      pushPoint(edgeLabelPoint(edge, control), pad + 10);
     });
     state.clusters.forEach(cluster => {
       if (!visible(cluster.el)) return;

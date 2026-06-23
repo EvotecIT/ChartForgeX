@@ -39,6 +39,6 @@ public enum HtmlGraphRenderBackend {
     /// <summary>Reserve the scene for a Canvas-backed runtime renderer.</summary>
     Canvas,
 
-    /// <summary>Reserve the scene for a WebGL-backed runtime renderer.</summary>
+    /// <summary>Request the planned WebGL-backed runtime renderer. Until it ships, the adapter routes this request to Canvas.</summary>
     WebGl
 }

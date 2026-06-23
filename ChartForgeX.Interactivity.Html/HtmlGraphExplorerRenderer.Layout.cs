@@ -271,7 +271,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
                 for (var oy = -1; oy <= 1; oy++) {
                     if (!grid.TryGetValue((gx + ox).ToString(CultureInfo.InvariantCulture) + "," + (gy + oy).ToString(CultureInfo.InvariantCulture), out var bucket)) continue;
                     foreach (var j in bucket) {
-                        if (j <= i || pairs++ > maxPairs) continue;
+                        if (j <= i) continue;
+                        pairs++;
+                        if (pairs > maxPairs) return moved;
                         moved |= SeparatePreparedPair(positions, generated, i, j, pass);
                     }
                 }
