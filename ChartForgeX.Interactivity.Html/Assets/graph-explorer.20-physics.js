@@ -190,6 +190,13 @@ self.onmessage = event => {
     root.__cfxGraphWorker = null;
     if (!preserveThread) root.dataset.cfxGraphPhysicsThread = 'stopped';
   };
+  const stopMainPhysics = (root, preserveThread) => {
+    const active = root.__cfxGraphMainPhysics;
+    if (!active) return;
+    if (active.frame) cancelAnimationFrame(active.frame);
+    root.__cfxGraphMainPhysics = null;
+    if (!preserveThread) root.dataset.cfxGraphPhysicsThread = 'stopped';
+  };
   const startWorkerPhysics = (root, state, settings) => {
     try {
       const blob = new Blob([workerPhysicsSource()], { type: 'application/javascript' });
@@ -229,25 +236,30 @@ self.onmessage = event => {
     }
   };
   const startMainPhysics = (root, state, settings) => {
+    stopMainPhysics(root, true);
     let tick = 0;
+    const active = {};
+    root.__cfxGraphMainPhysics = active;
     root.dataset.cfxGraphPhysicsThread = 'main';
     const step = () => {
-      if (root.dataset.cfxGraphPhysicsState !== 'running') return;
+      if (root.__cfxGraphMainPhysics !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
       tick += 1;
       const velocity = physicsTick(root, state, settings, tick);
       if (tick >= settings.iterations || velocity <= settings.minVelocity) {
         root.dataset.cfxGraphPhysicsState = 'stabilized';
+        root.__cfxGraphMainPhysics = null;
         emit(root, 'cfxgraphstabilized', { graphId: attr(root, 'data-cfx-graph-id'), ticks: tick, maxVelocity: velocity });
         return;
       }
-      requestAnimationFrame(step);
+      active.frame = requestAnimationFrame(step);
     };
-    requestAnimationFrame(step);
+    active.frame = requestAnimationFrame(step);
   };
   const startPhysics = (root) => {
     const settings = profile(root);
     if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return;
     stopWorkerPhysics(root);
+    stopMainPhysics(root);
     const state = graphState(root);
     root.dataset.cfxGraphPhysicsState = 'running';
     if (canUseWorkerPhysics(root, state, settings) && startWorkerPhysics(root, state, settings)) return;

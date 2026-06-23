@@ -88,8 +88,7 @@
     let content = '';
     let mime = 'application/octet-stream';
     if (format === 'svg') {
-      const svg = root.querySelector('[data-cfx-role="graph-scene"]');
-      content = svg ? new XMLSerializer().serializeToString(svg) : '';
+      content = exportSvgContent(root);
       mime = 'image/svg+xml';
     } else if (format === 'json') {
       content = JSON.stringify(exportGraphJson(root), null, 2);
@@ -104,6 +103,21 @@
     root.dataset.cfxGraphLastExport = format;
     if (!emit(root, 'cfxgraphexport', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, mimeType: mime, content }, { cancelable: true })) return;
     downloadExport(name, mime, content);
+  };
+  const exportSvgContent = (root) => {
+    const svg = root.querySelector('[data-cfx-role="graph-scene"]');
+    if (!svg) return '';
+    const clone = svg.cloneNode(true);
+    const styleSource = root.ownerDocument.querySelector('style[data-cfx-graph-assets="true"]') || root.ownerDocument.querySelector('style');
+    if (styleSource?.textContent) {
+      const style = root.ownerDocument.createElementNS('http:' + '//www.w3.org/2000/svg', 'style');
+      style.setAttribute('data-cfx-export-style', 'true');
+      style.textContent = styleSource.textContent;
+      const defs = clone.querySelector('defs');
+      if (defs) defs.insertBefore(style, defs.firstChild);
+      else clone.insertBefore(style, clone.firstChild);
+    }
+    return new XMLSerializer().serializeToString(clone);
   };
   const exportGraphJson = (root) => ({
     graphId: attr(root, 'data-cfx-graph-id'),
@@ -129,7 +143,7 @@
       acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
     },
     nodes: graphState(root).nodes.map(node => ({ id: node.id, x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', kind: attr(node.el, 'data-node-kind'), status: attr(node.el, 'data-cfx-status') })),
-    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), directed: attr(edge, 'data-edge-directed') === 'true' }))
+    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', search: attr(edge, 'data-cfx-search') }))
   });
   const downloadExport = (name, mime, content) => {
     const isDataUrl = content.startsWith('data:');
@@ -143,10 +157,27 @@
   const bind = (root) => {
     root.setAttribute('data-cfx-graph-bound', 'true');
     indexHitTesting(root, graphState(root));
-    applyLod(root);
+    if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
+    else {
+      const useCanvas = attr(root, 'data-cfx-graph-renderer') === 'canvas';
+      root.classList.toggle('cfx-graph-render-canvas', useCanvas);
+      root.classList.toggle('cfx-graph-render-svg', !useCanvas);
+      root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg';
+    }
     performanceGate(root);
-    if (attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true);
-    else applyClusterState(root, undefined);
+    if (hasFeature(root, 'Clustering')) {
+      if (attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true);
+      else applyClusterState(root, undefined);
+    } else {
+      items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
+        cluster.classList.add('cfx-graph-cluster-expanded');
+        cluster.setAttribute('data-cluster-collapsed', 'false');
+      });
+      items(root, '.cfx-graph-cluster-collapsed-member').forEach(item => item.classList.remove('cfx-graph-cluster-collapsed-member'));
+      root.dataset.cfxGraphClusters = 'disabled';
+      applyFilters(root);
+      drawCanvas(root, graphState(root));
+    }
     bindCanvasHitTesting(root);
     bindPointerInteractions(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {

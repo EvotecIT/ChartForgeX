@@ -206,6 +206,7 @@
     else drawCanvas(root, graphState(root));
   };
   const select = (root, node, options) => {
+    if (!hasFeature(root, 'Selection')) return;
     const additive = hasFeature(root, 'MultiSelection') && !!options?.additive;
     const toggle = additive && !!options?.toggle;
     const selected = node.classList.contains('cfx-graph-selected');
@@ -319,6 +320,13 @@
       edge.classList.toggle('cfx-graph-hidden', !edgeVisible);
       const label = labels.get(attr(edge, 'data-edge-id'));
       if (label) label.classList.toggle('cfx-graph-hidden', !edgeVisible);
+    });
+    items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
+      const queryOk = !query || searchable(cluster).includes(query);
+      const statusOk = !filters.status || attr(cluster, 'data-cfx-status') === filters.status;
+      const kindOk = !filters.kind || attr(cluster, 'data-cluster-kind') === filters.kind;
+      const memberVisible = idList(attr(cluster, 'data-cluster-node-ids')).some(id => visibleNodes.has(id));
+      cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible);
     });
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: visibleNodes.size });
