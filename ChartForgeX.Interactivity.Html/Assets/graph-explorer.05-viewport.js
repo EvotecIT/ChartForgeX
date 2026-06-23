@@ -36,17 +36,23 @@
   };
   const fitViewport = (root) => {
     const bounds = contentBounds(root, graphState(root));
+    const size = sceneSize(root);
     if (!bounds) {
       setViewport(root, { x: 0, y: 0, scale: 1 });
       return;
     }
-    const padding = 60;
+    const padding = Math.max(34, Math.min(84, Math.min(size.width, size.height) * 0.08));
     const width = Math.max(1, bounds.maxX - bounds.minX);
     const height = Math.max(1, bounds.maxY - bounds.minY);
-    const scale = Math.min(1.35, Math.max(0.2, Math.min((960 - padding * 2) / width, (560 - padding * 2) / height)));
+    const scale = Math.min(1.35, Math.max(0.2, Math.min((size.width - padding * 2) / width, (size.height - padding * 2) / height)));
+    const centerX = (bounds.minX + bounds.maxX) / 2;
+    const centerY = (bounds.minY + bounds.maxY) / 2;
+    root.dataset.cfxGraphFitScale = scale.toFixed(3);
+    root.dataset.cfxGraphFitContentWidth = width.toFixed(3);
+    root.dataset.cfxGraphFitContentHeight = height.toFixed(3);
     setViewport(root, {
       scale,
-      x: (960 - width * scale) / 2 - bounds.minX * scale,
-      y: (560 - height * scale) / 2 - bounds.minY * scale
+      x: size.centerX - centerX * scale,
+      y: size.centerY - centerY * scale
     });
   };

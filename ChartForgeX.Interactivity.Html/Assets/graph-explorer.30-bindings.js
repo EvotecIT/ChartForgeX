@@ -63,11 +63,12 @@
           emit(root, 'cfxgraphdragstart', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: node.id, x: node.x, y: node.y });
         }
         node.el.setAttribute('data-node-fixed', 'true');
-        node.x = Math.max(24, Math.min(936, point.x));
-        node.y = Math.max(24, Math.min(536, point.y));
+        node.x = point.x;
+        node.y = point.y;
         applyLayout(root, state);
         emit(root, 'cfxgraphdrag', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: node.id, x: node.x, y: node.y });
       } else if (active.mode === 'pan') {
+        root.__cfxGraphViewportTouched = true;
         setViewport(root, { x: active.view.x + point.screenX - active.screenX, y: active.view.y + point.screenY - active.screenY, scale: active.view.scale });
       }
     });
@@ -87,6 +88,7 @@
     stage.addEventListener('wheel', event => {
       if (!hasFeature(root, 'Viewport')) return;
       event.preventDefault();
+      root.__cfxGraphViewportTouched = true;
       const point = scenePoint(root, event);
       zoomViewport(root, event.deltaY < 0 ? 1.12 : 0.88, { x: point.screenX, y: point.screenY });
     }, { passive: false });
@@ -211,7 +213,23 @@
       applyFilters(root);
       drawCanvas(root, graphState(root));
     }
-    if (hasFeature(root, 'Viewport')) fitViewport(root);
+    if (hasFeature(root, 'Viewport')) {
+      fitViewport(root);
+      const stage = root.querySelector('.cfx-graph-stage');
+      if (stage && typeof ResizeObserver !== 'undefined') {
+        let frame = 0;
+        const observer = new ResizeObserver(() => {
+          if (root.__cfxGraphViewportTouched) return;
+          if (frame) cancelAnimationFrame(frame);
+          frame = requestAnimationFrame(() => {
+            frame = 0;
+            fitViewport(root);
+          });
+        });
+        observer.observe(stage);
+        root.__cfxGraphResizeObserver = observer;
+      }
+    }
     bindCanvasHitTesting(root);
     bindPointerInteractions(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
@@ -236,9 +254,18 @@
         if (action === 'clusters') applyClusterState(root, root.dataset.cfxGraphClusters !== 'collapsed');
         if (action === 'focus') toggleNeighborhoodFocus(root);
         if (action === 'clear-selection') clearSelection(root);
-        if (action === 'fit' && hasFeature(root, 'Viewport')) fitViewport(root);
-        if (action === 'zoom-in' && hasFeature(root, 'Viewport')) zoomViewport(root, 1.18);
-        if (action === 'zoom-out' && hasFeature(root, 'Viewport')) zoomViewport(root, 0.84);
+        if (action === 'fit' && hasFeature(root, 'Viewport')) {
+          root.__cfxGraphViewportTouched = false;
+          fitViewport(root);
+        }
+        if (action === 'zoom-in' && hasFeature(root, 'Viewport')) {
+          root.__cfxGraphViewportTouched = true;
+          zoomViewport(root, 1.18);
+        }
+        if (action === 'zoom-out' && hasFeature(root, 'Viewport')) {
+          root.__cfxGraphViewportTouched = true;
+          zoomViewport(root, 0.84);
+        }
         if (action === 'export-svg') void exportGraph(root, 'svg');
         if (action === 'export-png') void exportGraph(root, 'png');
         if (action === 'export-json') void exportGraph(root, 'json');

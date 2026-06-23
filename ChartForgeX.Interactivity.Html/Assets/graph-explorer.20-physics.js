@@ -82,11 +82,56 @@
     quad.children.forEach(child => applyBarnesForce(node, child, settings, theta));
   };
   const physicsAcceleration = (state, settings) => settings.solver === 'BarnesHut' || state.nodes.length >= 500 ? 'barnes-hut' : 'pairwise';
+  const physicsLayout = (state, settings) => {
+    if (settings.layout) return settings.layout;
+    return { width: 960, height: 560, centerX: 480, centerY: 280, minX: 0, minY: 0, maxX: 960, maxY: 560 };
+  };
+  const adaptivePhysicsLayout = (root, state) => {
+    const size = sceneSize(root);
+    const nodeFactor = Math.max(1, Math.sqrt(Math.max(1, state.nodes.length) / 90));
+    const edgeFactor = Math.max(1, Math.sqrt(Math.max(1, state.edges.length) / Math.max(1, state.nodes.length * 1.5)));
+    const span = Math.min(3.8, Math.max(1, nodeFactor * edgeFactor));
+    const width = size.width * span;
+    const height = size.height * Math.min(3.2, Math.max(1, nodeFactor * 0.9));
+    return {
+      width,
+      height,
+      centerX: size.centerX,
+      centerY: size.centerY,
+      minX: size.centerX - width / 2,
+      minY: size.centerY - height / 2,
+      maxX: size.centerX + width / 2,
+      maxY: size.centerY + height / 2
+    };
+  };
+  const balanceLayoutAspect = (root, state) => {
+    const movable = state.nodes.filter(node => !node.fixed);
+    if (movable.length < 3) return;
+    const minX = Math.min(...movable.map(node => node.x));
+    const maxX = Math.max(...movable.map(node => node.x));
+    const minY = Math.min(...movable.map(node => node.y));
+    const maxY = Math.max(...movable.map(node => node.y));
+    const width = Math.max(1, maxX - minX);
+    const height = Math.max(1, maxY - minY);
+    const current = width / height;
+    const target = sceneSize(root).width / sceneSize(root).height;
+    if (current > target * 0.78 && current < target * 1.28) return;
+    const ratio = current < target ? target / current : current / target;
+    const factor = Math.min(1.55, Math.sqrt(ratio));
+    const scaleX = current < target ? factor : 1 / factor;
+    const scaleY = current < target ? 1 / factor : factor;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    movable.forEach(node => {
+      node.x = centerX + (node.x - centerX) * scaleX;
+      node.y = centerY + (node.y - centerY) * scaleY;
+    });
+    root.dataset.cfxGraphLayoutAspect = `${current.toFixed(3)}>${target.toFixed(3)}`;
+  };
   const simulatePhysicsStep = (state, settings) => {
-    const width = 960;
-    const height = 560;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const layout = physicsLayout(state, settings);
+    const centerX = layout.centerX;
+    const centerY = layout.centerY;
     let maxVelocity = 0;
     const acceleration = physicsAcceleration(state, settings);
     if (acceleration === 'barnes-hut') barnesHutRepulsion(state.nodes, settings);
@@ -110,6 +155,10 @@
       if (!node.fixed) {
         node.vx += (centerX - node.x) * settings.centerGravity;
         node.vy += (centerY - node.y) * settings.centerGravity;
+        if (node.x < layout.minX) node.vx += (layout.minX - node.x) * settings.centerGravity * 1.6;
+        if (node.x > layout.maxX) node.vx -= (node.x - layout.maxX) * settings.centerGravity * 1.6;
+        if (node.y < layout.minY) node.vy += (layout.minY - node.y) * settings.centerGravity * 1.6;
+        if (node.y > layout.maxY) node.vy -= (node.y - layout.maxY) * settings.centerGravity * 1.6;
         node.vx *= (1 - settings.damping);
         node.vy *= (1 - settings.damping);
         const velocity = Math.sqrt(node.vx * node.vx + node.vy * node.vy);
@@ -118,8 +167,8 @@
           node.vx *= scale;
           node.vy *= scale;
         }
-        node.x = Math.max(24, Math.min(width - 24, node.x + node.vx * settings.timestep));
-        node.y = Math.max(24, Math.min(height - 24, node.y + node.vy * settings.timestep));
+        node.x += node.vx * settings.timestep;
+        node.y += node.vy * settings.timestep;
       }
       maxVelocity = Math.max(maxVelocity, Math.sqrt(node.vx * node.vx + node.vy * node.vy));
     });
@@ -164,6 +213,7 @@ const barnesChild = ${barnesChild.toString()};
 const barnesHutRepulsion = ${barnesHutRepulsion.toString()};
 const applyBarnesForce = ${applyBarnesForce.toString()};
 const physicsAcceleration = ${physicsAcceleration.toString()};
+const physicsLayout = ${physicsLayout.toString()};
 const simulatePhysicsStep = ${simulatePhysicsStep.toString()};
 self.onmessage = event => {
   const data = event.data || {};
@@ -214,11 +264,13 @@ self.onmessage = event => {
         }
         const message = event.data || {};
         updatePhysicsNodes(state, message.nodes || []);
+        if (message.type === 'done') balanceLayoutAspect(root, state);
         applyLayout(root, state);
         publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
         if (message.type === 'done') {
           root.dataset.cfxGraphPhysicsState = 'stabilized';
           stopWorkerPhysics(root, true);
+          if (root.__cfxGraphAutoFitOnStabilize) fitViewport(root);
           emit(root, 'cfxgraphstabilized', { graphId: attr(root, 'data-cfx-graph-id'), ticks: message.tick, maxVelocity: message.maxVelocity, thread: 'worker' });
         }
       };
@@ -248,6 +300,9 @@ self.onmessage = event => {
       if (tick >= settings.iterations || velocity <= settings.minVelocity) {
         root.dataset.cfxGraphPhysicsState = 'stabilized';
         root.__cfxGraphMainPhysics = null;
+        balanceLayoutAspect(root, state);
+        applyLayout(root, state);
+        if (root.__cfxGraphAutoFitOnStabilize) fitViewport(root);
         emit(root, 'cfxgraphstabilized', { graphId: attr(root, 'data-cfx-graph-id'), ticks: tick, maxVelocity: velocity });
         return;
       }
@@ -256,11 +311,12 @@ self.onmessage = event => {
     active.frame = requestAnimationFrame(step);
   };
   const startPhysics = (root) => {
-    const settings = profile(root);
-    if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return false;
     stopWorkerPhysics(root);
     stopMainPhysics(root);
     const state = graphState(root);
+    const settings = { ...profile(root), layout: adaptivePhysicsLayout(root, state) };
+    if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return false;
+    root.__cfxGraphAutoFitOnStabilize = hasFeature(root, 'Viewport') && root.__cfxGraphViewportTouched !== true;
     root.dataset.cfxGraphPhysicsState = 'running';
     if (canUseWorkerPhysics(root, state, settings) && startWorkerPhysics(root, state, settings)) return true;
     startMainPhysics(root, state, settings);

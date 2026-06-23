@@ -21,6 +21,12 @@
   };
   const hasFeature = (root, feature) => features(root).has(feature);
   const idList = (value) => value.split(',').map(item => item.trim()).filter(Boolean);
+  const sceneSize = (root) => {
+    const svg = root.querySelector('[data-cfx-role="graph-scene"]');
+    const parts = attr(svg, 'viewBox').split(/\s+/).map(Number);
+    const width = Number.isFinite(parts[2]) && parts[2] > 0 ? parts[2] : 960, height = Number.isFinite(parts[3]) && parts[3] > 0 ? parts[3] : 560;
+    return { width, height, centerX: width / 2, centerY: height / 2 };
+  };
   const searchable = (node) => [
     attr(node, 'data-node-id'),
     attr(node, 'data-node-label'),
@@ -116,7 +122,8 @@
   const zoomViewport = (root, factor, anchor) => {
     const current = viewport(root);
     const scale = Math.min(4, Math.max(0.2, current.scale * factor));
-    const point = anchor || { x: 480, y: 280 };
+    const size = sceneSize(root);
+    const point = anchor || { x: size.centerX, y: size.centerY };
     setViewport(root, {
       scale,
       x: point.x - (point.x - current.x) * scale / current.scale,
@@ -126,8 +133,9 @@
   const scenePoint = (root, event) => {
     const stage = root.querySelector('.cfx-graph-stage');
     const rect = (stage || root).getBoundingClientRect();
-    const sx = (event.clientX - rect.left) * 960 / Math.max(1, rect.width);
-    const sy = (event.clientY - rect.top) * 560 / Math.max(1, rect.height);
+    const size = sceneSize(root);
+    const sx = (event.clientX - rect.left) * size.width / Math.max(1, rect.width);
+    const sy = (event.clientY - rect.top) * size.height / Math.max(1, rect.height);
     const current = viewport(root);
     return { x: (sx - current.x) / current.scale, y: (sy - current.y) / current.scale, screenX: sx, screenY: sy };
   };
@@ -136,15 +144,16 @@
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
     const ratio = Math.max(1, window.devicePixelRatio || 1);
-    const width = Math.max(1, Math.round(rect.width || Number(canvas.getAttribute('width')) || 960));
-    const height = Math.max(1, Math.round(rect.height || Number(canvas.getAttribute('height')) || 560));
+    const size = sceneSize(root);
+    const width = Math.max(1, Math.round(rect.width || Number(canvas.getAttribute('width')) || size.width));
+    const height = Math.max(1, Math.round(rect.height || Number(canvas.getAttribute('height')) || size.height));
     if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
     }
     const context = canvas.getContext('2d');
     if (!context) return null;
-    context.setTransform(ratio * width / 960, 0, 0, ratio * height / 560, 0, 0);
+    context.setTransform(ratio * width / size.width, 0, 0, ratio * height / size.height, 0, 0);
     return { canvas, context };
   };
   const drawCanvas = (root, state, options) => {
@@ -152,9 +161,10 @@
     const surface = canvasContext(root);
     if (!surface) return;
     const { context } = surface;
-    context.clearRect(0, 0, 960, 560);
+    const size = sceneSize(root);
+    context.clearRect(0, 0, size.width, size.height);
     context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, 960, 560);
+    context.fillRect(0, 0, size.width, size.height);
     const view = viewport(root);
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     context.save();
