@@ -167,25 +167,28 @@
       const metrics = clusterMetrics(cluster, byId);
       if (!metrics) return;
       const label = attr(cluster.el, 'data-cluster-label') || cluster.id;
+      const selected = cluster.el.classList.contains('cfx-graph-selected');
       context.beginPath();
       context.arc(metrics.x, metrics.y, metrics.radius, 0, Math.PI * 2);
-      context.globalAlpha = metrics.expanded ? .18 : .86;
-      context.fillStyle = 'rgba(224,242,254,.86)';
+      context.globalAlpha = metrics.expanded ? .1 : .86;
+      context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : 'rgba(224,242,254,.86)';
       context.strokeStyle = cluster.el.classList.contains('cfx-graph-selected') ? '#f59e0b' : '#0284c7';
-      context.lineWidth = cluster.el.classList.contains('cfx-graph-selected') ? 4 : 2;
+      context.lineWidth = selected ? 4 : metrics.expanded ? 1.2 : 2;
       context.setLineDash([6, 4]);
-      context.fill();
+      if (!metrics.expanded) context.fill();
       context.stroke();
       context.setLineDash([]);
-      context.globalAlpha = metrics.expanded ? .42 : 1;
-      context.font = '700 12px Segoe UI, Arial, sans-serif';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.lineWidth = 4;
-      context.strokeStyle = '#ffffff';
-      context.fillStyle = '#075985';
-      context.strokeText(label, metrics.x, metrics.y);
-      context.fillText(label, metrics.x, metrics.y);
+      if (!metrics.expanded || selected) {
+        context.globalAlpha = metrics.expanded ? .55 : 1;
+        context.font = '700 12px Segoe UI, Arial, sans-serif';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.lineWidth = 4;
+        context.strokeStyle = '#ffffff';
+        context.fillStyle = '#075985';
+        context.strokeText(label, metrics.x, metrics.y);
+        context.fillText(label, metrics.x, metrics.y);
+      }
       context.globalAlpha = 1;
     });
     state.edges.forEach(edge => {

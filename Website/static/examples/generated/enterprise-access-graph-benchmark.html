@@ -1,8 +1,9 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enterprise Access Graph Benchmark</title><style>.cfx-graph-shell{min-height:100vh;padding:24px;background:#f8fafc;color:#0f172a;font-family:Segoe UI,Arial,sans-serif}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enterprise Access Graph Benchmark</title><style>.cfx-graph-shell{box-sizing:border-box;min-height:100vh;margin:0;padding:24px;background:#f8fafc;color:#0f172a;font-family:Segoe UI,Arial,sans-serif}
+.cfx-graph-shell *,.cfx-graph-shell *:before,.cfx-graph-shell *:after{box-sizing:inherit}
 .cfx-graph-explorer{display:grid;gap:12px;max-width:1180px;margin:0 auto}
 .cfx-graph-header{display:grid;gap:4px}
-.cfx-graph-title{font-size:22px;font-weight:700}
-.cfx-graph-subtitle{color:#64748b;font-size:14px}
+.cfx-graph-title{margin:0;font-size:22px;font-weight:700;line-height:1.16}
+.cfx-graph-subtitle{margin:0;color:#64748b;font-size:14px;line-height:1.45}
 .cfx-graph-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .cfx-graph-search,.cfx-graph-filter,.cfx-graph-tool{height:34px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#0f172a;padding:0 10px;font:inherit}
 .cfx-graph-tool{cursor:pointer}
@@ -28,7 +29,9 @@
 .cfx-graph-cluster{cursor:pointer}
 .cfx-graph-cluster circle{fill:#e0f2fe;stroke:#0284c7;stroke-width:2;stroke-dasharray:6 4;opacity:.74}
 .cfx-graph-cluster text{font-size:12px;text-anchor:middle;fill:#075985;font-weight:700;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round}
-.cfx-graph-cluster.cfx-graph-cluster-expanded{opacity:.28;pointer-events:none}
+.cfx-graph-cluster.cfx-graph-cluster-expanded{opacity:.1;pointer-events:none}
+.cfx-graph-cluster.cfx-graph-cluster-expanded circle{fill:none;stroke-width:1.4}
+.cfx-graph-cluster.cfx-graph-cluster-expanded text{display:none}
 .cfx-graph-node.cfx-graph-selected circle,.cfx-graph-node.cfx-graph-selected rect{stroke:#f59e0b;stroke-width:5}
 .cfx-graph-cluster.cfx-graph-selected circle{stroke:#f59e0b;stroke-width:4}
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-dim{opacity:.14}
@@ -215,25 +218,28 @@
       const metrics = clusterMetrics(cluster, byId);
       if (!metrics) return;
       const label = attr(cluster.el, 'data-cluster-label') || cluster.id;
+      const selected = cluster.el.classList.contains('cfx-graph-selected');
       context.beginPath();
       context.arc(metrics.x, metrics.y, metrics.radius, 0, Math.PI * 2);
-      context.globalAlpha = metrics.expanded ? .18 : .86;
-      context.fillStyle = 'rgba(224,242,254,.86)';
+      context.globalAlpha = metrics.expanded ? .1 : .86;
+      context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : 'rgba(224,242,254,.86)';
       context.strokeStyle = cluster.el.classList.contains('cfx-graph-selected') ? '#f59e0b' : '#0284c7';
-      context.lineWidth = cluster.el.classList.contains('cfx-graph-selected') ? 4 : 2;
+      context.lineWidth = selected ? 4 : metrics.expanded ? 1.2 : 2;
       context.setLineDash([6, 4]);
-      context.fill();
+      if (!metrics.expanded) context.fill();
       context.stroke();
       context.setLineDash([]);
-      context.globalAlpha = metrics.expanded ? .42 : 1;
-      context.font = '700 12px Segoe UI, Arial, sans-serif';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.lineWidth = 4;
-      context.strokeStyle = '#ffffff';
-      context.fillStyle = '#075985';
-      context.strokeText(label, metrics.x, metrics.y);
-      context.fillText(label, metrics.x, metrics.y);
+      if (!metrics.expanded || selected) {
+        context.globalAlpha = metrics.expanded ? .55 : 1;
+        context.font = '700 12px Segoe UI, Arial, sans-serif';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.lineWidth = 4;
+        context.strokeStyle = '#ffffff';
+        context.fillStyle = '#075985';
+        context.strokeText(label, metrics.x, metrics.y);
+        context.fillText(label, metrics.x, metrics.y);
+      }
       context.globalAlpha = 1;
     });
     state.edges.forEach(edge => {

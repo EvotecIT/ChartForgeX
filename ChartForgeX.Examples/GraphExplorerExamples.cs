@@ -94,7 +94,7 @@ internal static class GraphExplorerExamples {
         graph.Options.LevelOfDetail.ClusterNodeThreshold = 28;
         graph.Options.LevelOfDetail.HideEdgeLabelsThreshold = 70;
         graph.Options.LevelOfDetail.CompactNodeThreshold = 42;
-        graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 42;
+        graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 160;
         graph.Options.LevelOfDetail.CollapseClustersOnLoad = false;
         graph.Options.Performance.FrameBudgetMilliseconds = 16;
         graph.Options.Performance.MaxInteractiveSvgNodes = 180;
