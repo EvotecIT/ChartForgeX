@@ -82,30 +82,37 @@
       vy: 0
     }));
     const byId = new Map(nodes.map(node => [node.id, node]));
-    const edges = items(root, '[data-cfx-role="graph-edge"]').map(el => ({
-      el,
-      source: byId.get(attr(el, 'data-source-node-id')),
-      target: byId.get(attr(el, 'data-target-node-id')),
-      weight: Math.max(0.1, num(el, 'data-edge-weight', 1)),
-      length: Math.max(0, num(el, 'data-edge-length', 0)),
-      label: attr(el, 'data-edge-label'),
-      directed: attr(el, 'data-edge-directed') === 'true',
-      shape: attr(el, 'data-edge-shape') || 'line',
-      curvature: num(el, 'data-edge-curvature', 0),
-      dashed: attr(el, 'data-edge-dashed') === 'true',
-      showLabel: attr(el, 'data-edge-show-label') !== 'false'
-    })).filter(edge => edge.source && edge.target);
-    edges.forEach(edge => {
-      edge.source.degree += 1;
-      edge.target.degree += 1;
-    });
     const clusters = items(root, '[data-cfx-role="graph-cluster"]').map(el => ({
       el,
       id: attr(el, 'data-cluster-id'),
       nodeIds: idList(attr(el, 'data-cluster-node-ids')),
       collapsed: attr(el, 'data-cluster-collapsed') === 'true'
     }));
-    return { nodes, edges, clusters, byId };
+    const clusterById = new Map(clusters.map(cluster => [cluster.id, cluster]));
+    const edges = items(root, '[data-cfx-role="graph-edge"]').map(el => {
+      const source = byId.get(attr(el, 'data-source-node-id'));
+      const target = byId.get(attr(el, 'data-target-node-id'));
+      return {
+        el,
+        source,
+        target,
+        sourceCluster: clusterById.get(attr(el, 'data-source-cluster-id') || source?.cluster || ''),
+        targetCluster: clusterById.get(attr(el, 'data-target-cluster-id') || target?.cluster || ''),
+        weight: Math.max(0.1, num(el, 'data-edge-weight', 1)),
+        length: Math.max(0, num(el, 'data-edge-length', 0)),
+        label: attr(el, 'data-edge-label'),
+        directed: attr(el, 'data-edge-directed') === 'true',
+        shape: attr(el, 'data-edge-shape') || 'line',
+        curvature: num(el, 'data-edge-curvature', 0),
+        dashed: attr(el, 'data-edge-dashed') === 'true',
+        showLabel: attr(el, 'data-edge-show-label') !== 'false'
+      };
+    }).filter(edge => edge.source && edge.target);
+    edges.forEach(edge => {
+      edge.source.degree += 1;
+      edge.target.degree += 1;
+    });
+    return { nodes, edges, clusters, byId, clusterById };
   };
   const visible = (el) => !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member');
   const viewport = (root) => ({
@@ -214,19 +221,20 @@
       context.globalAlpha = 1;
     });
     state.edges.forEach(edge => {
-      if (!visible(edge.el) || !visible(edge.source.el) || !visible(edge.target.el)) return;
+      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, byId)) return;
+      const rendered = visualEdge(edge, byId);
+      const control = edgeControl(rendered);
       const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
       const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
       const selected = edge.el.classList.contains('cfx-graph-selected');
       context.beginPath();
-      const control = edgeControl(edge);
-      if (edge.source === edge.target) {
-        const loop = selfLoopGeometry(edge.source);
+      if (rendered.source === rendered.target) {
+        const loop = selfLoopGeometry(rendered.source);
         context.moveTo(loop.start.x, loop.start.y);
         context.bezierCurveTo(loop.c1.x, loop.c1.y, loop.c2.x, loop.c2.y, loop.end.x, loop.end.y);
       } else {
-        const target = edgeRenderTarget(edge, control);
-        context.moveTo(edge.source.x, edge.source.y);
+        const target = edgeRenderTarget(rendered, control, byId);
+        context.moveTo(rendered.source.x, rendered.source.y);
         if (control) context.quadraticCurveTo(control.x, control.y, target.x, target.y);
         else context.lineTo(target.x, target.y);
       }
@@ -240,11 +248,11 @@
       context.globalAlpha = 1;
       if (edge.directed) {
         context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
-        drawArrow(context, edge, control);
+        drawArrow(context, rendered, control);
         context.globalAlpha = 1;
       }
       if (edge.label && edge.showLabel && !root.classList.contains('cfx-graph-lod-hide-edge-labels')) {
-        const label = edgeLabelPoint(edge, control);
+        const label = edgeLabelPoint(rendered, control);
         context.font = '11px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
         context.textBaseline = 'middle';

@@ -27,7 +27,9 @@
     return image;
   };
   const clusterMetrics = (cluster, byId) => {
-    const members = cluster.nodeIds.map(id => byId.get(id)).filter(Boolean);
+    const allMembers = cluster.nodeIds.map(id => byId.get(id)).filter(Boolean);
+    const expanded = cluster.el.classList.contains('cfx-graph-cluster-expanded');
+    const members = expanded ? allMembers.filter(node => visible(node.el)) : allMembers;
     if (!members.length) return null;
     const minX = Math.min(...members.map(node => node.x));
     const maxX = Math.max(...members.map(node => node.x));
@@ -35,11 +37,22 @@
     const maxY = Math.max(...members.map(node => node.y));
     const x = members.reduce((sum, node) => sum + node.x, 0) / members.length;
     const y = members.reduce((sum, node) => sum + node.y, 0) / members.length;
-    const expanded = cluster.el.classList.contains('cfx-graph-cluster-expanded');
     const spread = Math.max(maxX - minX, maxY - minY);
     const radius = expanded ? Math.max(34, Math.min(96, spread / 2 + 22)) : Math.max(34, Math.min(54, 20 + Math.sqrt(members.length) * 7));
     return { x, y, radius, expanded };
   };
+  const clusterProxyNode = (cluster, byId) => {
+    if (!cluster || !visible(cluster.el) || cluster.el.classList.contains('cfx-graph-cluster-expanded')) return null;
+    const metrics = clusterMetrics(cluster, byId);
+    return metrics ? { el: cluster.el, id: cluster.id, x: metrics.x, y: metrics.y, size: metrics.radius, shape: 'circle' } : null;
+  };
+  const edgeVisualNode = (edge, side, byId) => {
+    const node = side === 'source' ? edge.source : edge.target;
+    if (visible(node.el)) return node;
+    return clusterProxyNode(side === 'source' ? edge.sourceCluster : edge.targetCluster, byId) || node;
+  };
+  const visualEdge = (edge, byId) => ({ ...edge, source: edgeVisualNode(edge, 'source', byId), target: edgeVisualNode(edge, 'target', byId) });
+  const edgeHasVisibleEndpoints = (edge, byId) => visible(edgeVisualNode(edge, 'source', byId).el) && visible(edgeVisualNode(edge, 'target', byId).el);
   const contentBounds = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     const bounds = [];
@@ -54,10 +67,11 @@
       bounds.push({ minX: node.x - nodeHalfWidth(node) - pad, minY: node.y - nodeHalfHeight(node) - pad, maxX: node.x + nodeHalfWidth(node) + pad, maxY: node.y + nodeHalfHeight(node) + pad });
     });
     state.edges.forEach(edge => {
-      if (!visible(edge.el) || !edge.source || !edge.target || !visible(edge.source.el) || !visible(edge.target.el)) return;
+      if (!visible(edge.el) || !edge.source || !edge.target || !edgeHasVisibleEndpoints(edge, byId)) return;
+      const rendered = visualEdge(edge, byId);
       const pad = Math.max(12, Math.min(34, (edge.weight || 1) * 3 + 10));
-      if (edge.source === edge.target) {
-        const loop = selfLoopGeometry(edge.source);
+      if (rendered.source === rendered.target) {
+        const loop = selfLoopGeometry(rendered.source);
         pushPoint(loop.start, pad);
         pushPoint(loop.c1, pad);
         pushPoint(loop.c2, pad);
@@ -66,11 +80,11 @@
         return;
       }
 
-      const control = edgeControl(edge);
-      pushPoint(edge.source, pad);
-      pushPoint(edge.target, pad);
+      const control = edgeControl(rendered);
+      pushPoint(rendered.source, pad);
+      pushPoint(rendered.target, pad);
       pushPoint(control, pad);
-      pushPoint(edgeLabelPoint(edge, control), pad + 10);
+      pushPoint(edgeLabelPoint(rendered, control), pad + 10);
     });
     state.clusters.forEach(cluster => {
       if (!visible(cluster.el)) return;

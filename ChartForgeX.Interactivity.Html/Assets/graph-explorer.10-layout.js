@@ -6,26 +6,28 @@
   const edgeRenderTarget = (edge, control) => {
     if (!edge.directed) return edge.target;
     const from = control || edge.source;
-    const dx = edge.target.x - from.x;
-    const dy = edge.target.y - from.y;
+    const dx = edge.target.x - from.x, dy = edge.target.y - from.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     const inset = nodeBoundaryInset(edge.target, dx / length, dy / length);
     return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
   };
   const updateEdges = (root, edges) => {
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
+    const state = root.__cfxGraphState || graphState(root);
+    const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     edges.forEach(edge => {
-      const control = edgeControl(edge);
-      const target = edgeRenderTarget(edge, control);
-      const d = edge.source === edge.target
-        ? selfLoopPath(edge.target)
+      const rendered = visualEdge(edge, byId);
+      const control = edgeControl(rendered);
+      const target = edgeRenderTarget(rendered, control);
+      const d = rendered.source === rendered.target
+        ? selfLoopPath(rendered.target)
         : control
-        ? `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${target.x.toFixed(3)} ${target.y.toFixed(3)}`
-        : `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} L ${target.x.toFixed(3)} ${target.y.toFixed(3)}`;
+        ? `M ${rendered.source.x.toFixed(3)} ${rendered.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${target.x.toFixed(3)} ${target.y.toFixed(3)}`
+        : `M ${rendered.source.x.toFixed(3)} ${rendered.source.y.toFixed(3)} L ${target.x.toFixed(3)} ${target.y.toFixed(3)}`;
       edge.el.setAttribute('d', d);
       const label = labels.get(attr(edge.el, 'data-edge-id'));
       if (label) {
-        const point = edgeLabelPoint(edge, control);
+        const point = edgeLabelPoint(rendered, control);
         label.setAttribute('x', point.x.toFixed(3));
         label.setAttribute('y', point.y.toFixed(3));
       }
@@ -52,7 +54,7 @@
     const edges = Number(attr(root, 'data-cfx-graph-edge-count'));
     const compact = nodes >= num(root, 'data-cfx-lod-compact-node-threshold', 500);
     const hideEdgeLabels = edges >= num(root, 'data-cfx-lod-hide-edge-labels-threshold', 250);
-    const preferCanvas = nodes >= num(root, 'data-cfx-lod-canvas-threshold', 1200);
+    const preferCanvas = nodes >= num(root, 'data-cfx-lod-canvas-threshold', 1200) || (edges > num(root, 'data-cfx-performance-max-svg-edges', 3000) && edges <= num(root, 'data-cfx-performance-max-canvas-edges', 12000));
     const configured = attr(root, 'data-cfx-graph-renderer');
     const normalizedRenderer = configured === 'webgl' ? 'canvas' : configured;
     const useCanvas = normalizedRenderer === 'canvas' || (normalizedRenderer === 'svg' && preferCanvas && attr(root, 'data-cfx-graph-canvas-fallback') !== 'false');
@@ -81,9 +83,11 @@
     state.nodes.forEach(node => node.el.classList.toggle('cfx-graph-cluster-collapsed-member', hiddenNodeIds.has(node.id)));
     const collapsedEdgeIds = new Set();
     state.edges.forEach(edge => {
-      const collapsedEdge = hiddenNodeIds.has(edge.source.id) || hiddenNodeIds.has(edge.target.id);
-      edge.el.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdge);
-      if (collapsedEdge) collapsedEdgeIds.add(attr(edge.el, 'data-edge-id'));
+      const sourceHidden = hiddenNodeIds.has(edge.source.id);
+      const targetHidden = hiddenNodeIds.has(edge.target.id);
+      const sameCollapsedCluster = sourceHidden && targetHidden && edge.sourceCluster && edge.sourceCluster === edge.targetCluster;
+      edge.el.classList.toggle('cfx-graph-cluster-collapsed-member', sameCollapsedCluster);
+      if (sameCollapsedCluster) collapsedEdgeIds.add(attr(edge.el, 'data-edge-id'));
     });
     items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => label.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdgeIds.has(attr(label, 'data-edge-label-for'))));
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';

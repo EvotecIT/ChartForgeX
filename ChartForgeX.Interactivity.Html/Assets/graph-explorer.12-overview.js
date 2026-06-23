@@ -42,14 +42,25 @@
     context.lineWidth = .75;
     for (let index = 0; index < edgeLimit; index++) {
       const edge = currentState.edges[index];
-      if (!visible(edge.el) || !visible(edge.source.el) || !visible(edge.target.el)) continue;
-      const source = overviewPoint(metrics, edge.source.x, edge.source.y);
-      const target = overviewPoint(metrics, edge.target.x, edge.target.y);
+      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, currentState.byId)) continue;
+      const rendered = visualEdge(edge, currentState.byId);
+      const source = overviewPoint(metrics, rendered.source.x, rendered.source.y);
+      const target = overviewPoint(metrics, rendered.target.x, rendered.target.y);
       context.beginPath();
       context.moveTo(source.x, source.y);
       context.lineTo(target.x, target.y);
       context.stroke();
     }
+    currentState.clusters.forEach(cluster => {
+      if (!visible(cluster.el) || cluster.el.classList.contains('cfx-graph-cluster-expanded')) return;
+      const clusterInfo = clusterMetrics(cluster, currentState.byId);
+      if (!clusterInfo) return;
+      const point = overviewPoint(metrics, clusterInfo.x, clusterInfo.y);
+      context.beginPath();
+      context.arc(point.x, point.y, Math.max(2.4, Math.min(6.5, clusterInfo.radius * metrics.scale)), 0, Math.PI * 2);
+      context.fillStyle = cluster.el.classList.contains('cfx-graph-selected') ? '#f59e0b' : '#0284c7';
+      context.fill();
+    });
     currentState.nodes.forEach(node => {
       if (!visible(node.el)) return;
       const point = overviewPoint(metrics, node.x, node.y);

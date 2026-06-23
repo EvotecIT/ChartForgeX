@@ -71,6 +71,8 @@ public sealed class GraphScene {
             ValidateFiniteValue(edge.Weight, edge.Id, "weight");
             ValidateFiniteValue(edge.Length, edge.Id, "length");
             ValidateFiniteValue(edge.Curvature, edge.Id, "curvature");
+            if (edge.Weight <= 0) throw new InvalidOperationException("Graph scene edge weight must be greater than zero: " + edge.Id);
+            if (edge.Length < 0) throw new InvalidOperationException("Graph scene edge length must not be negative: " + edge.Id);
             if (!edgeIds.Add(edge.Id)) throw new InvalidOperationException("Graph scene contains a duplicate edge id: " + edge.Id);
             if (!nodeIds.Contains(edge.SourceNodeId)) throw new InvalidOperationException("Graph scene edge references a missing source node: " + edge.Id);
             if (!nodeIds.Contains(edge.TargetNodeId)) throw new InvalidOperationException("Graph scene edge references a missing target node: " + edge.Id);
@@ -86,6 +88,7 @@ public sealed class GraphScene {
                 if (!nodeIds.Contains(nodeId)) throw new InvalidOperationException("Graph scene cluster references a missing node: " + cluster.Id + " -> " + nodeId);
             }
         }
+
     }
 
     private static void ValidateRequiredId(string? id, string itemKind) {

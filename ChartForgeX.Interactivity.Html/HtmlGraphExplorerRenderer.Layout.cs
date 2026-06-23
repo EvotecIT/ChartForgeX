@@ -329,6 +329,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
             }
         }
 
+        foreach (var node in scene.Nodes) {
+            if (!string.IsNullOrWhiteSpace(node.ClusterId)) membership[node.Id] = node.ClusterId!;
+        }
+
         return membership;
     }
 

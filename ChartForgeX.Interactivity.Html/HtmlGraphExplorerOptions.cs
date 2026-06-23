@@ -10,6 +10,9 @@ public sealed class HtmlGraphExplorerOptions {
     /// <summary>Gets or sets an optional CSP nonce for inline script elements.</summary>
     public string? ScriptNonce { get; set; }
 
+    /// <summary>Gets or sets an optional deterministic SVG id scope for repeated embeds of the same scene on one page.</summary>
+    public string? IdScope { get; set; }
+
     /// <summary>Gets or sets the initial graph renderer backend advertised to host code.</summary>
     public HtmlGraphRenderBackend RenderBackend { get; set; } = HtmlGraphRenderBackend.Svg;
 

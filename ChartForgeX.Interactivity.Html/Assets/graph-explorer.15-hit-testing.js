@@ -116,13 +116,14 @@
     let bestDistance = Number.POSITIVE_INFINITY;
     const state = root.__cfxGraphState || graphState(root);
     state.edges.forEach(edge => {
-      if (!visible(edge.el) || !visible(edge.source.el) || !visible(edge.target.el)) return;
-      const control = edgeControl(edge);
-      const distance = edge.source === edge.target
-        ? distanceToSelfLoop(point, edge.source)
+      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)) return;
+      const rendered = visualEdge(edge, state.byId);
+      const control = edgeControl(rendered);
+      const distance = rendered.source === rendered.target
+        ? distanceToSelfLoop(point, rendered.source)
         : control
-        ? distanceToQuadratic(point, edge.source, control, edgeRenderTarget(edge, control))
-        : distanceToSegment(point, edge.source, edge.target);
+        ? distanceToQuadratic(point, rendered.source, control, edgeRenderTarget(rendered, control))
+        : distanceToSegment(point, rendered.source, rendered.target);
       if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {
         best = edge;
         bestDistance = distance;
