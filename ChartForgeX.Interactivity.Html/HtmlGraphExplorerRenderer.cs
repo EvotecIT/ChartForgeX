@@ -413,7 +413,11 @@ public sealed class HtmlGraphExplorerRenderer {
             PlaceComponent(components[i], centers[i], adjacency, positions, clusterMembership);
         }
 
-        if (positions.Count == generated.Length) NormalizeGeneratedPositions(positions, generated);
+        if (generated.All(node => positions.ContainsKey(node.Id))) {
+            SeparatePreparedOverlaps(positions, generated, 4);
+            NormalizeGeneratedPositions(positions, generated);
+            SeparatePreparedOverlaps(positions, generated, 2);
+        }
         return positions;
     }
 
@@ -578,6 +582,70 @@ public sealed class HtmlGraphExplorerRenderer {
             positions[node.Id] = new Point(Width / 2 + (point.X - Width / 2) * scale, Height / 2 + (point.Y - Height / 2) * scale);
         }
     }
+
+    private static void SeparatePreparedOverlaps(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated, int passes) {
+        if (generated.Count < 2) return;
+        var cellSize = Math.Max(32, generated.Max(node => PreparedNodeRadius(node)) * 2 + 16);
+        var maxPairs = generated.Count >= 3000 ? 120000 : generated.Count >= 1000 ? 180000 : 220000;
+        for (var pass = 0; pass < passes; pass++) {
+            var grid = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+            for (var index = 0; index < generated.Count; index++) {
+                var point = positions[generated[index].Id];
+                var key = GridKey(point, cellSize);
+                if (!grid.TryGetValue(key, out var bucket)) {
+                    bucket = new List<int>();
+                    grid[key] = bucket;
+                }
+
+                bucket.Add(index);
+            }
+
+            var pairs = 0;
+            var moved = false;
+            for (var i = 0; i < generated.Count; i++) {
+                var first = generated[i];
+                var firstPoint = positions[first.Id];
+                var gx = (int)Math.Floor(firstPoint.X / cellSize);
+                var gy = (int)Math.Floor(firstPoint.Y / cellSize);
+                for (var ox = -1; ox <= 1; ox++) {
+                    for (var oy = -1; oy <= 1; oy++) {
+                        if (!grid.TryGetValue((gx + ox).ToString(CultureInfo.InvariantCulture) + "," + (gy + oy).ToString(CultureInfo.InvariantCulture), out var bucket)) continue;
+                        foreach (var j in bucket) {
+                            if (j <= i || pairs++ > maxPairs) continue;
+                            var second = generated[j];
+                            var a = positions[first.Id];
+                            var b = positions[second.Id];
+                            var minDistance = PreparedNodeRadius(first) + PreparedNodeRadius(second);
+                            var dx = b.X - a.X;
+                            var dy = b.Y - a.Y;
+                            var distance = Math.Sqrt(dx * dx + dy * dy);
+                            if (distance >= minDistance) continue;
+                            if (distance < 0.001) {
+                                var angle = GoldenAngle(i + j + pass);
+                                dx = Math.Cos(angle);
+                                dy = Math.Sin(angle);
+                                distance = 1;
+                            }
+
+                            var push = (minDistance - distance) / distance * 0.5;
+                            var fx = dx * push;
+                            var fy = dy * push;
+                            positions[first.Id] = new Point(a.X - fx, a.Y - fy);
+                            positions[second.Id] = new Point(b.X + fx, b.Y + fy);
+                            moved = true;
+                        }
+                    }
+                }
+            }
+
+            if (!moved) return;
+        }
+    }
+
+    private static double PreparedNodeRadius(GraphSceneNode node) => Math.Max(14, node.Size + (node.Shape == GraphNodeShape.Box ? 16 : node.Shape == GraphNodeShape.Image ? 14 : 12));
+
+    private static string GridKey(Point point, double cellSize) =>
+        ((int)Math.Floor(point.X / cellSize)).ToString(CultureInfo.InvariantCulture) + "," + ((int)Math.Floor(point.Y / cellSize)).ToString(CultureInfo.InvariantCulture);
 
     private static string CommunityKey(GraphSceneNode node, IReadOnlyDictionary<string, string> clusterMembership) {
         var clusterId = NodeClusterId(node, clusterMembership);

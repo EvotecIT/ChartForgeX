@@ -72,6 +72,7 @@
       imageUrl: attr(el, 'data-node-image-url'),
       icon: attr(el, 'data-node-icon'),
       size: Math.max(4, num(el, 'data-node-size', 8)),
+      degree: 0,
       fixed: attr(el, 'data-node-fixed') === 'true',
       x: num(el, 'data-node-x', 160 + index * 22),
       y: num(el, 'data-node-y', 160 + index * 17),
@@ -94,6 +95,10 @@
       dashed: attr(el, 'data-edge-dashed') === 'true',
       showLabel: attr(el, 'data-edge-show-label') !== 'false'
     })).filter(edge => edge.source && edge.target);
+    edges.forEach(edge => {
+      edge.source.degree += 1;
+      edge.target.degree += 1;
+    });
     const clusters = items(root, '[data-cfx-role="graph-cluster"]').map(el => ({
       el,
       id: attr(el, 'data-cluster-id'),

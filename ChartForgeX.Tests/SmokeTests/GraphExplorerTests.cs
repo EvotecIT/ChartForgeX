@@ -192,7 +192,11 @@ internal static partial class SmokeTests {
         Assert(html.Contains("if (hasFeature(root, 'Viewport')) {", StringComparison.Ordinal) && html.Contains("fitViewport(root);", StringComparison.Ordinal), "Graph explorer binding should not fit or emit viewport changes when hosts disable viewport behavior.");
         Assert(html.Contains("adaptivePhysicsLayout", StringComparison.Ordinal) && html.Contains("balanceLayoutAspect", StringComparison.Ordinal) && html.Contains("root.__cfxGraphAutoFitOnStabilize", StringComparison.Ordinal), "Graph explorer runtime physics should settle in an adaptive layout space, balance dense graph aspect ratio, and refit after stabilization when the user has not manually moved the viewport.");
         Assert(html.Contains("homeX", StringComparison.Ordinal) && html.Contains("homeY", StringComparison.Ordinal), "Graph explorer runtime should preserve prepared node homes for post-physics layout quality passes.");
+        Assert(html.Contains("applyStructuralForces", StringComparison.Ordinal) && html.Contains("homeGravity", StringComparison.Ordinal) && html.Contains("communityGravity", StringComparison.Ordinal), "Graph explorer runtime physics should continuously pull nodes toward prepared homes and communities instead of letting center gravity flatten the graph.");
+        Assert(html.Contains("applyOverlapPressure", StringComparison.Ordinal) && html.Contains("overlapPressureEvents", StringComparison.Ordinal), "Graph explorer runtime physics should apply and export lightweight overlap pressure while the solver is running.");
+        Assert(html.Contains("physicsCommunityAnchors", StringComparison.Ordinal) && html.Contains("physicsCommunityKey", StringComparison.Ordinal) && html.Contains("hubSpread", StringComparison.Ordinal), "Graph explorer runtime physics should keep communities and hubs structurally separated during stabilization.");
         Assert(html.Contains("compactStabilizedLayout", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCompaction", StringComparison.Ordinal), "Graph explorer runtime physics should compact oversized stabilized layouts back into a readable viewport envelope.");
+        Assert(html.Contains("expandDenseLayout", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutDensityExpansion", StringComparison.Ordinal), "Graph explorer runtime physics should expand dense stabilized layouts when overlap pressure shows the graph is too tightly packed.");
         Assert(html.Contains("runLayoutQualityPass", StringComparison.Ordinal) && html.Contains("spreadHubNeighborhoods", StringComparison.Ordinal) && html.Contains("separateOverlaps", StringComparison.Ordinal), "Graph explorer runtime physics should run a structured quality pass after stabilization instead of only fitting whatever the force solver produced.");
         Assert(html.Contains("restoreClusterAnchors", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutClusterGravity", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCommunityGravity", StringComparison.Ordinal), "Graph explorer runtime physics should pull stabilized communities back toward their prepared regions instead of blending all clusters into one mass.");
         Assert(html.Contains("cfxGraphLayoutQualityScore", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutOverlapCount", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutHubSpread", StringComparison.Ordinal), "Graph explorer runtime should publish layout quality diagnostics for dense graph QA.");
@@ -252,6 +256,7 @@ internal static partial class SmokeTests {
             .ToGraphExplorerHtmlFragment();
         Assert(declaredClusterHtml.Contains("data-node-id=\"a\" data-node-label=\"A\" data-node-cluster=\"declared\"", StringComparison.Ordinal) && declaredClusterHtml.Contains("data-node-id=\"b\" data-node-label=\"B\" data-node-cluster=\"declared\"", StringComparison.Ordinal), "Graph explorer renderer should derive node cluster membership from declared GraphSceneCluster.NodeIds when node ClusterId is not duplicated.");
         Assert(rendererSource.Contains("BuildClusterMembership", StringComparison.Ordinal) && rendererSource.Contains("NodeClusterId(node, clusterMembership)", StringComparison.Ordinal), "Graph explorer prepared layout should use declared cluster membership as a community key.");
+        Assert(rendererSource.Contains("SeparatePreparedOverlaps", StringComparison.Ordinal) && rendererSource.Contains("GridKey", StringComparison.Ordinal), "Graph explorer prepared layout should resolve opening overlaps with a scalable spatial grid before runtime physics starts.");
 
         var layoutScene = GraphScene.Create("layout-quality", "Layout quality");
         layoutScene.AddNode("hub", "Hub", node => {
@@ -303,6 +308,25 @@ internal static partial class SmokeTests {
         Assert(scaleHtml.Contains("data-cfx-graph-node-count=\"1000\"", StringComparison.Ordinal) && scaleHtml.Contains("data-cfx-graph-edge-count=\"1800\"", StringComparison.Ordinal), "Graph explorer should render a 1k-node scale-confidence artifact instead of only toy and 360-node scenes.");
         Assert(scaleHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal) && scaleHtml.Contains("data-cfx-lod-canvas-threshold=\"500\"", StringComparison.Ordinal), "Graph explorer should expose Canvas LOD for larger graph counts.");
         Assert(scaleHtml.Contains("data-cfx-performance-max-canvas-nodes=\"10000\"", StringComparison.Ordinal) && scaleHtml.Contains("data-cfx-performance-max-canvas-edges=\"24000\"", StringComparison.Ordinal), "Graph explorer should carry explicit 10k-object Canvas performance budgets for large-scene QA.");
+        var scaleBounds = GraphNodeBounds(scaleHtml, "n", 1000);
+        Assert(scaleBounds.Width > 460 && scaleBounds.Height > 260, "Graph explorer prepared layout should open 1k-node graphs across the scene instead of stacking them into a corner or line.");
+        Assert(Math.Abs(scaleBounds.CenterX - 480) < 80 && Math.Abs(scaleBounds.CenterY - 280) < 70, "Graph explorer prepared layout should keep 1k-node graphs centered before viewport fitting.");
+    }
+
+    private static (double MinX, double MinY, double MaxX, double MaxY, double Width, double Height, double CenterX, double CenterY) GraphNodeBounds(string html, string prefix, int count) {
+        var minX = double.PositiveInfinity;
+        var minY = double.PositiveInfinity;
+        var maxX = double.NegativeInfinity;
+        var maxY = double.NegativeInfinity;
+        for (var index = 0; index < count; index++) {
+            var point = ExtractGraphNodePoint(html, prefix + index.ToString(CultureInfo.InvariantCulture));
+            minX = Math.Min(minX, point.X);
+            minY = Math.Min(minY, point.Y);
+            maxX = Math.Max(maxX, point.X);
+            maxY = Math.Max(maxY, point.Y);
+        }
+
+        return (minX, minY, maxX, maxY, maxX - minX, maxY - minY, (minX + maxX) / 2, (minY + maxY) / 2);
     }
 
     private static (double X, double Y) AveragePoint(string html, string prefix, int count) {

@@ -202,13 +202,42 @@
     root.dataset.cfxGraphLayoutCompaction = scale.toFixed(3);
   };
 
+  const expandDenseLayout = (root, state) => {
+    const movable = state.nodes.filter(node => !node.fixed);
+    if (movable.length < 24) return;
+    const overlaps = countOverlaps(movable);
+    const threshold = movable.length >= 300 ? movable.length * 0.65 : movable.length * 0.35;
+    if (overlaps <= threshold) return;
+    const size = sceneSize(root);
+    const minX = Math.min(...movable.map(node => node.x));
+    const maxX = Math.max(...movable.map(node => node.x));
+    const minY = Math.min(...movable.map(node => node.y));
+    const maxY = Math.max(...movable.map(node => node.y));
+    const width = Math.max(1, maxX - minX);
+    const height = Math.max(1, maxY - minY);
+    const maxScale = Math.min(size.width * 0.92 / width, size.height * 0.88 / height);
+    const factor = Math.min(1.22, Math.max(1, maxScale), 1 + Math.min(0.2, overlaps / Math.max(1, movable.length * 18)));
+    if (factor <= 1.01) return;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    movable.forEach(node => {
+      node.x = centerX + (node.x - centerX) * factor;
+      node.y = centerY + (node.y - centerY) * factor;
+      node.vx *= factor;
+      node.vy *= factor;
+    });
+    root.dataset.cfxGraphLayoutDensityExpansion = factor.toFixed(3);
+    root.dataset.cfxGraphLayoutDensityOverlaps = String(overlaps);
+  };
+
   const runLayoutQualityPass = (root, state) => {
     spreadHubNeighborhoods(root, state);
     separateOverlaps(root, state, overlapPasses(state, 6));
     balanceLayoutAspect(root, state);
     restoreClusterAnchors(root, state);
     compactStabilizedLayout(root, state);
-    separateOverlaps(root, state, overlapPasses(state, 8));
+    expandDenseLayout(root, state);
+    separateOverlaps(root, state, overlapPasses(state, 14));
     centerLayout(root, state);
     layoutQualityMetrics(root, state);
   };

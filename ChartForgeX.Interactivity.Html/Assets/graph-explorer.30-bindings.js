@@ -181,6 +181,7 @@
       budgetMisses: Number(root.dataset.cfxGraphPerformanceBudgetMisses || 0),
       maxSampleMs: Number(root.dataset.cfxGraphPerformanceMaxSampleMs || 0),
       lastSampleMs: Number(root.dataset.cfxGraphPerformanceLastSampleMs || 0),
+      overlapPressureEvents: Number(root.dataset.cfxGraphPerformanceOverlapPressureEvents || 0),
       sampleTicks: Number(root.dataset.cfxGraphPerformanceSampleTicks || 0),
       sampleBudgetMs: Number(root.dataset.cfxGraphPerformanceSampleBudgetMs || 0),
       thread: root.dataset.cfxGraphPerformanceThread || '',

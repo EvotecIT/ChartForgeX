@@ -140,6 +140,8 @@
     const acceleration = physicsAcceleration(state, settings);
     if (acceleration === 'barnes-hut') barnesHutRepulsion(state.nodes, settings);
     else pairwiseRepulsion(state.nodes, settings);
+    applyStructuralForces(state, settings, layout);
+    const overlaps = applyOverlapPressure(state.nodes, settings);
     state.edges.forEach(edge => {
       const dx = edge.target.x - edge.source.x;
       const dy = edge.target.y - edge.source.y;
@@ -176,7 +178,7 @@
       }
       maxVelocity = Math.max(maxVelocity, Math.sqrt(node.vx * node.vx + node.vy * node.vy));
     });
-    return { maxVelocity, acceleration };
+    return { maxVelocity, acceleration, overlaps };
   };
   const physicsTick = (root, state, settings, tick) => {
     const started = Date.now();
@@ -184,7 +186,7 @@
     root.dataset.cfxGraphPhysicsAcceleration = result.acceleration;
     applyLayout(root, state);
     const interval = Math.max(1, num(root, 'data-cfx-performance-telemetry-interval', 30));
-    if (tick % interval === 0) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'main', sampleMs: Date.now() - started, sampleTicks: 1 });
+    if (tick % interval === 0) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'main', sampleMs: Date.now() - started, sampleTicks: 1 });
     return result.maxVelocity;
   };
   const canUseWorkerPhysics = (root, state, settings) =>
@@ -193,7 +195,7 @@
   const serializePhysicsState = (state) => {
     const nodeIndex = new Map(state.nodes.map((node, index) => [node.id, index]));
     return {
-      nodes: state.nodes.map(node => ({ id: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed })),
+      nodes: state.nodes.map(node => ({ id: node.id, x: node.x, y: node.y, homeX: node.homeX, homeY: node.homeY, vx: node.vx, vy: node.vy, fixed: node.fixed, degree: node.degree, size: node.size, cluster: node.cluster, groupId: node.groupId, kind: node.kind })),
       edges: state.edges.map(edge => ({ sourceIndex: nodeIndex.get(edge.source.id), targetIndex: nodeIndex.get(edge.target.id), length: edge.length, weight: edge.weight }))
         .filter(edge => Number.isInteger(edge.sourceIndex) && Number.isInteger(edge.targetIndex))
     };
@@ -218,6 +220,10 @@ const barnesHutRepulsion = ${barnesHutRepulsion.toString()};
 const applyBarnesForce = ${applyBarnesForce.toString()};
 const physicsAcceleration = ${physicsAcceleration.toString()};
 const physicsLayout = ${physicsLayout.toString()};
+const physicsCommunityKey = ${physicsCommunityKey.toString()};
+const physicsCommunityAnchors = ${physicsCommunityAnchors.toString()};
+const applyStructuralForces = ${applyStructuralForces.toString()};
+const applyOverlapPressure = ${applyOverlapPressure.toString()};
 const simulatePhysicsStep = ${simulatePhysicsStep.toString()};
 self.onmessage = event => {
   const data = event.data || {};
@@ -229,7 +235,7 @@ self.onmessage = event => {
     const result = simulatePhysicsStep(state, data.settings);
     const done = tick >= data.settings.iterations || result.maxVelocity <= data.settings.minVelocity;
     if (done || tick % interval === 0) {
-      self.postMessage({ type: done ? 'done' : 'progress', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, sampleMs: Date.now() - batchStarted, sampleTicks: tick - batchTick, nodes: state.nodes });
+      self.postMessage({ type: done ? 'done' : 'progress', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, sampleMs: Date.now() - batchStarted, sampleTicks: tick - batchTick, nodes: state.nodes });
       batchStarted = Date.now();
       batchTick = tick;
     }
@@ -272,7 +278,7 @@ self.onmessage = event => {
           runLayoutQualityPass(root, state);
         }
         applyLayout(root, state);
-        publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
+        publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
         if (message.type === 'done') {
           root.dataset.cfxGraphPhysicsState = 'stabilized';
           stopWorkerPhysics(root, true);
@@ -324,7 +330,15 @@ self.onmessage = event => {
     stopWorkerPhysics(root);
     stopMainPhysics(root);
     const state = graphState(root);
-    const settings = { ...profile(root), layout: adaptivePhysicsLayout(root, state) };
+    const base = profile(root);
+    const settings = {
+      ...base,
+      layout: adaptivePhysicsLayout(root, state),
+      homeGravity: Math.max(0.0005, Math.min(0.012, base.centerGravity * (state.nodes.length >= 1000 ? 0.55 : 0.9) + 0.0018)),
+      communityGravity: Math.max(0.0002, Math.min(0.006, base.centerGravity * (state.nodes.length >= 1000 ? 0.35 : 0.6) + 0.0007)),
+      hubSpread: state.nodes.length >= 1000 ? 0.0008 : 0.0014,
+      overlapPressure: state.nodes.length >= 3000 ? 0.015 : state.nodes.length >= 1000 ? 0.024 : 0.04
+    };
     if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return false;
     root.__cfxGraphAutoFitOnStabilize = hasFeature(root, 'Viewport') && root.__cfxGraphViewportTouched !== true;
     root.dataset.cfxGraphPhysicsState = 'running';
