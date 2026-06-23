@@ -232,7 +232,7 @@
     }
     performanceGate(root);
     if (hasFeature(root, 'Clustering')) {
-      if (attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true);
+      if (hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true);
       else applyClusterState(root, undefined);
     } else {
       items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {

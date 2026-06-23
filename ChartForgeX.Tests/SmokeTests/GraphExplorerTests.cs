@@ -222,6 +222,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("hiddenMemberHits", StringComparison.Ordinal) && html.Contains("edgeMatchesFacet", StringComparison.Ordinal), "Graph explorer filters should keep collapsed clusters visible when hidden member nodes or edges match search and facet filters.");
         Assert(html.Contains("expanded && queryOk && statusOk && kindOk", StringComparison.Ordinal) && html.Contains("idList(attr(cluster, 'data-cluster-node-ids')).forEach(id => visibleNodes.add(id))", StringComparison.Ordinal), "Graph explorer filters should surface expanded cluster matches through their member nodes.");
         Assert(html.Contains("data-edge-label-for", StringComparison.Ordinal) && html.Contains("cfx-graph-cluster-collapsed-member", StringComparison.Ordinal) && html.Contains("const sameCollapsedCluster = sourceHidden && targetHidden && edge.sourceCluster && edge.sourceCluster === edge.targetCluster", StringComparison.Ordinal), "Graph explorer collapsed clusters should hide internal edge labels while preserving aggregate external relationships.");
+        Assert(html.Contains("applyFilters(root); updateEdges(root, state.edges);", StringComparison.Ordinal), "Graph explorer SVG edges should recompute rendered aggregate paths after cluster collapse or expansion toggles.");
         Assert(html.Contains("__cfxGraphPointerSelectionId", StringComparison.Ordinal) && html.Contains("__cfxGraphPointerSelectionTick", StringComparison.Ordinal), "Graph explorer SVG selection should suppress the follow-up click after pointerdown selection to preserve additive multi-selection.");
         Assert(html.Contains("__cfxGraphSuppressClickId", StringComparison.Ordinal) && html.Contains("root.__cfxGraphSuppressClickId === bestId", StringComparison.Ordinal), "Graph explorer selection should suppress the post-drag click once even when the drag lasts longer than the pointerdown selection window.");
         Assert(!html.Contains("canvas.addEventListener('mousedown'", StringComparison.Ordinal), "Graph explorer Canvas selection should not double-toggle through both pointerdown and mousedown.");
@@ -233,7 +234,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("clusters: items(root, '[data-cfx-role=\"graph-cluster\"]')", StringComparison.Ordinal), "Graph explorer JSON export should include cluster membership and collapsed state.");
         Assert(html.Contains("metadata: metadataDetail(node.el)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(edge)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(cluster)", StringComparison.Ordinal), "Graph explorer JSON export should include structured metadata for nodes, edges, and clusters.");
         Assert(html.Contains("cfxGraphClusterLod", StringComparison.Ordinal) && html.Contains("data-cfx-lod-collapse-clusters", StringComparison.Ordinal), "Graph explorer binding should report cluster LOD while honoring the explicit collapse-on-load option.");
-        Assert(html.Contains("data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true)", StringComparison.Ordinal), "Graph explorer binding should honor CollapseClustersOnLoad regardless of the cluster LOD threshold.");
+        Assert(html.Contains("hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true)", StringComparison.Ordinal), "Graph explorer binding should honor CollapseClustersOnLoad only when LOD is enabled, regardless of the cluster LOD threshold.");
         Assert(html.Contains("dragThreshold", StringComparison.Ordinal) && html.Contains("if (!active.moved) {", StringComparison.Ordinal) && html.Contains("data-node-fixed', active.fixed", StringComparison.Ordinal), "Graph explorer node selection should only pin nodes and pause physics after an actual drag.");
         Assert(html.Contains("const hitItem = node || graphItem || hitGraphItemAt(root, point)", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Viewport') && !hitBlocksPan", StringComparison.Ordinal), "Graph explorer viewport panning should start from graph background or inert graph items, not from selectable nodes, clusters, or edges.");
         Assert(html.Contains("if (hasFeature(root, 'Viewport')) {", StringComparison.Ordinal) && html.Contains("fitViewport(root);", StringComparison.Ordinal), "Graph explorer binding should not fit or emit viewport changes when hosts disable viewport behavior.");
@@ -382,6 +383,23 @@ internal static partial class SmokeTests {
             .AddCluster("collapsed", "Collapsed", new[] { "a" }, cluster => cluster.Collapsed = false);
         loadCollapsedHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
         Assert(loadCollapsedHtml.ToGraphExplorerHtmlFragment().Contains("data-cluster-collapsed=\"true\"", StringComparison.Ordinal), "Graph explorer static markup should serialize the effective load-collapsed cluster state before bindings run.");
+
+        var loadCollapsedCrossEdgeHtml = GraphScene.Create("load-collapsed-cross-edge", "Load collapsed cross edge")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("a-b", "a", "b")
+            .AddCluster("left", "Left", new[] { "a" }, cluster => cluster.Collapsed = false)
+            .AddCluster("right", "Right", new[] { "b" }, cluster => cluster.Collapsed = false);
+        loadCollapsedCrossEdgeHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
+        Assert(!loadCollapsedCrossEdgeHtml.ToGraphExplorerHtmlFragment().Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\" tabindex=\"0\" data-cfx-role=\"graph-edge\" data-edge-id=\"a-b\"", StringComparison.Ordinal), "Graph explorer static load-collapse should preserve cross-cluster edges for aggregate rendering.");
+
+        var lodDisabledLoadCollapseScene = GraphScene.Create("lod-disabled-load-collapsed", "LOD disabled load collapsed")
+            .AddNode("a", "A")
+            .AddCluster("collapsed", "Collapsed", new[] { "a" }, cluster => cluster.Collapsed = false);
+        lodDisabledLoadCollapseScene.Options.LevelOfDetail.CollapseClustersOnLoad = true;
+        lodDisabledLoadCollapseScene.Options.Disable(GraphSceneFeatures.LevelOfDetail);
+        var lodDisabledLoadCollapseHtml = lodDisabledLoadCollapseScene.ToGraphExplorerHtmlFragment();
+        Assert(lodDisabledLoadCollapseHtml.Contains("data-cluster-collapsed=\"false\"", StringComparison.Ordinal) && lodDisabledLoadCollapseHtml.Contains("cfx-graph-cluster-expanded", StringComparison.Ordinal), "Graph explorer static load-collapse should not collapse clusters when the host disables LevelOfDetail.");
 
         var negativeSizeHtml = GraphScene.Create("negative-size", "Negative size")
             .AddNode("a", "A", node => node.Size = -20)

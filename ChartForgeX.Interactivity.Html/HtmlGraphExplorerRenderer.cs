@@ -171,11 +171,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static void WriteStage(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyDictionary<string, Point> positions, string graphId) {
         var clusterMembership = BuildClusterMembership(scene);
         var clusteringEnabled = scene.Options.HasFeature(GraphSceneFeatures.Clustering);
-        var collapseClustersOnLoad = clusteringEnabled && scene.Options.LevelOfDetail.CollapseClustersOnLoad;
+        var collapseClustersOnLoad = clusteringEnabled && scene.Options.HasFeature(GraphSceneFeatures.LevelOfDetail) && scene.Options.LevelOfDetail.CollapseClustersOnLoad;
         var collapsedNodeIds = clusteringEnabled
             ? BuildCollapsedNodeIds(scene, clusterMembership, collapseClustersOnLoad)
             : new HashSet<string>(StringComparer.Ordinal);
-        var collapsedEdgeIds = BuildCollapsedEdgeIds(scene, collapsedNodeIds);
+        var collapsedEdgeIds = BuildCollapsedEdgeIds(scene, clusterMembership, collapsedNodeIds);
         writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\"></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas>");
         writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
@@ -233,11 +233,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return nodeIds;
     }
 
-    private static HashSet<string> BuildCollapsedEdgeIds(GraphScene scene, HashSet<string> collapsedNodeIds) {
+    private static HashSet<string> BuildCollapsedEdgeIds(GraphScene scene, IReadOnlyDictionary<string, string> clusterMembership, HashSet<string> collapsedNodeIds) {
         var edgeIds = new HashSet<string>(StringComparer.Ordinal);
         if (collapsedNodeIds.Count == 0) return edgeIds;
+        var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
-            if (collapsedNodeIds.Contains(edge.SourceNodeId) && collapsedNodeIds.Contains(edge.TargetNodeId)) edgeIds.Add(edge.Id);
+            if (!collapsedNodeIds.Contains(edge.SourceNodeId) || !collapsedNodeIds.Contains(edge.TargetNodeId)) continue;
+            if (!nodesById.TryGetValue(edge.SourceNodeId, out var sourceNode) || !nodesById.TryGetValue(edge.TargetNodeId, out var targetNode)) continue;
+            var sourceClusterId = NodeClusterId(sourceNode, clusterMembership);
+            var targetClusterId = NodeClusterId(targetNode, clusterMembership);
+            if (!string.IsNullOrWhiteSpace(sourceClusterId) && string.Equals(sourceClusterId, targetClusterId, StringComparison.Ordinal)) edgeIds.Add(edge.Id);
         }
 
         return edgeIds;
