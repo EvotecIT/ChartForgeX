@@ -1,18 +1,25 @@
   const bindCanvasHitTesting = (root) => {
     const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
     if (!canvas) return;
-    const selectCanvasNode = (event) => {
+    const selectCanvasNode = (event, best) => {
       if (!root.classList.contains('cfx-graph-render-canvas')) return;
-      const best = hitGraphItemAt(root, scenePoint(root, event));
+      best = best || hitGraphItemAt(root, scenePoint(root, event));
       if (!best) return false;
       select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
       root.__cfxGraphCanvasSelectionTick = Date.now();
       return true;
     };
     canvas.addEventListener('click', event => {
+      const best = hitGraphItemAt(root, scenePoint(root, event));
+      const bestId = best ? attr(best.el, 'data-node-id') || attr(best.el, 'data-edge-id') || attr(best.el, 'data-cluster-id') : '';
+      if (bestId && root.__cfxGraphSuppressClickId === bestId) {
+        root.__cfxGraphSuppressClickId = '';
+        event.preventDefault();
+        return;
+      }
       if (Date.now() - (root.__cfxGraphCanvasSelectionTick || 0) < 250) return;
       if (Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
-      selectCanvasNode(event);
+      selectCanvasNode(event, best);
     });
   };
   const bindPointerInteractions = (root) => {

@@ -101,7 +101,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var generated = component.Where(node => !node.HasExplicitPosition).ToArray();
         if (generated.Length == 0) return;
         if (generated.Length == 1) {
-            positions[generated[0].Id] = new Point(center.X + StableOffset(generated[0].Id, 13), center.Y + StableOffset(generated[0].Id + ":y", 10));
+            var generatedNode = generated[0];
+            var explicitRadius = explicitMembers.Length == 0 ? 0 : explicitMembers.Max(PreparedNodeRadius);
+            var spacing = explicitMembers.Length == 0 ? 36 : Math.Max(72, PreparedNodeRadius(generatedNode) + explicitRadius + 36);
+            var angle = -Math.PI / 2 + StableUnit(generatedNode.Id + ":explicit-neighbor") * Math.PI;
+            positions[generatedNode.Id] = new Point(center.X + Math.Cos(angle) * spacing, center.Y + Math.Sin(angle) * spacing * 0.74);
             return;
         }
 

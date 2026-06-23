@@ -141,6 +141,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-role=\"graph-edge-label\"", StringComparison.Ordinal), "Graph explorer SVG should render relationship labels as addressable graph output.");
         Assert(html.Contains("data-cfx-role=\"graph-cluster\"", StringComparison.Ordinal) && html.Contains("data-cluster-node-ids=\"api,db\"", StringComparison.Ordinal), "Graph explorer SVG should expose reusable cluster summaries.");
         Assert(html.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"0\" aria-hidden=\"false\"", StringComparison.Ordinal), "Graph explorer SVG should keep collapsed cluster summaries keyboard reachable.");
+        Assert(html.Contains("class=\"cfx-graph-node cfx-graph-cluster-collapsed-member\" tabindex=\"0\" data-cfx-role=\"graph-node\" data-node-id=\"api\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\" tabindex=\"0\" data-cfx-role=\"graph-edge\" data-edge-id=\"api-db\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-edge-label cfx-graph-cluster-collapsed-member\" data-cfx-role=\"graph-edge-label\" data-edge-label-for=\"api-db\"", StringComparison.Ordinal), "Graph explorer SVG should render collapsed cluster members hidden before browser bindings run.");
         Assert(html.Contains("requestAnimationFrame(step)", StringComparison.Ordinal) && html.Contains("physicsTick", StringComparison.Ordinal), "Graph explorer runtime should run dependency-free browser physics instead of only exposing buttons.");
         Assert(html.Contains("barnesHutTree", StringComparison.Ordinal) && html.Contains("data-cfx-graph-physics=\"ForceAtlas2\"", StringComparison.Ordinal) && html.Contains("cfxGraphPhysicsAcceleration", StringComparison.Ordinal), "Graph explorer runtime should include scalable many-body acceleration and expose the active physics path for large graph diagnostics.");
         Assert(html.Contains("workerPhysicsSource", StringComparison.Ordinal) && html.Contains("cfxGraphPhysicsThread", StringComparison.Ordinal) && html.Contains("thread: 'worker'", StringComparison.Ordinal), "Graph explorer runtime should move large Barnes-Hut stabilization to a dependency-free Web Worker when the browser allows it.");
@@ -182,7 +183,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("expanded && queryOk && statusOk && kindOk", StringComparison.Ordinal) && html.Contains("idList(attr(cluster, 'data-cluster-node-ids')).forEach(id => visibleNodes.add(id))", StringComparison.Ordinal), "Graph explorer filters should surface expanded cluster matches through their member nodes.");
         Assert(html.Contains("data-edge-label-for", StringComparison.Ordinal) && html.Contains("cfx-graph-cluster-collapsed-member", StringComparison.Ordinal), "Graph explorer collapsed clusters should hide matching edge labels as well as edge paths.");
         Assert(html.Contains("__cfxGraphPointerSelectionId", StringComparison.Ordinal) && html.Contains("__cfxGraphPointerSelectionTick", StringComparison.Ordinal), "Graph explorer SVG selection should suppress the follow-up click after pointerdown selection to preserve additive multi-selection.");
-        Assert(html.Contains("__cfxGraphSuppressClickId", StringComparison.Ordinal), "Graph explorer SVG selection should suppress the post-drag click once even when the drag lasts longer than the pointerdown selection window.");
+        Assert(html.Contains("__cfxGraphSuppressClickId", StringComparison.Ordinal) && html.Contains("root.__cfxGraphSuppressClickId === bestId", StringComparison.Ordinal), "Graph explorer selection should suppress the post-drag click once even when the drag lasts longer than the pointerdown selection window.");
         Assert(!html.Contains("canvas.addEventListener('mousedown'", StringComparison.Ordinal), "Graph explorer Canvas selection should not double-toggle through both pointerdown and mousedown.");
         Assert(html.Contains("if (!hasFeature(root, 'Selection')) return", StringComparison.Ordinal), "Graph explorer selection handlers should honor scenes with selection disabled.");
         Assert(html.Contains("hasFeature(root, 'LevelOfDetail')", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Clustering')", StringComparison.Ordinal), "Graph explorer binding should honor disabled LOD and clustering feature flags.");
@@ -258,7 +259,7 @@ internal static partial class SmokeTests {
             .AddNode("b", "B")
             .AddCluster("expanded", "Expanded", new[] { "a", "b" })
             .ToGraphExplorerHtmlFragment();
-        Assert(expandedClusterHtml.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"-1\" aria-hidden=\"true\"", StringComparison.Ordinal), "Graph explorer SVG should remove expanded transparent cluster summaries from the keyboard tab order.");
+        Assert(expandedClusterHtml.Contains("class=\"cfx-graph-cluster cfx-graph-cluster-expanded\" data-cfx-role=\"graph-cluster\" tabindex=\"-1\" aria-hidden=\"true\"", StringComparison.Ordinal), "Graph explorer SVG should remove expanded transparent cluster summaries from the keyboard tab order before browser bindings run.");
 
         var declaredClusterHtml = GraphScene.Create("declared-cluster", "Declared cluster")
             .AddNode("a", "A")
@@ -305,6 +306,17 @@ internal static partial class SmokeTests {
             Assert(right.X >= 75 && right.X <= 885 && right.Y >= 65 && right.Y <= 495, "Graph explorer prepared layout should fit generated right-community nodes inside the opening scene.");
             Assert(Distance(hub, left) > 35 && Distance(hub, right) > 35, "Graph explorer prepared layout should push non-hub nodes outward from the centered hub.");
         }
+
+        var explicitNeighborHtml = GraphScene.Create("explicit-neighbor", "Explicit neighbor")
+            .AddNode("fixed", "Fixed", node => {
+                node.X = 320;
+                node.Y = 240;
+                node.Size = 20;
+            })
+            .AddNode("generated", "Generated", node => node.Size = 18)
+            .AddEdge("fixed-generated", "fixed", "generated")
+            .ToGraphExplorerHtmlFragment();
+        Assert(Distance(ExtractGraphNodePoint(explicitNeighborHtml, "fixed"), ExtractGraphNodePoint(explicitNeighborHtml, "generated")) > 70, "Graph explorer prepared layout should keep a generated neighbor visibly away from an explicit-position node.");
 
         var dottedIdHtml = GraphScene.Create("graph.with.dot", "Graph with dot").AddNode("a", "A").ToGraphExplorerHtmlFragment();
         var dashedIdHtml = GraphScene.Create("graph-with-dot", "Graph with dash").AddNode("a", "A").ToGraphExplorerHtmlFragment();

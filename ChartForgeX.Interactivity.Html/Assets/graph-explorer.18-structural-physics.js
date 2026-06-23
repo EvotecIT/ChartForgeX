@@ -1,4 +1,4 @@
-  const physicsCommunityKey = (node) => node.cluster || node.groupId || node.kind || 'graph';
+  const physicsCommunityKey = (node) => node.cluster ? `cluster:${node.cluster}` : node.groupId ? `group:${node.groupId}` : node.kind ? `kind:${node.kind}` : 'graph';
   const physicsCommunityAnchors = (state, layout) => {
     const groups = new Map();
     state.nodes.forEach(node => {

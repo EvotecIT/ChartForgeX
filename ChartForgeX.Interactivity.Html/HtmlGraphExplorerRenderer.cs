@@ -156,6 +156,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteStage(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyDictionary<string, Point> positions, string graphId) {
+        var clusterMembership = BuildClusterMembership(scene);
+        var collapseClustersOnLoad = scene.Options.LevelOfDetail.CollapseClustersOnLoad;
+        var collapsedNodeIds = BuildCollapsedNodeIds(scene, collapseClustersOnLoad);
+        var collapsedEdgeIds = BuildCollapsedEdgeIds(scene, collapsedNodeIds);
         writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\"></canvas>");
         writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
@@ -168,21 +172,24 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\"></path></marker></defs>");
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
-        WriteClusters(writer, scene, positions);
-        WriteEdges(writer, scene, positions, graphId + "-arrow");
-        WriteEdgeLabels(writer, scene, positions);
-        WriteNodes(writer, scene, positions, BuildClusterMembership(scene));
+        WriteClusters(writer, scene, positions, collapseClustersOnLoad);
+        WriteEdges(writer, scene, positions, graphId + "-arrow", collapsedEdgeIds);
+        WriteEdgeLabels(writer, scene, positions, collapsedEdgeIds);
+        WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds);
         writer.Append("</g></svg></div>");
     }
 
-    private static void WriteClusters(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions) {
+    private static void WriteClusters(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, bool collapseClustersOnLoad) {
         foreach (var cluster in scene.Clusters) {
+            var collapsed = cluster.Collapsed || collapseClustersOnLoad;
             var members = cluster.NodeIds.Where(positions.ContainsKey).Select(id => positions[id]).ToArray();
             var x = members.Length == 0 ? Width / 2 : members.Average(point => point.X);
             var y = members.Length == 0 ? Height / 2 : members.Average(point => point.Y);
-            writer.Append("<g class=\"cfx-graph-cluster\" data-cfx-role=\"graph-cluster\"");
-            Attribute(writer, "tabindex", cluster.Collapsed ? "0" : "-1");
-            Attribute(writer, "aria-hidden", cluster.Collapsed ? "false" : "true");
+            writer.Append("<g class=\"cfx-graph-cluster");
+            if (!collapsed) writer.Append(" cfx-graph-cluster-expanded");
+            writer.Append("\" data-cfx-role=\"graph-cluster\"");
+            Attribute(writer, "tabindex", collapsed ? "0" : "-1");
+            Attribute(writer, "aria-hidden", collapsed ? "false" : "true");
             Attribute(writer, "data-cluster-id", cluster.Id);
             Attribute(writer, "data-cluster-label", cluster.Label);
             Attribute(writer, "data-cluster-kind", cluster.Kind);
@@ -198,13 +205,36 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, string markerId) {
+    private static HashSet<string> BuildCollapsedNodeIds(GraphScene scene, bool collapseClustersOnLoad) {
+        var nodeIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var cluster in scene.Clusters.Where(cluster => cluster.Collapsed || collapseClustersOnLoad)) {
+            foreach (var nodeId in cluster.NodeIds) {
+                nodeIds.Add(nodeId);
+            }
+        }
+
+        return nodeIds;
+    }
+
+    private static HashSet<string> BuildCollapsedEdgeIds(GraphScene scene, HashSet<string> collapsedNodeIds) {
+        var edgeIds = new HashSet<string>(StringComparer.Ordinal);
+        if (collapsedNodeIds.Count == 0) return edgeIds;
+        foreach (var edge in scene.Edges) {
+            if (collapsedNodeIds.Contains(edge.SourceNodeId) || collapsedNodeIds.Contains(edge.TargetNodeId)) edgeIds.Add(edge.Id);
+        }
+
+        return edgeIds;
+    }
+
+    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, string markerId, HashSet<string> collapsedEdgeIds) {
         var nodeSizes = scene.Nodes.ToDictionary(node => node.Id, node => node.Size, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             var targetSize = nodeSizes.TryGetValue(edge.TargetNodeId, out var size) ? size : 8;
             var path = EdgePath(edge, source, target, targetSize);
-            writer.Append("<path class=\"cfx-graph-edge\" tabindex=\"0\" data-cfx-role=\"graph-edge\"");
+            writer.Append("<path class=\"cfx-graph-edge");
+            if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
+            writer.Append("\" tabindex=\"0\" data-cfx-role=\"graph-edge\"");
             Attribute(writer, "data-edge-id", edge.Id);
             Attribute(writer, "data-edge-label", edge.Label);
             Attribute(writer, "data-edge-kind", edge.Kind);
@@ -226,11 +256,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions) {
+    private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, HashSet<string> collapsedEdgeIds) {
         foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !string.IsNullOrWhiteSpace(edge.Label))) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             var point = EdgeLabelPoint(edge, source, target);
-            writer.Append("<text class=\"cfx-graph-edge-label\" data-cfx-role=\"graph-edge-label\"");
+            writer.Append("<text class=\"cfx-graph-edge-label");
+            if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
+            writer.Append("\" data-cfx-role=\"graph-edge-label\"");
             Attribute(writer, "data-edge-label-for", edge.Id);
             Attribute(writer, "x", Number(point.X));
             Attribute(writer, "y", Number(point.Y));
@@ -240,10 +272,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static void WriteNodes(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership) {
+    private static void WriteNodes(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, HashSet<string> collapsedNodeIds) {
         foreach (var node in scene.Nodes) {
             var point = positions[node.Id];
-            writer.Append("<g class=\"cfx-graph-node\" tabindex=\"0\" data-cfx-role=\"graph-node\"");
+            writer.Append("<g class=\"cfx-graph-node");
+            if (collapsedNodeIds.Contains(node.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
+            writer.Append("\" tabindex=\"0\" data-cfx-role=\"graph-node\"");
             Attribute(writer, "data-node-id", node.Id);
             Attribute(writer, "data-node-label", node.Label);
             Attribute(writer, "data-node-kind", node.Kind);
