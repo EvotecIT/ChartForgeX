@@ -204,11 +204,12 @@
   const centerLayout = (root, state) => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 2) return;
+    const boundsNodes = state.nodes.some(node => node.fixed) ? state.nodes : movable;
     const size = sceneSize(root);
-    const minX = Math.min(...movable.map(node => node.x));
-    const maxX = Math.max(...movable.map(node => node.x));
-    const minY = Math.min(...movable.map(node => node.y));
-    const maxY = Math.max(...movable.map(node => node.y));
+    const minX = Math.min(...boundsNodes.map(node => node.x));
+    const maxX = Math.max(...boundsNodes.map(node => node.x));
+    const minY = Math.min(...boundsNodes.map(node => node.y));
+    const maxY = Math.max(...boundsNodes.map(node => node.y));
     const dx = size.centerX - (minX + maxX) / 2;
     const dy = size.centerY - (minY + maxY) / 2;
     if (Math.hypot(dx, dy) < 0.5) return;

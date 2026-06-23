@@ -55,6 +55,7 @@ public sealed class GraphScene {
         foreach (var node in Nodes) {
             ValidateRequiredId(node.Id, "node");
             ValidateRequiredText(node.Label, "node");
+            ValidateFiniteValue(node.Size, node.Id, "size");
             if (node.HasExplicitPosition) {
                 ValidateFiniteCoordinate(node.X, node.Id, "x");
                 ValidateFiniteCoordinate(node.Y, node.Id, "y");
@@ -67,6 +68,7 @@ public sealed class GraphScene {
             ValidateRequiredId(edge.Id, "edge");
             ValidateRequiredId(edge.SourceNodeId, "edge source node");
             ValidateRequiredId(edge.TargetNodeId, "edge target node");
+            ValidateFiniteValue(edge.Curvature, edge.Id, "curvature");
             if (!edgeIds.Add(edge.Id)) throw new InvalidOperationException("Graph scene contains a duplicate edge id: " + edge.Id);
             if (!nodeIds.Contains(edge.SourceNodeId)) throw new InvalidOperationException("Graph scene edge references a missing source node: " + edge.Id);
             if (!nodeIds.Contains(edge.TargetNodeId)) throw new InvalidOperationException("Graph scene edge references a missing target node: " + edge.Id);
@@ -94,5 +96,9 @@ public sealed class GraphScene {
 
     private static void ValidateFiniteCoordinate(double value, string nodeId, string axis) {
         if (double.IsNaN(value) || double.IsInfinity(value)) throw new InvalidOperationException("Graph scene node has a non-finite " + axis + "-coordinate: " + nodeId);
+    }
+
+    private static void ValidateFiniteValue(double value, string id, string name) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) throw new InvalidOperationException("Graph scene item has a non-finite " + name + ": " + id);
     }
 }

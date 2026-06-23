@@ -178,14 +178,15 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\"></path></marker></defs>");
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
-        if (clusteringEnabled) WriteClusters(writer, scene, positions, collapseClustersOnLoad);
-        WriteEdges(writer, scene, positions, graphId + "-arrow", collapsedEdgeIds);
+        var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
+        if (clusteringEnabled) WriteClusters(writer, scene, positions, collapseClustersOnLoad, focusableGraphItems);
+        WriteEdges(writer, scene, positions, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems);
         WriteEdgeLabels(writer, scene, positions, collapsedEdgeIds);
-        WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds);
+        WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds, focusableGraphItems);
         writer.Append("</g></svg></div>");
     }
 
-    private static void WriteClusters(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, bool collapseClustersOnLoad) {
+    private static void WriteClusters(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, bool collapseClustersOnLoad, bool focusableGraphItems) {
         foreach (var cluster in scene.Clusters) {
             var collapsed = cluster.Collapsed || collapseClustersOnLoad;
             var members = cluster.NodeIds.Where(positions.ContainsKey).Select(id => positions[id]).ToArray();
@@ -194,7 +195,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("<g class=\"cfx-graph-cluster");
             if (!collapsed) writer.Append(" cfx-graph-cluster-expanded");
             writer.Append("\" data-cfx-role=\"graph-cluster\"");
-            Attribute(writer, "tabindex", collapsed ? "0" : "-1");
+            Attribute(writer, "tabindex", collapsed && focusableGraphItems ? "0" : "-1");
             Attribute(writer, "aria-hidden", collapsed ? "false" : "true");
             Attribute(writer, "data-cluster-id", cluster.Id);
             Attribute(writer, "data-cluster-label", cluster.Label);
@@ -232,7 +233,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return edgeIds;
     }
 
-    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, string markerId, HashSet<string> collapsedEdgeIds) {
+    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
@@ -240,7 +241,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var path = EdgePath(edge, source, target, targetNode);
             writer.Append("<path class=\"cfx-graph-edge");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
-            writer.Append("\" tabindex=\"0\" data-cfx-role=\"graph-edge\"");
+            writer.Append("\" tabindex=\"");
+            writer.Append(focusableGraphItems ? "0" : "-1");
+            writer.Append("\" data-cfx-role=\"graph-edge\"");
             Attribute(writer, "data-edge-id", edge.Id);
             Attribute(writer, "data-edge-label", edge.Label);
             Attribute(writer, "data-edge-kind", edge.Kind);
@@ -278,12 +281,14 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static void WriteNodes(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, HashSet<string> collapsedNodeIds) {
+    private static void WriteNodes(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, HashSet<string> collapsedNodeIds, bool focusableGraphItems) {
         foreach (var node in scene.Nodes) {
             var point = positions[node.Id];
             writer.Append("<g class=\"cfx-graph-node");
             if (collapsedNodeIds.Contains(node.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
-            writer.Append("\" tabindex=\"0\" data-cfx-role=\"graph-node\"");
+            writer.Append("\" tabindex=\"");
+            writer.Append(focusableGraphItems ? "0" : "-1");
+            writer.Append("\" data-cfx-role=\"graph-node\"");
             Attribute(writer, "data-node-id", node.Id);
             Attribute(writer, "data-node-label", node.Label);
             Attribute(writer, "data-node-kind", node.Kind);
@@ -449,11 +454,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static Point? EdgeControl(GraphSceneEdge edge, Point source, Point target) {
-        if (edge.Shape != GraphEdgeShape.Curve && Math.Abs(edge.Curvature) < 0.001) return null;
+        var curvature = IsFinite(edge.Curvature) ? edge.Curvature : 0;
+        if (edge.Shape != GraphEdgeShape.Curve && Math.Abs(curvature) < 0.001) return null;
         var dx = target.X - source.X;
         var dy = target.Y - source.Y;
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
-        var offset = Math.Abs(edge.Curvature) < 0.001 ? 34 : edge.Curvature;
+        var offset = Math.Abs(curvature) < 0.001 ? 34 : curvature;
         return new Point((source.X + target.X) / 2 - dy / length * offset, (source.Y + target.Y) / 2 + dx / length * offset);
     }
 
@@ -482,6 +488,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (node?.Shape == GraphNodeShape.Box) {
             var halfWidth = size * 1.45;
             var halfHeight = size * 1.05;
+            if (Math.Abs(unitX) < 0.001 && Math.Abs(unitY) < 0.001) return Math.Max(6, Math.Max(halfWidth, halfHeight) + 7);
             var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
             var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);
             return Math.Max(6, Math.Min(xInset, yInset) + 7);
@@ -489,6 +496,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
         return Math.Max(6, size + (node?.Shape == GraphNodeShape.Image ? 11 : 7));
     }
+
+    private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 
     private static void AppendScript(StringBuilder writer, HtmlGraphExplorerOptions options) {
         writer.Append("<script");

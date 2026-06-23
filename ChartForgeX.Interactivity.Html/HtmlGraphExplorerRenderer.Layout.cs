@@ -210,6 +210,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void NormalizeGeneratedPositions(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated) {
         if (generated.Count < 2) return;
+        if (positions.Count > generated.Count) return;
         var points = generated.Select(node => positions[node.Id]).ToArray();
         var minX = points.Min(point => point.X);
         var maxX = points.Max(point => point.X);

@@ -2,10 +2,17 @@
     const cellSize = 48;
     const grid = new Map();
     state.nodes.forEach(node => {
-      const key = `${Math.floor(node.x / cellSize)}:${Math.floor(node.y / cellSize)}`;
-      const bucket = grid.get(key) || [];
-      bucket.push(node);
-      grid.set(key, bucket);
+      const slack = 10;
+      const minX = Math.floor((node.x - nodeHalfWidth(node) - slack) / cellSize);
+      const maxX = Math.floor((node.x + nodeHalfWidth(node) + slack) / cellSize);
+      const minY = Math.floor((node.y - nodeHalfHeight(node) - slack) / cellSize);
+      const maxY = Math.floor((node.y + nodeHalfHeight(node) + slack) / cellSize);
+      for (let x = minX; x <= maxX; x++) for (let y = minY; y <= maxY; y++) {
+        const key = `${x}:${y}`;
+        const bucket = grid.get(key) || [];
+        bucket.push(node);
+        grid.set(key, bucket);
+      }
     });
     root.__cfxGraphState = state;
     root.__cfxGraphHitGrid = { cellSize, grid };
@@ -18,7 +25,14 @@
     const cx = Math.floor(point.x / index.cellSize);
     const cy = Math.floor(point.y / index.cellSize);
     const candidates = [];
-    for (let x = cx - 1; x <= cx + 1; x++) for (let y = cy - 1; y <= cy + 1; y++) candidates.push(...index.grid.get(`${x}:${y}`) || []);
+    const seen = new Set();
+    for (let x = cx - 1; x <= cx + 1; x++) for (let y = cy - 1; y <= cy + 1; y++) {
+      (index.grid.get(`${x}:${y}`) || []).forEach(node => {
+        if (seen.has(node.id)) return;
+        seen.add(node.id);
+        candidates.push(node);
+      });
+    }
     return candidates.length ? candidates : state.nodes;
   };
   const domHitNodeAt = (root, point) => {
@@ -62,6 +76,24 @@
     const y = a.y + t * dy;
     return Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
   };
+  const cubicPoint = (curve, t) => {
+    const inv = 1 - t;
+    return {
+      x: inv ** 3 * curve.start.x + 3 * inv * inv * t * curve.c1.x + 3 * inv * t * t * curve.c2.x + t ** 3 * curve.end.x,
+      y: inv ** 3 * curve.start.y + 3 * inv * inv * t * curve.c1.y + 3 * inv * t * t * curve.c2.y + t ** 3 * curve.end.y
+    };
+  };
+  const distanceToSelfLoop = (point, node) => {
+    const loop = selfLoopGeometry(node);
+    let best = Number.POSITIVE_INFINITY;
+    let previous = loop.start;
+    for (let index = 1; index <= 18; index++) {
+      const current = cubicPoint(loop, index / 18);
+      best = Math.min(best, distanceToSegment(point, previous, current));
+      previous = current;
+    }
+    return best;
+  };
   const hitEdgeAt = (root, point) => {
     let best = null;
     let bestDistance = Number.POSITIVE_INFINITY;
@@ -69,7 +101,9 @@
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !visible(edge.source.el) || !visible(edge.target.el)) return;
       const control = edgeControl(edge);
-      const distance = control
+      const distance = edge.source === edge.target
+        ? distanceToSelfLoop(point, edge.source)
+        : control
         ? Math.min(distanceToSegment(point, edge.source, control), distanceToSegment(point, control, edge.target))
         : distanceToSegment(point, edge.source, edge.target);
       if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {

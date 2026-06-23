@@ -3,6 +3,7 @@
   const nodeBoundaryInset = (node, unitX, unitY) => {
     const size = Math.max(4, node?.size || 8);
     if (node?.shape === 'box') {
+      if (Math.abs(unitX) < 0.001 && Math.abs(unitY) < 0.001) return Math.max(6, Math.max(size * 1.45, size * 1.05) + 7);
       const xInset = Math.abs(unitX) < 0.001 ? Number.POSITIVE_INFINITY : size * 1.45 / Math.abs(unitX);
       const yInset = Math.abs(unitY) < 0.001 ? Number.POSITIVE_INFINITY : size * 1.05 / Math.abs(unitY);
       return Math.max(6, Math.min(xInset, yInset) + 7);

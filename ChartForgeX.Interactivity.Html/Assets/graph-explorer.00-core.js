@@ -124,8 +124,9 @@
     root.setAttribute('data-cfx-viewport-scale', state.scale.toFixed(3));
     const group = root.querySelector('[data-cfx-role="graph-viewport"]');
     if (group) group.setAttribute('transform', `translate(${state.x.toFixed(3)} ${state.y.toFixed(3)}) scale(${state.scale.toFixed(3)})`);
-    const currentState = graphState(root);
-    drawCanvas(root, currentState);
+    const renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
+    const currentState = root.__cfxGraphState || (renderer === 'canvas' || typeof updateOverview === 'function' ? graphState(root) : null);
+    if (renderer === 'canvas' && currentState) drawCanvas(root, currentState);
     if (typeof updateOverview === 'function') updateOverview(root, currentState);
     emit(root, 'cfxgraphviewport', { graphId: attr(root, 'data-cfx-graph-id'), ...state });
   };

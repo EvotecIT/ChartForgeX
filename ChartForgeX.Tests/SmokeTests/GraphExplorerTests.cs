@@ -81,6 +81,16 @@ internal static partial class SmokeTests {
         var nonFinitePosition = GraphScene.Create("bad-position", "Bad position")
             .AddNode("bad", "Bad", node => node.X = double.NaN);
         AssertThrows<InvalidOperationException>(() => nonFinitePosition.Validate(), "Graph scenes should reject non-finite explicit node coordinates before adapters serialize invalid geometry.");
+
+        var nonFiniteSize = GraphScene.Create("bad-size", "Bad size")
+            .AddNode("bad", "Bad", node => node.Size = double.PositiveInfinity);
+        AssertThrows<InvalidOperationException>(() => nonFiniteSize.Validate(), "Graph scenes should reject non-finite node sizes before adapters serialize invalid marks.");
+
+        var nonFiniteCurvature = GraphScene.Create("bad-curvature", "Bad curvature")
+            .AddNode("source", "Source")
+            .AddNode("target", "Target")
+            .AddEdge("source-target", "source", "target", configure: edge => edge.Curvature = double.NaN);
+        AssertThrows<InvalidOperationException>(() => nonFiniteCurvature.Validate(), "Graph scenes should reject non-finite edge curvature before adapters serialize invalid paths.");
     }
 
     private static void GraphExplorerHtmlAdapterRendersSelfContainedScene() {
@@ -213,16 +223,21 @@ internal static partial class SmokeTests {
         Assert(html.Contains("restoreClusterAnchors", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutClusterGravity", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCommunityGravity", StringComparison.Ordinal), "Graph explorer runtime physics should pull stabilized communities back toward their prepared regions instead of blending all clusters into one mass.");
         Assert(html.Contains("spreadCommunityAreas", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCommunitySpread", StringComparison.Ordinal), "Graph explorer runtime layout quality should separate whole community areas before final overlap cleanup.");
         Assert(html.Contains("cluster:${node.cluster}", StringComparison.Ordinal) && html.Contains("group:${node.groupId}", StringComparison.Ordinal) && html.Contains("kind:${node.kind}", StringComparison.Ordinal), "Graph explorer runtime layout quality should keep cluster, group, and kind community namespaces separate.");
+        Assert(html.Contains("boundsNodes = state.nodes.some(node => node.fixed) ? state.nodes : movable", StringComparison.Ordinal), "Graph explorer runtime layout quality should keep fixed anchors inside recentering bounds.");
         Assert(html.Contains("cfxGraphLayoutQualityScore", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutOverlapCount", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutHubSpread", StringComparison.Ordinal), "Graph explorer runtime should publish layout quality diagnostics for dense graph QA.");
         Assert(html.Contains("root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true", StringComparison.Ordinal), "Graph explorer runtime physics should re-check user viewport touches before auto-fitting after stabilization.");
         Assert(html.Contains("if (dx === 0 && dy === 0)", StringComparison.Ordinal), "Graph explorer pairwise physics should force a non-zero deterministic jitter vector for perfectly overlapping node pairs.");
         Assert(!html.Contains("node.x = Math.max(24, Math.min(936, point.x))", StringComparison.Ordinal), "Graph explorer dragging should not force nodes back into the old fixed viewport box.");
         Assert(html.Contains("ResizeObserver", StringComparison.Ordinal) && html.Contains("__cfxGraphViewportTouched", StringComparison.Ordinal), "Graph explorer viewport should refit on stage resize until the user explicitly pans or zooms.");
+        Assert(html.Contains("root.__cfxGraphState ||", StringComparison.Ordinal) && html.Contains("renderer === 'canvas' && currentState", StringComparison.Ordinal), "Graph explorer viewport updates should reuse cached graph state and avoid Canvas redraw work while SVG is the active renderer.");
         Assert(html.Contains("bindOverview", StringComparison.Ordinal) && html.Contains("updateOverview", StringComparison.Ordinal) && html.Contains("cfxgraphoverview", StringComparison.Ordinal), "Graph explorer runtime should keep an overview/minimap synchronized with viewport, selection, focus, filtering, and layout changes.");
+        Assert(html.Contains("clearHiddenSelections", StringComparison.Ordinal) && html.Contains("syncGraphItemTabStops", StringComparison.Ordinal) && html.Contains("cfxGraphRendererActive !== 'canvas'", StringComparison.Ordinal), "Graph explorer runtime should remove hidden selections and remove invisible SVG tab stops when Canvas is the active renderer.");
         Assert(html.Contains("image.naturalWidth > 0", StringComparison.Ordinal) && html.Contains("malformed host-supplied images", StringComparison.Ordinal) && html.Contains("imageLoadCallbacks", StringComparison.Ordinal), "Graph explorer Canvas runtime should tolerate broken image-node URLs and redraw every waiting root when shared images finish loading.");
         Assert(html.Contains("data-cfx-graph-action=\"zoom-in\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"zoom-out\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"fit\"", StringComparison.Ordinal), "Graph explorer toolbar should expose dependency-free zoom and fit controls.");
         Assert(html.Contains("selfLoopPath(edge.target)", StringComparison.Ordinal) && html.Contains("bezierCurveTo(loop.c1.x", StringComparison.Ordinal), "Graph explorer runtime should preserve visible self-loop paths after physics, dragging, and Canvas redraws.");
         Assert(html.Contains("nodeHitDistance(node, point, 10)", StringComparison.Ordinal) && html.Contains("node.shape === 'box'", StringComparison.Ordinal), "Graph explorer Canvas hit testing should use box rectangles instead of circular hit radii for box nodes.");
+        Assert(html.Contains("distanceToSelfLoop", StringComparison.Ordinal) && html.Contains("selfLoopGeometry(node)", StringComparison.Ordinal), "Graph explorer Canvas hit testing should follow visible self-loop curves instead of their zero-length source-target segment.");
+        Assert(html.Contains("nodeHalfWidth(node)", StringComparison.Ordinal) && html.Contains("nodeHalfHeight(node)", StringComparison.Ordinal) && html.Contains("seen.add(node.id)", StringComparison.Ordinal), "Graph explorer Canvas hit testing should index large nodes across every grid cell they cover without duplicate candidates.");
         Assert(!html.Contains("else button.setAttribute('aria-pressed'", StringComparison.Ordinal), "Graph explorer toolbar should not leave one-shot actions announced as pressed toggles.");
         Assert(html.Contains("cfxgraphready", StringComparison.Ordinal) && html.Contains("cfxgraphselect", StringComparison.Ordinal) && html.Contains("cfxgraphselection", StringComparison.Ordinal) && html.Contains("cfxgraphfilter", StringComparison.Ordinal), "Graph explorer runtime should publish reusable host events.");
         Assert(html.Contains("cfxgraphstabilized", StringComparison.Ordinal) && html.Contains("cfxgraphperformance", StringComparison.Ordinal) && html.Contains("cfxgraphlod", StringComparison.Ordinal) && html.Contains("cfxgraphcluster", StringComparison.Ordinal), "Graph explorer runtime should publish physics, performance, LOD, and clustering events.");
@@ -283,6 +298,15 @@ internal static partial class SmokeTests {
         var clusteringDisabledHtml = clusteringDisabledScene.ToGraphExplorerHtmlFragment();
         Assert(!clusteringDisabledHtml.Contains("<g class=\"cfx-graph-cluster", StringComparison.Ordinal) && !clusteringDisabledHtml.Contains("class=\"cfx-graph-node cfx-graph-cluster-collapsed-member\"", StringComparison.Ordinal) && !clusteringDisabledHtml.Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\"", StringComparison.Ordinal), "Graph explorer static markup should not hide cluster members when the host disables clustering.");
         Assert(!clusteringDisabledHtml.Contains("<option value=\"cluster-only\">", StringComparison.Ordinal), "Graph explorer filters should not expose cluster-only kind facets when the host disables clustering.");
+
+        var readOnlyScene = GraphScene.Create("read-only", "Read only")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("a-b", "a", "b")
+            .AddCluster("readonly-cluster", "Read only cluster", new[] { "a", "b" }, cluster => cluster.Collapsed = true);
+        readOnlyScene.Options.Disable(GraphSceneFeatures.Selection);
+        var readOnlyHtml = readOnlyScene.ToGraphExplorerHtmlFragment();
+        Assert(readOnlyHtml.Contains("tabindex=\"-1\" data-cfx-role=\"graph-node\" data-node-id=\"a\"", StringComparison.Ordinal) && readOnlyHtml.Contains("tabindex=\"-1\" data-cfx-role=\"graph-edge\" data-edge-id=\"a-b\"", StringComparison.Ordinal) && readOnlyHtml.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"-1\" aria-hidden=\"false\"", StringComparison.Ordinal), "Graph explorer static markup should not leave inert graph items in the tab order when selection is disabled.");
 
         var declaredClusterHtml = GraphScene.Create("declared-cluster", "Declared cluster")
             .AddNode("a", "A")
@@ -351,6 +375,20 @@ internal static partial class SmokeTests {
             .AddEdge("fixed-generated", "fixed", "generated")
             .ToGraphExplorerHtmlFragment();
         Assert(Distance(ExtractGraphNodePoint(centeredExplicitNeighborHtml, "fixed"), ExtractGraphNodePoint(centeredExplicitNeighborHtml, "generated")) > 70, "Graph explorer prepared layout should not normalize a single generated neighbor back over an explicit center anchor.");
+
+        var mixedAnchorHtml = GraphScene.Create("mixed-anchor", "Mixed anchor")
+            .AddNode("fixed", "Fixed", node => {
+                node.X = 100;
+                node.Y = 100;
+                node.Size = 20;
+            })
+            .AddNode("generated-0", "Generated 0")
+            .AddNode("generated-1", "Generated 1")
+            .AddEdge("fixed-generated-0", "fixed", "generated-0")
+            .AddEdge("fixed-generated-1", "fixed", "generated-1")
+            .ToGraphExplorerHtmlFragment();
+        var mixedAverage = AveragePoint(mixedAnchorHtml, "generated-", 2);
+        Assert(mixedAverage.X < 300 && mixedAverage.Y < 280 && Distance(ExtractGraphNodePoint(mixedAnchorHtml, "fixed"), mixedAverage) < 220, "Graph explorer prepared layout should keep generated neighbors anchored near explicit positions instead of normalizing them to the scene center.");
 
         var selfLoopHtml = GraphScene.Create("self-loop", "Self loop")
             .AddNode("node", "Node", node => {

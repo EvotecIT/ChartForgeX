@@ -238,7 +238,6 @@
       items(root, '.cfx-graph-cluster-collapsed-member').forEach(item => item.classList.remove('cfx-graph-cluster-collapsed-member'));
       root.dataset.cfxGraphClusters = 'disabled';
       applyFilters(root);
-      drawCanvas(root, graphState(root));
     }
     if (hasFeature(root, 'Viewport')) {
       fitViewport(root);
