@@ -295,14 +295,18 @@
     const filters = {};
     items(root, '[data-cfx-graph-filter]').forEach(filter => { filters[attr(filter, 'data-cfx-graph-filter')] = filter.value || ''; });
     const visibleNodes = new Set();
+    const memberSearchHits = new Set();
     const nodeMatches = new Map();
     items(root, '[data-cfx-role="graph-node"]').forEach(node => {
       const queryOk = !query || searchable(node).includes(query);
       const statusOk = !filters.status || attr(node, 'data-cfx-status') === filters.status;
       const kindOk = !filters.kind || attr(node, 'data-node-kind') === filters.kind;
-      const matches = queryOk && statusOk && kindOk && !node.classList.contains('cfx-graph-cluster-collapsed-member');
-      nodeMatches.set(attr(node, 'data-node-id'), { node, matches });
-      if (matches) visibleNodes.add(attr(node, 'data-node-id'));
+      const id = attr(node, 'data-node-id');
+      const collapsedMember = node.classList.contains('cfx-graph-cluster-collapsed-member');
+      const matches = queryOk && statusOk && kindOk && !collapsedMember;
+      if (query && queryOk && statusOk && kindOk && collapsedMember) memberSearchHits.add(id);
+      nodeMatches.set(id, { node, matches });
+      if (matches) visibleNodes.add(id);
     });
     const edgeMatches = items(root, '[data-cfx-role="graph-edge"]').map(edge => {
       const edgeQueryOk = !query || searchable(edge).includes(query);
@@ -331,8 +335,10 @@
       const queryOk = !query || searchable(cluster).includes(query);
       const statusOk = !filters.status || attr(cluster, 'data-cfx-status') === filters.status;
       const kindOk = !filters.kind || attr(cluster, 'data-cluster-kind') === filters.kind;
-      const memberVisible = idList(attr(cluster, 'data-cluster-node-ids')).some(id => visibleNodes.has(id));
-      cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible);
+      const memberIds = idList(attr(cluster, 'data-cluster-node-ids'));
+      const memberVisible = memberIds.some(id => visibleNodes.has(id));
+      const memberSearchHit = memberIds.some(id => memberSearchHits.has(id));
+      cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !memberSearchHit);
     });
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: visibleNodes.size });

@@ -189,7 +189,11 @@
     const link = document.createElement('a');
     link.href = url;
     link.download = name;
+    link.style.display = 'none';
+    const parent = document.body || document.documentElement;
+    if (parent) parent.appendChild(link);
     link.click();
+    link.remove();
     if (!isDataUrl) setTimeout(() => URL.revokeObjectURL(url), 500);
   };
   const bind = (root) => {
