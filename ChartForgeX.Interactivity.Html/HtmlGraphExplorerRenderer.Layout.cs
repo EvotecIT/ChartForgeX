@@ -149,6 +149,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void AnchorGeneratedHubs(IDictionary<string, Point> positions, IReadOnlyList<List<GraphSceneNode>> components, IReadOnlyList<Point> centers, IReadOnlyDictionary<string, List<string>> adjacency) {
         for (var i = 0; i < components.Count && i < centers.Count; i++) {
+            if (components[i].Any(node => node.HasExplicitPosition)) continue;
             var hub = components[i]
                 .Where(node => !node.HasExplicitPosition && Degree(node.Id, adjacency) > 0)
                 .OrderByDescending(node => Degree(node.Id, adjacency))
@@ -208,6 +209,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static void NormalizeGeneratedPositions(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated) {
+        if (generated.Count < 2) return;
         var points = generated.Select(node => positions[node.Id]).ToArray();
         var minX = points.Min(point => point.X);
         var maxX = points.Max(point => point.X);

@@ -153,8 +153,9 @@
     const rect = canvas.getBoundingClientRect();
     const ratio = Math.max(1, window.devicePixelRatio || 1);
     const size = sceneSize(root);
-    const width = Math.max(1, Math.round(rect.width || Number(canvas.getAttribute('width')) || size.width));
-    const height = Math.max(1, Math.round(rect.height || Number(canvas.getAttribute('height')) || size.height));
+    const hasLayoutBox = rect.width > 0 && rect.height > 0;
+    const width = Math.max(1, Math.round(hasLayoutBox ? rect.width : size.width));
+    const height = Math.max(1, Math.round(hasLayoutBox ? rect.height : size.height));
     if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);

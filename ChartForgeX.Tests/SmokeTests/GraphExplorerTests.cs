@@ -137,7 +137,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-edge-directed=\"true\"", StringComparison.Ordinal) && html.Contains("data-edge-shape=\"curve\"", StringComparison.Ordinal) && html.Contains("marker-end=\"url(#service-map-arrow)\"", StringComparison.Ordinal), "Graph explorer SVG should render directional curved edge contracts.");
         var rendererSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerRenderer.cs"));
         var layoutSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerRenderer.Layout.cs"));
-        Assert(rendererSource.Contains("DirectedTargetPoint", StringComparison.Ordinal) && rendererSource.Contains("targetSize + 7", StringComparison.Ordinal), "Graph explorer SVG should trim directed edges before marker placement so arrowheads remain visible at node boundaries.");
+        Assert(rendererSource.Contains("DirectedTargetPoint", StringComparison.Ordinal) && rendererSource.Contains("TargetBoundaryInset", StringComparison.Ordinal) && rendererSource.Contains("GraphNodeShape.Box", StringComparison.Ordinal), "Graph explorer SVG should trim directed edges before marker placement with shape-aware boundaries so arrowheads remain visible.");
+        Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("const hasLayoutBox = rect.width > 0 && rect.height > 0", StringComparison.Ordinal), "Hidden SVG-mode canvases should size PNG exports from the scene instead of compounding reflected high-DPI canvas attributes.");
         Assert(html.Contains("data-cfx-role=\"graph-edge-label\"", StringComparison.Ordinal), "Graph explorer SVG should render relationship labels as addressable graph output.");
         Assert(html.Contains("data-cfx-role=\"graph-cluster\"", StringComparison.Ordinal) && html.Contains("data-cluster-node-ids=\"api,db\"", StringComparison.Ordinal), "Graph explorer SVG should expose reusable cluster summaries.");
         Assert(html.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"0\" aria-hidden=\"false\"", StringComparison.Ordinal), "Graph explorer SVG should keep collapsed cluster summaries keyboard reachable.");
@@ -261,6 +262,16 @@ internal static partial class SmokeTests {
             .ToGraphExplorerHtmlFragment();
         Assert(expandedClusterHtml.Contains("class=\"cfx-graph-cluster cfx-graph-cluster-expanded\" data-cfx-role=\"graph-cluster\" tabindex=\"-1\" aria-hidden=\"true\"", StringComparison.Ordinal), "Graph explorer SVG should remove expanded transparent cluster summaries from the keyboard tab order before browser bindings run.");
 
+        var clusteringDisabledScene = GraphScene.Create("cluster-disabled", "Cluster disabled")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("a-b", "a", "b")
+            .AddCluster("disabled", "Disabled", new[] { "a", "b" }, cluster => cluster.Collapsed = true);
+        clusteringDisabledScene.Options.Disable(GraphSceneFeatures.Clustering);
+        clusteringDisabledScene.Options.LevelOfDetail.CollapseClustersOnLoad = true;
+        var clusteringDisabledHtml = clusteringDisabledScene.ToGraphExplorerHtmlFragment();
+        Assert(!clusteringDisabledHtml.Contains("<g class=\"cfx-graph-cluster", StringComparison.Ordinal) && !clusteringDisabledHtml.Contains("class=\"cfx-graph-node cfx-graph-cluster-collapsed-member\"", StringComparison.Ordinal) && !clusteringDisabledHtml.Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\"", StringComparison.Ordinal), "Graph explorer static markup should not hide cluster members when the host disables clustering.");
+
         var declaredClusterHtml = GraphScene.Create("declared-cluster", "Declared cluster")
             .AddNode("a", "A")
             .AddNode("b", "B")
@@ -318,6 +329,41 @@ internal static partial class SmokeTests {
             .ToGraphExplorerHtmlFragment();
         Assert(Distance(ExtractGraphNodePoint(explicitNeighborHtml, "fixed"), ExtractGraphNodePoint(explicitNeighborHtml, "generated")) > 70, "Graph explorer prepared layout should keep a generated neighbor visibly away from an explicit-position node.");
 
+        var centeredExplicitNeighborHtml = GraphScene.Create("center-explicit-neighbor", "Center explicit neighbor")
+            .AddNode("fixed", "Fixed", node => {
+                node.X = 480;
+                node.Y = 280;
+                node.Size = 20;
+            })
+            .AddNode("generated", "Generated", node => node.Size = 18)
+            .AddEdge("fixed-generated", "fixed", "generated")
+            .ToGraphExplorerHtmlFragment();
+        Assert(Distance(ExtractGraphNodePoint(centeredExplicitNeighborHtml, "fixed"), ExtractGraphNodePoint(centeredExplicitNeighborHtml, "generated")) > 70, "Graph explorer prepared layout should not normalize a single generated neighbor back over an explicit center anchor.");
+
+        var selfLoopHtml = GraphScene.Create("self-loop", "Self loop")
+            .AddNode("node", "Node", node => {
+                node.X = 480;
+                node.Y = 280;
+            })
+            .AddEdge("loop", "node", "node", configure: edge => edge.Directed = true)
+            .ToGraphExplorerHtmlFragment();
+        Assert(ExtractGraphEdgePath(selfLoopHtml, "loop").Contains(" C ", StringComparison.Ordinal), "Graph explorer SVG should render accepted self-loop edges as visible paths instead of a zero-length segment hidden by the node.");
+
+        var boxTargetHtml = GraphScene.Create("box-target", "Box target")
+            .AddNode("source", "Source", node => {
+                node.X = 100;
+                node.Y = 280;
+            })
+            .AddNode("target", "Target", node => {
+                node.X = 480;
+                node.Y = 280;
+                node.Size = 30;
+                node.Shape = GraphNodeShape.Box;
+            })
+            .AddEdge("source-target", "source", "target", configure: edge => edge.Directed = true)
+            .ToGraphExplorerHtmlFragment();
+        Assert(ExtractGraphEdgePath(boxTargetHtml, "source-target").Contains("L 429.5 280", StringComparison.Ordinal), "Graph explorer SVG should trim directed arrows to the visible edge of box nodes instead of under the rectangle fill.");
+
         var dottedIdHtml = GraphScene.Create("graph.with.dot", "Graph with dot").AddNode("a", "A").ToGraphExplorerHtmlFragment();
         var dashedIdHtml = GraphScene.Create("graph-with-dot", "Graph with dash").AddNode("a", "A").ToGraphExplorerHtmlFragment();
         Assert(dottedIdHtml.Contains("id=\"graph.with.dot-title\"", StringComparison.Ordinal) && dottedIdHtml.Contains("id=\"graph.with.dot-arrow\"", StringComparison.Ordinal), "Graph explorer SVG ids should preserve valid dots in scene ids.");
@@ -373,14 +419,32 @@ internal static partial class SmokeTests {
         return (ExtractDoubleAttribute(nodeMarkup, "data-node-x"), ExtractDoubleAttribute(nodeMarkup, "data-node-y"));
     }
 
+    private static string ExtractGraphEdgePath(string html, string id) {
+        var edgeIndex = html.IndexOf("data-edge-id=\"" + id + "\"", StringComparison.Ordinal);
+        if (edgeIndex < 0) throw new InvalidOperationException("Missing graph edge: " + id);
+        var edgeEnd = html.IndexOf('>', edgeIndex);
+        if (edgeEnd < edgeIndex) throw new InvalidOperationException("Malformed graph edge: " + id);
+        return ExtractStringAttribute(html.Substring(edgeIndex, edgeEnd - edgeIndex), "d");
+    }
+
     private static double ExtractDoubleAttribute(string markup, string name) {
-        var marker = name + "=\"";
+        return double.Parse(ExtractStringAttribute(markup, name), CultureInfo.InvariantCulture);
+    }
+
+    private static string ExtractStringAttribute(string markup, string name) {
+        var marker = " " + name + "=\"";
         var start = markup.IndexOf(marker, StringComparison.Ordinal);
+        var offset = marker.Length;
+        if (start < 0 && markup.StartsWith(name + "=\"", StringComparison.Ordinal)) {
+            start = 0;
+            offset = name.Length + 2;
+        }
+
         if (start < 0) throw new InvalidOperationException("Missing graph node attribute: " + name);
-        start += marker.Length;
+        start += offset;
         var end = markup.IndexOf('"', start);
         if (end < start) throw new InvalidOperationException("Malformed graph node attribute: " + name);
-        return double.Parse(markup.Substring(start, end - start), CultureInfo.InvariantCulture);
+        return markup.Substring(start, end - start);
     }
 
     private static double Distance((double X, double Y) a, (double X, double Y) b) {

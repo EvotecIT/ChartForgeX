@@ -157,8 +157,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void WriteStage(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyDictionary<string, Point> positions, string graphId) {
         var clusterMembership = BuildClusterMembership(scene);
-        var collapseClustersOnLoad = scene.Options.LevelOfDetail.CollapseClustersOnLoad;
-        var collapsedNodeIds = BuildCollapsedNodeIds(scene, collapseClustersOnLoad);
+        var clusteringEnabled = scene.Options.HasFeature(GraphSceneFeatures.Clustering);
+        var collapseClustersOnLoad = clusteringEnabled && scene.Options.LevelOfDetail.CollapseClustersOnLoad;
+        var collapsedNodeIds = clusteringEnabled
+            ? BuildCollapsedNodeIds(scene, collapseClustersOnLoad)
+            : new HashSet<string>(StringComparer.Ordinal);
         var collapsedEdgeIds = BuildCollapsedEdgeIds(scene, collapsedNodeIds);
         writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\"></canvas>");
         writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
@@ -172,7 +175,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\"></path></marker></defs>");
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
-        WriteClusters(writer, scene, positions, collapseClustersOnLoad);
+        if (clusteringEnabled) WriteClusters(writer, scene, positions, collapseClustersOnLoad);
         WriteEdges(writer, scene, positions, graphId + "-arrow", collapsedEdgeIds);
         WriteEdgeLabels(writer, scene, positions, collapsedEdgeIds);
         WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds);
@@ -227,11 +230,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, string markerId, HashSet<string> collapsedEdgeIds) {
-        var nodeSizes = scene.Nodes.ToDictionary(node => node.Id, node => node.Size, StringComparer.Ordinal);
+        var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
-            var targetSize = nodeSizes.TryGetValue(edge.TargetNodeId, out var size) ? size : 8;
-            var path = EdgePath(edge, source, target, targetSize);
+            nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
+            var path = EdgePath(edge, source, target, targetNode);
             writer.Append("<path class=\"cfx-graph-edge");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" tabindex=\"0\" data-cfx-role=\"graph-edge\"");
@@ -426,9 +429,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return writer.ToString();
     }
 
-    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, double targetSize) {
+    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
+        if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopPath(target, targetNode);
         var control = EdgeControl(edge, source, target);
-        var renderTarget = DirectedTargetPoint(edge, source, target, control, targetSize);
+        var renderTarget = DirectedTargetPoint(edge, source, target, control, targetNode);
         return control.HasValue
             ? "M " + Number(source.X) + " " + Number(source.Y) + " Q " + Number(control.Value.X) + " " + Number(control.Value.Y) + " " + Number(renderTarget.X) + " " + Number(renderTarget.Y)
             : "M " + Number(source.X) + " " + Number(source.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
@@ -450,14 +454,37 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return new Point((source.X + target.X) / 2 - dy / length * offset, (source.Y + target.Y) / 2 + dx / length * offset);
     }
 
-    private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, double targetSize) {
+    private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode) {
         if (!edge.Directed) return target;
         var from = control ?? source;
         var dx = target.X - from.X;
         var dy = target.Y - from.Y;
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
-        var inset = Math.Max(6, targetSize + 7);
+        var inset = TargetBoundaryInset(targetNode, dx / length, dy / length);
         return new Point(target.X - dx / length * inset, target.Y - dy / length * inset);
+    }
+
+    private static string SelfLoopPath(Point center, GraphSceneNode? node) {
+        var right = TargetBoundaryInset(node, 1, 0) + 5;
+        var left = TargetBoundaryInset(node, -1, 0) + 5;
+        var top = TargetBoundaryInset(node, 0, -1) + 42;
+        return "M " + Number(center.X + right) + " " + Number(center.Y)
+            + " C " + Number(center.X + right + 44) + " " + Number(center.Y - top)
+            + " " + Number(center.X - left - 44) + " " + Number(center.Y - top)
+            + " " + Number(center.X - left) + " " + Number(center.Y);
+    }
+
+    private static double TargetBoundaryInset(GraphSceneNode? node, double unitX, double unitY) {
+        var size = Math.Max(4, node?.Size ?? 8);
+        if (node?.Shape == GraphNodeShape.Box) {
+            var halfWidth = size * 1.45;
+            var halfHeight = size * 1.05;
+            var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
+            var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);
+            return Math.Max(6, Math.Min(xInset, yInset) + 7);
+        }
+
+        return Math.Max(6, size + (node?.Shape == GraphNodeShape.Image ? 11 : 7));
     }
 
     private static void AppendScript(StringBuilder writer, HtmlGraphExplorerOptions options) {
