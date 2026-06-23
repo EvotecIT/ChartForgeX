@@ -14,7 +14,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Promote a shared rendered-target contract for series, points, annotations, regions, nodes, links, and legend items so every adapter can address chart elements without knowing the chart family.
 - Broaden rich tooltip payloads with chart-family-specific diagnostics where renderers already expose useful `data-cfx-*` attributes, while keeping the static SVG output script-free.
 - Broaden pinned tooltip, nearest-point crosshair, brush-to-lasso selection, one-series focus, selected-target compare, and keyboard traversal coverage across more chart families as the shared rendered-target contract grows.
-- Grow `ChartForgeX.Interactivity.Graph.Html` beyond its SVG/Canvas force-runtime, multi-selection, selected-neighborhood focus, worker-backed Barnes-Hut acceleration, threshold LOD, and 360-node/720-edge generated benchmark into WebGL render backends, OffscreenCanvas solver hardening, adaptive clustering, lasso/box selection, group transforms, undo/redo, CI performance budgets, and broader product-real generated examples.
+- Grow the graph explorer in `ChartForgeX.Interactivity.Html` beyond its SVG/Canvas force-runtime, multi-selection, selected-neighborhood focus, worker-backed Barnes-Hut acceleration, threshold LOD, and 360-node/720-edge generated benchmark into WebGL render backends, OffscreenCanvas solver hardening, adaptive clustering, lasso/box selection, group transforms, undo/redo, CI performance budgets, and broader product-real generated examples.
 - Extend synchronized dashboards beyond viewport, selection, hover, keyboard traversal, brush, crosshair, lasso, series focus, compare markers, scenario playback, and opt-in state bookmarks into named multi-chart review presets across mixed chart types.
 - Add playful but report-safe interaction presets beyond the opt-in focus trail, scenario-step trail integration, reveal labels, and route progress; keep future route-tour controls opt-in in `ChartForgeX.Interactivity.Html`.
 - Design a production table-interaction adapter only when there is a real host requirement for search, sort, filter, selection, copy, export, paging, or virtualization. Keep demos and generated proof output in `ChartForgeX.Examples` or docs, not in library packages.
@@ -78,7 +78,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Keep extension-inferred export behavior documented in README; new output formats should update `Save`, raster metadata helpers, and smoke tests together.
 - Keep map catalog discovery split between embedded entries and known external entries so hosts can tell package-shipped geometry from user-supplied GeoJSON assets.
 - Use GitHub Releases as the release-note source of truth; keep package release notes short enough for NuGet and do not maintain a second long-form repository changelog.
-- Keep package license metadata aligned across `ChartForgeX`, `ChartForgeX.Interactivity`, `ChartForgeX.Interactivity.Graph.Html`, and `ChartForgeX.Interactivity.Html`.
+- Keep package license metadata aligned across `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html`.
 - Update package versions and release metadata in all package projects when preparing a release.
 - Run the full quality loop and inspect generated examples before publishing packages.
 - Publish `.nupkg` and `.snupkg` files from `artifacts/packages/Release`.

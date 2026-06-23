@@ -1,15 +1,15 @@
 using System;
 using System.IO;
 
-namespace ChartForgeX.Interactivity.Graph.Html;
+namespace ChartForgeX.Interactivity.Html;
 
 internal static class HtmlGraphExplorerAssets {
-    private const string StyleResourceName = "ChartForgeX.Interactivity.Graph.Html.Assets.graph-explorer.css";
+    private const string StyleResourceName = "ChartForgeX.Interactivity.Html.Assets.graph-explorer.css";
     private static readonly string[] ScriptResourceNames = {
-        "ChartForgeX.Interactivity.Graph.Html.Assets.graph-explorer.00-core.js",
-        "ChartForgeX.Interactivity.Graph.Html.Assets.graph-explorer.10-layout.js",
-        "ChartForgeX.Interactivity.Graph.Html.Assets.graph-explorer.20-physics.js",
-        "ChartForgeX.Interactivity.Graph.Html.Assets.graph-explorer.30-bindings.js"
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-layout.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js"
     };
 
     private static readonly Lazy<string> StyleResource = new Lazy<string>(() => ReadResource(StyleResourceName));

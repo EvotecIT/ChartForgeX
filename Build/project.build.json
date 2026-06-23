@@ -5,7 +5,6 @@
   "ExpectedVersionMap": {
     "ChartForgeX": "0.1.X",
     "ChartForgeX.Interactivity": "0.1.X",
-    "ChartForgeX.Interactivity.Graph.Html": "0.1.X",
     "ChartForgeX.Interactivity.Html": "0.1.X",
     "ChartForgeX.Markup": "0.1.X",
     "ChartForgeX.Mermaid": "0.1.X",

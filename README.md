@@ -158,8 +158,7 @@ Optional visual artifact, markup, Mermaid, and interaction support is split into
 | `ChartForgeX.Markup` | Markdown-friendly v1 ChartForgeX visual fences for chart, timeline, topology, flow, sequence, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
-| `ChartForgeX.Interactivity.Graph.Html` | Self-contained HTML graph explorer adapter for large-object graph scenes, with SVG output and Canvas runtime fallback. |
-| `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
+| `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter, including the graph explorer for large-object graph scenes with SVG output and Canvas runtime fallback. |
 
 The core package also includes product-neutral visual artifact models for reusable visuals. `Chart` models can be wrapped as artifacts, `FlowArtifact` keeps authored process flows distinct from topology previews, `SequenceArtifact` models interaction diagrams, `TableArtifact` declares capabilities such as search, sort, filter, selection, copy, export, and virtualization, and static previews render deterministically from the core package. Rich interaction belongs in native hosts and adapter packages. See `docs/visual-artifacts.md`, `docs/markup.md`, `docs/markup-v1-reference.md`, and `docs/mermaid.md` for the current contracts.
 
@@ -484,8 +483,7 @@ ChartForgeX
 |   |-- Topology                   # product-neutral topology model/renderers
 |   `-- VisualBlocks               # tables, lists, metric cards, visual grids
 |-- ChartForgeX.Interactivity       # host-neutral interaction contracts
-|-- ChartForgeX.Interactivity.Graph.Html # self-contained graph explorer adapter
-|-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction adapter
+|-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction and graph explorer adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
 |-- Website                         # dedicated PowerForge.Web pilot site

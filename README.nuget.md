@@ -16,8 +16,7 @@ ChartForgeX targets `net472`, `netstandard2.0`, `net8.0`, and `net10.0`. The cor
 | --- | --- |
 | `ChartForgeX` | Static SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
-| `ChartForgeX.Interactivity.Graph.Html` | Self-contained HTML graph explorer adapter for large-object graph scenes, with SVG output and Canvas runtime fallback. |
-| `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
+| `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter, including the graph explorer for large-object graph scenes with SVG output and Canvas runtime fallback. |
 
 ## Visual Tour
 

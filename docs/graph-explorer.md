@@ -2,11 +2,11 @@
 
 `ChartForgeX.Interactivity` contains the host-neutral graph scene contract. It models nodes, image/icon node hints, rich edges, clusters, physics profiles, and level-of-detail thresholds without requiring a browser, a JavaScript framework, or a runtime package dependency.
 
-`ChartForgeX.Interactivity.Graph.Html` is the first adapter for that contract. It renders a self-contained HTML explorer with inline CSS, inline JavaScript, an SVG scene, a Canvas runtime target for large-object fallback, search, filters, cluster controls, multi-selection, selected-node neighborhood focus, runtime physics with Barnes-Hut acceleration and worker-thread stabilization for large scenes, spatial hit testing for large-scene selection and dragging, draggable nodes, pan/zoom/fit viewport controls, SVG/PNG/JSON export actions, image/icon nodes, directional curved/dashed edges with labels, level-of-detail modes, performance telemetry, stable `data-cfx-*` metadata, and host events such as `cfxgraphready`, `cfxgraphselect`, `cfxgraphselection`, `cfxgraphfilter`, `cfxgraphfocus`, `cfxgraphdragstart`, `cfxgraphdrag`, `cfxgraphdragend`, `cfxgraphviewport`, `cfxgraphexport`, `cfxgraphstabilized`, and `cfxgraphperformance`.
+`ChartForgeX.Interactivity.Html` is the first adapter for that contract. It renders a self-contained HTML explorer with inline CSS, inline JavaScript, an SVG scene, a Canvas runtime target for large-object fallback, search, filters, cluster controls, multi-selection, selected-node neighborhood focus, runtime physics with Barnes-Hut acceleration and worker-thread stabilization for large scenes, spatial hit testing for large-scene selection and dragging, draggable nodes, pan/zoom/fit viewport controls, SVG/PNG/JSON export actions, image/icon nodes, directional curved/dashed edges with labels, level-of-detail modes, performance telemetry, stable `data-cfx-*` metadata, and host events such as `cfxgraphready`, `cfxgraphselect`, `cfxgraphselection`, `cfxgraphfilter`, `cfxgraphfocus`, `cfxgraphdragstart`, `cfxgraphdrag`, `cfxgraphdragend`, `cfxgraphviewport`, `cfxgraphexport`, `cfxgraphstabilized`, and `cfxgraphperformance`.
 
 ```csharp
 using ChartForgeX.Interactivity;
-using ChartForgeX.Interactivity.Graph.Html;
+using ChartForgeX.Interactivity.Html;
 
 var graph = GraphScene.Create("service-map", "Service map")
     .AddNode("api", "API", node => {

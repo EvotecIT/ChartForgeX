@@ -1,5 +1,5 @@
 using ChartForgeX.Interactivity;
-using ChartForgeX.Interactivity.Graph.Html;
+using ChartForgeX.Interactivity.Html;
 
 internal static class GraphExplorerExamples {
     public static void Write(string output) {

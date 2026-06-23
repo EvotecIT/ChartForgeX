@@ -11,7 +11,6 @@
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
     <ProjectReference Include="..\ChartForgeX.Examples\ChartForgeX.Examples.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />
-    <ProjectReference Include="..\ChartForgeX.Interactivity.Graph.Html\ChartForgeX.Interactivity.Graph.Html.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
     <ProjectReference Include="..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
     <ProjectReference Include="..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />

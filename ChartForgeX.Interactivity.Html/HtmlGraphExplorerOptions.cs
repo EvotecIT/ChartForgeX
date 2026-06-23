@@ -1,4 +1,4 @@
-namespace ChartForgeX.Interactivity.Graph.Html;
+namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Configures the self-contained HTML graph explorer adapter.

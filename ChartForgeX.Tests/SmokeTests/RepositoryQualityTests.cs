@@ -15,7 +15,6 @@ internal static partial class SmokeTests {
                 "ChartForgeX.AotSmoke",
                 "ChartForgeX.Examples",
                 "ChartForgeX.Interactivity",
-                "ChartForgeX.Interactivity.Graph.Html",
                 "ChartForgeX.Interactivity.Html",
                 "ChartForgeX.Markup",
                 "ChartForgeX.Markup.Cli",
@@ -296,12 +295,12 @@ internal static partial class SmokeTests {
         Assert(graphExamples.Contains("CanvasPreferredNodeThreshold = 42", StringComparison.Ordinal) && graphExamples.Contains("MaxInteractiveCanvasNodes = 2000", StringComparison.Ordinal), "Graph explorer examples should exercise the Canvas fallback path and Canvas-specific performance budget.");
         Assert(graphExamples.Contains("Enterprise Access Graph Benchmark", StringComparison.Ordinal) && graphExamples.Contains("360 nodes, 720 directed edges", StringComparison.Ordinal) && graphExamples.Contains("CanvasPreferredNodeThreshold = 160", StringComparison.Ordinal), "Graph explorer examples should include a large-object benchmark beyond toy scenes.");
         Assert(graphExamples.Contains("xmlns='http://www.w3.org/2000/svg'", StringComparison.Ordinal), "Graph explorer image-node examples should use portable self-contained SVG data URLs.");
-        var graphAssetPath = Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Graph.Html", "Assets");
+        var graphAssetPath = Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "Assets");
         Assert(!File.Exists(Path.Combine(graphAssetPath, "graph-explorer.js")), "Graph explorer runtime source should stay split by responsibility instead of returning to one large asset file.");
         var graphScriptParts = Directory.EnumerateFiles(graphAssetPath, "graph-explorer.*.js").OrderBy(Path.GetFileName, StringComparer.Ordinal).ToArray();
         Assert(graphScriptParts.Length == 4 && graphScriptParts[0].EndsWith("00-core.js", StringComparison.Ordinal) && graphScriptParts[3].EndsWith("30-bindings.js", StringComparison.Ordinal), "Graph explorer runtime should be assembled from ordered script fragments.");
         foreach (var part in graphScriptParts) Assert(File.ReadLines(part).Count() <= 350, "Graph explorer script fragments should stay below the maintainable file-size review threshold: " + Path.GetFileName(part));
-        var graphAssets = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Graph.Html", "HtmlGraphExplorerAssets.cs"));
+        var graphAssets = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerAssets.cs"));
         Assert(graphAssets.Contains("ScriptResourceNames", StringComparison.Ordinal) && graphAssets.Contains("graph-explorer.20-physics.js", StringComparison.Ordinal), "Graph explorer asset loader should concatenate the ordered script fragments into one inline runtime.");
         var scenarios = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "ExampleInteractiveScenarios.cs"));
         Assert(program.Contains("ExampleInteractiveScenarios.ConfigureDomainSecurity", StringComparison.Ordinal) && scenarios.Contains(".AddScenario(\"healthy-trend\"", StringComparison.Ordinal) && scenarios.Contains(".WithDeepLinkState()", StringComparison.Ordinal), "Interactive example should visibly exercise reusable scenario and deep-link controls.");
@@ -374,7 +373,6 @@ internal static partial class SmokeTests {
         foreach (var packageProject in new[] {
             libraryProject,
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.csproj"),
-            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Graph.Html", "ChartForgeX.Interactivity.Graph.Html.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj")
         }) {
             Assert(HasXmlProperty(packageProject, "PackageLicenseExpression", "MIT"), "Package should declare the MIT license: " + Path.GetRelativePath(FindRepositoryRoot(), packageProject));

@@ -6,7 +6,7 @@ using System.Net;
 using System.Text;
 using ChartForgeX.Interactivity;
 
-namespace ChartForgeX.Interactivity.Graph.Html;
+namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Renders <see cref="GraphScene"/> instances as self-contained dependency-free HTML graph explorers.

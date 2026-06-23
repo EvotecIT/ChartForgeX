@@ -1,7 +1,7 @@
 using System;
 using ChartForgeX.Interactivity;
 
-namespace ChartForgeX.Interactivity.Graph.Html;
+namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Provides convenience methods for rendering graph scenes through the HTML graph explorer adapter.
