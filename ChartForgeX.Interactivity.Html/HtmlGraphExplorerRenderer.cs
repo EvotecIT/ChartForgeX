@@ -185,6 +185,7 @@ public sealed class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cluster-node-ids", string.Join(",", cluster.NodeIds));
             Attribute(writer, "data-cluster-collapsed", cluster.Collapsed ? "true" : "false");
             Attribute(writer, "data-cfx-status", cluster.Kind);
+            Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
             writer.Append("><circle r=\"42\"></circle><text y=\"5\">");
             writer.Append(Text(cluster.Label));
@@ -210,6 +211,7 @@ public sealed class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-curvature", Number(edge.Curvature));
             Attribute(writer, "data-edge-dashed", edge.Dashed ? "true" : "false");
             Attribute(writer, "data-edge-show-label", edge.ShowLabel ? "true" : "false");
+            Attribute(writer, "data-cfx-search", SearchText(edge.Metadata));
             Attribute(writer, "d", path);
             if (edge.Directed) Attribute(writer, "marker-end", "url(#" + markerId + ")");
             writer.Append("></path>");
@@ -245,6 +247,7 @@ public sealed class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-shape", NodeShape(node.Shape));
             Attribute(writer, "data-node-image-url", node.ImageUrl);
             Attribute(writer, "data-node-icon", node.IconText);
+            Attribute(writer, "data-cfx-search", SearchText(node.Metadata));
             Attribute(writer, "data-node-x", Number(point.X));
             Attribute(writer, "data-node-y", Number(point.Y));
             Attribute(writer, "transform", "translate(" + Number(point.X) + " " + Number(point.Y) + ")");
@@ -319,6 +322,11 @@ public sealed class HtmlGraphExplorerRenderer {
         writer.Append(" aria-pressed=\"false\">");
         writer.Append(Text(label));
         writer.Append("</button>");
+    }
+
+    private static string SearchText(IReadOnlyDictionary<string, string> metadata) {
+        if (metadata.Count == 0) return string.Empty;
+        return string.Join(" ", metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + " " + pair.Value));
     }
 
     private static IReadOnlyDictionary<string, Point> ComputePositions(IReadOnlyList<GraphSceneNode> nodes) {

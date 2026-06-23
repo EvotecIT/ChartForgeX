@@ -118,7 +118,13 @@
       cluster.nodeIds.forEach(id => { if (isCollapsed) hiddenNodeIds.add(id); });
     });
     state.nodes.forEach(node => node.el.classList.toggle('cfx-graph-cluster-collapsed-member', hiddenNodeIds.has(node.id)));
-    state.edges.forEach(edge => edge.el.classList.toggle('cfx-graph-cluster-collapsed-member', hiddenNodeIds.has(edge.source.id) || hiddenNodeIds.has(edge.target.id)));
+    const collapsedEdgeIds = new Set();
+    state.edges.forEach(edge => {
+      const collapsedEdge = hiddenNodeIds.has(edge.source.id) || hiddenNodeIds.has(edge.target.id);
+      edge.el.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdge);
+      if (collapsedEdge) collapsedEdgeIds.add(attr(edge.el, 'data-edge-id'));
+    });
+    items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => label.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdgeIds.has(attr(label, 'data-edge-label-for'))));
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';
     emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
     applyFilters(root);
@@ -282,18 +288,37 @@
     const filters = {};
     items(root, '[data-cfx-graph-filter]').forEach(filter => { filters[attr(filter, 'data-cfx-graph-filter')] = filter.value || ''; });
     const visibleNodes = new Set();
+    const nodeMatches = new Map();
     items(root, '[data-cfx-role="graph-node"]').forEach(node => {
       const queryOk = !query || searchable(node).includes(query);
       const statusOk = !filters.status || attr(node, 'data-cfx-status') === filters.status;
       const kindOk = !filters.kind || attr(node, 'data-node-kind') === filters.kind;
-      const visible = queryOk && statusOk && kindOk && !node.classList.contains('cfx-graph-cluster-collapsed-member');
-      node.classList.toggle('cfx-graph-hidden', !visible);
-      if (visible) visibleNodes.add(attr(node, 'data-node-id'));
+      const matches = queryOk && statusOk && kindOk && !node.classList.contains('cfx-graph-cluster-collapsed-member');
+      nodeMatches.set(attr(node, 'data-node-id'), { node, matches });
+      if (matches) visibleNodes.add(attr(node, 'data-node-id'));
     });
-    items(root, '[data-cfx-role="graph-edge"]').forEach(edge => {
+    const edgeMatches = items(root, '[data-cfx-role="graph-edge"]').map(edge => {
       const edgeQueryOk = !query || searchable(edge).includes(query);
+      const edgeStatusOk = !filters.status || attr(edge, 'data-cfx-status') === filters.status;
+      const edgeKindOk = !filters.kind || attr(edge, 'data-edge-kind') === filters.kind;
+      const matches = edgeQueryOk && edgeStatusOk && edgeKindOk && !edge.classList.contains('cfx-graph-cluster-collapsed-member');
+      if (matches) {
+        visibleNodes.add(attr(edge, 'data-source-node-id'));
+        visibleNodes.add(attr(edge, 'data-target-node-id'));
+      }
+      return { edge, matches };
+    });
+    nodeMatches.forEach((entry, id) => {
+      const visible = visibleNodes.has(id);
+      entry.node.classList.toggle('cfx-graph-hidden', !visible);
+    });
+    const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
+    edgeMatches.forEach(({ edge, matches }) => {
       const endpointsVisible = visibleNodes.has(attr(edge, 'data-source-node-id')) && visibleNodes.has(attr(edge, 'data-target-node-id'));
-      edge.classList.toggle('cfx-graph-hidden', edge.classList.contains('cfx-graph-cluster-collapsed-member') || !(edgeQueryOk || endpointsVisible));
+      const edgeVisible = matches && endpointsVisible;
+      edge.classList.toggle('cfx-graph-hidden', !edgeVisible);
+      const label = labels.get(attr(edge, 'data-edge-id'));
+      if (label) label.classList.toggle('cfx-graph-hidden', !edgeVisible);
     });
     drawCanvas(root, graphState(root));
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: visibleNodes.size });

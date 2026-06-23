@@ -34,6 +34,7 @@
     attr(node, 'data-cluster-id'),
     attr(node, 'data-cluster-label'),
     attr(node, 'data-cluster-kind'),
+    attr(node, 'data-cfx-search'),
     attr(node, 'data-cfx-status')
   ].join(' ').toLowerCase();
   const profile = (root) => {
@@ -147,8 +148,8 @@
     context.setTransform(ratio * width / 960, 0, 0, ratio * height / 560, 0, 0);
     return { canvas, context };
   };
-  const drawCanvas = (root, state) => {
-    if (!root.classList.contains('cfx-graph-render-canvas')) return;
+  const drawCanvas = (root, state, options) => {
+    if (!root.classList.contains('cfx-graph-render-canvas') && !options?.force) return;
     const surface = canvasContext(root);
     if (!surface) return;
     const { context } = surface;

@@ -94,6 +94,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-role=\"graph-node\"", StringComparison.Ordinal) && html.Contains("data-node-id=\"api\"", StringComparison.Ordinal), "Graph explorer SVG should expose graph node metadata.");
         Assert(html.Contains("data-node-size=\"11\"", StringComparison.Ordinal) && html.Contains("data-node-fixed=\"true\"", StringComparison.Ordinal), "Graph explorer SVG should expose node size and fixed-position hints for physics adapters.");
         Assert(html.Contains("data-node-shape=\"image\"", StringComparison.Ordinal) && html.Contains("data-node-image-url=\"data:image/svg+xml", StringComparison.Ordinal) && html.Contains("data-node-icon=\"A\"", StringComparison.Ordinal), "Graph explorer SVG should expose image and icon node metadata.");
+        Assert(html.Contains("data-cfx-search=\"owner identity\"", StringComparison.Ordinal) && html.Contains("evidence privileged-path", StringComparison.Ordinal) && html.Contains("tier core\"", StringComparison.Ordinal), "Graph explorer SVG should serialize node, edge, and cluster metadata into searchable attributes.");
         Assert(html.Contains("<image href=\"data:image/svg+xml", StringComparison.Ordinal), "Graph explorer SVG should render image-backed nodes without external dependencies.");
         Assert(html.Contains("data-cfx-role=\"graph-edge\"", StringComparison.Ordinal) && html.Contains("data-source-node-id=\"api\"", StringComparison.Ordinal) && html.Contains("data-target-node-id=\"db\"", StringComparison.Ordinal), "Graph explorer SVG should expose graph edge metadata.");
         Assert(html.Contains("data-edge-weight=\"2\"", StringComparison.Ordinal) && html.Contains("data-edge-length=\"140\"", StringComparison.Ordinal), "Graph explorer SVG should expose edge physics hints.");
@@ -113,6 +114,10 @@ internal static partial class SmokeTests {
         Assert(html.Contains("bindPointerInteractions", StringComparison.Ordinal) && html.Contains("cfxgraphdragstart", StringComparison.Ordinal) && html.Contains("cfxgraphviewport", StringComparison.Ordinal), "Graph explorer runtime should expose drag/drop node movement and viewport events.");
         Assert(html.Contains("toggleNeighborhoodFocus", StringComparison.Ordinal) && html.Contains("cfxgraphfocus", StringComparison.Ordinal) && html.Contains("cfxGraphFocusNode", StringComparison.Ordinal), "Graph explorer runtime should expose selected-node neighborhood focus and host events.");
         Assert(html.Contains("exportGraph", StringComparison.Ordinal) && html.Contains("cfxgraphexport", StringComparison.Ordinal) && html.Contains("exportGraphJson", StringComparison.Ordinal), "Graph explorer runtime should expose cancelable SVG, PNG, and JSON export events.");
+        Assert(html.Contains("drawCanvas(root, graphState(root), { force: true })", StringComparison.Ordinal), "Graph explorer PNG export should paint the Canvas surface even when the active renderer is SVG.");
+        Assert(html.Contains("edgeStatusOk", StringComparison.Ordinal) && html.Contains("edgeKindOk", StringComparison.Ordinal) && html.Contains("visibleNodes.add(attr(edge, 'data-source-node-id'))", StringComparison.Ordinal), "Graph explorer filters should evaluate edge facets and keep matching edge endpoints visible.");
+        Assert(html.Contains("data-edge-label-for", StringComparison.Ordinal) && html.Contains("cfx-graph-cluster-collapsed-member", StringComparison.Ordinal), "Graph explorer collapsed clusters should hide matching edge labels as well as edge paths.");
+        Assert(html.Contains("__cfxGraphPointerSelectionId", StringComparison.Ordinal) && html.Contains("__cfxGraphPointerSelectionTick", StringComparison.Ordinal), "Graph explorer SVG selection should suppress the follow-up click after pointerdown selection to preserve additive multi-selection.");
         Assert(html.Contains("image.naturalWidth > 0", StringComparison.Ordinal) && html.Contains("malformed host-supplied images", StringComparison.Ordinal), "Graph explorer Canvas runtime should tolerate broken image-node URLs without breaking interaction.");
         Assert(html.Contains("data-cfx-graph-action=\"zoom-in\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"zoom-out\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"fit\"", StringComparison.Ordinal), "Graph explorer toolbar should expose dependency-free zoom and fit controls.");
         Assert(html.Contains("cfxgraphready", StringComparison.Ordinal) && html.Contains("cfxgraphselect", StringComparison.Ordinal) && html.Contains("cfxgraphselection", StringComparison.Ordinal) && html.Contains("cfxgraphfilter", StringComparison.Ordinal), "Graph explorer runtime should publish reusable host events.");
@@ -138,6 +143,7 @@ internal static partial class SmokeTests {
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("downloadExport", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("cancelable: !!options?.cancelable", StringComparison.Ordinal), "Host-registered graph explorer runtime should support host-interceptable export downloads.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("selection: {", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("selectionCount", StringComparison.Ordinal), "Host-registered graph explorer runtime should export multi-selection state.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("featureGroups", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("Explorer: ['Selection', 'MultiSelection', 'Search', 'Filtering', 'Viewport'", StringComparison.Ordinal), "Graph explorer runtime should expand grouped feature flags so Explorer enables multi-selection, viewport, filtering, and clustering behavior in the browser.");
+        Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("data-cfx-search", StringComparison.Ordinal), "Graph explorer runtime search should include serialized metadata attributes.");
         Assert(!HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("<script>", StringComparison.Ordinal), "Host-registered graph explorer runtime should return raw JavaScript.");
 
         var canvasHtml = scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.Canvas);
@@ -182,6 +188,7 @@ internal static partial class SmokeTests {
                 edge.Shape = GraphEdgeShape.Curve;
                 edge.Curvature = 32;
                 edge.Dashed = true;
+                edge.Metadata["evidence"] = "privileged-path";
             })
             .AddEdge("api-worker", "api", "worker", "enqueues", edge => {
                 edge.Kind = "queue";
@@ -190,6 +197,7 @@ internal static partial class SmokeTests {
             .AddCluster("core", "Core services", new[] { "api", "db" }, cluster => {
                 cluster.Kind = "community";
                 cluster.Collapsed = true;
+                cluster.Metadata["tier"] = "core";
             });
     }
 }

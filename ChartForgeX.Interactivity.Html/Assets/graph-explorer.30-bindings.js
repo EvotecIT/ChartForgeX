@@ -39,6 +39,8 @@
         node.el.setAttribute('data-node-fixed', 'true');
         active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id };
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
+        root.__cfxGraphPointerSelectionTick = Date.now();
+        root.__cfxGraphPointerSelectionId = node.id;
         emit(root, 'cfxgraphdragstart', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: node.id, x: node.x, y: node.y });
       } else if (hasFeature(root, 'Viewport')) {
         event.preventDefault();
@@ -94,6 +96,7 @@
       mime = 'application/json';
     } else if (format === 'png') {
       const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
+      drawCanvas(root, graphState(root), { force: true });
       content = canvas ? canvas.toDataURL('image/png') : '';
       mime = 'image/png';
     }
@@ -147,7 +150,11 @@
     bindCanvasHitTesting(root);
     bindPointerInteractions(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
-      item.addEventListener('click', event => select(root, item, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey }));
+      item.addEventListener('click', event => {
+        const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
+        if (id && root.__cfxGraphPointerSelectionId === id && Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
+        select(root, item, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
+      });
       item.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
