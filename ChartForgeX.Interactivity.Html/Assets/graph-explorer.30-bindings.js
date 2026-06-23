@@ -240,7 +240,7 @@
     if (hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization')) startPhysics(root);
     emit(root, 'cfxgraphready', {
       graphId: attr(root, 'data-cfx-graph-id'),
-      renderer: attr(root, 'data-cfx-graph-renderer'),
+      renderer: root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer'),
       physics: attr(root, 'data-cfx-graph-physics'),
       nodeCount: Number(attr(root, 'data-cfx-graph-node-count')),
       edgeCount: Number(attr(root, 'data-cfx-graph-edge-count')),

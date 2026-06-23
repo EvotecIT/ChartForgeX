@@ -300,8 +300,14 @@
       const image = graphImage(node.imageUrl, () => drawCanvas(root, graphState(root)));
       if (image && image.complete && image.naturalWidth > 0) {
         try {
+          context.save();
+          context.beginPath();
+          context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+          context.clip();
           context.drawImage(image, node.x - node.size, node.y - node.size, node.size * 2, node.size * 2);
+          context.restore();
         } catch {
+          context.restore();
           // Keep malformed host-supplied images from breaking Canvas interaction.
         }
       }

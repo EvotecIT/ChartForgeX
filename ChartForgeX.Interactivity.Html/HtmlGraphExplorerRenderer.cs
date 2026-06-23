@@ -127,7 +127,7 @@ public sealed class HtmlGraphExplorerRenderer {
         writer.Append("</div><div class=\"cfx-graph-toolbar\">");
         if (options.IncludeSearch && scene.Options.HasFeature(GraphSceneFeatures.Search)) writer.Append("<input class=\"cfx-graph-search\" type=\"search\" data-cfx-graph-search=\"true\" placeholder=\"Search\">");
         if (options.IncludeFilters && scene.Options.HasFeature(GraphSceneFeatures.Filtering)) {
-            WriteFilter(writer, "status", scene.Nodes.Select(node => node.Status).Concat(scene.Edges.Select(edge => edge.Status)).Concat(scene.Clusters.Select(cluster => cluster.Kind)));
+            WriteFilter(writer, "status", scene.Nodes.Select(node => node.Status).Concat(scene.Edges.Select(edge => edge.Status)));
             WriteFilter(writer, "kind", scene.Nodes.Select(node => node.Kind).Concat(scene.Edges.Select(edge => edge.Kind)).Concat(scene.Clusters.Select(cluster => cluster.Kind)));
         }
 
