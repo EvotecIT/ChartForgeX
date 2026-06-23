@@ -156,7 +156,7 @@ public sealed class HtmlGraphExplorerRenderer {
 
     private static void WriteStage(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyDictionary<string, Point> positions, string graphId) {
         writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\"></canvas>");
-        writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" viewBox=\"0 0 960 560\" role=\"img\"");
+        writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
         writer.Append("><title");
         Attribute(writer, "id", graphId + "-title");
@@ -336,7 +336,7 @@ public sealed class HtmlGraphExplorerRenderer {
         var radius = Math.Min(Width, Height) * 0.36;
         for (var i = 0; i < nodes.Count; i++) {
             var node = nodes[i];
-            var hasPosition = node.HasExplicitPosition || node.Fixed;
+            var hasPosition = node.HasExplicitPosition;
             if (hasPosition) {
                 positions[node.Id] = new Point(node.X, node.Y);
                 continue;

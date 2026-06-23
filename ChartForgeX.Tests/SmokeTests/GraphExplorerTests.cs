@@ -43,6 +43,11 @@ internal static partial class SmokeTests {
         var originHtml = originScene.ToGraphExplorerHtmlFragment();
         Assert(originScene.Nodes[0].HasExplicitPosition && originHtml.Contains("data-node-x=\"0\"", StringComparison.Ordinal) && originHtml.Contains("data-node-y=\"0\"", StringComparison.Ordinal), "Graph scenes should preserve caller-supplied origin positions instead of treating zero coordinates as unset.");
 
+        var fixedOnlyHtml = GraphScene.Create("fixed-only", "Fixed only")
+            .AddNode("fixed", "Fixed", node => node.Fixed = true)
+            .ToGraphExplorerHtmlFragment();
+        Assert(fixedOnlyHtml.Contains("data-node-fixed=\"true\"", StringComparison.Ordinal) && !fixedOnlyHtml.Contains("data-node-x=\"0\" data-node-y=\"0\"", StringComparison.Ordinal), "Graph explorer prepared layout should not treat Fixed as a caller-supplied origin position.");
+
         var duplicateNode = GraphScene.Create("duplicate-node", "Duplicate node")
             .AddNode("api", "API")
             .AddNode("api", "API copy");
@@ -100,6 +105,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-lod-collapse-clusters=\"true\"", StringComparison.Ordinal), "Graph explorer pages should expose default cluster collapse state.");
         Assert(html.Contains("data-cfx-performance-frame-budget=\"10\"", StringComparison.Ordinal) && html.Contains("data-cfx-performance-max-svg-nodes=\"1000\"", StringComparison.Ordinal) && html.Contains("data-cfx-performance-max-canvas-nodes=\"6000\"", StringComparison.Ordinal) && html.Contains("data-cfx-performance-telemetry-interval=\"7\"", StringComparison.Ordinal), "Graph explorer pages should expose SVG and Canvas performance budgets.");
         Assert(html.Contains("data-cfx-role=\"graph-canvas\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-canvas\"", StringComparison.Ordinal), "Graph explorer pages should include a real Canvas rendering target for large-object fallback.");
+        Assert(html.Contains("class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\"", StringComparison.Ordinal), "Graph explorer SVG output should preserve intrinsic dimensions for standalone exports and host-registered CSS.");
         Assert(html.Contains("data-cfx-graph-search=\"true\"", StringComparison.Ordinal), "Graph explorer pages should include search controls.");
         Assert(html.Contains("data-cfx-graph-filter=\"status\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-filter=\"kind\"", StringComparison.Ordinal), "Graph explorer pages should include reusable status and kind filters.");
         Assert(html.Contains("data-cfx-graph-action=\"clusters\"", StringComparison.Ordinal), "Graph explorer pages should include cluster controls when clusters are present.");
@@ -182,6 +188,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("cfx-graph-lod-compact", StringComparison.Ordinal) && html.Contains("cfx-graph-performance-gated", StringComparison.Ordinal) && html.Contains("cfx-graph-neighborhood-active", StringComparison.Ordinal), "Graph explorer runtime and CSS should expose large-graph LOD, performance, and neighborhood focus states.");
         Assert(html.Contains(".cfx-graph-edge.cfx-graph-selected", StringComparison.Ordinal), "Graph explorer CSS should visibly preserve selected edge state.");
         Assert(html.Contains(".cfx-graph-edge-label.cfx-graph-hidden", StringComparison.Ordinal) && html.Contains(".cfx-graph-edge-label.cfx-graph-cluster-collapsed-member", StringComparison.Ordinal), "Graph explorer CSS should hide filtered and collapsed edge labels.");
+        Assert(html.Contains(".cfx-graph-stage{position:relative;overflow:hidden;aspect-ratio:12/7", StringComparison.Ordinal) && html.Contains(".cfx-graph-svg{display:block;width:100%;height:auto;aspect-ratio:12/7}", StringComparison.Ordinal) && !html.Contains("min-height:420px", StringComparison.Ordinal), "Graph explorer CSS should preserve the SVG scene aspect ratio so pointer mapping does not drift under narrow embeds.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should not reference external stylesheets.");
         Assert(!html.Contains("@import", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should not import external stylesheets.");
         Assert(!html.Contains("http://", StringComparison.OrdinalIgnoreCase) && !html.Contains("https://", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should remain self-contained.");
