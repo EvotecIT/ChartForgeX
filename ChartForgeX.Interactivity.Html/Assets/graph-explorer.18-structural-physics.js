@@ -117,14 +117,20 @@
     const maxPairs = nodes.length >= 3000 ? 70000 : nodes.length >= 1000 ? 110000 : 160000;
     let pairs = 0;
     let resolved = 0;
+    let exhausted = false;
     nodes.forEach((node, index) => {
+      if (exhausted) return;
       const gx = Math.floor(node.x / cellSize);
       const gy = Math.floor(node.y / cellSize);
       for (let ox = -1; ox <= 1; ox++) {
+        if (exhausted) break;
         for (let oy = -1; oy <= 1; oy++) {
+          if (exhausted) break;
           const bucket = grid.get(`${gx + ox},${gy + oy}`) || [];
           for (const other of bucket) {
-            if (other === node || other.id < node.id || pairs++ > maxPairs) continue;
+            if (other === node || other.id < node.id) continue;
+            pairs += 1;
+            if (pairs > maxPairs) { exhausted = true; break; }
             const minDistance = Math.max(14, (node.size || 8) + (other.size || 8) + 12);
             let dx = other.x - node.x;
             let dy = other.y - node.y;

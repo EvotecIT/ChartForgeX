@@ -116,7 +116,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         foreach (var node in generated.OrderByDescending(node => hubs.Any(hub => string.Equals(hub.Id, node.Id, StringComparison.Ordinal))).ThenBy(node => depths[node.Id]).ThenByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal)) {
             var hubIndex = Array.FindIndex(hubs, hub => string.Equals(hub.Id, node.Id, StringComparison.Ordinal));
             if (hubIndex >= 0) {
-                var hubRadius = hubs.Length == 1 ? 0 : 24 + hubIndex * 8;
+                var hubRadius = hubs.Length == 1
+                    ? explicitMembers.Length == 0 ? 0 : Math.Max(72, PreparedNodeRadius(node) + explicitMembers.Max(PreparedNodeRadius) + 36)
+                    : 24 + hubIndex * 8;
                 var hubAngle = GoldenAngle(hubIndex);
                 positions[node.Id] = new Point(center.X + Math.Cos(hubAngle) * hubRadius, center.Y + Math.Sin(hubAngle) * hubRadius * 0.72);
                 continue;

@@ -225,6 +225,7 @@
       root.classList.toggle('cfx-graph-render-canvas', useCanvas);
       root.classList.toggle('cfx-graph-render-svg', !useCanvas);
       root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg';
+      syncGraphItemTabStops(root);
     }
     performanceGate(root);
     if (hasFeature(root, 'Clustering')) {

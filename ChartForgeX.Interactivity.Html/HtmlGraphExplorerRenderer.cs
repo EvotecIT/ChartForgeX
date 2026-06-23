@@ -136,8 +136,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         if (options.IncludeClusterControls && scene.Clusters.Count > 0 && scene.Options.HasFeature(GraphSceneFeatures.Clustering)) WriteButton(writer, "clusters", "Clusters");
-        if (scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus)) WriteButton(writer, "focus", "Focus");
-        if (scene.Options.HasFeature(GraphSceneFeatures.MultiSelection)) WriteButton(writer, "clear-selection", "Clear");
+        if (scene.Options.HasFeature(GraphSceneFeatures.Selection) && scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus)) WriteButton(writer, "focus", "Focus");
+        if (scene.Options.HasFeature(GraphSceneFeatures.Selection) && scene.Options.HasFeature(GraphSceneFeatures.MultiSelection)) WriteButton(writer, "clear-selection", "Clear");
         if (scene.Options.HasFeature(GraphSceneFeatures.Viewport)) {
             WriteButton(writer, "fit", "Fit");
             WriteButton(writer, "zoom-in", "+");
@@ -202,7 +202,6 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cluster-kind", cluster.Kind);
             Attribute(writer, "data-cluster-node-ids", string.Join(",", cluster.NodeIds));
             Attribute(writer, "data-cluster-collapsed", cluster.Collapsed ? "true" : "false");
-            Attribute(writer, "data-cfx-status", cluster.Kind);
             Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
@@ -266,9 +265,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, HashSet<string> collapsedEdgeIds) {
+        var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !string.IsNullOrWhiteSpace(edge.Label))) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
-            var point = EdgeLabelPoint(edge, source, target);
+            nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
+            var point = EdgeLabelPoint(edge, source, target, targetNode);
             writer.Append("<text class=\"cfx-graph-edge-label");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" data-cfx-role=\"graph-edge-label\"");
@@ -446,7 +447,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             : "M " + Number(source.X) + " " + Number(source.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
     }
 
-    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target) {
+    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
+        if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
         var control = EdgeControl(edge, source, target);
         return control.HasValue
             ? new Point((source.X + 2 * control.Value.X + target.X) / 4, (source.Y + 2 * control.Value.Y + target.Y) / 4 - 7)
@@ -481,6 +483,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
             + " C " + Number(center.X + right + 44) + " " + Number(center.Y - top)
             + " " + Number(center.X - left - 44) + " " + Number(center.Y - top)
             + " " + Number(center.X - left) + " " + Number(center.Y);
+    }
+
+    private static Point SelfLoopLabelPoint(Point center, GraphSceneNode? node) {
+        var top = TargetBoundaryInset(node, 0, -1) + 42;
+        return new Point(center.X, center.Y - top - 7);
     }
 
     private static double TargetBoundaryInset(GraphSceneNode? node, double unitX, double unitY) {

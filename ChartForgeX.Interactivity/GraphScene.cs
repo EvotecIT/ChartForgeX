@@ -68,6 +68,8 @@ public sealed class GraphScene {
             ValidateRequiredId(edge.Id, "edge");
             ValidateRequiredId(edge.SourceNodeId, "edge source node");
             ValidateRequiredId(edge.TargetNodeId, "edge target node");
+            ValidateFiniteValue(edge.Weight, edge.Id, "weight");
+            ValidateFiniteValue(edge.Length, edge.Id, "length");
             ValidateFiniteValue(edge.Curvature, edge.Id, "curvature");
             if (!edgeIds.Add(edge.Id)) throw new InvalidOperationException("Graph scene contains a duplicate edge id: " + edge.Id);
             if (!nodeIds.Contains(edge.SourceNodeId)) throw new InvalidOperationException("Graph scene edge references a missing source node: " + edge.Id);
