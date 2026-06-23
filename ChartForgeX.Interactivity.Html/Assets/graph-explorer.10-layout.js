@@ -9,7 +9,7 @@
     const dx = edge.target.x - from.x;
     const dy = edge.target.y - from.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    const inset = Math.max(6, edge.target.size + 7);
+    const inset = nodeBoundaryInset(edge.target, dx / length, dy / length);
     return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
   };
   const updateEdges = (root, edges) => {
@@ -17,7 +17,9 @@
     edges.forEach(edge => {
       const control = edgeControl(edge);
       const target = edgeRenderTarget(edge, control);
-      const d = control
+      const d = edge.source === edge.target
+        ? selfLoopPath(edge.target)
+        : control
         ? `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${target.x.toFixed(3)} ${target.y.toFixed(3)}`
         : `M ${edge.source.x.toFixed(3)} ${edge.source.y.toFixed(3)} L ${target.x.toFixed(3)} ${target.y.toFixed(3)}`;
       edge.el.setAttribute('d', d);

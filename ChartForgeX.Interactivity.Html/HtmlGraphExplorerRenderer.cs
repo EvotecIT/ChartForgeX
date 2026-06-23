@@ -80,6 +80,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var writer = new StringBuilder();
         writer.Append("<section class=\"cfx-graph-explorer\"");
         Attribute(writer, "data-cfx-graph-id", scene.Id);
+        Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
         Attribute(writer, "data-cfx-graph-renderer", Backend(options.RenderBackend));
         Attribute(writer, "data-cfx-graph-canvas-fallback", options.AllowCanvasFallback ? "true" : "false");
         Attribute(writer, "data-cfx-graph-features", scene.Options.Features.ToString());
@@ -129,7 +130,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (options.IncludeSearch && scene.Options.HasFeature(GraphSceneFeatures.Search)) writer.Append("<input class=\"cfx-graph-search\" type=\"search\" data-cfx-graph-search=\"true\" placeholder=\"Search\">");
         if (options.IncludeFilters && scene.Options.HasFeature(GraphSceneFeatures.Filtering)) {
             WriteFilter(writer, "status", scene.Nodes.Select(node => node.Status).Concat(scene.Edges.Select(edge => edge.Status)));
-            WriteFilter(writer, "kind", scene.Nodes.Select(node => node.Kind).Concat(scene.Edges.Select(edge => edge.Kind)).Concat(scene.Clusters.Select(cluster => cluster.Kind)));
+            var kindValues = scene.Nodes.Select(node => node.Kind).Concat(scene.Edges.Select(edge => edge.Kind));
+            if (scene.Options.HasFeature(GraphSceneFeatures.Clustering)) kindValues = kindValues.Concat(scene.Clusters.Select(cluster => cluster.Kind));
+            WriteFilter(writer, "kind", kindValues);
         }
 
         if (options.IncludeClusterControls && scene.Clusters.Count > 0 && scene.Options.HasFeature(GraphSceneFeatures.Clustering)) WriteButton(writer, "clusters", "Clusters");

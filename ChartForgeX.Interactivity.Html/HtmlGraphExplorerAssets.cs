@@ -7,6 +7,7 @@ internal static class HtmlGraphExplorerAssets {
     private const string StyleResourceName = "ChartForgeX.Interactivity.Html.Assets.graph-explorer.css";
     private static readonly string[] ScriptResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.05-viewport.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-layout.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js",

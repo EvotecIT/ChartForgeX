@@ -216,10 +216,17 @@
       const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
       const selected = edge.el.classList.contains('cfx-graph-selected');
       context.beginPath();
-      context.moveTo(edge.source.x, edge.source.y);
       const control = edgeControl(edge);
-      if (control) context.quadraticCurveTo(control.x, control.y, edge.target.x, edge.target.y);
-      else context.lineTo(edge.target.x, edge.target.y);
+      if (edge.source === edge.target) {
+        const loop = selfLoopGeometry(edge.source);
+        context.moveTo(loop.start.x, loop.start.y);
+        context.bezierCurveTo(loop.c1.x, loop.c1.y, loop.c2.x, loop.c2.y, loop.end.x, loop.end.y);
+      } else {
+        const target = edgeRenderTarget(edge, control);
+        context.moveTo(edge.source.x, edge.source.y);
+        if (control) context.quadraticCurveTo(control.x, control.y, target.x, target.y);
+        else context.lineTo(target.x, target.y);
+      }
       context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : '#94a3b8';
       context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
       const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
@@ -276,31 +283,6 @@
       context.restore();
     });
     context.restore();
-  };
-  const edgeControl = (edge) => {
-    if (edge.shape !== 'curve' && Math.abs(edge.curvature) < 0.001) return null;
-    const dx = edge.target.x - edge.source.x;
-    const dy = edge.target.y - edge.source.y;
-    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    const offset = Math.abs(edge.curvature) < 0.001 ? 34 : edge.curvature;
-    return { x: (edge.source.x + edge.target.x) / 2 - dy / length * offset, y: (edge.source.y + edge.target.y) / 2 + dx / length * offset };
-  };
-  const edgeLabelPoint = (edge, control) => control
-    ? { x: (edge.source.x + 2 * control.x + edge.target.x) / 4, y: (edge.source.y + 2 * control.y + edge.target.y) / 4 - 7 }
-    : { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
-  const drawArrow = (context, edge, control) => {
-    const from = control || edge.source;
-    const angle = Math.atan2(edge.target.y - from.y, edge.target.x - from.x);
-    const size = 8;
-    const x = edge.target.x - Math.cos(angle) * (edge.target.size + 5);
-    const y = edge.target.y - Math.sin(angle) * (edge.target.size + 5);
-    context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x - Math.cos(angle - Math.PI / 6) * size, y - Math.sin(angle - Math.PI / 6) * size);
-    context.lineTo(x - Math.cos(angle + Math.PI / 6) * size, y - Math.sin(angle + Math.PI / 6) * size);
-    context.closePath();
-    context.fillStyle = '#64748b';
-    context.fill();
   };
   const drawNodeMark = (context, node, selected, compact, root) => {
     context.fillStyle = '#2563eb';

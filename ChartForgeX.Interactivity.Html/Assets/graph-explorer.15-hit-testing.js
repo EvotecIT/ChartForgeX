@@ -29,11 +29,10 @@
       const size = Math.max(4, num(el, 'data-node-size', 8));
       const x = num(el, 'data-node-x', 0);
       const y = num(el, 'data-node-y', 0);
-      const dx = x - point.x;
-      const dy = y - point.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance <= size + 10 && distance < bestDistance) {
-        best = { el, id: attr(el, 'data-node-id'), x, y, size };
+      const candidate = { el, id: attr(el, 'data-node-id'), x, y, size, shape: attr(el, 'data-node-shape') || 'circle' };
+      const distance = nodeHitDistance(candidate, point, 10);
+      if (distance < bestDistance) {
+        best = candidate;
         bestDistance = distance;
       }
     });
@@ -45,10 +44,8 @@
     let bestDistance = Number.POSITIVE_INFINITY;
     hitTestNodes(root, point).forEach(node => {
       if (!visible(node.el)) return;
-      const dx = node.x - point.x;
-      const dy = node.y - point.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance <= node.size + 10 && distance < bestDistance) {
+      const distance = nodeHitDistance(node, point, 10);
+      if (distance < bestDistance) {
         best = node;
         bestDistance = distance;
       }

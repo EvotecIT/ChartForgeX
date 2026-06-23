@@ -175,6 +175,7 @@
   };
   const exportGraphJson = (root) => ({
     graphId: attr(root, 'data-cfx-graph-id'),
+    metadata: metadataDetail(root),
     renderer: root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer'),
     viewport: viewport(root),
     selection: {
@@ -312,7 +313,6 @@
         }
         if (action === 'stabilize' && hasFeature(root, 'Stabilization')) startPhysics(root);
         if (action === 'physics') syncPhysicsControls(root);
-        else button.setAttribute('aria-pressed', attr(button, 'aria-pressed') === 'true' ? 'false' : 'true');
         emit(root, 'cfxgraphaction', { graphId: attr(root, 'data-cfx-graph-id'), action, physics: attr(root, 'data-cfx-graph-physics') });
       });
     });
