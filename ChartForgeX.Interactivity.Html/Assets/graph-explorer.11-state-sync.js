@@ -20,9 +20,17 @@
       changed = true;
     });
     if (!changed) return false;
-    updateSelectionState(root);
+    const details = updateSelectionState(root);
+    syncSelectionTooltip(root, details);
     if (focusedSelectionHidden) clearNeighborhoodFocus(root);
     return true;
+  };
+  const syncSelectionTooltip = (root, details, fallback) => {
+    const tip = root.querySelector('.cfx-graph-tooltip');
+    if (!tip) return;
+    const tooltipDetail = details.length === 1 ? details[0] : fallback;
+    tip.textContent = details.length === 1 ? [tooltipDetail.label || tooltipDetail.id, tooltipDetail.kind, tooltipDetail.status].filter(Boolean).join(' / ') : details.length ? `${details.length} selected` : '';
+    tip.hidden = details.length === 0;
   };
   const syncClusterControls = (root) => {
     const pressed = root.dataset.cfxGraphClusters === 'collapsed' ? 'true' : 'false';

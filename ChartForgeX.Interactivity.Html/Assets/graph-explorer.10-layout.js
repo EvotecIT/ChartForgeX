@@ -198,11 +198,7 @@
     else node.classList.add('cfx-graph-selected');
     const detail = selectionDetail(root, node);
     const details = updateSelectionState(root);
-    const tip = root.querySelector('.cfx-graph-tooltip');
-    if (tip) {
-      const tooltipDetail = details.length === 1 ? details[0] : detail; tip.textContent = details.length === 1 ? [tooltipDetail.label || tooltipDetail.id, tooltipDetail.kind, tooltipDetail.status].filter(Boolean).join(' / ') : `${details.length} selected`;
-      tip.hidden = details.length === 0;
-    }
+    syncSelectionTooltip(root, details, detail);
     if (hasFeature(root, 'NeighborhoodFocus') && root.dataset.cfxGraphFocus === 'active') {
       const primary = details.find(item => item.role === 'graph-node');
       if (primary) applyNeighborhoodFocus(root, primary.id);
