@@ -69,6 +69,8 @@
       cluster.collapsed = isCollapsed;
       cluster.el.classList.toggle('cfx-graph-cluster-expanded', !isCollapsed);
       cluster.el.setAttribute('data-cluster-collapsed', isCollapsed ? 'true' : 'false');
+      cluster.el.setAttribute('tabindex', isCollapsed ? '0' : '-1');
+      cluster.el.setAttribute('aria-hidden', isCollapsed ? 'false' : 'true');
       cluster.nodeIds.forEach(id => { if (isCollapsed) hiddenNodeIds.add(id); });
     });
     state.nodes.forEach(node => node.el.classList.toggle('cfx-graph-cluster-collapsed-member', hiddenNodeIds.has(node.id)));
@@ -288,6 +290,13 @@
         visibleNodes.add(attr(edge, 'data-target-node-id'));
       }
       return { edge, matches };
+    });
+    items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
+      const queryOk = !query || searchable(cluster).includes(query);
+      const statusOk = !filters.status || attr(cluster, 'data-cfx-status') === filters.status;
+      const kindOk = !filters.kind || attr(cluster, 'data-cluster-kind') === filters.kind;
+      const expanded = attr(cluster, 'data-cluster-collapsed') !== 'true';
+      if (expanded && queryOk && statusOk && kindOk) idList(attr(cluster, 'data-cluster-node-ids')).forEach(id => visibleNodes.add(id));
     });
     nodeMatches.forEach((entry, id) => {
       const visible = visibleNodes.has(id);

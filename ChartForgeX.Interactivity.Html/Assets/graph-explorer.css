@@ -1,6 +1,7 @@
 .cfx-graph-shell{box-sizing:border-box;min-height:100vh;margin:0;padding:24px;background:#f8fafc;color:#0f172a;font-family:Segoe UI,Arial,sans-serif}
 .cfx-graph-shell *,.cfx-graph-shell *:before,.cfx-graph-shell *:after{box-sizing:inherit}
-.cfx-graph-explorer{position:relative;display:grid;gap:12px;max-width:1180px;margin:0 auto}
+.cfx-graph-explorer{position:relative;box-sizing:border-box;display:grid;gap:12px;max-width:1180px;margin:0 auto;color:#0f172a;font-family:Segoe UI,Arial,sans-serif}
+.cfx-graph-explorer *,.cfx-graph-explorer *:before,.cfx-graph-explorer *:after{box-sizing:inherit}
 .cfx-graph-header{display:grid;gap:4px}
 .cfx-graph-title{margin:0;font-size:22px;font-weight:700;line-height:1.16}
 .cfx-graph-subtitle{margin:0;color:#64748b;font-size:14px;line-height:1.45}

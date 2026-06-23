@@ -139,6 +139,7 @@ internal static partial class SmokeTests {
         Assert(rendererSource.Contains("DirectedTargetPoint", StringComparison.Ordinal) && rendererSource.Contains("targetSize + 7", StringComparison.Ordinal), "Graph explorer SVG should trim directed edges before marker placement so arrowheads remain visible at node boundaries.");
         Assert(html.Contains("data-cfx-role=\"graph-edge-label\"", StringComparison.Ordinal), "Graph explorer SVG should render relationship labels as addressable graph output.");
         Assert(html.Contains("data-cfx-role=\"graph-cluster\"", StringComparison.Ordinal) && html.Contains("data-cluster-node-ids=\"api,db\"", StringComparison.Ordinal), "Graph explorer SVG should expose reusable cluster summaries.");
+        Assert(html.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"0\" aria-hidden=\"false\"", StringComparison.Ordinal), "Graph explorer SVG should keep collapsed cluster summaries keyboard reachable.");
         Assert(html.Contains("requestAnimationFrame(step)", StringComparison.Ordinal) && html.Contains("physicsTick", StringComparison.Ordinal), "Graph explorer runtime should run dependency-free browser physics instead of only exposing buttons.");
         Assert(html.Contains("barnesHutTree", StringComparison.Ordinal) && html.Contains("data-cfx-graph-physics=\"ForceAtlas2\"", StringComparison.Ordinal) && html.Contains("cfxGraphPhysicsAcceleration", StringComparison.Ordinal), "Graph explorer runtime should include scalable many-body acceleration and expose the active physics path for large graph diagnostics.");
         Assert(html.Contains("workerPhysicsSource", StringComparison.Ordinal) && html.Contains("cfxGraphPhysicsThread", StringComparison.Ordinal) && html.Contains("thread: 'worker'", StringComparison.Ordinal), "Graph explorer runtime should move large Barnes-Hut stabilization to a dependency-free Web Worker when the browser allows it.");
@@ -175,6 +176,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("edgeStatusOk", StringComparison.Ordinal) && html.Contains("edgeKindOk", StringComparison.Ordinal) && html.Contains("visibleNodes.add(attr(edge, 'data-source-node-id'))", StringComparison.Ordinal), "Graph explorer filters should evaluate edge facets and keep matching edge endpoints visible.");
         Assert(html.Contains("data-cluster-node-ids", StringComparison.Ordinal) && html.Contains("memberVisible", StringComparison.Ordinal), "Graph explorer filters should evaluate cluster facets and member visibility.");
         Assert(html.Contains("hiddenMemberHits", StringComparison.Ordinal) && html.Contains("edgeMatchesFacet", StringComparison.Ordinal), "Graph explorer filters should keep collapsed clusters visible when hidden member nodes or edges match search and facet filters.");
+        Assert(html.Contains("expanded && queryOk && statusOk && kindOk", StringComparison.Ordinal) && html.Contains("idList(attr(cluster, 'data-cluster-node-ids')).forEach(id => visibleNodes.add(id))", StringComparison.Ordinal), "Graph explorer filters should surface expanded cluster matches through their member nodes.");
         Assert(html.Contains("data-edge-label-for", StringComparison.Ordinal) && html.Contains("cfx-graph-cluster-collapsed-member", StringComparison.Ordinal), "Graph explorer collapsed clusters should hide matching edge labels as well as edge paths.");
         Assert(html.Contains("__cfxGraphPointerSelectionId", StringComparison.Ordinal) && html.Contains("__cfxGraphPointerSelectionTick", StringComparison.Ordinal), "Graph explorer SVG selection should suppress the follow-up click after pointerdown selection to preserve additive multi-selection.");
         Assert(!html.Contains("canvas.addEventListener('mousedown'", StringComparison.Ordinal), "Graph explorer Canvas selection should not double-toggle through both pointerdown and mousedown.");
@@ -216,6 +218,7 @@ internal static partial class SmokeTests {
         Assert(fragment.Contains("data-cfx-graph-assets=\"true\"", StringComparison.Ordinal), "Graph explorer fragments should include embeddable CSS assets.");
         Assert(fragment.Contains("<script nonce=\"fragment-nonce\">", StringComparison.Ordinal), "Graph explorer fragments should support CSP nonces.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains(".cfx-graph-explorer", StringComparison.Ordinal), "Host-registered graph explorer CSS should stay scoped to graph explorer surfaces.");
+        Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains(".cfx-graph-explorer *,.cfx-graph-explorer *:before,.cfx-graph-explorer *:after{box-sizing:inherit}", StringComparison.Ordinal), "Host-registered graph explorer CSS should scope base box sizing to fragments without requiring a page-level shell.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains(".cfx-graph-explorer{position:relative", StringComparison.Ordinal), "Host-registered graph explorer CSS should anchor graph tooltips to the explorer component.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("requestAnimationFrame(step)", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("cfxgraphperformance", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("cfxGraphRendererActive", StringComparison.Ordinal), "Host-registered graph explorer runtime should include physics, performance, and backend-selection behavior.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("performance: {", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("maxSampleMs", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("performanceBudget:", StringComparison.Ordinal), "Host-registered graph explorer runtime should export repeatable performance summary evidence.");
@@ -234,6 +237,21 @@ internal static partial class SmokeTests {
 
         var canvasHtml = scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.Canvas);
         Assert(canvasHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal), "Graph explorer fragments should allow hosts to request Canvas as the initial renderer.");
+
+        var expandedClusterHtml = GraphScene.Create("expanded-cluster", "Expanded cluster")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddCluster("expanded", "Expanded", new[] { "a", "b" })
+            .ToGraphExplorerHtmlFragment();
+        Assert(expandedClusterHtml.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"-1\" aria-hidden=\"true\"", StringComparison.Ordinal), "Graph explorer SVG should remove expanded transparent cluster summaries from the keyboard tab order.");
+
+        var declaredClusterHtml = GraphScene.Create("declared-cluster", "Declared cluster")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddCluster("declared", "Declared", new[] { "a", "b" })
+            .ToGraphExplorerHtmlFragment();
+        Assert(declaredClusterHtml.Contains("data-node-id=\"a\" data-node-label=\"A\" data-node-cluster=\"declared\"", StringComparison.Ordinal) && declaredClusterHtml.Contains("data-node-id=\"b\" data-node-label=\"B\" data-node-cluster=\"declared\"", StringComparison.Ordinal), "Graph explorer renderer should derive node cluster membership from declared GraphSceneCluster.NodeIds when node ClusterId is not duplicated.");
+        Assert(rendererSource.Contains("BuildClusterMembership", StringComparison.Ordinal) && rendererSource.Contains("NodeClusterId(node, clusterMembership)", StringComparison.Ordinal), "Graph explorer prepared layout should use declared cluster membership as a community key.");
 
         var layoutScene = GraphScene.Create("layout-quality", "Layout quality");
         layoutScene.AddNode("hub", "Hub", node => {

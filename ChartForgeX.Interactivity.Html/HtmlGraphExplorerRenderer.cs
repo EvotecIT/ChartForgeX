@@ -171,7 +171,7 @@ public sealed class HtmlGraphExplorerRenderer {
         WriteClusters(writer, scene, positions);
         WriteEdges(writer, scene, positions, graphId + "-arrow");
         WriteEdgeLabels(writer, scene, positions);
-        WriteNodes(writer, scene, positions);
+        WriteNodes(writer, scene, positions, BuildClusterMembership(scene));
         writer.Append("</g></svg></div>");
     }
 
@@ -180,7 +180,9 @@ public sealed class HtmlGraphExplorerRenderer {
             var members = cluster.NodeIds.Where(positions.ContainsKey).Select(id => positions[id]).ToArray();
             var x = members.Length == 0 ? Width / 2 : members.Average(point => point.X);
             var y = members.Length == 0 ? Height / 2 : members.Average(point => point.Y);
-            writer.Append("<g class=\"cfx-graph-cluster\" tabindex=\"0\" data-cfx-role=\"graph-cluster\"");
+            writer.Append("<g class=\"cfx-graph-cluster\" data-cfx-role=\"graph-cluster\"");
+            Attribute(writer, "tabindex", cluster.Collapsed ? "0" : "-1");
+            Attribute(writer, "aria-hidden", cluster.Collapsed ? "false" : "true");
             Attribute(writer, "data-cluster-id", cluster.Id);
             Attribute(writer, "data-cluster-label", cluster.Label);
             Attribute(writer, "data-cluster-kind", cluster.Kind);
@@ -238,7 +240,7 @@ public sealed class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static void WriteNodes(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions) {
+    private static void WriteNodes(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership) {
         foreach (var node in scene.Nodes) {
             var point = positions[node.Id];
             writer.Append("<g class=\"cfx-graph-node\" tabindex=\"0\" data-cfx-role=\"graph-node\"");
@@ -246,7 +248,7 @@ public sealed class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-label", node.Label);
             Attribute(writer, "data-node-kind", node.Kind);
             Attribute(writer, "data-node-group", node.GroupId);
-            Attribute(writer, "data-node-cluster", node.ClusterId);
+            Attribute(writer, "data-node-cluster", NodeClusterId(node, clusterMembership));
             Attribute(writer, "data-cfx-status", node.Status);
             Attribute(writer, "data-node-size", Number(node.Size));
             Attribute(writer, "data-node-fixed", node.Fixed ? "true" : "false");
@@ -404,10 +406,11 @@ public sealed class HtmlGraphExplorerRenderer {
         if (generated.Length == 0) return positions;
 
         var adjacency = BuildAdjacency(scene);
+        var clusterMembership = BuildClusterMembership(scene);
         var components = ConnectedComponents(nodes, adjacency);
         var centers = ComponentCenters(components);
         for (var i = 0; i < components.Count; i++) {
-            PlaceComponent(components[i], centers[i], adjacency, positions);
+            PlaceComponent(components[i], centers[i], adjacency, positions, clusterMembership);
         }
 
         if (positions.Count == generated.Length) NormalizeGeneratedPositions(positions, generated);
@@ -469,7 +472,7 @@ public sealed class HtmlGraphExplorerRenderer {
         return centers;
     }
 
-    private static void PlaceComponent(IReadOnlyList<GraphSceneNode> component, Point fallbackCenter, IReadOnlyDictionary<string, List<string>> adjacency, IDictionary<string, Point> positions) {
+    private static void PlaceComponent(IReadOnlyList<GraphSceneNode> component, Point fallbackCenter, IReadOnlyDictionary<string, List<string>> adjacency, IDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership) {
         if (component.Count == 0) return;
         var explicitMembers = component.Where(node => node.HasExplicitPosition && positions.ContainsKey(node.Id)).ToArray();
         var center = explicitMembers.Length == 0
@@ -493,8 +496,8 @@ public sealed class HtmlGraphExplorerRenderer {
             .ToArray();
         if (hubs.Length == 0) hubs = component.OrderByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal).Take(1).ToArray();
 
-        var communityAngles = CommunityAngles(component);
-        var communityCounts = component.GroupBy(CommunityKey, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        var communityAngles = CommunityAngles(component, clusterMembership);
+        var communityCounts = component.GroupBy(node => CommunityKey(node, clusterMembership), StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
         var communityRanks = new Dictionary<string, int>(StringComparer.Ordinal);
         var componentRadius = Math.Max(72, Math.Sqrt(component.Count) * 38);
         foreach (var node in generated.OrderByDescending(node => hubs.Any(hub => string.Equals(hub.Id, node.Id, StringComparison.Ordinal))).ThenBy(node => depths[node.Id]).ThenByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal)) {
@@ -506,7 +509,7 @@ public sealed class HtmlGraphExplorerRenderer {
                 continue;
             }
 
-            var key = CommunityKey(node);
+            var key = CommunityKey(node, clusterMembership);
             communityRanks.TryGetValue(key, out var rank);
             communityRanks[key] = rank + 1;
             var count = Math.Max(1, communityCounts[key]);
@@ -543,9 +546,9 @@ public sealed class HtmlGraphExplorerRenderer {
         return depths;
     }
 
-    private static Dictionary<string, double> CommunityAngles(IReadOnlyList<GraphSceneNode> component) {
+    private static Dictionary<string, double> CommunityAngles(IReadOnlyList<GraphSceneNode> component, IReadOnlyDictionary<string, string> clusterMembership) {
         var groups = component
-            .GroupBy(CommunityKey, StringComparer.Ordinal)
+            .GroupBy(node => CommunityKey(node, clusterMembership), StringComparer.Ordinal)
             .OrderByDescending(group => group.Count())
             .ThenBy(group => group.Key, StringComparer.Ordinal)
             .ToArray();
@@ -576,12 +579,29 @@ public sealed class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static string CommunityKey(GraphSceneNode node) {
-        if (!string.IsNullOrWhiteSpace(node.ClusterId)) return "cluster:" + node.ClusterId;
+    private static string CommunityKey(GraphSceneNode node, IReadOnlyDictionary<string, string> clusterMembership) {
+        var clusterId = NodeClusterId(node, clusterMembership);
+        if (!string.IsNullOrWhiteSpace(clusterId)) return "cluster:" + clusterId;
         if (!string.IsNullOrWhiteSpace(node.GroupId)) return "group:" + node.GroupId;
         if (!string.IsNullOrWhiteSpace(node.Kind)) return "kind:" + node.Kind;
         return "graph";
     }
+
+    private static Dictionary<string, string> BuildClusterMembership(GraphScene scene) {
+        var membership = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var cluster in scene.Clusters.OrderBy(cluster => cluster.Id, StringComparer.Ordinal)) {
+            foreach (var nodeId in cluster.NodeIds) {
+                if (!membership.ContainsKey(nodeId)) membership[nodeId] = cluster.Id;
+            }
+        }
+
+        return membership;
+    }
+
+    private static string? NodeClusterId(GraphSceneNode node, IReadOnlyDictionary<string, string> clusterMembership) =>
+        !string.IsNullOrWhiteSpace(node.ClusterId)
+            ? node.ClusterId
+            : clusterMembership.TryGetValue(node.Id, out var clusterId) ? clusterId : null;
 
     private static int Degree(string nodeId, IReadOnlyDictionary<string, List<string>> adjacency) => adjacency.TryGetValue(nodeId, out var neighbors) ? neighbors.Count : 0;
 
