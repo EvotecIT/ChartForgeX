@@ -12,7 +12,8 @@
     let focusedSelectionHidden = false;
     const focusNode = root.dataset.cfxGraphFocusNode || '';
     items(root, '.cfx-graph-selected').forEach(item => {
-      if (visible(item)) return;
+      const expandedCluster = attr(item, 'data-cfx-role') === 'graph-cluster' && item.classList.contains('cfx-graph-cluster-expanded');
+      if (visible(item) && !expandedCluster) return;
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
       focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && id === focusNode);
       item.classList.remove('cfx-graph-selected');
@@ -22,4 +23,12 @@
     updateSelectionState(root);
     if (focusedSelectionHidden) clearNeighborhoodFocus(root);
     return true;
+  };
+  const syncClusterControls = (root) => {
+    const pressed = root.dataset.cfxGraphClusters === 'collapsed' ? 'true' : 'false';
+    items(root, "[data-cfx-graph-action='clusters']").forEach(button => button.setAttribute('aria-pressed', pressed));
+  };
+  const syncFocusControls = (root) => {
+    const pressed = root.dataset.cfxGraphFocus === 'active' ? 'true' : 'false';
+    items(root, "[data-cfx-graph-action='focus']").forEach(button => button.setAttribute('aria-pressed', pressed));
   };

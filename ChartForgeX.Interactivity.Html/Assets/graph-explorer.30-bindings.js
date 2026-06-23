@@ -174,7 +174,7 @@
   };
   const syncPhysicsControls = (root) => {
     const pressed = root.dataset.cfxGraphPhysicsState === 'running' ? 'true' : 'false';
-    items(root, '[data-cfx-graph-action="physics"]').forEach(button => button.setAttribute('aria-pressed', pressed));
+    items(root, "[data-cfx-graph-action='physics']").forEach(button => button.setAttribute('aria-pressed', pressed));
   };
   const exportGraphJson = (root) => ({
     graphId: attr(root, 'data-cfx-graph-id'),
@@ -243,6 +243,8 @@
       root.dataset.cfxGraphClusters = 'disabled';
       applyFilters(root);
     }
+    syncClusterControls(root);
+    syncFocusControls(root);
     if (hasFeature(root, 'Viewport')) {
       fitViewport(root);
       const stage = root.querySelector('.cfx-graph-stage');

@@ -87,7 +87,7 @@
     });
     items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => label.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdgeIds.has(attr(label, 'data-edge-label-for'))));
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';
-    syncGraphItemTabStops(root);
+    syncGraphItemTabStops(root); clearHiddenSelections(root); if (typeof syncClusterControls === 'function') syncClusterControls(root);
     emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
     applyFilters(root);
   };
@@ -200,7 +200,7 @@
     const details = updateSelectionState(root);
     const tip = root.querySelector('.cfx-graph-tooltip');
     if (tip) {
-      tip.textContent = details.length === 1 ? [detail.label || detail.id, detail.kind, detail.status].filter(Boolean).join(' / ') : `${details.length} selected`;
+      const tooltipDetail = details.length === 1 ? details[0] : detail; tip.textContent = details.length === 1 ? [tooltipDetail.label || tooltipDetail.id, tooltipDetail.kind, tooltipDetail.status].filter(Boolean).join(' / ') : `${details.length} selected`;
       tip.hidden = details.length === 0;
     }
     if (hasFeature(root, 'NeighborhoodFocus') && root.dataset.cfxGraphFocus === 'active') {
@@ -227,6 +227,7 @@
     const state = graphState(root);
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
+    if (typeof syncFocusControls === 'function') syncFocusControls(root);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: false, nodeId: '', neighborNodeCount: 0, edgeCount: 0 });
   };
   const applyNeighborhoodFocus = (root, nodeId) => {
@@ -265,6 +266,7 @@
     root.dataset.cfxGraphFocusNode = nodeId;
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
+    if (typeof syncFocusControls === 'function') syncFocusControls(root);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: true, nodeId, neighborNodeCount: relatedNodes.size - 1, edgeCount: relatedEdges.size });
   };
   const toggleNeighborhoodFocus = (root) => {

@@ -137,8 +137,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             WriteFilter(writer, "kind", kindValues);
         }
 
-        if (options.IncludeClusterControls && scene.Clusters.Count > 0 && scene.Options.HasFeature(GraphSceneFeatures.Clustering)) WriteButton(writer, "clusters", "Clusters");
-        if (scene.Options.HasFeature(GraphSceneFeatures.Selection) && scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus)) WriteButton(writer, "focus", "Focus");
+        if (options.IncludeClusterControls && scene.Clusters.Count > 0 && scene.Options.HasFeature(GraphSceneFeatures.Clustering)) WriteButton(writer, "clusters", "Clusters", true);
+        if (scene.Options.HasFeature(GraphSceneFeatures.Selection) && scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus)) WriteButton(writer, "focus", "Focus", true);
         if (scene.Options.HasFeature(GraphSceneFeatures.Selection) && scene.Options.HasFeature(GraphSceneFeatures.MultiSelection)) WriteButton(writer, "clear-selection", "Clear");
         if (scene.Options.HasFeature(GraphSceneFeatures.Viewport)) {
             WriteButton(writer, "fit", "Fit");
@@ -147,7 +147,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         if (options.IncludePhysicsControls && CanRunRuntimePhysics(scene)) {
-            WriteButton(writer, "physics", "Physics");
+            WriteButton(writer, "physics", "Physics", true);
             if (scene.Options.HasFeature(GraphSceneFeatures.Stabilization)) WriteButton(writer, "stabilize", "Stabilize");
         }
 
@@ -374,10 +374,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("</select>");
     }
 
-    private static void WriteButton(StringBuilder writer, string action, string label) {
+    private static void WriteButton(StringBuilder writer, string action, string label, bool pressedState = false) {
         writer.Append("<button class=\"cfx-graph-tool\" type=\"button\"");
         Attribute(writer, "data-cfx-graph-action", action);
-        writer.Append(" aria-pressed=\"false\">");
+        if (pressedState) writer.Append(" aria-pressed=\"false\"");
+        writer.Append('>');
         writer.Append(Text(label));
         writer.Append("</button>");
     }
