@@ -56,7 +56,7 @@
       centerGravity: Math.max(0, num(root, 'data-cfx-graph-center-gravity', 0.01)),
       timestep: attr(root, 'data-cfx-graph-adaptive-timestep') === 'true' ? 0.8 : 1
     };
-    if (solver === 'BarnesHut') return { ...base, repulsion: base.repulsion * 1.35, damping: base.damping * 1.15, timestep: base.timestep * 0.9 };
+    if (solver === 'BarnesHut') return { ...base, repulsion: base.repulsion * 1.35, damping: Math.min(0.98, base.damping * 1.15), timestep: base.timestep * 0.9 };
     if (solver === 'ForceAtlas2') return { ...base, repulsion: base.repulsion * 0.9, linkDistance: base.linkDistance * 0.75, centerGravity: base.centerGravity * 1.8 };
     if (solver === 'HierarchicalRepulsion') return { ...base, repulsion: base.repulsion * 1.15, linkDistance: base.linkDistance * 1.2, centerGravity: base.centerGravity * 1.25 };
     return base;

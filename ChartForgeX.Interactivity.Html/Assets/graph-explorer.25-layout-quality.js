@@ -1,4 +1,4 @@
-  const layoutCommunityKey = (node) => node.cluster || node.groupId || node.kind || 'graph';
+  const layoutCommunityKey = (node) => node.cluster ? `cluster:${node.cluster}` : node.groupId ? `group:${node.groupId}` : node.kind ? `kind:${node.kind}` : 'graph';
 
   const restoreClusterAnchors = (root, state) => {
     const groups = new Map();

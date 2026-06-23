@@ -87,7 +87,7 @@
     let bestDistance = Number.POSITIVE_INFINITY;
     const state = root.__cfxGraphState || graphState(root);
     state.clusters.forEach(cluster => {
-      if (!visible(cluster.el)) return;
+      if (!visible(cluster.el) || cluster.el.classList.contains('cfx-graph-cluster-expanded') || attr(cluster.el, 'data-cluster-collapsed') !== 'true') return;
       const metrics = clusterMetrics(cluster, state.byId);
       if (!metrics) return;
       const distance = Math.sqrt((point.x - metrics.x) ** 2 + (point.y - metrics.y) ** 2);
