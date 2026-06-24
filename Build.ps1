@@ -742,6 +742,22 @@ var dashboard = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options =>
 if (!dashboard.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard surface missing.");
 if (!dashboard.Contains("data-cfx-chart-id=\"package-dashboard-2\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard child chart IDs missing.");
 
+var graph = GraphScene.Create("package-graph", "Package graph")
+    .AddNode("api", "API", node => {
+        node.Kind = "service";
+        node.Status = "healthy";
+    })
+    .AddNode("db", "Database", node => {
+        node.Kind = "database";
+        node.Status = "warning";
+    })
+    .AddEdge("api-db", "api", "db", "queries", edge => edge.Kind = "dependency");
+graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization);
+graph.Options.Physics.Solver = GraphPhysicsSolver.ForceDirected;
+var graphHtml = graph.ToGraphExplorerHtmlPage();
+if (!graphHtml.Contains("data-cfx-graph-id=\"package-graph\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer package surface missing.");
+if (!graphHtml.Contains("data-cfx-graph-physics=\"ForceDirected\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
+
 var mermaid = new MermaidParser().ParseFlowchart("flowchart LR\n  a[Start] --> b[Done]");
 if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");
 if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");

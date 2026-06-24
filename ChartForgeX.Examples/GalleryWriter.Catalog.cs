@@ -211,7 +211,9 @@ public static partial class GalleryWriter {
             "Interactive HTML Adapter",
             "Host-side HTML adapter demos for interactive chart review and synchronized dashboard exploration.",
             "domain-security-interactive",
-            "executive-interactive-dashboard"),
+            "executive-interactive-dashboard",
+            "identity-risk-graph-explorer",
+            "enterprise-access-graph-benchmark"),
         new(
             "Visual Systems",
             "Themes, brand kits, palettes, fonts, and pictorial symbol picker outputs.",

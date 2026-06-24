@@ -135,6 +135,7 @@ Useful review entry points:
 - `index.html` - full generated gallery.
 - `catalog.html` - examples grouped by chart family.
 - `topology-demo.html` - focused topology demo hub with the scenario route explorer.
+- `enterprise-access-graph-benchmark.html` - large graph explorer benchmark with 360 nodes, 720 directed edges, Canvas fallback, drag, pan, zoom, LOD, and telemetry.
 - `svg-png-comparison.html` - side-by-side renderer parity review.
 - `quality-dashboard.html` - visual health summary.
 
@@ -157,7 +158,7 @@ Optional visual artifact, markup, Mermaid, and interaction support is split into
 | `ChartForgeX.Markup` | Markdown-friendly v1 ChartForgeX visual fences for chart, timeline, topology, flow, sequence, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
-| `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter. |
+| `ChartForgeX.Interactivity.Html` | Self-contained HTML/SVG interaction adapter, including the graph explorer for large-object graph scenes with SVG output and Canvas runtime fallback. |
 
 The core package also includes product-neutral visual artifact models for reusable visuals. `Chart` models can be wrapped as artifacts, `FlowArtifact` keeps authored process flows distinct from topology previews, `SequenceArtifact` models interaction diagrams, `TableArtifact` declares capabilities such as search, sort, filter, selection, copy, export, and virtualization, and static previews render deterministically from the core package. Rich interaction belongs in native hosts and adapter packages. See `docs/visual-artifacts.md`, `docs/markup.md`, `docs/markup-v1-reference.md`, and `docs/mermaid.md` for the current contracts.
 
@@ -482,7 +483,7 @@ ChartForgeX
 |   |-- Topology                   # product-neutral topology model/renderers
 |   `-- VisualBlocks               # tables, lists, metric cards, visual grids
 |-- ChartForgeX.Interactivity       # host-neutral interaction contracts
-|-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction adapter
+|-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction and graph explorer adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
 |-- Website                         # dedicated PowerForge.Web pilot site
@@ -523,6 +524,7 @@ Review the generated pages under `ChartForgeX.Examples/bin/Release/net8.0/output
 - `svg-png-comparison.html`
 - `domain-security-interactive.html`
 - `executive-interactive-dashboard.html`
+- `identity-risk-graph-explorer.html`
 
 Only refresh visual baselines after reviewing the generated gallery:
 
@@ -533,6 +535,7 @@ Only refresh visual baselines after reviewing the generated gallery:
 ## Documentation
 
 - [Architecture notes](docs/architecture.md)
+- [Graph explorer reference](docs/graph-explorer.md)
 - [Interactivity reference](docs/interactivity.md)
 - [Topology reference](docs/topology.md)
 - [Visual blocks reference](docs/visual-blocks.md)

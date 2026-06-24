@@ -1,0 +1,55 @@
+.cfx-graph-shell{box-sizing:border-box;min-height:100vh;margin:0;padding:24px;background:#f8fafc;color:#0f172a;font-family:Segoe UI,Arial,sans-serif}
+.cfx-graph-shell *,.cfx-graph-shell *:before,.cfx-graph-shell *:after{box-sizing:inherit}
+.cfx-graph-explorer{position:relative;box-sizing:border-box;display:grid;gap:12px;max-width:1180px;margin:0 auto;color:#0f172a;font-family:Segoe UI,Arial,sans-serif}
+.cfx-graph-explorer *,.cfx-graph-explorer *:before,.cfx-graph-explorer *:after{box-sizing:inherit}
+.cfx-graph-header{display:grid;gap:4px}
+.cfx-graph-title{margin:0;font-size:22px;font-weight:700;line-height:1.16}
+.cfx-graph-subtitle{margin:0;color:#64748b;font-size:14px;line-height:1.45}
+.cfx-graph-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cfx-graph-search,.cfx-graph-filter,.cfx-graph-tool{height:34px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#0f172a;padding:0 10px;font:inherit}
+.cfx-graph-tool{cursor:pointer}
+.cfx-graph-tool[aria-pressed=true]{background:#0f172a;color:#fff;border-color:#0f172a}
+.cfx-graph-stage{position:relative;overflow:hidden;aspect-ratio:12/7;border:1px solid #dbe3ef;border-radius:8px;background:#fff;box-shadow:0 16px 34px rgba(15,23,42,.08);touch-action:auto;cursor:default}
+.cfx-graph-interactive-touch .cfx-graph-stage{touch-action:none;cursor:grab}
+.cfx-graph-interactive-touch .cfx-graph-stage:active,.cfx-graph-panning .cfx-graph-stage{cursor:grabbing}
+.cfx-graph-canvas{position:absolute;inset:0;display:none;width:100%;height:100%;background:#fff;cursor:inherit}
+.cfx-graph-overview{position:absolute;right:12px;bottom:12px;z-index:2;display:none;width:168px;height:98px;border:1px solid #cbd5e1;border-radius:6px;background:rgba(248,250,252,.96);box-shadow:0 12px 26px rgba(15,23,42,.16);cursor:crosshair}
+.cfx-graph-has-overview .cfx-graph-overview{display:block}
+.cfx-graph-svg{display:block;width:100%;height:auto;aspect-ratio:12/7}
+.cfx-graph-render-canvas .cfx-graph-canvas{display:block}
+.cfx-graph-render-canvas .cfx-graph-svg{opacity:0;pointer-events:none}
+.cfx-graph-render-svg .cfx-graph-canvas{display:none}
+.cfx-graph-bg{fill:#ffffff}
+.cfx-graph-edge{fill:none;stroke:#94a3b8;stroke-width:1.4;opacity:.58}
+.cfx-graph-edge[data-edge-dashed=true]{stroke-dasharray:8 6}
+.cfx-graph-svg marker path{fill:#64748b}
+.cfx-graph-edge-label{font-size:11px;text-anchor:middle;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round;pointer-events:none}
+.cfx-graph-node{cursor:grab}
+.cfx-graph-node:active,.cfx-graph-dragging-node .cfx-graph-node.cfx-graph-selected{cursor:grabbing}
+.cfx-graph-node circle,.cfx-graph-node rect{fill:#2563eb;stroke:#eff6ff;stroke-width:3}
+.cfx-graph-node image{clip-path:circle(50%)}
+.cfx-graph-node text{font-size:12px;text-anchor:middle;fill:#334155;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round}
+.cfx-graph-node .cfx-graph-node-icon{font-weight:700;fill:#fff;stroke:none;paint-order:normal}
+.cfx-graph-cluster{cursor:pointer}
+.cfx-graph-cluster circle{fill:#e0f2fe;stroke:#0284c7;stroke-width:2;stroke-dasharray:6 4;opacity:.74}
+.cfx-graph-cluster text{font-size:12px;text-anchor:middle;fill:#075985;font-weight:700;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round}
+.cfx-graph-cluster.cfx-graph-cluster-expanded{opacity:.1;pointer-events:none}
+.cfx-graph-cluster.cfx-graph-cluster-expanded circle{fill:none;stroke-width:1.4}
+.cfx-graph-cluster.cfx-graph-cluster-expanded text{display:none}
+.cfx-graph-node.cfx-graph-selected circle,.cfx-graph-node.cfx-graph-selected rect{stroke:#f59e0b;stroke-width:5}
+.cfx-graph-cluster.cfx-graph-selected circle{stroke:#f59e0b;stroke-width:4}
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-dim{opacity:.14}
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-edge{stroke:#0f766e;stroke-width:2.6;opacity:.86}
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-edge-label{fill:#0f766e;font-weight:700}
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node circle,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node rect{stroke:#5eead4;stroke-width:4}
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary circle,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary rect{stroke:#0f766e;stroke-width:6}
+.cfx-graph-node.cfx-graph-hidden,.cfx-graph-edge.cfx-graph-hidden,.cfx-graph-edge-label.cfx-graph-hidden,.cfx-graph-cluster.cfx-graph-hidden,.cfx-graph-node.cfx-graph-cluster-collapsed-member,.cfx-graph-edge.cfx-graph-cluster-collapsed-member,.cfx-graph-edge-label.cfx-graph-cluster-collapsed-member{display:none}
+.cfx-graph-lod-compact .cfx-graph-node text{display:none}
+.cfx-graph-lod-compact .cfx-graph-node circle{stroke-width:1.5}
+.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label{display:none}
+.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-label-selected,.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-neighborhood-related{display:block}
+.cfx-graph-performance-gated .cfx-graph-svg{background:repeating-linear-gradient(-45deg,#fff,#fff 12px,#f8fafc 12px,#f8fafc 24px)}
+.cfx-graph-tooltip{position:absolute;left:12px;bottom:12px;max-width:min(360px,calc(100% - 24px));padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;box-shadow:0 14px 30px rgba(15,23,42,.14);font-size:13px}
+.cfx-graph-tooltip[hidden]{display:none}
+.cfx-graph-edge.cfx-graph-selected{stroke:#f59e0b;stroke-width:3;opacity:.95}
+

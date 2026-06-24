@@ -1,0 +1,49 @@
+  const syncGraphItemTabStops = (root) => {
+    const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive !== 'canvas';
+    const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
+    if (canvas) {
+      canvas.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph canvas');
+    }
+    items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"]').forEach(item => item.setAttribute('tabindex', focusableSvg ? '0' : '-1'));
+    items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
+      const collapsed = attr(cluster, 'data-cluster-collapsed') === 'true';
+      cluster.setAttribute('tabindex', focusableSvg && collapsed ? '0' : '-1');
+      cluster.setAttribute('aria-hidden', root.dataset.cfxGraphRendererActive === 'canvas' || !collapsed ? 'true' : 'false');
+    });
+  };
+  const syncSelectedEdgeLabels = (root) => { const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label])); labels.forEach(label => label.classList.remove('cfx-graph-label-selected')); items(root, '[data-cfx-role="graph-edge"].cfx-graph-selected').forEach(edge => labels.get(attr(edge, 'data-edge-id'))?.classList.add('cfx-graph-label-selected')); };
+  const clearHiddenSelections = (root) => {
+    let changed = false;
+    let focusedSelectionHidden = false;
+    const focusNode = root.dataset.cfxGraphFocusNode || '';
+    items(root, '.cfx-graph-selected').forEach(item => {
+      const expandedCluster = attr(item, 'data-cfx-role') === 'graph-cluster' && item.classList.contains('cfx-graph-cluster-expanded');
+      if (visible(item) && !expandedCluster) return;
+      const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
+      focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && id === focusNode);
+      item.classList.remove('cfx-graph-selected');
+      changed = true;
+    });
+    if (!changed) return false;
+    const details = updateSelectionState(root);
+    syncSelectionTooltip(root, details);
+    if (focusedSelectionHidden) clearNeighborhoodFocus(root);
+    return true;
+  };
+  const syncSelectionTooltip = (root, details, fallback) => {
+    const tip = root.querySelector('.cfx-graph-tooltip');
+    if (!tip) return;
+    const tooltipDetail = details.length === 1 ? details[0] : fallback;
+    tip.textContent = details.length === 1 ? [tooltipDetail.label || tooltipDetail.id, tooltipDetail.kind, tooltipDetail.status].filter(Boolean).join(' / ') : details.length ? `${details.length} selected` : '';
+    tip.hidden = details.length === 0;
+  };
+  const syncClusterControls = (root) => {
+    const pressed = root.dataset.cfxGraphClusters === 'collapsed' ? 'true' : 'false';
+    items(root, "[data-cfx-graph-action='clusters']").forEach(button => button.setAttribute('aria-pressed', pressed));
+  };
+  const syncFocusControls = (root) => {
+    const pressed = root.dataset.cfxGraphFocus === 'active' ? 'true' : 'false';
+    items(root, "[data-cfx-graph-action='focus']").forEach(button => button.setAttribute('aria-pressed', pressed));
+  };

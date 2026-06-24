@@ -46,10 +46,14 @@ internal static partial class SmokeTests {
         Assert(script.Contains("Package consumer validation", StringComparison.Ordinal), "Build script should name package consumer validation errors.");
         Assert(script.Contains("TimeoutSeconds $PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Build script should use the shorter package consumer timeout for the final smoke run.");
         Assert(script.Contains("'add', 'package', 'ChartForgeX.Interactivity.Html'", StringComparison.Ordinal), "Build script should install the freshest adapter package in the consumer smoke test.");
+        var retiredGraphPackageId = "ChartForgeX.Interactivity." + "Graph" + ".Html";
+        Assert(!script.Contains("'add', 'package', '" + retiredGraphPackageId + "'", StringComparison.Ordinal), "Build script should not install a duplicate graph explorer package; graph explorer should ship in the HTML interactivity package.");
         Assert(script.Contains("function Join-ProcessArguments", StringComparison.Ordinal), "Build script should keep a Windows PowerShell compatible argument fallback.");
         Assert(script.Contains("$startInfo.Arguments = Join-ProcessArguments", StringComparison.Ordinal), "Build script should support ProcessStartInfo on runtimes without ArgumentList.");
         Assert(script.Contains("ToInteractiveHtmlPage", StringComparison.Ordinal), "Build script should verify interactive HTML package consumption from a clean project.");
         Assert(script.Contains("ToInteractiveHtmlDashboardPage", StringComparison.Ordinal), "Build script should verify interactive dashboard package consumption from a clean project.");
+        Assert(script.Contains("GraphScene.Create", StringComparison.Ordinal), "Build script should verify graph scene package consumption from a clean project.");
+        Assert(script.Contains("ToGraphExplorerHtmlPage", StringComparison.Ordinal), "Build script should verify graph explorer adapter package consumption from a clean project.");
         Assert(script.Contains("<dependency\\s", StringComparison.Ordinal), "Build script should verify dependency-free package invariants.");
         Assert(script.Contains("svg-png-comparison.json", StringComparison.Ordinal), "Build script should verify generated SVG/PNG comparison health.");
         Assert(script.Contains("function Assert-VisualComparisonHealth", StringComparison.Ordinal), "Build script should keep visual comparison health checks isolated.");
