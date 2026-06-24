@@ -100,9 +100,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
             : new Point(explicitMembers.Average(node => positions[node.Id].X), explicitMembers.Average(node => positions[node.Id].Y));
         var generated = component.Where(node => !node.HasExplicitPosition).ToArray();
         if (generated.Length == 0) return;
+        var explicitRadius = explicitMembers.Length == 0 ? 0 : explicitMembers.Max(PreparedNodeRadius);
         if (generated.Length == 1) {
             var generatedNode = generated[0];
-            var explicitRadius = explicitMembers.Length == 0 ? 0 : explicitMembers.Max(PreparedNodeRadius);
             var spacing = explicitMembers.Length == 0 ? 36 : Math.Max(72, PreparedNodeRadius(generatedNode) + explicitRadius + 36);
             var angle = -Math.PI / 2 + StableUnit(generatedNode.Id + ":explicit-neighbor") * Math.PI;
             positions[generatedNode.Id] = new Point(center.X + Math.Cos(angle) * spacing, center.Y + Math.Sin(angle) * spacing * 0.74);
@@ -116,9 +116,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         foreach (var node in generated.OrderByDescending(node => hubs.Any(hub => string.Equals(hub.Id, node.Id, StringComparison.Ordinal))).ThenBy(node => depths[node.Id]).ThenByDescending(node => Degree(node.Id, adjacency)).ThenBy(node => node.Id, StringComparer.Ordinal)) {
             var hubIndex = Array.FindIndex(hubs, hub => string.Equals(hub.Id, node.Id, StringComparison.Ordinal));
             if (hubIndex >= 0) {
+                var explicitSpacingFloor = explicitMembers.Length == 0 ? 0 : Math.Max(72, PreparedNodeRadius(node) + explicitRadius + 36);
                 var hubRadius = hubs.Length == 1
-                    ? explicitMembers.Length == 0 ? 0 : Math.Max(72, PreparedNodeRadius(node) + explicitMembers.Max(PreparedNodeRadius) + 36)
-                    : 24 + hubIndex * 8;
+                    ? explicitSpacingFloor
+                    : Math.Max(24 + hubIndex * 8, explicitSpacingFloor);
                 var hubAngle = GoldenAngle(hubIndex);
                 positions[node.Id] = new Point(center.X + Math.Cos(hubAngle) * hubRadius, center.Y + Math.Sin(hubAngle) * hubRadius * 0.72);
                 continue;
@@ -131,7 +132,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var depth = Math.Max(1, depths[node.Id]);
             var localAngle = GoldenAngle(rank) + StableOffset(node.Id + ":angle", 0.18);
             var localRadius = 18 + Math.Sqrt(rank + 1) * 14 + Math.Min(86, depth * 12) + StableOffset(node.Id + ":radius", 8);
-            if (explicitMembers.Length > 0) localRadius = Math.Max(localRadius, PreparedNodeRadius(node) + explicitMembers.Max(PreparedNodeRadius) + 36);
+            if (explicitMembers.Length > 0) localRadius = Math.Max(localRadius, PreparedNodeRadius(node) + explicitRadius + 36);
             positions[node.Id] = new Point(community.X + Math.Cos(localAngle) * localRadius, community.Y + Math.Sin(localAngle) * localRadius * 0.74);
         }
     }

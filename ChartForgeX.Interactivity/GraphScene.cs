@@ -60,6 +60,8 @@ public sealed class GraphScene {
             ValidateRequiredId(node.Id, "node");
             ValidateRequiredText(node.Label, "node");
             ValidateFiniteValue(node.Size, node.Id, "size");
+            if (node.Size <= 0) throw new InvalidOperationException("Graph scene node size must be greater than zero: " + node.Id);
+            if (!Enum.IsDefined(typeof(GraphNodeShape), node.Shape)) throw new InvalidOperationException("Graph scene node shape is unsupported: " + node.Id);
             if (node.HasExplicitPosition) {
                 ValidateFiniteCoordinate(node.X, node.Id, "x");
                 ValidateFiniteCoordinate(node.Y, node.Id, "y");
@@ -76,6 +78,7 @@ public sealed class GraphScene {
             ValidateFiniteValue(edge.Weight, edge.Id, "weight");
             ValidateFiniteValue(edge.Length, edge.Id, "length");
             ValidateFiniteValue(edge.Curvature, edge.Id, "curvature");
+            if (!Enum.IsDefined(typeof(GraphEdgeShape), edge.Shape)) throw new InvalidOperationException("Graph scene edge shape is unsupported: " + edge.Id);
             if (edge.Weight <= 0) throw new InvalidOperationException("Graph scene edge weight must be greater than zero: " + edge.Id);
             if (edge.Length < 0) throw new InvalidOperationException("Graph scene edge length must not be negative: " + edge.Id);
             if (!edgeIds.Add(edge.Id)) throw new InvalidOperationException("Graph scene contains a duplicate edge id: " + edge.Id);

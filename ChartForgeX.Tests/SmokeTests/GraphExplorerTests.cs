@@ -82,6 +82,17 @@ internal static partial class SmokeTests {
         unknownPhysicsSolver.Options.Physics.Solver = (GraphPhysicsSolver)999;
         AssertThrows<InvalidOperationException>(() => unknownPhysicsSolver.Validate(), "Graph scenes should reject unknown physics solver values before adapters serialize runtime physics settings.");
 
+        var nonPositiveSize = GraphScene.Create("bad-size-range", "Bad size range")
+            .AddNode("node", "Node", node => node.Size = 0);
+        AssertThrows<InvalidOperationException>(() => nonPositiveSize.Validate(), "Graph scenes should reject non-positive node sizes instead of exporting clamped marks.");
+
+        var unknownNodeShape = GraphScene.Create("bad-node-shape", "Bad node shape")
+            .AddNode("node", "Node", node => node.Shape = (GraphNodeShape)999);
+        AssertThrows<InvalidOperationException>(() => unknownNodeShape.Validate(), "Graph scenes should reject unknown node shape values before adapters silently fall back to circles.");
+
+        var unknownEdgeShape = GraphScene.Create("bad-edge-shape", "Bad edge shape").AddNode("a", "A").AddNode("b", "B").AddEdge("edge", "a", "b", configure: edge => edge.Shape = (GraphEdgeShape)999);
+        AssertThrows<InvalidOperationException>(() => unknownEdgeShape.Validate(), "Graph scenes should reject unknown edge shape values before adapters silently fall back to lines.");
+
         var blankPublicNode = GraphScene.Create("blank-node", "Blank node");
         blankPublicNode.Nodes.Add(new GraphSceneNode());
         AssertThrows<InvalidOperationException>(() => blankPublicNode.Validate(), "Graph scenes should reject blank public node ids before adapters render empty keys.");
@@ -343,7 +354,9 @@ internal static partial class SmokeTests {
         var scopedFragment = scene.ToGraphExplorerHtmlFragment(options => options.IdScope = "host-scope");
         Assert(scopedFragment.Contains("id=\"host-scope-title\"", StringComparison.Ordinal) && scopedFragment.Contains("marker-end=\"url(#host-scope-arrow)\"", StringComparison.Ordinal), "Graph explorer fragments should let hosts provide a deterministic SVG id scope for repeated embeds.");
         var repeatedScene = GraphScene.Create("graph", "Repeated graph").AddNode("a", "A");
-        Assert(!repeatedScene.ToGraphExplorerHtmlFragment().Contains("id=\"graph-title\"", StringComparison.Ordinal) && !repeatedScene.ToGraphExplorerHtmlFragment().Contains("id=\"graph-title\"", StringComparison.Ordinal), "Graph explorer fragments should avoid duplicate default SVG ids across repeated graph embeds.");
+        var firstRepeatedFragment = repeatedScene.ToGraphExplorerHtmlFragment();
+        var secondRepeatedFragment = repeatedScene.ToGraphExplorerHtmlFragment();
+        Assert(firstRepeatedFragment == secondRepeatedFragment && !firstRepeatedFragment.Contains("id=\"graph-title\"", StringComparison.Ordinal), "Graph explorer fragments should derive deterministic default SVG ids without process-global counters.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains(".cfx-graph-explorer", StringComparison.Ordinal), "Host-registered graph explorer CSS should stay scoped to graph explorer surfaces.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains(".cfx-graph-explorer *,.cfx-graph-explorer *:before,.cfx-graph-explorer *:after{box-sizing:inherit}", StringComparison.Ordinal), "Host-registered graph explorer CSS should scope base box sizing to fragments without requiring a page-level shell.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains(".cfx-graph-explorer{position:relative", StringComparison.Ordinal), "Host-registered graph explorer CSS should anchor graph tooltips to the explorer component.");
@@ -458,11 +471,6 @@ internal static partial class SmokeTests {
         var lodDisabledLoadCollapseHtml = lodDisabledLoadCollapseScene.ToGraphExplorerHtmlFragment();
         Assert(lodDisabledLoadCollapseHtml.Contains("data-cluster-collapsed=\"false\"", StringComparison.Ordinal) && lodDisabledLoadCollapseHtml.Contains("cfx-graph-cluster-expanded", StringComparison.Ordinal), "Graph explorer static load-collapse should not collapse clusters when the host disables LevelOfDetail.");
 
-        var negativeSizeHtml = GraphScene.Create("negative-size", "Negative size")
-            .AddNode("a", "A", node => node.Size = -20)
-            .ToGraphExplorerHtmlFragment();
-        Assert(negativeSizeHtml.Contains("data-node-size=\"4\"", StringComparison.Ordinal) && negativeSizeHtml.Contains("<text y=\"22\">", StringComparison.Ordinal), "Graph explorer static markup should use the same safe node size for marks, hit data, and label placement.");
-
         var staticEmbed = GraphScene.Create("static-embed", "Static embed").AddNode("a", "A");
         staticEmbed.Options.Disable(GraphSceneFeatures.Viewport | GraphSceneFeatures.DragNodes);
         Assert(!staticEmbed.ToGraphExplorerHtmlFragment().Contains("class=\"cfx-graph-explorer cfx-graph-interactive-touch\"", StringComparison.Ordinal), "Graph explorer static embeds should not block native touch scrolling when panning and dragging are disabled.");
@@ -562,6 +570,22 @@ internal static partial class SmokeTests {
             .AddEdge("generated-hub-generated-leaf", "generated-hub", "generated-leaf")
             .ToGraphExplorerHtmlFragment();
         Assert(Distance(ExtractGraphNodePoint(generatedHubHtml, "fixed"), ExtractGraphNodePoint(generatedHubHtml, "generated-hub")) > 70, "Graph explorer prepared layout should keep generated hubs from landing on explicit anchors in mixed components.");
+
+        var generatedHubsHtml = GraphScene.Create("generated-hubs-anchor", "Generated hubs anchor")
+            .AddNode("fixed", "Fixed", node => {
+                node.X = 140;
+                node.Y = 140;
+                node.Size = 20;
+            })
+            .AddNode("generated-hub-a", "Generated hub A")
+            .AddNode("generated-hub-b", "Generated hub B")
+            .AddNode("generated-leaf-a", "Generated leaf A").AddNode("generated-leaf-b", "Generated leaf B")
+            .AddEdge("fixed-generated-hub-a", "fixed", "generated-hub-a")
+            .AddEdge("fixed-generated-hub-b", "fixed", "generated-hub-b")
+            .AddEdge("generated-hub-a-leaf-a", "generated-hub-a", "generated-leaf-a").AddEdge("generated-hub-b-leaf-b", "generated-hub-b", "generated-leaf-b")
+            .ToGraphExplorerHtmlFragment();
+        var generatedHubsFixed = ExtractGraphNodePoint(generatedHubsHtml, "fixed");
+        Assert(Distance(generatedHubsFixed, ExtractGraphNodePoint(generatedHubsHtml, "generated-hub-a")) > 70 && Distance(generatedHubsFixed, ExtractGraphNodePoint(generatedHubsHtml, "generated-hub-b")) > 70, "Graph explorer prepared layout should apply explicit-anchor spacing to every generated hub in multi-hub mixed components.");
 
         var selfLoopHtml = GraphScene.Create("self-loop", "Self loop")
             .AddNode("node", "Node", node => {

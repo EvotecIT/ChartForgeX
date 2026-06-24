@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using ChartForgeX.Interactivity;
 
 namespace ChartForgeX.Interactivity.Html;
@@ -15,7 +14,6 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlGraphExplorerRenderer {
     private const double Width = 960;
     private const double Height = 560;
-    private static int s_renderInstance;
 
     /// <summary>
     /// Renders a complete HTML page containing the graph explorer and its inline assets.
@@ -75,16 +73,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return options;
     }
 
-    private static string ResolveDomId(string graphId, HtmlGraphExplorerOptions options) {
+    private static string ResolveDomId(GraphScene scene, string graphId, HtmlGraphExplorerOptions options) {
         if (!string.IsNullOrWhiteSpace(options.IdScope)) return SafeId(options.IdScope!);
-        return graphId + "-" + Interlocked.Increment(ref s_renderInstance).ToString(CultureInfo.InvariantCulture);
+        return graphId + "-" + StableSceneHash(scene);
     }
 
     private static string RenderGraph(GraphScene scene, HtmlGraphExplorerOptions options) {
         scene.Validate();
         var positions = ComputePositions(scene);
         var graphId = SafeId(scene.Id);
-        var domId = ResolveDomId(graphId, options);
+        var domId = ResolveDomId(scene, graphId, options);
         var writer = new StringBuilder();
         writer.Append("<section class=\"cfx-graph-explorer");
         if (ConsumesTouchMovement(scene)) writer.Append(" cfx-graph-interactive-touch");
@@ -631,6 +629,55 @@ public sealed partial class HtmlGraphExplorerRenderer {
     };
 
     private static string EdgeShape(GraphEdgeShape shape) => shape == GraphEdgeShape.Curve ? "curve" : "line";
+
+    private static string StableSceneHash(GraphScene scene) {
+        unchecked {
+            var hash = 2166136261u;
+            AddStableHash(ref hash, scene.Id);
+            AddStableHash(ref hash, scene.Title);
+            foreach (var node in scene.Nodes.OrderBy(node => node.Id, StringComparer.Ordinal)) {
+                AddStableHash(ref hash, node.Id);
+                AddStableHash(ref hash, node.Label);
+                AddStableHash(ref hash, node.Kind);
+                AddStableHash(ref hash, node.Status);
+                AddStableHash(ref hash, node.ClusterId);
+                AddStableHash(ref hash, node.Shape.ToString());
+                AddStableHash(ref hash, node.Size.ToString("R", CultureInfo.InvariantCulture));
+                if (node.HasExplicitPosition) {
+                    AddStableHash(ref hash, node.X.ToString("R", CultureInfo.InvariantCulture));
+                    AddStableHash(ref hash, node.Y.ToString("R", CultureInfo.InvariantCulture));
+                }
+            }
+
+            foreach (var edge in scene.Edges.OrderBy(edge => edge.Id, StringComparer.Ordinal)) {
+                AddStableHash(ref hash, edge.Id);
+                AddStableHash(ref hash, edge.SourceNodeId);
+                AddStableHash(ref hash, edge.TargetNodeId);
+                AddStableHash(ref hash, edge.Label);
+                AddStableHash(ref hash, edge.Kind);
+                AddStableHash(ref hash, edge.Shape.ToString());
+                AddStableHash(ref hash, edge.Curvature.ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            foreach (var cluster in scene.Clusters.OrderBy(cluster => cluster.Id, StringComparer.Ordinal)) {
+                AddStableHash(ref hash, cluster.Id);
+                AddStableHash(ref hash, cluster.Label);
+                foreach (var nodeId in cluster.NodeIds.OrderBy(nodeId => nodeId, StringComparer.Ordinal)) AddStableHash(ref hash, nodeId);
+            }
+
+            return hash.ToString("x8", CultureInfo.InvariantCulture);
+        }
+    }
+
+    private static void AddStableHash(ref uint hash, string? value) {
+        foreach (var ch in value ?? string.Empty) {
+            hash ^= ch;
+            hash *= 16777619u;
+        }
+
+        hash ^= 31u;
+        hash *= 16777619u;
+    }
 
     private static string SafeId(string value) {
         var builder = new StringBuilder(value.Length);
