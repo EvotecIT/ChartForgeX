@@ -118,12 +118,12 @@
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)) return;
       const rendered = visualEdge(edge, state.byId);
-      const control = edgeControl(rendered);
+      const control = edgeControl(rendered), endpoints = edgeRenderEndpoints(rendered, control);
       const distance = rendered.source === rendered.target
         ? distanceToSelfLoop(point, rendered.source)
         : control
-        ? distanceToQuadratic(point, rendered.source, control, edgeRenderTarget(rendered, control))
-        : distanceToSegment(point, rendered.source, rendered.target);
+        ? distanceToQuadratic(point, endpoints.source, control, endpoints.target)
+        : distanceToSegment(point, endpoints.source, endpoints.target);
       if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {
         best = edge;
         bestDistance = distance;

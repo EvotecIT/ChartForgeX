@@ -32,6 +32,23 @@
     const offset = Math.abs(edge.curvature) < 0.001 ? 34 : edge.curvature;
     return { x: (edge.source.x + edge.target.x) / 2 - dy / length * offset, y: (edge.source.y + edge.target.y) / 2 + dx / length * offset };
   };
+  const edgeRenderSource = (edge, control) => {
+    if (!edge.sourceCollapsed) return edge.source;
+    const to = control || edge.target;
+    const dx = to.x - edge.source.x, dy = to.y - edge.source.y;
+    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    const inset = nodeBoundaryInset(edge.source, dx / length, dy / length);
+    return { x: edge.source.x + dx / length * inset, y: edge.source.y + dy / length * inset };
+  };
+  const edgeRenderTarget = (edge, control) => {
+    if (!edge.directed && !edge.targetCollapsed) return edge.target;
+    const from = control || edge.source;
+    const dx = edge.target.x - from.x, dy = edge.target.y - from.y;
+    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    const inset = nodeBoundaryInset(edge.target, dx / length, dy / length);
+    return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
+  };
+  const edgeRenderEndpoints = (edge, control) => ({ source: edgeRenderSource(edge, control), target: edgeRenderTarget(edge, control) });
   const selfLoopGeometry = (node) => {
     const right = nodeBoundaryInset(node, 1, 0) + 5;
     const left = nodeBoundaryInset(node, -1, 0) + 5;

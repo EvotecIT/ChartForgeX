@@ -233,10 +233,10 @@
         context.moveTo(loop.start.x, loop.start.y);
         context.bezierCurveTo(loop.c1.x, loop.c1.y, loop.c2.x, loop.c2.y, loop.end.x, loop.end.y);
       } else {
-        const target = edgeRenderTarget(rendered, control, byId);
-        context.moveTo(rendered.source.x, rendered.source.y);
-        if (control) context.quadraticCurveTo(control.x, control.y, target.x, target.y);
-        else context.lineTo(target.x, target.y);
+        const endpoints = edgeRenderEndpoints(rendered, control);
+        context.moveTo(endpoints.source.x, endpoints.source.y);
+        if (control) context.quadraticCurveTo(control.x, control.y, endpoints.target.x, endpoints.target.y);
+        else context.lineTo(endpoints.target.x, endpoints.target.y);
       }
       context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : '#94a3b8';
       context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;

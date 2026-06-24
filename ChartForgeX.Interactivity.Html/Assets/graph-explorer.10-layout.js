@@ -3,14 +3,6 @@
     node.el.setAttribute('data-node-x', node.x.toFixed(3));
     node.el.setAttribute('data-node-y', node.y.toFixed(3));
   };
-  const edgeRenderTarget = (edge, control) => {
-    if (!edge.directed) return edge.target;
-    const from = control || edge.source;
-    const dx = edge.target.x - from.x, dy = edge.target.y - from.y;
-    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    const inset = nodeBoundaryInset(edge.target, dx / length, dy / length);
-    return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
-  };
   const updateEdges = (root, edges) => {
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     const state = root.__cfxGraphState || graphState(root);
@@ -18,12 +10,12 @@
     edges.forEach(edge => {
       const rendered = visualEdge(edge, byId);
       const control = edgeControl(rendered);
-      const target = edgeRenderTarget(rendered, control);
+      const endpoints = edgeRenderEndpoints(rendered, control);
       const d = rendered.source === rendered.target
         ? selfLoopPath(rendered.target)
         : control
-        ? `M ${rendered.source.x.toFixed(3)} ${rendered.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${target.x.toFixed(3)} ${target.y.toFixed(3)}`
-        : `M ${rendered.source.x.toFixed(3)} ${rendered.source.y.toFixed(3)} L ${target.x.toFixed(3)} ${target.y.toFixed(3)}`;
+        ? `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`
+        : `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} L ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`;
       edge.el.setAttribute('d', d);
       const label = labels.get(attr(edge.el, 'data-edge-id'));
       if (label) {

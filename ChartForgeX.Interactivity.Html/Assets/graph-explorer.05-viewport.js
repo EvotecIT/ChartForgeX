@@ -51,7 +51,7 @@
     if (visible(node.el)) return node;
     return clusterProxyNode(side === 'source' ? edge.sourceCluster : edge.targetCluster, byId) || node;
   };
-  const visualEdge = (edge, byId) => ({ ...edge, source: edgeVisualNode(edge, 'source', byId), target: edgeVisualNode(edge, 'target', byId) });
+  const visualEdge = (edge, byId) => { const source = edgeVisualNode(edge, 'source', byId), target = edgeVisualNode(edge, 'target', byId); return { ...edge, source, target, sourceCollapsed: source !== edge.source, targetCollapsed: target !== edge.target }; };
   const edgeHasVisibleEndpoints = (edge, byId) => visible(edgeVisualNode(edge, 'source', byId).el) && visible(edgeVisualNode(edge, 'target', byId).el);
   const contentBounds = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));

@@ -180,7 +180,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var collapsedNodeRadii = collapsedNodePositions.Count == 0
             ? new Dictionary<string, double>(StringComparer.Ordinal)
             : BuildCollapsedNodeRenderRadii(scene, positions, clusterMembership, collapseClustersOnLoad);
-        writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\"></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas>");
+        writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\"");
+        Attribute(writer, "aria-label", scene.Title);
+        writer.Append("></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas>");
         writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
         writer.Append("><title");
