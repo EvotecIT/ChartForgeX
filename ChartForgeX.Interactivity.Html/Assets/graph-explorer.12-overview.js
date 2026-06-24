@@ -37,12 +37,12 @@
     context.strokeStyle = '#cbd5e1';
     context.lineWidth = 1;
     context.strokeRect(.5, .5, canvas.width - 1, canvas.height - 1);
-    const edgeLimit = currentState.edges.length > 1200 ? 1200 : currentState.edges.length;
+    const drawableEdges = currentState.edges.filter(edge => visible(edge.el) && edgeHasVisibleEndpoints(edge, currentState.byId));
+    const edgeLimit = drawableEdges.length > 1200 ? 1200 : drawableEdges.length;
     context.strokeStyle = 'rgba(148,163,184,.32)';
     context.lineWidth = .75;
     for (let index = 0; index < edgeLimit; index++) {
-      const edge = currentState.edges[index];
-      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, currentState.byId)) continue;
+      const edge = drawableEdges[index];
       const rendered = visualEdge(edge, currentState.byId);
       const source = overviewPoint(metrics, rendered.source.x, rendered.source.y);
       const target = overviewPoint(metrics, rendered.target.x, rendered.target.y);

@@ -292,8 +292,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
             var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
+            var sourceBoundary = collapsedNodeRadii.TryGetValue(edge.SourceNodeId, out var sourceRadius) ? sourceRadius : (double?)null;
             var targetBoundary = collapsedNodeRadii.TryGetValue(edge.TargetNodeId, out var targetRadius) ? targetRadius : (double?)null;
-            var path = EdgePath(edge, renderSource, renderTarget, targetNode, targetBoundary);
+            var path = EdgePath(edge, renderSource, renderTarget, targetNode, targetBoundary, sourceBoundary);
             writer.Append("<path class=\"cfx-graph-edge");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" tabindex=\"");
@@ -369,7 +370,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cfx-status", node.Status);
             Attribute(writer, "data-node-size", Number(size));
             Attribute(writer, "data-node-fixed", node.Fixed ? "true" : "false");
-            Attribute(writer, "data-node-shape", NodeShape(node.Shape));
+            Attribute(writer, "data-node-shape", NodeShape(node));
             Attribute(writer, "data-node-image-url", node.ImageUrl);
             Attribute(writer, "data-node-icon", node.IconText);
             if (focusableGraphItems) Attribute(writer, "aria-label", node.Label);
@@ -519,16 +520,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
-        return EdgePath(edge, source, target, targetNode, null);
+        return EdgePath(edge, source, target, targetNode, null, null);
     }
 
-    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode, double? targetBoundaryInset) {
+    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopPath(target, targetNode);
         var control = EdgeControl(edge, source, target);
+        var renderSource = SourceBoundaryPoint(source, target, control, sourceBoundaryInset);
         var renderTarget = DirectedTargetPoint(edge, source, target, control, targetNode, targetBoundaryInset);
         return control.HasValue
-            ? "M " + Number(source.X) + " " + Number(source.Y) + " Q " + Number(control.Value.X) + " " + Number(control.Value.Y) + " " + Number(renderTarget.X) + " " + Number(renderTarget.Y)
-            : "M " + Number(source.X) + " " + Number(source.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
+            ? "M " + Number(renderSource.X) + " " + Number(renderSource.Y) + " Q " + Number(control.Value.X) + " " + Number(control.Value.Y) + " " + Number(renderTarget.X) + " " + Number(renderTarget.Y)
+            : "M " + Number(renderSource.X) + " " + Number(renderSource.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
     }
 
     private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
@@ -547,6 +549,15 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
         var offset = Math.Abs(curvature) < 0.001 ? 34 : curvature;
         return new Point((source.X + target.X) / 2 - dy / length * offset, (source.Y + target.Y) / 2 + dx / length * offset);
+    }
+
+    private static Point SourceBoundaryPoint(Point source, Point target, Point? control, double? sourceBoundaryInset) {
+        if (!sourceBoundaryInset.HasValue || sourceBoundaryInset.Value <= 0) return source;
+        var to = control ?? target;
+        var dx = to.X - source.X;
+        var dy = to.Y - source.Y;
+        var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
+        return new Point(source.X + dx / length * sourceBoundaryInset.Value, source.Y + dy / length * sourceBoundaryInset.Value);
     }
 
     private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode) {
@@ -580,7 +591,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static double TargetBoundaryInset(GraphSceneNode? node, double unitX, double unitY) {
         var size = Math.Max(4, node?.Size ?? 8);
-        if (node?.Shape == GraphNodeShape.Box) {
+        var shape = EffectiveNodeShape(node);
+        if (shape == GraphNodeShape.Box) {
             var halfWidth = size * 1.45;
             var halfHeight = size * 1.05;
             if (Math.Abs(unitX) < 0.001 && Math.Abs(unitY) < 0.001) return Math.Max(6, Math.Max(halfWidth, halfHeight) + 7);
@@ -589,7 +601,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             return Math.Max(6, Math.Min(xInset, yInset) + 7);
         }
 
-        return Math.Max(6, size + (node?.Shape == GraphNodeShape.Image ? 11 : 7));
+        return Math.Max(6, size + (shape == GraphNodeShape.Image ? 11 : 7));
     }
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
@@ -617,12 +629,18 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static string Backend(HtmlGraphRenderBackend backend) => backend switch {
+        HtmlGraphRenderBackend.Svg => "svg",
         HtmlGraphRenderBackend.Canvas => "canvas",
         HtmlGraphRenderBackend.WebGl => "canvas",
-        _ => "svg"
+        _ => throw new InvalidOperationException("Graph explorer render backend is unsupported: " + backend)
     };
 
-    private static string NodeShape(GraphNodeShape shape) => shape switch {
+    private static GraphNodeShape EffectiveNodeShape(GraphSceneNode? node) {
+        if (node == null) return GraphNodeShape.Circle;
+        return node.Shape == GraphNodeShape.Image && string.IsNullOrWhiteSpace(node.ImageUrl) ? GraphNodeShape.Circle : node.Shape;
+    }
+
+    private static string NodeShape(GraphSceneNode node) => EffectiveNodeShape(node) switch {
         GraphNodeShape.Box => "box",
         GraphNodeShape.Image => "image",
         _ => "circle"

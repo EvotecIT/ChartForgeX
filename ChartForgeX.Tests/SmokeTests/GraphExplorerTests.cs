@@ -86,8 +86,7 @@ internal static partial class SmokeTests {
             .AddNode("node", "Node", node => node.Size = 0);
         AssertThrows<InvalidOperationException>(() => nonPositiveSize.Validate(), "Graph scenes should reject non-positive node sizes instead of exporting clamped marks.");
 
-        var unknownNodeShape = GraphScene.Create("bad-node-shape", "Bad node shape")
-            .AddNode("node", "Node", node => node.Shape = (GraphNodeShape)999);
+        var unknownNodeShape = GraphScene.Create("bad-node-shape", "Bad node shape").AddNode("node", "Node", node => node.Shape = (GraphNodeShape)999);
         AssertThrows<InvalidOperationException>(() => unknownNodeShape.Validate(), "Graph scenes should reject unknown node shape values before adapters silently fall back to circles.");
 
         var unknownEdgeShape = GraphScene.Create("bad-edge-shape", "Bad edge shape").AddNode("a", "A").AddNode("b", "B").AddEdge("edge", "a", "b", configure: edge => edge.Shape = (GraphEdgeShape)999);
@@ -118,6 +117,8 @@ internal static partial class SmokeTests {
         var invalidPhysics = GraphScene.Create("bad-physics", "Bad physics").AddNode("node", "Node");
         invalidPhysics.Options.Physics.Damping = double.NaN;
         AssertThrows<InvalidOperationException>(() => invalidPhysics.Validate(), "Graph scenes should reject non-finite or out-of-range physics options before adapters serialize invalid runtime settings.");
+        var zeroRepulsion = GraphScene.Create("zero-repulsion", "Zero repulsion").AddNode("node", "Node"); zeroRepulsion.Options.Physics.Repulsion = 0;
+        AssertThrows<InvalidOperationException>(() => zeroRepulsion.Validate(), "Graph scenes should reject zero physics repulsion before the runtime silently clamps it to a different force.");
 
         var invalidPerformance = GraphScene.Create("bad-performance", "Bad performance").AddNode("node", "Node");
         invalidPerformance.Options.Performance.FrameBudgetMilliseconds = 0;
@@ -226,7 +227,7 @@ internal static partial class SmokeTests {
         var rendererSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerRenderer.cs"));
         var layoutSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerRenderer.Layout.cs"));
         Assert(rendererSource.Contains("DirectedTargetPoint", StringComparison.Ordinal) && rendererSource.Contains("TargetBoundaryInset", StringComparison.Ordinal) && rendererSource.Contains("GraphNodeShape.Box", StringComparison.Ordinal), "Graph explorer SVG should trim directed edges before marker placement with shape-aware boundaries so arrowheads remain visible.");
-        Assert(rendererSource.Contains("BuildCollapsedNodeRenderRadii", StringComparison.Ordinal) && rendererSource.Contains("collapsedNodeRadii.TryGetValue(edge.TargetNodeId", StringComparison.Ordinal), "Graph explorer static collapsed-cluster arrows should trim against each cluster summary radius instead of a fixed inset.");
+        Assert(rendererSource.Contains("BuildCollapsedNodeRenderRadii", StringComparison.Ordinal) && rendererSource.Contains("collapsedNodeRadii.TryGetValue(edge.TargetNodeId", StringComparison.Ordinal) && rendererSource.Contains("collapsedNodeRadii.TryGetValue(edge.SourceNodeId", StringComparison.Ordinal), "Graph explorer static collapsed-cluster arrows should trim against each cluster summary radius instead of a fixed inset.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("const hasLayoutBox = rect.width > 0 && rect.height > 0", StringComparison.Ordinal), "Hidden SVG-mode canvases should size PNG exports from the scene instead of compounding reflected high-DPI canvas attributes.");
         Assert(html.Contains("data-cfx-role=\"graph-edge-label\"", StringComparison.Ordinal), "Graph explorer SVG should render relationship labels as addressable graph output.");
         Assert(html.Contains("data-cfx-role=\"graph-cluster\"", StringComparison.Ordinal) && html.Contains("data-cluster-node-ids=\"api,db\"", StringComparison.Ordinal), "Graph explorer SVG should expose reusable cluster summaries.");
@@ -316,7 +317,7 @@ internal static partial class SmokeTests {
         Assert(!html.Contains("node.x = Math.max(24, Math.min(936, point.x))", StringComparison.Ordinal), "Graph explorer dragging should not force nodes back into the old fixed viewport box.");
         Assert(html.Contains("ResizeObserver", StringComparison.Ordinal) && html.Contains("__cfxGraphViewportTouched", StringComparison.Ordinal), "Graph explorer viewport should refit on stage resize until the user explicitly pans or zooms.");
         Assert(html.Contains("root.__cfxGraphState ||", StringComparison.Ordinal) && html.Contains("renderer === 'canvas' && currentState", StringComparison.Ordinal), "Graph explorer viewport updates should reuse cached graph state and avoid Canvas redraw work while SVG is the active renderer.");
-        Assert(html.Contains("bindOverview", StringComparison.Ordinal) && html.Contains("updateOverview", StringComparison.Ordinal) && html.Contains("cfxgraphoverview", StringComparison.Ordinal), "Graph explorer runtime should keep an overview/minimap synchronized with viewport, selection, focus, filtering, and layout changes.");
+        Assert(html.Contains("bindOverview", StringComparison.Ordinal) && html.Contains("updateOverview", StringComparison.Ordinal) && html.Contains("cfxgraphoverview", StringComparison.Ordinal) && html.Contains("const drawableEdges = currentState.edges.filter", StringComparison.Ordinal), "Graph explorer runtime should keep an overview/minimap synchronized with viewport, selection, focus, filtering, and layout changes.");
         Assert(html.Contains("clearHiddenSelections", StringComparison.Ordinal) && html.Contains("syncGraphItemTabStops", StringComparison.Ordinal) && html.Contains("cfxGraphRendererActive !== 'canvas'", StringComparison.Ordinal), "Graph explorer runtime should remove hidden selections and remove invisible SVG tab stops when Canvas is the active renderer.");
         Assert(html.Contains("cfx-graph-cluster-expanded", StringComparison.Ordinal) && html.Contains("clearHiddenSelections(root);", StringComparison.Ordinal), "Graph explorer runtime should remove selected clusters when cluster expansion makes them inaccessible.");
         Assert(html.Contains("focusedSelectionHidden", StringComparison.Ordinal) && html.Contains("clearNeighborhoodFocus(root)", StringComparison.Ordinal), "Graph explorer runtime should clear neighborhood focus when filters or cluster collapse hide the focused selection.");
@@ -384,6 +385,7 @@ internal static partial class SmokeTests {
         Assert(canvasHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal), "Graph explorer fragments should allow hosts to request Canvas as the initial renderer.");
         var webGlHtml = scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = HtmlGraphRenderBackend.WebGl);
         Assert(webGlHtml.Contains("data-cfx-graph-renderer=\"canvas\"", StringComparison.Ordinal) && !webGlHtml.Contains("data-cfx-graph-renderer=\"webgl\"", StringComparison.Ordinal), "Graph explorer should route explicit WebGL requests to the supported Canvas backend until a real WebGL renderer exists.");
+        AssertThrows<InvalidOperationException>(() => scene.ToGraphExplorerHtmlFragment(options => options.RenderBackend = (HtmlGraphRenderBackend)999), "Graph explorer should reject unknown render backend enum values instead of silently falling back to SVG.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("configured === 'webgl' ? 'canvas' : configured", StringComparison.Ordinal), "Graph explorer runtime should also route host-authored WebGL backend attributes to Canvas instead of silently falling back to SVG.");
 
         var expandedClusterHtml = GraphScene.Create("expanded-cluster", "Expanded cluster")
@@ -461,7 +463,7 @@ internal static partial class SmokeTests {
         loadCollapsedCrossEdgeHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
         var loadCollapsedCrossEdgeMarkup = loadCollapsedCrossEdgeHtml.ToGraphExplorerHtmlFragment();
         Assert(!loadCollapsedCrossEdgeMarkup.Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\" tabindex=\"0\" data-cfx-role=\"graph-edge\" data-edge-id=\"a-b\"", StringComparison.Ordinal), "Graph explorer static load-collapse should preserve cross-cluster edges for aggregate rendering.");
-        Assert(loadCollapsedCrossEdgeMarkup.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal) && loadCollapsedCrossEdgeMarkup.Contains("d=\"M 100 200 L 300 200\"", StringComparison.Ordinal), "Graph explorer static load-collapse should retarget visible cross-cluster edges to cluster summaries instead of hidden member nodes.");
+        Assert(loadCollapsedCrossEdgeMarkup.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal) && loadCollapsedCrossEdgeMarkup.Contains("d=\"M 134 200 L 300 200\"", StringComparison.Ordinal), "Graph explorer static load-collapse should retarget visible cross-cluster edges to cluster summaries and trim them away from the source summary.");
 
         var lodDisabledLoadCollapseScene = GraphScene.Create("lod-disabled-load-collapsed", "LOD disabled load collapsed")
             .AddNode("a", "A")
@@ -611,6 +613,9 @@ internal static partial class SmokeTests {
             .AddEdge("source-target", "source", "target", configure: edge => edge.Directed = true)
             .ToGraphExplorerHtmlFragment();
         Assert(ExtractGraphEdgePath(boxTargetHtml, "source-target").Contains("L 429.5 280", StringComparison.Ordinal), "Graph explorer SVG should trim directed arrows to the visible edge of box nodes instead of under the rectangle fill.");
+
+        var imageFallbackHtml = GraphScene.Create("image-fallback-target", "Image fallback target").AddNode("source", "Source", node => { node.X = 100; node.Y = 280; }).AddNode("target", "Target", node => { node.X = 480; node.Y = 280; node.Size = 30; node.Shape = GraphNodeShape.Image; }).AddEdge("source-target", "source", "target", configure: edge => edge.Directed = true).ToGraphExplorerHtmlFragment();
+        Assert(imageFallbackHtml.Contains("data-node-shape=\"circle\"", StringComparison.Ordinal) && ExtractGraphEdgePath(imageFallbackHtml, "source-target").Contains("L 443 280", StringComparison.Ordinal), "Graph explorer SVG should use the effective rendered circle shape for image nodes without image URLs.");
 
         var dottedIdHtml = GraphScene.Create("graph.with.dot", "Graph with dot").AddNode("a", "A").ToGraphExplorerHtmlFragment();
         var dashedIdHtml = GraphScene.Create("graph-with-dot", "Graph with dash").AddNode("a", "A").ToGraphExplorerHtmlFragment();

@@ -116,7 +116,7 @@ public sealed class GraphScene {
         ValidatePositiveFinite(Options.Physics.Damping, "physics damping");
         if (Options.Physics.Damping >= 1) throw new InvalidOperationException("Graph scene physics damping must be less than one.");
         ValidatePositiveFinite(Options.Physics.LinkDistance, "physics link distance");
-        ValidateNonNegativeFinite(Options.Physics.Repulsion, "physics repulsion");
+        ValidatePositiveFinite(Options.Physics.Repulsion, "physics repulsion");
         ValidateNonNegativeFinite(Options.Physics.CenterGravity, "physics center gravity");
         if (Options.LevelOfDetail.ClusterNodeThreshold < 0 || Options.LevelOfDetail.HideEdgeLabelsThreshold < 0 || Options.LevelOfDetail.CompactNodeThreshold < 0 || Options.LevelOfDetail.CanvasPreferredNodeThreshold < 0) throw new InvalidOperationException("Graph scene level-of-detail thresholds must not be negative.");
         if (Options.Performance.FrameBudgetMilliseconds <= 0) throw new InvalidOperationException("Graph scene performance frame budget must be greater than zero.");
