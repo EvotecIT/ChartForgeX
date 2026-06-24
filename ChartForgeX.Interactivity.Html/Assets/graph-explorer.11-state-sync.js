@@ -1,5 +1,7 @@
   const syncGraphItemTabStops = (root) => {
     const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive !== 'canvas';
+    const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
+    if (canvas) canvas.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"]').forEach(item => item.setAttribute('tabindex', focusableSvg ? '0' : '-1'));
     items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
       const collapsed = attr(cluster, 'data-cluster-collapsed') === 'true';

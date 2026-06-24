@@ -15,6 +15,7 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlGraphExplorerRenderer {
     private const double Width = 960;
     private const double Height = 560;
+    private const double ClusterBoundaryInset = 49;
     private static int s_renderInstance;
 
     /// <summary>
@@ -176,6 +177,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
             ? BuildCollapsedNodeIds(scene, clusterMembership, collapseClustersOnLoad)
             : new HashSet<string>(StringComparer.Ordinal);
         var collapsedEdgeIds = BuildCollapsedEdgeIds(scene, clusterMembership, collapsedNodeIds);
+        var collapsedNodePositions = clusteringEnabled
+            ? BuildCollapsedNodeRenderPositions(scene, positions, clusterMembership, collapseClustersOnLoad)
+            : new Dictionary<string, Point>(StringComparer.Ordinal);
         writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\"></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas>");
         writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
@@ -190,8 +194,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
         var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
         if (clusteringEnabled) WriteClusters(writer, scene, positions, clusterMembership, collapseClustersOnLoad, focusableGraphItems);
-        WriteEdges(writer, scene, positions, clusterMembership, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems);
-        WriteEdgeLabels(writer, scene, positions, collapsedEdgeIds);
+        WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems);
+        WriteEdgeLabels(writer, scene, positions, collapsedNodePositions, collapsedEdgeIds);
         WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds, focusableGraphItems);
         writer.Append("</g></svg></div>");
     }
@@ -248,13 +252,29 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return edgeIds;
     }
 
-    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems) {
+    private static Dictionary<string, Point> BuildCollapsedNodeRenderPositions(GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, bool collapseClustersOnLoad) {
+        var renderPositions = new Dictionary<string, Point>(StringComparer.Ordinal);
+        foreach (var cluster in scene.Clusters.Where(cluster => cluster.Collapsed || collapseClustersOnLoad)) {
+            var memberIds = ClusterMemberIds(scene, cluster, clusterMembership);
+            var members = memberIds.Where(positions.ContainsKey).Select(id => positions[id]).ToArray();
+            if (members.Length == 0) continue;
+            var point = new Point(members.Average(member => member.X), members.Average(member => member.Y));
+            foreach (var nodeId in memberIds) renderPositions[nodeId] = point;
+        }
+
+        return renderPositions;
+    }
+
+    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             nodesById.TryGetValue(edge.SourceNodeId, out var sourceNode);
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
-            var path = EdgePath(edge, source, target, targetNode);
+            var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
+            var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
+            var targetBoundary = collapsedNodePositions.ContainsKey(edge.TargetNodeId) ? ClusterBoundaryInset : (double?)null;
+            var path = EdgePath(edge, renderSource, renderTarget, targetNode, targetBoundary);
             writer.Append("<path class=\"cfx-graph-edge");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" tabindex=\"");
@@ -293,12 +313,14 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return members.OrderBy(id => id, StringComparer.Ordinal).ToArray();
     }
 
-    private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, HashSet<string> collapsedEdgeIds) {
+    private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, Point> collapsedNodePositions, HashSet<string> collapsedEdgeIds) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !string.IsNullOrWhiteSpace(edge.Label))) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
-            var point = EdgeLabelPoint(edge, source, target, targetNode);
+            var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
+            var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
+            var point = EdgeLabelPoint(edge, renderSource, renderTarget, targetNode);
             writer.Append("<text class=\"cfx-graph-edge-label");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" data-cfx-role=\"graph-edge-label\"");
@@ -477,9 +499,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
+        return EdgePath(edge, source, target, targetNode, null);
+    }
+
+    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode, double? targetBoundaryInset) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopPath(target, targetNode);
         var control = EdgeControl(edge, source, target);
-        var renderTarget = DirectedTargetPoint(edge, source, target, control, targetNode);
+        var renderTarget = DirectedTargetPoint(edge, source, target, control, targetNode, targetBoundaryInset);
         return control.HasValue
             ? "M " + Number(source.X) + " " + Number(source.Y) + " Q " + Number(control.Value.X) + " " + Number(control.Value.Y) + " " + Number(renderTarget.X) + " " + Number(renderTarget.Y)
             : "M " + Number(source.X) + " " + Number(source.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
@@ -504,12 +530,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode) {
+        return DirectedTargetPoint(edge, source, target, control, targetNode, null);
+    }
+
+    private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode, double? targetBoundaryInset) {
         if (!edge.Directed) return target;
         var from = control ?? source;
         var dx = target.X - from.X;
         var dy = target.Y - from.Y;
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
-        var inset = TargetBoundaryInset(targetNode, dx / length, dy / length);
+        var inset = targetBoundaryInset ?? TargetBoundaryInset(targetNode, dx / length, dy / length);
         return new Point(target.X - dx / length * inset, target.Y - dy / length * inset);
     }
 

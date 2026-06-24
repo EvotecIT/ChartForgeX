@@ -21,6 +21,13 @@
       if (Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       selectCanvasNode(event, best);
     });
+    canvas.addEventListener('keydown', event => {
+      if (!root.classList.contains('cfx-graph-render-canvas') || !hasFeature(root, 'Selection') || (event.key !== 'Enter' && event.key !== ' ')) return;
+      const state = root.__cfxGraphState || graphState(root);
+      const best = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el)) || state.edges.find(edge => visible(edge.el));
+      if (!best) return;
+      event.preventDefault(); select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
+    });
   };
   const bindPointerInteractions = (root) => {
     const stage = root.querySelector('.cfx-graph-stage');

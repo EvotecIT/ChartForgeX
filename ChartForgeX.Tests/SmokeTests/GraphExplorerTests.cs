@@ -64,6 +64,11 @@ internal static partial class SmokeTests {
             .AddCluster("core", "Core", new[] { "api", "db" });
         AssertThrows<InvalidOperationException>(() => missingClusterNode.Validate(), "Graph scenes should reject clusters that reference missing nodes.");
 
+        var conflictingClusterNode = GraphScene.Create("conflicting-cluster", "Conflicting cluster")
+            .AddNode("api", "API", node => node.ClusterId = "right")
+            .AddCluster("left", "Left", new[] { "api" });
+        AssertThrows<InvalidOperationException>(() => conflictingClusterNode.Validate(), "Graph scenes should reject nodes whose explicit ClusterId conflicts with declared cluster membership.");
+
         var blankPublicNode = GraphScene.Create("blank-node", "Blank node");
         blankPublicNode.Nodes.Add(new GraphSceneNode());
         AssertThrows<InvalidOperationException>(() => blankPublicNode.Validate(), "Graph scenes should reject blank public node ids before adapters render empty keys.");
@@ -85,6 +90,18 @@ internal static partial class SmokeTests {
         var nonFiniteSize = GraphScene.Create("bad-size", "Bad size")
             .AddNode("bad", "Bad", node => node.Size = double.PositiveInfinity);
         AssertThrows<InvalidOperationException>(() => nonFiniteSize.Validate(), "Graph scenes should reject non-finite node sizes before adapters serialize invalid marks.");
+
+        var invalidPhysics = GraphScene.Create("bad-physics", "Bad physics").AddNode("node", "Node");
+        invalidPhysics.Options.Physics.Damping = double.NaN;
+        AssertThrows<InvalidOperationException>(() => invalidPhysics.Validate(), "Graph scenes should reject non-finite or out-of-range physics options before adapters serialize invalid runtime settings.");
+
+        var invalidPerformance = GraphScene.Create("bad-performance", "Bad performance").AddNode("node", "Node");
+        invalidPerformance.Options.Performance.FrameBudgetMilliseconds = 0;
+        AssertThrows<InvalidOperationException>(() => invalidPerformance.Validate(), "Graph scenes should reject non-positive frame budgets before adapters report misleading performance telemetry.");
+
+        var negativePerformanceLimit = GraphScene.Create("bad-performance-limit", "Bad performance limit").AddNode("node", "Node");
+        negativePerformanceLimit.Options.Performance.MaxInteractiveCanvasEdges = -1;
+        AssertThrows<InvalidOperationException>(() => negativePerformanceLimit.Validate(), "Graph scenes should reject negative SVG or Canvas performance limits before runtime gating.");
 
         var nonFiniteCurvature = GraphScene.Create("bad-curvature", "Bad curvature")
             .AddNode("source", "Source")
@@ -228,6 +245,7 @@ internal static partial class SmokeTests {
         Assert(!html.Contains("canvas.addEventListener('mousedown'", StringComparison.Ordinal), "Graph explorer Canvas selection should not double-toggle through both pointerdown and mousedown.");
         Assert(html.Contains("if (!hasFeature(root, 'Selection')) return", StringComparison.Ordinal), "Graph explorer selection handlers should honor scenes with selection disabled.");
         Assert(html.Contains("hasFeature(root, 'LevelOfDetail')", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Clustering')", StringComparison.Ordinal), "Graph explorer binding should honor disabled LOD and clustering feature flags.");
+        Assert(html.Contains("canvas.setAttribute('tabindex'", StringComparison.Ordinal) && html.Contains("canvas.addEventListener('keydown'", StringComparison.Ordinal), "Graph explorer Canvas mode should keep keyboard selection available when SVG graph item tab stops are disabled.");
         Assert(html.Contains("label: attr(node.el, 'data-node-label')", StringComparison.Ordinal) && html.Contains("groupId: attr(node.el, 'data-node-group')", StringComparison.Ordinal) && html.Contains("imageUrl: attr(node.el, 'data-node-image-url')", StringComparison.Ordinal), "Graph explorer JSON export should include node labels, grouping, and image/icon details needed to reconstruct reviewed graphs.");
         Assert(html.Contains("metadata: metadataDetail(root)", StringComparison.Ordinal), "Graph explorer JSON export should include scene-level metadata from the graph root.");
         Assert(html.Contains("kind: attr(edge, 'data-edge-kind')", StringComparison.Ordinal) && html.Contains("showLabel: attr(edge, 'data-edge-show-label') !== 'false'", StringComparison.Ordinal) && html.Contains("hidden: edge.classList.contains('cfx-graph-hidden')", StringComparison.Ordinal), "Graph explorer JSON export should include edge facets and current visibility needed to reconstruct reviewed graphs.");
@@ -385,13 +403,17 @@ internal static partial class SmokeTests {
         Assert(loadCollapsedHtml.ToGraphExplorerHtmlFragment().Contains("data-cluster-collapsed=\"true\"", StringComparison.Ordinal), "Graph explorer static markup should serialize the effective load-collapsed cluster state before bindings run.");
 
         var loadCollapsedCrossEdgeHtml = GraphScene.Create("load-collapsed-cross-edge", "Load collapsed cross edge")
-            .AddNode("a", "A")
-            .AddNode("b", "B")
+            .AddNode("a", "A", node => { node.X = 100; node.Y = 100; })
+            .AddNode("b", "B", node => { node.X = 300; node.Y = 100; })
+            .AddNode("c", "C", node => { node.X = 100; node.Y = 300; })
+            .AddNode("d", "D", node => { node.X = 300; node.Y = 300; })
             .AddEdge("a-b", "a", "b")
-            .AddCluster("left", "Left", new[] { "a" }, cluster => cluster.Collapsed = false)
-            .AddCluster("right", "Right", new[] { "b" }, cluster => cluster.Collapsed = false);
+            .AddCluster("left", "Left", new[] { "a", "c" }, cluster => cluster.Collapsed = false)
+            .AddCluster("right", "Right", new[] { "b", "d" }, cluster => cluster.Collapsed = false);
         loadCollapsedCrossEdgeHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
-        Assert(!loadCollapsedCrossEdgeHtml.ToGraphExplorerHtmlFragment().Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\" tabindex=\"0\" data-cfx-role=\"graph-edge\" data-edge-id=\"a-b\"", StringComparison.Ordinal), "Graph explorer static load-collapse should preserve cross-cluster edges for aggregate rendering.");
+        var loadCollapsedCrossEdgeMarkup = loadCollapsedCrossEdgeHtml.ToGraphExplorerHtmlFragment();
+        Assert(!loadCollapsedCrossEdgeMarkup.Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\" tabindex=\"0\" data-cfx-role=\"graph-edge\" data-edge-id=\"a-b\"", StringComparison.Ordinal), "Graph explorer static load-collapse should preserve cross-cluster edges for aggregate rendering.");
+        Assert(loadCollapsedCrossEdgeMarkup.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal) && loadCollapsedCrossEdgeMarkup.Contains("d=\"M 100 200 L 300 200\"", StringComparison.Ordinal), "Graph explorer static load-collapse should retarget visible cross-cluster edges to cluster summaries instead of hidden member nodes.");
 
         var lodDisabledLoadCollapseScene = GraphScene.Create("lod-disabled-load-collapsed", "LOD disabled load collapsed")
             .AddNode("a", "A")
