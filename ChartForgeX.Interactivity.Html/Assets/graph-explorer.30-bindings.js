@@ -324,7 +324,7 @@
           if (!running) startPhysics(root);
           syncPhysicsControls(root);
         }
-        if (action === 'stabilize' && hasFeature(root, 'Stabilization')) startPhysics(root);
+        if (action === 'stabilize' && hasFeature(root, 'Stabilization') && startPhysics(root)) syncPhysicsControls(root);
         if (action === 'physics') syncPhysicsControls(root);
         emit(root, 'cfxgraphaction', { graphId: attr(root, 'data-cfx-graph-id'), action, physics: attr(root, 'data-cfx-graph-physics') });
       });

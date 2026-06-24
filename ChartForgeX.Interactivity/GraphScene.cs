@@ -96,6 +96,7 @@ public sealed class GraphScene {
         }
 
         foreach (var pair in explicitNodeClusters) {
+            if (!clusterIds.Contains(pair.Value)) throw new InvalidOperationException("Graph scene node references a missing cluster: " + pair.Key + " -> " + pair.Value);
             if (declaredNodeClusters.TryGetValue(pair.Key, out var declaredCluster) && !string.Equals(declaredCluster, pair.Value, StringComparison.Ordinal)) throw new InvalidOperationException("Graph scene node cluster id conflicts with declared cluster membership: " + pair.Key);
         }
     }

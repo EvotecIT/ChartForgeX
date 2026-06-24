@@ -15,7 +15,6 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlGraphExplorerRenderer {
     private const double Width = 960;
     private const double Height = 560;
-    private const double ClusterBoundaryInset = 49;
     private static int s_renderInstance;
 
     /// <summary>
@@ -180,6 +179,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var collapsedNodePositions = clusteringEnabled
             ? BuildCollapsedNodeRenderPositions(scene, positions, clusterMembership, collapseClustersOnLoad)
             : new Dictionary<string, Point>(StringComparer.Ordinal);
+        var collapsedNodeRadii = collapsedNodePositions.Count == 0
+            ? new Dictionary<string, double>(StringComparer.Ordinal)
+            : BuildCollapsedNodeRenderRadii(scene, positions, clusterMembership, collapseClustersOnLoad);
         writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\"></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas>");
         writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
@@ -194,7 +196,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
         var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
         if (clusteringEnabled) WriteClusters(writer, scene, positions, clusterMembership, collapseClustersOnLoad, focusableGraphItems);
-        WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems);
+        WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems);
         WriteEdgeLabels(writer, scene, positions, collapsedNodePositions, collapsedEdgeIds);
         WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds, focusableGraphItems);
         writer.Append("</g></svg></div>");
@@ -213,6 +215,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("\" data-cfx-role=\"graph-cluster\"");
             Attribute(writer, "tabindex", collapsed && focusableGraphItems ? "0" : "-1");
             Attribute(writer, "aria-hidden", collapsed ? "false" : "true");
+            if (collapsed && focusableGraphItems) Attribute(writer, "aria-label", cluster.Label);
             Attribute(writer, "data-cluster-id", cluster.Id);
             Attribute(writer, "data-cluster-label", cluster.Label);
             Attribute(writer, "data-cluster-kind", cluster.Kind);
@@ -272,7 +275,18 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return renderPositions;
     }
 
-    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems) {
+    private static Dictionary<string, double> BuildCollapsedNodeRenderRadii(GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, bool collapseClustersOnLoad) {
+        var renderRadii = new Dictionary<string, double>(StringComparer.Ordinal);
+        foreach (var cluster in scene.Clusters.Where(cluster => cluster.Collapsed || collapseClustersOnLoad)) {
+            var memberIds = ClusterMemberIds(scene, cluster, clusterMembership);
+            var radius = CollapsedClusterRadius(memberIds.Count(positions.ContainsKey));
+            foreach (var nodeId in memberIds) renderRadii[nodeId] = radius;
+        }
+
+        return renderRadii;
+    }
+
+    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
@@ -280,7 +294,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
             var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
-            var targetBoundary = collapsedNodePositions.ContainsKey(edge.TargetNodeId) ? ClusterBoundaryInset : (double?)null;
+            var targetBoundary = collapsedNodeRadii.TryGetValue(edge.TargetNodeId, out var targetRadius) ? targetRadius : (double?)null;
             var path = EdgePath(edge, renderSource, renderTarget, targetNode, targetBoundary);
             writer.Append("<path class=\"cfx-graph-edge");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
@@ -360,6 +374,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-shape", NodeShape(node.Shape));
             Attribute(writer, "data-node-image-url", node.ImageUrl);
             Attribute(writer, "data-node-icon", node.IconText);
+            if (focusableGraphItems) Attribute(writer, "aria-label", node.Label);
             Attribute(writer, "data-cfx-search", SearchText(node.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(node.Metadata));
             Attribute(writer, "data-node-x", Number(point.X));
