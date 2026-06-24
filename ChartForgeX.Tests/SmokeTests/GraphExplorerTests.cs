@@ -74,6 +74,10 @@ internal static partial class SmokeTests {
             .AddCluster("core", "Core", Array.Empty<string>());
         AssertThrows<InvalidOperationException>(() => missingExplicitClusterNode.Validate(), "Graph scenes should reject nodes whose explicit ClusterId does not match a declared cluster.");
 
+        var unknownFeatures = GraphScene.Create("unknown-features", "Unknown features").AddNode("node", "Node");
+        unknownFeatures.Options.Features |= (GraphSceneFeatures)(1 << 20);
+        AssertThrows<InvalidOperationException>(() => unknownFeatures.Validate(), "Graph scenes should reject unknown feature bits before adapters serialize browser feature flags.");
+
         var blankPublicNode = GraphScene.Create("blank-node", "Blank node");
         blankPublicNode.Nodes.Add(new GraphSceneNode());
         AssertThrows<InvalidOperationException>(() => blankPublicNode.Validate(), "Graph scenes should reject blank public node ids before adapters render empty keys.");
@@ -187,6 +191,10 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-graph-action=\"clusters\"", StringComparison.Ordinal), "Graph explorer pages should include cluster controls when clusters are present.");
         Assert(html.Contains("data-cfx-graph-action=\"focus\"", StringComparison.Ordinal), "Graph explorer pages should include selected-neighborhood focus controls when neighborhood exploration is enabled.");
         Assert(html.Contains("data-cfx-graph-action=\"clear-selection\"", StringComparison.Ordinal), "Graph explorer pages should include an explicit clear-selection control when multi-selection is enabled.");
+        var singleSelectionScene = SampleGraphScene();
+        singleSelectionScene.Options.Disable(GraphSceneFeatures.MultiSelection);
+        var singleSelectionHtml = singleSelectionScene.ToGraphExplorerHtmlFragment();
+        Assert(singleSelectionHtml.Contains("data-cfx-graph-action=\"clear-selection\"", StringComparison.Ordinal), "Graph explorer pages should include an explicit clear-selection control when single selection is enabled.");
         Assert(html.Contains("data-cfx-graph-action=\"physics\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"stabilize\"", StringComparison.Ordinal), "Graph explorer pages should include runtime physics controls when enabled.");
         Assert(html.Contains("data-cfx-graph-action=\"export-svg\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"export-png\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"export-json\"", StringComparison.Ordinal), "Graph explorer pages should include SVG, PNG, and JSON export controls when export is enabled.");
         Assert(html.Contains("data-cfx-role=\"graph-node\"", StringComparison.Ordinal) && html.Contains("data-node-id=\"api\"", StringComparison.Ordinal), "Graph explorer SVG should expose graph node metadata.");
@@ -345,6 +353,7 @@ internal static partial class SmokeTests {
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("applyNeighborhoodFocus", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("focus: { active:", StringComparison.Ordinal), "Host-registered graph explorer runtime should focus and export selected-neighborhood state.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("const primary = details.find(item => item.role === 'graph-node')", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("else clearNeighborhoodFocus(root)", StringComparison.Ordinal), "Graph explorer runtime should clear stale neighborhood focus when selection no longer contains a node.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("syncPhysicsControls", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("cfxGraphPhysicsState === 'running'"), "Graph explorer runtime should sync the Physics button pressed state from the actual runtime physics state.");
+        Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("root.dataset.cfxGraphPhysicsState = 'paused'; syncPhysicsControls(root);", StringComparison.Ordinal), "Graph explorer runtime should sync the Physics button when dragging pauses runtime physics.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("downloadExport", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("cancelable: !!options?.cancelable", StringComparison.Ordinal), "Host-registered graph explorer runtime should support host-interceptable export downloads.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("selection: {", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("selectionCount", StringComparison.Ordinal), "Host-registered graph explorer runtime should export multi-selection state.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("metadata: metadataDetail(node.el)", StringComparison.Ordinal), "Host-registered graph explorer runtime should export structured node metadata in JSON snapshots.");
@@ -534,6 +543,8 @@ internal static partial class SmokeTests {
             .ToGraphExplorerHtmlFragment();
         var mixedAverage = AveragePoint(mixedAnchorHtml, "generated-", 2);
         Assert(mixedAverage.X < 300 && mixedAverage.Y < 280 && Distance(ExtractGraphNodePoint(mixedAnchorHtml, "fixed"), mixedAverage) < 220, "Graph explorer prepared layout should keep generated neighbors anchored near explicit positions instead of normalizing them to the scene center.");
+        var mixedFixed = ExtractGraphNodePoint(mixedAnchorHtml, "fixed");
+        Assert(Distance(mixedFixed, ExtractGraphNodePoint(mixedAnchorHtml, "generated-0")) > 70 && Distance(mixedFixed, ExtractGraphNodePoint(mixedAnchorHtml, "generated-1")) > 70, "Graph explorer prepared layout should reserve explicit-anchor spacing for each generated neighbor in a mixed component.");
 
         var generatedHubHtml = GraphScene.Create("generated-hub-anchor", "Generated hub anchor")
             .AddNode("fixed", "Fixed", node => {

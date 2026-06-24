@@ -75,7 +75,7 @@
         if (!active.moved && Math.hypot(point.x - active.startX, point.y - active.startY) < dragThreshold) return;
         if (!active.moved) {
           active.moved = true;
-          root.dataset.cfxGraphPhysicsState = 'paused';
+          root.dataset.cfxGraphPhysicsState = 'paused'; syncPhysicsControls(root);
           stopWorkerPhysics(root, true);
           stopMainPhysics(root, true);
           root.classList.add('cfx-graph-dragging-node');

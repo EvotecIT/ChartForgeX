@@ -131,6 +131,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var depth = Math.Max(1, depths[node.Id]);
             var localAngle = GoldenAngle(rank) + StableOffset(node.Id + ":angle", 0.18);
             var localRadius = 18 + Math.Sqrt(rank + 1) * 14 + Math.Min(86, depth * 12) + StableOffset(node.Id + ":radius", 8);
+            if (explicitMembers.Length > 0) localRadius = Math.Max(localRadius, PreparedNodeRadius(node) + explicitMembers.Max(PreparedNodeRadius) + 36);
             positions[node.Id] = new Point(community.X + Math.Cos(localAngle) * localRadius, community.Y + Math.Sin(localAngle) * localRadius * 0.74);
         }
     }

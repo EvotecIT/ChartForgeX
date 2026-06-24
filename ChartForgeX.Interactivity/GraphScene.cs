@@ -7,6 +7,8 @@ namespace ChartForgeX.Interactivity;
 /// Describes a host-neutral graph exploration scene that adapters can render with SVG, Canvas, WebGL, desktop, or native controls.
 /// </summary>
 public sealed class GraphScene {
+    private const GraphSceneFeatures KnownFeatures = GraphSceneFeatures.Selection | GraphSceneFeatures.MultiSelection | GraphSceneFeatures.Search | GraphSceneFeatures.Filtering | GraphSceneFeatures.Viewport | GraphSceneFeatures.DragNodes | GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.Clustering | GraphSceneFeatures.LevelOfDetail | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Export | GraphSceneFeatures.NeighborhoodFocus | GraphSceneFeatures.PerformanceTelemetry;
+
     private string _id = "graph";
     private string _title = "Graph";
 
@@ -102,6 +104,7 @@ public sealed class GraphScene {
     }
 
     private void ValidateOptions() {
+        if ((Options.Features & ~KnownFeatures) != GraphSceneFeatures.None) throw new InvalidOperationException("Graph scene features contain unsupported flags: " + (Options.Features & ~KnownFeatures));
         if (Options.Physics.StabilizationIterations <= 0) throw new InvalidOperationException("Graph scene physics stabilization iterations must be greater than zero.");
         ValidatePositiveFinite(Options.Physics.MinVelocity, "physics min velocity");
         ValidatePositiveFinite(Options.Physics.MaxVelocity, "physics max velocity");
