@@ -9,6 +9,7 @@
       cluster.setAttribute('aria-hidden', root.dataset.cfxGraphRendererActive === 'canvas' || !collapsed ? 'true' : 'false');
     });
   };
+  const syncSelectedEdgeLabels = (root) => { const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label])); labels.forEach(label => label.classList.remove('cfx-graph-label-selected')); items(root, '[data-cfx-role="graph-edge"].cfx-graph-selected').forEach(edge => labels.get(attr(edge, 'data-edge-id'))?.classList.add('cfx-graph-label-selected')); };
   const clearHiddenSelections = (root) => {
     let changed = false;
     let focusedSelectionHidden = false;

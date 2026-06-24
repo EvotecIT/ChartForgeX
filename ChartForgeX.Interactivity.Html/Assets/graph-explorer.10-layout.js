@@ -171,7 +171,7 @@
     });
   const selectedItems = (root) => items(root, '.cfx-graph-selected').map(node => selectionDetail(root, node));
   const updateSelectionState = (root) => {
-    const details = selectedItems(root);
+    syncSelectedEdgeLabels(root); const details = selectedItems(root);
     const primaryNode = details.find(item => item.role === 'graph-node');
     root.dataset.cfxGraphSelectionCount = String(details.length);
     root.dataset.cfxGraphSelectionIds = details.map(item => item.id).join(',');
@@ -235,7 +235,7 @@
     const relatedNodes = new Set([nodeId]);
     const relatedEdges = new Set();
     state.edges.forEach(edge => {
-      if (edge.source.id !== nodeId && edge.target.id !== nodeId) return;
+      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId) || (edge.source.id !== nodeId && edge.target.id !== nodeId)) return;
       relatedNodes.add(edge.source.id);
       relatedNodes.add(edge.target.id);
       relatedEdges.add(attr(edge.el, 'data-edge-id'));

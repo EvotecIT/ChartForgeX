@@ -103,6 +103,10 @@ internal static partial class SmokeTests {
         negativePerformanceLimit.Options.Performance.MaxInteractiveCanvasEdges = -1;
         AssertThrows<InvalidOperationException>(() => negativePerformanceLimit.Validate(), "Graph scenes should reject negative SVG or Canvas performance limits before runtime gating.");
 
+        var negativeLodThreshold = GraphScene.Create("bad-lod", "Bad LOD").AddNode("node", "Node");
+        negativeLodThreshold.Options.LevelOfDetail.HideEdgeLabelsThreshold = -1;
+        AssertThrows<InvalidOperationException>(() => negativeLodThreshold.Validate(), "Graph scenes should reject negative LOD thresholds before every graph falls into compact or Canvas modes.");
+
         var nonFiniteCurvature = GraphScene.Create("bad-curvature", "Bad curvature")
             .AddNode("source", "Source")
             .AddNode("target", "Target")
@@ -246,6 +250,9 @@ internal static partial class SmokeTests {
         Assert(html.Contains("if (!hasFeature(root, 'Selection')) return", StringComparison.Ordinal), "Graph explorer selection handlers should honor scenes with selection disabled.");
         Assert(html.Contains("hasFeature(root, 'LevelOfDetail')", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Clustering')", StringComparison.Ordinal), "Graph explorer binding should honor disabled LOD and clustering feature flags.");
         Assert(html.Contains("canvas.setAttribute('tabindex'", StringComparison.Ordinal) && html.Contains("canvas.addEventListener('keydown'", StringComparison.Ordinal), "Graph explorer Canvas mode should keep keyboard selection available when SVG graph item tab stops are disabled.");
+        Assert(html.Contains("cfx-graph-edge-label.cfx-graph-label-selected", StringComparison.Ordinal) && html.Contains("cfx-graph-edge-label.cfx-graph-neighborhood-related{display:block}", StringComparison.Ordinal), "Graph explorer LOD should reveal selected and focused edge labels even when dense graphs hide ordinary labels.");
+        Assert(html.Contains("syncSelectedEdgeLabels", StringComparison.Ordinal) && html.Contains("state.clusters.find(cluster => visible(cluster.el))", StringComparison.Ordinal), "Graph explorer Canvas keyboard selection should include visible collapsed clusters, not only nodes and edges.");
+        Assert(html.Contains("!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)", StringComparison.Ordinal), "Graph explorer neighborhood focus should ignore hidden edges and hidden aggregate endpoints.");
         Assert(html.Contains("label: attr(node.el, 'data-node-label')", StringComparison.Ordinal) && html.Contains("groupId: attr(node.el, 'data-node-group')", StringComparison.Ordinal) && html.Contains("imageUrl: attr(node.el, 'data-node-image-url')", StringComparison.Ordinal), "Graph explorer JSON export should include node labels, grouping, and image/icon details needed to reconstruct reviewed graphs.");
         Assert(html.Contains("metadata: metadataDetail(root)", StringComparison.Ordinal), "Graph explorer JSON export should include scene-level metadata from the graph root.");
         Assert(html.Contains("kind: attr(edge, 'data-edge-kind')", StringComparison.Ordinal) && html.Contains("showLabel: attr(edge, 'data-edge-show-label') !== 'false'", StringComparison.Ordinal) && html.Contains("hidden: edge.classList.contains('cfx-graph-hidden')", StringComparison.Ordinal), "Graph explorer JSON export should include edge facets and current visibility needed to reconstruct reviewed graphs.");
@@ -401,6 +408,11 @@ internal static partial class SmokeTests {
             .AddCluster("collapsed", "Collapsed", new[] { "a" }, cluster => cluster.Collapsed = false);
         loadCollapsedHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
         Assert(loadCollapsedHtml.ToGraphExplorerHtmlFragment().Contains("data-cluster-collapsed=\"true\"", StringComparison.Ordinal), "Graph explorer static markup should serialize the effective load-collapsed cluster state before bindings run.");
+
+        var largeCollapsedCluster = GraphScene.Create("large-collapsed-cluster", "Large collapsed cluster");
+        for (var i = 0; i < 16; i++) largeCollapsedCluster.AddNode("n" + i, "Node " + i);
+        largeCollapsedCluster.AddCluster("large", "Large", Enumerable.Range(0, 16).Select(i => "n" + i).ToArray(), cluster => cluster.Collapsed = true);
+        Assert(largeCollapsedCluster.ToGraphExplorerHtmlFragment().Contains("data-cluster-id=\"large\"", StringComparison.Ordinal) && largeCollapsedCluster.ToGraphExplorerHtmlFragment().Contains("<circle r=\"48\"></circle>", StringComparison.Ordinal), "Graph explorer SVG collapsed cluster summaries should serialize the same member-count radius used by runtime Canvas metrics.");
 
         var loadCollapsedCrossEdgeHtml = GraphScene.Create("load-collapsed-cross-edge", "Load collapsed cross edge")
             .AddNode("a", "A", node => { node.X = 100; node.Y = 100; })

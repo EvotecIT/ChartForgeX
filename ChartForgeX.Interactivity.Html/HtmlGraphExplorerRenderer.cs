@@ -207,6 +207,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var members = memberIds.Where(positions.ContainsKey).Select(id => positions[id]).ToArray();
             var x = members.Length == 0 ? Width / 2 : members.Average(point => point.X);
             var y = members.Length == 0 ? Height / 2 : members.Average(point => point.Y);
+            var radius = CollapsedClusterRadius(members.Length);
             writer.Append("<g class=\"cfx-graph-cluster");
             if (!collapsed) writer.Append(" cfx-graph-cluster-expanded");
             writer.Append("\" data-cfx-role=\"graph-cluster\"");
@@ -220,10 +221,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
-            writer.Append("><circle r=\"42\"></circle><text y=\"5\">");
+            writer.Append("><circle r=\"");
+            writer.Append(Number(radius));
+            writer.Append("\"></circle><text y=\"5\">");
             writer.Append(Text(cluster.Label));
             writer.Append("</text></g>");
         }
+    }
+
+    private static double CollapsedClusterRadius(int memberCount) {
+        return Math.Max(34, Math.Min(54, 20 + Math.Sqrt(memberCount) * 7));
     }
 
     private static HashSet<string> BuildCollapsedNodeIds(GraphScene scene, IReadOnlyDictionary<string, string> clusterMembership, bool collapseClustersOnLoad) {

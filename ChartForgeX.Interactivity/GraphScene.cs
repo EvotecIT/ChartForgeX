@@ -110,6 +110,7 @@ public sealed class GraphScene {
         ValidatePositiveFinite(Options.Physics.LinkDistance, "physics link distance");
         ValidateNonNegativeFinite(Options.Physics.Repulsion, "physics repulsion");
         ValidateNonNegativeFinite(Options.Physics.CenterGravity, "physics center gravity");
+        if (Options.LevelOfDetail.ClusterNodeThreshold < 0 || Options.LevelOfDetail.HideEdgeLabelsThreshold < 0 || Options.LevelOfDetail.CompactNodeThreshold < 0 || Options.LevelOfDetail.CanvasPreferredNodeThreshold < 0) throw new InvalidOperationException("Graph scene level-of-detail thresholds must not be negative.");
         if (Options.Performance.FrameBudgetMilliseconds <= 0) throw new InvalidOperationException("Graph scene performance frame budget must be greater than zero.");
         if (Options.Performance.MaxInteractiveSvgNodes < 0 || Options.Performance.MaxInteractiveSvgEdges < 0 || Options.Performance.MaxInteractiveCanvasNodes < 0 || Options.Performance.MaxInteractiveCanvasEdges < 0) throw new InvalidOperationException("Graph scene performance limits must not be negative.");
         if (Options.Performance.TelemetrySampleInterval <= 0) throw new InvalidOperationException("Graph scene performance telemetry interval must be greater than zero.");

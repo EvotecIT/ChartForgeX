@@ -47,6 +47,7 @@
 .cfx-graph-lod-compact .cfx-graph-node text{display:none}
 .cfx-graph-lod-compact .cfx-graph-node circle{stroke-width:1.5}
 .cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label{display:none}
+.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-label-selected,.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-neighborhood-related{display:block}
 .cfx-graph-performance-gated .cfx-graph-svg{background:repeating-linear-gradient(-45deg,#fff,#fff 12px,#f8fafc 12px,#f8fafc 24px)}
 .cfx-graph-tooltip{position:absolute;left:12px;bottom:12px;max-width:min(360px,calc(100% - 24px));padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;box-shadow:0 14px 30px rgba(15,23,42,.14);font-size:13px}
 .cfx-graph-tooltip[hidden]{display:none}
