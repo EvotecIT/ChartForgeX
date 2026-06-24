@@ -565,7 +565,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode, double? targetBoundaryInset) {
-        if (!edge.Directed) return target;
+        if (!edge.Directed && !targetBoundaryInset.HasValue) return target;
         var from = control ?? source;
         var dx = target.X - from.X;
         var dy = target.Y - from.Y;

@@ -463,7 +463,7 @@ internal static partial class SmokeTests {
         loadCollapsedCrossEdgeHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
         var loadCollapsedCrossEdgeMarkup = loadCollapsedCrossEdgeHtml.ToGraphExplorerHtmlFragment();
         Assert(!loadCollapsedCrossEdgeMarkup.Contains("class=\"cfx-graph-edge cfx-graph-cluster-collapsed-member\" tabindex=\"0\" data-cfx-role=\"graph-edge\" data-edge-id=\"a-b\"", StringComparison.Ordinal), "Graph explorer static load-collapse should preserve cross-cluster edges for aggregate rendering.");
-        Assert(loadCollapsedCrossEdgeMarkup.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal) && loadCollapsedCrossEdgeMarkup.Contains("d=\"M 134 200 L 300 200\"", StringComparison.Ordinal), "Graph explorer static load-collapse should retarget visible cross-cluster edges to cluster summaries and trim them away from the source summary.");
+        Assert(loadCollapsedCrossEdgeMarkup.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal) && loadCollapsedCrossEdgeMarkup.Contains("d=\"M 134 200 L 266 200\"", StringComparison.Ordinal), "Graph explorer static load-collapse should retarget visible cross-cluster edges to cluster summaries and trim them away from collapsed summaries.");
 
         var lodDisabledLoadCollapseScene = GraphScene.Create("lod-disabled-load-collapsed", "LOD disabled load collapsed")
             .AddNode("a", "A")
