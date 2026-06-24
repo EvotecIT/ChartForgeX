@@ -78,6 +78,10 @@ internal static partial class SmokeTests {
         unknownFeatures.Options.Features |= (GraphSceneFeatures)(1 << 20);
         AssertThrows<InvalidOperationException>(() => unknownFeatures.Validate(), "Graph scenes should reject unknown feature bits before adapters serialize browser feature flags.");
 
+        var unknownPhysicsSolver = GraphScene.Create("unknown-physics", "Unknown physics").AddNode("node", "Node");
+        unknownPhysicsSolver.Options.Physics.Solver = (GraphPhysicsSolver)999;
+        AssertThrows<InvalidOperationException>(() => unknownPhysicsSolver.Validate(), "Graph scenes should reject unknown physics solver values before adapters serialize runtime physics settings.");
+
         var blankPublicNode = GraphScene.Create("blank-node", "Blank node");
         blankPublicNode.Nodes.Add(new GraphSceneNode());
         AssertThrows<InvalidOperationException>(() => blankPublicNode.Validate(), "Graph scenes should reject blank public node ids before adapters render empty keys.");

@@ -105,6 +105,7 @@ public sealed class GraphScene {
 
     private void ValidateOptions() {
         if ((Options.Features & ~KnownFeatures) != GraphSceneFeatures.None) throw new InvalidOperationException("Graph scene features contain unsupported flags: " + (Options.Features & ~KnownFeatures));
+        if (!Enum.IsDefined(typeof(GraphPhysicsSolver), Options.Physics.Solver)) throw new InvalidOperationException("Graph scene physics solver is unsupported: " + Options.Physics.Solver);
         if (Options.Physics.StabilizationIterations <= 0) throw new InvalidOperationException("Graph scene physics stabilization iterations must be greater than zero.");
         ValidatePositiveFinite(Options.Physics.MinVelocity, "physics min velocity");
         ValidatePositiveFinite(Options.Physics.MaxVelocity, "physics max velocity");
