@@ -194,7 +194,7 @@
       roles: (root.dataset.cfxGraphSelectionRoles || '').split(',').filter(Boolean),
       primary: root.dataset.cfxGraphSelectionPrimary || ''
     },
-    focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' },
+    focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' }, clustering: { mode: attr(root, 'data-cfx-graph-cluster-mode'), adaptive: attr(root, 'data-cfx-graph-cluster-adaptive') === 'true', minimumClusterSize: Number(attr(root, 'data-cfx-graph-cluster-min-size') || 0), targetClusterSize: Number(attr(root, 'data-cfx-graph-cluster-target-size') || 0), collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true', lod: root.dataset.cfxGraphClusterLod || '', state: root.dataset.cfxGraphClusters || '', count: Number(attr(root, 'data-cfx-graph-cluster-count') || 0) }, manipulation: { enabled: attr(root, 'data-cfx-graph-manipulation') === 'true', capabilities: (attr(root, 'data-cfx-graph-manipulation-capabilities') || '').split(',').filter(Boolean) },
     performance: {
       state: root.dataset.cfxGraphPerformance || '',
       budget: root.dataset.cfxGraphPerformanceBudget || '',

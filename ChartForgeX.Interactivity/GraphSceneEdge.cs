@@ -50,6 +50,9 @@ public sealed class GraphSceneEdge {
     /// <summary>Gets or sets whether adapters should draw the relationship label when labels are enabled.</summary>
     public bool ShowLabel { get; set; } = true;
 
+    /// <summary>Gets reusable edge styling hints for adapters that support richer graph lines.</summary>
+    public GraphEdgeStyle Style { get; } = new();
+
     /// <summary>Gets arbitrary edge metadata for search, tooltips, inspectors, and host event payloads.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 }
@@ -62,5 +65,14 @@ public enum GraphEdgeShape {
     Line,
 
     /// <summary>Use a quadratic curved edge.</summary>
-    Curve
+    Curve,
+
+    /// <summary>Use a dynamic curved edge whose side can be chosen by the adapter.</summary>
+    DynamicCurve,
+
+    /// <summary>Use a cubic-like continuous curve when an adapter supports it.</summary>
+    ContinuousCurve,
+
+    /// <summary>Use a self-reference loop for edges whose source and target are the same node.</summary>
+    SelfReference
 }

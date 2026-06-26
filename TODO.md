@@ -11,6 +11,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Interactivity
 
+- Keep super-topology parity aligned with `docs/super-topology-parity.md`: preserve the `TopologyChart` static/export owner, route large interactive exploration through `GraphScene`, and validate parity claims across API, generated artifacts, smoke tests, and performance evidence.
 - Promote a shared rendered-target contract for series, points, annotations, regions, nodes, links, and legend items so every adapter can address chart elements without knowing the chart family.
 - Broaden rich tooltip payloads with chart-family-specific diagnostics where renderers already expose useful `data-cfx-*` attributes, while keeping the static SVG output script-free.
 - Broaden pinned tooltip, nearest-point crosshair, brush-to-lasso selection, one-series focus, selected-target compare, and keyboard traversal coverage across more chart families as the shared rendered-target contract grows.

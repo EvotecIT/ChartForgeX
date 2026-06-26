@@ -17,9 +17,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
         var generated = nodes.Where(node => !node.HasExplicitPosition).ToArray();
         if (generated.Length == 0) return positions;
+        if (scene.Options.Layout.Mode == GraphLayoutMode.Hierarchical) {
+            ComputeHierarchicalPositions(scene, positions);
+            return positions;
+        }
 
         var adjacency = BuildAdjacency(scene);
-        var clusterMembership = BuildClusterMembership(scene);
+        var clusterMembership = BuildClusterMembership(scene, scene.GetEffectiveClusters());
         var components = ConnectedComponents(nodes, adjacency);
         var centers = ComponentCenters(components);
         for (var i = 0; i < components.Count; i++) {
@@ -35,6 +39,95 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         return positions;
+    }
+
+    private static void ComputeHierarchicalPositions(GraphScene scene, IDictionary<string, Point> positions) {
+        var levels = ResolveHierarchyLevels(scene);
+        var orderedLevels = scene.Nodes
+            .Where(node => !node.HasExplicitPosition)
+            .GroupBy(node => levels[node.Id])
+            .OrderBy(group => group.Key)
+            .Select(group => group
+                .OrderByDescending(node => scene.Edges.Count(edge => string.Equals(edge.SourceNodeId, node.Id, StringComparison.Ordinal) || string.Equals(edge.TargetNodeId, node.Id, StringComparison.Ordinal)))
+                .ThenBy(node => node.Id, StringComparer.Ordinal)
+                .ToArray())
+            .ToArray();
+        if (orderedLevels.Length == 0) return;
+
+        var layout = scene.Options.Layout;
+        var horizontal = layout.Direction is GraphLayoutDirection.LeftToRight or GraphLayoutDirection.RightToLeft;
+        var raw = new Dictionary<string, Point>(StringComparer.Ordinal);
+        for (var levelIndex = 0; levelIndex < orderedLevels.Length; levelIndex++) {
+            var nodes = orderedLevels[levelIndex];
+            var lineOffset = -(nodes.Length - 1) * layout.NodeSpacing / 2;
+            for (var index = 0; index < nodes.Length; index++) {
+                var primary = levelIndex * layout.LevelSeparation;
+                var secondary = lineOffset + index * layout.NodeSpacing;
+                raw[nodes[index].Id] = horizontal
+                    ? new Point(primary, secondary)
+                    : new Point(secondary, primary);
+            }
+        }
+
+        NormalizeHierarchicalPositions(raw, positions, layout.Direction);
+    }
+
+    private static Dictionary<string, int> ResolveHierarchyLevels(GraphScene scene) {
+        var levels = scene.Nodes.ToDictionary(node => node.Id, node => node.Level ?? int.MaxValue, StringComparer.Ordinal);
+        if (!scene.Options.Layout.InferLevelsFromEdges) {
+            foreach (var node in scene.Nodes) if (levels[node.Id] == int.MaxValue) levels[node.Id] = 0;
+            return levels;
+        }
+
+        var outgoing = scene.Nodes.ToDictionary(node => node.Id, _ => new List<string>(), StringComparer.Ordinal);
+        var incoming = scene.Nodes.ToDictionary(node => node.Id, _ => 0, StringComparer.Ordinal);
+        foreach (var edge in scene.Edges) {
+            if (!outgoing.ContainsKey(edge.SourceNodeId) || !incoming.ContainsKey(edge.TargetNodeId)) continue;
+            outgoing[edge.SourceNodeId].Add(edge.TargetNodeId);
+            incoming[edge.TargetNodeId]++;
+        }
+
+        var queue = new Queue<string>();
+        foreach (var node in scene.Nodes.OrderBy(node => node.Id, StringComparer.Ordinal)) {
+            if (levels[node.Id] != int.MaxValue || incoming[node.Id] == 0) {
+                if (levels[node.Id] == int.MaxValue) levels[node.Id] = 0;
+                queue.Enqueue(node.Id);
+            }
+        }
+
+        while (queue.Count > 0) {
+            var id = queue.Dequeue();
+            foreach (var target in outgoing[id].OrderBy(value => value, StringComparer.Ordinal)) {
+                var next = levels[id] + 1;
+                if (levels[target] != int.MaxValue && levels[target] >= next) continue;
+                levels[target] = next;
+                queue.Enqueue(target);
+            }
+        }
+
+        foreach (var node in scene.Nodes) if (levels[node.Id] == int.MaxValue) levels[node.Id] = 0;
+        return levels;
+    }
+
+    private static void NormalizeHierarchicalPositions(IReadOnlyDictionary<string, Point> raw, IDictionary<string, Point> positions, GraphLayoutDirection direction) {
+        if (raw.Count == 0) return;
+        var minX = raw.Values.Min(point => point.X);
+        var maxX = raw.Values.Max(point => point.X);
+        var minY = raw.Values.Min(point => point.Y);
+        var maxY = raw.Values.Max(point => point.Y);
+        var width = Math.Max(1, maxX - minX);
+        var height = Math.Max(1, maxY - minY);
+        var margin = 82;
+        var scale = Math.Min((Width - margin * 2) / width, (Height - margin * 2) / height);
+        if (double.IsInfinity(scale) || double.IsNaN(scale)) scale = 1;
+        scale = Math.Min(1, scale);
+        foreach (var pair in raw) {
+            var x = Width / 2 + (pair.Value.X - (minX + maxX) / 2) * scale;
+            var y = Height / 2 + (pair.Value.Y - (minY + maxY) / 2) * scale;
+            if (direction == GraphLayoutDirection.BottomToTop) y = Height - y;
+            if (direction == GraphLayoutDirection.RightToLeft) x = Width - x;
+            positions[pair.Key] = new Point(x, y);
+        }
     }
 
     private static Dictionary<string, List<string>> BuildAdjacency(GraphScene scene) {
@@ -323,9 +416,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return "graph";
     }
 
-    private static Dictionary<string, string> BuildClusterMembership(GraphScene scene) {
+    private static Dictionary<string, string> BuildClusterMembership(GraphScene scene, IReadOnlyList<GraphSceneCluster> clusters) {
         var membership = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var cluster in scene.Clusters.OrderBy(cluster => cluster.Id, StringComparer.Ordinal)) {
+        foreach (var cluster in clusters.OrderBy(cluster => cluster.Id, StringComparer.Ordinal)) {
             foreach (var nodeId in cluster.NodeIds) {
                 if (!membership.ContainsKey(nodeId)) membership[nodeId] = cluster.Id;
             }

@@ -52,4 +52,5 @@
 .cfx-graph-tooltip{position:absolute;left:12px;bottom:12px;max-width:min(360px,calc(100% - 24px));padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;box-shadow:0 14px 30px rgba(15,23,42,.14);font-size:13px}
 .cfx-graph-tooltip[hidden]{display:none}
 .cfx-graph-edge.cfx-graph-selected{stroke:#f59e0b;stroke-width:3;opacity:.95}
+@media (max-width:520px){.cfx-graph-overview{display:none!important}}
 
