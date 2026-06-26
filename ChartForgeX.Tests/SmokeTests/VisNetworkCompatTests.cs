@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 
@@ -21,6 +22,18 @@ internal static partial class SmokeTests {
         implicitGroup.AddNode("api", "API", node => node.Group = "implicit");
         var implicitScene = implicitGroup.ToGraphScene("implicit", "Implicit group");
         Assert(implicitScene.Clusters.Count == 1 && implicitScene.Nodes[0].ClusterId == "implicit", "Vis-network groups should create clusters even when callers do not configure explicit group defaults.");
+
+        var plain = VisNetworkGraph.Create()
+            .AddNode("partial", "Partial", node => node.X = 42)
+            .AddNode("fixed", "Fixed", node => {
+                node.X = 12;
+                node.Y = 24;
+                node.Fixed = true;
+            })
+            .AddEdge("", "partial", "fixed");
+        var plainScene = plain.ToGraphScene("plain-vis", "Plain vis");
+        Assert(plainScene.Edges[0].Id == "edge-0" && !plainScene.Edges[0].Directed && !plainScene.Edges[0].TargetArrow, "Vis-network edges without ids should get stable synthetic ids while plain edges remain undirected by default.");
+        Assert(!plainScene.Nodes.Single(node => node.Id == "partial").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").Fixed, "Vis-network coordinates should only pin graph nodes when callers supply both x and y.");
     }
 
     private static void VisNetworkCompatRendersHierarchicalStyledHtml() {
@@ -37,10 +50,12 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal) && html.Contains("data-edge-target-arrow=\"false\"", StringComparison.Ordinal), "Graph explorer output should preserve source-side vis-network arrow direction.");
         Assert(html.Contains("data-edge-width=\"3\"", StringComparison.Ordinal) && html.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal) && html.Contains("data-edge-label-color=\"#7F1D1D\"", StringComparison.Ordinal) && html.Contains("data-edge-physics=\"false\"", StringComparison.Ordinal), "Graph explorer output should expose vis-network edge width, color, label color, and physics flags.");
         Assert(html.Contains("style=\"stroke:#DC2626;stroke-width:3\"", StringComparison.Ordinal), "Graph explorer SVG should visibly render vis-network-style edge color and width.");
+        Assert(html.Contains("style=\"fill:#DC2626;stroke:#DC2626\"", StringComparison.Ordinal), "Graph explorer SVG should render arrow markers with the matching vis-network edge color.");
         Assert(html.Contains("style=\"fill:#7F1D1D\">issues</text>", StringComparison.Ordinal), "Graph explorer SVG should visibly render vis-network-style edge label colors.");
-        Assert(html.Contains("data-edge-hidden=\"true\"", StringComparison.Ordinal) && !html.Contains(">queries</text>", StringComparison.Ordinal), "Graph explorer SVG should suppress labels for hidden vis-network-style edges.");
+        Assert(html.Contains("data-edge-hidden=\"true\"", StringComparison.Ordinal) && html.Contains("cfx-graph-edge cfx-graph-hidden", StringComparison.Ordinal) && !html.Contains(">queries</text>", StringComparison.Ordinal), "Graph explorer SVG and Canvas state should suppress hidden vis-network-style edges.");
         Assert(html.Contains("physics: attr(edge, 'data-edge-physics') !== 'false'", StringComparison.Ordinal) && html.Contains("state.edges.filter(edge => edge.physics !== false)", StringComparison.Ordinal), "Graph explorer runtime physics should exclude edges that opt out of physics.");
         Assert(html.Contains("style: { backgroundColor: attr(node.el, 'data-node-background-color')", StringComparison.Ordinal) && html.Contains("context.fillStyle = node.backgroundColor || '#2563eb'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should consume serialized node styles.");
+        Assert(html.Contains("drawNodeShapeMark(context, node)", StringComparison.Ordinal) && html.Contains("node.shape === 'database'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render rich vis-network node shapes instead of falling back to circles.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains("@media (max-width:520px){.cfx-graph-overview{display:none!important}}", StringComparison.Ordinal), "Graph explorer responsive CSS should hide the overview on narrow embeds so hierarchy examples remain inspectable.");
 
         var rootX = GetAttribute(html, "data-node-id=\"identity\"", "data-node-x");

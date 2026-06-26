@@ -25,7 +25,8 @@ public static class TopologyGraphExplorerExtensions {
         var scene = GraphScene.Create(TopologySceneId(chart), TopologySceneTitle(chart));
         scene.Subtitle = chart.Subtitle;
         if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
-        scene.Options.Cluster.Mode = options.IncludeGroupsAsClusters ? GraphClusterMode.Hybrid : scene.Options.Cluster.Mode;
+        scene.Options.Cluster.Mode = options.IncludeGroupsAsClusters ? GraphClusterMode.Hybrid : GraphClusterMode.Explicit;
+        if (!options.IncludeGroupsAsClusters) scene.Options.Cluster.Adaptive = false;
         scene.Options.Cluster.CollapseOnLoad = scene.Options.LevelOfDetail.CollapseClustersOnLoad;
         scene.Metadata["source.model"] = nameof(TopologyChart);
         scene.Metadata["topology.layout"] = chart.LayoutMode.ToString();
@@ -108,6 +109,10 @@ public static class TopologyGraphExplorerExtensions {
             graphNode.Y = node.Y + node.Height / 2;
         }
 
+        graphNode.Style.BackgroundColor = node.BackgroundColor;
+        graphNode.Style.BorderColor = node.Color;
+        graphNode.Style.LabelColor = node.Color;
+
         AddMetadata(graphNode.Metadata, "topology.id", node.Id);
         AddMetadata(graphNode.Metadata, "topology.subtitle", node.Subtitle);
         AddMetadata(graphNode.Metadata, "topology.kind", node.Kind.ToString());
@@ -150,6 +155,7 @@ public static class TopologyGraphExplorerExtensions {
         };
         graphEdge.SourceArrow = sourceArrow;
         graphEdge.TargetArrow = targetArrow;
+        graphEdge.Style.Color = edge.Color;
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
         AddMetadata(graphEdge.Metadata, "topology.sourceNodeId", edge.SourceNodeId);
         AddMetadata(graphEdge.Metadata, "topology.targetNodeId", edge.TargetNodeId);

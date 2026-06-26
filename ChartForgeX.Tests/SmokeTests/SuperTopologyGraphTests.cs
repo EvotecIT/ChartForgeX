@@ -20,6 +20,7 @@ internal static partial class SmokeTests {
             .AddNode("cdn", "CDN", 440, 92, TopologyNodeKind.Network, TopologyHealthStatus.Healthy, groupId: "edge", subtitle: "Ingress", symbol: "NET")
             .AddEdge("cdn-api", "cdn", "api", "routes", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved)
             .AddEdge("api-db", "api", "db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, secondaryLabel: "32 ms");
+        topology.WithNodeColor("api", "#0F766E").WithNodeBackground("api", "#CCFBF1").WithEdgeColor("cdn-api", "#7C3AED");
         topology.Nodes[0].Metadata["owner"] = "identity";
         topology.Nodes[1].Metrics["latency"] = "32";
         topology.Edges[1].Metrics["transport"] = "tcp";
@@ -35,6 +36,7 @@ internal static partial class SmokeTests {
         Assert(scene.Nodes[0].ClusterId == "core" && scene.Clusters[0].NodeIds.Count == 2, "Topology groups should seed graph cluster membership.");
         Assert(scene.Nodes[0].Metadata["topology.meta.owner"] == "identity" && scene.Nodes[1].Metadata["topology.metric.latency"] == "32", "Topology graph nodes should carry source metadata and metrics for inspectors.");
         Assert(scene.Edges[0].Shape == GraphEdgeShape.Curve && scene.Edges[0].Directed, "Topology graph edges should preserve curved directed relationship hints.");
+        Assert(scene.Nodes[0].Style.BackgroundColor == "#CCFBF1" && scene.Nodes[0].Style.BorderColor == "#0F766E" && scene.Edges[0].Style.Color == "#7C3AED", "Topology graph bridge should map topology colors into reusable GraphScene styling, not only metadata.");
         Assert(scene.Edges[1].Metadata["topology.metric.transport"] == "tcp" && scene.Edges[1].Metadata["topology.secondaryLabel"] == "32 ms", "Topology graph edges should carry topology metrics and secondary labels.");
         Assert(scene.Nodes[0].HasExplicitPosition && scene.Nodes[0].Fixed, "Manual topology coordinates should seed fixed graph positions for deterministic opening layouts.");
 
@@ -48,10 +50,11 @@ internal static partial class SmokeTests {
         Assert(html.Contains("clustering: {", StringComparison.Ordinal) && html.Contains("minimumClusterSize", StringComparison.Ordinal) && html.Contains("data-cfx-graph-cluster-count", StringComparison.Ordinal), "Topology graph JSON export should preserve clustering policy and runtime cluster state.");
         Assert(html.Contains("manipulation: {", StringComparison.Ordinal) && html.Contains("data-cfx-graph-manipulation-capabilities", StringComparison.Ordinal), "Topology graph JSON export should preserve opt-in manipulation capability policy.");
         Assert(html.Contains("data-node-id=\"api\"", StringComparison.Ordinal) && html.Contains("data-node-cluster=\"core\"", StringComparison.Ordinal), "Topology graph explorer output should render topology nodes with cluster metadata.");
+        Assert(html.Contains("data-node-background-color=\"#CCFBF1\"", StringComparison.Ordinal) && html.Contains("data-node-border-color=\"#0F766E\"", StringComparison.Ordinal) && html.Contains("data-edge-color=\"#7C3AED\"", StringComparison.Ordinal), "Topology graph explorer output should serialize topology style hints for SVG, Canvas, PNG, and export paths.");
 
         var noClusterScene = topology.ToGraphScene(options => options.IncludeGroupsAsClusters = false);
         noClusterScene.Validate();
-        Assert(noClusterScene.Clusters.Count == 0 && noClusterScene.Nodes.All(node => string.IsNullOrWhiteSpace(node.ClusterId)), "Topology graph bridge should not assign dangling cluster ids when group cluster rendering is disabled.");
+        Assert(noClusterScene.Clusters.Count == 0 && noClusterScene.GetEffectiveClusters().Count == 0 && noClusterScene.Nodes.All(node => string.IsNullOrWhiteSpace(node.ClusterId)), "Topology graph bridge should not assign dangling cluster ids or derive replacement clusters when group cluster rendering is disabled.");
 
         var anchored = TopologyChart.Create()
             .WithId("hidden-anchor")
@@ -64,6 +67,6 @@ internal static partial class SmokeTests {
         var anchoredScene = anchored.ToGraphScene();
         Assert(anchoredScene.Nodes.Single(node => node.Id == "anchor").Hidden && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").SourceArrow && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").TargetArrow, "Topology graph bridge should preserve hidden routing anchors and bidirectional edge markers.");
         var anchoredHtml = anchored.ToGraphExplorerHtmlFragment();
-        Assert(anchoredHtml.Contains("data-node-id=\"anchor\"", StringComparison.Ordinal) && anchoredHtml.Contains("cfx-graph-hidden", StringComparison.Ordinal) && anchoredHtml.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal), "Graph explorer output should keep hidden topology anchors available for routing without drawing visible node marks.");
+        Assert(anchoredHtml.Contains("data-node-id=\"anchor\"", StringComparison.Ordinal) && anchoredHtml.Contains("data-node-hidden=\"true\"", StringComparison.Ordinal) && anchoredHtml.Contains("entry.node.classList.toggle('cfx-graph-hidden', entry.intrinsicHidden || !visible)", StringComparison.Ordinal) && anchoredHtml.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal), "Graph explorer output should keep hidden topology anchors available for routing without drawing visible node marks or resurrecting them during filter binding.");
     }
 }

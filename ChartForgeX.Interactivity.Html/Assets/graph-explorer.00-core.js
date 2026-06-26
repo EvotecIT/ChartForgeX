@@ -339,9 +339,7 @@
           // Keep malformed host-supplied images from breaking Canvas interaction.
         }
       }
-    } else {
-      context.beginPath(); context.arc(node.x, node.y, node.size, 0, Math.PI * 2); context.fill(); context.stroke();
-    }
+    } else drawNodeShapeMark(context, node);
     if (node.icon) {
       context.font = 'bold 12px Segoe UI, Arial, sans-serif';
       context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = '#ffffff';

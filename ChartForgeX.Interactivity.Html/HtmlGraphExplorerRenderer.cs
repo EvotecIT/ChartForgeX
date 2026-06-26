@@ -199,9 +199,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "id", graphId + "-title");
         writer.Append('>');
         writer.Append(Text(scene.Title));
-        writer.Append("</title><defs><marker");
-        Attribute(writer, "id", graphId + "-arrow");
-        writer.Append(" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\"></path></marker></defs>");
+        writer.Append("</title>");
+        WriteArrowMarkers(writer, scene, graphId + "-arrow");
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
         var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
@@ -309,6 +308,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var path = EdgePath(edge, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
             writer.Append("<path class=\"cfx-graph-edge");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
+            if (edge.Style.Hidden) writer.Append(" cfx-graph-hidden");
             writer.Append("\" tabindex=\"");
             writer.Append(focusableGraphItems ? "0" : "-1");
             writer.Append("\" data-cfx-role=\"graph-edge\"");
@@ -340,10 +340,33 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "d", path);
             var edgeStyle = EdgeStyle(edge);
             if (!string.IsNullOrWhiteSpace(edgeStyle)) Attribute(writer, "style", edgeStyle);
-            if (HasSourceArrow(edge)) Attribute(writer, "marker-start", "url(#" + markerId + ")");
-            if (HasTargetArrow(edge)) Attribute(writer, "marker-end", "url(#" + markerId + ")");
+            var edgeMarkerId = ArrowMarkerId(markerId, edge.Style.Color);
+            if (HasSourceArrow(edge)) Attribute(writer, "marker-start", "url(#" + edgeMarkerId + ")");
+            if (HasTargetArrow(edge)) Attribute(writer, "marker-end", "url(#" + edgeMarkerId + ")");
             writer.Append("></path>");
         }
+    }
+
+    private static void WriteArrowMarkers(StringBuilder writer, GraphScene scene, string markerId) {
+        writer.Append("<defs>");
+        WriteArrowMarker(writer, markerId, null);
+        foreach (var color in scene.Edges.Where(edge => HasSourceArrow(edge) || HasTargetArrow(edge)).Select(edge => edge.Style.Color).Where(color => !string.IsNullOrWhiteSpace(color)).Distinct(StringComparer.Ordinal)) {
+            WriteArrowMarker(writer, ArrowMarkerId(markerId, color), color);
+        }
+
+        writer.Append("</defs>");
+    }
+
+    private static void WriteArrowMarker(StringBuilder writer, string markerId, string? color) {
+        writer.Append("<marker");
+        Attribute(writer, "id", markerId);
+        writer.Append(" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\"");
+        if (!string.IsNullOrWhiteSpace(color)) Attribute(writer, "style", "fill:" + color + ";stroke:" + color);
+        writer.Append("></path></marker>");
+    }
+
+    private static string ArrowMarkerId(string markerId, string? color) {
+        return string.IsNullOrWhiteSpace(color) ? markerId : markerId + "-" + SafeId(color!);
     }
 
     private static string[] ClusterMemberIds(GraphScene scene, GraphSceneCluster cluster, IReadOnlyDictionary<string, string> clusterMembership) {

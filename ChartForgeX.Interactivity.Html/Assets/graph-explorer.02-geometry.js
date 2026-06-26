@@ -23,6 +23,36 @@
     const distance = Math.sqrt(dx * dx + dy * dy);
     return distance <= node.size + slack ? distance : Number.POSITIVE_INFINITY;
   };
+  const canvasPolygon = (context, node, points) => {
+    context.beginPath();
+    points.forEach((point, index) => index ? context.lineTo(node.x + point[0] * node.size, node.y + point[1] * node.size) : context.moveTo(node.x + point[0] * node.size, node.y + point[1] * node.size));
+    context.closePath();
+  };
+  const drawNodeShapeMark = (context, node) => {
+    const size = node.size;
+    if (node.shape === 'ellipse') {
+      context.beginPath(); context.ellipse(node.x, node.y, size * 1.35, size * .85, 0, 0, Math.PI * 2); context.fill(); context.stroke();
+    } else if (node.shape === 'square') {
+      context.beginPath(); context.rect(node.x - size, node.y - size, size * 2, size * 2); context.fill(); context.stroke();
+    } else if (node.shape === 'diamond') {
+      canvasPolygon(context, node, [[0, -1.35], [1.35, 0], [0, 1.35], [-1.35, 0]]); context.fill(); context.stroke();
+    } else if (node.shape === 'triangle') {
+      canvasPolygon(context, node, [[0, -1.35], [1.25, 1.05], [-1.25, 1.05]]); context.fill(); context.stroke();
+    } else if (node.shape === 'triangleDown') {
+      canvasPolygon(context, node, [[-1.25, -1.05], [1.25, -1.05], [0, 1.35]]); context.fill(); context.stroke();
+    } else if (node.shape === 'star') {
+      canvasPolygon(context, node, [[0, -1.45], [.42, -.45], [1.4, -.45], [.62, .18], [.9, 1.25], [0, .64], [-.9, 1.25], [-.62, .18], [-1.4, -.45], [-.42, -.45]]); context.fill(); context.stroke();
+    } else if (node.shape === 'database') {
+      const width = size * 1.25, height = size * 1.45;
+      context.beginPath(); context.rect(node.x - width, node.y - height * .35, width * 2, height * .7); context.fill(); context.stroke();
+      context.beginPath(); context.ellipse(node.x, node.y - height * .35, width, size * .38, 0, 0, Math.PI * 2); context.fill(); context.stroke();
+      context.beginPath(); context.ellipse(node.x, node.y + height * .35, width, size * .38, 0, 0, Math.PI); context.stroke();
+    } else if (node.shape === 'text') {
+      context.beginPath(); context.arc(node.x, node.y, Math.max(2, size * .18), 0, Math.PI * 2); context.fill();
+    } else {
+      context.beginPath(); context.arc(node.x, node.y, size, 0, Math.PI * 2); context.fill(); context.stroke();
+    }
+  };
   const edgeControl = (edge) => {
     if (edge.source === edge.target) return null;
     if (edge.shape !== 'curve' && Math.abs(edge.curvature) < 0.001) return null;

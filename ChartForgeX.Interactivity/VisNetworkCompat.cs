@@ -55,7 +55,7 @@ public sealed class VisNetworkGraph {
         ApplyOptions(scene);
         ApplyGroups(scene);
         foreach (var node in Nodes) scene.Nodes.Add(node.ToGraphSceneNode(Groups));
-        foreach (var edge in Edges) scene.Edges.Add(edge.ToGraphSceneEdge());
+        for (var index = 0; index < Edges.Count; index++) scene.Edges.Add(Edges[index].ToGraphSceneEdge(index));
         scene.Validate();
         return scene;
     }
@@ -171,10 +171,12 @@ public sealed class VisNetworkNode {
             Shape = MapShape(Shape ?? group?.Shape ?? VisNetworkNodeShape.Dot),
             ImageUrl = Image ?? group?.Image,
             IconText = Icon ?? group?.Icon,
-            Fixed = Fixed
+            Fixed = Fixed && X.HasValue && Y.HasValue
         };
-        if (X.HasValue) node.X = X.Value;
-        if (Y.HasValue) node.Y = Y.Value;
+        if (X.HasValue && Y.HasValue) {
+            node.X = X.Value;
+            node.Y = Y.Value;
+        }
         ApplyStyle(node.Style, group?.Style);
         node.Metadata["vis.node"] = "true";
         if (!string.IsNullOrWhiteSpace(Group)) node.Metadata["vis.group"] = Group!;
@@ -228,7 +230,7 @@ public sealed class VisNetworkEdge {
     public string? Kind { get; set; }
 
     /// <summary>Gets or sets whether the edge should show an arrow at the target side.</summary>
-    public bool ArrowsTo { get; set; } = true;
+    public bool ArrowsTo { get; set; }
 
     /// <summary>Gets or sets whether the edge should show an arrow at the source side.</summary>
     public bool ArrowsFrom { get; set; }
@@ -248,9 +250,9 @@ public sealed class VisNetworkEdge {
     /// <summary>Gets edge style hints.</summary>
     public GraphEdgeStyle Style { get; } = new();
 
-    internal GraphSceneEdge ToGraphSceneEdge() {
+    internal GraphSceneEdge ToGraphSceneEdge(int index) {
         var edge = new GraphSceneEdge {
-            Id = Id,
+            Id = string.IsNullOrWhiteSpace(Id) ? "edge-" + index.ToString(System.Globalization.CultureInfo.InvariantCulture) : Id,
             SourceNodeId = From,
             TargetNodeId = To,
             Label = Label,
