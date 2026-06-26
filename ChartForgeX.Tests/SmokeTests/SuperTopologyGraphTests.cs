@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
@@ -47,5 +48,22 @@ internal static partial class SmokeTests {
         Assert(html.Contains("clustering: {", StringComparison.Ordinal) && html.Contains("minimumClusterSize", StringComparison.Ordinal) && html.Contains("data-cfx-graph-cluster-count", StringComparison.Ordinal), "Topology graph JSON export should preserve clustering policy and runtime cluster state.");
         Assert(html.Contains("manipulation: {", StringComparison.Ordinal) && html.Contains("data-cfx-graph-manipulation-capabilities", StringComparison.Ordinal), "Topology graph JSON export should preserve opt-in manipulation capability policy.");
         Assert(html.Contains("data-node-id=\"api\"", StringComparison.Ordinal) && html.Contains("data-node-cluster=\"core\"", StringComparison.Ordinal), "Topology graph explorer output should render topology nodes with cluster metadata.");
+
+        var noClusterScene = topology.ToGraphScene(options => options.IncludeGroupsAsClusters = false);
+        noClusterScene.Validate();
+        Assert(noClusterScene.Clusters.Count == 0 && noClusterScene.Nodes.All(node => string.IsNullOrWhiteSpace(node.ClusterId)), "Topology graph bridge should not assign dangling cluster ids when group cluster rendering is disabled.");
+
+        var anchored = TopologyChart.Create()
+            .WithId("hidden-anchor")
+            .AddNode("source", "Source", 20, 20, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddNode("anchor", "Anchor", 140, 20, TopologyNodeKind.Network, TopologyHealthStatus.Unknown)
+            .AddNode("target", "Target", 260, 20, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
+            .AddEdge("source-anchor", "source", "anchor", "route", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy)
+            .AddEdge("anchor-target", "anchor", "target", "route", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional);
+        anchored.WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+        var anchoredScene = anchored.ToGraphScene();
+        Assert(anchoredScene.Nodes.Single(node => node.Id == "anchor").Hidden && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").SourceArrow && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").TargetArrow, "Topology graph bridge should preserve hidden routing anchors and bidirectional edge markers.");
+        var anchoredHtml = anchored.ToGraphExplorerHtmlFragment();
+        Assert(anchoredHtml.Contains("data-node-id=\"anchor\"", StringComparison.Ordinal) && anchoredHtml.Contains("cfx-graph-hidden", StringComparison.Ordinal) && anchoredHtml.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal), "Graph explorer output should keep hidden topology anchors available for routing without drawing visible node marks.");
     }
 }

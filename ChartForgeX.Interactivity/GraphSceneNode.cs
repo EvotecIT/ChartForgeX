@@ -78,6 +78,9 @@ public sealed class GraphSceneNode {
     /// <summary>Gets or sets whether physics adapters should keep the node at its current position.</summary>
     public bool Fixed { get; set; }
 
+    /// <summary>Gets or sets whether adapters should keep the node available for routing while hiding its visible mark.</summary>
+    public bool Hidden { get; set; }
+
     /// <summary>Gets reusable node styling hints for adapters that support richer graph marks.</summary>
     public GraphNodeStyle Style { get; } = new();
 

@@ -33,7 +33,7 @@
     return { x: (edge.source.x + edge.target.x) / 2 - dy / length * offset, y: (edge.source.y + edge.target.y) / 2 + dx / length * offset };
   };
   const edgeRenderSource = (edge, control) => {
-    if (!edge.sourceCollapsed) return edge.source;
+    if (!edge.sourceCollapsed && !edge.sourceArrow) return edge.source;
     const to = control || edge.target;
     const dx = to.x - edge.source.x, dy = to.y - edge.source.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -41,7 +41,7 @@
     return { x: edge.source.x + dx / length * inset, y: edge.source.y + dy / length * inset };
   };
   const edgeRenderTarget = (edge, control) => {
-    if (!edge.directed && !edge.targetCollapsed) return edge.target;
+    if (!edge.directed && !edge.targetArrow && !edge.targetCollapsed) return edge.target;
     const from = control || edge.source;
     const dx = edge.target.x - from.x, dy = edge.target.y - from.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -70,10 +70,11 @@
     : edge.source === edge.target
       ? selfLoopGeometry(edge.source).label
       : { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
-  const drawArrow = (context, edge, control) => {
+  const drawArrow = (context, edge, control, side, color) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
-    const from = loop?.c2 || control || edge.source;
-    const target = loop?.end || edge.target;
+    const sourceSide = side === 'source' && !loop;
+    const from = sourceSide ? (control || edge.target) : loop?.c2 || control || edge.source;
+    const target = sourceSide ? edge.source : loop?.end || edge.target;
     const dx = target.x - from.x;
     const dy = target.y - from.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -81,7 +82,7 @@
     const unitY = dy / length;
     const angle = Math.atan2(unitY, unitX);
     const size = 8;
-    const inset = loop ? 0 : nodeBoundaryInset(edge.target, unitX, unitY);
+    const inset = loop ? 0 : nodeBoundaryInset(sourceSide ? edge.source : edge.target, unitX, unitY);
     const x = target.x - unitX * inset;
     const y = target.y - unitY * inset;
     context.beginPath();
@@ -89,6 +90,6 @@
     context.lineTo(x - Math.cos(angle - Math.PI / 6) * size, y - Math.sin(angle - Math.PI / 6) * size);
     context.lineTo(x - Math.cos(angle + Math.PI / 6) * size, y - Math.sin(angle + Math.PI / 6) * size);
     context.closePath();
-    context.fillStyle = '#64748b';
+    context.fillStyle = color || '#64748b';
     context.fill();
   };

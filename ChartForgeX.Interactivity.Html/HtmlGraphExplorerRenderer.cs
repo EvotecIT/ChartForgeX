@@ -306,7 +306,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
             var sourceBoundary = collapsedNodeRadii.TryGetValue(edge.SourceNodeId, out var sourceRadius) ? sourceRadius : (double?)null;
             var targetBoundary = collapsedNodeRadii.TryGetValue(edge.TargetNodeId, out var targetRadius) ? targetRadius : (double?)null;
-            var path = EdgePath(edge, renderSource, renderTarget, targetNode, targetBoundary, sourceBoundary);
+            var path = EdgePath(edge, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
             writer.Append("<path class=\"cfx-graph-edge");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" tabindex=\"");
@@ -323,6 +323,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-weight", Number(edge.Weight));
             Attribute(writer, "data-edge-length", Number(edge.Length));
             Attribute(writer, "data-edge-directed", edge.Directed ? "true" : "false");
+            Attribute(writer, "data-edge-source-arrow", HasSourceArrow(edge) ? "true" : "false");
+            Attribute(writer, "data-edge-target-arrow", HasTargetArrow(edge) ? "true" : "false");
             Attribute(writer, "data-edge-shape", EdgeShape(edge.Shape));
             Attribute(writer, "data-edge-curvature", Number(edge.Curvature));
             Attribute(writer, "data-edge-dashed", edge.Dashed ? "true" : "false");
@@ -338,7 +340,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "d", path);
             var edgeStyle = EdgeStyle(edge);
             if (!string.IsNullOrWhiteSpace(edgeStyle)) Attribute(writer, "style", edgeStyle);
-            if (edge.Directed) Attribute(writer, "marker-end", "url(#" + markerId + ")");
+            if (HasSourceArrow(edge)) Attribute(writer, "marker-start", "url(#" + markerId + ")");
+            if (HasTargetArrow(edge)) Attribute(writer, "marker-end", "url(#" + markerId + ")");
             writer.Append("></path>");
         }
     }
@@ -354,7 +357,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, Point> collapsedNodePositions, HashSet<string> collapsedEdgeIds) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !string.IsNullOrWhiteSpace(edge.Label))) {
+        foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !edge.Style.Hidden && !string.IsNullOrWhiteSpace(edge.Label))) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
             var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
@@ -366,6 +369,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-label-for", edge.Id);
             Attribute(writer, "x", Number(point.X));
             Attribute(writer, "y", Number(point.Y));
+            var labelStyle = EdgeLabelStyle(edge);
+            if (!string.IsNullOrWhiteSpace(labelStyle)) Attribute(writer, "style", labelStyle);
             writer.Append('>');
             writer.Append(Text(edge.Label!));
             writer.Append("</text>");
@@ -378,6 +383,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var size = SafeNodeSize(node);
             writer.Append("<g class=\"cfx-graph-node");
             if (collapsedNodeIds.Contains(node.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
+            if (node.Hidden) writer.Append(" cfx-graph-hidden");
             writer.Append("\" tabindex=\"");
             writer.Append(focusableGraphItems ? "0" : "-1");
             writer.Append("\" data-cfx-role=\"graph-node\"");
@@ -389,6 +395,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cfx-status", node.Status);
             Attribute(writer, "data-node-size", Number(size));
             Attribute(writer, "data-node-fixed", node.Fixed ? "true" : "false");
+            Attribute(writer, "data-node-hidden", node.Hidden ? "true" : "false");
             Attribute(writer, "data-node-level", node.Level.HasValue ? node.Level.Value.ToString(CultureInfo.InvariantCulture) : null);
             Attribute(writer, "data-node-shape", NodeShape(node));
             Attribute(writer, "data-node-image-url", node.ImageUrl);
@@ -611,14 +618,14 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
-        return EdgePath(edge, source, target, targetNode, null, null);
+        return EdgePath(edge, source, target, null, targetNode, null, null);
     }
 
-    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
+    private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopPath(target, targetNode);
         var control = EdgeControl(edge, source, target);
-        var renderSource = SourceBoundaryPoint(source, target, control, sourceBoundaryInset);
-        var renderTarget = DirectedTargetPoint(edge, source, target, control, targetNode, targetBoundaryInset);
+        var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
+        var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);
         return control.HasValue
             ? "M " + Number(renderSource.X) + " " + Number(renderSource.Y) + " Q " + Number(control.Value.X) + " " + Number(control.Value.Y) + " " + Number(renderTarget.X) + " " + Number(renderTarget.Y)
             : "M " + Number(renderSource.X) + " " + Number(renderSource.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
@@ -642,21 +649,22 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return new Point((source.X + target.X) / 2 - dy / length * offset, (source.Y + target.Y) / 2 + dx / length * offset);
     }
 
-    private static Point SourceBoundaryPoint(Point source, Point target, Point? control, double? sourceBoundaryInset) {
-        if (!sourceBoundaryInset.HasValue || sourceBoundaryInset.Value <= 0) return source;
+    private static Point SourceBoundaryPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? sourceNode, double? sourceBoundaryInset) {
         var to = control ?? target;
         var dx = to.X - source.X;
         var dy = to.Y - source.Y;
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
-        return new Point(source.X + dx / length * sourceBoundaryInset.Value, source.Y + dy / length * sourceBoundaryInset.Value);
+        var inset = sourceBoundaryInset ?? (HasSourceArrow(edge) ? TargetBoundaryInset(sourceNode, dx / length, dy / length) : 0);
+        if (inset <= 0) return source;
+        return new Point(source.X + dx / length * inset, source.Y + dy / length * inset);
     }
 
     private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode) {
-        return DirectedTargetPoint(edge, source, target, control, targetNode, null);
+        return TargetBoundaryPoint(edge, source, target, control, targetNode, null);
     }
 
-    private static Point DirectedTargetPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode, double? targetBoundaryInset) {
-        if (!edge.Directed && !targetBoundaryInset.HasValue) return target;
+    private static Point TargetBoundaryPoint(GraphSceneEdge edge, Point source, Point target, Point? control, GraphSceneNode? targetNode, double? targetBoundaryInset) {
+        if (!HasTargetArrow(edge) && !targetBoundaryInset.HasValue) return target;
         var from = control ?? source;
         var dx = target.X - from.X;
         var dy = target.Y - from.Y;
@@ -664,6 +672,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var inset = targetBoundaryInset ?? TargetBoundaryInset(targetNode, dx / length, dy / length);
         return new Point(target.X - dx / length * inset, target.Y - dy / length * inset);
     }
+
+    private static bool HasSourceArrow(GraphSceneEdge edge) => edge.SourceArrow;
+
+    private static bool HasTargetArrow(GraphSceneEdge edge) => edge.TargetArrow || (edge.Directed && !edge.SourceArrow);
 
     private static string SelfLoopPath(Point center, GraphSceneNode? node) {
         var right = TargetBoundaryInset(node, 1, 0) + 5;

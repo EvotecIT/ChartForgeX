@@ -99,9 +99,10 @@ public static class TopologyGraphExplorerExtensions {
             Size = NodeSize(node),
             IconText = FirstText(node.Symbol, node.Badge),
             ImageAlt = node.Label,
-            Fixed = ShouldPreserveCoordinates(chart, node, options)
+            Fixed = ShouldPreserveCoordinates(chart, node, options),
+            Hidden = node.DisplayMode == TopologyNodeDisplayMode.Hidden
         };
-        if (options.UseGroupsAsClusterIds && !string.IsNullOrWhiteSpace(node.GroupId) && groupIds.Contains(node.GroupId!)) graphNode.ClusterId = node.GroupId;
+        if (options.IncludeGroupsAsClusters && options.UseGroupsAsClusterIds && !string.IsNullOrWhiteSpace(node.GroupId) && groupIds.Contains(node.GroupId!)) graphNode.ClusterId = node.GroupId;
         if (ShouldPreserveCoordinates(chart, node, options)) {
             graphNode.X = node.X + node.Width / 2;
             graphNode.Y = node.Y + node.Height / 2;
@@ -125,7 +126,9 @@ public static class TopologyGraphExplorerExtensions {
     private static GraphSceneEdge ToGraphEdge(TopologyEdge edge) {
         var sourceNodeId = edge.SourceNodeId;
         var targetNodeId = edge.TargetNodeId;
-        var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward;
+        var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward || edge.Direction == TopologyDirection.Bidirectional;
+        var sourceArrow = edge.Direction == TopologyDirection.Bidirectional;
+        var targetArrow = directed;
         if (edge.Direction == TopologyDirection.Backward) {
             sourceNodeId = edge.TargetNodeId;
             targetNodeId = edge.SourceNodeId;
@@ -145,6 +148,8 @@ public static class TopologyGraphExplorerExtensions {
             Weight = EdgeWeight(edge),
             ShowLabel = !string.IsNullOrWhiteSpace(edge.Label)
         };
+        graphEdge.SourceArrow = sourceArrow;
+        graphEdge.TargetArrow = targetArrow;
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
         AddMetadata(graphEdge.Metadata, "topology.sourceNodeId", edge.SourceNodeId);
         AddMetadata(graphEdge.Metadata, "topology.targetNodeId", edge.TargetNodeId);

@@ -71,6 +71,11 @@
       shape: attr(el, 'data-node-shape') || 'circle',
       imageUrl: attr(el, 'data-node-image-url'),
       icon: attr(el, 'data-node-icon'),
+      backgroundColor: attr(el, 'data-node-background-color'),
+      borderColor: attr(el, 'data-node-border-color'),
+      labelColor: attr(el, 'data-node-label-color'),
+      labelBackgroundColor: attr(el, 'data-node-label-background-color'),
+      shadow: attr(el, 'data-node-shadow') === 'true',
       size: Math.max(4, num(el, 'data-node-size', 8)),
       degree: 0,
       fixed: attr(el, 'data-node-fixed') === 'true',
@@ -102,10 +107,16 @@
         length: Math.max(0, num(el, 'data-edge-length', 0)),
         label: attr(el, 'data-edge-label'),
         directed: attr(el, 'data-edge-directed') === 'true',
+        sourceArrow: attr(el, 'data-edge-source-arrow') === 'true',
+        targetArrow: attr(el, 'data-edge-target-arrow') === 'true',
         shape: attr(el, 'data-edge-shape') || 'line',
         curvature: num(el, 'data-edge-curvature', 0),
         dashed: attr(el, 'data-edge-dashed') === 'true',
-        showLabel: attr(el, 'data-edge-show-label') !== 'false'
+        showLabel: attr(el, 'data-edge-show-label') !== 'false',
+        strokeColor: attr(el, 'data-edge-color'),
+        labelColor: attr(el, 'data-edge-label-color'),
+        strokeWidth: num(el, 'data-edge-width', 0),
+        physics: attr(el, 'data-edge-physics') !== 'false'
       };
     }).filter(edge => edge.source && edge.target);
     edges.forEach(edge => {
@@ -238,17 +249,19 @@
         if (control) context.quadraticCurveTo(control.x, control.y, endpoints.target.x, endpoints.target.y);
         else context.lineTo(endpoints.target.x, endpoints.target.y);
       }
-      context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : '#94a3b8';
+      context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : edge.strokeColor || '#94a3b8';
       context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
       const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
-      context.lineWidth = Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, baseWidth + (selected ? 1.6 : related ? 1.2 : 0)));
+      const styledWidth = edge.strokeWidth > 0 ? edge.strokeWidth : baseWidth;
+      context.lineWidth = Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, styledWidth + (selected ? 1.6 : related ? 1.2 : 0)));
       context.setLineDash(edge.dashed ? [8, 6] : []);
       context.stroke();
       context.setLineDash([]);
       context.globalAlpha = 1;
-      if (edge.directed) {
+      if (edge.sourceArrow || edge.targetArrow || edge.directed) {
         context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
-        drawArrow(context, rendered, control);
+        if (edge.sourceArrow) drawArrow(context, rendered, control, 'source', edge.strokeColor);
+        if (edge.targetArrow || (edge.directed && !edge.sourceArrow)) drawArrow(context, rendered, control, 'target', edge.strokeColor);
         context.globalAlpha = 1;
       }
       if (edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)) {
@@ -258,7 +271,7 @@
         context.textBaseline = 'middle';
         context.lineWidth = 4;
         context.strokeStyle = '#ffffff';
-        context.fillStyle = '#475569';
+        context.fillStyle = edge.labelColor || '#475569';
         context.globalAlpha = dimmed ? .16 : 1;
         context.strokeText(edge.label, label.x, label.y);
         context.fillText(edge.label, label.x, label.y);
@@ -286,7 +299,7 @@
         context.textBaseline = 'top';
         context.lineWidth = 4;
         context.strokeStyle = '#ffffff';
-        context.fillStyle = '#334155';
+        context.fillStyle = node.labelColor || '#334155';
         const label = attr(node.el, 'data-node-label');
         context.strokeText(label, node.x, node.y + node.size + 8);
         context.fillText(label, node.x, node.y + node.size + 8);
@@ -296,8 +309,8 @@
     context.restore();
   };
   const drawNodeMark = (context, node, selected, compact, root) => {
-    context.fillStyle = '#2563eb';
-    context.strokeStyle = selected ? '#f59e0b' : '#eff6ff';
+    context.fillStyle = node.backgroundColor || '#2563eb';
+    context.strokeStyle = selected ? '#f59e0b' : node.borderColor || '#eff6ff';
     context.lineWidth = selected ? 5 : compact ? 1.5 : 3;
     if (node.shape === 'box') {
       const width = node.size * 2.9;
@@ -327,16 +340,11 @@
         }
       }
     } else {
-      context.beginPath();
-      context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
+      context.beginPath(); context.arc(node.x, node.y, node.size, 0, Math.PI * 2); context.fill(); context.stroke();
     }
     if (node.icon) {
       context.font = 'bold 12px Segoe UI, Arial, sans-serif';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.fillStyle = '#ffffff';
+      context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = '#ffffff';
       context.fillText(node.icon, node.x, node.y + 1);
     }
   };

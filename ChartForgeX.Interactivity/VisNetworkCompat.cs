@@ -92,15 +92,27 @@ public sealed class VisNetworkGraph {
             scene.Options.Layout.InferLevelsFromEdges = Options.Layout.Hierarchical.InferLevelsFromEdges;
             if (Options.Physics.Enabled && Options.Physics.Solver == GraphPhysicsSolver.StaticPrepared) scene.Options.Physics.Solver = GraphPhysicsSolver.HierarchicalRepulsion;
         }
+
+        if (Options.Physics.Enabled && scene.Options.Physics.Solver != GraphPhysicsSolver.None && scene.Options.Physics.Solver != GraphPhysicsSolver.StaticPrepared) {
+            scene.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization);
+        }
     }
 
     private void ApplyGroups(GraphScene scene) {
-        foreach (var group in Groups.OrderBy(pair => pair.Key, StringComparer.Ordinal)) {
-            var members = Nodes.Where(node => string.Equals(node.Group, group.Key, StringComparison.Ordinal)).Select(node => node.Id).ToArray();
+        var groupIds = Nodes
+            .Select(node => node.Group)
+            .Where(group => !string.IsNullOrWhiteSpace(group))
+            .Select(group => group!)
+            .Concat(Groups.Keys)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(group => group, StringComparer.Ordinal);
+        foreach (var groupId in groupIds) {
+            Groups.TryGetValue(groupId, out var group);
+            var members = Nodes.Where(node => string.Equals(node.Group, groupId, StringComparison.Ordinal)).Select(node => node.Id).ToArray();
             if (members.Length == 0) continue;
-            scene.AddCluster(group.Key, group.Value.Label ?? group.Key, members, cluster => {
+            scene.AddCluster(groupId, group?.Label ?? groupId, members, cluster => {
                 cluster.Kind = "group";
-                cluster.Metadata["vis.group"] = group.Key;
+                cluster.Metadata["vis.group"] = groupId;
             });
         }
     }
@@ -244,6 +256,8 @@ public sealed class VisNetworkEdge {
             Label = Label,
             Kind = Kind,
             Directed = ArrowsTo || ArrowsFrom || ArrowsMiddle,
+            SourceArrow = ArrowsFrom,
+            TargetArrow = ArrowsTo,
             Dashed = Dashes,
             Length = Length ?? 0,
             Shape = MapShape(Smooth)

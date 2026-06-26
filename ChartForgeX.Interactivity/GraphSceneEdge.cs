@@ -38,6 +38,12 @@ public sealed class GraphSceneEdge {
     /// <summary>Gets or sets whether adapters should render a directional arrow toward the target node.</summary>
     public bool Directed { get; set; }
 
+    /// <summary>Gets or sets whether adapters should render a directional arrow at the source node.</summary>
+    public bool SourceArrow { get; set; }
+
+    /// <summary>Gets or sets whether adapters should render a directional arrow at the target node. When unset, <see cref="Directed"/> keeps its target-arrow compatibility behavior.</summary>
+    public bool TargetArrow { get; set; }
+
     /// <summary>Gets or sets the preferred edge geometry used by adapters that support richer graph lines.</summary>
     public GraphEdgeShape Shape { get; set; } = GraphEdgeShape.Line;
 

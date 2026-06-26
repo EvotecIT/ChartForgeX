@@ -142,7 +142,7 @@
     else pairwiseRepulsion(state.nodes, settings);
     const communityPushes = applyStructuralForces(state, settings, layout);
     const overlaps = applyOverlapPressure(state.nodes, settings);
-    state.edges.forEach(edge => {
+    state.edges.filter(edge => edge.physics !== false).forEach(edge => {
       const dx = edge.target.x - edge.source.x;
       const dy = edge.target.y - edge.source.y;
       const distance = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -196,7 +196,7 @@
     const nodeIndex = new Map(state.nodes.map((node, index) => [node.id, index]));
     return {
       nodes: state.nodes.map(node => ({ id: node.id, x: node.x, y: node.y, homeX: node.homeX, homeY: node.homeY, vx: node.vx, vy: node.vy, fixed: node.fixed, degree: node.degree, size: node.size, cluster: node.cluster, groupId: node.groupId, kind: node.kind })),
-      edges: state.edges.map(edge => ({ sourceIndex: nodeIndex.get(edge.source.id), targetIndex: nodeIndex.get(edge.target.id), length: edge.length, weight: edge.weight }))
+      edges: state.edges.filter(edge => edge.physics !== false).map(edge => ({ sourceIndex: nodeIndex.get(edge.source.id), targetIndex: nodeIndex.get(edge.target.id), length: edge.length, weight: edge.weight }))
         .filter(edge => Number.isInteger(edge.sourceIndex) && Number.isInteger(edge.targetIndex))
     };
   };

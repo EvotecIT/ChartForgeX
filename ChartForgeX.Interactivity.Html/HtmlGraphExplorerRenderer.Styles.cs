@@ -73,6 +73,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return string.Join(";", parts);
     }
 
+    private static string EdgeLabelStyle(GraphSceneEdge edge) {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(edge.Style.LabelColor)) parts.Add("fill:" + edge.Style.LabelColor);
+        if (edge.Style.Hidden) parts.Add("display:none");
+        return string.Join(";", parts);
+    }
+
     private static string PolygonPoints(GraphNodeShape shape, double size) {
         if (shape == GraphNodeShape.Diamond) return "0," + Number(-size * 1.35) + " " + Number(size * 1.35) + ",0 0," + Number(size * 1.35) + " " + Number(-size * 1.35) + ",0";
         if (shape == GraphNodeShape.Triangle) return "0," + Number(-size * 1.35) + " " + Number(size * 1.25) + "," + Number(size * 1.05) + " " + Number(-size * 1.25) + "," + Number(size * 1.05);

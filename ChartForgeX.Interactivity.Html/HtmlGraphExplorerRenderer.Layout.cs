@@ -47,21 +47,24 @@ public sealed partial class HtmlGraphExplorerRenderer {
             .Where(node => !node.HasExplicitPosition)
             .GroupBy(node => levels[node.Id])
             .OrderBy(group => group.Key)
-            .Select(group => group
-                .OrderByDescending(node => scene.Edges.Count(edge => string.Equals(edge.SourceNodeId, node.Id, StringComparison.Ordinal) || string.Equals(edge.TargetNodeId, node.Id, StringComparison.Ordinal)))
-                .ThenBy(node => node.Id, StringComparer.Ordinal)
-                .ToArray())
+            .Select(group => new {
+                Level = group.Key,
+                Nodes = group
+                    .OrderByDescending(node => scene.Edges.Count(edge => string.Equals(edge.SourceNodeId, node.Id, StringComparison.Ordinal) || string.Equals(edge.TargetNodeId, node.Id, StringComparison.Ordinal)))
+                    .ThenBy(node => node.Id, StringComparer.Ordinal)
+                    .ToArray()
+            })
             .ToArray();
         if (orderedLevels.Length == 0) return;
 
         var layout = scene.Options.Layout;
         var horizontal = layout.Direction is GraphLayoutDirection.LeftToRight or GraphLayoutDirection.RightToLeft;
         var raw = new Dictionary<string, Point>(StringComparer.Ordinal);
-        for (var levelIndex = 0; levelIndex < orderedLevels.Length; levelIndex++) {
-            var nodes = orderedLevels[levelIndex];
+        foreach (var level in orderedLevels) {
+            var nodes = level.Nodes;
             var lineOffset = -(nodes.Length - 1) * layout.NodeSpacing / 2;
             for (var index = 0; index < nodes.Length; index++) {
-                var primary = levelIndex * layout.LevelSeparation;
+                var primary = level.Level * layout.LevelSeparation;
                 var secondary = lineOffset + index * layout.NodeSpacing;
                 raw[nodes[index].Id] = horizontal
                     ? new Point(primary, secondary)
@@ -80,33 +83,44 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         var outgoing = scene.Nodes.ToDictionary(node => node.Id, _ => new List<string>(), StringComparer.Ordinal);
-        var incoming = scene.Nodes.ToDictionary(node => node.Id, _ => 0, StringComparer.Ordinal);
+        var incoming = scene.Nodes.ToDictionary(node => node.Id, _ => new HashSet<string>(StringComparer.Ordinal), StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
-            if (!outgoing.ContainsKey(edge.SourceNodeId) || !incoming.ContainsKey(edge.TargetNodeId)) continue;
+            if (!outgoing.ContainsKey(edge.SourceNodeId) || !incoming.ContainsKey(edge.TargetNodeId) || string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) continue;
             outgoing[edge.SourceNodeId].Add(edge.TargetNodeId);
-            incoming[edge.TargetNodeId]++;
+            incoming[edge.TargetNodeId].Add(edge.SourceNodeId);
         }
 
-        var queue = new Queue<string>();
+        var visiting = new HashSet<string>(StringComparer.Ordinal);
+        var resolved = new HashSet<string>(StringComparer.Ordinal);
         foreach (var node in scene.Nodes.OrderBy(node => node.Id, StringComparer.Ordinal)) {
-            if (levels[node.Id] != int.MaxValue || incoming[node.Id] == 0) {
-                if (levels[node.Id] == int.MaxValue) levels[node.Id] = 0;
-                queue.Enqueue(node.Id);
-            }
-        }
-
-        while (queue.Count > 0) {
-            var id = queue.Dequeue();
-            foreach (var target in outgoing[id].OrderBy(value => value, StringComparer.Ordinal)) {
-                var next = levels[id] + 1;
-                if (levels[target] != int.MaxValue && levels[target] >= next) continue;
-                levels[target] = next;
-                queue.Enqueue(target);
-            }
+            levels[node.Id] = ResolveHierarchyLevel(node.Id, incoming, levels, visiting, resolved);
         }
 
         foreach (var node in scene.Nodes) if (levels[node.Id] == int.MaxValue) levels[node.Id] = 0;
         return levels;
+    }
+
+    private static int ResolveHierarchyLevel(string nodeId, IReadOnlyDictionary<string, HashSet<string>> incoming, IDictionary<string, int> levels, ISet<string> visiting, ISet<string> resolved) {
+        if (resolved.Contains(nodeId)) return levels[nodeId] == int.MaxValue ? 0 : levels[nodeId];
+        if (levels[nodeId] != int.MaxValue) {
+            resolved.Add(nodeId);
+            return levels[nodeId];
+        }
+
+        if (!visiting.Add(nodeId)) return 0;
+        var level = 0;
+        if (incoming.TryGetValue(nodeId, out var sources)) {
+            foreach (var source in sources.OrderBy(value => value, StringComparer.Ordinal)) {
+                if (!levels.ContainsKey(source)) continue;
+                if (visiting.Contains(source)) continue;
+                level = Math.Max(level, ResolveHierarchyLevel(source, incoming, levels, visiting, resolved) + 1);
+            }
+        }
+
+        visiting.Remove(nodeId);
+        levels[nodeId] = level;
+        resolved.Add(nodeId);
+        return level;
     }
 
     private static void NormalizeHierarchicalPositions(IReadOnlyDictionary<string, Point> raw, IDictionary<string, Point> positions, GraphLayoutDirection direction) {

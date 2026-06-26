@@ -9,13 +9,18 @@ internal static partial class SmokeTests {
         var scene = SampleVisNetworkCompatGraph().ToGraphScene("vis-parity", "Vis parity");
 
         Assert(scene.Options.Layout.Mode == GraphLayoutMode.Hierarchical && scene.Options.Layout.Direction == GraphLayoutDirection.LeftToRight, "Vis-network compatibility should map hierarchical layout options into the reusable GraphScene layout contract.");
-        Assert(scene.Options.Physics.Solver == GraphPhysicsSolver.HierarchicalRepulsion, "Vis-network hierarchical compatibility should request the hierarchical repulsion solver when physics remains enabled.");
+        Assert(scene.Options.Physics.Solver == GraphPhysicsSolver.HierarchicalRepulsion && scene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics) && scene.Options.HasFeature(GraphSceneFeatures.Stabilization), "Vis-network hierarchical compatibility should request runtime-capable hierarchical physics when physics remains enabled.");
         Assert(scene.Options.HasFeature(GraphSceneFeatures.Manipulation) && scene.Options.Manipulation.CanAddNodes && scene.Options.Manipulation.CanEditEdges && scene.Options.Manipulation.CanPersistPositions, "Vis-network manipulation options should flow into the host-neutral manipulation contract.");
         Assert(scene.Clusters.Count == 2 && scene.Nodes[0].ClusterId == "identity" && scene.Nodes[0].GroupId == "identity", "Vis-network groups should become GraphScene groups and cluster membership.");
         Assert(scene.Nodes[0].Shape == GraphNodeShape.Star && scene.Nodes[0].Style.BackgroundColor == "#F97316" && scene.Nodes[1].Style.BorderColor == "#1D4ED8", "Vis-network node/group style defaults should map to GraphScene node styling.");
         Assert(scene.Nodes[0].Level == 0 && scene.Nodes[2].Shape == GraphNodeShape.Database, "Vis-network levels and shapes should map to GraphScene hierarchy and node marks.");
-        Assert(scene.Edges[0].Shape == GraphEdgeShape.ContinuousCurve && scene.Edges[0].Directed && scene.Edges[0].Style.Width == 3 && !scene.Edges[0].Style.Physics, "Vis-network edge arrows, smoothing, width, and physics flags should map to reusable edge styling.");
+        Assert(scene.Edges[0].Shape == GraphEdgeShape.ContinuousCurve && scene.Edges[0].Directed && scene.Edges[0].SourceArrow && !scene.Edges[0].TargetArrow && scene.Edges[0].Style.Width == 3 && !scene.Edges[0].Style.Physics, "Vis-network edge arrows, smoothing, width, and physics flags should map to reusable edge styling.");
         Assert(scene.Edges[0].Metadata["vis.arrows.from"] == "true" && scene.Edges[0].Metadata["vis.smooth"] == "Continuous", "Vis-network edge-specific options should remain available as metadata for host inspectors.");
+
+        var implicitGroup = VisNetworkGraph.Create();
+        implicitGroup.AddNode("api", "API", node => node.Group = "implicit");
+        var implicitScene = implicitGroup.ToGraphScene("implicit", "Implicit group");
+        Assert(implicitScene.Clusters.Count == 1 && implicitScene.Nodes[0].ClusterId == "implicit", "Vis-network groups should create clusters even when callers do not configure explicit group defaults.");
     }
 
     private static void VisNetworkCompatRendersHierarchicalStyledHtml() {
@@ -29,14 +34,30 @@ internal static partial class SmokeTests {
         Assert(html.Contains("class=\"cfx-graph-node-label-bg\"", StringComparison.Ordinal) && html.Contains("style=\"fill:#FFF7ED\"", StringComparison.Ordinal), "Graph explorer SVG should render label backgrounds for styled nodes.");
         Assert(html.Contains("<text y=\"26\" style=\"fill:#0F172A\">Identity</text>", StringComparison.Ordinal), "Graph explorer SVG should render styled node labels with well-formed text attributes.");
         Assert(!html.Contains("y=\"26 style=", StringComparison.Ordinal), "Graph explorer SVG should not corrupt text attributes when a node label color is set.");
-        Assert(html.Contains("data-edge-width=\"3\"", StringComparison.Ordinal) && html.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal) && html.Contains("data-edge-physics=\"false\"", StringComparison.Ordinal), "Graph explorer output should expose vis-network edge width, color, and physics flags.");
+        Assert(html.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal) && html.Contains("data-edge-target-arrow=\"false\"", StringComparison.Ordinal), "Graph explorer output should preserve source-side vis-network arrow direction.");
+        Assert(html.Contains("data-edge-width=\"3\"", StringComparison.Ordinal) && html.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal) && html.Contains("data-edge-label-color=\"#7F1D1D\"", StringComparison.Ordinal) && html.Contains("data-edge-physics=\"false\"", StringComparison.Ordinal), "Graph explorer output should expose vis-network edge width, color, label color, and physics flags.");
         Assert(html.Contains("style=\"stroke:#DC2626;stroke-width:3\"", StringComparison.Ordinal), "Graph explorer SVG should visibly render vis-network-style edge color and width.");
+        Assert(html.Contains("style=\"fill:#7F1D1D\">issues</text>", StringComparison.Ordinal), "Graph explorer SVG should visibly render vis-network-style edge label colors.");
+        Assert(html.Contains("data-edge-hidden=\"true\"", StringComparison.Ordinal) && !html.Contains(">queries</text>", StringComparison.Ordinal), "Graph explorer SVG should suppress labels for hidden vis-network-style edges.");
+        Assert(html.Contains("physics: attr(edge, 'data-edge-physics') !== 'false'", StringComparison.Ordinal) && html.Contains("state.edges.filter(edge => edge.physics !== false)", StringComparison.Ordinal), "Graph explorer runtime physics should exclude edges that opt out of physics.");
+        Assert(html.Contains("style: { backgroundColor: attr(node.el, 'data-node-background-color')", StringComparison.Ordinal) && html.Contains("context.fillStyle = node.backgroundColor || '#2563eb'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should consume serialized node styles.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains("@media (max-width:520px){.cfx-graph-overview{display:none!important}}", StringComparison.Ordinal), "Graph explorer responsive CSS should hide the overview on narrow embeds so hierarchy examples remain inspectable.");
 
         var rootX = GetAttribute(html, "data-node-id=\"identity\"", "data-node-x");
         var apiX = GetAttribute(html, "data-node-id=\"api\"", "data-node-x");
         var dbX = GetAttribute(html, "data-node-id=\"db\"", "data-node-x");
         Assert(rootX < apiX && apiX < dbX, "Left-to-right hierarchical layout should place increasing levels from left to right.");
+
+        var cyclic = GraphScene.Create("cycle", "Cycle")
+            .AddNode("s", "Source", node => node.Level = 0)
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("s-a", "s", "a")
+            .AddEdge("a-b", "a", "b")
+            .AddEdge("b-a", "b", "a");
+        cyclic.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        var cyclicHtml = cyclic.ToGraphExplorerHtmlFragment();
+        Assert(cyclicHtml.Contains("data-node-id=\"b\"", StringComparison.Ordinal), "Hierarchical layout inference should terminate and render cyclic graphs.");
     }
 
     private static VisNetworkGraph SampleVisNetworkCompatGraph() {
@@ -87,14 +108,17 @@ internal static partial class SmokeTests {
         });
         graph.AddEdge("identity-api", "identity", "api", "issues", edge => {
             edge.ArrowsFrom = true;
+            edge.ArrowsTo = false;
             edge.Smooth = VisNetworkSmoothType.Continuous;
             edge.Style.Color = "#DC2626";
+            edge.Style.LabelColor = "#7F1D1D";
             edge.Style.Width = 3;
             edge.Style.Physics = false;
         });
         graph.AddEdge("api-db", "api", "db", "queries", edge => {
             edge.Kind = "dataflow";
             edge.Dashes = true;
+            edge.Style.Hidden = true;
         });
         return graph;
     }
