@@ -328,6 +328,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-shape", EdgeShape(edge.Shape));
             Attribute(writer, "data-edge-curvature", Number(edge.Curvature));
             Attribute(writer, "data-edge-dashed", edge.Dashed ? "true" : "false");
+            Attribute(writer, "data-edge-dash-pattern", edge.Style.DashPattern);
             Attribute(writer, "data-edge-show-label", edge.ShowLabel ? "true" : "false");
             Attribute(writer, "data-edge-width", edge.Style.Width.HasValue ? Number(edge.Style.Width.Value) : null);
             Attribute(writer, "data-edge-color", edge.Style.Color);

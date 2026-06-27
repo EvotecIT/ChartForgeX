@@ -47,8 +47,6 @@
       context.beginPath(); context.rect(node.x - width, node.y - height * .35, width * 2, height * .7); context.fill(); context.stroke();
       context.beginPath(); context.ellipse(node.x, node.y - height * .35, width, size * .38, 0, 0, Math.PI * 2); context.fill(); context.stroke();
       context.beginPath(); context.ellipse(node.x, node.y + height * .35, width, size * .38, 0, 0, Math.PI); context.stroke();
-    } else if (node.shape === 'text') {
-      context.beginPath(); context.arc(node.x, node.y, Math.max(2, size * .18), 0, Math.PI * 2); context.fill();
     } else {
       context.beginPath(); context.arc(node.x, node.y, size, 0, Math.PI * 2); context.fill(); context.stroke();
     }

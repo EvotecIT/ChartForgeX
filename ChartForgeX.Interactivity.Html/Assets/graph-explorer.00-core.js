@@ -21,6 +21,7 @@
   };
   const hasFeature = (root, feature) => features(root).has(feature);
   const idList = (value) => value.split(',').map(item => item.trim()).filter(Boolean);
+  const dashPattern = (value, fallback) => { const parts = (value || '').split(/[,\s]+/).map(Number).filter(item => Number.isFinite(item) && item > 0); return parts.length ? parts : fallback; };
   const sceneSize = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
     const parts = attr(svg, 'viewBox').split(/\s+/).map(Number);
@@ -112,6 +113,7 @@
         shape: attr(el, 'data-edge-shape') || 'line',
         curvature: num(el, 'data-edge-curvature', 0),
         dashed: attr(el, 'data-edge-dashed') === 'true',
+        dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6]),
         showLabel: attr(el, 'data-edge-show-label') !== 'false',
         strokeColor: attr(el, 'data-edge-color'),
         labelColor: attr(el, 'data-edge-label-color'),
@@ -254,7 +256,7 @@
       const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
       const styledWidth = edge.strokeWidth > 0 ? edge.strokeWidth : baseWidth;
       context.lineWidth = Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, styledWidth + (selected ? 1.6 : related ? 1.2 : 0)));
-      context.setLineDash(edge.dashed ? [8, 6] : []);
+      context.setLineDash(edge.dashed ? edge.dashPattern : []);
       context.stroke();
       context.setLineDash([]);
       context.globalAlpha = 1;

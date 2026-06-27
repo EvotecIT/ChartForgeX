@@ -67,7 +67,20 @@ internal static partial class SmokeTests {
         var anchoredScene = anchored.ToGraphScene();
         Assert(anchoredScene.Nodes.Single(node => node.Id == "anchor").Hidden && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").SourceArrow && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").TargetArrow, "Topology graph bridge should preserve hidden routing anchors and bidirectional edge markers.");
         var anchoredHtml = anchored.ToGraphExplorerHtmlFragment();
-        Assert(anchoredHtml.Contains("data-node-id=\"anchor\"", StringComparison.Ordinal) && anchoredHtml.Contains("data-node-hidden=\"true\"", StringComparison.Ordinal) && anchoredHtml.Contains("entry.node.classList.toggle('cfx-graph-hidden', entry.intrinsicHidden || !visible)", StringComparison.Ordinal) && anchoredHtml.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal), "Graph explorer output should keep hidden topology anchors available for routing without drawing visible node marks or resurrecting them during filter binding.");
+        Assert(anchoredHtml.Contains("data-node-id=\"anchor\"", StringComparison.Ordinal) && anchoredHtml.Contains("data-node-hidden=\"true\"", StringComparison.Ordinal) && anchoredHtml.Contains("endpointVisible(edgeVisualNode", StringComparison.Ordinal) && anchoredHtml.Contains("endpointAvailable(attr(edge, 'data-source-node-id'))", StringComparison.Ordinal) && anchoredHtml.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal), "Graph explorer output should keep hidden topology anchors available for Canvas, PNG, overview, and filter routing without drawing visible node marks.");
+
+        var dashedTopology = TopologyChart.Create()
+            .WithId("dash-parity")
+            .AddNode("api", "API", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddNode("db", "DB", 160, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
+            .AddNode("queue", "Queue", 300, 40, TopologyNodeKind.Queue, TopologyHealthStatus.Healthy)
+            .AddEdge("api-db", "api", "db", "warning", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning)
+            .AddEdge("db-queue", "db", "queue", "dotted", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy);
+        dashedTopology.WithEdgeLineStyle("db-queue", TopologyEdgeLineStyle.Dotted);
+        var dashedScene = dashedTopology.ToGraphScene();
+        Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.DashPattern == "8 5" && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Style.DashPattern == "2 5", "Topology graph bridge should preserve auto status dashes and explicit dotted edge patterns.");
+        var dashedHtml = dashedTopology.ToGraphExplorerHtmlFragment();
+        Assert(dashedHtml.Contains("data-edge-dash-pattern=\"8 5\"", StringComparison.Ordinal) && dashedHtml.Contains("data-edge-dash-pattern=\"2 5\"", StringComparison.Ordinal) && dashedHtml.Contains("stroke-dasharray:2 5", StringComparison.Ordinal) && dashedHtml.Contains("dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6])", StringComparison.Ordinal), "Graph explorer output should carry topology dash patterns into SVG and Canvas/PNG rendering state.");
 
         var friendlyIds = TopologyChart.Create()
             .WithId("app map")

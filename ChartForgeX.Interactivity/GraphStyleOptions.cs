@@ -42,6 +42,9 @@ public sealed class GraphEdgeStyle {
     /// <summary>Gets or sets the preferred edge stroke width.</summary>
     public double? Width { get; set; }
 
+    /// <summary>Gets or sets an optional SVG-style dash pattern such as "8 5" or "2 5".</summary>
+    public string? DashPattern { get; set; }
+
     /// <summary>Gets or sets whether the edge participates in runtime physics solvers.</summary>
     public bool Physics { get; set; } = true;
 
@@ -51,7 +54,17 @@ public sealed class GraphEdgeStyle {
     internal void Validate(string edgeId) {
         GraphStyleGuards.ValidateCssColor(Color, "edge color", edgeId);
         GraphStyleGuards.ValidateCssColor(LabelColor, "edge label color", edgeId);
+        ValidateDashPattern(DashPattern, edgeId);
         if (Width.HasValue && (double.IsNaN(Width.Value) || double.IsInfinity(Width.Value) || Width.Value <= 0)) throw new InvalidOperationException("Graph scene edge width must be finite and greater than zero: " + edgeId);
+    }
+
+    private static void ValidateDashPattern(string? value, string edgeId) {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        if (value!.Length > 40) throw new InvalidOperationException("Graph scene edge dash pattern is too long: " + edgeId);
+        foreach (var ch in value) {
+            if (char.IsDigit(ch) || ch is ' ' or '.' or ',') continue;
+            throw new InvalidOperationException("Graph scene edge dash pattern contains unsupported characters: " + edgeId);
+        }
     }
 }
 

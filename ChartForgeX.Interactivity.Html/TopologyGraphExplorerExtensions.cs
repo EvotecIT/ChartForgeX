@@ -101,7 +101,7 @@ public static class TopologyGraphExplorerExtensions {
             Kind = Token(node.Kind),
             GroupId = groupId,
             Status = Token(node.Status),
-            Shape = NodeShape(node),
+            Shape = node.DisplayMode == TopologyNodeDisplayMode.Hidden ? GraphNodeShape.Text : NodeShape(node),
             Size = NodeSize(node),
             IconText = FirstText(node.Symbol, node.Badge),
             ImageAlt = node.Label,
@@ -145,6 +145,7 @@ public static class TopologyGraphExplorerExtensions {
             targetNodeId = ids.NodeId(edge.SourceNodeId);
         }
 
+        var dashPattern = TopologyRenderPrimitives.EdgeDash(edge);
         var graphEdge = new GraphSceneEdge {
             Id = ids.EdgeId(edge.Id),
             SourceNodeId = sourceNodeId,
@@ -155,13 +156,14 @@ public static class TopologyGraphExplorerExtensions {
             Directed = directed,
             Shape = edge.Routing == TopologyEdgeRouting.Curved ? GraphEdgeShape.Curve : GraphEdgeShape.Line,
             Curvature = edge.Routing == TopologyEdgeRouting.Curved ? 34 : 0,
-            Dashed = edge.LineStyle == TopologyEdgeLineStyle.Dashed || edge.LineStyle == TopologyEdgeLineStyle.Dotted,
+            Dashed = !string.Equals(dashPattern, "none", StringComparison.Ordinal),
             Weight = EdgeWeight(edge),
             ShowLabel = !string.IsNullOrWhiteSpace(edge.Label)
         };
         graphEdge.SourceArrow = sourceArrow;
         graphEdge.TargetArrow = targetArrow;
         graphEdge.Style.Color = edge.Color;
+        if (graphEdge.Dashed) graphEdge.Style.DashPattern = dashPattern;
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
         AddMetadata(graphEdge.Metadata, "topology.sourceNodeId", edge.SourceNodeId);
         AddMetadata(graphEdge.Metadata, "topology.targetNodeId", edge.TargetNodeId);

@@ -35,6 +35,16 @@ internal static partial class SmokeTests {
         Assert(plainScene.Edges[0].Id == "edge-0" && !plainScene.Edges[0].Directed && !plainScene.Edges[0].TargetArrow, "Vis-network edges without ids should get stable synthetic ids while plain edges remain undirected by default.");
         Assert(!plainScene.Nodes.Single(node => node.Id == "partial").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").Fixed, "Vis-network coordinates should only pin graph nodes when callers supply both x and y.");
 
+        var friendly = VisNetworkGraph.Create()
+            .AddNode("app server", "App Server", node => node.Group = "core services")
+            .AddNode("sql db", "SQL DB", node => node.Fixed = true)
+            .AddEdge("app link", "app server", "sql db");
+        var friendlyScene = friendly.ToGraphScene("friendly-vis", "Friendly vis");
+        friendlyScene.Validate();
+        Assert(friendlyScene.Nodes.Any(node => node.Id == "app-server" && node.Metadata["vis.id"] == "app server" && node.GroupId == "core-services"), "Vis-network compatibility should normalize friendly node and group ids while preserving original ids in metadata.");
+        Assert(friendlyScene.Nodes.Single(node => node.Id == "sql-db").Fixed && !friendlyScene.Nodes.Single(node => node.Id == "sql-db").HasExplicitPosition, "Vis-network fixed nodes without coordinates should remain fixed after the prepared layout chooses an initial position.");
+        Assert(friendlyScene.Edges.Single().Id == "app-link" && friendlyScene.Edges.Single().SourceNodeId == "app-server" && friendlyScene.Edges.Single().TargetNodeId == "sql-db", "Vis-network compatibility should normalize friendly edge ids and rewrite edge endpoints to normalized node ids.");
+
         var noNavigation = VisNetworkGraph.Create();
         noNavigation.Options.Interaction.NavigationButtons = false;
         noNavigation.AddNode("a", "A").AddNode("b", "B").AddEdge("a-b", "a", "b");
@@ -81,6 +91,14 @@ internal static partial class SmokeTests {
         cyclic.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
         var cyclicHtml = cyclic.ToGraphExplorerHtmlFragment();
         Assert(cyclicHtml.Contains("data-node-id=\"b\"", StringComparison.Ordinal), "Hierarchical layout inference should terminate and render cyclic graphs.");
+
+        var peers = GraphScene.Create("peers", "Peers")
+            .AddNode("left", "Left")
+            .AddNode("right", "Right")
+            .AddEdge("left-right", "left", "right");
+        peers.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        var peerHtml = peers.ToGraphExplorerHtmlFragment();
+        Assert(Math.Abs(GetAttribute(peerHtml, "data-node-id=\"left\"", "data-node-y") - GetAttribute(peerHtml, "data-node-id=\"right\"", "data-node-y")) < 0.01, "Hierarchical level inference should ignore undirected peer edges unless callers set levels explicitly.");
 
         var separated = GraphScene.Create("hier-components", "Hierarchical components")
             .AddNode("a-root", "A root", node => node.Level = 0)

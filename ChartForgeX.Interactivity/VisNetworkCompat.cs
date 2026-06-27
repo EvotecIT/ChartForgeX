@@ -53,9 +53,10 @@ public sealed class VisNetworkGraph {
     public GraphScene ToGraphScene(string id, string title) {
         var scene = GraphScene.Create(id, title);
         ApplyOptions(scene);
-        ApplyGroups(scene);
-        foreach (var node in Nodes) scene.Nodes.Add(node.ToGraphSceneNode(Groups));
-        for (var index = 0; index < Edges.Count; index++) scene.Edges.Add(Edges[index].ToGraphSceneEdge(index));
+        var ids = VisNetworkGraphIdMap.Create(this);
+        ApplyGroups(scene, ids);
+        foreach (var node in Nodes) scene.Nodes.Add(node.ToGraphSceneNode(Groups, ids));
+        for (var index = 0; index < Edges.Count; index++) scene.Edges.Add(Edges[index].ToGraphSceneEdge(index, ids));
         scene.Validate();
         return scene;
     }
@@ -99,7 +100,7 @@ public sealed class VisNetworkGraph {
         }
     }
 
-    private void ApplyGroups(GraphScene scene) {
+    private void ApplyGroups(GraphScene scene, VisNetworkGraphIdMap ids) {
         var groupIds = Nodes
             .Select(node => node.Group)
             .Where(group => !string.IsNullOrWhiteSpace(group))
@@ -109,12 +110,76 @@ public sealed class VisNetworkGraph {
             .OrderBy(group => group, StringComparer.Ordinal);
         foreach (var groupId in groupIds) {
             Groups.TryGetValue(groupId, out var group);
-            var members = Nodes.Where(node => string.Equals(node.Group, groupId, StringComparison.Ordinal)).Select(node => node.Id).ToArray();
+            var members = Nodes.Where(node => string.Equals(node.Group, groupId, StringComparison.Ordinal)).Select(node => ids.NodeId(node.Id)).ToArray();
             if (members.Length == 0) continue;
-            scene.AddCluster(groupId, group?.Label ?? groupId, members, cluster => {
+            scene.AddCluster(ids.GroupId(groupId), group?.Label ?? groupId, members, cluster => {
                 cluster.Kind = "group";
                 cluster.Metadata["vis.group"] = groupId;
             });
+        }
+    }
+
+    internal sealed class VisNetworkGraphIdMap {
+        private readonly Dictionary<string, string> _nodeIds = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _groupIds = new(StringComparer.Ordinal);
+        private readonly List<string> _edgeIds = new();
+
+        private VisNetworkGraphIdMap() {
+        }
+
+        public static VisNetworkGraphIdMap Create(VisNetworkGraph graph) {
+            var map = new VisNetworkGraphIdMap();
+            var nodeIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var node in graph.Nodes) map._nodeIds[node.Id] = UniqueToken(node.Id, "node", nodeIds);
+            var edgeIds = new HashSet<string>(StringComparer.Ordinal);
+            for (var index = 0; index < graph.Edges.Count; index++) {
+                var rawId = string.IsNullOrWhiteSpace(graph.Edges[index].Id) ? "edge-" + index.ToString(System.Globalization.CultureInfo.InvariantCulture) : graph.Edges[index].Id;
+                map._edgeIds.Add(UniqueToken(rawId, "edge", edgeIds));
+            }
+
+            var groupIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var groupId in graph.Nodes.Select(node => node.Group).Where(group => !string.IsNullOrWhiteSpace(group)).Select(group => group!).Concat(graph.Groups.Keys).Distinct(StringComparer.Ordinal)) {
+                map._groupIds[groupId] = UniqueToken(groupId, "group", groupIds);
+            }
+
+            return map;
+        }
+
+        public string NodeId(string id) => _nodeIds[id];
+
+        public string GroupId(string id) => _groupIds[id];
+
+        public string EdgeId(int index) => _edgeIds[index];
+
+        private static string UniqueToken(string value, string prefix, ISet<string> used) {
+            var token = ToToken(value, prefix);
+            var candidate = token;
+            var suffix = 2;
+            while (!used.Add(candidate)) {
+                candidate = token + "-" + suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                suffix++;
+            }
+
+            return candidate;
+        }
+
+        private static string ToToken(string value, string prefix) {
+            var trimmed = value.Trim();
+            if (IsToken(trimmed)) return trimmed;
+            var builder = new System.Text.StringBuilder(trimmed.Length);
+            foreach (var ch in trimmed) builder.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.' ? ch : '-');
+            var token = builder.ToString().Trim('-', '_', '.');
+            return token.Length == 0 ? prefix : token;
+        }
+
+        private static bool IsToken(string value) {
+            if (value.Length == 0) return false;
+            foreach (var ch in value) {
+                if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.') continue;
+                return false;
+            }
+
+            return true;
         }
     }
 }
@@ -159,20 +224,21 @@ public sealed class VisNetworkNode {
     /// <summary>Gets node style hints.</summary>
     public GraphNodeStyle Style { get; } = new();
 
-    internal GraphSceneNode ToGraphSceneNode(IReadOnlyDictionary<string, VisNetworkGroupOptions> groups) {
+    internal GraphSceneNode ToGraphSceneNode(IReadOnlyDictionary<string, VisNetworkGroupOptions> groups, VisNetworkGraph.VisNetworkGraphIdMap ids) {
         groups.TryGetValue(Group ?? string.Empty, out var group);
+        var groupId = string.IsNullOrWhiteSpace(Group) ? null : ids.GroupId(Group!);
         var node = new GraphSceneNode {
-            Id = Id,
+            Id = ids.NodeId(Id),
             Label = Label,
-            GroupId = Group,
-            ClusterId = Group,
+            GroupId = groupId,
+            ClusterId = groupId,
             Kind = group?.Kind,
             Level = Level,
             Size = Size ?? group?.Size ?? 8,
             Shape = MapShape(Shape ?? group?.Shape ?? VisNetworkNodeShape.Dot),
             ImageUrl = Image ?? group?.Image,
             IconText = Icon ?? group?.Icon,
-            Fixed = Fixed && X.HasValue && Y.HasValue
+            Fixed = Fixed
         };
         if (X.HasValue && Y.HasValue) {
             node.X = X.Value;
@@ -180,6 +246,7 @@ public sealed class VisNetworkNode {
         }
         ApplyStyle(node.Style, group?.Style);
         node.Metadata["vis.node"] = "true";
+        if (!string.Equals(node.Id, Id, StringComparison.Ordinal)) node.Metadata["vis.id"] = Id;
         if (!string.IsNullOrWhiteSpace(Group)) node.Metadata["vis.group"] = Group!;
         if (Level.HasValue) node.Metadata["vis.level"] = Level.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         return node;
@@ -251,11 +318,11 @@ public sealed class VisNetworkEdge {
     /// <summary>Gets edge style hints.</summary>
     public GraphEdgeStyle Style { get; } = new();
 
-    internal GraphSceneEdge ToGraphSceneEdge(int index) {
+    internal GraphSceneEdge ToGraphSceneEdge(int index, VisNetworkGraph.VisNetworkGraphIdMap ids) {
         var edge = new GraphSceneEdge {
-            Id = string.IsNullOrWhiteSpace(Id) ? "edge-" + index.ToString(System.Globalization.CultureInfo.InvariantCulture) : Id,
-            SourceNodeId = From,
-            TargetNodeId = To,
+            Id = ids.EdgeId(index),
+            SourceNodeId = ids.NodeId(From),
+            TargetNodeId = ids.NodeId(To),
             Label = Label,
             Kind = Kind,
             Directed = ArrowsTo || ArrowsFrom || ArrowsMiddle,
@@ -271,6 +338,9 @@ public sealed class VisNetworkEdge {
         edge.Style.Physics = Style.Physics;
         edge.Style.Hidden = Style.Hidden;
         edge.Metadata["vis.edge"] = "true";
+        if (!string.Equals(edge.Id, Id, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(Id)) edge.Metadata["vis.id"] = Id;
+        if (!string.Equals(edge.SourceNodeId, From, StringComparison.Ordinal)) edge.Metadata["vis.from"] = From;
+        if (!string.Equals(edge.TargetNodeId, To, StringComparison.Ordinal)) edge.Metadata["vis.to"] = To;
         edge.Metadata["vis.arrows.to"] = ArrowsTo ? "true" : "false";
         edge.Metadata["vis.arrows.from"] = ArrowsFrom ? "true" : "false";
         edge.Metadata["vis.arrows.middle"] = ArrowsMiddle ? "true" : "false";

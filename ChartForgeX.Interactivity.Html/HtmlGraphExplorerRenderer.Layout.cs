@@ -104,6 +104,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var outgoing = scene.Nodes.ToDictionary(node => node.Id, _ => new List<string>(), StringComparer.Ordinal);
         var incoming = scene.Nodes.ToDictionary(node => node.Id, _ => new HashSet<string>(StringComparer.Ordinal), StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
+            if (!edge.Directed) continue;
             if (!outgoing.ContainsKey(edge.SourceNodeId) || !incoming.ContainsKey(edge.TargetNodeId) || string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) continue;
             outgoing[edge.SourceNodeId].Add(edge.TargetNodeId);
             incoming[edge.TargetNodeId].Add(edge.SourceNodeId);

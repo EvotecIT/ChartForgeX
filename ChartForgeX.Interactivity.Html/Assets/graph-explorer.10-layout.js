@@ -319,8 +319,9 @@
       entry.node.classList.toggle('cfx-graph-hidden', entry.intrinsicHidden || !visible);
     });
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
+    const endpointAvailable = (id) => visibleNodes.has(id) || nodeMatches.get(id)?.intrinsicHidden === true;
     edgeMatches.forEach(({ edge, matches, intrinsicHidden }) => {
-      const endpointsVisible = visibleNodes.has(attr(edge, 'data-source-node-id')) && visibleNodes.has(attr(edge, 'data-target-node-id'));
+      const endpointsVisible = endpointAvailable(attr(edge, 'data-source-node-id')) && endpointAvailable(attr(edge, 'data-target-node-id'));
       const edgeVisible = matches && endpointsVisible && !intrinsicHidden;
       edge.classList.toggle('cfx-graph-hidden', !edgeVisible);
       const label = labels.get(attr(edge, 'data-edge-id'));
