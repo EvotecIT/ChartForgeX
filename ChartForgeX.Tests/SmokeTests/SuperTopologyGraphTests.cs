@@ -75,12 +75,28 @@ internal static partial class SmokeTests {
             .AddNode("db", "DB", 160, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddNode("queue", "Queue", 300, 40, TopologyNodeKind.Queue, TopologyHealthStatus.Healthy)
             .AddEdge("api-db", "api", "db", "warning", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning)
-            .AddEdge("db-queue", "db", "queue", "dotted", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy);
+            .AddEdge("db-queue", "db", "queue", "dotted", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy)
+            .AddEdge("queue-api", "queue", "api", "muted", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning);
         dashedTopology.WithEdgeLineStyle("db-queue", TopologyEdgeLineStyle.Dotted);
+        dashedTopology.Edges[1].SecondaryLabel = "queue 7";
+        dashedTopology.Edges[1].TertiaryLabel = "3m ago";
+        dashedTopology.Edges[2].IsMuted = true;
         var dashedScene = dashedTopology.ToGraphScene();
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.DashPattern == "8 5" && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Style.DashPattern == "2 5", "Topology graph bridge should preserve auto status dashes and explicit dotted edge patterns.");
+        Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph bridge should keep muted auto-dash edges solid while preserving secondary and tertiary label facts.");
         var dashedHtml = dashedTopology.ToGraphExplorerHtmlFragment();
         Assert(dashedHtml.Contains("data-edge-dash-pattern=\"8 5\"", StringComparison.Ordinal) && dashedHtml.Contains("data-edge-dash-pattern=\"2 5\"", StringComparison.Ordinal) && dashedHtml.Contains("stroke-dasharray:2 5", StringComparison.Ordinal) && dashedHtml.Contains("dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6])", StringComparison.Ordinal), "Graph explorer output should carry topology dash patterns into SVG and Canvas/PNG rendering state.");
+
+        var duplicateEdges = TopologyChart.Create()
+            .WithId("duplicate-edge-parity")
+            .AddNode("a", "A", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddNode("b", "B", 160, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
+            .AddNode("c", "C", 300, 40, TopologyNodeKind.Queue, TopologyHealthStatus.Healthy)
+            .AddEdge("duplicate-link", "a", "b", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy)
+            .AddEdge("duplicate-link", "b", "c", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, secondaryLabel: "secondary only");
+        var duplicateScene = duplicateEdges.ToGraphScene();
+        duplicateScene.Validate();
+        Assert(duplicateScene.Edges.Select(edge => edge.Id).Distinct(StringComparer.Ordinal).Count() == 2 && duplicateScene.Edges.Single(edge => edge.SourceNodeId == "b").Label == "secondary only", "Topology graph bridge should generate unique graph ids for duplicate topology edge ids and keep secondary-only labels visible.");
 
         var friendlyIds = TopologyChart.Create()
             .WithId("app map")

@@ -45,6 +45,13 @@ internal static partial class SmokeTests {
         Assert(friendlyScene.Nodes.Single(node => node.Id == "sql-db").Fixed && !friendlyScene.Nodes.Single(node => node.Id == "sql-db").HasExplicitPosition, "Vis-network fixed nodes without coordinates should remain fixed after the prepared layout chooses an initial position.");
         Assert(friendlyScene.Edges.Single().Id == "app-link" && friendlyScene.Edges.Single().SourceNodeId == "app-server" && friendlyScene.Edges.Single().TargetNodeId == "sql-db", "Vis-network compatibility should normalize friendly edge ids and rewrite edge endpoints to normalized node ids.");
 
+        var middleArrow = VisNetworkGraph.Create()
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("middle", "a", "b", configure: edge => edge.ArrowsMiddle = true);
+        var middleArrowScene = middleArrow.ToGraphScene("middle-arrow", "Middle arrow");
+        Assert(!middleArrowScene.Edges[0].Directed && !middleArrowScene.Edges[0].TargetArrow && middleArrowScene.Edges[0].Metadata["vis.arrows.middle"] == "true", "Vis-network middle-only arrows should remain metadata-only until the graph contract models middle markers explicitly.");
+
         var noNavigation = VisNetworkGraph.Create();
         noNavigation.Options.Interaction.NavigationButtons = false;
         noNavigation.AddNode("a", "A").AddNode("b", "B").AddEdge("a-b", "a", "b");
@@ -73,6 +80,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("style: { backgroundColor: attr(node.el, 'data-node-background-color')", StringComparison.Ordinal) && html.Contains("context.fillStyle = node.backgroundColor || '#2563eb'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should consume serialized node styles.");
         Assert(html.Contains("drawNodeShapeMark(context, node)", StringComparison.Ordinal) && html.Contains("node.shape === 'database'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render rich vis-network node shapes instead of falling back to circles.");
         Assert(html.Contains("data-edge-shape=\"continuous\"", StringComparison.Ordinal) && html.Contains("edge.shape === 'line' && Math.abs(edge.curvature) < 0.001", StringComparison.Ordinal), "Graph explorer runtime paths should keep vis-network smoothed edges curved after Canvas redraws, physics, or dragging.");
+        Assert(html.Contains("const targetArrow = edge.targetArrow || (edge.directed && !edge.sourceArrow)", StringComparison.Ordinal), "Graph explorer Canvas and PNG endpoints should only shorten targets when a target arrow is actually rendered.");
         Assert(html.Contains("data-node-shape=\"database\"", StringComparison.Ordinal) && html.Contains(" Z M ", StringComparison.Ordinal), "Graph explorer SVG should render database nodes with cylinder-like geometry instead of a plain ellipse.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains("@media (max-width:520px){.cfx-graph-overview{display:none!important}}", StringComparison.Ordinal), "Graph explorer responsive CSS should hide the overview on narrow embeds so hierarchy examples remain inspectable.");
 

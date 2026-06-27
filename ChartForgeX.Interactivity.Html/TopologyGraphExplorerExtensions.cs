@@ -42,8 +42,8 @@ public static class TopologyGraphExplorerExtensions {
             scene.Nodes.Add(ToGraphNode(chart, node, groupIds, options, ids));
         }
 
-        foreach (var edge in chart.Edges) {
-            scene.Edges.Add(ToGraphEdge(edge, ids));
+        for (var index = 0; index < chart.Edges.Count; index++) {
+            scene.Edges.Add(ToGraphEdge(chart.Edges[index], ids, index));
         }
 
         if (options.IncludeGroupsAsClusters) {
@@ -134,7 +134,7 @@ public static class TopologyGraphExplorerExtensions {
         return graphNode;
     }
 
-    private static GraphSceneEdge ToGraphEdge(TopologyEdge edge, TopologyGraphIdMap ids) {
+    private static GraphSceneEdge ToGraphEdge(TopologyEdge edge, TopologyGraphIdMap ids, int index) {
         var sourceNodeId = ids.NodeId(edge.SourceNodeId);
         var targetNodeId = ids.NodeId(edge.TargetNodeId);
         var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward || edge.Direction == TopologyDirection.Bidirectional;
@@ -145,12 +145,13 @@ public static class TopologyGraphExplorerExtensions {
             targetNodeId = ids.NodeId(edge.SourceNodeId);
         }
 
-        var dashPattern = TopologyRenderPrimitives.EdgeDash(edge);
+        var label = EdgeLabel(edge);
+        var dashPattern = edge.IsMuted ? "none" : TopologyRenderPrimitives.EdgeDash(edge);
         var graphEdge = new GraphSceneEdge {
-            Id = ids.EdgeId(edge.Id),
+            Id = ids.EdgeId(index),
             SourceNodeId = sourceNodeId,
             TargetNodeId = targetNodeId,
-            Label = edge.Label,
+            Label = label,
             Kind = Token(edge.Kind),
             Status = Token(edge.Status),
             Directed = directed,
@@ -158,7 +159,7 @@ public static class TopologyGraphExplorerExtensions {
             Curvature = edge.Routing == TopologyEdgeRouting.Curved ? 34 : 0,
             Dashed = !string.Equals(dashPattern, "none", StringComparison.Ordinal),
             Weight = EdgeWeight(edge),
-            ShowLabel = !string.IsNullOrWhiteSpace(edge.Label)
+            ShowLabel = !string.IsNullOrWhiteSpace(label)
         };
         graphEdge.SourceArrow = sourceArrow;
         graphEdge.TargetArrow = targetArrow;
@@ -212,6 +213,14 @@ public static class TopologyGraphExplorerExtensions {
         return 1;
     }
 
+    private static string? EdgeLabel(TopologyEdge edge) {
+        var parts = new[] { edge.Label, edge.SecondaryLabel, edge.TertiaryLabel }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value!.Trim())
+            .ToArray();
+        return parts.Length == 0 ? null : string.Join(" / ", parts);
+    }
+
     private static string Token<TEnum>(TEnum value) where TEnum : struct {
         return value.ToString()!.ToLowerInvariant();
     }
@@ -236,7 +245,7 @@ public static class TopologyGraphExplorerExtensions {
 
     private sealed class TopologyGraphIdMap {
         private readonly Dictionary<string, string> _nodeIds = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, string> _edgeIds = new(StringComparer.Ordinal);
+        private readonly List<string> _edgeIds = new();
         private readonly Dictionary<string, string> _groupIds = new(StringComparer.Ordinal);
 
         private TopologyGraphIdMap(string chartId) {
@@ -251,7 +260,7 @@ public static class TopologyGraphExplorerExtensions {
             var nodeIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var node in chart.Nodes) map._nodeIds[node.Id] = UniqueToken(node.Id, "node", nodeIds);
             var edgeIds = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var edge in chart.Edges) map._edgeIds[edge.Id] = UniqueToken(edge.Id, "edge", edgeIds);
+            foreach (var edge in chart.Edges) map._edgeIds.Add(UniqueToken(edge.Id, "edge", edgeIds));
             var groupIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var group in chart.Groups) map._groupIds[group.Id] = UniqueToken(group.Id, "group", groupIds);
             foreach (var groupId in chart.Nodes.Select(node => node.GroupId).Where(groupId => !string.IsNullOrWhiteSpace(groupId)).Select(groupId => groupId!)) {
@@ -263,7 +272,7 @@ public static class TopologyGraphExplorerExtensions {
 
         public string NodeId(string id) => _nodeIds[id];
 
-        public string EdgeId(string id) => _edgeIds[id];
+        public string EdgeId(int index) => _edgeIds[index];
 
         public string GroupId(string id) => _groupIds[id];
 

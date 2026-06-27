@@ -69,7 +69,8 @@
     return { x: edge.source.x + dx / length * inset, y: edge.source.y + dy / length * inset };
   };
   const edgeRenderTarget = (edge, control) => {
-    if (!edge.directed && !edge.targetArrow && !edge.targetCollapsed) return edge.target;
+    const targetArrow = edge.targetArrow || (edge.directed && !edge.sourceArrow);
+    if (!edge.targetCollapsed && !targetArrow) return edge.target;
     const from = control || edge.source;
     const dx = edge.target.x - from.x, dy = edge.target.y - from.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));

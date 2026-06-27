@@ -325,7 +325,7 @@ public sealed class VisNetworkEdge {
             TargetNodeId = ids.NodeId(To),
             Label = Label,
             Kind = Kind,
-            Directed = ArrowsTo || ArrowsFrom || ArrowsMiddle,
+            Directed = ArrowsTo || ArrowsFrom,
             SourceArrow = ArrowsFrom,
             TargetArrow = ArrowsTo,
             Dashed = Dashes,
