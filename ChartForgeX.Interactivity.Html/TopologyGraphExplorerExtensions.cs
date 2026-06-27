@@ -169,7 +169,7 @@ public static class TopologyGraphExplorerExtensions {
         graphEdge.SourceArrow = sourceArrow;
         graphEdge.TargetArrow = targetArrow;
         graphEdge.Style.Color = TopologyRenderPrimitives.EdgeColor(edge, chart.Theme ?? TopologyTheme.Light(), new TopologyRenderOptions());
-        if (edge.Emphasis != TopologyEdgeEmphasis.Normal || edge.IsMuted) graphEdge.Style.Width = TopologyRenderPrimitives.EdgeStrokeWidth(edge, false, new TopologyRenderOptions());
+        graphEdge.Style.Width = EdgeStyleWidth(edge);
         if (graphEdge.Dashed) graphEdge.Style.DashPattern = dashPattern;
         AddRoutePoints(graphEdge, chart, edge, topologyNodes, options);
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
@@ -224,6 +224,12 @@ public static class TopologyGraphExplorerExtensions {
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) return 1.8;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle || edge.IsMuted) return 0.7;
         return 1;
+    }
+
+    private static double? EdgeStyleWidth(TopologyEdge edge) {
+        if (edge.Emphasis == TopologyEdgeEmphasis.Normal && !edge.IsMuted) return null;
+        var options = new TopologyRenderOptions { VisualStyle = TopologyVisualStyle.MonitoringDashboard };
+        return TopologyRenderPrimitives.EdgeStrokeWidth(edge, false, options);
     }
 
     private static GraphEdgeShape EdgeShape(TopologyEdge edge) {

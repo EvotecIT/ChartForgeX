@@ -96,6 +96,10 @@ internal static partial class SmokeTests {
         var dashedHtml = dashedTopology.ToGraphExplorerHtmlFragment();
         Assert(dashedHtml.Contains("data-edge-dash-pattern=\"8 5\"", StringComparison.Ordinal) && dashedHtml.Contains("data-edge-dash-pattern=\"2 5\"", StringComparison.Ordinal) && dashedHtml.Contains("stroke-dasharray:2 5", StringComparison.Ordinal) && dashedHtml.Contains("dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6])", StringComparison.Ordinal), "Graph explorer output should carry topology dash patterns into SVG and Canvas/PNG rendering state.");
 
+        dashedTopology.WithEdgeEmphasis("db-queue", TopologyEdgeEmphasis.Subtle);
+        var subtleScene = dashedTopology.ToGraphScene();
+        Assert(subtleScene.Edges.Single(edge => edge.Id == "db-queue").Style.Width == 1.05 && subtleScene.Edges.Single(edge => edge.Id == "db-queue").Weight == 0.7, "Topology graph bridge should keep subtle topology edges visually thinner than normal graph edges while preserving low runtime force weight.");
+
         var duplicateEdges = TopologyChart.Create()
             .WithId("duplicate-edge-parity")
             .AddNode("a", "A", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)

@@ -111,7 +111,7 @@
     return moved;
   };
 
-  const nodeRadius = (node) => Math.max(6, node.size + (node.shape === 'box' ? 7 : node.shape === 'image' || node.shape === 'imageRect' ? 6 : 5));
+  const nodeRadius = (node) => Math.max(6, Math.max(nodeHalfWidth(node), nodeHalfHeight(node)) + 5);
 
   const separateOverlaps = (root, state, passes) => {
     const movable = state.nodes.filter(node => !node.fixed);
