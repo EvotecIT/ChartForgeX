@@ -92,7 +92,6 @@ public sealed class VisNetworkGraph {
             scene.Options.Layout.NodeSpacing = Options.Layout.Hierarchical.NodeSpacing;
             scene.Options.Layout.ComponentSpacing = Options.Layout.Hierarchical.ComponentSpacing;
             scene.Options.Layout.InferLevelsFromEdges = Options.Layout.Hierarchical.InferLevelsFromEdges;
-            if (Options.Physics.Enabled && Options.Physics.Solver == GraphPhysicsSolver.StaticPrepared) scene.Options.Physics.Solver = GraphPhysicsSolver.HierarchicalRepulsion;
         }
 
         if (Options.Physics.Enabled && scene.Options.Physics.Solver != GraphPhysicsSolver.None && scene.Options.Physics.Solver != GraphPhysicsSolver.StaticPrepared) {
@@ -328,13 +327,14 @@ public sealed class VisNetworkEdge {
             Directed = ArrowsTo || ArrowsFrom,
             SourceArrow = ArrowsFrom,
             TargetArrow = ArrowsTo,
-            Dashed = Dashes,
+            Dashed = Dashes || !string.IsNullOrWhiteSpace(Style.DashPattern),
             Length = Length ?? 0,
             Shape = MapShape(Smooth)
         };
         edge.Style.Color = Style.Color;
         edge.Style.LabelColor = Style.LabelColor;
         edge.Style.Width = Style.Width;
+        edge.Style.DashPattern = Style.DashPattern;
         edge.Style.Physics = Style.Physics;
         edge.Style.Hidden = Style.Hidden;
         edge.Metadata["vis.edge"] = "true";

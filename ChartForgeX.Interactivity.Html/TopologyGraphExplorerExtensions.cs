@@ -43,7 +43,7 @@ public static class TopologyGraphExplorerExtensions {
         }
 
         for (var index = 0; index < chart.Edges.Count; index++) {
-            scene.Edges.Add(ToGraphEdge(chart.Edges[index], ids, index));
+            scene.Edges.Add(ToGraphEdge(chart, chart.Edges[index], ids, index));
         }
 
         if (options.IncludeGroupsAsClusters) {
@@ -134,7 +134,7 @@ public static class TopologyGraphExplorerExtensions {
         return graphNode;
     }
 
-    private static GraphSceneEdge ToGraphEdge(TopologyEdge edge, TopologyGraphIdMap ids, int index) {
+    private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, int index) {
         var sourceNodeId = ids.NodeId(edge.SourceNodeId);
         var targetNodeId = ids.NodeId(edge.TargetNodeId);
         var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward || edge.Direction == TopologyDirection.Bidirectional;
@@ -163,7 +163,7 @@ public static class TopologyGraphExplorerExtensions {
         };
         graphEdge.SourceArrow = sourceArrow;
         graphEdge.TargetArrow = targetArrow;
-        graphEdge.Style.Color = edge.Color;
+        graphEdge.Style.Color = TopologyRenderPrimitives.EdgeColor(edge, chart.Theme ?? TopologyTheme.Light(), new TopologyRenderOptions());
         if (graphEdge.Dashed) graphEdge.Style.DashPattern = dashPattern;
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
         AddMetadata(graphEdge.Metadata, "topology.sourceNodeId", edge.SourceNodeId);
@@ -193,7 +193,7 @@ public static class TopologyGraphExplorerExtensions {
 
     private static bool ShouldPreserveCoordinates(TopologyChart chart, TopologyNode node, TopologyGraphSceneOptions options) {
         if (!options.PreserveManualCoordinates && !options.PreserveNonZeroCoordinates) return false;
-        if (options.PreserveManualCoordinates && chart.LayoutMode == TopologyLayoutMode.Manual) return true;
+        if (options.PreserveManualCoordinates && chart.LayoutMode == TopologyLayoutMode.Manual && node.HasPositionOverride) return true;
         return options.PreserveNonZeroCoordinates && (Math.Abs(node.X) > 0.001 || Math.Abs(node.Y) > 0.001);
     }
 

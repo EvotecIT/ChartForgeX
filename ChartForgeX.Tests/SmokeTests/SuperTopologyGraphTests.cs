@@ -83,6 +83,7 @@ internal static partial class SmokeTests {
         dashedTopology.Edges[2].IsMuted = true;
         var dashedScene = dashedTopology.ToGraphScene();
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.DashPattern == "8 5" && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Style.DashPattern == "2 5", "Topology graph bridge should preserve auto status dashes and explicit dotted edge patterns.");
+        Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.Color == "#F97316" && dashedScene.Edges.Single(edge => edge.Id == "queue-api").Style.Color == "#CBD5E1", "Topology graph bridge should preserve status-derived edge colors, including muted fallback colors.");
         Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph bridge should keep muted auto-dash edges solid while preserving secondary and tertiary label facts.");
         var dashedHtml = dashedTopology.ToGraphExplorerHtmlFragment();
         Assert(dashedHtml.Contains("data-edge-dash-pattern=\"8 5\"", StringComparison.Ordinal) && dashedHtml.Contains("data-edge-dash-pattern=\"2 5\"", StringComparison.Ordinal) && dashedHtml.Contains("stroke-dasharray:2 5", StringComparison.Ordinal) && dashedHtml.Contains("dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6])", StringComparison.Ordinal), "Graph explorer output should carry topology dash patterns into SVG and Canvas/PNG rendering state.");
@@ -97,6 +98,13 @@ internal static partial class SmokeTests {
         var duplicateScene = duplicateEdges.ToGraphScene();
         duplicateScene.Validate();
         Assert(duplicateScene.Edges.Select(edge => edge.Id).Distinct(StringComparer.Ordinal).Count() == 2 && duplicateScene.Edges.Single(edge => edge.SourceNodeId == "b").Label == "secondary only", "Topology graph bridge should generate unique graph ids for duplicate topology edge ids and keep secondary-only labels visible.");
+
+        var autoOrigin = TopologyChart.Create()
+            .WithLayout(TopologyLayoutMode.Manual)
+            .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddNode("origin", "Origin", 0, 0, TopologyNodeKind.Database, TopologyHealthStatus.Healthy);
+        var autoOriginScene = autoOrigin.ToGraphScene();
+        Assert(!autoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && !autoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition && autoOriginScene.Nodes.Single(node => node.Id == "origin").Fixed && autoOriginScene.Nodes.Single(node => node.Id == "origin").HasExplicitPosition, "Topology graph bridge should not pin AddAutoNode placeholder coordinates at the origin while preserving explicit manual origin nodes.");
 
         var friendlyIds = TopologyChart.Create()
             .WithId("app map")

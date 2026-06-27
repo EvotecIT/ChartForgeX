@@ -10,7 +10,7 @@ internal static partial class SmokeTests {
         var scene = SampleVisNetworkCompatGraph().ToGraphScene("vis-parity", "Vis parity");
 
         Assert(scene.Options.Layout.Mode == GraphLayoutMode.Hierarchical && scene.Options.Layout.Direction == GraphLayoutDirection.LeftToRight, "Vis-network compatibility should map hierarchical layout options into the reusable GraphScene layout contract.");
-        Assert(scene.Options.Physics.Solver == GraphPhysicsSolver.HierarchicalRepulsion && scene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics) && scene.Options.HasFeature(GraphSceneFeatures.Stabilization), "Vis-network hierarchical compatibility should request runtime-capable hierarchical physics when physics remains enabled.");
+        Assert(scene.Options.Physics.Solver == GraphPhysicsSolver.StaticPrepared && !scene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics) && !scene.Options.HasFeature(GraphSceneFeatures.Stabilization), "Vis-network hierarchical compatibility should keep prepared hierarchical layouts static by default so serialized levels and direction do not drift.");
         Assert(scene.Options.HasFeature(GraphSceneFeatures.Manipulation) && scene.Options.Manipulation.CanAddNodes && scene.Options.Manipulation.CanEditEdges && scene.Options.Manipulation.CanPersistPositions, "Vis-network manipulation options should flow into the host-neutral manipulation contract.");
         Assert(scene.Clusters.Count == 2 && scene.Nodes[0].ClusterId == "identity" && scene.Nodes[0].GroupId == "identity", "Vis-network groups should become GraphScene groups and cluster membership.");
         Assert(scene.Nodes[0].Shape == GraphNodeShape.Star && scene.Nodes[0].Style.BackgroundColor == "#F97316" && scene.Nodes[1].Style.BorderColor == "#1D4ED8", "Vis-network node/group style defaults should map to GraphScene node styling.");
@@ -51,6 +51,18 @@ internal static partial class SmokeTests {
             .AddEdge("middle", "a", "b", configure: edge => edge.ArrowsMiddle = true);
         var middleArrowScene = middleArrow.ToGraphScene("middle-arrow", "Middle arrow");
         Assert(!middleArrowScene.Edges[0].Directed && !middleArrowScene.Edges[0].TargetArrow && middleArrowScene.Edges[0].Metadata["vis.arrows.middle"] == "true", "Vis-network middle-only arrows should remain metadata-only until the graph contract models middle markers explicitly.");
+
+        var runtimeHierarchy = SampleVisNetworkCompatGraph();
+        runtimeHierarchy.Options.Physics.Solver = GraphPhysicsSolver.HierarchicalRepulsion;
+        var runtimeHierarchyScene = runtimeHierarchy.ToGraphScene("runtime-hierarchy", "Runtime hierarchy");
+        Assert(runtimeHierarchyScene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics) && runtimeHierarchyScene.Options.HasFeature(GraphSceneFeatures.Stabilization), "Vis-network compatibility should still enable runtime physics when callers choose a runtime-capable hierarchical solver.");
+
+        var dashPattern = VisNetworkGraph.Create()
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("dash", "a", "b", configure: edge => edge.Style.DashPattern = "4 2");
+        var dashPatternScene = dashPattern.ToGraphScene("dash-pattern", "Dash pattern");
+        Assert(dashPatternScene.Edges[0].Dashed && dashPatternScene.Edges[0].Style.DashPattern == "4 2", "Vis-network compatibility should preserve explicit edge dash patterns even when Dashes is not separately enabled.");
 
         var noNavigation = VisNetworkGraph.Create();
         noNavigation.Options.Interaction.NavigationButtons = false;

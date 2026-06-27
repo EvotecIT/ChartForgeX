@@ -150,6 +150,7 @@ public sealed class TopologyGroup {
         set {
             TopologyModelGuards.Finite(value, nameof(value));
             _x = value;
+            HasPositionOverride = true;
         }
     }
 
@@ -159,6 +160,7 @@ public sealed class TopologyGroup {
         set {
             TopologyModelGuards.Finite(value, nameof(value));
             _y = value;
+            HasPositionOverride = true;
         }
     }
 
@@ -381,6 +383,8 @@ public sealed class TopologyNode {
 
     /// <summary>Gets arbitrary node metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
+
+    internal bool HasPositionOverride { get; set; }
 }
 
 /// <summary>
