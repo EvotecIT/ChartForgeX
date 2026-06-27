@@ -37,7 +37,7 @@
   const spreadHubNeighborhoods = (root, state) => {
     if (state.nodes.length < 8 || !state.edges.length) return;
     const neighbors = new Map(state.nodes.map(node => [node.id, new Set()]));
-    state.edges.forEach(edge => {
+    state.edges.filter(edge => edge.physics !== false).forEach(edge => {
       neighbors.get(edge.source.id)?.add(edge.target.id);
       neighbors.get(edge.target.id)?.add(edge.source.id);
     });

@@ -28,6 +28,9 @@ public sealed class HtmlGraphExplorerOptions {
     /// <summary>Gets or sets whether clustering controls should be rendered when the scene advertises clusters.</summary>
     public bool IncludeClusterControls { get; set; } = true;
 
+    /// <summary>Gets or sets whether viewport fit and zoom controls should be rendered when viewport behavior is enabled.</summary>
+    public bool IncludeViewportControls { get; set; } = true;
+
     /// <summary>Gets or sets whether physics controls should be rendered when runtime physics is enabled.</summary>
     public bool IncludePhysicsControls { get; set; } = true;
 }

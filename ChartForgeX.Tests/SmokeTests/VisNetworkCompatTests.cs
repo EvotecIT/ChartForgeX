@@ -86,8 +86,9 @@ internal static partial class SmokeTests {
         var noNavigation = VisNetworkGraph.Create();
         noNavigation.Options.Interaction.NavigationButtons = false;
         noNavigation.AddNode("a", "A").AddNode("b", "B").AddEdge("a-b", "a", "b");
-        var noNavigationHtml = noNavigation.ToGraphScene("no-navigation", "No navigation").ToGraphExplorerHtmlFragment();
-        Assert(!noNavigation.ToGraphScene("no-navigation-scene", "No navigation").Options.HasFeature(GraphSceneFeatures.Viewport) && !noNavigationHtml.Contains("data-cfx-graph-action=\"fit\"", StringComparison.Ordinal), "Vis-network navigationButtons=false should suppress graph viewport controls.");
+        var noNavigationScene = noNavigation.ToGraphScene("no-navigation-scene", "No navigation");
+        var noNavigationHtml = noNavigationScene.ToGraphExplorerHtmlFragment();
+        Assert(noNavigationScene.Options.HasFeature(GraphSceneFeatures.Viewport) && noNavigationScene.Metadata["vis.interaction.navigationButtons"] == "false" && !noNavigationHtml.Contains("data-cfx-graph-action=\"fit\"", StringComparison.Ordinal) && noNavigationHtml.Contains("hasFeature(root, 'Viewport')", StringComparison.Ordinal), "Vis-network navigationButtons=false should suppress toolbar buttons without disabling viewport pan and zoom behavior.");
     }
 
     private static void VisNetworkCompatRendersHierarchicalStyledHtml() {
@@ -107,7 +108,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("style=\"fill:#DC2626;stroke:#DC2626\"", StringComparison.Ordinal), "Graph explorer SVG should render arrow markers with the matching vis-network edge color.");
         Assert(html.Contains("style=\"fill:#7F1D1D\">issues</text>", StringComparison.Ordinal), "Graph explorer SVG should visibly render vis-network-style edge label colors.");
         Assert(html.Contains("data-edge-hidden=\"true\"", StringComparison.Ordinal) && html.Contains("cfx-graph-edge cfx-graph-hidden", StringComparison.Ordinal) && !html.Contains(">queries</text>", StringComparison.Ordinal), "Graph explorer SVG and Canvas state should suppress hidden vis-network-style edges.");
-        Assert(html.Contains("physics: attr(edge, 'data-edge-physics') !== 'false'", StringComparison.Ordinal) && html.Contains("state.edges.filter(edge => edge.physics !== false)", StringComparison.Ordinal), "Graph explorer runtime physics should exclude edges that opt out of physics.");
+        Assert(html.Contains("physics: attr(edge, 'data-edge-physics') !== 'false'", StringComparison.Ordinal) && html.Contains("edges.filter(edge => edge.physics !== false).forEach(edge =>", StringComparison.Ordinal) && html.Contains("state.edges.filter(edge => edge.physics !== false)", StringComparison.Ordinal), "Graph explorer runtime physics should exclude edges that opt out of physics from spring, worker, and degree-derived forces.");
         Assert(html.Contains("style: { backgroundColor: attr(node.el, 'data-node-background-color')", StringComparison.Ordinal) && html.Contains("context.fillStyle = node.backgroundColor || '#2563eb'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should consume serialized node styles.");
         Assert(html.Contains("if (node.labelBackgroundColor)", StringComparison.Ordinal) && html.Contains("context.shadowColor = 'rgba(15,23,42,.18)'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render node label backgrounds and shadows when style data is serialized.");
         Assert(html.Contains("drawNodeShapeMark(context, node)", StringComparison.Ordinal) && html.Contains("node.shape === 'database'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render rich vis-network node shapes instead of falling back to circles.");

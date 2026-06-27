@@ -65,8 +65,8 @@ public sealed class VisNetworkGraph {
         scene.Options.Features = GraphSceneFeatures.Explorer | GraphSceneFeatures.Export;
         if (Options.Interaction.DragNodes) scene.Options.Enable(GraphSceneFeatures.DragNodes);
         else scene.Options.Disable(GraphSceneFeatures.DragNodes);
-        if (Options.Interaction.NavigationButtons) scene.Options.Enable(GraphSceneFeatures.Viewport);
-        else scene.Options.Disable(GraphSceneFeatures.Viewport);
+        scene.Options.Enable(GraphSceneFeatures.Viewport);
+        scene.Metadata["vis.interaction.navigationButtons"] = Options.Interaction.NavigationButtons ? "true" : "false";
         if (Options.Interaction.Hover) scene.Metadata["vis.interaction.hover"] = "true";
         if (Options.Manipulation.Enabled) {
             scene.Options.Enable(GraphSceneFeatures.Manipulation);

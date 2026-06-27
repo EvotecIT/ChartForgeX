@@ -157,7 +157,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (options.IncludeClusterControls && clusters.Count > 0 && scene.Options.HasFeature(GraphSceneFeatures.Clustering)) WriteButton(writer, "clusters", "Clusters", true);
         if (scene.Options.HasFeature(GraphSceneFeatures.Selection) && scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus)) WriteButton(writer, "focus", "Focus", true);
         if (scene.Options.HasFeature(GraphSceneFeatures.Selection)) WriteButton(writer, "clear-selection", "Clear");
-        if (scene.Options.HasFeature(GraphSceneFeatures.Viewport)) {
+        if (ShouldRenderViewportControls(scene, options)) {
             WriteButton(writer, "fit", "Fit");
             WriteButton(writer, "zoom-in", "+");
             WriteButton(writer, "zoom-out", "-");
@@ -734,6 +734,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return scene.Options.HasFeature(GraphSceneFeatures.RuntimePhysics)
             && scene.Options.Physics.Solver != GraphPhysicsSolver.None
             && scene.Options.Physics.Solver != GraphPhysicsSolver.StaticPrepared;
+    }
+
+    private static bool ShouldRenderViewportControls(GraphScene scene, HtmlGraphExplorerOptions options) {
+        if (!options.IncludeViewportControls || !scene.Options.HasFeature(GraphSceneFeatures.Viewport)) return false;
+        return !scene.Metadata.TryGetValue("vis.interaction.navigationButtons", out var value) || !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool ConsumesTouchMovement(GraphScene scene) {

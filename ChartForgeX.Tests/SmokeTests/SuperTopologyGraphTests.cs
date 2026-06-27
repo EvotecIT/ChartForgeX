@@ -57,6 +57,12 @@ internal static partial class SmokeTests {
         noClusterScene.Validate();
         Assert(noClusterScene.Clusters.Count == 0 && noClusterScene.GetEffectiveClusters().Count == 0 && noClusterScene.Nodes.All(node => string.IsNullOrWhiteSpace(node.ClusterId)), "Topology graph bridge should not assign dangling cluster ids or derive replacement clusters when group cluster rendering is disabled.");
 
+        var leanManipulation = topology.ToGraphScene(options => {
+            options.UseSuperTopologyDefaults = false;
+            options.EnableManipulation = true;
+        });
+        Assert(leanManipulation.Options.HasFeature(GraphSceneFeatures.Manipulation) && leanManipulation.Options.Manipulation.CanAddNodes && leanManipulation.Options.Manipulation.CanEditEdges && leanManipulation.Options.Manipulation.CanPersistPositions, "Topology graph bridge should honor opt-in manipulation even when large-topology defaults are disabled.");
+
         var anchored = TopologyChart.Create()
             .WithId("hidden-anchor")
             .AddNode("source", "Source", 20, 20, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
@@ -111,9 +117,12 @@ internal static partial class SmokeTests {
 
         var freeAutoOrigin = TopologyChart.Create()
             .WithLayout(TopologyLayoutMode.Manual)
-            .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy);
+            .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddAutoNode("free-target", "Free target", TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
+            .AddEdge("free-route", "auto", "free-target", "free", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
         var freeAutoOriginScene = freeAutoOrigin.ToGraphScene();
         Assert(!freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && !freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition, "Topology graph bridge should not pin untouched AddAutoNode placeholder coordinates at the origin.");
+        Assert(freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").RoutePoints.Count == 0 && freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").Shape == GraphEdgeShape.Polyline, "Topology graph bridge should not emit prepared route points when generated node positions will use a different coordinate space.");
 
         var friendlyIds = TopologyChart.Create()
             .WithId("app map")

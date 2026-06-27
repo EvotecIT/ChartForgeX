@@ -123,7 +123,7 @@
         physics: attr(el, 'data-edge-physics') !== 'false'
       };
     }).filter(edge => edge.source && edge.target);
-    edges.forEach(edge => {
+    edges.filter(edge => edge.physics !== false).forEach(edge => {
       edge.source.degree += 1;
       edge.target.degree += 1;
     });

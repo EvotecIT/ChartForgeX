@@ -26,6 +26,7 @@ public static class TopologyGraphExplorerExtensions {
         var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(chart));
         scene.Subtitle = chart.Subtitle;
         if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
+        ApplyManipulationOptions(scene, options);
         scene.Options.Cluster.Mode = options.IncludeGroupsAsClusters ? GraphClusterMode.Hybrid : GraphClusterMode.Explicit;
         if (!options.IncludeGroupsAsClusters) scene.Options.Cluster.Adaptive = false;
         scene.Options.Cluster.CollapseOnLoad = scene.Options.LevelOfDetail.CollapseClustersOnLoad;
@@ -44,7 +45,7 @@ public static class TopologyGraphExplorerExtensions {
 
         var topologyNodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         for (var index = 0; index < chart.Edges.Count; index++) {
-            scene.Edges.Add(ToGraphEdge(chart, chart.Edges[index], ids, topologyNodes, index));
+            scene.Edges.Add(ToGraphEdge(chart, chart.Edges[index], ids, topologyNodes, options, index));
         }
 
         if (options.IncludeGroupsAsClusters) {
@@ -137,7 +138,7 @@ public static class TopologyGraphExplorerExtensions {
         return graphNode;
     }
 
-    private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, IReadOnlyDictionary<string, TopologyNode> topologyNodes, int index) {
+    private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options, int index) {
         var sourceNodeId = ids.NodeId(edge.SourceNodeId);
         var targetNodeId = ids.NodeId(edge.TargetNodeId);
         var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward || edge.Direction == TopologyDirection.Bidirectional;
@@ -169,7 +170,7 @@ public static class TopologyGraphExplorerExtensions {
         graphEdge.Style.Color = TopologyRenderPrimitives.EdgeColor(edge, chart.Theme ?? TopologyTheme.Light(), new TopologyRenderOptions());
         if (edge.Emphasis != TopologyEdgeEmphasis.Normal || edge.IsMuted) graphEdge.Style.Width = TopologyRenderPrimitives.EdgeStrokeWidth(edge, false, new TopologyRenderOptions());
         if (graphEdge.Dashed) graphEdge.Style.DashPattern = dashPattern;
-        AddRoutePoints(graphEdge, chart, edge, topologyNodes);
+        AddRoutePoints(graphEdge, chart, edge, topologyNodes, options);
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
         AddMetadata(graphEdge.Metadata, "topology.sourceNodeId", edge.SourceNodeId);
         AddMetadata(graphEdge.Metadata, "topology.targetNodeId", edge.TargetNodeId);
@@ -202,6 +203,12 @@ public static class TopologyGraphExplorerExtensions {
         return options.PreserveNonZeroCoordinates && (Math.Abs(node.X) > 0.001 || Math.Abs(node.Y) > 0.001);
     }
 
+    private static void ApplyManipulationOptions(GraphScene scene, TopologyGraphSceneOptions options) {
+        if (!options.EnableManipulation) return;
+        scene.Options.Enable(GraphSceneFeatures.Manipulation);
+        scene.Options.Manipulation.EnableEditing();
+    }
+
     private static GraphNodeShape NodeShape(TopologyNode node) {
         var display = node.DisplayMode ?? TopologyNodeDisplayMode.Card;
         return display == TopologyNodeDisplayMode.Dot || display == TopologyNodeDisplayMode.Icon ? GraphNodeShape.Circle : GraphNodeShape.Box;
@@ -223,9 +230,10 @@ public static class TopologyGraphExplorerExtensions {
         return edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0 ? GraphEdgeShape.Polyline : GraphEdgeShape.Line;
     }
 
-    private static void AddRoutePoints(GraphSceneEdge graphEdge, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> topologyNodes) {
+    private static void AddRoutePoints(GraphSceneEdge graphEdge, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options) {
         if (graphEdge.Shape != GraphEdgeShape.Polyline) return;
-        if (!topologyNodes.ContainsKey(edge.SourceNodeId) || !topologyNodes.ContainsKey(edge.TargetNodeId)) return;
+        if (!topologyNodes.TryGetValue(edge.SourceNodeId, out var source) || !topologyNodes.TryGetValue(edge.TargetNodeId, out var target)) return;
+        if (!ShouldPreserveCoordinates(chart, source, options) || !ShouldPreserveCoordinates(chart, target, options)) return;
         var points = TopologyRenderPrimitives.EdgePoints(chart, edge, topologyNodes);
         if (edge.Direction == TopologyDirection.Backward) points.Reverse();
         foreach (var point in points) graphEdge.RoutePoints.Add(new GraphScenePoint(point.X, point.Y));
