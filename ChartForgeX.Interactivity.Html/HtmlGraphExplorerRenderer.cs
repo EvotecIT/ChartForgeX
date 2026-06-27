@@ -328,6 +328,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-target-arrow", HasTargetArrow(edge) ? "true" : "false");
             Attribute(writer, "data-edge-shape", EdgeShape(edge.Shape));
             Attribute(writer, "data-edge-curvature", Number(edge.Curvature));
+            Attribute(writer, "data-edge-route-points", RoutePointsData(edge));
             Attribute(writer, "data-edge-dashed", edge.Dashed ? "true" : "false");
             Attribute(writer, "data-edge-dash-pattern", edge.Style.DashPattern);
             Attribute(writer, "data-edge-show-label", edge.ShowLabel ? "true" : "false");
@@ -641,6 +642,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopPath(target, targetNode);
+        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylinePath(edge.RoutePoints);
         var control = EdgeControl(edge, source, target);
         var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
         var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);
@@ -651,6 +653,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
+        if (edge.RoutePoints.Count > 1) return PolylineMidpoint(edge.RoutePoints, -7);
         var control = EdgeControl(edge, source, target);
         return control.HasValue
             ? new Point((source.X + 2 * control.Value.X + target.X) / 4, (source.Y + 2 * control.Value.Y + target.Y) / 4 - 7)
@@ -659,7 +662,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static Point? EdgeControl(GraphSceneEdge edge, Point source, Point target) {
         var curvature = IsFinite(edge.Curvature) ? edge.Curvature : 0;
-        if (edge.Shape == GraphEdgeShape.Line && Math.Abs(curvature) < 0.001) return null;
+        if ((edge.Shape is GraphEdgeShape.Line or GraphEdgeShape.Polyline) && Math.Abs(curvature) < 0.001) return null;
         var dx = target.X - source.X;
         var dy = target.Y - source.Y;
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));

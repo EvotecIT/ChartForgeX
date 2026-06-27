@@ -294,6 +294,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("metadata: metadataDetail(node.el)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(edge)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(cluster)", StringComparison.Ordinal), "Graph explorer JSON export should include structured metadata for nodes, edges, and clusters.");
         Assert(html.Contains("cfxGraphClusterLod", StringComparison.Ordinal) && html.Contains("data-cfx-lod-collapse-clusters", StringComparison.Ordinal), "Graph explorer binding should report cluster LOD while honoring the explicit collapse-on-load option.");
         Assert(html.Contains("data-cfx-graph-cluster-collapse-on-load", StringComparison.Ordinal) && html.Contains("attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true' || (hasFeature(root, 'LevelOfDetail')", StringComparison.Ordinal), "Graph explorer binding and JSON export should preserve explicit cluster collapse defaults independently from LOD collapse.");
+        Assert(html.Contains("routePoints: routePoints(attr(el, 'data-edge-route-points'))", StringComparison.Ordinal) && html.Contains("edgePathData(rendered, control)", StringComparison.Ordinal) && html.Contains("distanceToRoute(point, rendered.routePoints)", StringComparison.Ordinal), "Graph explorer SVG, Canvas/PNG, export, and hit-testing paths should consume prepared edge route points.");
         Assert(html.Contains("dragThreshold", StringComparison.Ordinal) && html.Contains("if (!active.moved) {", StringComparison.Ordinal) && html.Contains("data-node-fixed', active.fixed", StringComparison.Ordinal), "Graph explorer node selection should only pin nodes and pause physics after an actual drag.");
         Assert(html.Contains("const hitItem = node || graphItem || hitGraphItemAt(root, point)", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Viewport') && !hitBlocksPan", StringComparison.Ordinal), "Graph explorer viewport panning should start from graph background or inert graph items, not from selectable nodes, clusters, or edges.");
         Assert(html.Contains("if (hasFeature(root, 'Viewport')) {", StringComparison.Ordinal) && html.Contains("fitViewport(root);", StringComparison.Ordinal), "Graph explorer binding should not fit or emit viewport changes when hosts disable viewport behavior.");
@@ -323,7 +324,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("focusedSelectionHidden", StringComparison.Ordinal) && html.Contains("clearNeighborhoodFocus(root)", StringComparison.Ordinal), "Graph explorer runtime should clear neighborhood focus when filters or cluster collapse hide the focused selection.");
         Assert(html.Contains("image.naturalWidth > 0", StringComparison.Ordinal) && html.Contains("malformed host-supplied images", StringComparison.Ordinal) && html.Contains("imageLoadCallbacks", StringComparison.Ordinal), "Graph explorer Canvas runtime should tolerate broken image-node URLs and redraw every waiting root when shared images finish loading.");
         Assert(html.Contains("data-cfx-graph-action=\"zoom-in\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"zoom-out\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"fit\"", StringComparison.Ordinal), "Graph explorer toolbar should expose dependency-free zoom and fit controls.");
-        Assert(html.Contains("selfLoopPath(rendered.target)", StringComparison.Ordinal) && html.Contains("bezierCurveTo(loop.c1.x", StringComparison.Ordinal), "Graph explorer runtime should preserve visible self-loop paths after physics, dragging, aggregate edge retargeting, and Canvas redraws.");
+        Assert(html.Contains("edgePathData(rendered, control)", StringComparison.Ordinal) && html.Contains("bezierCurveTo(loop.c1.x", StringComparison.Ordinal), "Graph explorer runtime should preserve visible self-loop paths after physics, dragging, aggregate edge retargeting, and Canvas redraws.");
         Assert(html.Contains("nodeHitDistance(node, point, 10)", StringComparison.Ordinal) && html.Contains("node.shape === 'box'", StringComparison.Ordinal), "Graph explorer Canvas hit testing should use box rectangles instead of circular hit radii for box nodes.");
         Assert(html.Contains("distanceToSelfLoop", StringComparison.Ordinal) && html.Contains("selfLoopGeometry(node)", StringComparison.Ordinal), "Graph explorer Canvas hit testing should follow visible self-loop curves instead of their zero-length source-target segment.");
         Assert(html.Contains("distanceToQuadratic(point, endpoints.source, control, endpoints.target)", StringComparison.Ordinal), "Graph explorer Canvas hit testing should follow the rendered quadratic curve for curved and aggregate edges.");
@@ -453,6 +454,26 @@ internal static partial class SmokeTests {
         explicitClusterCollapse.Options.Cluster.CollapseOnLoad = true;
         var explicitClusterCollapseHtml = explicitClusterCollapse.ToGraphExplorerHtmlFragment();
         Assert(explicitClusterCollapseHtml.Contains("data-cfx-graph-cluster-collapse-on-load=\"true\"", StringComparison.Ordinal) && explicitClusterCollapseHtml.Contains("collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true'", StringComparison.Ordinal), "Graph explorer JSON export should report explicit cluster collapse defaults, not only LOD collapse defaults.");
+
+        var dashPatternOnly = GraphScene.Create("dash-pattern-only", "Dash pattern only")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("a-b", "a", "b", configure: edge => edge.Style.DashPattern = "4 2");
+        var dashPatternOnlyHtml = dashPatternOnly.ToGraphExplorerHtmlFragment();
+        Assert(dashPatternOnlyHtml.Contains("data-edge-dash-pattern=\"4 2\"", StringComparison.Ordinal) && !dashPatternOnlyHtml.Contains("stroke-dasharray:4 2", StringComparison.Ordinal), "Graph explorer SVG should only apply dash patterns when the graph edge is marked dashed, matching Canvas and PNG behavior.");
+
+        var anchoredHierarchy = GraphScene.Create("anchored-hierarchy", "Anchored hierarchy")
+            .AddNode("root", "Root", node => {
+                node.Level = 0;
+                node.X = 480;
+                node.Y = 280;
+                node.Fixed = true;
+            })
+            .AddNode("child", "Child")
+            .AddEdge("root-child", "root", "child", configure: edge => edge.Directed = true);
+        anchoredHierarchy.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        var anchoredHierarchyHtml = anchoredHierarchy.ToGraphExplorerHtmlFragment();
+        Assert(anchoredHierarchyHtml.Contains("data-node-id=\"root\" data-node-label=\"Root\"", StringComparison.Ordinal) && anchoredHierarchyHtml.Contains("data-node-id=\"child\" data-node-label=\"Child\"", StringComparison.Ordinal) && anchoredHierarchyHtml.Contains("data-node-y=\"400\"", StringComparison.Ordinal), "Hierarchical graph layout should place generated nodes relative to explicit fixed anchors instead of collapsing them onto the viewport center.");
 
         var largeCollapsedCluster = GraphScene.Create("large-collapsed-cluster", "Large collapsed cluster");
         for (var i = 0; i < 16; i++) largeCollapsedCluster.AddNode("n" + i, "Node " + i);

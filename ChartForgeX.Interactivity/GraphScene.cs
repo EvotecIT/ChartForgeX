@@ -83,6 +83,11 @@ public sealed class GraphScene {
             if (!Enum.IsDefined(typeof(GraphEdgeShape), edge.Shape)) throw new InvalidOperationException("Graph scene edge shape is unsupported: " + edge.Id);
             if (edge.Weight <= 0) throw new InvalidOperationException("Graph scene edge weight must be greater than zero: " + edge.Id);
             if (edge.Length < 0) throw new InvalidOperationException("Graph scene edge length must not be negative: " + edge.Id);
+            for (var pointIndex = 0; pointIndex < edge.RoutePoints.Count; pointIndex++) {
+                ValidateFiniteValue(edge.RoutePoints[pointIndex].X, edge.Id, "route point x");
+                ValidateFiniteValue(edge.RoutePoints[pointIndex].Y, edge.Id, "route point y");
+            }
+
             edge.Style.Validate(edge.Id);
             if (!edgeIds.Add(edge.Id)) throw new InvalidOperationException("Graph scene contains a duplicate edge id: " + edge.Id);
             if (!nodeIds.Contains(edge.SourceNodeId)) throw new InvalidOperationException("Graph scene edge references a missing source node: " + edge.Id);

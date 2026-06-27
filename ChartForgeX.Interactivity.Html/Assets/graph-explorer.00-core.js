@@ -22,6 +22,7 @@
   const hasFeature = (root, feature) => features(root).has(feature);
   const idList = (value) => value.split(',').map(item => item.trim()).filter(Boolean);
   const dashPattern = (value, fallback) => { const parts = (value || '').split(/[,\s]+/).map(Number).filter(item => Number.isFinite(item) && item > 0); return parts.length ? parts : fallback; };
+  const routePoints = (value) => (value || '').split(';').map(item => item.split(',').map(Number)).filter(pair => pair.length === 2 && pair.every(Number.isFinite)).map(pair => ({ x: pair[0], y: pair[1] }));
   const sceneSize = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
     const parts = attr(svg, 'viewBox').split(/\s+/).map(Number);
@@ -111,6 +112,7 @@
         sourceArrow: attr(el, 'data-edge-source-arrow') === 'true',
         targetArrow: attr(el, 'data-edge-target-arrow') === 'true',
         shape: attr(el, 'data-edge-shape') || 'line',
+        routePoints: routePoints(attr(el, 'data-edge-route-points')),
         curvature: num(el, 'data-edge-curvature', 0),
         dashed: attr(el, 'data-edge-dashed') === 'true',
         dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6]),
@@ -240,17 +242,7 @@
       const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
       const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
       const selected = edge.el.classList.contains('cfx-graph-selected');
-      context.beginPath();
-      if (rendered.source === rendered.target) {
-        const loop = selfLoopGeometry(rendered.source);
-        context.moveTo(loop.start.x, loop.start.y);
-        context.bezierCurveTo(loop.c1.x, loop.c1.y, loop.c2.x, loop.c2.y, loop.end.x, loop.end.y);
-      } else {
-        const endpoints = edgeRenderEndpoints(rendered, control);
-        context.moveTo(endpoints.source.x, endpoints.source.y);
-        if (control) context.quadraticCurveTo(control.x, control.y, endpoints.target.x, endpoints.target.y);
-        else context.lineTo(endpoints.target.x, endpoints.target.y);
-      }
+      edgeDrawPath(context, rendered, control);
       context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : edge.strokeColor || '#94a3b8';
       context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
       const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;

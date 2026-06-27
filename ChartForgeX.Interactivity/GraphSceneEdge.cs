@@ -59,8 +59,32 @@ public sealed class GraphSceneEdge {
     /// <summary>Gets reusable edge styling hints for adapters that support richer graph lines.</summary>
     public GraphEdgeStyle Style { get; } = new();
 
+    /// <summary>Gets optional prepared route points for adapters that can render deterministic polylines.</summary>
+    public List<GraphScenePoint> RoutePoints { get; } = new();
+
     /// <summary>Gets arbitrary edge metadata for search, tooltips, inspectors, and host event payloads.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
+}
+
+/// <summary>
+/// Describes a prepared point in graph scene coordinates.
+/// </summary>
+public readonly struct GraphScenePoint {
+    /// <summary>
+    /// Creates a graph scene point.
+    /// </summary>
+    /// <param name="x">Horizontal scene coordinate.</param>
+    /// <param name="y">Vertical scene coordinate.</param>
+    public GraphScenePoint(double x, double y) {
+        X = x;
+        Y = y;
+    }
+
+    /// <summary>Gets the horizontal scene coordinate.</summary>
+    public double X { get; }
+
+    /// <summary>Gets the vertical scene coordinate.</summary>
+    public double Y { get; }
 }
 
 /// <summary>
@@ -80,5 +104,8 @@ public enum GraphEdgeShape {
     ContinuousCurve,
 
     /// <summary>Use a self-reference loop for edges whose source and target are the same node.</summary>
-    SelfReference
+    SelfReference,
+
+    /// <summary>Use prepared route points as a deterministic polyline.</summary>
+    Polyline
 }

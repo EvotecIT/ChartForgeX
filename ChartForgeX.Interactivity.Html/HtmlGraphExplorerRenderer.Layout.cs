@@ -51,7 +51,6 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         var orderedComponents = scene.Nodes
-            .Where(node => !node.HasExplicitPosition)
             .GroupBy(node => componentOrder.TryGetValue(node.Id, out var order) ? order : 0)
             .OrderBy(group => group.Key)
             .Select(group => new {
@@ -155,12 +154,21 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var scale = Math.Min((Width - margin * 2) / width, (Height - margin * 2) / height);
         if (double.IsInfinity(scale) || double.IsNaN(scale)) scale = 1;
         scale = Math.Min(1, scale);
+        var transformed = new Dictionary<string, Point>(StringComparer.Ordinal);
         foreach (var pair in raw) {
             var x = Width / 2 + (pair.Value.X - (minX + maxX) / 2) * scale;
             var y = Height / 2 + (pair.Value.Y - (minY + maxY) / 2) * scale;
             if (direction == GraphLayoutDirection.BottomToTop) y = Height - y;
             if (direction == GraphLayoutDirection.RightToLeft) x = Width - x;
-            positions[pair.Key] = new Point(x, y);
+            transformed[pair.Key] = new Point(x, y);
+        }
+
+        var anchors = transformed.Where(pair => positions.ContainsKey(pair.Key)).ToArray();
+        var offsetX = anchors.Length == 0 ? 0 : anchors.Average(pair => positions[pair.Key].X - pair.Value.X);
+        var offsetY = anchors.Length == 0 ? 0 : anchors.Average(pair => positions[pair.Key].Y - pair.Value.Y);
+        foreach (var pair in transformed) {
+            if (positions.ContainsKey(pair.Key)) continue;
+            positions[pair.Key] = new Point(pair.Value.X + offsetX, pair.Value.Y + offsetY);
         }
     }
 

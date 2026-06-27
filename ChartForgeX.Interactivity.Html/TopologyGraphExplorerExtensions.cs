@@ -42,8 +42,9 @@ public static class TopologyGraphExplorerExtensions {
             scene.Nodes.Add(ToGraphNode(chart, node, groupIds, options, ids));
         }
 
+        var topologyNodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         for (var index = 0; index < chart.Edges.Count; index++) {
-            scene.Edges.Add(ToGraphEdge(chart, chart.Edges[index], ids, index));
+            scene.Edges.Add(ToGraphEdge(chart, chart.Edges[index], ids, topologyNodes, index));
         }
 
         if (options.IncludeGroupsAsClusters) {
@@ -136,7 +137,7 @@ public static class TopologyGraphExplorerExtensions {
         return graphNode;
     }
 
-    private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, int index) {
+    private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, IReadOnlyDictionary<string, TopologyNode> topologyNodes, int index) {
         var sourceNodeId = ids.NodeId(edge.SourceNodeId);
         var targetNodeId = ids.NodeId(edge.TargetNodeId);
         var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward || edge.Direction == TopologyDirection.Bidirectional;
@@ -157,7 +158,7 @@ public static class TopologyGraphExplorerExtensions {
             Kind = Token(edge.Kind),
             Status = Token(edge.Status),
             Directed = directed,
-            Shape = edge.Routing == TopologyEdgeRouting.Curved ? GraphEdgeShape.Curve : GraphEdgeShape.Line,
+            Shape = EdgeShape(edge),
             Curvature = edge.Routing == TopologyEdgeRouting.Curved ? 34 : 0,
             Dashed = !string.Equals(dashPattern, "none", StringComparison.Ordinal),
             Weight = EdgeWeight(edge),
@@ -166,7 +167,9 @@ public static class TopologyGraphExplorerExtensions {
         graphEdge.SourceArrow = sourceArrow;
         graphEdge.TargetArrow = targetArrow;
         graphEdge.Style.Color = TopologyRenderPrimitives.EdgeColor(edge, chart.Theme ?? TopologyTheme.Light(), new TopologyRenderOptions());
+        if (edge.Emphasis != TopologyEdgeEmphasis.Normal || edge.IsMuted) graphEdge.Style.Width = TopologyRenderPrimitives.EdgeStrokeWidth(edge, false, new TopologyRenderOptions());
         if (graphEdge.Dashed) graphEdge.Style.DashPattern = dashPattern;
+        AddRoutePoints(graphEdge, chart, edge, topologyNodes);
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
         AddMetadata(graphEdge.Metadata, "topology.sourceNodeId", edge.SourceNodeId);
         AddMetadata(graphEdge.Metadata, "topology.targetNodeId", edge.TargetNodeId);
@@ -213,6 +216,20 @@ public static class TopologyGraphExplorerExtensions {
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) return 1.8;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle || edge.IsMuted) return 0.7;
         return 1;
+    }
+
+    private static GraphEdgeShape EdgeShape(TopologyEdge edge) {
+        if (edge.Routing == TopologyEdgeRouting.Curved) return GraphEdgeShape.Curve;
+        return edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0 ? GraphEdgeShape.Polyline : GraphEdgeShape.Line;
+    }
+
+    private static void AddRoutePoints(GraphSceneEdge graphEdge, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> topologyNodes) {
+        if (graphEdge.Shape != GraphEdgeShape.Polyline) return;
+        if (!topologyNodes.ContainsKey(edge.SourceNodeId) || !topologyNodes.ContainsKey(edge.TargetNodeId)) return;
+        var points = TopologyRenderPrimitives.EdgePoints(chart, edge, topologyNodes);
+        if (edge.Direction == TopologyDirection.Backward) points.Reverse();
+        foreach (var point in points) graphEdge.RoutePoints.Add(new GraphScenePoint(point.X, point.Y));
+        graphEdge.Metadata["topology.routePointCount"] = graphEdge.RoutePoints.Count.ToString(CultureInfo.InvariantCulture);
     }
 
     private static string? EdgeLabel(TopologyEdge edge) {

@@ -55,12 +55,29 @@
   };
   const edgeControl = (edge) => {
     if (edge.source === edge.target) return null;
+    if (edgeHasRoute(edge)) return null;
     if (edge.shape === 'line' && Math.abs(edge.curvature) < 0.001) return null;
     const dx = edge.target.x - edge.source.x;
     const dy = edge.target.y - edge.source.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     const offset = Math.abs(edge.curvature) < 0.001 ? 34 : edge.curvature;
     return { x: (edge.source.x + edge.target.x) / 2 - dy / length * offset, y: (edge.source.y + edge.target.y) / 2 + dx / length * offset };
+  };
+  const edgeHasRoute = (edge) => Array.isArray(edge.routePoints) && edge.routePoints.length > 1 && !edge.sourceCollapsed && !edge.targetCollapsed;
+  const routeMidpoint = (points, yOffset) => {
+    let total = 0;
+    for (let i = 1; i < points.length; i++) total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+    if (total <= 0) return { x: points[0].x, y: points[0].y + yOffset };
+    let walked = 0;
+    for (let i = 1; i < points.length; i++) {
+      const length = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+      if (walked + length >= total / 2) {
+        const ratio = length <= 0 ? 0 : (total / 2 - walked) / length;
+        return { x: points[i - 1].x + (points[i].x - points[i - 1].x) * ratio, y: points[i - 1].y + (points[i].y - points[i - 1].y) * ratio + yOffset };
+      }
+      walked += length;
+    }
+    return { x: points[points.length - 1].x, y: points[points.length - 1].y + yOffset };
   };
   const edgeRenderSource = (edge, control) => {
     if (!edge.sourceCollapsed && !edge.sourceArrow) return edge.source;
@@ -80,6 +97,29 @@
     return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
   };
   const edgeRenderEndpoints = (edge, control) => ({ source: edgeRenderSource(edge, control), target: edgeRenderTarget(edge, control) });
+  const edgePathData = (edge, control) => {
+    if (edge.source === edge.target) return selfLoopPath(edge.target);
+    if (edgeHasRoute(edge)) return edge.routePoints.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(3)} ${point.y.toFixed(3)}`).join(' ');
+    const endpoints = edgeRenderEndpoints(edge, control);
+    return control
+      ? `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`
+      : `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} L ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`;
+  };
+  const edgeDrawPath = (context, edge, control) => {
+    context.beginPath();
+    if (edge.source === edge.target) {
+      const loop = selfLoopGeometry(edge.source);
+      context.moveTo(loop.start.x, loop.start.y);
+      context.bezierCurveTo(loop.c1.x, loop.c1.y, loop.c2.x, loop.c2.y, loop.end.x, loop.end.y);
+    } else if (edgeHasRoute(edge)) {
+      edge.routePoints.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
+    } else {
+      const endpoints = edgeRenderEndpoints(edge, control);
+      context.moveTo(endpoints.source.x, endpoints.source.y);
+      if (control) context.quadraticCurveTo(control.x, control.y, endpoints.target.x, endpoints.target.y);
+      else context.lineTo(endpoints.target.x, endpoints.target.y);
+    }
+  };
   const selfLoopGeometry = (node) => {
     const right = nodeBoundaryInset(node, 1, 0) + 5;
     const left = nodeBoundaryInset(node, -1, 0) + 5;
@@ -100,12 +140,15 @@
     ? { x: (edge.source.x + 2 * control.x + edge.target.x) / 4, y: (edge.source.y + 2 * control.y + edge.target.y) / 4 - 7 }
     : edge.source === edge.target
       ? selfLoopGeometry(edge.source).label
+      : edgeHasRoute(edge)
+      ? routeMidpoint(edge.routePoints, -7)
       : { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
   const drawArrow = (context, edge, control, side, color) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
+    const route = edgeHasRoute(edge) ? edge.routePoints : null;
     const sourceSide = side === 'source' && !loop;
-    const from = sourceSide ? (control || edge.target) : loop?.c2 || control || edge.source;
-    const target = sourceSide ? edge.source : loop?.end || edge.target;
+    const from = route ? (sourceSide ? route[1] : route[route.length - 2]) : sourceSide ? (control || edge.target) : loop?.c2 || control || edge.source;
+    const target = route ? (sourceSide ? route[0] : route[route.length - 1]) : sourceSide ? edge.source : loop?.end || edge.target;
     const dx = target.x - from.x;
     const dy = target.y - from.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -113,7 +156,7 @@
     const unitY = dy / length;
     const angle = Math.atan2(unitY, unitX);
     const size = 8;
-    const inset = loop ? 0 : nodeBoundaryInset(sourceSide ? edge.source : edge.target, unitX, unitY);
+    const inset = loop || route ? 0 : nodeBoundaryInset(sourceSide ? edge.source : edge.target, unitX, unitY);
     const x = target.x - unitX * inset;
     const y = target.y - unitY * inset;
     context.beginPath();

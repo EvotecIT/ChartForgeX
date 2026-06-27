@@ -35,7 +35,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(Number(Math.Min(8, size * 0.35)));
         writer.Append('"');
         WriteNodeMarkStyle(writer, node);
-        writer.Append("></rect><image");
+        writer.Append("></rect><image class=\"cfx-graph-node-image-rect\"");
         Attribute(writer, "href", node.ImageUrl);
         Attribute(writer, "aria-label", node.ImageAlt);
         Attribute(writer, "x", Number(-width / 2 + 3));

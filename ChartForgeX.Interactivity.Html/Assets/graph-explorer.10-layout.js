@@ -10,13 +10,7 @@
     edges.forEach(edge => {
       const rendered = visualEdge(edge, byId);
       const control = edgeControl(rendered);
-      const endpoints = edgeRenderEndpoints(rendered, control);
-      const d = rendered.source === rendered.target
-        ? selfLoopPath(rendered.target)
-        : control
-        ? `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`
-        : `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} L ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`;
-      edge.el.setAttribute('d', d);
+      edge.el.setAttribute('d', edgePathData(rendered, control));
       const label = labels.get(attr(edge.el, 'data-edge-id'));
       if (label) {
         const point = edgeLabelPoint(rendered, control);

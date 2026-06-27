@@ -27,7 +27,7 @@
 .cfx-graph-node{cursor:grab}
 .cfx-graph-node:active,.cfx-graph-dragging-node .cfx-graph-node.cfx-graph-selected{cursor:grabbing}
 .cfx-graph-node circle,.cfx-graph-node rect,.cfx-graph-node ellipse,.cfx-graph-node polygon,.cfx-graph-node path{fill:#2563eb;stroke:#eff6ff;stroke-width:3}
-.cfx-graph-node image{clip-path:circle(50%)}
+.cfx-graph-node image:not(.cfx-graph-node-image-rect){clip-path:circle(50%)}
 .cfx-graph-node text{font-size:12px;text-anchor:middle;fill:#334155;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round}
 .cfx-graph-node .cfx-graph-node-icon{font-weight:700;fill:#fff;stroke:none;paint-order:normal}
 .cfx-graph-cluster{cursor:pointer}
