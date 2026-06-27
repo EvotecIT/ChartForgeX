@@ -346,6 +346,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("cfx-graph-lod-compact", StringComparison.Ordinal) && html.Contains("cfx-graph-performance-gated", StringComparison.Ordinal) && html.Contains("cfx-graph-neighborhood-active", StringComparison.Ordinal), "Graph explorer runtime and CSS should expose large-graph LOD, performance, and neighborhood focus states.");
         Assert(html.Contains(".cfx-graph-has-overview .cfx-graph-overview{display:block}", StringComparison.Ordinal), "Graph explorer CSS should show the overview only when viewport navigation is enabled.");
         Assert(html.Contains(".cfx-graph-edge.cfx-graph-selected", StringComparison.Ordinal) && html.Contains("stroke:var(--cfx-edge-stroke,#94a3b8)", StringComparison.Ordinal), "Graph explorer CSS should visibly preserve selected edge state even when edges carry custom color variables.");
+        Assert(html.Contains(".cfx-graph-node.cfx-graph-selected", StringComparison.Ordinal) && html.Contains("stroke:var(--cfx-node-stroke,#eff6ff)", StringComparison.Ordinal), "Graph explorer CSS should visibly preserve selected node state even when nodes carry custom style variables.");
         Assert(html.Contains(".cfx-graph-edge-label.cfx-graph-hidden", StringComparison.Ordinal) && html.Contains(".cfx-graph-edge-label.cfx-graph-cluster-collapsed-member", StringComparison.Ordinal), "Graph explorer CSS should hide filtered and collapsed edge labels.");
         Assert(html.Contains(".cfx-graph-stage{position:relative;overflow:hidden;aspect-ratio:12/7", StringComparison.Ordinal) && html.Contains(".cfx-graph-svg{display:block;width:100%;height:auto;aspect-ratio:12/7}", StringComparison.Ordinal) && !html.Contains("min-height:420px", StringComparison.Ordinal), "Graph explorer CSS should preserve the SVG scene aspect ratio so pointer mapping does not drift under narrow embeds.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should not reference external stylesheets.");
@@ -643,6 +644,21 @@ internal static partial class SmokeTests {
             .AddEdge("source-target", "source", "target", configure: edge => edge.Directed = true)
             .ToGraphExplorerHtmlFragment();
         Assert(ExtractGraphEdgePath(boxTargetHtml, "source-target").Contains("L 429.5 280", StringComparison.Ordinal), "Graph explorer SVG should trim directed arrows to the visible edge of box nodes instead of under the rectangle fill.");
+
+        var collapsedRouteLabelHtml = GraphScene.Create("collapsed-route-label", "Collapsed route label")
+            .AddNode("source", "Source", node => { node.X = 100; node.Y = 260; node.ClusterId = "cluster"; })
+            .AddNode("target", "Target", node => { node.X = 520; node.Y = 260; })
+            .AddCluster("cluster", "Cluster", new[] { "source" }, cluster => cluster.Collapsed = true)
+            .AddEdge("route", "source", "target", "Route", edge => {
+                edge.Shape = GraphEdgeShape.Polyline;
+                edge.RoutePoints.Add(new GraphScenePoint(100, 260));
+                edge.RoutePoints.Add(new GraphScenePoint(100, 120));
+                edge.RoutePoints.Add(new GraphScenePoint(520, 120));
+                edge.RoutePoints.Add(new GraphScenePoint(520, 260));
+                edge.Directed = true;
+            })
+            .ToGraphExplorerHtmlFragment();
+        Assert(Math.Abs(ExtractGraphEdgeLabelPoint(collapsedRouteLabelHtml, "route").Y - 253) < 0.001, "Graph explorer SVG should place collapsed routed-edge labels on the rendered collapsed geometry instead of the hidden member route.");
 
         var imageFallbackHtml = GraphScene.Create("image-fallback-target", "Image fallback target").AddNode("source", "Source", node => { node.X = 100; node.Y = 280; }).AddNode("target", "Target", node => { node.X = 480; node.Y = 280; node.Size = 30; node.Shape = GraphNodeShape.Image; }).AddEdge("source-target", "source", "target", configure: edge => edge.Directed = true).ToGraphExplorerHtmlFragment();
         Assert(imageFallbackHtml.Contains("data-node-shape=\"circle\"", StringComparison.Ordinal) && ExtractGraphEdgePath(imageFallbackHtml, "source-target").Contains("L 443 280", StringComparison.Ordinal), "Graph explorer SVG should use the effective rendered circle shape for image nodes without image URLs.");

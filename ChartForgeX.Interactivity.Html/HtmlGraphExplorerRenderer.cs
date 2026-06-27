@@ -207,7 +207,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
         if (clusteringEnabled) WriteClusters(writer, scene, clusters, positions, clusterMembership, collapseClustersOnLoad, focusableGraphItems);
         WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems);
-        WriteEdgeLabels(writer, scene, positions, collapsedNodePositions, collapsedEdgeIds);
+        WriteEdgeLabels(writer, scene, positions, collapsedNodePositions, collapsedNodeRadii, collapsedEdgeIds);
         WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds, focusableGraphItems);
         writer.Append("</g></svg></div>");
     }
@@ -381,14 +381,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return members.OrderBy(id => id, StringComparer.Ordinal).ToArray();
     }
 
-    private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, Point> collapsedNodePositions, HashSet<string> collapsedEdgeIds) {
+    private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, HashSet<string> collapsedEdgeIds) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !edge.Style.Hidden && !string.IsNullOrWhiteSpace(edge.Label))) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
             var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
-            var point = EdgeLabelPoint(edge, renderSource, renderTarget, targetNode);
+            var sourceBoundary = collapsedNodeRadii.TryGetValue(edge.SourceNodeId, out var sourceRadius) ? sourceRadius : (double?)null;
+            var targetBoundary = collapsedNodeRadii.TryGetValue(edge.TargetNodeId, out var targetRadius) ? targetRadius : (double?)null;
+            var point = EdgeLabelPoint(edge, renderSource, renderTarget, targetNode, targetBoundary, sourceBoundary);
             writer.Append("<text class=\"cfx-graph-edge-label");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" data-cfx-role=\"graph-edge-label\"");
@@ -651,13 +653,15 @@ public sealed partial class HtmlGraphExplorerRenderer {
             : "M " + Number(renderSource.X) + " " + Number(renderSource.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
     }
 
-    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode) {
+    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
-        if (edge.RoutePoints.Count > 1) return PolylineMidpoint(edge.RoutePoints, -7);
+        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylineMidpoint(edge.RoutePoints, -7);
         var control = EdgeControl(edge, source, target);
+        var renderSource = SourceBoundaryPoint(edge, source, target, control, null, sourceBoundaryInset);
+        var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);
         return control.HasValue
-            ? new Point((source.X + 2 * control.Value.X + target.X) / 4, (source.Y + 2 * control.Value.Y + target.Y) / 4 - 7)
-            : new Point((source.X + target.X) / 2, (source.Y + target.Y) / 2 - 7);
+            ? new Point((renderSource.X + 2 * control.Value.X + renderTarget.X) / 4, (renderSource.Y + 2 * control.Value.Y + renderTarget.Y) / 4 - 7)
+            : new Point((renderSource.X + renderTarget.X) / 2, (renderSource.Y + renderTarget.Y) / 2 - 7);
     }
 
     private static Point? EdgeControl(GraphSceneEdge edge, Point source, Point target) {

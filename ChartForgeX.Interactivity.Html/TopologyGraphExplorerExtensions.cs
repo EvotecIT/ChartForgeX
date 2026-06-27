@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ChartForgeX.Interactivity;
+using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Interactivity.Html;
@@ -236,8 +237,34 @@ public static class TopologyGraphExplorerExtensions {
         if (!ShouldPreserveCoordinates(chart, source, options) || !ShouldPreserveCoordinates(chart, target, options)) return;
         var points = TopologyRenderPrimitives.EdgePoints(chart, edge, topologyNodes);
         if (edge.Direction == TopologyDirection.Backward) points.Reverse();
+        AlignRouteEndpointsToGraphNodes(points, edge.Direction == TopologyDirection.Backward ? target : source, edge.Direction == TopologyDirection.Backward ? source : target);
         foreach (var point in points) graphEdge.RoutePoints.Add(new GraphScenePoint(point.X, point.Y));
         graphEdge.Metadata["topology.routePointCount"] = graphEdge.RoutePoints.Count.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static void AlignRouteEndpointsToGraphNodes(IList<ChartPoint> points, TopologyNode source, TopologyNode target) {
+        if (points.Count < 2) return;
+        points[0] = ProjectRouteEndpoint(source, points[1]);
+        points[points.Count - 1] = ProjectRouteEndpoint(target, points[points.Count - 2]);
+    }
+
+    private static ChartPoint ProjectRouteEndpoint(TopologyNode node, ChartPoint guide) {
+        var centerX = node.X + node.Width / 2;
+        var centerY = node.Y + node.Height / 2;
+        if (node.DisplayMode == TopologyNodeDisplayMode.Hidden) return new ChartPoint(centerX, centerY);
+        var dx = guide.X - centerX;
+        var dy = guide.Y - centerY;
+        var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
+        var unitX = dx / length;
+        var unitY = dy / length;
+        var size = NodeSize(node);
+        var halfWidth = NodeShape(node) == GraphNodeShape.Box ? size * 1.45 : size;
+        var halfHeight = NodeShape(node) == GraphNodeShape.Box ? size * 1.05 : size;
+        var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
+        var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);
+        var inset = Math.Min(xInset, yInset);
+        if (double.IsInfinity(inset) || double.IsNaN(inset)) inset = Math.Max(halfWidth, halfHeight);
+        return new ChartPoint(centerX + unitX * inset, centerY + unitY * inset);
     }
 
     private static string? EdgeLabel(TopologyEdge edge) {

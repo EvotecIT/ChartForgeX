@@ -97,8 +97,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string NodeMarkStyle(GraphSceneNode node) {
         var parts = new List<string>();
-        if (!string.IsNullOrWhiteSpace(node.Style.BackgroundColor)) parts.Add("fill:" + node.Style.BackgroundColor);
-        if (!string.IsNullOrWhiteSpace(node.Style.BorderColor)) parts.Add("stroke:" + node.Style.BorderColor);
+        if (!string.IsNullOrWhiteSpace(node.Style.BackgroundColor)) parts.Add("--cfx-node-fill:" + node.Style.BackgroundColor);
+        if (!string.IsNullOrWhiteSpace(node.Style.BorderColor)) parts.Add("--cfx-node-stroke:" + node.Style.BorderColor);
         if (node.Style.Shadow) parts.Add("filter:drop-shadow(0 5px 10px rgba(15,23,42,.18))");
         return string.Join(";", parts);
     }
