@@ -113,6 +113,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-graph-cluster-adaptive", scene.Options.Cluster.Adaptive ? "true" : "false");
         Attribute(writer, "data-cfx-graph-cluster-min-size", scene.Options.Cluster.MinimumClusterSize.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-graph-cluster-target-size", scene.Options.Cluster.TargetClusterSize.ToString(CultureInfo.InvariantCulture));
+        Attribute(writer, "data-cfx-graph-cluster-collapse-on-load", scene.Options.Cluster.CollapseOnLoad ? "true" : "false");
         Attribute(writer, "data-cfx-graph-manipulation", scene.Options.HasFeature(GraphSceneFeatures.Manipulation) ? "true" : "false");
         Attribute(writer, "data-cfx-graph-manipulation-capabilities", ManipulationCapabilities(scene.Options.Manipulation));
         Attribute(writer, "data-cfx-lod-cluster-threshold", scene.Options.LevelOfDetail.ClusterNodeThreshold.ToString(CultureInfo.InvariantCulture));
@@ -509,18 +510,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
             WriteNodeMarkStyle(writer, node);
             writer.Append("></circle>");
         } else if (node.Shape == GraphNodeShape.Image && !string.IsNullOrWhiteSpace(node.ImageUrl)) {
-            writer.Append("<circle r=\"");
-            writer.Append(Number(size + 4));
-            writer.Append('"');
-            WriteNodeMarkStyle(writer, node);
-            writer.Append("></circle><image");
-            Attribute(writer, "href", node.ImageUrl);
-            Attribute(writer, "aria-label", node.ImageAlt);
-            Attribute(writer, "x", Number(-size));
-            Attribute(writer, "y", Number(-size));
-            Attribute(writer, "width", Number(size * 2));
-            Attribute(writer, "height", Number(size * 2));
-            writer.Append("></image>");
+            WriteCircularImageNodeMark(writer, node, size);
+        } else if (node.Shape == GraphNodeShape.RectangularImage && !string.IsNullOrWhiteSpace(node.ImageUrl)) {
+            WriteRectangularImageNodeMark(writer, node, size);
         } else {
             writer.Append("<circle r=\"");
             writer.Append(Number(size));
@@ -721,9 +713,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static double TargetBoundaryInset(GraphSceneNode? node, double unitX, double unitY) {
         var size = Math.Max(4, node?.Size ?? 8);
         var shape = EffectiveNodeShape(node);
-        if (shape == GraphNodeShape.Box) {
-            var halfWidth = size * 1.45;
-            var halfHeight = size * 1.05;
+        if (shape == GraphNodeShape.Box || shape == GraphNodeShape.RectangularImage) {
+            var halfWidth = shape == GraphNodeShape.RectangularImage ? size * 1.3 : size * 1.45;
+            var halfHeight = shape == GraphNodeShape.RectangularImage ? size * 0.9 : size * 1.05;
             if (Math.Abs(unitX) < 0.001 && Math.Abs(unitY) < 0.001) return Math.Max(6, Math.Max(halfWidth, halfHeight) + 7);
             var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
             var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);

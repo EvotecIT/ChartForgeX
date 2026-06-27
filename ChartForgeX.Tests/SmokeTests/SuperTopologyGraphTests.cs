@@ -36,7 +36,7 @@ internal static partial class SmokeTests {
         Assert(scene.Nodes[0].ClusterId == "core" && scene.Clusters[0].NodeIds.Count == 2, "Topology groups should seed graph cluster membership.");
         Assert(scene.Nodes[0].Metadata["topology.meta.owner"] == "identity" && scene.Nodes[1].Metadata["topology.metric.latency"] == "32", "Topology graph nodes should carry source metadata and metrics for inspectors.");
         Assert(scene.Edges[0].Shape == GraphEdgeShape.Curve && scene.Edges[0].Directed, "Topology graph edges should preserve curved directed relationship hints.");
-        Assert(scene.Nodes[0].Style.BackgroundColor == "#CCFBF1" && scene.Nodes[0].Style.BorderColor == "#0F766E" && scene.Edges[0].Style.Color == "#7C3AED", "Topology graph bridge should map topology colors into reusable GraphScene styling, not only metadata.");
+        Assert(scene.Nodes[0].Style.BackgroundColor == "#CCFBF1" && scene.Nodes[0].Style.BorderColor == "#0F766E" && scene.Nodes[1].Style.BorderColor == "#F97316" && scene.Edges[0].Style.Color == "#7C3AED", "Topology graph bridge should map explicit and status-derived topology colors into reusable GraphScene styling, not only metadata.");
         Assert(scene.Edges[1].Metadata["topology.metric.transport"] == "tcp" && scene.Edges[1].Metadata["topology.secondaryLabel"] == "32 ms", "Topology graph edges should carry topology metrics and secondary labels.");
         Assert(scene.Nodes[0].HasExplicitPosition && scene.Nodes[0].Fixed, "Manual topology coordinates should seed fixed graph positions for deterministic opening layouts.");
 
@@ -103,8 +103,16 @@ internal static partial class SmokeTests {
             .WithLayout(TopologyLayoutMode.Manual)
             .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("origin", "Origin", 0, 0, TopologyNodeKind.Database, TopologyHealthStatus.Healthy);
+        autoOrigin.Nodes.Single(node => node.Id == "auto").X = 220;
+        autoOrigin.Nodes.Single(node => node.Id == "auto").Y = 80;
         var autoOriginScene = autoOrigin.ToGraphScene();
-        Assert(!autoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && !autoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition && autoOriginScene.Nodes.Single(node => node.Id == "origin").Fixed && autoOriginScene.Nodes.Single(node => node.Id == "origin").HasExplicitPosition, "Topology graph bridge should not pin AddAutoNode placeholder coordinates at the origin while preserving explicit manual origin nodes.");
+        Assert(autoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && autoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition && autoOriginScene.Nodes.Single(node => node.Id == "origin").Fixed && autoOriginScene.Nodes.Single(node => node.Id == "origin").HasExplicitPosition, "Topology graph bridge should preserve explicit coordinate mutations after AddAutoNode while preserving explicit manual origin nodes.");
+
+        var freeAutoOrigin = TopologyChart.Create()
+            .WithLayout(TopologyLayoutMode.Manual)
+            .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy);
+        var freeAutoOriginScene = freeAutoOrigin.ToGraphScene();
+        Assert(!freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && !freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition, "Topology graph bridge should not pin untouched AddAutoNode placeholder coordinates at the origin.");
 
         var friendlyIds = TopologyChart.Create()
             .WithId("app map")

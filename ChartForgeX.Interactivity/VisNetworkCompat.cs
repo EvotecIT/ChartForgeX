@@ -228,7 +228,7 @@ public sealed class VisNetworkNode {
         var groupId = string.IsNullOrWhiteSpace(Group) ? null : ids.GroupId(Group!);
         var node = new GraphSceneNode {
             Id = ids.NodeId(Id),
-            Label = Label,
+            Label = string.IsNullOrWhiteSpace(Label) ? ids.NodeId(Id) : Label,
             GroupId = groupId,
             ClusterId = groupId,
             Kind = group?.Kind,
@@ -267,7 +267,7 @@ public sealed class VisNetworkNode {
         VisNetworkNodeShape.Diamond => GraphNodeShape.Diamond,
         VisNetworkNodeShape.Ellipse => GraphNodeShape.Ellipse,
         VisNetworkNodeShape.Icon => GraphNodeShape.Circle,
-        VisNetworkNodeShape.Image => GraphNodeShape.Image,
+        VisNetworkNodeShape.Image => GraphNodeShape.RectangularImage,
         VisNetworkNodeShape.Square => GraphNodeShape.Square,
         VisNetworkNodeShape.Star => GraphNodeShape.Star,
         VisNetworkNodeShape.Text => GraphNodeShape.Text,

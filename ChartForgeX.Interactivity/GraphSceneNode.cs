@@ -123,5 +123,8 @@ public enum GraphNodeShape {
     Database,
 
     /// <summary>Use a text-only node mark.</summary>
-    Text
+    Text,
+
+    /// <summary>Use an image-backed rectangular node mark when an image URI is available.</summary>
+    RectangularImage
 }

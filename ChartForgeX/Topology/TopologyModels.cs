@@ -315,6 +315,7 @@ public sealed class TopologyNode {
         set {
             TopologyModelGuards.Finite(value, nameof(value));
             _x = value;
+            HasPositionOverride = true;
         }
     }
 
@@ -324,6 +325,7 @@ public sealed class TopologyNode {
         set {
             TopologyModelGuards.Finite(value, nameof(value));
             _y = value;
+            HasPositionOverride = true;
         }
     }
 

@@ -64,6 +64,25 @@ internal static partial class SmokeTests {
         var dashPatternScene = dashPattern.ToGraphScene("dash-pattern", "Dash pattern");
         Assert(dashPatternScene.Edges[0].Dashed && dashPatternScene.Edges[0].Style.DashPattern == "4 2", "Vis-network compatibility should preserve explicit edge dash patterns even when Dashes is not separately enabled.");
 
+        var idOnly = VisNetworkGraph.Create();
+        idOnly.Nodes.Add(new VisNetworkNode { Id = "id-only" });
+        var idOnlyScene = idOnly.ToGraphScene("id-only", "Id only");
+        Assert(idOnlyScene.Nodes.Single().Label == "id-only", "Vis-network compatibility should fall back to the id for id-only node records.");
+
+        var imageShapes = VisNetworkGraph.Create()
+            .AddNode("rect", "Rectangle", node => {
+                node.Shape = VisNetworkNodeShape.Image;
+                node.Image = "data:image/svg+xml,%3Csvg viewBox='0 0 10 6'%3E%3Crect width='10' height='6' fill='%23f00'/%3E%3C/svg%3E";
+            })
+            .AddNode("circle", "Circle", node => {
+                node.Shape = VisNetworkNodeShape.CircularImage;
+                node.Image = "data:image/svg+xml,%3Csvg viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='5' fill='%2300f'/%3E%3C/svg%3E";
+            });
+        var imageShapeScene = imageShapes.ToGraphScene("image-shapes", "Image shapes");
+        var imageShapeHtml = imageShapeScene.ToGraphExplorerHtmlFragment();
+        Assert(imageShapeScene.Nodes.Single(node => node.Id == "rect").Shape == GraphNodeShape.RectangularImage && imageShapeScene.Nodes.Single(node => node.Id == "circle").Shape == GraphNodeShape.Image, "Vis-network compatibility should keep image and circularImage as distinct graph node shapes.");
+        Assert(imageShapeHtml.Contains("data-node-shape=\"imageRect\"", StringComparison.Ordinal) && imageShapeHtml.Contains("data-node-shape=\"image\"", StringComparison.Ordinal), "Graph explorer output should serialize rectangular and circular vis image nodes distinctly.");
+
         var noNavigation = VisNetworkGraph.Create();
         noNavigation.Options.Interaction.NavigationButtons = false;
         noNavigation.AddNode("a", "A").AddNode("b", "B").AddEdge("a-b", "a", "b");
@@ -90,6 +109,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-edge-hidden=\"true\"", StringComparison.Ordinal) && html.Contains("cfx-graph-edge cfx-graph-hidden", StringComparison.Ordinal) && !html.Contains(">queries</text>", StringComparison.Ordinal), "Graph explorer SVG and Canvas state should suppress hidden vis-network-style edges.");
         Assert(html.Contains("physics: attr(edge, 'data-edge-physics') !== 'false'", StringComparison.Ordinal) && html.Contains("state.edges.filter(edge => edge.physics !== false)", StringComparison.Ordinal), "Graph explorer runtime physics should exclude edges that opt out of physics.");
         Assert(html.Contains("style: { backgroundColor: attr(node.el, 'data-node-background-color')", StringComparison.Ordinal) && html.Contains("context.fillStyle = node.backgroundColor || '#2563eb'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should consume serialized node styles.");
+        Assert(html.Contains("if (node.labelBackgroundColor)", StringComparison.Ordinal) && html.Contains("context.shadowColor = 'rgba(15,23,42,.18)'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render node label backgrounds and shadows when style data is serialized.");
         Assert(html.Contains("drawNodeShapeMark(context, node)", StringComparison.Ordinal) && html.Contains("node.shape === 'database'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render rich vis-network node shapes instead of falling back to circles.");
         Assert(html.Contains("data-edge-shape=\"continuous\"", StringComparison.Ordinal) && html.Contains("edge.shape === 'line' && Math.abs(edge.curvature) < 0.001", StringComparison.Ordinal), "Graph explorer runtime paths should keep vis-network smoothed edges curved after Canvas redraws, physics, or dragging.");
         Assert(html.Contains("const targetArrow = edge.targetArrow || (edge.directed && !edge.sourceArrow)", StringComparison.Ordinal), "Graph explorer Canvas and PNG endpoints should only shorten targets when a target arrow is actually rendered.");

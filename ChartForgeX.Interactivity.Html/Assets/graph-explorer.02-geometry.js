@@ -1,11 +1,13 @@
-  const nodeHalfWidth = (node) => node.shape === 'box' ? node.size * 1.45 : node.size;
-  const nodeHalfHeight = (node) => node.shape === 'box' ? node.size * 1.05 : node.size;
+  const nodeHalfWidth = (node) => node.shape === 'box' ? node.size * 1.45 : node.shape === 'imageRect' ? node.size * 1.3 : node.size;
+  const nodeHalfHeight = (node) => node.shape === 'box' ? node.size * 1.05 : node.shape === 'imageRect' ? node.size * .9 : node.size;
   const nodeBoundaryInset = (node, unitX, unitY) => {
     const size = Math.max(4, node?.size || 8);
-    if (node?.shape === 'box') {
-      if (Math.abs(unitX) < 0.001 && Math.abs(unitY) < 0.001) return Math.max(6, Math.max(size * 1.45, size * 1.05) + 7);
-      const xInset = Math.abs(unitX) < 0.001 ? Number.POSITIVE_INFINITY : size * 1.45 / Math.abs(unitX);
-      const yInset = Math.abs(unitY) < 0.001 ? Number.POSITIVE_INFINITY : size * 1.05 / Math.abs(unitY);
+    if (node?.shape === 'box' || node?.shape === 'imageRect') {
+      const halfWidth = node.shape === 'imageRect' ? size * 1.3 : size * 1.45;
+      const halfHeight = node.shape === 'imageRect' ? size * .9 : size * 1.05;
+      if (Math.abs(unitX) < 0.001 && Math.abs(unitY) < 0.001) return Math.max(6, Math.max(halfWidth, halfHeight) + 7);
+      const xInset = Math.abs(unitX) < 0.001 ? Number.POSITIVE_INFINITY : halfWidth / Math.abs(unitX);
+      const yInset = Math.abs(unitY) < 0.001 ? Number.POSITIVE_INFINITY : halfHeight / Math.abs(unitY);
       return Math.max(6, Math.min(xInset, yInset) + 7);
     }
     return Math.max(6, size + (node?.shape === 'image' ? 11 : 7));
@@ -14,7 +16,7 @@
     const slack = tolerance ?? 10;
     const dx = Math.abs(node.x - point.x);
     const dy = Math.abs(node.y - point.y);
-    if (node.shape === 'box') {
+    if (node.shape === 'box' || node.shape === 'imageRect') {
       const outsideX = Math.max(0, dx - nodeHalfWidth(node));
       const outsideY = Math.max(0, dy - nodeHalfHeight(node));
       if (dx <= nodeHalfWidth(node) + slack && dy <= nodeHalfHeight(node) + slack) return Math.sqrt(outsideX * outsideX + outsideY * outsideY);

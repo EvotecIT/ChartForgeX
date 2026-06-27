@@ -21,12 +21,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static GraphNodeShape EffectiveNodeShape(GraphSceneNode? node) {
         if (node == null) return GraphNodeShape.Circle;
-        return node.Shape == GraphNodeShape.Image && string.IsNullOrWhiteSpace(node.ImageUrl) ? GraphNodeShape.Circle : node.Shape;
+        return (node.Shape == GraphNodeShape.Image || node.Shape == GraphNodeShape.RectangularImage) && string.IsNullOrWhiteSpace(node.ImageUrl) ? GraphNodeShape.Circle : node.Shape;
     }
 
     private static string NodeShape(GraphSceneNode node) => EffectiveNodeShape(node) switch {
         GraphNodeShape.Box => "box",
         GraphNodeShape.Image => "image",
+        GraphNodeShape.RectangularImage => "imageRect",
         GraphNodeShape.Ellipse => "ellipse",
         GraphNodeShape.Square => "square",
         GraphNodeShape.Diamond => "diamond",

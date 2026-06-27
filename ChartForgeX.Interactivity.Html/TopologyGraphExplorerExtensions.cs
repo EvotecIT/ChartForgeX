@@ -114,9 +114,11 @@ public static class TopologyGraphExplorerExtensions {
             graphNode.Y = node.Y + node.Height / 2;
         }
 
-        graphNode.Style.BackgroundColor = node.BackgroundColor;
-        graphNode.Style.BorderColor = node.Color;
-        graphNode.Style.LabelColor = node.Color;
+        var theme = chart.Theme ?? TopologyTheme.Light();
+        var accentColor = string.IsNullOrWhiteSpace(node.Color) ? theme.StatusColor(node.Status) : node.Color!.Trim();
+        graphNode.Style.BackgroundColor = TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
+        graphNode.Style.BorderColor = accentColor;
+        graphNode.Style.LabelColor = accentColor;
 
         AddMetadata(graphNode.Metadata, "topology.id", node.Id);
         AddMetadata(graphNode.Metadata, "topology.groupId", node.GroupId);

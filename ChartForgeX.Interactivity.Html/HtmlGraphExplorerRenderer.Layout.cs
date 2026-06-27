@@ -437,7 +437,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return true;
     }
 
-    private static double PreparedNodeRadius(GraphSceneNode node) => Math.Max(14, node.Size + (node.Shape == GraphNodeShape.Box ? 16 : node.Shape == GraphNodeShape.Image ? 14 : 12));
+    private static double PreparedNodeRadius(GraphSceneNode node) => Math.Max(14, node.Size + (node.Shape == GraphNodeShape.Box ? 16 : node.Shape == GraphNodeShape.Image || node.Shape == GraphNodeShape.RectangularImage ? 14 : 12));
 
     private static string GridKey(Point point, double cellSize) =>
         ((int)Math.Floor(point.X / cellSize)).ToString(CultureInfo.InvariantCulture) + "," + ((int)Math.Floor(point.Y / cellSize)).ToString(CultureInfo.InvariantCulture);

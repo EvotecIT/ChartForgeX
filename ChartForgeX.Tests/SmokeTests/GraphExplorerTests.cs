@@ -293,7 +293,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("clusters: items(root, '[data-cfx-role=\"graph-cluster\"]')", StringComparison.Ordinal), "Graph explorer JSON export should include cluster membership and collapsed state.");
         Assert(html.Contains("metadata: metadataDetail(node.el)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(edge)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(cluster)", StringComparison.Ordinal), "Graph explorer JSON export should include structured metadata for nodes, edges, and clusters.");
         Assert(html.Contains("cfxGraphClusterLod", StringComparison.Ordinal) && html.Contains("data-cfx-lod-collapse-clusters", StringComparison.Ordinal), "Graph explorer binding should report cluster LOD while honoring the explicit collapse-on-load option.");
-        Assert(html.Contains("hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true)", StringComparison.Ordinal), "Graph explorer binding should honor CollapseClustersOnLoad only when LOD is enabled, regardless of the cluster LOD threshold.");
+        Assert(html.Contains("data-cfx-graph-cluster-collapse-on-load", StringComparison.Ordinal) && html.Contains("attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true' || (hasFeature(root, 'LevelOfDetail')", StringComparison.Ordinal), "Graph explorer binding and JSON export should preserve explicit cluster collapse defaults independently from LOD collapse.");
         Assert(html.Contains("dragThreshold", StringComparison.Ordinal) && html.Contains("if (!active.moved) {", StringComparison.Ordinal) && html.Contains("data-node-fixed', active.fixed", StringComparison.Ordinal), "Graph explorer node selection should only pin nodes and pause physics after an actual drag.");
         Assert(html.Contains("const hitItem = node || graphItem || hitGraphItemAt(root, point)", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Viewport') && !hitBlocksPan", StringComparison.Ordinal), "Graph explorer viewport panning should start from graph background or inert graph items, not from selectable nodes, clusters, or edges.");
         Assert(html.Contains("if (hasFeature(root, 'Viewport')) {", StringComparison.Ordinal) && html.Contains("fitViewport(root);", StringComparison.Ordinal), "Graph explorer binding should not fit or emit viewport changes when hosts disable viewport behavior.");
@@ -446,6 +446,13 @@ internal static partial class SmokeTests {
             .AddCluster("collapsed", "Collapsed", new[] { "a" }, cluster => cluster.Collapsed = false);
         loadCollapsedHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
         Assert(loadCollapsedHtml.ToGraphExplorerHtmlFragment().Contains("data-cluster-collapsed=\"true\"", StringComparison.Ordinal), "Graph explorer static markup should serialize the effective load-collapsed cluster state before bindings run.");
+
+        var explicitClusterCollapse = GraphScene.Create("explicit-cluster-collapse", "Explicit cluster collapse")
+            .AddNode("a", "A")
+            .AddCluster("collapsed", "Collapsed", new[] { "a" }, cluster => cluster.Collapsed = false);
+        explicitClusterCollapse.Options.Cluster.CollapseOnLoad = true;
+        var explicitClusterCollapseHtml = explicitClusterCollapse.ToGraphExplorerHtmlFragment();
+        Assert(explicitClusterCollapseHtml.Contains("data-cfx-graph-cluster-collapse-on-load=\"true\"", StringComparison.Ordinal) && explicitClusterCollapseHtml.Contains("collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true'", StringComparison.Ordinal), "Graph explorer JSON export should report explicit cluster collapse defaults, not only LOD collapse defaults.");
 
         var largeCollapsedCluster = GraphScene.Create("large-collapsed-cluster", "Large collapsed cluster");
         for (var i = 0; i < 16; i++) largeCollapsedCluster.AddNode("n" + i, "Node " + i);
@@ -713,57 +720,6 @@ internal static partial class SmokeTests {
         var dx = b.X - a.X;
         var dy = b.Y - a.Y;
         return Math.Sqrt(dx * dx + dy * dy);
-    }
-
-    private static GraphScene SampleGraphScene() {
-        return GraphScene.Create("service-map", "Service map")
-            .AddNode("api", "API", node => {
-                node.Kind = "service";
-                node.GroupId = "platform";
-                node.ClusterId = "core";
-                node.Status = "healthy";
-                node.Size = 11;
-                node.Shape = GraphNodeShape.Image;
-                node.ImageUrl = "data:image/svg+xml,%3Csvg viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232563eb'/%3E%3C/svg%3E";
-                node.ImageAlt = "API service icon";
-                node.IconText = "A";
-                node.Metadata["owner"] = "identity";
-            })
-            .AddNode("db", "Database", node => {
-                node.Kind = "database";
-                node.GroupId = "platform";
-                node.ClusterId = "core";
-                node.Status = "warning";
-                node.Size = 13;
-            })
-            .AddNode("worker", "Worker", node => {
-                node.Kind = "service";
-                node.GroupId = "jobs";
-                node.Status = "healthy";
-                node.Fixed = true;
-                node.X = 760;
-                node.Y = 340;
-            })
-            .AddEdge("api-db", "api", "db", "queries", edge => {
-                edge.Kind = "dependency";
-                edge.Status = "warning";
-                edge.Weight = 2;
-                edge.Length = 140;
-                edge.Directed = true;
-                edge.Shape = GraphEdgeShape.Curve;
-                edge.Curvature = 32;
-                edge.Dashed = true;
-                edge.Metadata["evidence"] = "privileged-path";
-            })
-            .AddEdge("api-worker", "api", "worker", "enqueues", edge => {
-                edge.Kind = "queue";
-                edge.Status = "healthy";
-            })
-            .AddCluster("core", "Core services", new[] { "api", "db" }, cluster => {
-                cluster.Kind = "community";
-                cluster.Collapsed = true;
-                cluster.Metadata["tier"] = "core";
-            });
     }
 
     private static GraphScene BuildScaleConfidenceScene(int nodeCount, int edgeCount) {
