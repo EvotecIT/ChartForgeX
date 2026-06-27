@@ -22,37 +22,41 @@ public static class TopologyGraphExplorerExtensions {
         var options = new TopologyGraphSceneOptions();
         configure?.Invoke(options);
 
-        var scene = GraphScene.Create(TopologySceneId(chart), TopologySceneTitle(chart));
+        var ids = TopologyGraphIdMap.Create(chart);
+        var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(chart));
         scene.Subtitle = chart.Subtitle;
         if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
         scene.Options.Cluster.Mode = options.IncludeGroupsAsClusters ? GraphClusterMode.Hybrid : GraphClusterMode.Explicit;
         if (!options.IncludeGroupsAsClusters) scene.Options.Cluster.Adaptive = false;
         scene.Options.Cluster.CollapseOnLoad = scene.Options.LevelOfDetail.CollapseClustersOnLoad;
         scene.Metadata["source.model"] = nameof(TopologyChart);
+        AddMetadata(scene.Metadata, "topology.id", chart.Id);
         scene.Metadata["topology.layout"] = chart.LayoutMode.ToString();
         scene.Metadata["topology.direction"] = chart.LayoutDirection.ToString();
         scene.Metadata["topology.nodeCount"] = chart.Nodes.Count.ToString(CultureInfo.InvariantCulture);
         scene.Metadata["topology.edgeCount"] = chart.Edges.Count.ToString(CultureInfo.InvariantCulture);
         scene.Metadata["topology.groupCount"] = chart.Groups.Count.ToString(CultureInfo.InvariantCulture);
 
-        var groupIds = new HashSet<string>(chart.Groups.Select(group => group.Id), StringComparer.Ordinal);
+        var groupIds = new HashSet<string>(chart.Groups.Select(group => ids.GroupId(group.Id)), StringComparer.Ordinal);
         foreach (var node in chart.Nodes) {
-            scene.Nodes.Add(ToGraphNode(chart, node, groupIds, options));
+            scene.Nodes.Add(ToGraphNode(chart, node, groupIds, options, ids));
         }
 
         foreach (var edge in chart.Edges) {
-            scene.Edges.Add(ToGraphEdge(edge));
+            scene.Edges.Add(ToGraphEdge(edge, ids));
         }
 
         if (options.IncludeGroupsAsClusters) {
             foreach (var group in chart.Groups) {
-                var memberIds = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).Select(node => node.Id).ToArray();
+                var groupId = ids.GroupId(group.Id);
+                var memberIds = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).Select(node => ids.NodeId(node.Id)).ToArray();
                 var cluster = new GraphSceneCluster {
-                    Id = group.Id,
+                    Id = groupId,
                     Label = group.Label,
                     Kind = "topology-group"
                 };
                 cluster.NodeIds.AddRange(memberIds);
+                AddMetadata(cluster.Metadata, "topology.id", group.Id);
                 cluster.Metadata["topology.status"] = group.Status.ToString();
                 cluster.Metadata["topology.layoutPolicy"] = group.LayoutPolicy.ToString();
                 AddMetadata(cluster.Metadata, "topology.subtitle", group.Subtitle);
@@ -89,12 +93,13 @@ public static class TopologyGraphExplorerExtensions {
         return chart.ToGraphScene(configureScene).ToGraphExplorerHtmlFragment(configureHtml);
     }
 
-    private static GraphSceneNode ToGraphNode(TopologyChart chart, TopologyNode node, ISet<string> groupIds, TopologyGraphSceneOptions options) {
+    private static GraphSceneNode ToGraphNode(TopologyChart chart, TopologyNode node, ISet<string> groupIds, TopologyGraphSceneOptions options, TopologyGraphIdMap ids) {
+        var groupId = string.IsNullOrWhiteSpace(node.GroupId) ? null : ids.GroupId(node.GroupId!);
         var graphNode = new GraphSceneNode {
-            Id = node.Id,
+            Id = ids.NodeId(node.Id),
             Label = node.Label,
             Kind = Token(node.Kind),
-            GroupId = string.IsNullOrWhiteSpace(node.GroupId) ? null : node.GroupId,
+            GroupId = groupId,
             Status = Token(node.Status),
             Shape = NodeShape(node),
             Size = NodeSize(node),
@@ -103,7 +108,7 @@ public static class TopologyGraphExplorerExtensions {
             Fixed = ShouldPreserveCoordinates(chart, node, options),
             Hidden = node.DisplayMode == TopologyNodeDisplayMode.Hidden
         };
-        if (options.IncludeGroupsAsClusters && options.UseGroupsAsClusterIds && !string.IsNullOrWhiteSpace(node.GroupId) && groupIds.Contains(node.GroupId!)) graphNode.ClusterId = node.GroupId;
+        if (options.IncludeGroupsAsClusters && options.UseGroupsAsClusterIds && !string.IsNullOrWhiteSpace(groupId) && groupIds.Contains(groupId!)) graphNode.ClusterId = groupId;
         if (ShouldPreserveCoordinates(chart, node, options)) {
             graphNode.X = node.X + node.Width / 2;
             graphNode.Y = node.Y + node.Height / 2;
@@ -114,6 +119,7 @@ public static class TopologyGraphExplorerExtensions {
         graphNode.Style.LabelColor = node.Color;
 
         AddMetadata(graphNode.Metadata, "topology.id", node.Id);
+        AddMetadata(graphNode.Metadata, "topology.groupId", node.GroupId);
         AddMetadata(graphNode.Metadata, "topology.subtitle", node.Subtitle);
         AddMetadata(graphNode.Metadata, "topology.kind", node.Kind.ToString());
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
@@ -128,19 +134,19 @@ public static class TopologyGraphExplorerExtensions {
         return graphNode;
     }
 
-    private static GraphSceneEdge ToGraphEdge(TopologyEdge edge) {
-        var sourceNodeId = edge.SourceNodeId;
-        var targetNodeId = edge.TargetNodeId;
+    private static GraphSceneEdge ToGraphEdge(TopologyEdge edge, TopologyGraphIdMap ids) {
+        var sourceNodeId = ids.NodeId(edge.SourceNodeId);
+        var targetNodeId = ids.NodeId(edge.TargetNodeId);
         var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward || edge.Direction == TopologyDirection.Bidirectional;
         var sourceArrow = edge.Direction == TopologyDirection.Bidirectional;
         var targetArrow = directed;
         if (edge.Direction == TopologyDirection.Backward) {
-            sourceNodeId = edge.TargetNodeId;
-            targetNodeId = edge.SourceNodeId;
+            sourceNodeId = ids.NodeId(edge.TargetNodeId);
+            targetNodeId = ids.NodeId(edge.SourceNodeId);
         }
 
         var graphEdge = new GraphSceneEdge {
-            Id = edge.Id,
+            Id = ids.EdgeId(edge.Id),
             SourceNodeId = sourceNodeId,
             TargetNodeId = targetNodeId,
             Label = edge.Label,
@@ -223,6 +229,71 @@ public static class TopologyGraphExplorerExtensions {
     private static void CopyMetadata(IReadOnlyDictionary<string, string> source, IDictionary<string, string> target, string prefix) {
         foreach (var pair in source) {
             if (!string.IsNullOrWhiteSpace(pair.Key) && pair.Value != null) target[prefix + pair.Key] = pair.Value;
+        }
+    }
+
+    private sealed class TopologyGraphIdMap {
+        private readonly Dictionary<string, string> _nodeIds = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _edgeIds = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _groupIds = new(StringComparer.Ordinal);
+
+        private TopologyGraphIdMap(string chartId) {
+            ChartId = chartId;
+        }
+
+        public string ChartId { get; }
+
+        public static TopologyGraphIdMap Create(TopologyChart chart) {
+            var chartIds = new HashSet<string>(StringComparer.Ordinal);
+            var map = new TopologyGraphIdMap(UniqueToken(string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!, "topology", chartIds));
+            var nodeIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var node in chart.Nodes) map._nodeIds[node.Id] = UniqueToken(node.Id, "node", nodeIds);
+            var edgeIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var edge in chart.Edges) map._edgeIds[edge.Id] = UniqueToken(edge.Id, "edge", edgeIds);
+            var groupIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var group in chart.Groups) map._groupIds[group.Id] = UniqueToken(group.Id, "group", groupIds);
+            foreach (var groupId in chart.Nodes.Select(node => node.GroupId).Where(groupId => !string.IsNullOrWhiteSpace(groupId)).Select(groupId => groupId!)) {
+                if (!map._groupIds.ContainsKey(groupId)) map._groupIds[groupId] = UniqueToken(groupId, "group", groupIds);
+            }
+
+            return map;
+        }
+
+        public string NodeId(string id) => _nodeIds[id];
+
+        public string EdgeId(string id) => _edgeIds[id];
+
+        public string GroupId(string id) => _groupIds[id];
+
+        private static string UniqueToken(string value, string prefix, ISet<string> used) {
+            var token = ToToken(value, prefix);
+            var candidate = token;
+            var suffix = 2;
+            while (!used.Add(candidate)) {
+                candidate = token + "-" + suffix.ToString(CultureInfo.InvariantCulture);
+                suffix++;
+            }
+
+            return candidate;
+        }
+
+        private static string ToToken(string value, string prefix) {
+            var trimmed = value.Trim();
+            if (IsToken(trimmed)) return trimmed;
+            var builder = new System.Text.StringBuilder(trimmed.Length);
+            foreach (var ch in trimmed) builder.Append(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.' ? ch : '-');
+            var token = builder.ToString().Trim('-', '_', '.');
+            return token.Length == 0 ? prefix : token;
+        }
+
+        private static bool IsToken(string value) {
+            if (value.Length == 0) return false;
+            foreach (var ch in value) {
+                if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.') continue;
+                return false;
+            }
+
+            return true;
         }
     }
 }

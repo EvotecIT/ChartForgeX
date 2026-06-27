@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 
@@ -50,5 +51,24 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cluster-id=\"group-core\"", StringComparison.Ordinal) && html.Contains("data-cluster-node-ids=\"api,db\"", StringComparison.Ordinal), "Graph explorer output should render group-derived cluster summaries.");
         Assert(html.Contains("data-node-id=\"api\"", StringComparison.Ordinal) && html.Contains("data-node-cluster=\"group-core\"", StringComparison.Ordinal), "Graph explorer output should map grouped nodes to their derived cluster id.");
         Assert(html.Contains("data-cfx-graph-action=\"clusters\"", StringComparison.Ordinal), "Group-derived clusters should enable the normal cluster control surface.");
+
+        var explicitCollapse = GraphScene.Create("explicit-collapse", "Explicit collapse")
+            .AddNode("root", "Root")
+            .AddNode("child", "Child")
+            .AddCluster("declared", "Declared", new[] { "root", "child" });
+        explicitCollapse.Options.Cluster.CollapseOnLoad = true;
+        explicitCollapse.Validate();
+        var explicitCollapseHtml = explicitCollapse.ToGraphExplorerHtmlFragment();
+        Assert(explicitCollapse.GetEffectiveClusters()[0].Collapsed && explicitCollapseHtml.Contains("data-cluster-id=\"declared\"", StringComparison.Ordinal) && explicitCollapseHtml.Contains("data-cluster-collapsed=\"true\"", StringComparison.Ordinal), "Cluster collapse defaults should apply to explicit clusters as well as derived group clusters.");
+
+        var collision = GraphScene.Create("cluster-collision", "Cluster collision")
+            .AddNode("explicit", "Explicit", node => node.ClusterId = "group-core")
+            .AddNode("api", "API", node => node.GroupId = "core")
+            .AddNode("db", "Database", node => node.GroupId = "core")
+            .AddCluster("group-core", "Declared core", new[] { "explicit" });
+        collision.Options.Cluster.Mode = GraphClusterMode.ByGroup;
+        collision.Validate();
+        var collisionClusters = collision.GetEffectiveClusters();
+        Assert(collisionClusters.Count == 2 && collisionClusters.Any(cluster => cluster.Id == "group-core") && collisionClusters.Any(cluster => cluster.Id == "group-core-2"), "Derived group clusters should avoid colliding with declared cluster ids.");
     }
 }

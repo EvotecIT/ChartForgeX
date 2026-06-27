@@ -43,32 +43,51 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void ComputeHierarchicalPositions(GraphScene scene, IDictionary<string, Point> positions) {
         var levels = ResolveHierarchyLevels(scene);
-        var orderedLevels = scene.Nodes
+        var adjacency = BuildAdjacency(scene);
+        var components = ConnectedComponents(scene.Nodes, adjacency);
+        var componentOrder = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var index = 0; index < components.Count; index++) {
+            foreach (var node in components[index]) componentOrder[node.Id] = index;
+        }
+
+        var orderedComponents = scene.Nodes
             .Where(node => !node.HasExplicitPosition)
-            .GroupBy(node => levels[node.Id])
+            .GroupBy(node => componentOrder.TryGetValue(node.Id, out var order) ? order : 0)
             .OrderBy(group => group.Key)
             .Select(group => new {
-                Level = group.Key,
-                Nodes = group
-                    .OrderByDescending(node => scene.Edges.Count(edge => string.Equals(edge.SourceNodeId, node.Id, StringComparison.Ordinal) || string.Equals(edge.TargetNodeId, node.Id, StringComparison.Ordinal)))
-                    .ThenBy(node => node.Id, StringComparer.Ordinal)
+                Component = group.Key,
+                Levels = group
+                    .GroupBy(node => levels[node.Id])
+                    .OrderBy(level => level.Key)
+                    .Select(level => new {
+                        Level = level.Key,
+                        Nodes = level
+                            .OrderByDescending(node => scene.Edges.Count(edge => string.Equals(edge.SourceNodeId, node.Id, StringComparison.Ordinal) || string.Equals(edge.TargetNodeId, node.Id, StringComparison.Ordinal)))
+                            .ThenBy(node => node.Id, StringComparer.Ordinal)
+                            .ToArray()
+                    })
                     .ToArray()
             })
             .ToArray();
-        if (orderedLevels.Length == 0) return;
+        if (orderedComponents.Length == 0) return;
 
         var layout = scene.Options.Layout;
         var horizontal = layout.Direction is GraphLayoutDirection.LeftToRight or GraphLayoutDirection.RightToLeft;
         var raw = new Dictionary<string, Point>(StringComparer.Ordinal);
-        foreach (var level in orderedLevels) {
-            var nodes = level.Nodes;
-            var lineOffset = -(nodes.Length - 1) * layout.NodeSpacing / 2;
-            for (var index = 0; index < nodes.Length; index++) {
-                var primary = level.Level * layout.LevelSeparation;
-                var secondary = lineOffset + index * layout.NodeSpacing;
-                raw[nodes[index].Id] = horizontal
-                    ? new Point(primary, secondary)
-                    : new Point(secondary, primary);
+        var componentOffsetStart = -(orderedComponents.Length - 1) * layout.ComponentSpacing / 2;
+        for (var componentIndex = 0; componentIndex < orderedComponents.Length; componentIndex++) {
+            var component = orderedComponents[componentIndex];
+            var componentOffset = componentOffsetStart + componentIndex * layout.ComponentSpacing;
+            foreach (var level in component.Levels) {
+                var nodes = level.Nodes;
+                var lineOffset = componentOffset - (nodes.Length - 1) * layout.NodeSpacing / 2;
+                for (var index = 0; index < nodes.Length; index++) {
+                    var primary = level.Level * layout.LevelSeparation;
+                    var secondary = lineOffset + index * layout.NodeSpacing;
+                    raw[nodes[index].Id] = horizontal
+                        ? new Point(primary, secondary)
+                        : new Point(secondary, primary);
+                }
             }
         }
 

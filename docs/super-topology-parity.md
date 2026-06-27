@@ -1,8 +1,8 @@
-# Super Topology Parity Roadmap
+# Super Topology Parity Reference
 
 ChartForgeX should cover the useful vis-network-style graph exploration surface while staying better suited to C# report, documentation, email, Office, static-site, and server-side use cases.
 
-This document is a roadmap, not a completion claim. The current implementation establishes the shared `GraphScene` contract, topology bridge, effective clusters, vis-network-style compatibility conversion, deterministic hierarchical layout, export metadata, and smoke/visual proof. It is not yet full vis-network parity.
+This document records durable architecture and capability-state reference material. Active follow-up work belongs in `TODO.md`.
 
 ## Architecture
 
@@ -30,20 +30,3 @@ Status key: `Landed` means implemented and validated in ChartForgeX; `Partial` m
 | Events and host API | Partial | Graph events for selection, focus, viewport, export, LOD, cluster, drag, performance | Match the useful vis-network event surface for click, double-click, hover, blur, drag, zoom, stabilization, render lifecycle, and export interception. |
 | Scale proof | Partial | 360-node benchmark plus 1k-node smoke confidence | Add generated 1k, 5k, and 10k object fixtures with browser-visible performance budgets and screenshot/pixel proof. |
 | C# advantage | Partial | Static SVG/PNG/HTML, AOT, deterministic report output, topology scenarios, animated route exports | Keep every interactive state exportable as a deterministic C# artifact for reports, docs, email, and Office-style hosts. |
-
-## Parity Gaps To Close First
-
-1. Extend the typed vis-style compatibility layer with more option families and import/export helpers so C# users can migrate common examples without learning a second model first.
-2. Implement manipulation UI in the HTML adapter behind the existing opt-in `GraphManipulationOptions` contract, with host callbacks and JSON patch export instead of silent mutation.
-3. Add richer node and edge styling: selected/hover styles, arrows from/to/middle, self-reference polish, edge scaling, and relationship-specific styling.
-4. Extend clustering beyond current group-derived summaries with hub/outlier clustering, zoom-driven clustering, open-cluster behavior, and saved cluster state import.
-5. Add browser-visible scale baselines for 1k, 5k, and 10k graphs across SVG, Canvas, and future WebGL, including screenshot/pixel checks and performance telemetry thresholds.
-
-## Implementation Route
-
-1. Keep `TopologyChart -> GraphScene` projection thin and metadata-preserving.
-2. Grow clustering as a reusable `GraphScene` policy before adding adapter-specific behavior; adapters should render effective clusters from `GetEffectiveClusters()` instead of reading only explicit declarations.
-3. Keep manipulation opt-in and adapter-owned; static topology output stays immutable unless the host persists edited state.
-4. Add WebGL and OffscreenCanvas as backends over the same `GraphScene`, not as new models.
-5. Make examples product-real: identity risk, service dependencies, replication mesh, geography plus WAN, evidence graphs, and imported icon/stencil topologies.
-6. Validate every parity claim through public API, generated HTML/SVG/PNG artifacts, smoke tests, and performance evidence.

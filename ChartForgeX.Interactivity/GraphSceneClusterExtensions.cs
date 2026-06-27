@@ -16,7 +16,12 @@ public static class GraphSceneClusterExtensions {
     public static IReadOnlyList<GraphSceneCluster> GetEffectiveClusters(this GraphScene scene) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         var clusters = scene.Clusters.Select(CloneCluster).ToList();
+        if (scene.Options.Cluster.CollapseOnLoad) {
+            foreach (var cluster in clusters) cluster.Collapsed = true;
+        }
+
         if (!ShouldDeriveGroupClusters(scene)) return clusters;
+        var clusterIds = new HashSet<string>(clusters.Select(cluster => cluster.Id), StringComparer.Ordinal);
 
         var clusteredNodeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var cluster in clusters) {
@@ -33,8 +38,9 @@ public static class GraphSceneClusterExtensions {
             .OrderBy(group => group.Key, StringComparer.Ordinal)) {
             var members = group.Select(node => node.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
             if (members.Length < scene.Options.Cluster.MinimumClusterSize) continue;
+            var clusterId = UniqueClusterId("group-" + group.Key, clusterIds);
             var cluster = new GraphSceneCluster {
-                Id = "group-" + group.Key,
+                Id = clusterId,
                 Label = group.Key,
                 Kind = "group",
                 Collapsed = scene.Options.Cluster.CollapseOnLoad
@@ -54,6 +60,13 @@ public static class GraphSceneClusterExtensions {
         return scene.Options.Cluster.Mode == GraphClusterMode.ByGroup
             || scene.Options.Cluster.Mode == GraphClusterMode.Hybrid
             || (scene.Options.Cluster.Mode == GraphClusterMode.Adaptive && scene.Options.Cluster.Adaptive);
+    }
+
+    private static string UniqueClusterId(string preferred, ISet<string> usedIds) {
+        var id = preferred;
+        var suffix = 2;
+        while (!usedIds.Add(id)) id = preferred + "-" + suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return id;
     }
 
     private static GraphSceneCluster CloneCluster(GraphSceneCluster source) {

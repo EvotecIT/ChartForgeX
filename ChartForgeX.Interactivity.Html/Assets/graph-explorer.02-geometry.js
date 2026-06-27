@@ -55,7 +55,7 @@
   };
   const edgeControl = (edge) => {
     if (edge.source === edge.target) return null;
-    if (edge.shape !== 'curve' && Math.abs(edge.curvature) < 0.001) return null;
+    if (edge.shape === 'line' && Math.abs(edge.curvature) < 0.001) return null;
     const dx = edge.target.x - edge.source.x;
     const dy = edge.target.y - edge.source.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));

@@ -26,7 +26,7 @@
 .cfx-graph-edge-label{font-size:11px;text-anchor:middle;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round;pointer-events:none}
 .cfx-graph-node{cursor:grab}
 .cfx-graph-node:active,.cfx-graph-dragging-node .cfx-graph-node.cfx-graph-selected{cursor:grabbing}
-.cfx-graph-node circle,.cfx-graph-node rect,.cfx-graph-node ellipse,.cfx-graph-node polygon{fill:#2563eb;stroke:#eff6ff;stroke-width:3}
+.cfx-graph-node circle,.cfx-graph-node rect,.cfx-graph-node ellipse,.cfx-graph-node polygon,.cfx-graph-node path{fill:#2563eb;stroke:#eff6ff;stroke-width:3}
 .cfx-graph-node image{clip-path:circle(50%)}
 .cfx-graph-node text{font-size:12px;text-anchor:middle;fill:#334155;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round}
 .cfx-graph-node .cfx-graph-node-icon{font-weight:700;fill:#fff;stroke:none;paint-order:normal}
@@ -36,16 +36,16 @@
 .cfx-graph-cluster.cfx-graph-cluster-expanded{opacity:.1;pointer-events:none}
 .cfx-graph-cluster.cfx-graph-cluster-expanded circle{fill:none;stroke-width:1.4}
 .cfx-graph-cluster.cfx-graph-cluster-expanded text{display:none}
-.cfx-graph-node.cfx-graph-selected circle,.cfx-graph-node.cfx-graph-selected rect,.cfx-graph-node.cfx-graph-selected ellipse,.cfx-graph-node.cfx-graph-selected polygon{stroke:#f59e0b;stroke-width:5}
+.cfx-graph-node.cfx-graph-selected circle,.cfx-graph-node.cfx-graph-selected rect,.cfx-graph-node.cfx-graph-selected ellipse,.cfx-graph-node.cfx-graph-selected polygon,.cfx-graph-node.cfx-graph-selected path{stroke:#f59e0b;stroke-width:5}
 .cfx-graph-cluster.cfx-graph-selected circle{stroke:#f59e0b;stroke-width:4}
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-dim{opacity:.14}
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-edge{stroke:#0f766e;stroke-width:2.6;opacity:.86}
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-edge-label{fill:#0f766e;font-weight:700}
-.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node circle,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node rect,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node ellipse,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node polygon{stroke:#5eead4;stroke-width:4}
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node circle,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node rect,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node ellipse,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node polygon,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-node path{stroke:#5eead4;stroke-width:4}
 .cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary circle,.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary rect{stroke:#0f766e;stroke-width:6}
 .cfx-graph-node.cfx-graph-hidden,.cfx-graph-edge.cfx-graph-hidden,.cfx-graph-edge-label.cfx-graph-hidden,.cfx-graph-cluster.cfx-graph-hidden,.cfx-graph-node.cfx-graph-cluster-collapsed-member,.cfx-graph-edge.cfx-graph-cluster-collapsed-member,.cfx-graph-edge-label.cfx-graph-cluster-collapsed-member{display:none}
 .cfx-graph-lod-compact .cfx-graph-node text{display:none}
-.cfx-graph-lod-compact .cfx-graph-node circle,.cfx-graph-lod-compact .cfx-graph-node rect,.cfx-graph-lod-compact .cfx-graph-node ellipse,.cfx-graph-lod-compact .cfx-graph-node polygon{stroke-width:1.5}
+.cfx-graph-lod-compact .cfx-graph-node circle,.cfx-graph-lod-compact .cfx-graph-node rect,.cfx-graph-lod-compact .cfx-graph-node ellipse,.cfx-graph-lod-compact .cfx-graph-node polygon,.cfx-graph-lod-compact .cfx-graph-node path{stroke-width:1.5}
 .cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label{display:none}
 .cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-label-selected,.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-neighborhood-related{display:block}
 .cfx-graph-performance-gated .cfx-graph-svg{background:repeating-linear-gradient(-45deg,#fff,#fff 12px,#f8fafc 12px,#f8fafc 24px)}

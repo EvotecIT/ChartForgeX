@@ -68,5 +68,16 @@ internal static partial class SmokeTests {
         Assert(anchoredScene.Nodes.Single(node => node.Id == "anchor").Hidden && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").SourceArrow && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").TargetArrow, "Topology graph bridge should preserve hidden routing anchors and bidirectional edge markers.");
         var anchoredHtml = anchored.ToGraphExplorerHtmlFragment();
         Assert(anchoredHtml.Contains("data-node-id=\"anchor\"", StringComparison.Ordinal) && anchoredHtml.Contains("data-node-hidden=\"true\"", StringComparison.Ordinal) && anchoredHtml.Contains("entry.node.classList.toggle('cfx-graph-hidden', entry.intrinsicHidden || !visible)", StringComparison.Ordinal) && anchoredHtml.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal), "Graph explorer output should keep hidden topology anchors available for routing without drawing visible node marks or resurrecting them during filter binding.");
+
+        var friendlyIds = TopologyChart.Create()
+            .WithId("app map")
+            .AddGroup("core services", "Core Services", 0, 0, 240, 160, TopologyHealthStatus.Healthy)
+            .AddNode("app server", "App Server", 40, 50, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, groupId: "core services")
+            .AddNode("sql db", "SQL DB", 160, 50, TopologyNodeKind.Database, TopologyHealthStatus.Warning, groupId: "core services")
+            .AddEdge("app link", "app server", "sql db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward);
+        var friendlyScene = friendlyIds.ToGraphScene();
+        friendlyScene.Validate();
+        Assert(friendlyScene.Id == "app-map" && friendlyScene.Nodes.Any(node => node.Id == "app-server" && node.Metadata["topology.id"] == "app server") && friendlyScene.Clusters.Any(cluster => cluster.Id == "core-services" && cluster.Metadata["topology.id"] == "core services"), "Topology graph bridge should normalize friendly topology ids while preserving original ids in metadata.");
+        Assert(friendlyScene.Edges.Single(edge => edge.Metadata["topology.id"] == "app link").SourceNodeId == "app-server" && friendlyScene.Edges.Single(edge => edge.Metadata["topology.id"] == "app link").TargetNodeId == "sql-db", "Topology graph bridge should rewrite edge references to normalized node ids.");
     }
 }

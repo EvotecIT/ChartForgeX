@@ -34,6 +34,12 @@ internal static partial class SmokeTests {
         var plainScene = plain.ToGraphScene("plain-vis", "Plain vis");
         Assert(plainScene.Edges[0].Id == "edge-0" && !plainScene.Edges[0].Directed && !plainScene.Edges[0].TargetArrow, "Vis-network edges without ids should get stable synthetic ids while plain edges remain undirected by default.");
         Assert(!plainScene.Nodes.Single(node => node.Id == "partial").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").Fixed, "Vis-network coordinates should only pin graph nodes when callers supply both x and y.");
+
+        var noNavigation = VisNetworkGraph.Create();
+        noNavigation.Options.Interaction.NavigationButtons = false;
+        noNavigation.AddNode("a", "A").AddNode("b", "B").AddEdge("a-b", "a", "b");
+        var noNavigationHtml = noNavigation.ToGraphScene("no-navigation", "No navigation").ToGraphExplorerHtmlFragment();
+        Assert(!noNavigation.ToGraphScene("no-navigation-scene", "No navigation").Options.HasFeature(GraphSceneFeatures.Viewport) && !noNavigationHtml.Contains("data-cfx-graph-action=\"fit\"", StringComparison.Ordinal), "Vis-network navigationButtons=false should suppress graph viewport controls.");
     }
 
     private static void VisNetworkCompatRendersHierarchicalStyledHtml() {
@@ -56,6 +62,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("physics: attr(edge, 'data-edge-physics') !== 'false'", StringComparison.Ordinal) && html.Contains("state.edges.filter(edge => edge.physics !== false)", StringComparison.Ordinal), "Graph explorer runtime physics should exclude edges that opt out of physics.");
         Assert(html.Contains("style: { backgroundColor: attr(node.el, 'data-node-background-color')", StringComparison.Ordinal) && html.Contains("context.fillStyle = node.backgroundColor || '#2563eb'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should consume serialized node styles.");
         Assert(html.Contains("drawNodeShapeMark(context, node)", StringComparison.Ordinal) && html.Contains("node.shape === 'database'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render rich vis-network node shapes instead of falling back to circles.");
+        Assert(html.Contains("data-edge-shape=\"continuous\"", StringComparison.Ordinal) && html.Contains("edge.shape === 'line' && Math.abs(edge.curvature) < 0.001", StringComparison.Ordinal), "Graph explorer runtime paths should keep vis-network smoothed edges curved after Canvas redraws, physics, or dragging.");
+        Assert(html.Contains("data-node-shape=\"database\"", StringComparison.Ordinal) && html.Contains(" Z M ", StringComparison.Ordinal), "Graph explorer SVG should render database nodes with cylinder-like geometry instead of a plain ellipse.");
         Assert(HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains("@media (max-width:520px){.cfx-graph-overview{display:none!important}}", StringComparison.Ordinal), "Graph explorer responsive CSS should hide the overview on narrow embeds so hierarchy examples remain inspectable.");
 
         var rootX = GetAttribute(html, "data-node-id=\"identity\"", "data-node-x");
@@ -73,6 +81,22 @@ internal static partial class SmokeTests {
         cyclic.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
         var cyclicHtml = cyclic.ToGraphExplorerHtmlFragment();
         Assert(cyclicHtml.Contains("data-node-id=\"b\"", StringComparison.Ordinal), "Hierarchical layout inference should terminate and render cyclic graphs.");
+
+        var separated = GraphScene.Create("hier-components", "Hierarchical components")
+            .AddNode("a-root", "A root", node => node.Level = 0)
+            .AddNode("a-child", "A child", node => node.Level = 1)
+            .AddNode("b-root", "B root", node => node.Level = 0)
+            .AddNode("b-child", "B child", node => node.Level = 1)
+            .AddEdge("a-link", "a-root", "a-child")
+            .AddEdge("b-link", "b-root", "b-child");
+        separated.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        separated.Options.Layout.Direction = GraphLayoutDirection.LeftToRight;
+        separated.Options.Layout.NodeSpacing = 30;
+        separated.Options.Layout.ComponentSpacing = 260;
+        var separatedHtml = separated.ToGraphExplorerHtmlFragment();
+        var aRootY = GetAttribute(separatedHtml, "data-node-id=\"a-root\"", "data-node-y");
+        var bRootY = GetAttribute(separatedHtml, "data-node-id=\"b-root\"", "data-node-y");
+        Assert(Math.Abs(aRootY - bRootY) > 100, "Hierarchical layout should use ComponentSpacing to separate disconnected components.");
     }
 
     private static VisNetworkGraph SampleVisNetworkCompatGraph() {

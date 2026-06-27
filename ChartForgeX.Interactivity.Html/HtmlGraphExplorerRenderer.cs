@@ -179,7 +179,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static void WriteStage(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyDictionary<string, Point> positions, string graphId, IReadOnlyList<GraphSceneCluster> clusters) {
         var clusterMembership = BuildClusterMembership(scene, clusters);
         var clusteringEnabled = scene.Options.HasFeature(GraphSceneFeatures.Clustering);
-        var collapseClustersOnLoad = clusteringEnabled && scene.Options.HasFeature(GraphSceneFeatures.LevelOfDetail) && scene.Options.LevelOfDetail.CollapseClustersOnLoad;
+        var collapseClustersOnLoad = clusteringEnabled && (scene.Options.Cluster.CollapseOnLoad || (scene.Options.HasFeature(GraphSceneFeatures.LevelOfDetail) && scene.Options.LevelOfDetail.CollapseClustersOnLoad));
         var collapsedNodeIds = clusteringEnabled
             ? BuildCollapsedNodeIds(scene, clusters, clusterMembership, collapseClustersOnLoad)
             : new HashSet<string>(StringComparer.Ordinal);
@@ -485,7 +485,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("\" rx=\"4\"");
             WriteNodeMarkStyle(writer, node);
             writer.Append("></rect>");
-        } else if (node.Shape == GraphNodeShape.Ellipse || node.Shape == GraphNodeShape.Database) {
+        } else if (node.Shape == GraphNodeShape.Database) {
+            WriteDatabaseNodeMark(writer, node, size);
+        } else if (node.Shape == GraphNodeShape.Ellipse) {
             writer.Append("<ellipse rx=\"");
             writer.Append(Number(size * 1.55));
             writer.Append("\" ry=\"");

@@ -80,6 +80,64 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return string.Join(";", parts);
     }
 
+    private static void WriteDatabaseNodeMark(StringBuilder writer, GraphSceneNode node, double size) {
+        var width = size * 1.25;
+        var top = -size * 0.55;
+        var bottom = size * 0.55;
+        var radius = size * 0.38;
+        writer.Append("<path d=\"M ");
+        writer.Append(Number(-width));
+        writer.Append(' ');
+        writer.Append(Number(top));
+        writer.Append(" C ");
+        writer.Append(Number(-width));
+        writer.Append(' ');
+        writer.Append(Number(top - radius));
+        writer.Append(' ');
+        writer.Append(Number(width));
+        writer.Append(' ');
+        writer.Append(Number(top - radius));
+        writer.Append(' ');
+        writer.Append(Number(width));
+        writer.Append(' ');
+        writer.Append(Number(top));
+        writer.Append(" L ");
+        writer.Append(Number(width));
+        writer.Append(' ');
+        writer.Append(Number(bottom));
+        writer.Append(" C ");
+        writer.Append(Number(width));
+        writer.Append(' ');
+        writer.Append(Number(bottom + radius));
+        writer.Append(' ');
+        writer.Append(Number(-width));
+        writer.Append(' ');
+        writer.Append(Number(bottom + radius));
+        writer.Append(' ');
+        writer.Append(Number(-width));
+        writer.Append(' ');
+        writer.Append(Number(bottom));
+        writer.Append(" Z M ");
+        writer.Append(Number(-width));
+        writer.Append(' ');
+        writer.Append(Number(top));
+        writer.Append(" C ");
+        writer.Append(Number(-width));
+        writer.Append(' ');
+        writer.Append(Number(top + radius));
+        writer.Append(' ');
+        writer.Append(Number(width));
+        writer.Append(' ');
+        writer.Append(Number(top + radius));
+        writer.Append(' ');
+        writer.Append(Number(width));
+        writer.Append(' ');
+        writer.Append(Number(top));
+        writer.Append('"');
+        WriteNodeMarkStyle(writer, node);
+        writer.Append("></path>");
+    }
+
     private static string PolygonPoints(GraphNodeShape shape, double size) {
         if (shape == GraphNodeShape.Diamond) return "0," + Number(-size * 1.35) + " " + Number(size * 1.35) + ",0 0," + Number(size * 1.35) + " " + Number(-size * 1.35) + ",0";
         if (shape == GraphNodeShape.Triangle) return "0," + Number(-size * 1.35) + " " + Number(size * 1.25) + "," + Number(size * 1.05) + " " + Number(-size * 1.25) + "," + Number(size * 1.05);
