@@ -33,7 +33,7 @@
   const drawNodeShapeMark = (context, node) => {
     const size = node.size;
     if (node.shape === 'ellipse') {
-      context.beginPath(); context.ellipse(node.x, node.y, size * 1.35, size * .85, 0, 0, Math.PI * 2); context.fill(); context.stroke();
+      context.beginPath(); context.ellipse(node.x, node.y, size * 1.55, size, 0, 0, Math.PI * 2); context.fill(); context.stroke();
     } else if (node.shape === 'square') {
       context.beginPath(); context.rect(node.x - size, node.y - size, size * 2, size * 2); context.fill(); context.stroke();
     } else if (node.shape === 'diamond') {
@@ -97,9 +97,31 @@
     return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
   };
   const edgeRenderEndpoints = (edge, control) => ({ source: edgeRenderSource(edge, control), target: edgeRenderTarget(edge, control) });
+  const routeEndpointFromNode = (node, guide, trim) => {
+    if (!trim) return { x: node.x, y: node.y };
+    const dx = guide.x - node.x, dy = guide.y - node.y;
+    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    const inset = nodeBoundaryInset(node, dx / length, dy / length);
+    return { x: node.x + dx / length * inset, y: node.y + dy / length * inset };
+  };
+  const routeEndpointToNode = (node, guide, trim) => {
+    if (!trim) return { x: node.x, y: node.y };
+    const dx = node.x - guide.x, dy = node.y - guide.y;
+    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    const inset = nodeBoundaryInset(node, dx / length, dy / length);
+    return { x: node.x - dx / length * inset, y: node.y - dy / length * inset };
+  };
+  const routeRenderPoints = (edge) => {
+    if (!edgeHasRoute(edge)) return edge.routePoints || [];
+    const points = edge.routePoints.map(point => ({ x: point.x, y: point.y }));
+    const targetArrow = edge.targetArrow || (edge.directed && !edge.sourceArrow);
+    points[0] = routeEndpointFromNode(edge.source, points[1] || edge.target, edge.sourceCollapsed || edge.sourceArrow);
+    points[points.length - 1] = routeEndpointToNode(edge.target, points[points.length - 2] || edge.source, edge.targetCollapsed || targetArrow);
+    return points;
+  };
   const edgePathData = (edge, control) => {
     if (edge.source === edge.target) return selfLoopPath(edge.target);
-    if (edgeHasRoute(edge)) return edge.routePoints.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(3)} ${point.y.toFixed(3)}`).join(' ');
+    if (edgeHasRoute(edge)) return routeRenderPoints(edge).map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(3)} ${point.y.toFixed(3)}`).join(' ');
     const endpoints = edgeRenderEndpoints(edge, control);
     return control
       ? `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`
@@ -112,7 +134,7 @@
       context.moveTo(loop.start.x, loop.start.y);
       context.bezierCurveTo(loop.c1.x, loop.c1.y, loop.c2.x, loop.c2.y, loop.end.x, loop.end.y);
     } else if (edgeHasRoute(edge)) {
-      edge.routePoints.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
+      routeRenderPoints(edge).forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
     } else {
       const endpoints = edgeRenderEndpoints(edge, control);
       context.moveTo(endpoints.source.x, endpoints.source.y);
@@ -140,12 +162,12 @@
     ? { x: (edge.source.x + 2 * control.x + edge.target.x) / 4, y: (edge.source.y + 2 * control.y + edge.target.y) / 4 - 7 }
     : edge.source === edge.target
       ? selfLoopGeometry(edge.source).label
-      : edgeHasRoute(edge)
-      ? routeMidpoint(edge.routePoints, -7)
+    : edgeHasRoute(edge)
+      ? routeMidpoint(routeRenderPoints(edge), -7)
       : { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
   const drawArrow = (context, edge, control, side, color) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
-    const route = edgeHasRoute(edge) ? edge.routePoints : null;
+    const route = edgeHasRoute(edge) ? routeRenderPoints(edge) : null;
     const sourceSide = side === 'source' && !loop;
     const from = route ? (sourceSide ? route[1] : route[route.length - 2]) : sourceSide ? (control || edge.target) : loop?.c2 || control || edge.source;
     const target = route ? (sourceSide ? route[0] : route[route.length - 1]) : sourceSide ? edge.source : loop?.end || edge.target;

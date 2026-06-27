@@ -127,7 +127,7 @@
       const distance = rendered.source === rendered.target
         ? distanceToSelfLoop(point, rendered.source)
         : edgeHasRoute(rendered)
-        ? distanceToRoute(point, rendered.routePoints)
+        ? distanceToRoute(point, routeRenderPoints(rendered))
         : control
         ? distanceToQuadratic(point, endpoints.source, control, endpoints.target)
         : distanceToSegment(point, endpoints.source, endpoints.target);
