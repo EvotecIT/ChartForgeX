@@ -102,7 +102,7 @@
     return { x: edge.source.x + dx / length * inset, y: edge.source.y + dy / length * inset };
   };
   const edgeRenderTarget = (edge, control) => {
-    const targetArrow = edge.targetArrow || (edge.directed && !edge.sourceArrow);
+    const targetArrow = edge.targetArrow || edge.directed;
     if (!edge.targetCollapsed && !targetArrow) return edge.target;
     const from = control || edge.source;
     const dx = edge.target.x - from.x, dy = edge.target.y - from.y;
@@ -128,7 +128,7 @@
   const routeRenderPoints = (edge) => {
     if (!edgeHasRoute(edge)) return edge.routePoints || [];
     const points = edge.routePoints.map(point => ({ x: point.x, y: point.y }));
-    const targetArrow = edge.targetArrow || (edge.directed && !edge.sourceArrow);
+    const targetArrow = edge.targetArrow || edge.directed;
     points[0] = routeEndpointFromNode(edge.source, points[1] || edge.target, edge.sourceCollapsed || edge.sourceArrow);
     points[points.length - 1] = routeEndpointToNode(edge.target, points[points.length - 2] || edge.source, edge.targetCollapsed || targetArrow);
     return points;
@@ -172,13 +172,14 @@
     const loop = selfLoopGeometry(node);
     return `M ${loop.start.x.toFixed(3)} ${loop.start.y.toFixed(3)} C ${loop.c1.x.toFixed(3)} ${loop.c1.y.toFixed(3)} ${loop.c2.x.toFixed(3)} ${loop.c2.y.toFixed(3)} ${loop.end.x.toFixed(3)} ${loop.end.y.toFixed(3)}`;
   };
-  const edgeLabelPoint = (edge, control) => control
-    ? { x: (edge.source.x + 2 * control.x + edge.target.x) / 4, y: (edge.source.y + 2 * control.y + edge.target.y) / 4 - 7 }
-    : edge.source === edge.target
-      ? selfLoopGeometry(edge.source).label
-    : edgeHasRoute(edge)
-      ? routeMidpoint(routeRenderPoints(edge), -7)
-      : { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
+  const edgeLabelPoint = (edge, control) => {
+    if (edge.source === edge.target) return selfLoopGeometry(edge.source).label;
+    if (edgeHasRoute(edge)) return routeMidpoint(routeRenderPoints(edge), -7);
+    const endpoints = edgeRenderEndpoints(edge, control);
+    return control
+      ? { x: (endpoints.source.x + 2 * control.x + endpoints.target.x) / 4, y: (endpoints.source.y + 2 * control.y + endpoints.target.y) / 4 - 7 }
+      : { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 - 7 };
+  };
   const drawArrow = (context, edge, control, side, color) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
     const route = edgeHasRoute(edge) ? routeRenderPoints(edge) : null;

@@ -385,12 +385,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !edge.Style.Hidden && !string.IsNullOrWhiteSpace(edge.Label))) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
+            nodesById.TryGetValue(edge.SourceNodeId, out var sourceNode);
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
             var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
             var sourceBoundary = collapsedNodeRadii.TryGetValue(edge.SourceNodeId, out var sourceRadius) ? sourceRadius : (double?)null;
             var targetBoundary = collapsedNodeRadii.TryGetValue(edge.TargetNodeId, out var targetRadius) ? targetRadius : (double?)null;
-            var point = EdgeLabelPoint(edge, renderSource, renderTarget, targetNode, targetBoundary, sourceBoundary);
+            var point = EdgeLabelPoint(edge, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
             writer.Append("<text class=\"cfx-graph-edge-label");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" data-cfx-role=\"graph-edge-label\"");
@@ -653,11 +654,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
             : "M " + Number(renderSource.X) + " " + Number(renderSource.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
     }
 
-    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
+    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
         if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylineMidpoint(edge.RoutePoints, -7);
         var control = EdgeControl(edge, source, target);
-        var renderSource = SourceBoundaryPoint(edge, source, target, control, null, sourceBoundaryInset);
+        var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
         var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);
         return control.HasValue
             ? new Point((renderSource.X + 2 * control.Value.X + renderTarget.X) / 4, (renderSource.Y + 2 * control.Value.Y + renderTarget.Y) / 4 - 7)
@@ -700,7 +701,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static bool HasSourceArrow(GraphSceneEdge edge) => edge.SourceArrow;
 
-    private static bool HasTargetArrow(GraphSceneEdge edge) => edge.TargetArrow || (edge.Directed && !edge.SourceArrow);
+    private static bool HasTargetArrow(GraphSceneEdge edge) => edge.TargetArrow || edge.Directed;
 
     private static string SelfLoopPath(Point center, GraphSceneNode? node) {
         var right = TargetBoundaryInset(node, 1, 0) + 5;

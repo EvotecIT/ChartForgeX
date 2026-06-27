@@ -84,6 +84,7 @@
       const control = edgeControl(rendered);
       pushPoint(rendered.source, pad);
       pushPoint(rendered.target, pad);
+      if (edgeHasRoute(rendered)) routeRenderPoints(rendered).forEach(point => pushPoint(point, pad));
       pushPoint(control, pad);
       pushPoint(edgeLabelPoint(rendered, control), pad + 10);
     });

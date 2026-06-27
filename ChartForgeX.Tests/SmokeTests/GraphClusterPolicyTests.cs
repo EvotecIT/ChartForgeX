@@ -70,5 +70,13 @@ internal static partial class SmokeTests {
         collision.Validate();
         var collisionClusters = collision.GetEffectiveClusters();
         Assert(collisionClusters.Count == 2 && collisionClusters.Any(cluster => cluster.Id == "group-core") && collisionClusters.Any(cluster => cluster.Id == "group-core-2"), "Derived group clusters should avoid colliding with declared cluster ids.");
+
+        var adaptiveOnly = GraphScene.Create("adaptive-only", "Adaptive-only clusters")
+            .AddNode("api", "API", node => node.GroupId = "core")
+            .AddNode("db", "Database", node => node.GroupId = "core");
+        adaptiveOnly.Options.Cluster.Mode = GraphClusterMode.Adaptive;
+        adaptiveOnly.Options.Cluster.Adaptive = true;
+        adaptiveOnly.Validate();
+        Assert(adaptiveOnly.GetEffectiveClusters().Count == 0, "Adaptive-only clustering should leave group-derived clusters to runtime graph-structure adapters instead of materializing fixed group summaries.");
     }
 }

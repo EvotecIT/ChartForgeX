@@ -58,8 +58,7 @@ public static class GraphSceneClusterExtensions {
     private static bool ShouldDeriveGroupClusters(GraphScene scene) {
         if (!scene.Options.HasFeature(GraphSceneFeatures.Clustering)) return false;
         return scene.Options.Cluster.Mode == GraphClusterMode.ByGroup
-            || scene.Options.Cluster.Mode == GraphClusterMode.Hybrid
-            || (scene.Options.Cluster.Mode == GraphClusterMode.Adaptive && scene.Options.Cluster.Adaptive);
+            || scene.Options.Cluster.Mode == GraphClusterMode.Hybrid;
     }
 
     private static string UniqueClusterId(string preferred, ISet<string> usedIds) {

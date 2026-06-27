@@ -160,6 +160,7 @@ internal static partial class SmokeTests {
         ("Graph scene cluster policy derives group clusters", GraphSceneClusterPolicyDerivesGroupClusters),
         ("Vis-network compatibility maps options to graph scene", VisNetworkCompatMapsOptionsToGraphScene),
         ("Vis-network compatibility renders hierarchical styled HTML", VisNetworkCompatRendersHierarchicalStyledHtml),
+        ("Graph explorer edge geometry keeps bidirectional arrow labels aligned", GraphExplorerEdgeGeometryKeepsBidirectionalArrowLabelsAligned),
         ("Graph explorer HTML adapter renders self-contained scene", GraphExplorerHtmlAdapterRendersSelfContainedScene),
         ("Super topology bridge maps topology to graph explorer contract", SuperTopologyBridgeMapsTopologyToGraphExplorerContract),
         ("Typography uses a native font stack and escapes custom families", TypographyUsesNativeFontStackAndEscapesCustomFamilies),
