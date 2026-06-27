@@ -716,9 +716,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static double TargetBoundaryInset(GraphSceneNode? node, double unitX, double unitY) {
         var size = Math.Max(4, node?.Size ?? 8);
         var shape = EffectiveNodeShape(node);
-        if (shape == GraphNodeShape.Box || shape == GraphNodeShape.RectangularImage) {
-            var halfWidth = shape == GraphNodeShape.RectangularImage ? size * 1.3 : size * 1.45;
-            var halfHeight = shape == GraphNodeShape.RectangularImage ? size * 0.9 : size * 1.05;
+        if (TryNodeBoundaryExtents(shape, size, out var halfWidth, out var halfHeight)) {
             if (Math.Abs(unitX) < 0.001 && Math.Abs(unitY) < 0.001) return Math.Max(6, Math.Max(halfWidth, halfHeight) + 7);
             var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
             var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);

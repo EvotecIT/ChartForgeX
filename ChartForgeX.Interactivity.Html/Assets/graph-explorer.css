@@ -20,7 +20,7 @@
 .cfx-graph-render-canvas .cfx-graph-svg{opacity:0;pointer-events:none}
 .cfx-graph-render-svg .cfx-graph-canvas{display:none}
 .cfx-graph-bg{fill:#ffffff}
-.cfx-graph-edge{fill:none;stroke:#94a3b8;stroke-width:1.4;opacity:.58}
+.cfx-graph-edge{fill:none;stroke:var(--cfx-edge-stroke,#94a3b8);stroke-width:var(--cfx-edge-width,1.4);opacity:.58}
 .cfx-graph-edge[data-edge-dashed=true]{stroke-dasharray:8 6}
 .cfx-graph-svg marker path{fill:#64748b}
 .cfx-graph-edge-label{font-size:11px;text-anchor:middle;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round;pointer-events:none}

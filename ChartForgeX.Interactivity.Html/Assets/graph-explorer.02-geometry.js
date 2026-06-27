@@ -1,10 +1,22 @@
-  const nodeHalfWidth = (node) => node.shape === 'box' ? node.size * 1.45 : node.shape === 'imageRect' ? node.size * 1.3 : node.size;
-  const nodeHalfHeight = (node) => node.shape === 'box' ? node.size * 1.05 : node.shape === 'imageRect' ? node.size * .9 : node.size;
+  const nodeShapeExtents = (node) => {
+    const size = Math.max(4, node?.size || 8);
+    if (node?.shape === 'box') return { x: size * 1.45, y: size * 1.05 };
+    if (node?.shape === 'imageRect') return { x: size * 1.3, y: size * .9 };
+    if (node?.shape === 'ellipse') return { x: size * 1.55, y: size };
+    if (node?.shape === 'square') return { x: size, y: size };
+    if (node?.shape === 'diamond') return { x: size * 1.35, y: size * 1.35 };
+    if (node?.shape === 'triangle' || node?.shape === 'triangleDown') return { x: size * 1.25, y: size * 1.35 };
+    if (node?.shape === 'star') return { x: size * 1.4, y: size * 1.45 };
+    if (node?.shape === 'database') return { x: size * 1.25, y: size * .9 };
+    return { x: size, y: size };
+  };
+  const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database'].includes(node?.shape);
+  const nodeHalfWidth = (node) => nodeShapeExtents(node).x;
+  const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
   const nodeBoundaryInset = (node, unitX, unitY) => {
     const size = Math.max(4, node?.size || 8);
-    if (node?.shape === 'box' || node?.shape === 'imageRect') {
-      const halfWidth = node.shape === 'imageRect' ? size * 1.3 : size * 1.45;
-      const halfHeight = node.shape === 'imageRect' ? size * .9 : size * 1.05;
+    if (nodeUsesRectangularGeometry(node)) {
+      const { x: halfWidth, y: halfHeight } = nodeShapeExtents(node);
       if (Math.abs(unitX) < 0.001 && Math.abs(unitY) < 0.001) return Math.max(6, Math.max(halfWidth, halfHeight) + 7);
       const xInset = Math.abs(unitX) < 0.001 ? Number.POSITIVE_INFINITY : halfWidth / Math.abs(unitX);
       const yInset = Math.abs(unitY) < 0.001 ? Number.POSITIVE_INFINITY : halfHeight / Math.abs(unitY);
@@ -16,7 +28,7 @@
     const slack = tolerance ?? 10;
     const dx = Math.abs(node.x - point.x);
     const dy = Math.abs(node.y - point.y);
-    if (node.shape === 'box' || node.shape === 'imageRect') {
+    if (nodeUsesRectangularGeometry(node)) {
       const outsideX = Math.max(0, dx - nodeHalfWidth(node));
       const outsideY = Math.max(0, dy - nodeHalfHeight(node));
       if (dx <= nodeHalfWidth(node) + slack && dy <= nodeHalfHeight(node) + slack) return Math.sqrt(outsideX * outsideX + outsideY * outsideY);
@@ -49,6 +61,8 @@
       context.beginPath(); context.rect(node.x - width, node.y - height * .35, width * 2, height * .7); context.fill(); context.stroke();
       context.beginPath(); context.ellipse(node.x, node.y - height * .35, width, size * .38, 0, 0, Math.PI * 2); context.fill(); context.stroke();
       context.beginPath(); context.ellipse(node.x, node.y + height * .35, width, size * .38, 0, 0, Math.PI); context.stroke();
+    } else if (node.shape === 'text') {
+      return;
     } else {
       context.beginPath(); context.arc(node.x, node.y, size, 0, Math.PI * 2); context.fill(); context.stroke();
     }
@@ -56,7 +70,7 @@
   const edgeControl = (edge) => {
     if (edge.source === edge.target) return null;
     if (edgeHasRoute(edge)) return null;
-    if (edge.shape === 'line' && Math.abs(edge.curvature) < 0.001) return null;
+    if ((edge.shape === 'line' || edge.shape === 'polyline') && Math.abs(edge.curvature) < 0.001) return null;
     const dx = edge.target.x - edge.source.x;
     const dy = edge.target.y - edge.source.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -168,9 +182,9 @@
   const drawArrow = (context, edge, control, side, color) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
     const route = edgeHasRoute(edge) ? routeRenderPoints(edge) : null;
-    const sourceSide = side === 'source' && !loop;
-    const from = route ? (sourceSide ? route[1] : route[route.length - 2]) : sourceSide ? (control || edge.target) : loop?.c2 || control || edge.source;
-    const target = route ? (sourceSide ? route[0] : route[route.length - 1]) : sourceSide ? edge.source : loop?.end || edge.target;
+    const sourceSide = side === 'source';
+    const from = route ? (sourceSide ? route[1] : route[route.length - 2]) : sourceSide ? (loop?.c1 || control || edge.target) : loop?.c2 || control || edge.source;
+    const target = route ? (sourceSide ? route[0] : route[route.length - 1]) : sourceSide ? (loop?.start || edge.source) : loop?.end || edge.target;
     const dx = target.x - from.x;
     const dy = target.y - from.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));

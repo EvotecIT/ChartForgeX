@@ -48,6 +48,48 @@ public sealed partial class HtmlGraphExplorerRenderer {
         _ => "line"
     };
 
+    private static bool TryNodeBoundaryExtents(GraphNodeShape shape, double size, out double halfWidth, out double halfHeight) {
+        switch (shape) {
+            case GraphNodeShape.Box:
+                halfWidth = size * 1.45;
+                halfHeight = size * 1.05;
+                return true;
+            case GraphNodeShape.RectangularImage:
+                halfWidth = size * 1.3;
+                halfHeight = size * 0.9;
+                return true;
+            case GraphNodeShape.Ellipse:
+                halfWidth = size * 1.55;
+                halfHeight = size;
+                return true;
+            case GraphNodeShape.Square:
+                halfWidth = size;
+                halfHeight = size;
+                return true;
+            case GraphNodeShape.Diamond:
+                halfWidth = size * 1.35;
+                halfHeight = size * 1.35;
+                return true;
+            case GraphNodeShape.Triangle:
+            case GraphNodeShape.TriangleDown:
+                halfWidth = size * 1.25;
+                halfHeight = size * 1.35;
+                return true;
+            case GraphNodeShape.Star:
+                halfWidth = size * 1.4;
+                halfHeight = size * 1.45;
+                return true;
+            case GraphNodeShape.Database:
+                halfWidth = size * 1.25;
+                halfHeight = size * 0.9;
+                return true;
+            default:
+                halfWidth = size;
+                halfHeight = size;
+                return false;
+        }
+    }
+
     private static void WriteNodeMarkStyle(StringBuilder writer, GraphSceneNode node) {
         var style = NodeMarkStyle(node);
         if (!string.IsNullOrWhiteSpace(style)) Attribute(writer, "style", style);
@@ -69,8 +111,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string EdgeStyle(GraphSceneEdge edge) {
         var parts = new List<string>();
-        if (!string.IsNullOrWhiteSpace(edge.Style.Color)) parts.Add("stroke:" + edge.Style.Color);
-        if (edge.Style.Width.HasValue) parts.Add("stroke-width:" + Number(edge.Style.Width.Value));
+        if (!string.IsNullOrWhiteSpace(edge.Style.Color)) parts.Add("--cfx-edge-stroke:" + edge.Style.Color);
+        if (edge.Style.Width.HasValue) parts.Add("--cfx-edge-width:" + Number(edge.Style.Width.Value));
         if (edge.Dashed && !string.IsNullOrWhiteSpace(edge.Style.DashPattern)) parts.Add("stroke-dasharray:" + edge.Style.DashPattern);
         if (edge.Style.Hidden) parts.Add("display:none");
         return string.Join(";", parts);
