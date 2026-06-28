@@ -19,6 +19,22 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return writer.ToString();
     }
 
+    private static IReadOnlyList<GraphScenePoint> PolylineRenderPoints(GraphSceneEdge edge, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
+        if (edge.RoutePoints.Count < 2) return edge.RoutePoints;
+        if (!HasSourceArrow(edge) && !HasTargetArrow(edge) && !sourceBoundaryInset.HasValue && !targetBoundaryInset.HasValue) return edge.RoutePoints;
+        var points = edge.RoutePoints.ToArray();
+        var source = new Point(points[0].X, points[0].Y);
+        var sourceGuide = new Point(points[1].X, points[1].Y);
+        var renderedSource = SourceBoundaryPoint(edge, source, sourceGuide, null, sourceNode, sourceBoundaryInset);
+        points[0] = new GraphScenePoint(renderedSource.X, renderedSource.Y);
+        var last = points.Length - 1;
+        var targetGuide = new Point(points[last - 1].X, points[last - 1].Y);
+        var target = new Point(points[last].X, points[last].Y);
+        var renderedTarget = TargetBoundaryPoint(edge, targetGuide, target, null, targetNode, targetBoundaryInset);
+        points[last] = new GraphScenePoint(renderedTarget.X, renderedTarget.Y);
+        return points;
+    }
+
     private static Point PolylineMidpoint(IReadOnlyList<GraphScenePoint> points, double yOffset) {
         var total = 0d;
         for (var i = 1; i < points.Count; i++) total += Distance(points[i - 1], points[i]);

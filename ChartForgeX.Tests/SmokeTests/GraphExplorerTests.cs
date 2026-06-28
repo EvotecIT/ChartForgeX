@@ -287,7 +287,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)", StringComparison.Ordinal), "Graph explorer Canvas LOD should draw selected and focused edge labels even when ordinary dense edge labels are hidden.");
         Assert(html.Contains("syncSelectedEdgeLabels", StringComparison.Ordinal) && html.Contains("state.clusters.find(cluster => visible(cluster.el))", StringComparison.Ordinal), "Graph explorer Canvas keyboard selection should include visible collapsed clusters, not only nodes and edges.");
         Assert(html.Contains("!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)", StringComparison.Ordinal), "Graph explorer neighborhood focus should ignore hidden edges and hidden aggregate endpoints.");
-        Assert(html.Contains("label: attr(node.el, 'data-node-label')", StringComparison.Ordinal) && html.Contains("groupId: attr(node.el, 'data-node-group')", StringComparison.Ordinal) && html.Contains("imageUrl: attr(node.el, 'data-node-image-url')", StringComparison.Ordinal), "Graph explorer JSON export should include node labels, grouping, and image/icon details needed to reconstruct reviewed graphs.");
+        Assert(html.Contains("label: attr(node.el, 'data-node-label')", StringComparison.Ordinal) && html.Contains("level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level'))", StringComparison.Ordinal) && html.Contains("groupId: attr(node.el, 'data-node-group')", StringComparison.Ordinal) && html.Contains("imageUrl: attr(node.el, 'data-node-image-url')", StringComparison.Ordinal), "Graph explorer JSON export should include node labels, hierarchy levels, grouping, and image/icon details needed to reconstruct reviewed graphs.");
         Assert(html.Contains("metadata: metadataDetail(root)", StringComparison.Ordinal), "Graph explorer JSON export should include scene-level metadata from the graph root.");
         Assert(html.Contains("kind: attr(edge, 'data-edge-kind')", StringComparison.Ordinal) && html.Contains("showLabel: attr(edge, 'data-edge-show-label') !== 'false'", StringComparison.Ordinal) && html.Contains("hidden: edge.classList.contains('cfx-graph-hidden')", StringComparison.Ordinal), "Graph explorer JSON export should include edge facets and current visibility needed to reconstruct reviewed graphs.");
         Assert(html.Contains("clusters: items(root, '[data-cfx-role=\"graph-cluster\"]')", StringComparison.Ordinal), "Graph explorer JSON export should include cluster membership and collapsed state.");
@@ -651,14 +651,18 @@ internal static partial class SmokeTests {
             .AddCluster("cluster", "Cluster", new[] { "source" }, cluster => cluster.Collapsed = true)
             .AddEdge("route", "source", "target", "Route", edge => {
                 edge.Shape = GraphEdgeShape.Polyline;
-                edge.RoutePoints.Add(new GraphScenePoint(100, 260));
-                edge.RoutePoints.Add(new GraphScenePoint(100, 120));
-                edge.RoutePoints.Add(new GraphScenePoint(520, 120));
-                edge.RoutePoints.Add(new GraphScenePoint(520, 260));
+                edge.RoutePoints.AddRange(new[] { new GraphScenePoint(100, 260), new GraphScenePoint(100, 120), new GraphScenePoint(520, 120), new GraphScenePoint(520, 260) });
                 edge.Directed = true;
             })
             .ToGraphExplorerHtmlFragment();
         Assert(Math.Abs(ExtractGraphEdgeLabelPoint(collapsedRouteLabelHtml, "route").Y - 253) < 0.001, "Graph explorer SVG should place collapsed routed-edge labels on the rendered collapsed geometry instead of the hidden member route.");
+
+        var routedArrowHtml = GraphScene.Create("routed-arrow", "Routed arrow")
+            .AddNode("source", "Source", node => { node.X = 100; node.Y = 260; })
+            .AddNode("target", "Target", node => { node.X = 520; node.Y = 260; })
+            .AddEdge("route", "source", "target", "Route", edge => { edge.Shape = GraphEdgeShape.Polyline; edge.RoutePoints.AddRange(new[] { new GraphScenePoint(100, 260), new GraphScenePoint(100, 120), new GraphScenePoint(520, 120), new GraphScenePoint(520, 260) }); edge.Directed = true; edge.SourceArrow = true; })
+            .ToGraphExplorerHtmlFragment();
+        Assert(ExtractGraphEdgePath(routedArrowHtml, "route").Contains("M 100 245", StringComparison.Ordinal) && ExtractGraphEdgePath(routedArrowHtml, "route").Contains("L 520 245", StringComparison.Ordinal), "Graph explorer SVG should trim prepared routed-edge endpoints before placing source and target arrow markers.");
 
         var imageFallbackHtml = GraphScene.Create("image-fallback-target", "Image fallback target").AddNode("source", "Source", node => { node.X = 100; node.Y = 280; }).AddNode("target", "Target", node => { node.X = 480; node.Y = 280; node.Size = 30; node.Shape = GraphNodeShape.Image; }).AddEdge("source-target", "source", "target", configure: edge => edge.Directed = true).ToGraphExplorerHtmlFragment();
         Assert(imageFallbackHtml.Contains("data-node-shape=\"circle\"", StringComparison.Ordinal) && ExtractGraphEdgePath(imageFallbackHtml, "source-target").Contains("L 443 280", StringComparison.Ordinal), "Graph explorer SVG should use the effective rendered circle shape for image nodes without image URLs.");
