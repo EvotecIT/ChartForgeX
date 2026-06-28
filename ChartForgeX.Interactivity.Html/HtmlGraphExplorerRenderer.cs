@@ -442,11 +442,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "transform", "translate(" + Number(point.X) + " " + Number(point.Y) + ")");
             writer.Append('>');
             WriteNodeMark(writer, node);
+            var textShape = node.Shape == GraphNodeShape.Text;
             if (!string.IsNullOrWhiteSpace(node.Style.LabelBackgroundColor)) {
                 writer.Append("<rect class=\"cfx-graph-node-label-bg\" x=\"");
                 writer.Append(Number(-Math.Max(24, node.Label.Length * 3.8)));
                 writer.Append("\" y=\"");
-                writer.Append(Number(size + 7));
+                writer.Append(Number(textShape ? -9 : size + 7));
                 writer.Append("\" width=\"");
                 writer.Append(Number(Math.Max(48, node.Label.Length * 7.6)));
                 writer.Append("\" height=\"18\" rx=\"5\"");
@@ -455,7 +456,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             }
 
             writer.Append("<text y=\"");
-            writer.Append(Number(size + 18));
+            writer.Append(Number(textShape ? 4 : size + 18));
             writer.Append('"');
             var labelStyle = NodeLabelStyle(node);
             if (!string.IsNullOrWhiteSpace(labelStyle)) Attribute(writer, "style", labelStyle);

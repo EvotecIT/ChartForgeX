@@ -287,19 +287,20 @@
         context.lineWidth = 3;
         context.stroke();
       }
-      if (!compact) {
+      if (!compact || node.shape === 'text') {
         context.font = '12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
-        context.textBaseline = 'top';
+        context.textBaseline = node.shape === 'text' ? 'middle' : 'top';
         context.lineWidth = 4;
       context.strokeStyle = '#ffffff';
       context.fillStyle = node.labelColor || '#334155';
       const label = attr(node.el, 'data-node-label');
+      const labelY = node.shape === 'text' ? node.y : node.y + node.size + 8;
       if (node.labelBackgroundColor) {
         const metrics = context.measureText(label);
         const width = Math.max(48, metrics.width + 18);
         const x = node.x - width / 2;
-        const y = node.y + node.size + 4;
+        const y = node.shape === 'text' ? node.y - 9 : node.y + node.size + 4;
         context.save();
         context.fillStyle = node.labelBackgroundColor;
         context.beginPath();
@@ -308,8 +309,8 @@
         context.fill();
         context.restore();
       }
-      context.strokeText(label, node.x, node.y + node.size + 8);
-      context.fillText(label, node.x, node.y + node.size + 8);
+      context.strokeText(label, node.x, labelY);
+      context.fillText(label, node.x, labelY);
       }
       context.restore();
     });

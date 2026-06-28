@@ -190,6 +190,9 @@ internal static partial class SmokeTests {
         visHierarchy.AddNode("root", "Root").AddNode("child", "Child").AddEdge("root-child", "root", "child");
         var visHierarchyHtml = visHierarchy.ToGraphScene("vis-hierarchy", "Vis hierarchy").ToGraphExplorerHtmlFragment();
         Assert(GetAttribute(visHierarchyHtml, "data-node-id=\"root\"", "data-node-x") < GetAttribute(visHierarchyHtml, "data-node-id=\"child\"", "data-node-x"), "Vis-network hierarchical layouts should infer levels from from/to edges without requiring visible arrows.");
+
+        var textNodeHtml = GraphScene.Create("text-node", "Text node").AddNode("note", "Anchor note", node => { node.Shape = GraphNodeShape.Text; node.Style.LabelBackgroundColor = "#E0F2FE"; }).ToGraphExplorerHtmlFragment();
+        Assert(textNodeHtml.Contains("data-node-shape=\"text\"", StringComparison.Ordinal) && textNodeHtml.Contains("class=\"cfx-graph-node-label-bg\" x=\"-41.8\" y=\"-9\"", StringComparison.Ordinal) && textNodeHtml.Contains("<text y=\"4\">Anchor note</text>", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("const labelY = node.shape === 'text' ? node.y", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildFragmentStyle().Contains(".cfx-graph-lod-compact .cfx-graph-node:not([data-node-shape=text]) text", StringComparison.Ordinal), "Graph explorer should render text-shaped nodes as label marks anchored at the node coordinates across SVG, Canvas, and compact modes.");
     }
 
     private static VisNetworkGraph SampleVisNetworkCompatGraph() {
