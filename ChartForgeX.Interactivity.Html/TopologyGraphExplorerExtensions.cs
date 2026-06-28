@@ -53,6 +53,7 @@ public static class TopologyGraphExplorerExtensions {
             foreach (var group in chart.Groups) {
                 var groupId = ids.GroupId(group.Id);
                 var memberIds = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).Select(node => ids.NodeId(node.Id)).ToArray();
+                if (memberIds.Length == 0) continue;
                 var cluster = new GraphSceneCluster {
                     Id = groupId,
                     Label = group.Label,

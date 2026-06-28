@@ -111,15 +111,15 @@
     return { x: edge.target.x - dx / length * inset, y: edge.target.y - dy / length * inset };
   };
   const edgeRenderEndpoints = (edge, control) => ({ source: edgeRenderSource(edge, control), target: edgeRenderTarget(edge, control) });
-  const routeEndpointFromNode = (node, guide, trim) => {
-    if (!trim) return { x: node.x, y: node.y };
+  const routeEndpointFromNode = (endpoint, node, guide, trim) => {
+    if (!trim) return endpoint;
     const dx = guide.x - node.x, dy = guide.y - node.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     const inset = nodeBoundaryInset(node, dx / length, dy / length);
     return { x: node.x + dx / length * inset, y: node.y + dy / length * inset };
   };
-  const routeEndpointToNode = (node, guide, trim) => {
-    if (!trim) return { x: node.x, y: node.y };
+  const routeEndpointToNode = (endpoint, node, guide, trim) => {
+    if (!trim) return endpoint;
     const dx = node.x - guide.x, dy = node.y - guide.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     const inset = nodeBoundaryInset(node, dx / length, dy / length);
@@ -129,8 +129,8 @@
     if (!edgeHasRoute(edge)) return edge.routePoints || [];
     const points = edge.routePoints.map(point => ({ x: point.x, y: point.y }));
     const targetArrow = edge.targetArrow || edge.directed;
-    points[0] = routeEndpointFromNode(edge.source, points[1] || edge.target, edge.sourceCollapsed || edge.sourceArrow);
-    points[points.length - 1] = routeEndpointToNode(edge.target, points[points.length - 2] || edge.source, edge.targetCollapsed || targetArrow);
+    points[0] = routeEndpointFromNode(points[0], edge.source, points[1] || edge.target, edge.sourceCollapsed || edge.sourceArrow);
+    points[points.length - 1] = routeEndpointToNode(points[points.length - 1], edge.target, points[points.length - 2] || edge.source, edge.targetCollapsed || targetArrow);
     return points;
   };
   const edgePathData = (edge, control) => {

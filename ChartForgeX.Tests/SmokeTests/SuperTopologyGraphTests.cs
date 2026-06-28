@@ -139,5 +139,8 @@ internal static partial class SmokeTests {
         friendlyScene.Validate();
         Assert(friendlyScene.Id == "app-map" && friendlyScene.Nodes.Any(node => node.Id == "app-server" && node.Metadata["topology.id"] == "app server") && friendlyScene.Clusters.Any(cluster => cluster.Id == "core-services" && cluster.Metadata["topology.id"] == "core services"), "Topology graph bridge should normalize friendly topology ids while preserving original ids in metadata.");
         Assert(friendlyScene.Edges.Single(edge => edge.Metadata["topology.id"] == "app link").SourceNodeId == "app-server" && friendlyScene.Edges.Single(edge => edge.Metadata["topology.id"] == "app link").TargetNodeId == "sql-db", "Topology graph bridge should rewrite edge references to normalized node ids.");
+
+        var emptyGroupScene = TopologyChart.Create().AddGroup("empty", "Empty", 0, 0, 120, 80, TopologyHealthStatus.Unknown).ToGraphScene();
+        Assert(emptyGroupScene.Clusters.Count == 0, "Topology graph bridge should skip empty topology groups instead of rendering unrelated memberless cluster badges.");
     }
 }

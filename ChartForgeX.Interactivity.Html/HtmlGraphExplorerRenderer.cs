@@ -450,7 +450,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
                 writer.Append("\" width=\"");
                 writer.Append(Number(Math.Max(48, node.Label.Length * 7.6)));
                 writer.Append("\" height=\"18\" rx=\"5\"");
-                Attribute(writer, "style", "fill:" + node.Style.LabelBackgroundColor);
+                Attribute(writer, "style", "fill:" + node.Style.LabelBackgroundColor + ";stroke:none;stroke-width:0;pointer-events:none");
                 writer.Append("></rect>");
             }
 
