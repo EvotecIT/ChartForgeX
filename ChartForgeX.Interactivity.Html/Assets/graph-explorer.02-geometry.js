@@ -113,14 +113,16 @@
   };
   const edgeRenderEndpoints = (edge, control) => ({ source: edgeRenderSource(edge, control), target: edgeRenderTarget(edge, control) });
   const routeEndpointFromNode = (endpoint, node, guide, trim) => {
-    if (!trim) return endpoint;
+    const homeX = Number.isFinite(node.homeX) ? node.homeX : node.x, homeY = Number.isFinite(node.homeY) ? node.homeY : node.y;
+    if (!trim) return { x: endpoint.x + node.x - homeX, y: endpoint.y + node.y - homeY };
     const dx = guide.x - node.x, dy = guide.y - node.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     const inset = nodeBoundaryInset(node, dx / length, dy / length);
     return { x: node.x + dx / length * inset, y: node.y + dy / length * inset };
   };
   const routeEndpointToNode = (endpoint, node, guide, trim) => {
-    if (!trim) return endpoint;
+    const homeX = Number.isFinite(node.homeX) ? node.homeX : node.x, homeY = Number.isFinite(node.homeY) ? node.homeY : node.y;
+    if (!trim) return { x: endpoint.x + node.x - homeX, y: endpoint.y + node.y - homeY };
     const dx = node.x - guide.x, dy = node.y - guide.y;
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     const inset = nodeBoundaryInset(node, dx / length, dy / length);
