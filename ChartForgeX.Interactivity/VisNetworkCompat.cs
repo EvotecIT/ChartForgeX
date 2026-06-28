@@ -228,7 +228,7 @@ public sealed class VisNetworkNode {
         var groupId = string.IsNullOrWhiteSpace(Group) ? null : ids.GroupId(Group!);
         var node = new GraphSceneNode {
             Id = ids.NodeId(Id),
-            Label = string.IsNullOrWhiteSpace(Label) ? ids.NodeId(Id) : Label,
+            Label = string.IsNullOrWhiteSpace(Label) ? Id : Label,
             GroupId = groupId,
             ClusterId = groupId,
             Kind = group?.Kind,

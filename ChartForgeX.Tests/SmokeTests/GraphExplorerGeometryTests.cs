@@ -45,6 +45,17 @@ internal static partial class SmokeTests {
         var computedTarget = ExtractGraphNodePoint(computedRouteHtml, "target");
         var computedRouteTarget = ExtractLastPathPoint(ExtractGraphEdgePath(computedRouteHtml, "route"));
         Assert(Distance(computedRouteTarget, computedTarget) < 40 && Distance(computedRouteTarget, (0d, 0d)) > 80, "Graph explorer SVG should trim routed arrows from computed node positions instead of default model coordinates.");
+
+        var hiddenAnchorHtml = GraphScene.Create("hidden-anchor-boundary", "Hidden anchor boundary")
+            .AddNode("source", "Source", node => { node.X = 100; node.Y = 100; })
+            .AddNode("anchor", "Anchor", node => { node.X = 300; node.Y = 100; node.Hidden = true; })
+            .AddEdge("source-anchor", "source", "anchor", configure: edge => edge.Directed = true)
+            .ToGraphExplorerHtmlFragment();
+        Assert(ExtractGraphEdgePath(hiddenAnchorHtml, "source-anchor").Contains("L 300 100", StringComparison.Ordinal), "Graph explorer SVG should trim arrowed hidden-anchor endpoints to the anchor coordinate instead of a phantom node boundary.");
+
+        var layoutSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerRenderer.Layout.cs"));
+        Assert(layoutSource.Contains("TryNodeBoundaryExtents(shape, size", StringComparison.Ordinal) && layoutSource.Contains("Math.Max(halfWidth, halfHeight)", StringComparison.Ordinal), "Graph explorer prepared layout spacing should use rich node shape extents before the runtime opens.");
+        Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("context.lineWidth = edge.strokeWidth > 0", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("Math.max(.65, edge.strokeWidth +", StringComparison.Ordinal), "Graph explorer Canvas and PNG output should honor explicit edge stroke widths without the lightweight default cap.");
     }
 
     private static (double X, double Y) ExtractLastPathPoint(string path) {

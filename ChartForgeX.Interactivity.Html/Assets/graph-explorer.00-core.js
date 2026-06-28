@@ -247,7 +247,9 @@
       context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
       const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
       const styledWidth = edge.strokeWidth > 0 ? edge.strokeWidth : baseWidth;
-      context.lineWidth = Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, styledWidth + (selected ? 1.6 : related ? 1.2 : 0)));
+      context.lineWidth = edge.strokeWidth > 0
+        ? Math.max(.65, edge.strokeWidth + (selected ? 1.6 : related ? 1.2 : 0))
+        : Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, styledWidth + (selected ? 1.6 : related ? 1.2 : 0)));
       context.setLineDash(edge.dashed ? edge.dashPattern : []);
       context.stroke();
       context.setLineDash([]);

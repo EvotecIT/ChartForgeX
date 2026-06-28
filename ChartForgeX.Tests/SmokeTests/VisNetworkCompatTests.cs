@@ -74,6 +74,9 @@ internal static partial class SmokeTests {
         idOnly.Nodes.Add(new VisNetworkNode { Id = "id-only" });
         var idOnlyScene = idOnly.ToGraphScene("id-only", "Id only");
         Assert(idOnlyScene.Nodes.Single().Label == "id-only", "Vis-network compatibility should fall back to the id for id-only node records.");
+        idOnly.Nodes.Add(new VisNetworkNode { Id = "app server" });
+        var friendlyIdOnlyScene = idOnly.ToGraphScene("friendly-id-only", "Friendly id only");
+        Assert(friendlyIdOnlyScene.Nodes.Single(node => node.Id == "app-server").Label == "app server", "Vis-network compatibility should preserve original id text as the fallback label when graph ids are normalized.");
 
         var imageShapes = VisNetworkGraph.Create()
             .AddNode("rect", "Rectangle", node => {
