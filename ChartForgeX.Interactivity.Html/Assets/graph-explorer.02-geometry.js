@@ -8,9 +8,10 @@
     if (node?.shape === 'triangle' || node?.shape === 'triangleDown') return { x: size * 1.25, y: size * 1.35 };
     if (node?.shape === 'star') return { x: size * 1.4, y: size * 1.45 };
     if (node?.shape === 'database') return { x: size * 1.25, y: size * .9 };
+    if (node?.shape === 'text') return { x: Math.max(size, ((attr(node.el, 'data-node-label') || node.id || '').length * 6) / 2), y: Math.max(size * .75, 8) };
     return { x: size, y: size };
   };
-  const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database'].includes(node?.shape);
+  const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
   const nodeHalfWidth = (node) => nodeShapeExtents(node).x;
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
   const nodeBoundaryInset = (node, unitX, unitY) => {

@@ -479,22 +479,22 @@ public sealed class VisNetworkManipulationOptions {
     public bool Enabled { get; set; }
 
     /// <summary>Gets or sets whether adapters may add nodes.</summary>
-    public bool AddNode { get; set; }
+    public bool AddNode { get; set; } = true;
 
     /// <summary>Gets or sets whether adapters may edit nodes.</summary>
     public bool EditNode { get; set; }
 
     /// <summary>Gets or sets whether adapters may delete nodes.</summary>
-    public bool DeleteNode { get; set; }
+    public bool DeleteNode { get; set; } = true;
 
     /// <summary>Gets or sets whether adapters may add edges.</summary>
-    public bool AddEdge { get; set; }
+    public bool AddEdge { get; set; } = true;
 
     /// <summary>Gets or sets whether adapters may edit edges.</summary>
-    public bool EditEdge { get; set; }
+    public bool EditEdge { get; set; } = true;
 
     /// <summary>Gets or sets whether adapters may delete edges.</summary>
-    public bool DeleteEdge { get; set; }
+    public bool DeleteEdge { get; set; } = true;
 
     /// <summary>Gets or sets whether adapters may persist positions.</summary>
     public bool PersistPositions { get; set; }

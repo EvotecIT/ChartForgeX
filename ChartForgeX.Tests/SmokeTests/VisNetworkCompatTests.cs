@@ -18,6 +18,12 @@ internal static partial class SmokeTests {
         Assert(scene.Edges[0].Shape == GraphEdgeShape.ContinuousCurve && !scene.Edges[0].Directed && scene.Edges[0].SourceArrow && !scene.Edges[0].TargetArrow && scene.Edges[0].Style.Width == 3 && !scene.Edges[0].Style.Physics, "Vis-network source-only arrows, smoothing, width, and physics flags should map to reusable edge styling without implying target arrows.");
         Assert(scene.Edges[0].Metadata["vis.arrows.from"] == "true" && scene.Edges[0].Metadata["vis.smooth"] == "Continuous", "Vis-network edge-specific options should remain available as metadata for host inspectors.");
 
+        var defaultManipulation = VisNetworkGraph.Create();
+        defaultManipulation.Options.Manipulation.Enabled = true;
+        defaultManipulation.AddNode("a", "A").AddNode("b", "B").AddEdge("a-b", "a", "b");
+        var defaultManipulationScene = defaultManipulation.ToGraphScene("default-manipulation", "Default manipulation");
+        Assert(defaultManipulationScene.Options.Manipulation.CanAddNodes && defaultManipulationScene.Options.Manipulation.CanDeleteNodes && defaultManipulationScene.Options.Manipulation.CanAddEdges && defaultManipulationScene.Options.Manipulation.CanEditEdges && defaultManipulationScene.Options.Manipulation.CanDeleteEdges && !defaultManipulationScene.Options.Manipulation.CanEditNodes, "Vis-network manipulation defaults should expose the standard add/edit/delete surface when manipulation is enabled without per-action overrides.");
+
         var implicitGroup = VisNetworkGraph.Create();
         implicitGroup.AddNode("api", "API", node => node.Group = "implicit");
         var implicitScene = implicitGroup.ToGraphScene("implicit", "Implicit group");
@@ -112,6 +118,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("style: { backgroundColor: attr(node.el, 'data-node-background-color')", StringComparison.Ordinal) && html.Contains("context.fillStyle = node.backgroundColor || '#2563eb'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should consume serialized node styles.");
         Assert(html.Contains("if (node.labelBackgroundColor)", StringComparison.Ordinal) && html.Contains("context.shadowColor = 'rgba(15,23,42,.18)'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render node label backgrounds and shadows when style data is serialized.");
         Assert(html.Contains("drawNodeShapeMark(context, node)", StringComparison.Ordinal) && html.Contains("node.shape === 'database'", StringComparison.Ordinal), "Graph explorer Canvas and PNG paths should render rich vis-network node shapes instead of falling back to circles.");
+        Assert(html.Contains("node?.shape === 'text'", StringComparison.Ordinal) && html.Contains("'database', 'text'", StringComparison.Ordinal), "Graph explorer Canvas hit testing should use label-sized rectangular geometry for text-only nodes.");
         Assert(html.Contains("context.ellipse(node.x, node.y, size * 1.55, size, 0, 0, Math.PI * 2)", StringComparison.Ordinal), "Graph explorer Canvas and PNG ellipse nodes should match SVG ellipse geometry.");
         Assert(html.Contains("data-edge-shape=\"continuous\"", StringComparison.Ordinal) && html.Contains("(edge.shape === 'line' || edge.shape === 'polyline') && Math.abs(edge.curvature) < 0.001", StringComparison.Ordinal), "Graph explorer runtime paths should keep vis-network smoothed edges curved after Canvas redraws, physics, or dragging while empty polylines stay straight.");
         Assert(html.Contains("const targetArrow = edge.targetArrow || edge.directed", StringComparison.Ordinal), "Graph explorer Canvas and PNG endpoints should shorten targets whenever the reusable graph contract renders a target arrow.");
