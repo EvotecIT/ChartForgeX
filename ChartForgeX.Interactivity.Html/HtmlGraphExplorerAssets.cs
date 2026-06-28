@@ -8,6 +8,7 @@ internal static class HtmlGraphExplorerAssets {
     private static readonly string[] ScriptResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-nodes.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.05-viewport.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-layout.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.11-state-sync.js",

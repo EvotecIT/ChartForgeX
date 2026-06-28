@@ -38,6 +38,15 @@ public sealed class GraphSceneEdge {
     /// <summary>Gets or sets whether adapters should render a directional arrow toward the target node.</summary>
     public bool Directed { get; set; }
 
+    /// <summary>Gets or sets whether hierarchical layout inference should follow source-to-target order without requiring a rendered arrow.</summary>
+    public bool LayoutDirected { get; set; }
+
+    /// <summary>Gets or sets whether adapters should render a directional arrow at the source node.</summary>
+    public bool SourceArrow { get; set; }
+
+    /// <summary>Gets or sets whether adapters should render a directional arrow at the target node. When unset, <see cref="Directed"/> keeps its target-arrow compatibility behavior.</summary>
+    public bool TargetArrow { get; set; }
+
     /// <summary>Gets or sets the preferred edge geometry used by adapters that support richer graph lines.</summary>
     public GraphEdgeShape Shape { get; set; } = GraphEdgeShape.Line;
 
@@ -50,8 +59,35 @@ public sealed class GraphSceneEdge {
     /// <summary>Gets or sets whether adapters should draw the relationship label when labels are enabled.</summary>
     public bool ShowLabel { get; set; } = true;
 
+    /// <summary>Gets reusable edge styling hints for adapters that support richer graph lines.</summary>
+    public GraphEdgeStyle Style { get; } = new();
+
+    /// <summary>Gets optional prepared route points for adapters that can render deterministic polylines.</summary>
+    public List<GraphScenePoint> RoutePoints { get; } = new();
+
     /// <summary>Gets arbitrary edge metadata for search, tooltips, inspectors, and host event payloads.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
+}
+
+/// <summary>
+/// Describes a prepared point in graph scene coordinates.
+/// </summary>
+public readonly struct GraphScenePoint {
+    /// <summary>
+    /// Creates a graph scene point.
+    /// </summary>
+    /// <param name="x">Horizontal scene coordinate.</param>
+    /// <param name="y">Vertical scene coordinate.</param>
+    public GraphScenePoint(double x, double y) {
+        X = x;
+        Y = y;
+    }
+
+    /// <summary>Gets the horizontal scene coordinate.</summary>
+    public double X { get; }
+
+    /// <summary>Gets the vertical scene coordinate.</summary>
+    public double Y { get; }
 }
 
 /// <summary>
@@ -62,5 +98,17 @@ public enum GraphEdgeShape {
     Line,
 
     /// <summary>Use a quadratic curved edge.</summary>
-    Curve
+    Curve,
+
+    /// <summary>Use a dynamic curved edge whose side can be chosen by the adapter.</summary>
+    DynamicCurve,
+
+    /// <summary>Use a cubic-like continuous curve when an adapter supports it.</summary>
+    ContinuousCurve,
+
+    /// <summary>Use a self-reference loop for edges whose source and target are the same node.</summary>
+    SelfReference,
+
+    /// <summary>Use prepared route points as a deterministic polyline.</summary>
+    Polyline
 }

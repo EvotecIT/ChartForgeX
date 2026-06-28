@@ -11,10 +11,16 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Interactivity
 
+- Keep super-topology parity aligned with `docs/super-topology-parity.md`: preserve the `TopologyChart` static/export owner, route large interactive exploration through `GraphScene`, and validate parity claims across API, generated artifacts, smoke tests, and performance evidence.
 - Promote a shared rendered-target contract for series, points, annotations, regions, nodes, links, and legend items so every adapter can address chart elements without knowing the chart family.
 - Broaden rich tooltip payloads with chart-family-specific diagnostics where renderers already expose useful `data-cfx-*` attributes, while keeping the static SVG output script-free.
 - Broaden pinned tooltip, nearest-point crosshair, brush-to-lasso selection, one-series focus, selected-target compare, and keyboard traversal coverage across more chart families as the shared rendered-target contract grows.
 - Grow the graph explorer in `ChartForgeX.Interactivity.Html` beyond its SVG/Canvas force-runtime, multi-selection, selected-neighborhood focus, worker-backed Barnes-Hut acceleration, threshold LOD, and 360-node/720-edge generated benchmark into WebGL render backends, OffscreenCanvas solver hardening, adaptive clustering, lasso/box selection, group transforms, undo/redo, CI performance budgets, and broader product-real generated examples.
+- Extend the typed vis-style compatibility layer with more option families and import/export helpers so C# users can migrate common examples without learning a second model first.
+- Implement manipulation UI in the HTML adapter behind the existing opt-in `GraphManipulationOptions` contract, with host callbacks and JSON patch export instead of silent mutation.
+- Broaden graph node and edge styling beyond the current parity tranche with selected/hover styles, middle arrows, self-reference polish, edge scaling, and relationship-specific styling.
+- Extend graph clustering beyond current explicit and group-derived summaries with hub/outlier clustering, zoom-driven clustering, open-cluster behavior, and saved cluster state import.
+- Add browser-visible scale baselines for 1k, 5k, and 10k graphs across SVG, Canvas, and future WebGL, including screenshot/pixel checks and performance telemetry thresholds.
 - Extend synchronized dashboards beyond viewport, selection, hover, keyboard traversal, brush, crosshair, lasso, series focus, compare markers, scenario playback, and opt-in state bookmarks into named multi-chart review presets across mixed chart types.
 - Add playful but report-safe interaction presets beyond the opt-in focus trail, scenario-step trail integration, reveal labels, and route progress; keep future route-tour controls opt-in in `ChartForgeX.Interactivity.Html`.
 - Design a production table-interaction adapter only when there is a real host requirement for search, sort, filter, selection, copy, export, paging, or virtualization. Keep demos and generated proof output in `ChartForgeX.Examples` or docs, not in library packages.

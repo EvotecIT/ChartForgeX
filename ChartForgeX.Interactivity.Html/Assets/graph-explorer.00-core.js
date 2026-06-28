@@ -21,6 +21,8 @@
   };
   const hasFeature = (root, feature) => features(root).has(feature);
   const idList = (value) => value.split(',').map(item => item.trim()).filter(Boolean);
+  const dashPattern = (value, fallback) => { const parts = (value || '').split(/[,\s]+/).map(Number).filter(item => Number.isFinite(item) && item > 0); return parts.length ? parts : fallback; };
+  const routePoints = (value) => (value || '').split(';').map(item => item.split(',').map(Number)).filter(pair => pair.length === 2 && pair.every(Number.isFinite)).map(pair => ({ x: pair[0], y: pair[1] }));
   const sceneSize = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
     const parts = attr(svg, 'viewBox').split(/\s+/).map(Number);
@@ -71,6 +73,11 @@
       shape: attr(el, 'data-node-shape') || 'circle',
       imageUrl: attr(el, 'data-node-image-url'),
       icon: attr(el, 'data-node-icon'),
+      backgroundColor: attr(el, 'data-node-background-color'),
+      borderColor: attr(el, 'data-node-border-color'),
+      labelColor: attr(el, 'data-node-label-color'),
+      labelBackgroundColor: attr(el, 'data-node-label-background-color'),
+      shadow: attr(el, 'data-node-shadow') === 'true',
       size: Math.max(4, num(el, 'data-node-size', 8)),
       degree: 0,
       fixed: attr(el, 'data-node-fixed') === 'true',
@@ -102,13 +109,21 @@
         length: Math.max(0, num(el, 'data-edge-length', 0)),
         label: attr(el, 'data-edge-label'),
         directed: attr(el, 'data-edge-directed') === 'true',
+        sourceArrow: attr(el, 'data-edge-source-arrow') === 'true',
+        targetArrow: attr(el, 'data-edge-target-arrow') === 'true',
         shape: attr(el, 'data-edge-shape') || 'line',
+        routePoints: routePoints(attr(el, 'data-edge-route-points')),
         curvature: num(el, 'data-edge-curvature', 0),
         dashed: attr(el, 'data-edge-dashed') === 'true',
-        showLabel: attr(el, 'data-edge-show-label') !== 'false'
+        dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6]),
+        showLabel: attr(el, 'data-edge-show-label') !== 'false',
+        strokeColor: attr(el, 'data-edge-color'),
+        labelColor: attr(el, 'data-edge-label-color'),
+        strokeWidth: num(el, 'data-edge-width', 0),
+        physics: attr(el, 'data-edge-physics') !== 'false'
       };
     }).filter(edge => edge.source && edge.target);
-    edges.forEach(edge => {
+    edges.filter(edge => edge.physics !== false).forEach(edge => {
       edge.source.degree += 1;
       edge.target.degree += 1;
     });
@@ -227,28 +242,22 @@
       const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
       const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
       const selected = edge.el.classList.contains('cfx-graph-selected');
-      context.beginPath();
-      if (rendered.source === rendered.target) {
-        const loop = selfLoopGeometry(rendered.source);
-        context.moveTo(loop.start.x, loop.start.y);
-        context.bezierCurveTo(loop.c1.x, loop.c1.y, loop.c2.x, loop.c2.y, loop.end.x, loop.end.y);
-      } else {
-        const endpoints = edgeRenderEndpoints(rendered, control);
-        context.moveTo(endpoints.source.x, endpoints.source.y);
-        if (control) context.quadraticCurveTo(control.x, control.y, endpoints.target.x, endpoints.target.y);
-        else context.lineTo(endpoints.target.x, endpoints.target.y);
-      }
-      context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : '#94a3b8';
+      edgeDrawPath(context, rendered, control);
+      context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : edge.strokeColor || '#94a3b8';
       context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
       const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
-      context.lineWidth = Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, baseWidth + (selected ? 1.6 : related ? 1.2 : 0)));
-      context.setLineDash(edge.dashed ? [8, 6] : []);
+      const styledWidth = edge.strokeWidth > 0 ? edge.strokeWidth : baseWidth;
+      context.lineWidth = edge.strokeWidth > 0
+        ? Math.max(.65, edge.strokeWidth + (selected ? 1.6 : related ? 1.2 : 0))
+        : Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, styledWidth + (selected ? 1.6 : related ? 1.2 : 0)));
+      context.setLineDash(edge.dashed ? edge.dashPattern : []);
       context.stroke();
       context.setLineDash([]);
       context.globalAlpha = 1;
-      if (edge.directed) {
+      if (edge.sourceArrow || edge.targetArrow || edge.directed) {
         context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
-        drawArrow(context, rendered, control);
+        if (edge.sourceArrow) drawArrow(context, rendered, control, 'source', edge.strokeColor);
+        if (edge.targetArrow || edge.directed) drawArrow(context, rendered, control, 'target', edge.strokeColor);
         context.globalAlpha = 1;
       }
       if (edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)) {
@@ -258,7 +267,7 @@
         context.textBaseline = 'middle';
         context.lineWidth = 4;
         context.strokeStyle = '#ffffff';
-        context.fillStyle = '#475569';
+        context.fillStyle = edge.labelColor || '#475569';
         context.globalAlpha = dimmed ? .16 : 1;
         context.strokeText(edge.label, label.x, label.y);
         context.fillText(edge.label, label.x, label.y);
@@ -280,63 +289,32 @@
         context.lineWidth = 3;
         context.stroke();
       }
-      if (!compact) {
+      if (!compact || node.shape === 'text') {
         context.font = '12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
-        context.textBaseline = 'top';
+        context.textBaseline = node.shape === 'text' ? 'middle' : 'top';
         context.lineWidth = 4;
-        context.strokeStyle = '#ffffff';
-        context.fillStyle = '#334155';
-        const label = attr(node.el, 'data-node-label');
-        context.strokeText(label, node.x, node.y + node.size + 8);
-        context.fillText(label, node.x, node.y + node.size + 8);
+      context.strokeStyle = '#ffffff';
+      context.fillStyle = node.labelColor || '#334155';
+      const label = attr(node.el, 'data-node-label');
+      const labelY = node.shape === 'text' ? node.y : node.y + node.size + 8;
+      if (node.labelBackgroundColor) {
+        const metrics = context.measureText(label);
+        const width = Math.max(48, metrics.width + 18);
+        const x = node.x - width / 2;
+        const y = node.shape === 'text' ? node.y - 9 : node.y + node.size + 4;
+        context.save();
+        context.fillStyle = node.labelBackgroundColor;
+        context.beginPath();
+        if (context.roundRect) context.roundRect(x, y, width, 18, 5);
+        else context.rect(x, y, width, 18);
+        context.fill();
+        context.restore();
+      }
+      context.strokeText(label, node.x, labelY);
+      context.fillText(label, node.x, labelY);
       }
       context.restore();
     });
     context.restore();
-  };
-  const drawNodeMark = (context, node, selected, compact, root) => {
-    context.fillStyle = '#2563eb';
-    context.strokeStyle = selected ? '#f59e0b' : '#eff6ff';
-    context.lineWidth = selected ? 5 : compact ? 1.5 : 3;
-    if (node.shape === 'box') {
-      const width = node.size * 2.9;
-      const height = node.size * 2.1;
-      context.beginPath();
-      if (context.roundRect) context.roundRect(node.x - width / 2, node.y - height / 2, width, height, Math.min(8, node.size * .45));
-      else context.rect(node.x - width / 2, node.y - height / 2, width, height);
-      context.fill();
-      context.stroke();
-    } else if (node.shape === 'image' && node.imageUrl) {
-      context.beginPath();
-      context.arc(node.x, node.y, node.size + 3, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-      const image = graphImage(node.imageUrl, () => drawCanvas(root, graphState(root)));
-      if (image && image.complete && image.naturalWidth > 0) {
-        try {
-          context.save();
-          context.beginPath();
-          context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
-          context.clip();
-          context.drawImage(image, node.x - node.size, node.y - node.size, node.size * 2, node.size * 2);
-          context.restore();
-        } catch {
-          context.restore();
-          // Keep malformed host-supplied images from breaking Canvas interaction.
-        }
-      }
-    } else {
-      context.beginPath();
-      context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-    }
-    if (node.icon) {
-      context.font = 'bold 12px Segoe UI, Arial, sans-serif';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.fillStyle = '#ffffff';
-      context.fillText(node.icon, node.x, node.y + 1);
-    }
   };

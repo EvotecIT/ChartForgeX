@@ -51,8 +51,9 @@
     if (visible(node.el)) return node;
     return clusterProxyNode(side === 'source' ? edge.sourceCluster : edge.targetCluster, byId) || node;
   };
+  const endpointVisible = (node) => node && (visible(node.el) || attr(node.el, 'data-node-hidden') === 'true');
   const visualEdge = (edge, byId) => { const source = edgeVisualNode(edge, 'source', byId), target = edgeVisualNode(edge, 'target', byId); return { ...edge, source, target, sourceCollapsed: source !== edge.source, targetCollapsed: target !== edge.target }; };
-  const edgeHasVisibleEndpoints = (edge, byId) => visible(edgeVisualNode(edge, 'source', byId).el) && visible(edgeVisualNode(edge, 'target', byId).el);
+  const edgeHasVisibleEndpoints = (edge, byId) => endpointVisible(edgeVisualNode(edge, 'source', byId)) && endpointVisible(edgeVisualNode(edge, 'target', byId));
   const contentBounds = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     const bounds = [];
@@ -83,6 +84,7 @@
       const control = edgeControl(rendered);
       pushPoint(rendered.source, pad);
       pushPoint(rendered.target, pad);
+      if (edgeHasRoute(rendered)) routeRenderPoints(rendered).forEach(point => pushPoint(point, pad));
       pushPoint(control, pad);
       pushPoint(edgeLabelPoint(rendered, control), pad + 10);
     });

@@ -144,7 +144,7 @@
     if (!emit(root, 'cfxgraphexport', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, mimeType: mime, content }, { cancelable: true })) return;
     downloadExport(name, mime, content);
   };
-  const preloadCanvasImages = (root, state) => Promise.all(state.nodes.filter(node => node.shape === 'image' && node.imageUrl).map(node => new Promise(resolve => {
+  const preloadCanvasImages = (root, state) => Promise.all(state.nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => new Promise(resolve => {
     const image = graphImage(node.imageUrl, () => resolve());
     if (!image || image.complete) {
       resolve();
@@ -194,7 +194,7 @@
       roles: (root.dataset.cfxGraphSelectionRoles || '').split(',').filter(Boolean),
       primary: root.dataset.cfxGraphSelectionPrimary || ''
     },
-    focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' },
+    focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' }, clustering: { mode: attr(root, 'data-cfx-graph-cluster-mode'), adaptive: attr(root, 'data-cfx-graph-cluster-adaptive') === 'true', minimumClusterSize: Number(attr(root, 'data-cfx-graph-cluster-min-size') || 0), targetClusterSize: Number(attr(root, 'data-cfx-graph-cluster-target-size') || 0), collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true', lod: root.dataset.cfxGraphClusterLod || '', state: root.dataset.cfxGraphClusters || '', count: Number(attr(root, 'data-cfx-graph-cluster-count') || 0) }, manipulation: { enabled: attr(root, 'data-cfx-graph-manipulation') === 'true', capabilities: (attr(root, 'data-cfx-graph-manipulation-capabilities') || '').split(',').filter(Boolean) },
     performance: {
       state: root.dataset.cfxGraphPerformance || '',
       budget: root.dataset.cfxGraphPerformanceBudget || '',
@@ -209,8 +209,8 @@
       thread: root.dataset.cfxGraphPerformanceThread || '',
       acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
     },
-    nodes: graphState(root).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el.querySelector('image'), 'aria-label'), hidden: node.el.classList.contains('cfx-graph-hidden') || node.el.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
-    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', hidden: edge.classList.contains('cfx-graph-hidden') || edge.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(edge, 'data-cfx-search'), metadata: metadataDetail(edge) })),
+    nodes: graphState(root).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level')), kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el.querySelector('image'), 'aria-label'), style: { backgroundColor: attr(node.el, 'data-node-background-color'), borderColor: attr(node.el, 'data-node-border-color'), labelColor: attr(node.el, 'data-node-label-color'), labelBackgroundColor: attr(node.el, 'data-node-label-background-color'), shadow: attr(node.el, 'data-node-shadow') === 'true' }, hidden: node.el.classList.contains('cfx-graph-hidden') || node.el.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
+    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), routePoints: routePoints(attr(edge, 'data-edge-route-points')), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', dashPattern: attr(edge, 'data-edge-dash-pattern'), showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', sourceArrow: attr(edge, 'data-edge-source-arrow') === 'true', targetArrow: attr(edge, 'data-edge-target-arrow') === 'true', physics: attr(edge, 'data-edge-physics') !== 'false', style: { color: attr(edge, 'data-edge-color'), labelColor: attr(edge, 'data-edge-label-color'), width: Number(attr(edge, 'data-edge-width') || 0) }, hidden: edge.classList.contains('cfx-graph-hidden') || edge.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(edge, 'data-cfx-search'), metadata: metadataDetail(edge) })),
     clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: cluster.classList.contains('cfx-graph-hidden'), search: attr(cluster, 'data-cfx-search'), metadata: metadataDetail(cluster) }))
   });
   const downloadExport = (name, mime, content) => {
@@ -239,7 +239,7 @@
     }
     performanceGate(root);
     if (hasFeature(root, 'Clustering')) {
-      if (hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true);
+      if (attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true' || (hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true')) applyClusterState(root, true);
       else applyClusterState(root, undefined);
     } else {
       items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {

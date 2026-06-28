@@ -215,7 +215,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
     public static TopologyChart AddAutoNode(this TopologyChart chart, string id, string label, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null) {
-        return AddNode(chart, id, label, 0, 0, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color, iconId);
+        return AddNodeCore(chart, id, label, 0, 0, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color, iconId, backgroundColor: null, hasPositionOverride: false);
     }
 
     /// <summary>
@@ -241,6 +241,10 @@ public static partial class TopologyChartExtensions {
     /// <param name="backgroundColor">The optional node surface fill color.</param>
     /// <returns>The current topology chart.</returns>
     public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null, string? backgroundColor = null) {
+        return AddNodeCore(chart, id, label, x, y, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color, iconId, backgroundColor, hasPositionOverride: true);
+    }
+
+    private static TopologyChart AddNodeCore(TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind, TopologyHealthStatus status, string? groupId, string? subtitle, string? href, string? tooltip, double width, double height, string? symbol, string? cssClass, string? color, string? iconId, string? backgroundColor, bool hasPositionOverride) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var nodeId = RequiredText(id, nameof(id), "Topology node ids");
         var nodeLabel = RequiredText(label, nameof(label), "Topology node labels");
@@ -251,7 +255,7 @@ public static partial class TopologyChartExtensions {
         ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
         var nodeGroupId = string.IsNullOrWhiteSpace(groupId) ? null : groupId!.Trim();
-        chart.Nodes.Add(new TopologyNode { Id = nodeId, Label = nodeLabel, X = x, Y = y, Kind = kind, Symbol = symbol, IconId = OptionalText(iconId), Status = status, GroupId = nodeGroupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color, BackgroundColor = backgroundColor });
+        chart.Nodes.Add(new TopologyNode { Id = nodeId, Label = nodeLabel, X = x, Y = y, Kind = kind, Symbol = symbol, IconId = OptionalText(iconId), Status = status, GroupId = nodeGroupId, Subtitle = subtitle, Href = href, Tooltip = tooltip, Width = width, Height = height, CssClass = cssClass, Color = color, BackgroundColor = backgroundColor, HasPositionOverride = hasPositionOverride });
         return chart;
     }
 

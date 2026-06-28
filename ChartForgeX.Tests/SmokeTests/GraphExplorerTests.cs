@@ -248,7 +248,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("if (action === 'stabilize' && hasFeature(root, 'Stabilization') && startPhysics(root)) syncPhysicsControls(root);", StringComparison.Ordinal), "Graph explorer Stabilize should sync the maintained Physics toggle after starting a physics run.");
         Assert(html.Contains("body class=\"cfx-graph-shell\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-search\"", StringComparison.Ordinal) && html.Contains("class=\"cfx-graph-tool\"", StringComparison.Ordinal), "Graph explorer pages should emit the styled page shell and toolbar classes.");
         Assert(html.Contains("contentBounds", StringComparison.Ordinal) && html.Contains("fitViewport(root)", StringComparison.Ordinal), "Graph explorer runtime should fit visible content into the opening viewport.");
-        Assert(html.Contains("nodeHalfWidth(node)", StringComparison.Ordinal) && html.Contains("edgeLabelPoint(rendered, control)", StringComparison.Ordinal) && html.Contains("selfLoopGeometry(rendered.source)", StringComparison.Ordinal), "Graph explorer fit bounds should include shape-aware node extents plus curved edge, self-loop, and aggregate cluster-edge geometry.");
+        Assert(html.Contains("nodeHalfWidth(node)", StringComparison.Ordinal) && html.Contains("edgeLabelPoint(rendered, control)", StringComparison.Ordinal) && html.Contains("routeRenderPoints(rendered).forEach(point => pushPoint(point, pad))", StringComparison.Ordinal) && html.Contains("selfLoopGeometry(rendered.source)", StringComparison.Ordinal), "Graph explorer fit bounds should include shape-aware node extents plus route vertices, curved edge, self-loop, and aggregate cluster-edge geometry.");
         Assert(html.Contains("sceneSize(root)", StringComparison.Ordinal) && html.Contains("cfxGraphFitScale", StringComparison.Ordinal), "Graph explorer fit should use the live graph viewport and expose repeatable fit diagnostics instead of relying on fixed pixel guesses.");
         Assert(html.Contains("clusterMetrics", StringComparison.Ordinal) && html.Contains("Math.min(54", StringComparison.Ordinal) && html.Contains("const members = expanded ? allMembers.filter(node => visible(node.el)) : allMembers", StringComparison.Ordinal), "Graph explorer Canvas clusters should use bounded readable hulls and visible-member metrics when expanded clusters are filtered.");
         Assert(html.Contains("sampleTicks", StringComparison.Ordinal) && html.Contains("cfxGraphPerformanceSampleBudgetMs", StringComparison.Ordinal), "Graph explorer runtime should compare performance samples against the effective sampled-tick budget.");
@@ -261,7 +261,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("const metrics = clusterMetrics(cluster, state.byId)", StringComparison.Ordinal), "Graph explorer Canvas cluster hit testing should reuse drawn cluster bounds.");
         Assert(html.Contains("!visible(cluster.el) || cluster.el.classList.contains('cfx-graph-cluster-expanded')", StringComparison.Ordinal), "Graph explorer Canvas cluster hit testing should skip transparent expanded cluster hulls.");
         Assert(html.Contains("bindPointerInteractions", StringComparison.Ordinal) && html.Contains("cfxgraphdragstart", StringComparison.Ordinal) && html.Contains("cfxgraphviewport", StringComparison.Ordinal), "Graph explorer runtime should expose drag/drop node movement and viewport events.");
-        Assert(html.Contains("toggleNeighborhoodFocus", StringComparison.Ordinal) && html.Contains("cfxgraphfocus", StringComparison.Ordinal) && html.Contains("cfxGraphFocusNode", StringComparison.Ordinal), "Graph explorer runtime should expose selected-node neighborhood focus and host events.");
+        Assert(html.Contains("toggleNeighborhoodFocus", StringComparison.Ordinal) && html.Contains("cfxgraphfocus", StringComparison.Ordinal) && html.Contains("cfxGraphFocusNode", StringComparison.Ordinal) && html.Contains(".cfx-graph-neighborhood-primary ellipse", StringComparison.Ordinal), "Graph explorer runtime should expose selected-node neighborhood focus, host events, and rich-shape SVG focus styling.");
         Assert(html.Contains("if (focusNode && items(root, '[data-cfx-role=\"graph-node\"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode);", StringComparison.Ordinal), "Graph explorer filters should recompute active neighborhood focus after visible edges change.");
         Assert(html.Contains("exportGraph", StringComparison.Ordinal) && html.Contains("cfxgraphexport", StringComparison.Ordinal) && html.Contains("exportGraphJson", StringComparison.Ordinal), "Graph explorer runtime should expose cancelable SVG, PNG, and JSON export events.");
         Assert(html.Contains("exportSvgContent", StringComparison.Ordinal) && html.Contains("data-cfx-export-style", StringComparison.Ordinal), "Graph explorer SVG export should inline graph styles into the standalone SVG payload.");
@@ -270,7 +270,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("parent.appendChild(link)", StringComparison.Ordinal) && html.Contains("link.remove()", StringComparison.Ordinal), "Graph explorer export downloads should click an attached anchor for browsers that ignore detached download links.");
         Assert(html.Contains("drawCanvas(root, state, { force: true })", StringComparison.Ordinal), "Graph explorer PNG export should paint the Canvas surface even when the active renderer is SVG.");
         Assert(html.Contains("cfxgraphexporterror", StringComparison.Ordinal) && html.Contains("cfxGraphLastExportError", StringComparison.Ordinal), "Graph explorer PNG export should report tainted-canvas failures instead of throwing.");
-        Assert(html.Contains("edgeRenderEndpoints", StringComparison.Ordinal) && html.Contains("edge.sourceCollapsed", StringComparison.Ordinal) && html.Contains("nodeBoundaryInset(edge.target", StringComparison.Ordinal), "Graph explorer runtime layout should keep directed and collapsed-proxy SVG edge endpoints trimmed after physics, dragging, or cluster toggles.");
+        Assert(html.Contains("edgeRenderEndpoints", StringComparison.Ordinal) && html.Contains("const endpoints = edgeRenderEndpoints(edge, control)", StringComparison.Ordinal) && html.Contains("edge.sourceCollapsed", StringComparison.Ordinal) && html.Contains("nodeBoundaryInset(edge.target", StringComparison.Ordinal), "Graph explorer runtime layout should keep directed and collapsed-proxy SVG edge endpoints and labels trimmed after physics, dragging, or cluster toggles.");
         Assert(html.Contains("edgeStatusOk", StringComparison.Ordinal) && html.Contains("edgeKindOk", StringComparison.Ordinal) && html.Contains("visibleNodes.add(attr(edge, 'data-source-node-id'))", StringComparison.Ordinal), "Graph explorer filters should evaluate edge facets and keep matching edge endpoints visible.");
         Assert(html.Contains("data-cluster-node-ids", StringComparison.Ordinal) && html.Contains("memberVisible", StringComparison.Ordinal), "Graph explorer filters should evaluate cluster facets and member visibility.");
         Assert(html.Contains("hiddenMemberHits", StringComparison.Ordinal) && html.Contains("edgeMatchesFacet", StringComparison.Ordinal), "Graph explorer filters should keep collapsed clusters visible when hidden member nodes or edges match search and facet filters.");
@@ -287,13 +287,14 @@ internal static partial class SmokeTests {
         Assert(html.Contains("edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)", StringComparison.Ordinal), "Graph explorer Canvas LOD should draw selected and focused edge labels even when ordinary dense edge labels are hidden.");
         Assert(html.Contains("syncSelectedEdgeLabels", StringComparison.Ordinal) && html.Contains("state.clusters.find(cluster => visible(cluster.el))", StringComparison.Ordinal), "Graph explorer Canvas keyboard selection should include visible collapsed clusters, not only nodes and edges.");
         Assert(html.Contains("!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)", StringComparison.Ordinal), "Graph explorer neighborhood focus should ignore hidden edges and hidden aggregate endpoints.");
-        Assert(html.Contains("label: attr(node.el, 'data-node-label')", StringComparison.Ordinal) && html.Contains("groupId: attr(node.el, 'data-node-group')", StringComparison.Ordinal) && html.Contains("imageUrl: attr(node.el, 'data-node-image-url')", StringComparison.Ordinal), "Graph explorer JSON export should include node labels, grouping, and image/icon details needed to reconstruct reviewed graphs.");
+        Assert(html.Contains("label: attr(node.el, 'data-node-label')", StringComparison.Ordinal) && html.Contains("level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level'))", StringComparison.Ordinal) && html.Contains("groupId: attr(node.el, 'data-node-group')", StringComparison.Ordinal) && html.Contains("imageUrl: attr(node.el, 'data-node-image-url')", StringComparison.Ordinal), "Graph explorer JSON export should include node labels, hierarchy levels, grouping, and image/icon details needed to reconstruct reviewed graphs.");
         Assert(html.Contains("metadata: metadataDetail(root)", StringComparison.Ordinal), "Graph explorer JSON export should include scene-level metadata from the graph root.");
         Assert(html.Contains("kind: attr(edge, 'data-edge-kind')", StringComparison.Ordinal) && html.Contains("showLabel: attr(edge, 'data-edge-show-label') !== 'false'", StringComparison.Ordinal) && html.Contains("hidden: edge.classList.contains('cfx-graph-hidden')", StringComparison.Ordinal), "Graph explorer JSON export should include edge facets and current visibility needed to reconstruct reviewed graphs.");
         Assert(html.Contains("clusters: items(root, '[data-cfx-role=\"graph-cluster\"]')", StringComparison.Ordinal), "Graph explorer JSON export should include cluster membership and collapsed state.");
         Assert(html.Contains("metadata: metadataDetail(node.el)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(edge)", StringComparison.Ordinal) && html.Contains("metadata: metadataDetail(cluster)", StringComparison.Ordinal), "Graph explorer JSON export should include structured metadata for nodes, edges, and clusters.");
         Assert(html.Contains("cfxGraphClusterLod", StringComparison.Ordinal) && html.Contains("data-cfx-lod-collapse-clusters", StringComparison.Ordinal), "Graph explorer binding should report cluster LOD while honoring the explicit collapse-on-load option.");
-        Assert(html.Contains("hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true') applyClusterState(root, true)", StringComparison.Ordinal), "Graph explorer binding should honor CollapseClustersOnLoad only when LOD is enabled, regardless of the cluster LOD threshold.");
+        Assert(html.Contains("data-cfx-graph-cluster-collapse-on-load", StringComparison.Ordinal) && html.Contains("attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true' || (hasFeature(root, 'LevelOfDetail')", StringComparison.Ordinal), "Graph explorer binding and JSON export should preserve explicit cluster collapse defaults independently from LOD collapse.");
+        Assert(html.Contains("routePoints: routePoints(attr(el, 'data-edge-route-points'))", StringComparison.Ordinal) && html.Contains("routeRenderPoints(edge).map", StringComparison.Ordinal) && html.Contains("endpoint.x + node.x - homeX", StringComparison.Ordinal) && html.Contains("distanceToRoute(point, routeRenderPoints(rendered))", StringComparison.Ordinal), "Graph explorer SVG, Canvas/PNG, export, and hit-testing paths should consume prepared edge route points while keeping untrimmed route endpoints attached to live node positions.");
         Assert(html.Contains("dragThreshold", StringComparison.Ordinal) && html.Contains("if (!active.moved) {", StringComparison.Ordinal) && html.Contains("data-node-fixed', active.fixed", StringComparison.Ordinal), "Graph explorer node selection should only pin nodes and pause physics after an actual drag.");
         Assert(html.Contains("const hitItem = node || graphItem || hitGraphItemAt(root, point)", StringComparison.Ordinal) && html.Contains("hasFeature(root, 'Viewport') && !hitBlocksPan", StringComparison.Ordinal), "Graph explorer viewport panning should start from graph background or inert graph items, not from selectable nodes, clusters, or edges.");
         Assert(html.Contains("if (hasFeature(root, 'Viewport')) {", StringComparison.Ordinal) && html.Contains("fitViewport(root);", StringComparison.Ordinal), "Graph explorer binding should not fit or emit viewport changes when hosts disable viewport behavior.");
@@ -306,7 +307,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("physicsCommunityAnchors", StringComparison.Ordinal) && html.Contains("physicsCommunityKey", StringComparison.Ordinal) && html.Contains("hubSpread", StringComparison.Ordinal), "Graph explorer runtime physics should keep communities and hubs structurally separated during stabilization.");
         Assert(html.Contains("compactStabilizedLayout", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCompaction", StringComparison.Ordinal), "Graph explorer runtime physics should compact oversized stabilized layouts back into a readable viewport envelope.");
         Assert(html.Contains("expandDenseLayout", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutDensityExpansion", StringComparison.Ordinal), "Graph explorer runtime physics should expand dense stabilized layouts when overlap pressure shows the graph is too tightly packed.");
-        Assert(html.Contains("runLayoutQualityPass", StringComparison.Ordinal) && html.Contains("spreadHubNeighborhoods", StringComparison.Ordinal) && html.Contains("separateOverlaps", StringComparison.Ordinal), "Graph explorer runtime physics should run a structured quality pass after stabilization instead of only fitting whatever the force solver produced.");
+        Assert(html.Contains("runLayoutQualityPass", StringComparison.Ordinal) && html.Contains("spreadHubNeighborhoods", StringComparison.Ordinal) && html.Contains("separateOverlaps", StringComparison.Ordinal) && html.Contains("Math.max(nodeHalfWidth(node), nodeHalfHeight(node))", StringComparison.Ordinal), "Graph explorer runtime physics should run a structured shape-aware quality pass after stabilization instead of only fitting whatever the force solver produced.");
         Assert(html.Contains("restoreClusterAnchors", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutClusterGravity", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCommunityGravity", StringComparison.Ordinal), "Graph explorer runtime physics should pull stabilized communities back toward their prepared regions instead of blending all clusters into one mass.");
         Assert(html.Contains("spreadCommunityAreas", StringComparison.Ordinal) && html.Contains("cfxGraphLayoutCommunitySpread", StringComparison.Ordinal), "Graph explorer runtime layout quality should separate whole community areas before final overlap cleanup.");
         Assert(html.Contains("cluster:${node.cluster}", StringComparison.Ordinal) && html.Contains("group:${node.groupId}", StringComparison.Ordinal) && html.Contains("kind:${node.kind}", StringComparison.Ordinal), "Graph explorer runtime layout quality should keep cluster, group, and kind community namespaces separate.");
@@ -323,8 +324,10 @@ internal static partial class SmokeTests {
         Assert(html.Contains("focusedSelectionHidden", StringComparison.Ordinal) && html.Contains("clearNeighborhoodFocus(root)", StringComparison.Ordinal), "Graph explorer runtime should clear neighborhood focus when filters or cluster collapse hide the focused selection.");
         Assert(html.Contains("image.naturalWidth > 0", StringComparison.Ordinal) && html.Contains("malformed host-supplied images", StringComparison.Ordinal) && html.Contains("imageLoadCallbacks", StringComparison.Ordinal), "Graph explorer Canvas runtime should tolerate broken image-node URLs and redraw every waiting root when shared images finish loading.");
         Assert(html.Contains("data-cfx-graph-action=\"zoom-in\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"zoom-out\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-action=\"fit\"", StringComparison.Ordinal), "Graph explorer toolbar should expose dependency-free zoom and fit controls.");
-        Assert(html.Contains("selfLoopPath(rendered.target)", StringComparison.Ordinal) && html.Contains("bezierCurveTo(loop.c1.x", StringComparison.Ordinal), "Graph explorer runtime should preserve visible self-loop paths after physics, dragging, aggregate edge retargeting, and Canvas redraws.");
-        Assert(html.Contains("nodeHitDistance(node, point, 10)", StringComparison.Ordinal) && html.Contains("node.shape === 'box'", StringComparison.Ordinal), "Graph explorer Canvas hit testing should use box rectangles instead of circular hit radii for box nodes.");
+        Assert(html.Contains("edgePathData(rendered, control)", StringComparison.Ordinal) && html.Contains("bezierCurveTo(loop.c1.x", StringComparison.Ordinal), "Graph explorer runtime should preserve visible self-loop paths after physics, dragging, aggregate edge retargeting, and Canvas redraws.");
+        Assert(html.Contains("nodeHitDistance(node, point, 10)", StringComparison.Ordinal) && html.Contains("nodeUsesRectangularGeometry(node)", StringComparison.Ordinal) && html.Contains("node.shape === 'database'", StringComparison.Ordinal), "Graph explorer Canvas hit testing should use shape extents instead of circular hit radii for rich nodes.");
+        Assert(html.Contains("node.shape === 'text'", StringComparison.Ordinal) && html.Contains("return;", StringComparison.Ordinal), "Graph explorer Canvas should not draw an artificial mark for text-only nodes.");
+        Assert(html.Contains("loop?.c1 || control || edge.target", StringComparison.Ordinal) && html.Contains("loop?.start || edge.source", StringComparison.Ordinal), "Graph explorer Canvas should draw source arrows at self-loop starts instead of over target markers.");
         Assert(html.Contains("distanceToSelfLoop", StringComparison.Ordinal) && html.Contains("selfLoopGeometry(node)", StringComparison.Ordinal), "Graph explorer Canvas hit testing should follow visible self-loop curves instead of their zero-length source-target segment.");
         Assert(html.Contains("distanceToQuadratic(point, endpoints.source, control, endpoints.target)", StringComparison.Ordinal), "Graph explorer Canvas hit testing should follow the rendered quadratic curve for curved and aggregate edges.");
         Assert(html.Contains("nodeHalfWidth(node)", StringComparison.Ordinal) && html.Contains("nodeHalfHeight(node)", StringComparison.Ordinal) && html.Contains("seen.add(node.id)", StringComparison.Ordinal), "Graph explorer Canvas hit testing should index large nodes across every grid cell they cover without duplicate candidates.");
@@ -342,7 +345,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("cfxGraphSelectionCount", StringComparison.Ordinal) && html.Contains("cfxGraphSelectionIds", StringComparison.Ordinal) && html.Contains("cfxGraphSelectionPrimary", StringComparison.Ordinal), "Graph explorer runtime should keep durable multi-selection diagnostics on the graph root.");
         Assert(html.Contains("cfx-graph-lod-compact", StringComparison.Ordinal) && html.Contains("cfx-graph-performance-gated", StringComparison.Ordinal) && html.Contains("cfx-graph-neighborhood-active", StringComparison.Ordinal), "Graph explorer runtime and CSS should expose large-graph LOD, performance, and neighborhood focus states.");
         Assert(html.Contains(".cfx-graph-has-overview .cfx-graph-overview{display:block}", StringComparison.Ordinal), "Graph explorer CSS should show the overview only when viewport navigation is enabled.");
-        Assert(html.Contains(".cfx-graph-edge.cfx-graph-selected", StringComparison.Ordinal), "Graph explorer CSS should visibly preserve selected edge state.");
+        Assert(html.Contains(".cfx-graph-edge.cfx-graph-selected", StringComparison.Ordinal) && html.Contains("stroke:var(--cfx-edge-stroke,#94a3b8)", StringComparison.Ordinal), "Graph explorer CSS should visibly preserve selected edge state even when edges carry custom color variables.");
+        Assert(html.Contains(".cfx-graph-node.cfx-graph-selected", StringComparison.Ordinal) && html.Contains("stroke:var(--cfx-node-stroke,#eff6ff)", StringComparison.Ordinal), "Graph explorer CSS should visibly preserve selected node state even when nodes carry custom style variables.");
         Assert(html.Contains(".cfx-graph-edge-label.cfx-graph-hidden", StringComparison.Ordinal) && html.Contains(".cfx-graph-edge-label.cfx-graph-cluster-collapsed-member", StringComparison.Ordinal), "Graph explorer CSS should hide filtered and collapsed edge labels.");
         Assert(html.Contains(".cfx-graph-stage{position:relative;overflow:hidden;aspect-ratio:12/7", StringComparison.Ordinal) && html.Contains(".cfx-graph-svg{display:block;width:100%;height:auto;aspect-ratio:12/7}", StringComparison.Ordinal) && !html.Contains("min-height:420px", StringComparison.Ordinal), "Graph explorer CSS should preserve the SVG scene aspect ratio so pointer mapping does not drift under narrow embeds.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should not reference external stylesheets.");
@@ -446,6 +450,33 @@ internal static partial class SmokeTests {
             .AddCluster("collapsed", "Collapsed", new[] { "a" }, cluster => cluster.Collapsed = false);
         loadCollapsedHtml.Options.LevelOfDetail.CollapseClustersOnLoad = true;
         Assert(loadCollapsedHtml.ToGraphExplorerHtmlFragment().Contains("data-cluster-collapsed=\"true\"", StringComparison.Ordinal), "Graph explorer static markup should serialize the effective load-collapsed cluster state before bindings run.");
+
+        var explicitClusterCollapse = GraphScene.Create("explicit-cluster-collapse", "Explicit cluster collapse")
+            .AddNode("a", "A")
+            .AddCluster("collapsed", "Collapsed", new[] { "a" }, cluster => cluster.Collapsed = false);
+        explicitClusterCollapse.Options.Cluster.CollapseOnLoad = true;
+        var explicitClusterCollapseHtml = explicitClusterCollapse.ToGraphExplorerHtmlFragment();
+        Assert(explicitClusterCollapseHtml.Contains("data-cfx-graph-cluster-collapse-on-load=\"true\"", StringComparison.Ordinal) && explicitClusterCollapseHtml.Contains("collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true'", StringComparison.Ordinal), "Graph explorer JSON export should report explicit cluster collapse defaults, not only LOD collapse defaults.");
+
+        var dashPatternOnly = GraphScene.Create("dash-pattern-only", "Dash pattern only")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddEdge("a-b", "a", "b", configure: edge => edge.Style.DashPattern = "4 2");
+        var dashPatternOnlyHtml = dashPatternOnly.ToGraphExplorerHtmlFragment();
+        Assert(dashPatternOnlyHtml.Contains("data-edge-dash-pattern=\"4 2\"", StringComparison.Ordinal) && !dashPatternOnlyHtml.Contains("stroke-dasharray:4 2", StringComparison.Ordinal), "Graph explorer SVG should only apply dash patterns when the graph edge is marked dashed, matching Canvas and PNG behavior.");
+
+        var anchoredHierarchy = GraphScene.Create("anchored-hierarchy", "Anchored hierarchy")
+            .AddNode("root", "Root", node => {
+                node.Level = 0;
+                node.X = 480;
+                node.Y = 280;
+                node.Fixed = true;
+            })
+            .AddNode("child", "Child")
+            .AddEdge("root-child", "root", "child", configure: edge => edge.Directed = true);
+        anchoredHierarchy.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        var anchoredHierarchyHtml = anchoredHierarchy.ToGraphExplorerHtmlFragment();
+        Assert(anchoredHierarchyHtml.Contains("data-node-id=\"root\" data-node-label=\"Root\"", StringComparison.Ordinal) && anchoredHierarchyHtml.Contains("data-node-id=\"child\" data-node-label=\"Child\"", StringComparison.Ordinal) && anchoredHierarchyHtml.Contains("data-node-y=\"400\"", StringComparison.Ordinal), "Hierarchical graph layout should place generated nodes relative to explicit fixed anchors instead of collapsing them onto the viewport center.");
 
         var largeCollapsedCluster = GraphScene.Create("large-collapsed-cluster", "Large collapsed cluster");
         for (var i = 0; i < 16; i++) largeCollapsedCluster.AddNode("n" + i, "Node " + i);
@@ -614,6 +645,26 @@ internal static partial class SmokeTests {
             .ToGraphExplorerHtmlFragment();
         Assert(ExtractGraphEdgePath(boxTargetHtml, "source-target").Contains("L 429.5 280", StringComparison.Ordinal), "Graph explorer SVG should trim directed arrows to the visible edge of box nodes instead of under the rectangle fill.");
 
+        var collapsedRouteLabelHtml = GraphScene.Create("collapsed-route-label", "Collapsed route label")
+            .AddNode("source", "Source", node => { node.X = 100; node.Y = 260; node.ClusterId = "cluster"; })
+            .AddNode("target", "Target", node => { node.X = 520; node.Y = 260; })
+            .AddCluster("cluster", "Cluster", new[] { "source" }, cluster => cluster.Collapsed = true)
+            .AddEdge("route", "source", "target", "Route", edge => {
+                edge.Shape = GraphEdgeShape.Polyline;
+                edge.RoutePoints.AddRange(new[] { new GraphScenePoint(100, 260), new GraphScenePoint(100, 120), new GraphScenePoint(520, 120), new GraphScenePoint(520, 260) });
+                edge.Directed = true;
+            })
+            .ToGraphExplorerHtmlFragment();
+        Assert(Math.Abs(ExtractGraphEdgeLabelPoint(collapsedRouteLabelHtml, "route").Y - 253) < 0.001, "Graph explorer SVG should place collapsed routed-edge labels on the rendered collapsed geometry instead of the hidden member route.");
+
+        var routedArrowHtml = GraphScene.Create("routed-arrow", "Routed arrow")
+            .AddNode("source", "Source", node => { node.X = 100; node.Y = 260; })
+            .AddNode("target", "Target", node => { node.X = 520; node.Y = 260; })
+            .AddEdge("route", "source", "target", "Route", edge => { edge.Shape = GraphEdgeShape.Polyline; edge.RoutePoints.AddRange(new[] { new GraphScenePoint(100, 260), new GraphScenePoint(100, 120), new GraphScenePoint(520, 120), new GraphScenePoint(520, 260) }); edge.Directed = true; edge.SourceArrow = true; })
+            .ToGraphExplorerHtmlFragment();
+        Assert(ExtractGraphEdgePath(routedArrowHtml, "route").Contains("M 100 245", StringComparison.Ordinal) && ExtractGraphEdgePath(routedArrowHtml, "route").Contains("L 520 245", StringComparison.Ordinal), "Graph explorer SVG should trim prepared routed-edge endpoints before placing source and target arrow markers.");
+        var boundaryRouteHtml = GraphScene.Create("boundary-routed-arrow", "Boundary routed arrow").AddNode("source", "Source", node => { node.X = 100; node.Y = 260; }).AddNode("target", "Target", node => { node.X = 520; node.Y = 260; }).AddEdge("route", "source", "target", "Route", edge => { edge.Shape = GraphEdgeShape.Polyline; edge.RoutePoints.AddRange(new[] { new GraphScenePoint(100, 245), new GraphScenePoint(100, 120), new GraphScenePoint(520, 120), new GraphScenePoint(520, 245) }); edge.Directed = true; edge.SourceArrow = true; }).ToGraphExplorerHtmlFragment();
+        Assert(ExtractGraphEdgePath(boundaryRouteHtml, "route").Contains("M 100 245", StringComparison.Ordinal) && ExtractGraphEdgePath(boundaryRouteHtml, "route").Contains("L 520 245", StringComparison.Ordinal), "Graph explorer SVG should not double-trim prepared route endpoints that already land on node boundaries.");
         var imageFallbackHtml = GraphScene.Create("image-fallback-target", "Image fallback target").AddNode("source", "Source", node => { node.X = 100; node.Y = 280; }).AddNode("target", "Target", node => { node.X = 480; node.Y = 280; node.Size = 30; node.Shape = GraphNodeShape.Image; }).AddEdge("source-target", "source", "target", configure: edge => edge.Directed = true).ToGraphExplorerHtmlFragment();
         Assert(imageFallbackHtml.Contains("data-node-shape=\"circle\"", StringComparison.Ordinal) && ExtractGraphEdgePath(imageFallbackHtml, "source-target").Contains("L 443 280", StringComparison.Ordinal), "Graph explorer SVG should use the effective rendered circle shape for image nodes without image URLs.");
 
@@ -713,57 +764,6 @@ internal static partial class SmokeTests {
         var dx = b.X - a.X;
         var dy = b.Y - a.Y;
         return Math.Sqrt(dx * dx + dy * dy);
-    }
-
-    private static GraphScene SampleGraphScene() {
-        return GraphScene.Create("service-map", "Service map")
-            .AddNode("api", "API", node => {
-                node.Kind = "service";
-                node.GroupId = "platform";
-                node.ClusterId = "core";
-                node.Status = "healthy";
-                node.Size = 11;
-                node.Shape = GraphNodeShape.Image;
-                node.ImageUrl = "data:image/svg+xml,%3Csvg viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232563eb'/%3E%3C/svg%3E";
-                node.ImageAlt = "API service icon";
-                node.IconText = "A";
-                node.Metadata["owner"] = "identity";
-            })
-            .AddNode("db", "Database", node => {
-                node.Kind = "database";
-                node.GroupId = "platform";
-                node.ClusterId = "core";
-                node.Status = "warning";
-                node.Size = 13;
-            })
-            .AddNode("worker", "Worker", node => {
-                node.Kind = "service";
-                node.GroupId = "jobs";
-                node.Status = "healthy";
-                node.Fixed = true;
-                node.X = 760;
-                node.Y = 340;
-            })
-            .AddEdge("api-db", "api", "db", "queries", edge => {
-                edge.Kind = "dependency";
-                edge.Status = "warning";
-                edge.Weight = 2;
-                edge.Length = 140;
-                edge.Directed = true;
-                edge.Shape = GraphEdgeShape.Curve;
-                edge.Curvature = 32;
-                edge.Dashed = true;
-                edge.Metadata["evidence"] = "privileged-path";
-            })
-            .AddEdge("api-worker", "api", "worker", "enqueues", edge => {
-                edge.Kind = "queue";
-                edge.Status = "healthy";
-            })
-            .AddCluster("core", "Core services", new[] { "api", "db" }, cluster => {
-                cluster.Kind = "community";
-                cluster.Collapsed = true;
-                cluster.Metadata["tier"] = "core";
-            });
     }
 
     private static GraphScene BuildScaleConfidenceScene(int nodeCount, int edgeCount) {

@@ -213,6 +213,7 @@ public static partial class GalleryWriter {
             "domain-security-interactive",
             "executive-interactive-dashboard",
             "identity-risk-graph-explorer",
+            "vis-network-parity-hierarchy",
             "enterprise-access-graph-benchmark"),
         new(
             "Visual Systems",

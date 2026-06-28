@@ -9,6 +9,12 @@ internal static class GraphExplorerExamples {
             options.RenderBackend = HtmlGraphRenderBackend.Svg;
         }).SaveText(Path.Combine(output, "identity-risk-graph-explorer.html"));
 
+        var visParity = BuildVisNetworkParityHierarchy();
+        visParity.ToGraphExplorerHtmlPage(options => {
+            options.PageTitle = "Vis-Network Parity Hierarchy";
+            options.RenderBackend = HtmlGraphRenderBackend.Svg;
+        }).SaveText(Path.Combine(output, "vis-network-parity-hierarchy.html"));
+
         var benchmark = BuildEnterpriseAccessBenchmark();
         benchmark.ToGraphExplorerHtmlPage(options => {
             options.PageTitle = "Enterprise Access Graph Benchmark";
@@ -75,6 +81,52 @@ internal static class GraphExplorerExamples {
         }
 
         return graph;
+    }
+
+    private static GraphScene BuildVisNetworkParityHierarchy() {
+        var graph = VisNetworkGraph.Create();
+        graph.Options.Layout.Hierarchical.Enabled = true;
+        graph.Options.Layout.Hierarchical.Direction = GraphLayoutDirection.LeftToRight;
+        graph.Options.Layout.Hierarchical.LevelSeparation = 150;
+        graph.Options.Layout.Hierarchical.NodeSpacing = 88;
+        graph.Options.Physics.StabilizationIterations = 180;
+        graph.Options.Interaction.NavigationButtons = true;
+        graph.Options.Manipulation.Enabled = true;
+        graph.Options.Manipulation.AddNode = true;
+        graph.Options.Manipulation.EditNode = true;
+        graph.Options.Manipulation.AddEdge = true;
+        graph.Options.Manipulation.EditEdge = true;
+        graph.Options.Manipulation.PersistPositions = true;
+
+        graph.Groups["identity"] = new VisNetworkGroupOptions { Label = "Identity", Kind = "service", Shape = VisNetworkNodeShape.Diamond, Icon = "ID" };
+        graph.Groups["apps"] = new VisNetworkGroupOptions { Label = "Apps", Kind = "application", Shape = VisNetworkNodeShape.Box, Icon = "A" };
+        graph.Groups["data"] = new VisNetworkGroupOptions { Label = "Data", Kind = "database", Shape = VisNetworkNodeShape.Database, Icon = "D" };
+        graph.Groups["risk"] = new VisNetworkGroupOptions { Label = "Risk", Kind = "finding", Shape = VisNetworkNodeShape.Star, Icon = "!" };
+        graph.Groups["identity"].Style.BackgroundColor = "#DBEAFE";
+        graph.Groups["identity"].Style.BorderColor = "#2563EB";
+        graph.Groups["apps"].Style.BackgroundColor = "#ECFDF5";
+        graph.Groups["apps"].Style.BorderColor = "#059669";
+        graph.Groups["data"].Style.BackgroundColor = "#F5F3FF";
+        graph.Groups["data"].Style.BorderColor = "#7C3AED";
+        graph.Groups["risk"].Style.BackgroundColor = "#FFF7ED";
+        graph.Groups["risk"].Style.BorderColor = "#EA580C";
+        graph.Groups["risk"].Style.LabelBackgroundColor = "#FFFFFF";
+
+        graph.AddNode("entra", "Entra ID", node => { node.Group = "identity"; node.Level = 0; node.Shape = VisNetworkNodeShape.Star; node.Style.BackgroundColor = "#2563EB"; node.Style.BorderColor = "#1E3A8A"; node.Style.LabelColor = "#0F172A"; node.Style.Shadow = true; });
+        graph.AddNode("adfs", "AD FS", node => { node.Group = "identity"; node.Level = 1; });
+        graph.AddNode("portal", "Portal", node => { node.Group = "apps"; node.Level = 2; });
+        graph.AddNode("crm", "CRM", node => { node.Group = "apps"; node.Level = 2; });
+        graph.AddNode("sql", "SQL", node => { node.Group = "data"; node.Level = 3; });
+        graph.AddNode("vault", "Vault", node => { node.Group = "data"; node.Level = 3; });
+        graph.AddNode("stale-admin", "Stale admin", node => { node.Group = "risk"; node.Level = 1; node.Shape = VisNetworkNodeShape.TriangleDown; node.Style.BackgroundColor = "#F97316"; });
+
+        graph.AddEdge("entra-adfs", "entra", "adfs", "trusts", edge => { edge.Smooth = VisNetworkSmoothType.Continuous; edge.Style.Color = "#2563EB"; edge.Style.Width = 2.4; });
+        graph.AddEdge("adfs-portal", "adfs", "portal", "auth", edge => { edge.Smooth = VisNetworkSmoothType.Dynamic; edge.Style.Color = "#059669"; edge.Style.Width = 2.2; });
+        graph.AddEdge("portal-crm", "portal", "crm", "delegates", edge => { edge.Dashes = true; edge.Style.Color = "#64748B"; });
+        graph.AddEdge("crm-sql", "crm", "sql", "queries", edge => { edge.Kind = "dataflow"; edge.Style.Color = "#7C3AED"; edge.Style.Width = 3; edge.Style.Physics = false; });
+        graph.AddEdge("portal-vault", "portal", "vault", "secrets", edge => { edge.Kind = "dependency"; edge.Style.Color = "#0F766E"; });
+        graph.AddEdge("risk-adfs", "stale-admin", "adfs", "affects", edge => { edge.ArrowsFrom = true; edge.Smooth = VisNetworkSmoothType.Continuous; edge.Style.Color = "#DC2626"; edge.Style.Width = 3.2; });
+        return graph.ToGraphScene("vis-network-parity-hierarchy", "Vis-Network Parity Hierarchy");
     }
 
     private static GraphScene BuildIdentityRiskGraph() {

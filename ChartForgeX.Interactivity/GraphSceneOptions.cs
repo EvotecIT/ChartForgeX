@@ -16,6 +16,15 @@ public sealed class GraphSceneOptions {
     /// <summary>Gets graph runtime performance budgets and telemetry settings.</summary>
     public GraphPerformanceOptions Performance { get; } = new();
 
+    /// <summary>Gets deterministic graph layout settings shared by static and interactive adapters.</summary>
+    public GraphLayoutOptions Layout { get; } = new();
+
+    /// <summary>Gets clustering policy for semantic, group-derived, or adaptive large-scene summaries.</summary>
+    public GraphClusterOptions Cluster { get; } = new();
+
+    /// <summary>Gets opt-in graph editing and manipulation capabilities for adapters that support authoring workflows.</summary>
+    public GraphManipulationOptions Manipulation { get; } = new();
+
     /// <summary>
     /// Determines whether all bits in the requested feature set are enabled.
     /// </summary>
@@ -93,6 +102,9 @@ public enum GraphSceneFeatures {
 
     /// <summary>The adapter can publish runtime performance telemetry.</summary>
     PerformanceTelemetry = 8192,
+
+    /// <summary>The adapter can add, edit, delete, or persist graph structure through an opt-in authoring surface.</summary>
+    Manipulation = 16384,
 
     /// <summary>Common graph explorer surface for dependency-free visual exploration.</summary>
     Explorer = Selection | MultiSelection | Search | Filtering | Viewport | NeighborhoodFocus | Clustering | LevelOfDetail

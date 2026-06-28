@@ -111,6 +111,11 @@
     }
     return best;
   };
+  const distanceToRoute = (point, points) => {
+    let best = Number.POSITIVE_INFINITY;
+    for (let index = 1; index < points.length; index++) best = Math.min(best, distanceToSegment(point, points[index - 1], points[index]));
+    return best;
+  };
   const hitEdgeAt = (root, point) => {
     let best = null;
     let bestDistance = Number.POSITIVE_INFINITY;
@@ -121,6 +126,8 @@
       const control = edgeControl(rendered), endpoints = edgeRenderEndpoints(rendered, control);
       const distance = rendered.source === rendered.target
         ? distanceToSelfLoop(point, rendered.source)
+        : edgeHasRoute(rendered)
+        ? distanceToRoute(point, routeRenderPoints(rendered))
         : control
         ? distanceToQuadratic(point, endpoints.source, control, endpoints.target)
         : distanceToSegment(point, endpoints.source, endpoints.target);

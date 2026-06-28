@@ -10,13 +10,7 @@
     edges.forEach(edge => {
       const rendered = visualEdge(edge, byId);
       const control = edgeControl(rendered);
-      const endpoints = edgeRenderEndpoints(rendered, control);
-      const d = rendered.source === rendered.target
-        ? selfLoopPath(rendered.target)
-        : control
-        ? `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} Q ${control.x.toFixed(3)} ${control.y.toFixed(3)} ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`
-        : `M ${endpoints.source.x.toFixed(3)} ${endpoints.source.y.toFixed(3)} L ${endpoints.target.x.toFixed(3)} ${endpoints.target.y.toFixed(3)}`;
-      edge.el.setAttribute('d', d);
+      edge.el.setAttribute('d', edgePathData(rendered, control));
       const label = labels.get(attr(edge.el, 'data-edge-id'));
       if (label) {
         const point = edgeLabelPoint(rendered, control);
@@ -283,9 +277,10 @@
       const kindOk = !filters.kind || attr(node, 'data-node-kind') === filters.kind;
       const id = attr(node, 'data-node-id');
       const collapsedMember = node.classList.contains('cfx-graph-cluster-collapsed-member');
-      const matches = queryOk && statusOk && kindOk && !collapsedMember;
+      const intrinsicHidden = attr(node, 'data-node-hidden') === 'true';
+      const matches = queryOk && statusOk && kindOk && !collapsedMember && !intrinsicHidden;
       if (queryOk && statusOk && kindOk && collapsedMember) hiddenMemberHits.add(id);
-      nodeMatches.set(id, { node, matches });
+      nodeMatches.set(id, { node, matches, intrinsicHidden });
       if (matches) visibleNodes.add(id);
     });
     const edgeMatches = items(root, '[data-cfx-role="graph-edge"]').map(edge => {
@@ -293,9 +288,10 @@
       const edgeStatusOk = !filters.status || attr(edge, 'data-cfx-status') === filters.status;
       const edgeKindOk = !filters.kind || attr(edge, 'data-edge-kind') === filters.kind;
       const collapsedMember = edge.classList.contains('cfx-graph-cluster-collapsed-member');
+      const intrinsicHidden = attr(edge, 'data-edge-hidden') === 'true';
       const edgeMatchesFacet = edgeQueryOk && edgeStatusOk && edgeKindOk;
-      const matches = edgeMatchesFacet && !collapsedMember;
-      if (edgeMatchesFacet && collapsedMember) {
+      const matches = edgeMatchesFacet && !collapsedMember && !intrinsicHidden;
+      if (edgeMatchesFacet && collapsedMember && !intrinsicHidden) {
         hiddenMemberHits.add(attr(edge, 'data-source-node-id'));
         hiddenMemberHits.add(attr(edge, 'data-target-node-id'));
       }
@@ -303,7 +299,7 @@
         visibleNodes.add(attr(edge, 'data-source-node-id'));
         visibleNodes.add(attr(edge, 'data-target-node-id'));
       }
-      return { edge, matches };
+      return { edge, matches, intrinsicHidden };
     });
     items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
       const queryOk = !query || searchable(cluster).includes(query);
@@ -314,12 +310,13 @@
     });
     nodeMatches.forEach((entry, id) => {
       const visible = visibleNodes.has(id);
-      entry.node.classList.toggle('cfx-graph-hidden', !visible);
+      entry.node.classList.toggle('cfx-graph-hidden', entry.intrinsicHidden || !visible);
     });
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
-    edgeMatches.forEach(({ edge, matches }) => {
-      const endpointsVisible = visibleNodes.has(attr(edge, 'data-source-node-id')) && visibleNodes.has(attr(edge, 'data-target-node-id'));
-      const edgeVisible = matches && endpointsVisible;
+    const endpointAvailable = (id) => visibleNodes.has(id) || nodeMatches.get(id)?.intrinsicHidden === true;
+    edgeMatches.forEach(({ edge, matches, intrinsicHidden }) => {
+      const endpointsVisible = endpointAvailable(attr(edge, 'data-source-node-id')) && endpointAvailable(attr(edge, 'data-target-node-id'));
+      const edgeVisible = matches && endpointsVisible && !intrinsicHidden;
       edge.classList.toggle('cfx-graph-hidden', !edgeVisible);
       const label = labels.get(attr(edge, 'data-edge-id'));
       if (label) label.classList.toggle('cfx-graph-hidden', !edgeVisible);

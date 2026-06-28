@@ -537,6 +537,7 @@ Only refresh visual baselines after reviewing the generated gallery:
 - [Architecture notes](docs/architecture.md)
 - [Graph explorer reference](docs/graph-explorer.md)
 - [Interactivity reference](docs/interactivity.md)
+- [Super topology parity](docs/super-topology-parity.md)
 - [Topology reference](docs/topology.md)
 - [Visual blocks reference](docs/visual-blocks.md)
 - [Contributing and release workflow](CONTRIBUTING.md)

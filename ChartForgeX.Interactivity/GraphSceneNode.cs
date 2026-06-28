@@ -39,6 +39,9 @@ public sealed class GraphSceneNode {
     /// <summary>Gets or sets the preferred node shape used by adapters that support richer graph marks.</summary>
     public GraphNodeShape Shape { get; set; } = GraphNodeShape.Circle;
 
+    /// <summary>Gets or sets an optional hierarchy level used by deterministic hierarchical graph layouts.</summary>
+    public int? Level { get; set; }
+
     /// <summary>Gets or sets an optional image URI for image-backed graph nodes. Data URIs keep static output self-contained.</summary>
     public string? ImageUrl { get => _imageUrl; set => _imageUrl = ChartInteractionText.OptionalText(value, nameof(value), "Graph node image URLs"); }
 
@@ -75,6 +78,12 @@ public sealed class GraphSceneNode {
     /// <summary>Gets or sets whether physics adapters should keep the node at its current position.</summary>
     public bool Fixed { get; set; }
 
+    /// <summary>Gets or sets whether adapters should keep the node available for routing while hiding its visible mark.</summary>
+    public bool Hidden { get; set; }
+
+    /// <summary>Gets reusable node styling hints for adapters that support richer graph marks.</summary>
+    public GraphNodeStyle Style { get; } = new();
+
     /// <summary>Gets arbitrary node metadata for search, tooltips, inspectors, and host event payloads.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 }
@@ -90,5 +99,32 @@ public enum GraphNodeShape {
     Box,
 
     /// <summary>Use an image-backed node mark when an image URI is available.</summary>
-    Image
+    Image,
+
+    /// <summary>Use an elliptical node mark.</summary>
+    Ellipse,
+
+    /// <summary>Use a square node mark.</summary>
+    Square,
+
+    /// <summary>Use a diamond node mark.</summary>
+    Diamond,
+
+    /// <summary>Use an upward triangle node mark.</summary>
+    Triangle,
+
+    /// <summary>Use a downward triangle node mark.</summary>
+    TriangleDown,
+
+    /// <summary>Use a star-like node mark.</summary>
+    Star,
+
+    /// <summary>Use a database cylinder-like node mark.</summary>
+    Database,
+
+    /// <summary>Use a text-only node mark.</summary>
+    Text,
+
+    /// <summary>Use an image-backed rectangular node mark when an image URI is available.</summary>
+    RectangularImage
 }

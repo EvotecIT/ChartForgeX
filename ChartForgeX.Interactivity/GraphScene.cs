@@ -7,7 +7,7 @@ namespace ChartForgeX.Interactivity;
 /// Describes a host-neutral graph exploration scene that adapters can render with SVG, Canvas, WebGL, desktop, or native controls.
 /// </summary>
 public sealed class GraphScene {
-    private const GraphSceneFeatures KnownFeatures = GraphSceneFeatures.Selection | GraphSceneFeatures.MultiSelection | GraphSceneFeatures.Search | GraphSceneFeatures.Filtering | GraphSceneFeatures.Viewport | GraphSceneFeatures.DragNodes | GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.Clustering | GraphSceneFeatures.LevelOfDetail | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Export | GraphSceneFeatures.NeighborhoodFocus | GraphSceneFeatures.PerformanceTelemetry;
+    private const GraphSceneFeatures KnownFeatures = GraphSceneFeatures.Selection | GraphSceneFeatures.MultiSelection | GraphSceneFeatures.Search | GraphSceneFeatures.Filtering | GraphSceneFeatures.Viewport | GraphSceneFeatures.DragNodes | GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.Clustering | GraphSceneFeatures.LevelOfDetail | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Export | GraphSceneFeatures.NeighborhoodFocus | GraphSceneFeatures.PerformanceTelemetry | GraphSceneFeatures.Manipulation;
 
     private string _id = "graph";
     private string _title = "Graph";
@@ -62,6 +62,8 @@ public sealed class GraphScene {
             ValidateFiniteValue(node.Size, node.Id, "size");
             if (node.Size <= 0) throw new InvalidOperationException("Graph scene node size must be greater than zero: " + node.Id);
             if (!Enum.IsDefined(typeof(GraphNodeShape), node.Shape)) throw new InvalidOperationException("Graph scene node shape is unsupported: " + node.Id);
+            if (node.Level.HasValue && node.Level.Value < 0) throw new InvalidOperationException("Graph scene node hierarchy level must not be negative: " + node.Id);
+            node.Style.Validate(node.Id);
             if (node.HasExplicitPosition) {
                 ValidateFiniteCoordinate(node.X, node.Id, "x");
                 ValidateFiniteCoordinate(node.Y, node.Id, "y");
@@ -81,6 +83,12 @@ public sealed class GraphScene {
             if (!Enum.IsDefined(typeof(GraphEdgeShape), edge.Shape)) throw new InvalidOperationException("Graph scene edge shape is unsupported: " + edge.Id);
             if (edge.Weight <= 0) throw new InvalidOperationException("Graph scene edge weight must be greater than zero: " + edge.Id);
             if (edge.Length < 0) throw new InvalidOperationException("Graph scene edge length must not be negative: " + edge.Id);
+            for (var pointIndex = 0; pointIndex < edge.RoutePoints.Count; pointIndex++) {
+                ValidateFiniteValue(edge.RoutePoints[pointIndex].X, edge.Id, "route point x");
+                ValidateFiniteValue(edge.RoutePoints[pointIndex].Y, edge.Id, "route point y");
+            }
+
+            edge.Style.Validate(edge.Id);
             if (!edgeIds.Add(edge.Id)) throw new InvalidOperationException("Graph scene contains a duplicate edge id: " + edge.Id);
             if (!nodeIds.Contains(edge.SourceNodeId)) throw new InvalidOperationException("Graph scene edge references a missing source node: " + edge.Id);
             if (!nodeIds.Contains(edge.TargetNodeId)) throw new InvalidOperationException("Graph scene edge references a missing target node: " + edge.Id);
@@ -122,6 +130,8 @@ public sealed class GraphScene {
         if (Options.Performance.FrameBudgetMilliseconds <= 0) throw new InvalidOperationException("Graph scene performance frame budget must be greater than zero.");
         if (Options.Performance.MaxInteractiveSvgNodes < 0 || Options.Performance.MaxInteractiveSvgEdges < 0 || Options.Performance.MaxInteractiveCanvasNodes < 0 || Options.Performance.MaxInteractiveCanvasEdges < 0) throw new InvalidOperationException("Graph scene performance limits must not be negative.");
         if (Options.Performance.TelemetrySampleInterval <= 0) throw new InvalidOperationException("Graph scene performance telemetry interval must be greater than zero.");
+        Options.Layout.Validate();
+        Options.Cluster.Validate();
     }
 
     private static void ValidateRequiredId(string? id, string itemKind) {

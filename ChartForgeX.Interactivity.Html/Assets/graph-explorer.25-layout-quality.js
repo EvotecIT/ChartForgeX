@@ -37,7 +37,7 @@
   const spreadHubNeighborhoods = (root, state) => {
     if (state.nodes.length < 8 || !state.edges.length) return;
     const neighbors = new Map(state.nodes.map(node => [node.id, new Set()]));
-    state.edges.forEach(edge => {
+    state.edges.filter(edge => edge.physics !== false).forEach(edge => {
       neighbors.get(edge.source.id)?.add(edge.target.id);
       neighbors.get(edge.target.id)?.add(edge.source.id);
     });
@@ -111,7 +111,7 @@
     return moved;
   };
 
-  const nodeRadius = (node) => Math.max(6, node.size + (node.shape === 'box' ? 7 : node.shape === 'image' ? 6 : 5));
+  const nodeRadius = (node) => Math.max(6, Math.max(nodeHalfWidth(node), nodeHalfHeight(node)) + 5);
 
   const separateOverlaps = (root, state, passes) => {
     const movable = state.nodes.filter(node => !node.fixed);
