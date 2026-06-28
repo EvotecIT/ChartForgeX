@@ -32,7 +32,7 @@ internal static partial class SmokeTests {
             })
             .AddEdge("", "partial", "fixed");
         var plainScene = plain.ToGraphScene("plain-vis", "Plain vis");
-        Assert(plainScene.Edges[0].Id == "edge-0" && !plainScene.Edges[0].Directed && !plainScene.Edges[0].TargetArrow, "Vis-network edges without ids should get stable synthetic ids while plain edges remain undirected by default.");
+        Assert(plainScene.Edges[0].Id == "edge-0" && !plainScene.Edges[0].Directed && !plainScene.Edges[0].TargetArrow && plainScene.Edges[0].LayoutDirected, "Vis-network edges without ids should get stable synthetic ids while plain edges remain visually undirected but usable for hierarchy inference.");
         Assert(!plainScene.Nodes.Single(node => node.Id == "partial").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").HasExplicitPosition && plainScene.Nodes.Single(node => node.Id == "fixed").Fixed, "Vis-network coordinates should only pin graph nodes when callers supply both x and y.");
 
         var friendly = VisNetworkGraph.Create()
@@ -157,6 +157,32 @@ internal static partial class SmokeTests {
         var aRootY = GetAttribute(separatedHtml, "data-node-id=\"a-root\"", "data-node-y");
         var bRootY = GetAttribute(separatedHtml, "data-node-id=\"b-root\"", "data-node-y");
         Assert(Math.Abs(aRootY - bRootY) > 100, "Hierarchical layout should use ComponentSpacing to separate disconnected components.");
+
+        var wide = GraphScene.Create("wide-hier-components", "Wide hierarchical components");
+        wide.AddNode("a-root", "A root", node => node.Level = 0);
+        wide.AddNode("b-root", "B root", node => node.Level = 0);
+        for (var index = 0; index < 10; index++) {
+            wide.AddNode("a-" + index, "A " + index, node => node.Level = 1);
+            wide.AddNode("b-" + index, "B " + index, node => node.Level = 1);
+            wide.AddEdge("a-link-" + index, "a-root", "a-" + index);
+            wide.AddEdge("b-link-" + index, "b-root", "b-" + index);
+        }
+
+        wide.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        wide.Options.Layout.Direction = GraphLayoutDirection.LeftToRight;
+        wide.Options.Layout.NodeSpacing = 30;
+        wide.Options.Layout.ComponentSpacing = 120;
+        var wideHtml = wide.ToGraphExplorerHtmlFragment();
+        var aBottom = Enumerable.Range(0, 10).Select(index => GetAttribute(wideHtml, "data-node-id=\"a-" + index + "\"", "data-node-y")).Max();
+        var bTop = Enumerable.Range(0, 10).Select(index => GetAttribute(wideHtml, "data-node-id=\"b-" + index + "\"", "data-node-y")).Min();
+        Assert(aBottom < bTop, "Hierarchical layout should add each disconnected component's breadth before ComponentSpacing so wide levels do not overlap.");
+
+        var visHierarchy = VisNetworkGraph.Create();
+        visHierarchy.Options.Layout.Hierarchical.Enabled = true;
+        visHierarchy.Options.Layout.Hierarchical.Direction = GraphLayoutDirection.LeftToRight;
+        visHierarchy.AddNode("root", "Root").AddNode("child", "Child").AddEdge("root-child", "root", "child");
+        var visHierarchyHtml = visHierarchy.ToGraphScene("vis-hierarchy", "Vis hierarchy").ToGraphExplorerHtmlFragment();
+        Assert(GetAttribute(visHierarchyHtml, "data-node-id=\"root\"", "data-node-x") < GetAttribute(visHierarchyHtml, "data-node-id=\"child\"", "data-node-x"), "Vis-network hierarchical layouts should infer levels from from/to edges without requiring visible arrows.");
     }
 
     private static VisNetworkGraph SampleVisNetworkCompatGraph() {

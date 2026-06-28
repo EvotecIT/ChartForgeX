@@ -234,8 +234,9 @@ public static class TopologyGraphExplorerExtensions {
     }
 
     private static GraphEdgeShape EdgeShape(TopologyEdge edge) {
+        if (edge.Waypoints.Count > 0) return GraphEdgeShape.Polyline;
         if (edge.Routing == TopologyEdgeRouting.Curved) return GraphEdgeShape.Curve;
-        return edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0 ? GraphEdgeShape.Polyline : GraphEdgeShape.Line;
+        return edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal ? GraphEdgeShape.Polyline : GraphEdgeShape.Line;
     }
 
     private static void AddRoutePoints(GraphSceneEdge graphEdge, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options) {

@@ -129,6 +129,15 @@ internal static partial class SmokeTests {
         Assert(!freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && !freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition, "Topology graph bridge should not pin untouched AddAutoNode placeholder coordinates at the origin.");
         Assert(freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").RoutePoints.Count == 0 && freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").Shape == GraphEdgeShape.Polyline, "Topology graph bridge should not emit prepared route points when generated node positions will use a different coordinate space.");
 
+        var curvedWaypoint = TopologyChart.Create()
+            .WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("left", "Left", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddNode("right", "Right", 260, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
+            .AddEdge("curved-route", "left", "right", "manual", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved)
+            .WithEdgeWaypoints("curved-route", new ChartForgeX.Primitives.ChartPoint(130, 20), new ChartForgeX.Primitives.ChartPoint(170, 120));
+        var curvedWaypointEdge = curvedWaypoint.ToGraphScene().Edges.Single(edge => edge.Id == "curved-route");
+        Assert(curvedWaypointEdge.Shape == GraphEdgeShape.Polyline && curvedWaypointEdge.RoutePoints.Count >= 4, "Topology graph bridge should preserve caller-specified manual waypoints even when the edge routing remains curved.");
+
         var friendlyIds = TopologyChart.Create()
             .WithId("app map")
             .AddGroup("core services", "Core Services", 0, 0, 240, 160, TopologyHealthStatus.Healthy)

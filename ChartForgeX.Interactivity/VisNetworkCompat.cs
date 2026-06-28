@@ -325,6 +325,7 @@ public sealed class VisNetworkEdge {
             Label = Label,
             Kind = Kind,
             Directed = ArrowsTo,
+            LayoutDirected = true,
             SourceArrow = ArrowsFrom,
             TargetArrow = ArrowsTo,
             Dashed = Dashes || !string.IsNullOrWhiteSpace(Style.DashPattern),

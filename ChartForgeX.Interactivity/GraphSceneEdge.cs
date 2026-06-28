@@ -38,6 +38,9 @@ public sealed class GraphSceneEdge {
     /// <summary>Gets or sets whether adapters should render a directional arrow toward the target node.</summary>
     public bool Directed { get; set; }
 
+    /// <summary>Gets or sets whether hierarchical layout inference should follow source-to-target order without requiring a rendered arrow.</summary>
+    public bool LayoutDirected { get; set; }
+
     /// <summary>Gets or sets whether adapters should render a directional arrow at the source node.</summary>
     public bool SourceArrow { get; set; }
 

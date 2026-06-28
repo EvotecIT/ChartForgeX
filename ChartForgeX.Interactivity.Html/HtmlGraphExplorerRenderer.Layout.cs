@@ -50,6 +50,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             foreach (var node in components[index]) componentOrder[node.Id] = index;
         }
 
+        var layout = scene.Options.Layout;
         var orderedComponents = scene.Nodes
             .GroupBy(node => componentOrder.TryGetValue(node.Id, out var order) ? order : 0)
             .OrderBy(group => group.Key)
@@ -65,21 +66,26 @@ public sealed partial class HtmlGraphExplorerRenderer {
                             .ThenBy(node => node.Id, StringComparer.Ordinal)
                             .ToArray()
                     })
-                    .ToArray()
+                    .ToArray(),
+                Breadth = group
+                    .GroupBy(node => levels[node.Id])
+                    .Select(level => Math.Max(0, level.Count() - 1) * layout.NodeSpacing)
+                    .DefaultIfEmpty(0)
+                    .Max()
             })
             .ToArray();
         if (orderedComponents.Length == 0) return;
 
-        var layout = scene.Options.Layout;
         var horizontal = layout.Direction is GraphLayoutDirection.LeftToRight or GraphLayoutDirection.RightToLeft;
         var raw = new Dictionary<string, Point>(StringComparer.Ordinal);
-        var componentOffsetStart = -(orderedComponents.Length - 1) * layout.ComponentSpacing / 2;
+        var totalBreadth = orderedComponents.Sum(component => component.Breadth) + Math.Max(0, orderedComponents.Length - 1) * layout.ComponentSpacing;
+        var componentOffset = -totalBreadth / 2;
         for (var componentIndex = 0; componentIndex < orderedComponents.Length; componentIndex++) {
             var component = orderedComponents[componentIndex];
-            var componentOffset = componentOffsetStart + componentIndex * layout.ComponentSpacing;
+            var componentCenter = componentOffset + component.Breadth / 2;
             foreach (var level in component.Levels) {
                 var nodes = level.Nodes;
-                var lineOffset = componentOffset - (nodes.Length - 1) * layout.NodeSpacing / 2;
+                var lineOffset = componentCenter - (nodes.Length - 1) * layout.NodeSpacing / 2;
                 for (var index = 0; index < nodes.Length; index++) {
                     var primary = level.Level * layout.LevelSeparation;
                     var secondary = lineOffset + index * layout.NodeSpacing;
@@ -88,6 +94,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
                         : new Point(secondary, primary);
                 }
             }
+
+            componentOffset += component.Breadth + layout.ComponentSpacing;
         }
 
         NormalizeHierarchicalPositions(raw, positions, layout.Direction);
@@ -103,7 +111,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var outgoing = scene.Nodes.ToDictionary(node => node.Id, _ => new List<string>(), StringComparer.Ordinal);
         var incoming = scene.Nodes.ToDictionary(node => node.Id, _ => new HashSet<string>(StringComparer.Ordinal), StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
-            if (!edge.Directed) continue;
+            if (!edge.Directed && !edge.LayoutDirected) continue;
             if (!outgoing.ContainsKey(edge.SourceNodeId) || !incoming.ContainsKey(edge.TargetNodeId) || string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) continue;
             outgoing[edge.SourceNodeId].Add(edge.TargetNodeId);
             incoming[edge.TargetNodeId].Add(edge.SourceNodeId);
