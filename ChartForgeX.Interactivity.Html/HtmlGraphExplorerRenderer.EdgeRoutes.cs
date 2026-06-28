@@ -19,32 +19,32 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return writer.ToString();
     }
 
-    private static IReadOnlyList<GraphScenePoint> PolylineRenderPoints(GraphSceneEdge edge, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
+    private static IReadOnlyList<GraphScenePoint> PolylineRenderPoints(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
         if (edge.RoutePoints.Count < 2) return edge.RoutePoints;
         if (!HasSourceArrow(edge) && !HasTargetArrow(edge) && !sourceBoundaryInset.HasValue && !targetBoundaryInset.HasValue) return edge.RoutePoints;
         var points = edge.RoutePoints.ToArray();
-        points[0] = RouteEndpointFromNode(points[0], sourceNode, points[1], HasSourceArrow(edge) || sourceBoundaryInset.HasValue, sourceBoundaryInset);
+        points[0] = RouteEndpointFromNode(points[0], source, sourceNode, points[1], HasSourceArrow(edge) || sourceBoundaryInset.HasValue, sourceBoundaryInset);
         var last = points.Length - 1;
-        points[last] = RouteEndpointToNode(points[last], targetNode, points[last - 1], HasTargetArrow(edge) || targetBoundaryInset.HasValue, targetBoundaryInset);
+        points[last] = RouteEndpointToNode(points[last], target, targetNode, points[last - 1], HasTargetArrow(edge) || targetBoundaryInset.HasValue, targetBoundaryInset);
         return points;
     }
 
-    private static GraphScenePoint RouteEndpointFromNode(GraphScenePoint endpoint, GraphSceneNode? node, GraphScenePoint guide, bool trim, double? boundaryInset) {
+    private static GraphScenePoint RouteEndpointFromNode(GraphScenePoint endpoint, Point nodePoint, GraphSceneNode? node, GraphScenePoint guide, bool trim, double? boundaryInset) {
         if (!trim || node == null) return endpoint;
-        var dx = guide.X - node.X;
-        var dy = guide.Y - node.Y;
+        var dx = guide.X - nodePoint.X;
+        var dy = guide.Y - nodePoint.Y;
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
         var inset = boundaryInset ?? TargetBoundaryInset(node, dx / length, dy / length);
-        return new GraphScenePoint(node.X + dx / length * inset, node.Y + dy / length * inset);
+        return new GraphScenePoint(nodePoint.X + dx / length * inset, nodePoint.Y + dy / length * inset);
     }
 
-    private static GraphScenePoint RouteEndpointToNode(GraphScenePoint endpoint, GraphSceneNode? node, GraphScenePoint guide, bool trim, double? boundaryInset) {
+    private static GraphScenePoint RouteEndpointToNode(GraphScenePoint endpoint, Point nodePoint, GraphSceneNode? node, GraphScenePoint guide, bool trim, double? boundaryInset) {
         if (!trim || node == null) return endpoint;
-        var dx = node.X - guide.X;
-        var dy = node.Y - guide.Y;
+        var dx = nodePoint.X - guide.X;
+        var dy = nodePoint.Y - guide.Y;
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
         var inset = boundaryInset ?? TargetBoundaryInset(node, dx / length, dy / length);
-        return new GraphScenePoint(node.X - dx / length * inset, node.Y - dy / length * inset);
+        return new GraphScenePoint(nodePoint.X - dx / length * inset, nodePoint.Y - dy / length * inset);
     }
 
     private static Point PolylineMidpoint(IReadOnlyList<GraphScenePoint> points, double yOffset) {

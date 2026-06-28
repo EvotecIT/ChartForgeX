@@ -646,7 +646,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string EdgePath(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopPath(target, targetNode);
-        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylinePath(PolylineRenderPoints(edge, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset));
+        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylinePath(PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset));
         var control = EdgeControl(edge, source, target);
         var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
         var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);
@@ -657,7 +657,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
-        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylineMidpoint(PolylineRenderPoints(edge, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset), -7);
+        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylineMidpoint(PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset), -7);
         var control = EdgeControl(edge, source, target);
         var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
         var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);

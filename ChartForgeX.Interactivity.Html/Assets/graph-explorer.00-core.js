@@ -255,7 +255,7 @@
       if (edge.sourceArrow || edge.targetArrow || edge.directed) {
         context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
         if (edge.sourceArrow) drawArrow(context, rendered, control, 'source', edge.strokeColor);
-        if (edge.targetArrow || (edge.directed && !edge.sourceArrow)) drawArrow(context, rendered, control, 'target', edge.strokeColor);
+        if (edge.targetArrow || edge.directed) drawArrow(context, rendered, control, 'target', edge.strokeColor);
         context.globalAlpha = 1;
       }
       if (edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)) {
