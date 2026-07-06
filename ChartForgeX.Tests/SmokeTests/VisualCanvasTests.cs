@@ -39,6 +39,45 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("Power", StringComparison.Ordinal) && svg.Contains("BGInfo", StringComparison.Ordinal), "VisualCanvas hero title should preserve colored title runs.");
         Assert(canvas.ToPng().Length > 64, "VisualCanvas should render PNG output.");
 
+        var resizedTileCanvas = VisualCanvas.Create(620, 220)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddInfoTile(24, 24, 520, 150, "OS", "OPERATING SYSTEM", "Windows 11 Enterprise Intune compliance", "cross-site policy drift", surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, iconKind: VisualCanvasInfoTileIconKind.OperatingSystem);
+        var resizedTileSvg = resizedTileCanvas.ToSvg("visual-canvas-resized-tile-text");
+        Assert(resizedTileSvg.Contains("compliance", StringComparison.Ordinal), "Resized VisualCanvas info tiles should preserve long value text across wrapped lines.");
+        Assert(resizedTileSvg.Contains("policy drift", StringComparison.Ordinal), "Resized VisualCanvas info tiles should preserve detail text when height is available.");
+        Assert(resizedTileCanvas.AnalyzeLayout().IsClean, "Resized VisualCanvas info tiles should not report layout diagnostics when text fits.");
+        Assert(resizedTileCanvas.ToPng().Length > 64, "Resized VisualCanvas info tiles should render wrapped text to PNG output.");
+
+        var constrainedTileCanvas = VisualCanvas.Create(230, 120)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddInfoTile(12, 12, 160, 72, "OS", "OPERATING SYSTEM", "Windows 11 Enterprise Intune compliance", textFitPolicy: VisualCanvasTextFitPolicy.SingleLineEllipsis);
+        var constrainedTileSvg = constrainedTileCanvas.ToSvg("visual-canvas-constrained-tile-text");
+        Assert(constrainedTileSvg.Contains("...", StringComparison.Ordinal), "Single-line VisualCanvas info tile policy should trim overflowing values with an ellipsis.");
+        Assert(constrainedTileCanvas.AnalyzeLayout().HasWarnings, "Constrained VisualCanvas info tiles should report layout diagnostics when text is trimmed.");
+
+        var spacedTileSvg = VisualCanvas.Create(360, 112)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddInfoTile(12, 12, 300, 82, "PC", "HOST", "DEV  WKS  01")
+            .ToSvg("visual-canvas-spaced-tile-text");
+        Assert(spacedTileSvg.Contains("DEV  WKS  01", StringComparison.Ordinal), "VisualCanvas info tile fitting should preserve intentional spacing when text fits without wrapping.");
+
+        var progressDetailCanvas = VisualCanvas.Create(360, 128)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddInfoTile(12, 12, 300, 96, "CPU", "CPU", "Intel Core i7", "Package temperature nominal", progress: 0.23);
+        var progressDetailReport = progressDetailCanvas.AnalyzeLayout();
+        var progressDetailTrimmed = false;
+        var progressDetailTooTall = false;
+        foreach (var diagnostic in progressDetailReport.Diagnostics) {
+            progressDetailTrimmed |= diagnostic.Code == "InfoTileTextTrimmed";
+            progressDetailTooTall |= diagnostic.Code == "InfoTileTextTooTall";
+        }
+
+        Assert(progressDetailTrimmed && !progressDetailTooTall, "Progress info tiles should report omitted detail as fitted text instead of letting text collide with the progress rail.");
+
+        var outsideCanvas = VisualCanvas.Create(100, 80)
+            .AddInfoTile(80, 20, 60, 44, "I", "LABEL", "VALUE", textFitPolicy: VisualCanvasTextFitPolicy.Wrap);
+        Assert(outsideCanvas.AnalyzeLayout().HasWarnings, "VisualCanvas layout diagnostics should detect layers outside the canvas bounds.");
+
         var cpuChart = Chart.Create()
             .WithSize(220, 120)
             .WithTransparentBackground()
@@ -202,6 +241,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => canvas.PngOutputScale = 5, "VisualCanvas should reject unsupported PNG output scales.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").Progress = 1.2, "VisualCanvas info tile progress should stay normalized.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").WithMiniChart(VisualCanvasInfoTileMiniChartKind.Sparkline, new[] { double.NaN }), "VisualCanvas info tile mini charts should reject invalid values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").WithTextFitPolicy((VisualCanvasTextFitPolicy)999), "VisualCanvas info tile text fit policy should reject unknown values.");
         AssertThrows<ArgumentException>(() => new VisualCanvasKeyValueBlockLayer(0, 0, 100, 1, Array.Empty<VisualCanvasKeyValueItem>()), "VisualCanvas key/value blocks should require rows.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasKeyValueBlockLayer(0, 0, 100, 1, new[] { VisualCanvasKeyValueItem.Pair("A", "B") }) { LabelFontSize = 0 }, "VisualCanvas key/value blocks should reject invalid font sizes.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualCanvas.Create(24, 24).AddImage(0, 0, 12, 12, rgba: new byte[] { 0, 0, 0, 255 }, sourceWidth: 1, sourceHeight: 1, fit: (VisualCanvasImageFit)999), "VisualCanvas image fit should reject unknown values.");
