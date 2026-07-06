@@ -354,6 +354,9 @@ public sealed class VisualCanvas {
     /// <summary>Resolves anchor-based placement against the full canvas.</summary>
     public ChartRect ResolvePlacement(VisualCanvasPlacement placement, double width, double height) => placement.Resolve(Width, Height, width, height);
 
+    /// <summary>Analyzes canvas layer bounds and built-in text fitting decisions without rendering.</summary>
+    public VisualCanvasLayoutReport AnalyzeLayout() => VisualCanvasLayoutAnalyzer.Analyze(this);
+
     /// <summary>Adds a plain text layer.</summary>
     public VisualCanvas AddText(double x, double y, double width, string text, double fontSize, ChartColor color, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Left, bool emphasized = false) =>
         AddLayer(new VisualCanvasTextLayer(x, y, width, text, fontSize, color) { Alignment = alignment, Emphasized = emphasized });
@@ -412,13 +415,13 @@ public sealed class VisualCanvas {
     }
 
     /// <summary>Adds a reusable information tile.</summary>
-    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null) =>
-        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, AccentOverride = accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
+    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) =>
+        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, AccentOverride = accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind, TextFitPolicy = textFitPolicy }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
 
     /// <summary>Adds a reusable information tile using anchor-based placement.</summary>
-    public VisualCanvas AddInfoTile(VisualCanvasPlacement placement, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null) {
+    public VisualCanvas AddInfoTile(VisualCanvasPlacement placement, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) {
         var bounds = ResolvePlacement(placement, width, height);
-        return AddInfoTile(bounds.X, bounds.Y, bounds.Width, bounds.Height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum);
+        return AddInfoTile(bounds.X, bounds.Y, bounds.Width, bounds.Height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy);
     }
 
     /// <summary>Adds a central icon or logo badge.</summary>
@@ -640,6 +643,8 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     public VisualCanvasInfoTileIconKind IconKind { get; set; }
     /// <summary>Gets or sets the compact chart kind rendered inside the tile.</summary>
     public VisualCanvasInfoTileMiniChartKind MiniChartKind { get; set; }
+    /// <summary>Gets or sets how label, value, and detail text should be fitted inside this tile.</summary>
+    public VisualCanvasTextFitPolicy TextFitPolicy { get; set; }
     /// <summary>Gets compact chart values rendered inside the tile.</summary>
     public IReadOnlyList<double> MiniChartValues => _miniChartValues;
     /// <summary>Gets or sets the optional compact chart maximum. When empty, the values define the scale.</summary>
@@ -673,6 +678,13 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
 
         MiniChartKind = _miniChartValues.Count == 0 ? VisualCanvasInfoTileMiniChartKind.None : kind;
         MiniChartMaximum = maximum;
+        return this;
+    }
+
+    /// <summary>Sets the text fit policy used by renderers for this information tile.</summary>
+    public VisualCanvasInfoTileLayer WithTextFitPolicy(VisualCanvasTextFitPolicy policy) {
+        VisualCanvas.ValidateEnum(policy, nameof(policy));
+        TextFitPolicy = policy;
         return this;
     }
 }

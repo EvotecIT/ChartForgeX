@@ -211,10 +211,12 @@ public sealed class SvgVisualCanvasRenderer {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
-        var x = Math.Round(tile.X);
-        var y = Math.Round(tile.Y);
-        var width = Math.Round(tile.Width);
-        var height = Math.Round(tile.Height);
+        VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile);
+        var x = metrics.X;
+        var y = metrics.Y;
+        var width = metrics.Width;
+        var height = metrics.Height;
         var accent = tile.AccentOverride ?? theme.Accent;
         var radius = Math.Min(16, height * 0.18);
         var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
@@ -232,36 +234,37 @@ public sealed class SvgVisualCanvasRenderer {
         if (isFilled) {
             writer.StartElement("rect").Attribute("x", x + 2.5).Attribute("y", y + 2.5).Attribute("width", Math.Max(1, width - 5)).Attribute("height", Math.Max(1, height - 5)).Attribute("rx", Math.Max(1, radius - 2)).Attribute("fill", "none").Attribute("stroke", theme.TileInnerStroke.ToCss()).EndEmptyElement().Line();
         }
-        var padX = Math.Max(20, Math.Min(28, width * 0.06));
-        var iconBox = Math.Max(44, Math.Min(54, height - 34));
-        var iconX = x + padX;
-        var iconY = y + (height - iconBox) / 2;
+        var padX = metrics.PadX;
+        var iconBox = metrics.IconBox;
+        var iconX = metrics.IconX;
+        var iconY = metrics.IconY;
         var iconFont = Math.Min(25, iconBox * (tile.Icon.Length > 3 ? 0.34 : 0.42));
         writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", isFilled ? accent.WithOpacity(isRaised ? 0.25 : 0.18).ToCss() : "none").Attribute("stroke", isRaised ? accent.WithOpacity(0.32).ToCss() : (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? accent.WithOpacity(0.38).ToCss() : "none")).EndEmptyElement().Line();
         RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, accent);
-        var textX = iconX + iconBox + 22;
-        var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartValues.Count > 0;
-        var chartW = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82, width * 0.20)) : 0;
-        var chartX = x + width - padX - chartW;
-        var chartY = y + Math.Max(24, height * 0.30);
-        var chartH = Math.Max(28, Math.Min(46, height * 0.42));
-        var hasDetail = tile.Detail.Length > 0;
-        var labelY = y + (hasDetail ? 30 : Math.Max(32, (height - 52) / 2 + 14));
-        var valueY = labelY + 28;
-        var detailY = valueY + 25;
-        var textMax = hasMiniChart ? Math.Max(24, chartX - textX - 16) : Math.Max(24, width - (textX - x) - padX);
-        writer.StartElement("text").Attribute("x", textX).Attribute("y", labelY).Attribute("fill", theme.TileLabelColor.ToCss()).Attribute("font-family", "Segoe UI, Arial, sans-serif").Attribute("font-size", 14).Attribute("font-weight", "700").Text(FitText(tile.Label, 14, textMax, true)).EndElement().Line();
-        writer.StartElement("text").Attribute("x", textX).Attribute("y", valueY).Attribute("fill", theme.TileValueColor.ToCss()).Attribute("font-family", "Segoe UI, Arial, sans-serif").Attribute("font-size", height < 92 ? 21 : 22).Attribute("font-weight", "650").Text(FitText(tile.Value, height < 92 ? 21 : 22, textMax, true)).EndElement().Line();
-        if (hasDetail) writer.StartElement("text").Attribute("x", textX).Attribute("y", detailY).Attribute("fill", theme.TileDetailColor.ToCss()).Attribute("font-family", "Segoe UI, Arial, sans-serif").Attribute("font-size", 13).Text(FitText(tile.Detail, 13, textMax, false)).EndElement().Line();
+        var textX = metrics.TextX;
+        var chartW = metrics.ChartWidth;
+        var chartX = metrics.ChartX;
+        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax).Lines) {
+            writer.StartElement("text")
+                .Attribute("x", line.X)
+                .Attribute("y", line.Y + line.FontSize)
+                .Attribute("fill", TileTextColor(line.Role, theme).ToCss())
+                .Attribute("font-family", "Segoe UI, Arial, sans-serif")
+                .Attribute("font-size", line.FontSize)
+                .Attribute("font-weight", line.Role == VisualCanvasInfoTileTextRole.Label ? "700" : line.Role == VisualCanvasInfoTileTextRole.Value ? "650" : "500")
+                .Text(line.Text)
+                .EndElement()
+                .Line();
+        }
         if (tile.Progress.HasValue) {
             var railX = textX;
             var railY = y + height - 16;
-            var railW = hasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
+            var railW = metrics.HasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
             writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW).Attribute("height", 8).Attribute("rx", 4).Attribute("fill", theme.TileProgressTrackColor.ToCss()).EndEmptyElement().Line();
             writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW * tile.Progress.Value).Attribute("height", 8).Attribute("rx", 4).Attribute("fill", accent.ToCss()).EndEmptyElement().Line();
         }
-        if (hasMiniChart) {
-            RenderTileMiniChart(writer, tile, theme, accent, chartX, chartY, chartW, chartH);
+        if (metrics.HasMiniChart) {
+            RenderTileMiniChart(writer, tile, theme, accent, chartX, metrics.ChartY, chartW, metrics.ChartHeight);
         }
 
         writer.EndElement().Line();
@@ -443,6 +446,14 @@ public sealed class SvgVisualCanvasRenderer {
             case VisualCanvasImageFit.Stretch:
             default:
                 return "none";
+        }
+    }
+
+    private static ChartColor TileTextColor(VisualCanvasInfoTileTextRole role, VisualCanvasTheme theme) {
+        switch (role) {
+            case VisualCanvasInfoTileTextRole.Label: return theme.TileLabelColor;
+            case VisualCanvasInfoTileTextRole.Detail: return theme.TileDetailColor;
+            default: return theme.TileValueColor;
         }
     }
 

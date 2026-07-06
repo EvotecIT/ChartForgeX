@@ -118,10 +118,12 @@ public sealed class PngVisualCanvasRenderer {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
-        var x = Math.Round(tile.X);
-        var y = Math.Round(tile.Y);
-        var width = Math.Round(tile.Width);
-        var height = Math.Round(tile.Height);
+        VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile);
+        var x = metrics.X;
+        var y = metrics.Y;
+        var width = metrics.Width;
+        var height = metrics.Height;
         var radius = Math.Min(16, height * 0.18);
         var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
         var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
@@ -145,10 +147,10 @@ public sealed class PngVisualCanvasRenderer {
         if (isFilled) {
             canvas.StrokeRoundedRect(x + 2.5, y + 2.5, Math.Max(1, width - 5), Math.Max(1, height - 5), Math.Max(1, radius - 2), theme.TileInnerStroke, 1);
         }
-        var padX = Math.Max(20, Math.Min(28, width * 0.06));
-        var iconBox = Math.Max(44, Math.Min(54, height - 34));
-        var iconX = x + padX;
-        var iconY = y + (height - iconBox) / 2;
+        var padX = metrics.PadX;
+        var iconBox = metrics.IconBox;
+        var iconX = metrics.IconX;
+        var iconY = metrics.IconY;
         var iconRadius = Math.Min(13, iconBox * 0.25);
         if (isFilled) {
             canvas.FillRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, accent.WithOpacity(isRaised ? 0.25 : 0.18));
@@ -157,32 +159,31 @@ public sealed class PngVisualCanvasRenderer {
             canvas.StrokeRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, accent.WithOpacity(0.38), 1);
         }
         DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, accent);
-        var textX = iconX + iconBox + 22;
-        var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartValues.Count > 0;
-        var chartW = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82, width * 0.20)) : 0;
-        var chartX = x + width - padX - chartW;
-        var chartY = y + Math.Max(24, height * 0.30);
-        var chartH = Math.Max(28, Math.Min(46, height * 0.42));
-        var textMax = hasMiniChart ? Math.Max(24, chartX - textX - 16) : Math.Max(24, width - (textX - x) - padX);
-        var labelFont = 14.0;
-        var valueFont = height < 92 ? 21.0 : 22.0;
-        var detailFont = 13.0;
-        var hasDetail = tile.Detail.Length > 0;
-        var labelY = y + (hasDetail ? 17 : Math.Max(18, (height - 52) / 2));
-        var valueY = labelY + 25;
-        var detailY = valueY + 25;
-        canvas.DrawTextEmphasized(textX, labelY, FitText(tile.Label, labelFont, textMax, true), theme.TileLabelColor, labelFont);
-        canvas.DrawTextEmphasized(textX, valueY, FitText(tile.Value, valueFont, textMax, true), theme.TileValueColor, valueFont);
-        if (hasDetail) canvas.DrawText(textX, detailY, FitText(tile.Detail, detailFont, textMax, false), theme.TileDetailColor, detailFont);
+        var textX = metrics.TextX;
+        var chartW = metrics.ChartWidth;
+        var chartX = metrics.ChartX;
+        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax).Lines) {
+            var color = TileTextColor(line.Role, theme);
+            if (line.Emphasized) canvas.DrawTextEmphasized(line.X, line.Y, line.Text, color, line.FontSize);
+            else canvas.DrawText(line.X, line.Y, line.Text, color, line.FontSize);
+        }
         if (tile.Progress.HasValue) {
             var railX = textX;
             var railY = y + height - 16;
-            var railW = hasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
+            var railW = metrics.HasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
             canvas.FillRoundedRect(railX, railY, railW, 8, 4, theme.TileProgressTrackColor);
             canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, 8, 4, accent);
         }
-        if (hasMiniChart) {
-            DrawTileMiniChart(canvas, tile, theme, accent, chartX, chartY, chartW, chartH);
+        if (metrics.HasMiniChart) {
+            DrawTileMiniChart(canvas, tile, theme, accent, chartX, metrics.ChartY, chartW, metrics.ChartHeight);
+        }
+    }
+
+    private static ChartColor TileTextColor(VisualCanvasInfoTileTextRole role, VisualCanvasTheme theme) {
+        switch (role) {
+            case VisualCanvasInfoTileTextRole.Label: return theme.TileLabelColor;
+            case VisualCanvasInfoTileTextRole.Detail: return theme.TileDetailColor;
+            default: return theme.TileValueColor;
         }
     }
 
