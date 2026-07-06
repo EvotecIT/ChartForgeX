@@ -121,7 +121,7 @@ internal static class VisualCanvasLayoutAnalyzer {
                 tile.Bounds));
         }
 
-        if (layout.TextHeight > Math.Max(1, metrics.Height - 12)) {
+        if (layout.HasVerticalOverflow || layout.TextHeight > Math.Max(1, metrics.Height - 12)) {
             diagnostics.Add(new VisualCanvasLayoutDiagnostic(
                 VisualCanvasLayoutDiagnosticSeverity.Warning,
                 "InfoTileTextTooTall",

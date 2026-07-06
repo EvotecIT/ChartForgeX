@@ -55,6 +55,25 @@ internal static partial class SmokeTests {
         Assert(constrainedTileSvg.Contains("...", StringComparison.Ordinal), "Single-line VisualCanvas info tile policy should trim overflowing values with an ellipsis.");
         Assert(constrainedTileCanvas.AnalyzeLayout().HasWarnings, "Constrained VisualCanvas info tiles should report layout diagnostics when text is trimmed.");
 
+        var spacedTileSvg = VisualCanvas.Create(360, 112)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddInfoTile(12, 12, 300, 82, "PC", "HOST", "DEV  WKS  01")
+            .ToSvg("visual-canvas-spaced-tile-text");
+        Assert(spacedTileSvg.Contains("DEV  WKS  01", StringComparison.Ordinal), "VisualCanvas info tile fitting should preserve intentional spacing when text fits without wrapping.");
+
+        var progressDetailCanvas = VisualCanvas.Create(360, 128)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddInfoTile(12, 12, 300, 96, "CPU", "CPU", "Intel Core i7", "Package temperature nominal", progress: 0.23);
+        var progressDetailReport = progressDetailCanvas.AnalyzeLayout();
+        var progressDetailTrimmed = false;
+        var progressDetailTooTall = false;
+        foreach (var diagnostic in progressDetailReport.Diagnostics) {
+            progressDetailTrimmed |= diagnostic.Code == "InfoTileTextTrimmed";
+            progressDetailTooTall |= diagnostic.Code == "InfoTileTextTooTall";
+        }
+
+        Assert(progressDetailTrimmed && !progressDetailTooTall, "Progress info tiles should report omitted detail as fitted text instead of letting text collide with the progress rail.");
+
         var outsideCanvas = VisualCanvas.Create(100, 80)
             .AddInfoTile(80, 20, 60, 44, "I", "LABEL", "VALUE", textFitPolicy: VisualCanvasTextFitPolicy.Wrap);
         Assert(outsideCanvas.AnalyzeLayout().HasWarnings, "VisualCanvas layout diagnostics should detect layers outside the canvas bounds.");

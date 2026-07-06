@@ -67,15 +67,17 @@ internal sealed class VisualCanvasInfoTileTextLine {
 }
 
 internal sealed class VisualCanvasInfoTileTextLayoutResult {
-    public VisualCanvasInfoTileTextLayoutResult(IReadOnlyList<VisualCanvasInfoTileTextLine> lines, bool hasTruncatedText, double textWidth, double textHeight) {
+    public VisualCanvasInfoTileTextLayoutResult(IReadOnlyList<VisualCanvasInfoTileTextLine> lines, bool hasTruncatedText, bool hasVerticalOverflow, double textWidth, double textHeight) {
         Lines = lines;
         HasTruncatedText = hasTruncatedText;
+        HasVerticalOverflow = hasVerticalOverflow;
         TextWidth = textWidth;
         TextHeight = textHeight;
     }
 
     public IReadOnlyList<VisualCanvasInfoTileTextLine> Lines { get; }
     public bool HasTruncatedText { get; }
+    public bool HasVerticalOverflow { get; }
     public double TextWidth { get; }
     public double TextHeight { get; }
 }
@@ -113,21 +115,29 @@ internal static class VisualCanvasInfoTileTextLayout {
         var policy = tile.TextFitPolicy == VisualCanvasTextFitPolicy.Auto ? VisualCanvasTextFitPolicy.WrapThenShrink : tile.TextFitPolicy;
         var singleLine = policy == VisualCanvasTextFitPolicy.SingleLineEllipsis || policy == VisualCanvasTextFitPolicy.ShrinkToFit;
         var scale = 1.0;
-        var best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale);
+        var best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false);
         if (policy != VisualCanvasTextFitPolicy.ShrinkToFit && policy != VisualCanvasTextFitPolicy.WrapThenShrink) return best;
 
-        for (var i = 0; i < 8 && best.HasTruncatedText; i++) {
+        for (var i = 0; i < 8 && RequiresFitAdjustment(best); i++) {
             scale -= 0.04;
             if (scale < 0.72) break;
-            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale);
+            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false);
             best = next;
-            if (!next.HasTruncatedText) break;
+            if (!RequiresFitAdjustment(next)) break;
+        }
+
+        if (best.HasVerticalOverflow && tile.Detail.Length > 0) {
+            var withoutDetail = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, true);
+            if (withoutDetail.TextHeight < best.TextHeight || !withoutDetail.HasVerticalOverflow) best = withoutDetail;
         }
 
         return best;
     }
 
-    private static VisualCanvasInfoTileTextLayoutResult BuildCore(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, bool singleLine, double scale) {
+    private static bool RequiresFitAdjustment(VisualCanvasInfoTileTextLayoutResult result) =>
+        result.HasTruncatedText || result.HasVerticalOverflow;
+
+    private static VisualCanvasInfoTileTextLayoutResult BuildCore(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, bool singleLine, double scale, bool omitDetail) {
         var labelFont = Math.Max(10, (tileHeight < 72 ? 12.0 : 14.0) * scale);
         var valueFont = Math.Max(13, (tileHeight < 72 ? 17.0 : tileHeight < 92 ? 21.0 : 22.0) * scale);
         var detailFont = Math.Max(10, (tileHeight < 72 ? 11.0 : 13.0) * scale);
@@ -138,7 +148,7 @@ internal static class VisualCanvasInfoTileTextLayout {
         var bottomPadding = tile.Progress.HasValue ? 30.0 : Math.Max(12, Math.Min(18, tileHeight * 0.15));
         var availableHeight = Math.Max(valueLineHeight, tileHeight - topPadding - bottomPadding);
         var hasDetail = tile.Detail.Length > 0;
-        var detailLineLimit = singleLine ? (hasDetail ? 1 : 0) : hasDetail ? tileHeight >= 122 ? 2 : 1 : 0;
+        var detailLineLimit = omitDetail || !hasDetail ? 0 : singleLine ? 1 : tileHeight >= 122 ? 2 : 1;
         var valueLineLimit = singleLine ? 1 : Math.Max(1, (int)Math.Floor((availableHeight - labelLineHeight - detailLineLimit * detailLineHeight) / valueLineHeight));
         valueLineLimit = singleLine ? 1 : Math.Min(tileHeight >= 132 ? 3 : 2, valueLineLimit);
         if (valueLineLimit < 1 && detailLineLimit > 0) {
@@ -182,11 +192,15 @@ internal static class VisualCanvasInfoTileTextLayout {
             if (lineWidth > textWidth) textWidth = lineWidth;
         }
 
-        return new VisualCanvasInfoTileTextLayoutResult(lines, labelLines.Truncated || valueLines.Truncated || detailLines.Truncated, textWidth, totalHeight);
+        var textBottom = tileY + Math.Max(topPadding, (tileHeight - bottomPadding - totalHeight) / 2) + totalHeight;
+        var hasVerticalOverflow = textBottom > tileY + tileHeight - bottomPadding + 0.5;
+        var detailOmitted = hasDetail && detailLineLimit == 0;
+        return new VisualCanvasInfoTileTextLayoutResult(lines, labelLines.Truncated || valueLines.Truncated || detailLines.Truncated || detailOmitted, hasVerticalOverflow, textWidth, totalHeight);
     }
 
     private static WrapResult Wrap(string value, double fontSize, double maxWidth, bool emphasized, int maxLines) {
         if (string.IsNullOrEmpty(value) || maxLines <= 0) return WrapResult.Empty;
+        if (Measure(value, fontSize, emphasized) <= maxWidth) return new WrapResult(new[] { new WrappedLine(value, false) }, false);
         var words = value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (words.Length == 0) return new WrapResult(new[] { new WrappedLine(string.Empty, false) }, false);
         var lines = new List<WrappedLine>(maxLines);
