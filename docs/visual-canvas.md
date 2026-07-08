@@ -113,7 +113,19 @@ var canvas = background
 canvas.SavePng("wallpaper-with-info.png");
 ```
 
-`AddImageFile(...)` and `AddImageBytes(...)` are available when an image should be placed into an existing canvas region. The dependency-free decoder supports baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF. Hosts that need unsupported image variants can decode them before handing RGBA pixels to `AddRasterImage(...)`.
+`AddImageFile(...)`, `AddImageBytes(...)`, and `AddHeroBadgeImageFile(...)` are available when an image should be placed into an existing canvas region or inside the central hero badge. The dependency-free decoder supports baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF. Hosts that need unsupported image variants can decode them before handing RGBA pixels to `AddRasterImage(...)` or `AddHeroBadge(...)`.
+
+```csharp
+var brandedCanvas = VisualCanvas.CreateSocialPreview()
+    .AddHeroBadgeImageFile(
+        538,
+        157,
+        124,
+        88,
+        "logo.png",
+        fit: VisualCanvasImageFit.Contain,
+        padding: 12);
+```
 
 For lower-level wallpaper and report generation where the host wants to work directly with RGBA pixels, use `ImageComposition`. It keeps the same anchor and fit model as `VisualCanvas`, but focuses on image-engine operations: load or create a background, alpha-blend overlays, draw rectangle outlines, draw text, place ChartForgeX layers, and save by extension without `System.Drawing`.
 

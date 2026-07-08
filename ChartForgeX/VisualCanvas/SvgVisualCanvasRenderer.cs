@@ -389,9 +389,24 @@ public sealed class SvgVisualCanvasRenderer {
     }
 
     private static void RenderHeroBadge(SvgMarkupWriter writer, VisualCanvasHeroBadgeLayer badge, string id, VisualCanvasTheme theme) {
+        VisualCanvas.ValidateEnum(badge.ImageFit, nameof(badge.ImageFit));
         var accent = badge.AccentOverride ?? theme.SecondaryAccent;
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-hero-badge").EndStartElement().Line();
         writer.StartElement("rect").Attribute("x", badge.X).Attribute("y", badge.Y).Attribute("width", badge.Width).Attribute("height", badge.Height).Attribute("rx", Math.Min(22, badge.Height * 0.20)).Attribute("fill", "url(#" + id + "-hero-badge)").Attribute("stroke", accent.ToCss()).Attribute("stroke-width", 2.4).Attribute("filter", "url(#" + id + "-soft-glow)").EndEmptyElement().Line();
+        if (badge.ImageHref.Length > 0) {
+            var padding = Math.Max(0, Math.Min(Math.Min(badge.ImagePadding, badge.Width / 2 - 1), badge.Height / 2 - 1));
+            var image = new VisualCanvasImageLayer(badge.X + padding, badge.Y + padding, Math.Max(1, badge.Width - padding * 2), Math.Max(1, badge.Height - padding * 2)) {
+                Href = badge.ImageHref,
+                SourceWidth = badge.ImageSourceWidth,
+                SourceHeight = badge.ImageSourceHeight,
+                Fit = badge.ImageFit,
+                Opacity = badge.ImageOpacity
+            };
+            RenderImage(writer, image, id + "-hero-badge", 0, theme);
+            writer.EndElement().Line();
+            return;
+        }
+
         writer.StartElement("text").Attribute("x", badge.X + badge.Width / 2).Attribute("y", badge.Y + badge.Height / 2 + badge.Height * 0.17).Attribute("text-anchor", "middle").Attribute("fill", theme.HeroBadgeTextColor.ToCss()).Attribute("font-family", "Cascadia Mono, Consolas, monospace").Attribute("font-size", Math.Max(24, badge.Height * 0.42)).Attribute("font-weight", "850").Text(badge.Symbol).EndElement().Line();
         writer.EndElement().Line();
     }

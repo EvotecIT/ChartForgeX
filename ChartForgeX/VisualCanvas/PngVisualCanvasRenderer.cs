@@ -334,11 +334,26 @@ public sealed class PngVisualCanvasRenderer {
     }
 
     private static void DrawHeroBadge(RgbaCanvas canvas, VisualCanvasHeroBadgeLayer badge, VisualCanvasTheme theme) {
+        VisualCanvas.ValidateEnum(badge.ImageFit, nameof(badge.ImageFit));
         var radius = Math.Min(22, badge.Height * 0.20);
         canvas.FillRoundedRect(badge.X - 6, badge.Y - 6, badge.Width + 12, badge.Height + 12, radius + 4, theme.HeroBadgeGlowColor);
         canvas.FillRoundedRectVerticalGradient(badge.X, badge.Y, badge.Width, badge.Height, radius, theme.HeroBadgeTop, theme.HeroBadgeBottom);
         var accent = badge.AccentOverride ?? theme.SecondaryAccent;
         canvas.StrokeRoundedRect(badge.X, badge.Y, badge.Width, badge.Height, radius, accent, 2.4);
+        if (badge.ImageRgba != null && badge.ImageSourceWidth > 0 && badge.ImageSourceHeight > 0) {
+            var padding = Math.Max(0, Math.Min(Math.Min(badge.ImagePadding, badge.Width / 2 - 1), badge.Height / 2 - 1));
+            var image = new VisualCanvasImageLayer(badge.X + padding, badge.Y + padding, Math.Max(1, badge.Width - padding * 2), Math.Max(1, badge.Height - padding * 2)) {
+                Rgba = badge.ImageRgba,
+                SourceWidth = badge.ImageSourceWidth,
+                SourceHeight = badge.ImageSourceHeight,
+                Fit = badge.ImageFit,
+                Opacity = badge.ImageOpacity
+            };
+            var rgba = image.Opacity >= 0.999 ? image.Rgba : ApplyOpacity(image.Rgba, image.Opacity);
+            DrawFittedImage(canvas, image, rgba);
+            return;
+        }
+
         var fontSize = Math.Max(24, badge.Height * 0.42);
         DrawText(canvas, badge.X, badge.Y + badge.Height / 2 - fontSize * 0.40, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, VisualCanvasTextAlignment.Center, true);
     }

@@ -530,6 +530,25 @@ public static partial class ChartExtensions {
     }
 
     /// <summary>
+    /// Decodes an image file and adds it as the content of a hero badge.
+    /// </summary>
+    public static VisualCanvas AddHeroBadgeImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1) {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+        var data = File.ReadAllBytes(path);
+        var image = RasterImageDecoder.Decode(data);
+        return canvas.AddHeroBadge(x, y, width, height, symbol, accent, EmbeddedRasterDataUri(data, image, path), image.Pixels, image.Width, image.Height, fit, padding, opacity);
+    }
+
+    /// <summary>
+    /// Decodes an image file and adds it as the content of a hero badge using anchor-based placement.
+    /// </summary>
+    public static VisualCanvas AddHeroBadgeImageFile(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, string path, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        var bounds = canvas.ResolvePlacement(placement, width, height);
+        return canvas.AddHeroBadgeImageFile(bounds.X, bounds.Y, bounds.Width, bounds.Height, path, symbol, accent, fit, padding, opacity);
+    }
+
+    /// <summary>
     /// Adds a rendered chart layer to a visual canvas.
     /// </summary>
     public static VisualCanvas AddChart(this VisualCanvas canvas, double x, double y, double width, double height, Chart chart, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
