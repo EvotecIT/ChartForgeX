@@ -425,7 +425,11 @@ public sealed class VisualCanvas {
     }
 
     /// <summary>Adds a central icon or logo badge.</summary>
-    public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent = null, string? imageHref = null, byte[]? imageRgba = null, int imageSourceWidth = 0, int imageSourceHeight = 0, VisualCanvasImageFit imageFit = VisualCanvasImageFit.Contain, double imagePadding = 10, double imageOpacity = 1) {
+    public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent = null) =>
+        AddHeroBadge(x, y, width, height, symbol, accent, null, null, 0, 0, VisualCanvasImageFit.Contain, 10, 1);
+
+    /// <summary>Adds a central icon or logo badge with optional image content.</summary>
+    public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent, string? imageHref, byte[]? imageRgba = null, int imageSourceWidth = 0, int imageSourceHeight = 0, VisualCanvasImageFit imageFit = VisualCanvasImageFit.Contain, double imagePadding = 10, double imageOpacity = 1) {
         ValidateEnum(imageFit, nameof(imageFit));
         if (imageRgba != null && (imageSourceWidth <= 0 || imageSourceHeight <= 0)) throw new ArgumentOutOfRangeException(nameof(imageSourceWidth), "Hero badge image layers require positive imageSourceWidth and imageSourceHeight.");
         return AddLayer(new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) {
@@ -441,7 +445,13 @@ public sealed class VisualCanvas {
     }
 
     /// <summary>Adds a central icon or logo badge using anchor-based placement.</summary>
-    public VisualCanvas AddHeroBadge(VisualCanvasPlacement placement, double width, double height, string symbol, ChartColor? accent = null, string? imageHref = null, byte[]? imageRgba = null, int imageSourceWidth = 0, int imageSourceHeight = 0, VisualCanvasImageFit imageFit = VisualCanvasImageFit.Contain, double imagePadding = 10, double imageOpacity = 1) {
+    public VisualCanvas AddHeroBadge(VisualCanvasPlacement placement, double width, double height, string symbol, ChartColor? accent = null) {
+        var bounds = ResolvePlacement(placement, width, height);
+        return AddHeroBadge(bounds.X, bounds.Y, bounds.Width, bounds.Height, symbol, accent);
+    }
+
+    /// <summary>Adds a central icon or logo badge with optional image content using anchor-based placement.</summary>
+    public VisualCanvas AddHeroBadge(VisualCanvasPlacement placement, double width, double height, string symbol, ChartColor? accent, string? imageHref, byte[]? imageRgba = null, int imageSourceWidth = 0, int imageSourceHeight = 0, VisualCanvasImageFit imageFit = VisualCanvasImageFit.Contain, double imagePadding = 10, double imageOpacity = 1) {
         var bounds = ResolvePlacement(placement, width, height);
         return AddHeroBadge(bounds.X, bounds.Y, bounds.Width, bounds.Height, symbol, accent, imageHref, imageRgba, imageSourceWidth, imageSourceHeight, imageFit, imagePadding, imageOpacity);
     }

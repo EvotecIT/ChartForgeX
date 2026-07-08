@@ -51,6 +51,13 @@ internal static partial class SmokeTests {
         Assert(brandedBadgeSvg.Contains("preserveAspectRatio=\"xMidYMid meet\"", StringComparison.Ordinal), "VisualCanvas hero badge logos should default to contain fit for SVG output.");
         var brandedBadgePng = RasterImageDecoder.Decode(brandedBadgeCanvas.ToPng());
         Assert(CountPixels(brandedBadgePng, (r, g, b, a) => a > 240 && r > 220 && g < 80 && b < 80) > 500, "VisualCanvas hero badges should render configured logo pixels in PNG output.");
+        var rgbaOnlyBadgeSvg = VisualCanvas.Create(180, 120)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddHeroBadge(20, 20, 60, 50, string.Empty, null, null, imageRgba: badgeLogoPixels, imageSourceWidth: 2, imageSourceHeight: 2, imageFit: VisualCanvasImageFit.Tile)
+            .AddHeroBadge(100, 20, 60, 50, string.Empty, null, null, imageRgba: badgeLogoPixels, imageSourceWidth: 2, imageSourceHeight: 2, imageFit: VisualCanvasImageFit.Center)
+            .ToSvg("visual-canvas-rgba-only-badges");
+        Assert(rgbaOnlyBadgeSvg.Contains("data:image/png;base64", StringComparison.Ordinal), "VisualCanvas hero badge SVG output should synthesize image hrefs for RGBA-only logo pixels.");
+        Assert(rgbaOnlyBadgeSvg.Contains("-hero-badge-image-0", StringComparison.Ordinal) && rgbaOnlyBadgeSvg.Contains("-hero-badge-image-1", StringComparison.Ordinal), "Multiple hero badge images should use unique SVG image IDs.");
 
         var resizedTileCanvas = VisualCanvas.Create(620, 220)
             .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
