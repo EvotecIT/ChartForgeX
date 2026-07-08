@@ -426,12 +426,34 @@ public sealed class VisualCanvas {
 
     /// <summary>Adds a central icon or logo badge.</summary>
     public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent = null) =>
-        AddLayer(new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) { AccentOverride = accent });
+        AddHeroBadge(x, y, width, height, symbol, accent, null, null, 0, 0, VisualCanvasImageFit.Contain, 10, 1);
+
+    /// <summary>Adds a central icon or logo badge with optional image content.</summary>
+    public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent, string? imageHref, byte[]? imageRgba = null, int imageSourceWidth = 0, int imageSourceHeight = 0, VisualCanvasImageFit imageFit = VisualCanvasImageFit.Contain, double imagePadding = 10, double imageOpacity = 1) {
+        ValidateEnum(imageFit, nameof(imageFit));
+        if (imageRgba != null && (imageSourceWidth <= 0 || imageSourceHeight <= 0)) throw new ArgumentOutOfRangeException(nameof(imageSourceWidth), "Hero badge image layers require positive imageSourceWidth and imageSourceHeight.");
+        return AddLayer(new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) {
+            AccentOverride = accent,
+            ImageHref = imageHref ?? string.Empty,
+            ImageRgba = imageRgba,
+            ImageSourceWidth = imageSourceWidth,
+            ImageSourceHeight = imageSourceHeight,
+            ImageFit = imageFit,
+            ImagePadding = imagePadding,
+            ImageOpacity = imageOpacity
+        });
+    }
 
     /// <summary>Adds a central icon or logo badge using anchor-based placement.</summary>
     public VisualCanvas AddHeroBadge(VisualCanvasPlacement placement, double width, double height, string symbol, ChartColor? accent = null) {
         var bounds = ResolvePlacement(placement, width, height);
         return AddHeroBadge(bounds.X, bounds.Y, bounds.Width, bounds.Height, symbol, accent);
+    }
+
+    /// <summary>Adds a central icon or logo badge with optional image content using anchor-based placement.</summary>
+    public VisualCanvas AddHeroBadge(VisualCanvasPlacement placement, double width, double height, string symbol, ChartColor? accent, string? imageHref, byte[]? imageRgba = null, int imageSourceWidth = 0, int imageSourceHeight = 0, VisualCanvasImageFit imageFit = VisualCanvasImageFit.Contain, double imagePadding = 10, double imageOpacity = 1) {
+        var bounds = ResolvePlacement(placement, width, height);
+        return AddHeroBadge(bounds.X, bounds.Y, bounds.Width, bounds.Height, symbol, accent, imageHref, imageRgba, imageSourceWidth, imageSourceHeight, imageFit, imagePadding, imageOpacity);
     }
 
     /// <summary>Adds an image layer. SVG output uses <paramref name="href"/>; PNG output uses <paramref name="rgba"/> when supplied.</summary>
@@ -687,28 +709,6 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
         TextFitPolicy = policy;
         return this;
     }
-}
-
-/// <summary>Central logo or icon badge layer.</summary>
-public sealed class VisualCanvasHeroBadgeLayer : VisualCanvasLayer {
-    private string _symbol;
-
-    /// <summary>Initializes a hero badge layer.</summary>
-    /// <param name="x">The badge X coordinate.</param>
-    /// <param name="y">The badge Y coordinate.</param>
-    /// <param name="width">The badge width.</param>
-    /// <param name="height">The badge height.</param>
-    /// <param name="symbol">The badge symbol.</param>
-    public VisualCanvasHeroBadgeLayer(double x, double y, double width, double height, string symbol) : base(x, y, width, height) {
-        _symbol = symbol ?? throw new ArgumentNullException(nameof(symbol));
-    }
-
-    /// <summary>Gets or sets the badge symbol.</summary>
-    public string Symbol { get => _symbol; set => _symbol = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Gets or sets the badge accent color.</summary>
-    public ChartColor Accent { get => AccentOverride ?? ChartColor.FromHex("#22A7FF"); set => AccentOverride = value; }
-    /// <summary>Gets or sets an explicit badge accent color. When empty, renderers use the current theme secondary accent.</summary>
-    public ChartColor? AccentOverride { get; set; }
 }
 
 /// <summary>Image layer for host-provided bitmap or SVG-compatible image references.</summary>
