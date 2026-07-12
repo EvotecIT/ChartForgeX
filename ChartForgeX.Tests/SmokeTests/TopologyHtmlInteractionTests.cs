@@ -32,6 +32,11 @@ internal static partial class SmokeTests {
         Assert(staticHtml.Contains("data-cfx-scenario-url-state=\"false\"", StringComparison.Ordinal), "Static topology HTML should not enable query-string scenario state.");
         Assert(!staticHtml.Contains("data-cfx-topology-scenario=\"primary\"", StringComparison.Ordinal), "Static topology HTML should omit scenario picker controls.");
 
+        var reusableOptions = new TopologyRenderOptions { IncludeLegend = false };
+        chart.ToInteractiveHtmlPage(reusableOptions);
+        Assert(!reusableOptions.EnableHtmlInteractions, "Interactive topology rendering should not mutate caller-owned render options.");
+        Assert(chart.ToHtmlPage(reusableOptions).Contains("data-cfx-interactive=\"false\"", StringComparison.Ordinal), "Caller options should remain reusable for a subsequent static topology render.");
+
         var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "failover" });
         Assert(html.Contains("data-cfx-scenario-controls=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should enable scenario controls when scenarios are present.");
         Assert(html.Contains("data-cfx-scenario-panel=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should enable scenario panels when scenarios are present.");

@@ -58,9 +58,7 @@ public sealed class HtmlInteractiveTopologyRenderer {
     }
 
     private static TopologyRenderOptions Prepare(TopologyRenderOptions? options) {
-        options ??= new TopologyRenderOptions();
-        options.EnableHtmlInteractions = true;
-        return options;
+        return (options ?? new TopologyRenderOptions()).ForInteractiveHtmlRendering();
     }
 
     private static string InteractionScriptTag(TopologyRenderOptions options) {

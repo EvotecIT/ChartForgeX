@@ -468,6 +468,9 @@ internal static partial class SmokeTests {
         var boundaryA = Chart.Create().WithTitle("ab").WithSubtitle("c").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
         var boundaryB = Chart.Create().WithTitle("a").WithSubtitle("bc").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(boundaryA.ToSvg("embed") + boundaryB.ToSvg("embed"), "Boundary-distinct scoped raw SVG charts");
+        var lightVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(ChartTheme.Light()).AddLine("Values", Points(10, 20, 30));
+        var darkVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(ChartTheme.Dark()).AddLine("Values", Points(10, 20, 30));
+        AssertNoDuplicateIds(lightVariant.ToHtmlFragment() + darkVariant.ToHtmlFragment(), "Unscoped fragments with distinct visual identities");
     }
 
     private static void ExplicitAxisBoundsAffectSvgTicks() {

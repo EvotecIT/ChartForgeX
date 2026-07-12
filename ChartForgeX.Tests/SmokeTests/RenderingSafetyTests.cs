@@ -71,5 +71,11 @@ internal static partial class SmokeTests {
         var inside = ChartTicks.GenerateInside(0, 20_000, int.MaxValue);
         Assert(inside.Count <= 10_000, "Inside ticks should stay within the deterministic safety cap for extreme requested counts.");
         Assert(inside[0] == 0 && inside[inside.Count - 1] == 20_000, "Inside ticks should retain the requested upper endpoint when their safety cap is reached.");
+
+        var extremeMinimum = double.MaxValue - 1e294;
+        var extremeTicks = ChartTicks.Generate(extremeMinimum, double.MaxValue, 6);
+        Assert(extremeTicks.All(value => !double.IsNaN(value) && !double.IsInfinity(value)), "Extreme finite tick ranges should remain finite after magnitude normalization.");
+        Assert(extremeTicks[0] <= extremeMinimum && extremeTicks[extremeTicks.Count - 1] == double.MaxValue, "Extreme finite tick ranges should preserve the exact upper data endpoint.");
+        Assert(extremeTicks.Zip(extremeTicks.Skip(1), (left, right) => right > left).All(increasing => increasing), "Extreme finite ticks should remain strictly increasing after normalization.");
     }
 }

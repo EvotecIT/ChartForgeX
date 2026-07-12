@@ -269,4 +269,10 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets the PNG output scale used by the topology PNG renderer.</summary>
     public int PngOutputScale { get; set; } = 1;
+
+    internal TopologyRenderOptions ForInteractiveHtmlRendering() {
+        var snapshot = (TopologyRenderOptions)MemberwiseClone();
+        snapshot.EnableHtmlInteractions = true;
+        return snapshot;
+    }
 }

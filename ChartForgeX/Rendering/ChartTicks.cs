@@ -5,6 +5,7 @@ namespace ChartForgeX.Rendering;
 
 internal static class ChartTicks {
     private const int MaximumGeneratedTicks = 10_000;
+    private const double DirectMagnitudeLimit = 1e150;
 
     public static IReadOnlyList<double> Generate(double min, double max, int desiredCount) {
         desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
@@ -21,10 +22,10 @@ internal static class ChartTicks {
         for (var index = 0; index < MaximumGeneratedTicks; index++) {
             var normalizedValue = niceMin + normalizedStep * index;
             if (normalizedValue > niceMax + normalizedStep * 0.5) break;
-            AddFiniteDistinct(ticks, NormalizeZero(normalizedValue, normalizedStep) * scale);
+            AddFiniteDistinct(ticks, Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
         }
 
-        PreserveUpperEndpoint(ticks, NormalizeZero(niceMax, normalizedStep) * scale);
+        PreserveUpperEndpoint(ticks, Denormalize(NormalizeZero(niceMax, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
 
         return ticks.Count >= 2 ? ticks : DistinctEndpoints(min, max);
     }
@@ -52,7 +53,7 @@ internal static class ChartTicks {
         for (var index = 0; index < MaximumGeneratedTicks; index++) {
             var normalizedValue = start + normalizedStep * index;
             if (normalizedValue > normalizedMax + normalizedStep * 0.001) break;
-            AddFiniteDistinct(ticks, NormalizeZero(normalizedValue, normalizedStep) * scale);
+            AddFiniteDistinct(ticks, Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
         }
 
         if (ticks.Count == 0 || Math.Abs(ticks[ticks.Count - 1] - max) > step * 0.2) PreserveUpperEndpoint(ticks, max);
@@ -68,17 +69,25 @@ internal static class ChartTicks {
         if (min == max) return true;
 
         var directRange = max - min;
-        if (IsPositiveFinite(directRange) && directRange > double.Epsilon) {
+        var magnitude = Math.Max(Math.Abs(min), Math.Abs(max));
+        if (IsPositiveFinite(directRange) && directRange > double.Epsilon && magnitude <= DirectMagnitudeLimit) {
             normalizedMin = min;
             normalizedMax = max;
             return true;
         }
 
-        scale = Math.Max(Math.Abs(min), Math.Abs(max));
+        scale = magnitude;
         if (scale == 0) scale = 1;
         normalizedMin = min / scale;
         normalizedMax = max / scale;
         return IsFinite(normalizedMin) && IsFinite(normalizedMax) && normalizedMax > normalizedMin;
+    }
+
+    private static double Denormalize(double value, double scale, double min, double max, double normalizedMin, double normalizedMax) {
+        if (scale == 1) return value;
+        if (value <= normalizedMin) return min;
+        if (value >= normalizedMax) return max;
+        return value * scale;
     }
 
     private static IReadOnlyList<double> ExpandEqualValue(double value) {
