@@ -7,8 +7,8 @@ $root = Split-Path -Parent $PSScriptRoot
 
 $assets = @(
     @{
-        Source = 'ChartForgeX/Topology/Assets/topology-interaction.source'
-        Target = 'ChartForgeX/Topology/Assets/topology-interaction.js'
+        Source = 'ChartForgeX.Interactivity.Html/Assets/topology-interaction.source'
+        Target = 'ChartForgeX.Interactivity.Html/Assets/topology-interaction.js'
     },
     @{
         Source = 'ChartForgeX.Interactivity.Html/Assets/interactive.source'

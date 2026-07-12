@@ -425,12 +425,13 @@ public sealed partial class SvgChartRenderer {
         var xLabels = XAxisTickLabels(chart, xTicks, false);
         var xLabelY = plot.Bottom + XAxisLabelOffset(chart, xLabels);
         var xLabelMaxWidth = AxisTickLabelMaxWidth(plot, xTicks.Count, xLabelAngle);
-        foreach (var yv in yTicks) {
+        for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
+            var yv = yTicks[yIndex];
             var y = map.Y(yv);
             if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
-            if (ShowYAxis(chart)) {
+            if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) {
                 AppendSvg(sb, writer => {
-                    writer.StartElement("text").Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize);
+                    writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize);
                     WriteSvgTextStyleAttributes(writer, tickStyle);
                     writer.Text(FormatValue(chart, yv)).EndElement().Line();
                 });

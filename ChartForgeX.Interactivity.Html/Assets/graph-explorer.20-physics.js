@@ -278,10 +278,10 @@ self.onmessage = event => {
         if (message.type === 'done') {
           runLayoutQualityPass(root, state);
         }
-        applyLayout(root, state);
-        publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, communityPushes: message.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
+        const renderStarted = performanceClock(); applyLayout(root, state); const renderedAt = performanceClock(); recordFramePerformance(root, renderedAt, renderedAt - renderStarted, 'worker'); if (message.type === 'done') syncSvgLayout(root, state);
+        if (message.type === 'done' || message.tick % Math.max(1, num(root, 'data-cfx-performance-telemetry-interval', 30)) < message.sampleTicks) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, communityPushes: message.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
         if (message.type === 'done') {
-          root.dataset.cfxGraphPhysicsState = 'stabilized';
+          root.dataset.cfxGraphPhysicsState = 'stabilized'; drawCanvas(root, state);
           stopWorkerPhysics(root, true);
           if (root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true) fitViewport(root);
           root.__cfxGraphAutoFitOnStabilize = false;
@@ -294,7 +294,7 @@ self.onmessage = event => {
         stopWorkerPhysics(root);
         if (root.dataset.cfxGraphPhysicsState === 'running') startMainPhysics(root, state, settings);
       };
-      worker.postMessage({ ...serializePhysicsState(state), settings, interval: Math.max(1, num(root, 'data-cfx-performance-telemetry-interval', 30)) });
+      worker.postMessage({ ...serializePhysicsState(state), settings, interval: Math.max(1, num(root, 'data-cfx-performance-worker-progress-interval', 4)) });
       return true;
     } catch {
       root.__cfxGraphWorkerFailed = true;
@@ -308,15 +308,15 @@ self.onmessage = event => {
     const active = {};
     root.__cfxGraphMainPhysics = active;
     root.dataset.cfxGraphPhysicsThread = 'main';
-    const step = () => {
+    const step = (timestamp) => {
       if (root.__cfxGraphMainPhysics !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
-      tick += 1;
-      const velocity = physicsTick(root, state, settings, tick);
+      const renderStarted = performanceClock(); tick += 1; const velocity = physicsTick(root, state, settings, tick);
+      const renderedAt = performanceClock(); recordFramePerformance(root, Number.isFinite(timestamp) ? timestamp : renderedAt, renderedAt - renderStarted, 'main');
       if (tick >= settings.iterations || velocity <= settings.minVelocity) {
         root.dataset.cfxGraphPhysicsState = 'stabilized';
         root.__cfxGraphMainPhysics = null;
         runLayoutQualityPass(root, state);
-        applyLayout(root, state);
+        applyLayout(root, state); syncSvgLayout(root, state);
         if (root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true) fitViewport(root);
         root.__cfxGraphAutoFitOnStabilize = false;
         if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root);

@@ -43,7 +43,7 @@ public sealed partial class TopologyPngRenderer {
         var height = (int)Math.Ceiling(prepared.Viewport.Height);
         var theme = prepared.Theme ?? TopologyTheme.Light();
         var highlight = TopologyHighlightState.From(prepared, options);
-        var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), null, Math.Max(1, options.PngOutputScale));
+        var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), Math.Max(1, options.PngOutputScale));
         canvas.Clear(Color(theme.Background));
         if (prepared.LayoutMode != TopologyLayoutMode.Geographic) DrawCanvasSurface(canvas, prepared, theme, options);
         if (options.IncludeTitle) DrawHeader(canvas, prepared, theme, options);

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -52,7 +53,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-callout-critical-count=\"1\"", StringComparison.Ordinal), "Geographic callouts should expose status counts.");
         Assert(svg.Contains("data-cfx-role=\"topology-geographic-callout-status\"", StringComparison.Ordinal), "Geographic callouts should render status chips.");
 
-        var html = chart.ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeGeographicCallouts = true, EnableHtmlInteractions = true });
+        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeGeographicCallouts = true });
         Assert(html.Contains("longitude: attr(element, 'data-node-longitude')", StringComparison.Ordinal), "Topology HTML selection details should expose node longitude.");
         Assert(html.Contains("geoVisible: attr(element, 'data-group-geo-visible')", StringComparison.Ordinal), "Topology HTML selection details should expose group geographic visibility.");
         Assert(html.Contains("nodeCount: attr(element, 'data-callout-node-count')", StringComparison.Ordinal), "Topology HTML selection details should expose callout counts.");

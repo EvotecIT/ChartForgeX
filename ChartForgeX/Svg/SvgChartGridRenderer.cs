@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -12,7 +11,6 @@ namespace ChartForgeX.Svg;
 /// Renders chart grids to self-contained SVG.
 /// </summary>
 public sealed class SvgChartGridRenderer {
-    private static long ScopeCounter;
     private readonly SvgChartRenderer _chartRenderer = new();
 
     /// <summary>
@@ -20,7 +18,7 @@ public sealed class SvgChartGridRenderer {
     /// </summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <returns>SVG markup.</returns>
-    public string Render(ChartGrid grid) => Render(grid, NextScope());
+    public string Render(ChartGrid grid) => Render(grid, string.Empty);
 
     /// <summary>
     /// Renders a chart grid to SVG markup with an additional deterministic ID scope.
@@ -144,11 +142,6 @@ public sealed class SvgChartGridRenderer {
         var valueEnd = openTag.IndexOf('"', valueStart);
         if (valueEnd < 0) return openTag;
         return openTag.Substring(0, valueStart) + Escape(value) + openTag.Substring(valueEnd);
-    }
-
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return value.ToString(CultureInfo.InvariantCulture);
     }
 
     private static double EstimateTextWidth(string text, double fontSize) {

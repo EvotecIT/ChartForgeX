@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -31,7 +32,7 @@ internal static partial class SmokeTests {
         Assert(staticHtml.Contains("data-cfx-scenario-url-state=\"false\"", StringComparison.Ordinal), "Static topology HTML should not enable query-string scenario state.");
         Assert(!staticHtml.Contains("data-cfx-topology-scenario=\"primary\"", StringComparison.Ordinal), "Static topology HTML should omit scenario picker controls.");
 
-        var html = chart.ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, ActiveScenarioId = "failover" });
+        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "failover" });
         Assert(html.Contains("data-cfx-scenario-controls=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should enable scenario controls when scenarios are present.");
         Assert(html.Contains("data-cfx-scenario-panel=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should enable scenario panels when scenarios are present.");
         Assert(html.Contains("data-cfx-scenario-url-state=\"false\"", StringComparison.Ordinal), "Interactive topology HTML should keep query-string scenario state opt-in.");
@@ -88,10 +89,10 @@ internal static partial class SmokeTests {
         Assert(html.Contains("cfx-topology-html-scenario-muted", StringComparison.Ordinal), "Scenario interactions should dim non-participating elements instead of drawing every path at once.");
         Assert(html.Contains("cfx-topology-html-scenario-active", StringComparison.Ordinal), "Scenario interactions should mark participating elements for route emphasis.");
 
-        var fallbackHtml = chart.ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, ActiveScenarioId = "missing" });
+        var fallbackHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "missing" });
         Assert(!fallbackHtml.Contains("data-cfx-active-scenario=\"primary\"", StringComparison.Ordinal), "Interactive topology HTML should default to All when no requested scenario resolves.");
 
-        var urlStateHtml = chart.ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, EnableHtmlScenarioUrlState = true });
+        var urlStateHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { EnableHtmlScenarioUrlState = true });
         Assert(urlStateHtml.Contains("data-cfx-scenario-url-state=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should expose opt-in query-string scenario state.");
         Assert(urlStateHtml.Contains("scenarioUrlParam('scenario')", StringComparison.Ordinal), "Scenario URL state should allow links to open a specific scenario.");
         Assert(urlStateHtml.Contains("scenarioUrlParam('scenarioStep')", StringComparison.Ordinal), "Scenario URL state should allow links to open a specific route step.");
@@ -100,17 +101,17 @@ internal static partial class SmokeTests {
         Assert(urlStateHtml.Contains("syncScenarioUrl(route.scenarioId, index)", StringComparison.Ordinal), "Scenario step focus should keep URL state synchronized.");
         Assert(urlStateHtml.Contains("syncScenarioUrl(scenarioId, '')", StringComparison.Ordinal), "Scenario selection should keep URL state synchronized.");
 
-        var panelDisabledHtml = chart.ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, EnableHtmlScenarioPanel = false });
+        var panelDisabledHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { EnableHtmlScenarioPanel = false });
         Assert(panelDisabledHtml.Contains("data-cfx-scenario-panel=\"false\"", StringComparison.Ordinal), "Interactive topology HTML should allow hosts to disable the built-in scenario panel.");
         Assert(!panelDisabledHtml.Contains("data-cfx-topology-scenario-panel=\"true\"", StringComparison.Ordinal), "Disabled scenario panels should omit panel markup while keeping scenario controls available.");
 
-        var pickerDisabledHtml = chart.ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, EnableHtmlScenarioControls = false });
+        var pickerDisabledHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { EnableHtmlScenarioControls = false });
         Assert(pickerDisabledHtml.Contains("data-cfx-scenario-controls=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should keep scenario runtime enabled when built-in picker controls are hidden.");
         Assert(!pickerDisabledHtml.Contains("data-cfx-topology-scenario=\"primary\"", StringComparison.Ordinal), "Hidden scenario controls should omit only the built-in picker buttons.");
         Assert(pickerDisabledHtml.Contains("cfx-topology-set-scenario", StringComparison.Ordinal), "Hidden scenario controls should keep host-driven scenario events active.");
         Assert(pickerDisabledHtml.Contains("findScenarioSummary(scenarioId)", StringComparison.Ordinal) && pickerDisabledHtml.Contains("data-cfx-scenarios=", StringComparison.Ordinal), "Hidden scenario controls should still resolve route metadata from the embedded topology SVG.");
 
-        var checkboxHtml = chart.ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, HtmlScenarioControlMode = TopologyHtmlScenarioControlMode.Checkboxes, EnableHtmlFullscreenControl = true, HtmlControlPlacement = TopologyHtmlControlPlacement.LeftRail });
+        var checkboxHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { HtmlScenarioControlMode = TopologyHtmlScenarioControlMode.Checkboxes, EnableHtmlFullscreenControl = true, HtmlControlPlacement = TopologyHtmlControlPlacement.LeftRail });
         Assert(checkboxHtml.Contains("data-cfx-scenario-control-mode=\"checkboxes\"", StringComparison.Ordinal), "Interactive topology HTML should expose checkbox scenario mode.");
         Assert(checkboxHtml.Contains("data-cfx-topology-scenario-toggle=\"primary\"", StringComparison.Ordinal), "Checkbox scenario mode should render independent route toggles.");
         Assert(checkboxHtml.Contains("data-cfx-fullscreen-control=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should expose opt-in fullscreen controls.");
@@ -126,15 +127,15 @@ internal static partial class SmokeTests {
         Assert(checkboxHtml.Contains("initialScenarioStep && (scenarioControlMode !== 'checkboxes' || attr(wrapper, 'data-cfx-active-scenario'))", StringComparison.Ordinal), "Checkbox scenario mode should restore route step deep links only when the URL names one active route.");
         Assert(checkboxHtml.Contains("syncScenarioUrl(routes.map(route => route.scenarioId).join(','), '')", StringComparison.Ordinal), "Checkbox scenario mode should serialize route filters into URL state when enabled.");
 
-        var helperCheckboxHtml = chart.ToHtmlPage(new TopologyRenderOptions().WithHtmlScenarioCheckboxes());
+        var helperCheckboxHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions().WithHtmlScenarioCheckboxes());
         Assert(helperCheckboxHtml.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Scenario checkbox helper should enable the topology HTML runtime.");
         Assert(helperCheckboxHtml.Contains("data-cfx-topology-scenario-toggle=\"primary\"", StringComparison.Ordinal), "Scenario checkbox helper should render checkbox controls without requiring a separate interaction toggle.");
 
-        var helperPanelHtml = chart.ToHtmlPage(new TopologyRenderOptions().WithHtmlScenarioPanel());
+        var helperPanelHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions().WithHtmlScenarioPanel());
         Assert(helperPanelHtml.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Scenario panel helper should enable the topology HTML runtime.");
         Assert(helperPanelHtml.Contains("data-cfx-topology-scenario-panel=\"true\"", StringComparison.Ordinal), "Scenario panel helper should render the route panel without requiring a separate interaction toggle.");
 
-        var helperUrlStateHtml = chart.ToHtmlPage(new TopologyRenderOptions().WithHtmlScenarioUrlState());
+        var helperUrlStateHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions().WithHtmlScenarioUrlState());
         Assert(helperUrlStateHtml.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Scenario URL-state helper should enable the topology HTML runtime.");
         Assert(helperUrlStateHtml.Contains("data-cfx-scenario-url-state=\"true\"", StringComparison.Ordinal), "Scenario URL-state helper should expose query-string route state.");
         Assert(helperUrlStateHtml.Contains("data-cfx-scenario-step-control=\"link\"", StringComparison.Ordinal), "Scenario URL-state helper should render copy-link controls without requiring a separate interaction toggle.");
@@ -144,6 +145,7 @@ internal static partial class SmokeTests {
         var defaultHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false });
         Assert(defaultHtml.Contains("data-cfx-interactive=\"false\"", StringComparison.Ordinal), "Topology HTML pages should be static by default.");
         Assert(!defaultHtml.Contains("new CustomEvent('cfx-topology-select'", StringComparison.Ordinal), "Default topology HTML pages should omit the interaction script.");
+        AssertThrows<InvalidOperationException>(() => CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true }), "The core topology renderer should reject browser behavior and direct callers to ChartForgeX.Interactivity.Html.");
         Assert(defaultHtml.Contains("linear-gradient(180deg", StringComparison.Ordinal), "Topology HTML pages should use the shared polished page surface.");
         Assert(defaultHtml.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal) && defaultHtml.Contains("text-rendering:geometricPrecision", StringComparison.Ordinal), "Topology HTML pages should use the shared text polish.");
         Assert(defaultHtml.Contains("overflow:visible", StringComparison.Ordinal), "Topology HTML pages should keep exported topology strokes and labels visible.");
@@ -154,7 +156,7 @@ internal static partial class SmokeTests {
         var cssBackgroundHtml = cssBackgroundChart.ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false });
         Assert(cssBackgroundHtml.Contains("background:rgb(245, 247, 250)", StringComparison.Ordinal), "Topology HTML pages should preserve caller-provided CSS background values.");
 
-        var html = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true });
+        var html = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false });
         Assert(html.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Topology HTML pages should mark interactive wrappers.");
         Assert(html.Contains("data-cfx-selection-panel=\"false\"", StringComparison.Ordinal), "Topology selection panels should be opt-in for embedders.");
         Assert(html.Contains("cfx-topology-select", StringComparison.Ordinal), "Topology HTML pages should dispatch host-friendly selection events.");
@@ -196,7 +198,7 @@ internal static partial class SmokeTests {
         Assert(!staticHtml.Contains("new CustomEvent('cfx-topology-hover'", StringComparison.Ordinal), "Static topology HTML pages should omit hover interaction hooks.");
         Assert(!staticHtml.Contains("cfx-topology-navigate", StringComparison.Ordinal), "Static topology HTML pages should omit keyboard navigation hooks.");
 
-        var selectionPanelHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true, EnableHtmlSelectionPanel = true });
+        var selectionPanelHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlSelectionPanel = true });
         Assert(selectionPanelHtml.Contains("data-cfx-selection-panel=\"true\"", StringComparison.Ordinal), "Interactive topology HTML should expose opt-in selected-record panels.");
         Assert(selectionPanelHtml.Contains("data-cfx-topology-selection-panel=\"true\"", StringComparison.Ordinal), "Selection panels should render a host-independent detail surface.");
         Assert(selectionPanelHtml.Contains("data-cfx-selection-title=\"true\"", StringComparison.Ordinal), "Selection panels should expose a title target for runtime updates.");
@@ -204,11 +206,11 @@ internal static partial class SmokeTests {
         Assert(selectionPanelHtml.Contains("hydrateSelected(initiallySelected)", StringComparison.Ordinal), "Selection panels should hydrate server-selected elements without emitting startup events or dimming unrelated topology elements.");
         Assert(selectionPanelHtml.Contains("cfx-topology-selection-panel__row", StringComparison.Ordinal), "Selection panels should include compact fact rows for metadata, metrics, and related edges.");
         Assert(selectionPanelHtml.Contains(".cfx-topology-selection-panel,.cfx-topology-force-controls", StringComparison.Ordinal), "Viewport gestures should ignore selection panel interactions.");
-        var helperSelectionPanelHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions().WithHtmlSelectionPanel());
+        var helperSelectionPanelHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions().WithHtmlSelectionPanel());
         Assert(helperSelectionPanelHtml.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Selection panel fluent helper should enable topology HTML interactions.");
         Assert(helperSelectionPanelHtml.Contains("data-cfx-topology-selection-panel=\"true\"", StringComparison.Ordinal), "Selection panel fluent helper should render the panel without requiring a separate interactions toggle.");
 
-        var viewportHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true, EnableHtmlViewportControls = true });
+        var viewportHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlViewportControls = true });
         Assert(viewportHtml.Contains("data-cfx-viewport-controls=\"true\"", StringComparison.Ordinal), "Topology HTML pages should expose opt-in viewport controls.");
         Assert(viewportHtml.Contains("data-cfx-controls-placement=\"top-left\"", StringComparison.Ordinal), "Topology viewport controls should default to upper-left placement.");
         Assert(viewportHtml.Contains("data-cfx-topology-zoom=\"in\"", StringComparison.Ordinal) && viewportHtml.Contains("data-cfx-topology-zoom=\"out\"", StringComparison.Ordinal), "Topology viewport controls should include zoom actions.");
@@ -228,14 +230,14 @@ internal static partial class SmokeTests {
         Assert(staticViewportHtml.Contains("data-cfx-viewport-controls=\"false\"", StringComparison.Ordinal), "Static topology HTML pages should not render viewport controls.");
         Assert(!staticViewportHtml.Contains("data-cfx-topology-zoom=\"in\"", StringComparison.Ordinal), "Static topology HTML pages should omit viewport control markup.");
 
-        var exportHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true, EnableHtmlExportControls = true });
+        var exportHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlExportControls = true });
         Assert(exportHtml.Contains("data-cfx-export-controls=\"true\"", StringComparison.Ordinal), "Topology HTML pages should expose opt-in export controls.");
         Assert(exportHtml.Contains("data-cfx-topology-export=\"svg\"", StringComparison.Ordinal) && exportHtml.Contains("data-cfx-topology-export=\"png\"", StringComparison.Ordinal), "Topology export controls should include SVG and PNG actions.");
         Assert(exportHtml.Contains("new CustomEvent('cfx-topology-export'", StringComparison.Ordinal), "Topology export controls should dispatch host-friendly export events.");
         Assert(exportHtml.Contains("new XMLSerializer().serializeToString(clone)", StringComparison.Ordinal), "Topology SVG export should serialize the prepared embedded SVG clone.");
         Assert(exportHtml.Contains("canvas.toBlob", StringComparison.Ordinal), "Topology PNG export should rasterize the embedded SVG in-browser.");
 
-        var fragmentHtml = CreateSampleTopologyChart().ToHtmlFragment(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true, EnableHtmlViewportControls = true, EnableHtmlExportControls = true });
+        var fragmentHtml = CreateSampleTopologyChart().ToInteractiveHtmlFragment(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlViewportControls = true, EnableHtmlExportControls = true });
         Assert(fragmentHtml.Contains("data-cfx-topology-assets=\"true\"", StringComparison.Ordinal), "Interactive topology fragments should include scoped topology CSS assets for embedders.");
         Assert(fragmentHtml.Contains("--cfx-topology-control-bg", StringComparison.Ordinal), "Topology fragment controls should be themeable through CSS variables.");
         Assert(fragmentHtml.Contains("<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"", StringComparison.Ordinal), "Topology fragment controls should render icon-style buttons instead of raw text controls.");
@@ -243,9 +245,9 @@ internal static partial class SmokeTests {
         Assert(fragmentHtml.Contains("data-cfx-runtime-bound", StringComparison.Ordinal), "The topology runtime should guard wrappers against duplicate event binding when several fragments are embedded.");
 
         var assetlessOptions = new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true, EnableHtmlViewportControls = true, CssClassPrefix = "report-topology" };
-        var assetlessFragment = CreateSampleTopologyChart().ToHtmlFragmentWithoutAssets(assetlessOptions);
+        var assetlessFragment = CreateSampleTopologyChart().ToInteractiveHtmlFragmentWithoutAssets(assetlessOptions);
         var assetlessStyle = TopologyHtmlRenderer.BuildFragmentStyle(assetlessOptions, TopologyTheme.Dark());
-        var assetlessScript = TopologyHtmlRenderer.BuildInteractionScript(assetlessOptions);
+        var assetlessScript = HtmlInteractiveTopologyRenderer.BuildInteractionScript(assetlessOptions);
         Assert(assetlessFragment.Contains("class=\"report-topology-wrapper\"", StringComparison.Ordinal), "Asset-light topology fragments should still render the requested wrapper prefix.");
         Assert(!assetlessFragment.Contains("data-cfx-topology-assets=\"true\"", StringComparison.Ordinal), "Asset-light topology fragments should omit inline topology CSS assets.");
         Assert(!assetlessFragment.Contains("<script>", StringComparison.Ordinal), "Asset-light topology fragments should omit the inline topology runtime script.");
@@ -259,27 +261,27 @@ internal static partial class SmokeTests {
         Assert(staticExportHtml.Contains("data-cfx-export-controls=\"false\"", StringComparison.Ordinal), "Static topology HTML pages should not render export controls.");
         Assert(!staticExportHtml.Contains("data-cfx-topology-export=\"svg\"", StringComparison.Ordinal), "Static topology HTML pages should omit export control markup.");
 
-        var syncHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true, EnableHtmlSynchronizedState = true, HtmlSyncGroupName = "directory-topology" });
+        var syncHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlSynchronizedState = true, HtmlSyncGroupName = "directory-topology" });
         Assert(syncHtml.Contains("data-cfx-sync-enabled=\"true\"", StringComparison.Ordinal), "Topology HTML pages should expose opt-in synchronization state.");
         Assert(syncHtml.Contains("data-cfx-sync-group=\"directory-topology\"", StringComparison.Ordinal), "Topology HTML pages should expose the synchronization group name.");
         Assert(syncHtml.Contains("new CustomEvent('cfx-topology-sync'", StringComparison.Ordinal), "Topology HTML pages should dispatch host-friendly synchronization events.");
         Assert(syncHtml.Contains("cfx-topology-apply-sync", StringComparison.Ordinal), "Topology HTML pages should accept synchronized state from peer topology wrappers.");
         Assert(syncHtml.Contains("emitSync('selection'", StringComparison.Ordinal) && syncHtml.Contains("emitSync('viewport'", StringComparison.Ordinal), "Topology synchronization should cover selection and viewport state.");
 
-        var syncWithoutGroupHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, EnableHtmlSynchronizedState = true });
+        var syncWithoutGroupHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { EnableHtmlSynchronizedState = true });
         Assert(syncWithoutGroupHtml.Contains("data-cfx-sync-enabled=\"false\"", StringComparison.Ordinal), "Topology synchronization should require an explicit group name.");
 
         var staticSyncHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = false, EnableHtmlSynchronizedState = true, HtmlSyncGroupName = "directory-topology" });
         Assert(staticSyncHtml.Contains("data-cfx-sync-enabled=\"false\"", StringComparison.Ordinal), "Static topology HTML pages should not enable synchronization.");
         Assert(!staticSyncHtml.Contains("new CustomEvent('cfx-topology-sync'", StringComparison.Ordinal), "Static topology HTML pages should omit synchronization hooks.");
 
-        var prefixedHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, CssClassPrefix = "report-topology" });
+        var prefixedHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { CssClassPrefix = "report-topology" });
         Assert(prefixedHtml.Contains("class=\"report-topology-wrapper\"", StringComparison.Ordinal), "Topology HTML wrappers should honor CssClassPrefix.");
         Assert(prefixedHtml.Contains(".report-topology-wrapper[data-cfx-interactive=\"true\"]", StringComparison.Ordinal), "Topology interaction selectors should honor CssClassPrefix.");
         Assert(prefixedHtml.Contains("report-topology-html-selected", StringComparison.Ordinal), "Topology interaction state classes should honor CssClassPrefix.");
         Assert(!prefixedHtml.Contains("class=\"cfx-topology-wrapper\"", StringComparison.Ordinal), "Prefixed topology HTML should not keep hardcoded wrapper class names.");
 
-        var sanitizedPrefixHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = true, CssClassPrefix = "123 report topology" });
+        var sanitizedPrefixHtml = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { CssClassPrefix = "123 report topology" });
         Assert(sanitizedPrefixHtml.Contains("class=\"cfx-123-report-topology-wrapper\"", StringComparison.Ordinal), "Topology HTML should sanitize wrapper CSS prefixes.");
         Assert(sanitizedPrefixHtml.Contains("class=\"cfx-123-report-topology\"", StringComparison.Ordinal), "Topology embedded SVG should use the same sanitized CSS prefix as the HTML wrapper.");
         Assert(!sanitizedPrefixHtml.Contains("123 report topology", StringComparison.Ordinal), "Topology HTML should not emit unsanitized CSS prefixes.");

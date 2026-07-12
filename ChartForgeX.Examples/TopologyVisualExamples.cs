@@ -1,6 +1,7 @@
 using System.Globalization;
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
@@ -743,7 +744,8 @@ internal static partial class TopologyVisualExamples {
 
     private static void SaveTopology(string target, List<VisualArtifact> artifacts, string name, TopologyChart chart, string title, string notes, TopologyRenderOptions? options = null) {
         chart.SaveSvg(Path.Combine(target, name + ".svg"), options);
-        chart.SaveHtml(Path.Combine(target, name + ".html"), options);
+        if (options?.EnableHtmlInteractions == true) chart.SaveInteractiveHtml(Path.Combine(target, name + ".html"), options);
+        else chart.SaveHtml(Path.Combine(target, name + ".html"), options);
         chart.SavePng(Path.Combine(target, name + ".png"), options);
         var hasMotion = options?.Motion != null;
         if (hasMotion) chart.SaveGif(Path.Combine(target, name + ".gif"), options);

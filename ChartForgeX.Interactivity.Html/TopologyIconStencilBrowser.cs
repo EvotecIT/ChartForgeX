@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ChartForgeX.Html;
+using ChartForgeX.Topology;
 
-namespace ChartForgeX.Topology;
+namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Defines settings for rendering a topology icon catalog as a stencil browser page.
@@ -200,9 +201,9 @@ public static class TopologyIconStencilBrowserExtensions {
             .EndElement().Line();
     }
 
-    private static string StyleSheet() => TopologyHtmlAssets.IconStencilBrowserStyle;
+    private static string StyleSheet() => HtmlTopologyAssets.IconStencilBrowserStyle;
 
-    private static string Script() => TopologyHtmlAssets.IconStencilBrowserScript;
+    private static string Script() => HtmlTopologyAssets.IconStencilBrowserScript;
 
     private static TopologyIconCatalogQuery ToQuery(TopologyIconStencilBrowserOptions options) {
         var query = new TopologyIconCatalogQuery {

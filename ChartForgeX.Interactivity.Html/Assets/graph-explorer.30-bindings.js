@@ -163,7 +163,7 @@
   const exportSvgContent = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
     if (!svg) return '';
-    const clone = svg.cloneNode(true);
+    syncSvgLayout(root, graphState(root)); const clone = svg.cloneNode(true);
     ['cfx-graph-lod-compact', 'cfx-graph-lod-hide-edge-labels', 'cfx-graph-neighborhood-active', 'cfx-graph-performance-gated'].forEach(name => {
       if (root.classList.contains(name)) clone.classList.add(name);
     });
@@ -196,18 +196,18 @@
     },
     focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' }, clustering: { mode: attr(root, 'data-cfx-graph-cluster-mode'), adaptive: attr(root, 'data-cfx-graph-cluster-adaptive') === 'true', minimumClusterSize: Number(attr(root, 'data-cfx-graph-cluster-min-size') || 0), targetClusterSize: Number(attr(root, 'data-cfx-graph-cluster-target-size') || 0), collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true', lod: root.dataset.cfxGraphClusterLod || '', state: root.dataset.cfxGraphClusters || '', count: Number(attr(root, 'data-cfx-graph-cluster-count') || 0) }, manipulation: { enabled: attr(root, 'data-cfx-graph-manipulation') === 'true', capabilities: (attr(root, 'data-cfx-graph-manipulation-capabilities') || '').split(',').filter(Boolean) },
     performance: {
-      state: root.dataset.cfxGraphPerformance || '',
-      budget: root.dataset.cfxGraphPerformanceBudget || '',
+      state: root.dataset.cfxGraphPerformance || '', budget: root.dataset.cfxGraphPerformanceBudget || '',
       samples: Number(root.dataset.cfxGraphPerformanceSamples || 0),
-      budgetMisses: Number(root.dataset.cfxGraphPerformanceBudgetMisses || 0),
+      frameSamples: Number(root.dataset.cfxGraphPerformanceFrameSamples || 0), maxFrameMs: Number(root.dataset.cfxGraphPerformanceMaxFrameMs || 0), maxRenderMs: Number(root.dataset.cfxGraphPerformanceMaxRenderMs || 0),
+      warmupFrameSamples: Number(root.dataset.cfxGraphPerformanceWarmupFrameSamples || 0), maxWarmupFrameMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupFrameMs || 0), maxWarmupRenderMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupRenderMs || 0),
+      physicsSamples: Number(root.dataset.cfxGraphPerformancePhysicsSamples || 0), physicsBudgetMisses: Number(root.dataset.cfxGraphPerformancePhysicsBudgetMisses || 0),
+      budgetMisses: Number(root.dataset.cfxGraphPerformanceBudgetMisses || 0), budgetMissRate: Number(root.dataset.cfxGraphPerformanceBudgetMissRate || 0),
       maxSampleMs: Number(root.dataset.cfxGraphPerformanceMaxSampleMs || 0),
       lastSampleMs: Number(root.dataset.cfxGraphPerformanceLastSampleMs || 0),
-      overlapPressureEvents: Number(root.dataset.cfxGraphPerformanceOverlapPressureEvents || 0),
-      communityPackingEvents: Number(root.dataset.cfxGraphPerformanceCommunityPackingEvents || 0),
+      overlapPressureEvents: Number(root.dataset.cfxGraphPerformanceOverlapPressureEvents || 0), communityPackingEvents: Number(root.dataset.cfxGraphPerformanceCommunityPackingEvents || 0),
       sampleTicks: Number(root.dataset.cfxGraphPerformanceSampleTicks || 0),
       sampleBudgetMs: Number(root.dataset.cfxGraphPerformanceSampleBudgetMs || 0),
-      thread: root.dataset.cfxGraphPerformanceThread || '',
-      acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
+      thread: root.dataset.cfxGraphPerformanceThread || '', acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
     },
     nodes: graphState(root).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level')), kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el.querySelector('image'), 'aria-label'), style: { backgroundColor: attr(node.el, 'data-node-background-color'), borderColor: attr(node.el, 'data-node-border-color'), labelColor: attr(node.el, 'data-node-label-color'), labelBackgroundColor: attr(node.el, 'data-node-label-background-color'), shadow: attr(node.el, 'data-node-shadow') === 'true' }, hidden: node.el.classList.contains('cfx-graph-hidden') || node.el.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
     edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), routePoints: routePoints(attr(edge, 'data-edge-route-points')), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', dashPattern: attr(edge, 'data-edge-dash-pattern'), showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', sourceArrow: attr(edge, 'data-edge-source-arrow') === 'true', targetArrow: attr(edge, 'data-edge-target-arrow') === 'true', physics: attr(edge, 'data-edge-physics') !== 'false', style: { color: attr(edge, 'data-edge-color'), labelColor: attr(edge, 'data-edge-label-color'), width: Number(attr(edge, 'data-edge-width') || 0) }, hidden: edge.classList.contains('cfx-graph-hidden') || edge.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(edge, 'data-cfx-search'), metadata: metadataDetail(edge) })),
@@ -234,7 +234,7 @@
       const useCanvas = attr(root, 'data-cfx-graph-renderer') === 'canvas';
       root.classList.toggle('cfx-graph-render-canvas', useCanvas);
       root.classList.toggle('cfx-graph-render-svg', !useCanvas);
-      root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg';
+      root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg'; syncRendererAccessibility(root, useCanvas);
       syncGraphItemTabStops(root);
     }
     performanceGate(root);

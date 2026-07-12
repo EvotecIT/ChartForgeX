@@ -130,6 +130,8 @@ public sealed class GraphScene {
         if (Options.Performance.FrameBudgetMilliseconds <= 0) throw new InvalidOperationException("Graph scene performance frame budget must be greater than zero.");
         if (Options.Performance.MaxInteractiveSvgNodes < 0 || Options.Performance.MaxInteractiveSvgEdges < 0 || Options.Performance.MaxInteractiveCanvasNodes < 0 || Options.Performance.MaxInteractiveCanvasEdges < 0) throw new InvalidOperationException("Graph scene performance limits must not be negative.");
         if (Options.Performance.TelemetrySampleInterval <= 0) throw new InvalidOperationException("Graph scene performance telemetry interval must be greater than zero.");
+        if (Options.Performance.WarmupFrameCount < 0) throw new InvalidOperationException("Graph scene performance warmup frame count must not be negative.");
+        if (Options.Performance.WorkerProgressInterval <= 0) throw new InvalidOperationException("Graph scene worker progress interval must be greater than zero.");
         Options.Layout.Validate();
         Options.Cluster.Validate();
     }

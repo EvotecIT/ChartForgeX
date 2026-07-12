@@ -23,7 +23,7 @@ public sealed class PngVisualGridRenderer {
         var layout = VisualGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
-        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, null, grid.PngOutputScale);
+        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), grid.PngOutputScale);
         canvas.Clear(background);
         if (background.A == 255) {
             var surfaceInset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);

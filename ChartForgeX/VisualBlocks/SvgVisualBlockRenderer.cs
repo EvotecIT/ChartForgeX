@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,10 +12,8 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual blocks to self-contained SVG.
 /// </summary>
 public sealed partial class SvgVisualBlockRenderer {
-    private static long ScopeCounter;
-
     /// <summary>Renders a visual block to SVG markup.</summary>
-    public string Render(IVisualBlock block) => Render(block, NextScope());
+    public string Render(IVisualBlock block) => Render(block, string.Empty);
 
     /// <summary>Renders a visual block to SVG markup with a caller-provided ID scope.</summary>
     public string Render(IVisualBlock block, string idScope) {
@@ -622,8 +619,4 @@ public sealed partial class SvgVisualBlockRenderer {
 
     private static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "visual-block-" + value.ToString(CultureInfo.InvariantCulture);
-    }
 }

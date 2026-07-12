@@ -29,7 +29,23 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 796773,
-        "minDistinctColors": 1967,
+        "minDistinctColors": 2008,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "axis-label-fitting-showcase",
+      "width": 760,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 38,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 408629,
+        "minDistinctColors": 1631,
         "maxEdgeInkPixels": 0
       }
     },
@@ -38,7 +54,7 @@
       "width": 914,
       "height": 670,
       "svg": {
-        "minVisualNodes": 117,
+        "minVisualNodes": 110,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -253,7 +269,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 730261,
-        "minDistinctColors": 1575,
+        "minDistinctColors": 1542,
         "maxEdgeInkPixels": 0
       }
     },
@@ -269,7 +285,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
-        "minDistinctColors": 711,
+        "minDistinctColors": 709,
         "maxEdgeInkPixels": 0
       }
     },
@@ -285,7 +301,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
-        "minDistinctColors": 1628,
+        "minDistinctColors": 1546,
         "maxEdgeInkPixels": 0
       }
     },
@@ -294,7 +310,7 @@
       "width": 1224,
       "height": 2331,
       "svg": {
-        "minVisualNodes": 608,
+        "minVisualNodes": 606,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -349,7 +365,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 234381,
-        "minDistinctColors": 946,
+        "minDistinctColors": 926,
         "maxEdgeInkPixels": 0
       }
     },
@@ -397,7 +413,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 234381,
-        "minDistinctColors": 762,
+        "minDistinctColors": 737,
         "maxEdgeInkPixels": 0
       }
     },
@@ -413,7 +429,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 818531,
-        "minDistinctColors": 1207,
+        "minDistinctColors": 1281,
         "maxEdgeInkPixels": 0
       }
     },
@@ -477,7 +493,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 234381,
-        "minDistinctColors": 821,
+        "minDistinctColors": 801,
         "maxEdgeInkPixels": 0
       }
     },
@@ -493,7 +509,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 590400,
-        "minDistinctColors": 1979,
+        "minDistinctColors": 1937,
         "maxEdgeInkPixels": 0
       }
     },
@@ -525,7 +541,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 656000,
-        "minDistinctColors": 504,
+        "minDistinctColors": 507,
         "maxEdgeInkPixels": 0
       }
     },
@@ -541,7 +557,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 632035,
-        "minDistinctColors": 906,
+        "minDistinctColors": 888,
         "maxEdgeInkPixels": 0
       }
     },
@@ -557,7 +573,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
-        "minDistinctColors": 837,
+        "minDistinctColors": 830,
         "maxEdgeInkPixels": 0
       }
     },
@@ -573,7 +589,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
-        "minDistinctColors": 624,
+        "minDistinctColors": 617,
         "maxEdgeInkPixels": 0
       }
     },
@@ -589,7 +605,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
-        "minDistinctColors": 744,
+        "minDistinctColors": 743,
         "maxEdgeInkPixels": 0
       }
     },
@@ -598,7 +614,7 @@
       "width": 1352,
       "height": 751,
       "svg": {
-        "minVisualNodes": 238,
+        "minVisualNodes": 236,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -621,7 +637,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 496861,
-        "minDistinctColors": 858,
+        "minDistinctColors": 855,
         "maxEdgeInkPixels": 0
       }
     },
@@ -630,14 +646,14 @@
       "width": 420,
       "height": 300,
       "svg": {
-        "minVisualNodes": 28,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
-        "minDistinctColors": 1199,
+        "minDistinctColors": 1231,
         "maxEdgeInkPixels": 0
       }
     },
@@ -669,7 +685,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 846400,
-        "minDistinctColors": 1532,
+        "minDistinctColors": 1527,
         "maxEdgeInkPixels": 0
       }
     },
@@ -685,7 +701,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 404800,
-        "minDistinctColors": 1317,
+        "minDistinctColors": 1316,
         "maxEdgeInkPixels": 0
       }
     },
@@ -700,8 +716,8 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 20035,
-        "minDistinctColors": 932,
+        "minVisiblePixels": 17363,
+        "minDistinctColors": 878,
         "maxEdgeInkPixels": 0
       }
     },
@@ -733,7 +749,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 274315,
-        "minDistinctColors": 730,
+        "minDistinctColors": 721,
         "maxEdgeInkPixels": 0
       }
     },
@@ -749,7 +765,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 274315,
-        "minDistinctColors": 756,
+        "minDistinctColors": 743,
         "maxEdgeInkPixels": 0
       }
     },
@@ -765,7 +781,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 469075,
-        "minDistinctColors": 1445,
+        "minDistinctColors": 1422,
         "maxEdgeInkPixels": 0
       }
     },
@@ -781,7 +797,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1011555,
-        "minDistinctColors": 1851,
+        "minDistinctColors": 1842,
         "maxEdgeInkPixels": 0
       }
     },
@@ -973,7 +989,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
-        "minDistinctColors": 1766,
+        "minDistinctColors": 1764,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1309,7 +1325,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 223391,
-        "minDistinctColors": 1451,
+        "minDistinctColors": 1485,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1366,14 +1382,14 @@
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 38,
+        "minVisualNodes": 42,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 257471,
-        "minDistinctColors": 934,
+        "minDistinctColors": 1135,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1494,7 +1510,7 @@
       "width": 934,
       "height": 1008,
       "svg": {
-        "minVisualNodes": 184,
+        "minVisualNodes": 183,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1517,7 +1533,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1776,
+        "minDistinctColors": 1775,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1549,7 +1565,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
-        "minDistinctColors": 1411,
+        "minDistinctColors": 1414,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1741,7 +1757,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962269,
-        "minDistinctColors": 1737,
+        "minDistinctColors": 1740,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1862,7 +1878,7 @@
       "width": 914,
       "height": 670,
       "svg": {
-        "minVisualNodes": 115,
+        "minVisualNodes": 109,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -2077,7 +2093,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 572191,
-        "minDistinctColors": 899,
+        "minDistinctColors": 876,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2109,7 +2125,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 470400,
-        "minDistinctColors": 958,
+        "minDistinctColors": 954,
         "maxEdgeInkPixels": 0
       }
     },

@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -13,10 +12,9 @@ namespace ChartForgeX.Composition;
 /// Renders visual canvases to self-contained SVG.
 /// </summary>
 public sealed class SvgVisualCanvasRenderer {
-    private static long ScopeCounter;
 
     /// <summary>Renders a visual canvas to SVG markup.</summary>
-    public string Render(VisualCanvas canvas) => Render(canvas, NextScope());
+    public string Render(VisualCanvas canvas) => Render(canvas, string.Empty);
 
     /// <summary>Renders a visual canvas to SVG markup with a caller-provided ID scope.</summary>
     public string Render(VisualCanvas canvas, string idScope) {
@@ -531,11 +529,6 @@ public sealed class SvgVisualCanvasRenderer {
 
     private static double Measure(string value, double fontSize, bool emphasized) =>
         emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) : RgbaCanvas.MeasureTextWidth(value, fontSize, null);
-
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "visual-canvas-" + value.ToString(CultureInfo.InvariantCulture);
-    }
 
     private static string StableHash(params string[] values) {
         unchecked {

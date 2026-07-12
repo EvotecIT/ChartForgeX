@@ -226,6 +226,7 @@ public static partial class GalleryWriter {
             "people-infographic-showcase-grid",
             "word-cloud-control-showcase-grid",
             "data-label-placement-showcase-grid",
+            "axis-label-fitting-showcase",
             "point-color-customization-showcase-grid",
             "text-style-showcase-editorial"),
         new(

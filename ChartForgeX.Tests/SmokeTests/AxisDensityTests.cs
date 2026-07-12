@@ -52,4 +52,25 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">enforcement</text>", System.StringComparison.Ordinal), "Long horizontal category labels should wrap onto a second readable SVG line.");
         Assert(svg.Contains(">DNSSEC</text>", System.StringComparison.Ordinal), "Short horizontal category labels should remain a single SVG line.");
     }
+
+    private static void NumericYAxisTicksThinWhenCrowded() {
+        var automatic = Chart.Create()
+            .WithSize(360, 150)
+            .WithYAxisBounds(0, 100)
+            .WithTickCount(11)
+            .AddLine("Values", Points(10, 50, 90));
+        var automaticSvg = automatic.ToSvg();
+        var automaticLabels = CountOccurrences(automaticSvg, "data-cfx-role=\"y-axis-label\"");
+        Assert(automaticLabels >= 2 && automaticLabels < 11, "Automatic y-axis density should retain the endpoints while removing vertically crowded labels.");
+        Assert(automatic.ToPng().Length > 64, "PNG should use the same y-axis density policy.");
+
+        var allSvg = Chart.Create()
+            .WithSize(360, 150)
+            .WithYAxisBounds(0, 100)
+            .WithTickCount(11)
+            .WithYAxisLabelDensity(ChartLabelDensity.All)
+            .AddLine("Values", Points(10, 50, 90))
+            .ToSvg();
+        Assert(CountOccurrences(allSvg, "data-cfx-role=\"y-axis-label\"") == 11, "All y-axis density should preserve every generated label.");
+    }
 }

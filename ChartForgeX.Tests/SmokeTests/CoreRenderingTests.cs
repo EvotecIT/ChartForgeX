@@ -245,7 +245,7 @@ internal static partial class SmokeTests {
             .AddLine("Latency budget", Points(1000000, 1120000, 1080000))
             .ToSvg();
         Assert(GetAttribute(svg, "<clipPath", "x") > 76, "Long formatted y-axis labels should push the SVG plot area to the right.");
-        Assert(svg.Contains("$1,000,000 ms", StringComparison.Ordinal) || svg.Contains("$1,200,000 ms", StringComparison.Ordinal), "Long formatted y-axis labels should render.");
+        Assert(svg.Contains(" ms</text>", StringComparison.Ordinal), "Long formatted y-axis labels should render after density-aware selection.");
     }
 
     private static void LongAxisTitlesFitAvailableSpace() {
@@ -457,10 +457,11 @@ internal static partial class SmokeTests {
         Assert(html.Contains("style=\"width:100%;max-width:640px;box-sizing:border-box;overflow:visible\"", StringComparison.Ordinal), "HTML fragment should carry responsive wrapper styles.");
         Assert(html.Contains("style=\"max-width:100%;height:auto;display:block\"", StringComparison.Ordinal), "SVG should carry responsive sizing styles.");
         var repeated = Chart.Create().WithTitle("Repeated fragment").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
-        var combined = repeated.ToHtmlFragment() + repeated.ToHtmlFragment();
+        Assert(repeated.ToHtmlFragment() == repeated.ToHtmlFragment(), "Default HTML chart fragments should be deterministic.");
+        var combined = repeated.ToHtmlFragment("embed-a") + repeated.ToHtmlFragment("embed-b");
         var titleIds = ExtractAttributeValues(combined, "<title id=\"");
-        Assert(titleIds.Length == 2 && titleIds.Distinct(StringComparer.Ordinal).Count() == 2, "Concatenated HTML fragments should give repeated charts unique SVG title IDs.");
-        AssertNoDuplicateIds(combined, "Concatenated HTML fragments");
+        Assert(titleIds.Length == 2 && titleIds.Distinct(StringComparer.Ordinal).Count() == 2, "Explicitly scoped HTML fragments should give equivalent charts unique SVG title IDs.");
+        AssertNoDuplicateIds(combined, "Explicitly scoped HTML fragments");
         var scopedRawSvg = repeated.ToSvg("embed-a") + repeated.ToSvg("embed-b");
         AssertNoDuplicateIds(scopedRawSvg, "Scoped raw SVG charts");
         Assert(repeated.ToSvg("stable-scope") == repeated.ToSvg("stable-scope"), "Explicit SVG ID scopes should keep raw SVG output deterministic.");

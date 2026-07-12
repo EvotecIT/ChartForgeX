@@ -164,6 +164,7 @@ internal static partial class SmokeTests {
         var first = canvas.ToSvg("fixed-scope");
         var second = canvas.ToSvg("fixed-scope");
         Assert(first == second, "Visual canvas SVG image resource IDs should stay deterministic for a fixed render scope.");
+        Assert(canvas.ToSvg() == canvas.ToSvg(), "Visual canvas SVG output should be deterministic by default.");
         Assert(first.Contains("-image-0-pattern", StringComparison.Ordinal) && first.Contains("-image-1-clip", StringComparison.Ordinal), "Visual canvas SVG image resource IDs should be derived from stable layer positions.");
     }
 

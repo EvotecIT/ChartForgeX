@@ -582,9 +582,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double ProjectX(double value, ChartRange range, ChartRect plot) {
-        var span = range.MaxX - range.MinX;
-        if (Math.Abs(span) < 0.0000001) return plot.Left + plot.Width / 2;
-        return plot.Left + (value - range.MinX) / span * plot.Width;
+        return plot.Left + ChartMath.Normalize(value, range.MinX, range.MaxX) * plot.Width;
     }
 
     private static string FormatX(Chart chart, double value) {

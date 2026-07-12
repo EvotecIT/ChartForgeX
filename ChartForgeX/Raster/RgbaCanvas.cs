@@ -26,15 +26,16 @@ internal sealed partial class RgbaCanvas {
     public RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont) : this(width, height, scale, outlineFont, 1) { }
 
     public RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont, int outputScale) {
+        var allocation = RasterAllocationGuard.Calculate(width, height, scale, outputScale);
         Width = width;
         Height = height;
-        _supersamplingScale = Math.Max(1, scale);
-        _outputScale = Math.Max(1, outputScale);
-        _scale = _supersamplingScale * _outputScale;
+        _supersamplingScale = scale;
+        _outputScale = outputScale;
+        _scale = allocation.CombinedScale;
         _outlineFont = outlineFont ?? DefaultOutlineFont;
-        _pixelWidth = width * _scale;
-        _pixelHeight = height * _scale;
-        Pixels = new byte[_pixelWidth * _pixelHeight * 4];
+        _pixelWidth = allocation.PixelWidth;
+        _pixelHeight = allocation.PixelHeight;
+        Pixels = new byte[allocation.ByteCount];
     }
 
     public void Clear(ChartColor color) {

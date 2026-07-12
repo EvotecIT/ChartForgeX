@@ -43,9 +43,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static double ProjectX(double value, ChartRange range, ChartRect plot) {
-        var span = range.MaxX - range.MinX;
-        if (Math.Abs(span) < 0.0000001) return plot.Left + plot.Width / 2;
-        return plot.Left + (value - range.MinX) / span * plot.Width;
+        return plot.Left + ChartMath.Normalize(value, range.MinX, range.MaxX) * plot.Width;
     }
 
     private static void DrawAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, IReadOnlyList<string>? xAxisLabels = null) {
@@ -89,7 +87,9 @@ public sealed partial class PngChartRenderer {
         var preferredFontSize = PngTickFontSize(chart);
         var labelMaxWidth = Math.Max(24, chart.Options.Size.Width - plot.Right - 12);
         if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
-        foreach (var tick in yTicks) {
+        for (var tickIndex = 0; tickIndex < yTicks.Count; tickIndex++) {
+            var tick = yTicks[tickIndex];
+            if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredFontSize, chart.Options.YAxisLabelDensity)) continue;
             var rawLabel = FormatSecondaryValue(chart, tick);
             var fontSize = TextFontSizeForWidth(rawLabel, labelMaxWidth, preferredFontSize);
             var label = TrimPngLabelToWidth(rawLabel, fontSize, labelMaxWidth);

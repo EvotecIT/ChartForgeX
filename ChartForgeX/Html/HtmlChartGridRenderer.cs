@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +12,6 @@ namespace ChartForgeX.Html;
 /// Renders dependency-free small-multiple chart grids as static HTML.
 /// </summary>
 public sealed class HtmlChartGridRenderer {
-    private static long ScopeCounter;
     private readonly SvgChartRenderer _svg = new();
 
     /// <summary>
@@ -21,10 +19,17 @@ public sealed class HtmlChartGridRenderer {
     /// </summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <returns>An HTML fragment containing inline SVG charts.</returns>
-    public string RenderFragment(ChartGrid grid) {
+    public string RenderFragment(ChartGrid grid) => RenderFragment(grid, string.Empty);
+
+    /// <summary>Renders a chart grid fragment with a caller-provided deterministic ID scope.</summary>
+    /// <param name="grid">The chart grid to render.</param>
+    /// <param name="idScope">A stable scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment containing inline SVG charts.</returns>
+    public string RenderFragment(ChartGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
+        if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         if (grid.Charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart.");
-        var gridScope = NextScope();
+        var gridScope = idScope;
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
 
         var writer = new HtmlMarkupWriter();
@@ -77,7 +82,7 @@ public sealed class HtmlChartGridRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(bg, theme.Text.ToCss(), theme.MutedText.ToCss(), fontFamily, theme.TitleFontSize, theme.SubtitleFontSize));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(RenderFragment(grid)).Line()
+            .RawTrusted(RenderFragment(grid, "html-page")).Line()
             .EndElement().Line()
             .EndElement();
         return writer.Build();
@@ -108,11 +113,6 @@ public sealed class HtmlChartGridRenderer {
     private static string AttributeTitle(Chart chart) {
         if (chart.Title.Length > 0) return chart.Title;
         return chart.Series.Count == 0 ? "Chart" : chart.Series[0].Name;
-    }
-
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "html-grid-" + value.ToString(CultureInfo.InvariantCulture);
     }
 
     private static string GridStyle(ChartGrid grid) {

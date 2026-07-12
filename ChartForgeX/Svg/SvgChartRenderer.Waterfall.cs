@@ -223,9 +223,7 @@ public sealed partial class SvgChartRenderer {
     private static string WaterfallStatus(WaterfallStep step) => step.IsTotal ? "total" : step.Delta >= 0 ? "positive" : "negative";
 
     private static double WaterfallY(ChartRect plot, ChartRange bounds, double value) {
-        var span = bounds.MaxY - bounds.MinY;
-        if (Math.Abs(span) < 0.000001) return plot.Top + plot.Height / 2;
-        return plot.Bottom - (value - bounds.MinY) / span * plot.Height;
+        return plot.Bottom - ChartMath.Normalize(value, bounds.MinY, bounds.MaxY) * plot.Height;
     }
 
     private readonly struct WaterfallStep {

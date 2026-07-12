@@ -26,14 +26,23 @@
     const y = members.reduce((sum, node) => sum + node.y, 0) / members.length;
     cluster.el.setAttribute('transform', `translate(${x.toFixed(3)} ${y.toFixed(3)})`);
   });
-  const applyLayout = (root, state) => {
+  const syncSvgLayout = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     state.nodes.forEach(setNodePosition);
     updateEdges(root, state.edges);
     updateClusters(state.clusters, byId);
+  };
+  const applyLayout = (root, state) => {
+    if (root.dataset.cfxGraphRendererActive !== 'canvas') syncSvgLayout(root, state);
     indexHitTesting(root, state);
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
+  };
+  const syncRendererAccessibility = (root, useCanvas) => {
+    const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
+    const svg = root.querySelector('[data-cfx-role="graph-scene"]');
+    if (canvas) canvas.setAttribute('aria-hidden', useCanvas ? 'false' : 'true');
+    if (svg) svg.setAttribute('aria-hidden', useCanvas ? 'true' : 'false');
   };
   const applyLod = (root) => {
     const nodes = Number(attr(root, 'data-cfx-graph-node-count'));
@@ -51,6 +60,7 @@
     root.dataset.cfxGraphLod = preferCanvas ? 'canvas-preferred' : compact ? 'compact' : hideEdgeLabels ? 'edge-labels-hidden' : 'full';
     root.dataset.cfxGraphClusterLod = nodes >= num(root, 'data-cfx-lod-cluster-threshold', Number.POSITIVE_INFINITY) ? 'threshold' : 'none';
     root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg';
+    syncRendererAccessibility(root, useCanvas);
     syncGraphItemTabStops(root);
     emit(root, 'cfxgraphlod', { graphId: attr(root, 'data-cfx-graph-id'), mode: root.dataset.cfxGraphLod, renderer: root.dataset.cfxGraphRendererActive, nodes, edges });
   };
@@ -80,61 +90,6 @@
     syncGraphItemTabStops(root); clearHiddenSelections(root); if (typeof syncClusterControls === 'function') syncClusterControls(root);
     emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
     applyFilters(root); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
-  };
-  const publishPerformance = (root, detail) => {
-    if (!hasFeature(root, 'PerformanceTelemetry')) return;
-    const summary = root.__cfxGraphPerformanceSummary || {
-      samples: 0,
-      budgetMisses: 0,
-      maxSampleMs: 0,
-      maxVelocity: 0,
-      overlapPressureEvents: 0,
-      communityPackingEvents: 0,
-      lastTick: 0,
-      frameBudget: num(root, 'data-cfx-performance-frame-budget', 16)
-    };
-    const sampleMs = Number.isFinite(detail.sampleMs) ? detail.sampleMs : 0;
-    const sampleTicks = Math.max(1, Number(detail.sampleTicks) || 1);
-    const sampleBudgetMs = summary.frameBudget * sampleTicks;
-    summary.samples += detail.mode === 'physics' ? 1 : 0;
-    summary.lastTick = Number.isFinite(detail.tick) ? detail.tick : summary.lastTick;
-    summary.maxVelocity = Math.max(summary.maxVelocity, Number.isFinite(detail.maxVelocity) ? detail.maxVelocity : 0);
-    summary.overlapPressureEvents += Math.max(0, Number.isFinite(detail.overlaps) ? detail.overlaps : 0);
-    summary.communityPackingEvents += Math.max(0, Number.isFinite(detail.communityPushes) ? detail.communityPushes : 0);
-    summary.maxSampleMs = Math.max(summary.maxSampleMs, sampleMs);
-    summary.lastSampleMs = sampleMs;
-    summary.lastSampleTicks = sampleTicks;
-    summary.lastSampleBudgetMs = sampleBudgetMs;
-    summary.thread = detail.thread || summary.thread || '';
-    summary.acceleration = detail.acceleration || summary.acceleration || '';
-    summary.renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
-    summary.budgetMisses += sampleMs > sampleBudgetMs ? 1 : 0;
-    root.__cfxGraphPerformanceSummary = summary;
-    root.dataset.cfxGraphPerformanceSamples = String(summary.samples);
-    root.dataset.cfxGraphPerformanceLastTick = String(summary.lastTick);
-    root.dataset.cfxGraphPerformanceLastSampleMs = sampleMs.toFixed(3);
-    root.dataset.cfxGraphPerformanceMaxSampleMs = summary.maxSampleMs.toFixed(3);
-    root.dataset.cfxGraphPerformanceOverlapPressureEvents = String(summary.overlapPressureEvents);
-    root.dataset.cfxGraphPerformanceCommunityPackingEvents = String(summary.communityPackingEvents);
-    root.dataset.cfxGraphPerformanceSampleTicks = String(sampleTicks);
-    root.dataset.cfxGraphPerformanceSampleBudgetMs = sampleBudgetMs.toFixed(3);
-    root.dataset.cfxGraphPerformanceBudgetMisses = String(summary.budgetMisses);
-    root.dataset.cfxGraphPerformanceThread = summary.thread;
-    root.dataset.cfxGraphPerformanceAcceleration = summary.acceleration;
-    root.dataset.cfxGraphPerformanceBudget = summary.budgetMisses ? 'over-budget' : 'within-budget';
-    emit(root, 'cfxgraphperformance', { ...detail, summary: { ...summary } });
-  };
-  const performanceGate = (root) => {
-    const nodeCount = Number(attr(root, 'data-cfx-graph-node-count'));
-    const edgeCount = Number(attr(root, 'data-cfx-graph-edge-count'));
-    const canvas = root.dataset.cfxGraphRendererActive === 'canvas';
-    const nodeLimit = canvas ? num(root, 'data-cfx-performance-max-canvas-nodes', 5000) : num(root, 'data-cfx-performance-max-svg-nodes', 1200);
-    const edgeLimit = canvas ? num(root, 'data-cfx-performance-max-canvas-edges', 12000) : num(root, 'data-cfx-performance-max-svg-edges', 3000);
-    const gated = nodeCount > nodeLimit || edgeCount > edgeLimit;
-    root.classList.toggle('cfx-graph-performance-gated', gated);
-    root.dataset.cfxGraphPerformance = gated ? 'gated' : 'interactive';
-    if (gated) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'gated', renderer: root.dataset.cfxGraphRendererActive, nodeCount, edgeCount, nodeLimit, edgeLimit });
-    return gated;
   };
   const metadataDetail = (node) => {
     const raw = attr(node, 'data-cfx-metadata');

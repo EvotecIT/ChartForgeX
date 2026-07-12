@@ -25,7 +25,7 @@ public sealed class PngChartGridRenderer {
         var layout = ChartGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
-        var output = new RgbaCanvas(layout.Width, layout.Height, 1, null, grid.PngOutputScale);
+        var output = new RgbaCanvas(layout.Width, layout.Height, 1, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), grid.PngOutputScale);
         output.Clear(background);
         if (background.A == 255) {
             var inset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);

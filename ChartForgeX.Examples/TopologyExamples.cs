@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Text;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 internal static class TopologyExamples {
@@ -45,7 +46,8 @@ internal static class TopologyExamples {
         foreach (var demo in demos) {
             var options = DemoRenderOptions(demo.Item1, iconCatalog);
             demo.Item2.SaveSvg(Path.Combine(target, demo.Item1 + ".svg"), options);
-            demo.Item2.SaveHtml(Path.Combine(target, demo.Item1 + ".html"), options);
+            if (options?.EnableHtmlInteractions == true) demo.Item2.SaveInteractiveHtml(Path.Combine(target, demo.Item1 + ".html"), options);
+            else demo.Item2.SaveHtml(Path.Combine(target, demo.Item1 + ".html"), options);
             demo.Item2.SavePng(Path.Combine(target, demo.Item1 + ".png"), options);
         }
 

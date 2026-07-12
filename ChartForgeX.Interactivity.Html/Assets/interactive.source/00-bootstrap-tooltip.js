@@ -12,6 +12,18 @@
   const lassoSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point]';
   const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
+  const seriesLabel = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeriesName) return data.cfxSeriesName;
+    if (data.cfxSeries === undefined) return '';
+    const root = node.closest('.cfx-interactive-chart');
+    if (root) {
+      const legend = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'))
+        .find((item) => (item.dataset || {}).cfxSeries === data.cfxSeries);
+      if (legend) return (legend.dataset || {}).cfxLabel || legend.getAttribute('aria-label') || legend.textContent || '';
+    }
+    return 'Series ' + data.cfxSeries;
+  };
   const text = (node) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
@@ -20,7 +32,7 @@
     const parts = [];
     if (label) parts.push(label);
     else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
-    if (data.cfxSeries !== undefined && !label) parts.push('Series ' + data.cfxSeries);
+    if (data.cfxSeries !== undefined && !label) parts.push(seriesLabel(node));
     if (data.cfxPoint !== undefined) parts.push('Point ' + data.cfxPoint);
     const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
     if (value) parts.push('Value ' + value);
@@ -54,7 +66,7 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Role', data.cfxRole ? data.cfxRole.replace(/-/g, ' ') : '');
-    push('Series', data.cfxSeries);
+    push('Series', seriesLabel(node));
     push('Point', data.cfxPoint);
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     push('Y', data.cfxY || data.cfxValue);

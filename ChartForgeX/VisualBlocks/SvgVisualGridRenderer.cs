@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -12,12 +11,11 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual grids to self-contained SVG.
 /// </summary>
 public sealed class SvgVisualGridRenderer {
-    private static long ScopeCounter;
     private readonly SvgChartRenderer _chartRenderer = new();
     private readonly SvgVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid to SVG markup.</summary>
-    public string Render(VisualGrid grid) => Render(grid, NextScope());
+    public string Render(VisualGrid grid) => Render(grid, string.Empty);
 
     /// <summary>Renders a visual grid to SVG markup with a caller-provided ID scope.</summary>
     public string Render(VisualGrid grid, string idScope) {
@@ -144,8 +142,4 @@ public sealed class SvgVisualGridRenderer {
         return openTag.Substring(0, valueStart) + VisualBlockRendering.Escape(value) + openTag.Substring(valueEnd);
     }
 
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "visual-grid-" + value.ToString(CultureInfo.InvariantCulture);
-    }
 }

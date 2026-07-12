@@ -161,7 +161,7 @@
     const data = node.dataset || {};
     if (data.cfxLabel || data.cfxText) return data.cfxLabel || data.cfxText;
     if (target && target.label) return target.label;
-    if (data.cfxSeries !== undefined && data.cfxPoint === undefined) return 'Series ' + data.cfxSeries;
+    if (data.cfxSeries !== undefined && data.cfxPoint === undefined) return seriesLabel(node);
     if (data.cfxPoint !== undefined) return text(node);
     return text(node) || (target ? target.role || target.id : '') || 'Target';
   };

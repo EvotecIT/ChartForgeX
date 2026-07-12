@@ -20,6 +20,7 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options.</param>
     /// <returns>An HTML fragment.</returns>
     public string RenderFragment(TopologyChart chart, TopologyRenderOptions? options = null) {
+        EnsureStatic(options);
         return RenderFragmentCore(chart, options, includeAssets: true);
     }
 
@@ -30,7 +31,12 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options.</param>
     /// <returns>An HTML fragment that expects the caller to register topology HTML assets.</returns>
     public string RenderFragmentWithoutAssets(TopologyChart chart, TopologyRenderOptions? options = null) {
+        EnsureStatic(options);
         return RenderFragmentCore(chart, options, includeAssets: false);
+    }
+
+    internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets) {
+        return RenderFragmentCore(chart, options, includeAssets);
     }
 
     private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets) {
@@ -117,7 +123,6 @@ public sealed partial class TopologyHtmlRenderer {
 
         writer.RawTrusted(RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
         writer.EndElement().EndElement();
-        if (includeAssets && options.EnableHtmlInteractions) writer.RawTrusted(InteractionScript(cssPrefix));
         return writer.Build();
     }
 
@@ -149,6 +154,7 @@ public sealed partial class TopologyHtmlRenderer {
     /// <returns>A complete HTML page.</returns>
     public string RenderPage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        EnsureStatic(options);
         options ??= new TopologyRenderOptions();
         var theme = chart.Theme ?? TopologyTheme.Light();
         var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX topology" : chart.Title!;
@@ -161,7 +167,6 @@ public sealed partial class TopologyHtmlRenderer {
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false)).Line();
-        if (options.EnableHtmlInteractions) writer.RawTrusted(InteractionScript(cssPrefix)).Line();
         writer.EndElement().Line()
             .EndElement().Line();
         return writer.Build();
@@ -177,16 +182,6 @@ public sealed partial class TopologyHtmlRenderer {
         options ??= new TopologyRenderOptions();
         theme ??= TopologyTheme.Light();
         return StyleSheet(CssClassPrefix(options), CssFontFamily(theme.FontFamily), theme.Background, includePageShell: false);
-    }
-
-    /// <summary>
-    /// Builds the renderer-owned JavaScript runtime used by interactive topology HTML fragments.
-    /// </summary>
-    /// <param name="options">Optional render options whose CSS prefix should be honored.</param>
-    /// <returns>JavaScript ready to register once in a host document.</returns>
-    public static string BuildInteractionScript(TopologyRenderOptions? options = null) {
-        options ??= new TopologyRenderOptions();
-        return InteractionScriptBody(CssClassPrefix(options));
     }
 
     private static void WriteIconButton(HtmlMarkupWriter writer, string dataAttribute, string dataValue, string title, string ariaLabel, bool? pressed, string icon, string? text = null) {
@@ -330,6 +325,18 @@ public sealed partial class TopologyHtmlRenderer {
 
     private static string CssClassPrefix(TopologyRenderOptions options) {
         return NormalizeCssClassPrefix(options.CssClassPrefix, DefaultCssClassPrefix);
+    }
+
+    internal static string BuildPageStyle(TopologyRenderOptions options, TopologyTheme theme) {
+        return StyleSheet(CssClassPrefix(options), CssFontFamily(theme.FontFamily), theme.Background);
+    }
+
+    internal static string GetCssClassPrefix(TopologyRenderOptions options) => CssClassPrefix(options);
+
+    private static void EnsureStatic(TopologyRenderOptions? options) {
+        if (options?.EnableHtmlInteractions == true) {
+            throw new InvalidOperationException("Interactive topology HTML is owned by ChartForgeX.Interactivity.Html. Use ToInteractiveHtmlPage or HtmlInteractiveTopologyRenderer from that package.");
+        }
     }
 
     private static string ControlPlacementValue(TopologyHtmlControlPlacement placement) => placement switch {

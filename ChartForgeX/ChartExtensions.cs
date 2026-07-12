@@ -121,6 +121,14 @@ public static partial class ChartExtensions {
     public static string ToHtmlFragment(this Chart chart) => new HtmlChartRenderer().RenderFragment(chart);
 
     /// <summary>
+    /// Renders a chart to an HTML fragment with an additional deterministic ID scope.
+    /// </summary>
+    /// <param name="chart">The chart to render.</param>
+    /// <param name="idScope">A caller-provided scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment.</returns>
+    public static string ToHtmlFragment(this Chart chart, string idScope) => new HtmlChartRenderer().RenderFragment(chart, idScope);
+
+    /// <summary>
     /// Renders a chart to a complete HTML document.
     /// </summary>
     /// <param name="chart">The chart to render.</param>
@@ -183,6 +191,14 @@ public static partial class ChartExtensions {
     /// <param name="grid">The chart grid to render.</param>
     /// <returns>An HTML fragment.</returns>
     public static string ToHtmlFragment(this ChartGrid grid) => new HtmlChartGridRenderer().RenderFragment(grid);
+
+    /// <summary>
+    /// Renders a chart grid to an HTML fragment with an additional deterministic ID scope.
+    /// </summary>
+    /// <param name="grid">The chart grid to render.</param>
+    /// <param name="idScope">A caller-provided scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment.</returns>
+    public static string ToHtmlFragment(this ChartGrid grid, string idScope) => new HtmlChartGridRenderer().RenderFragment(grid, idScope);
 
     /// <summary>
     /// Renders a chart grid to a complete HTML document.
@@ -321,6 +337,14 @@ public static partial class ChartExtensions {
     public static string ToHtmlFragment(this IVisualBlock block) => new HtmlVisualBlockRenderer().RenderFragment(block);
 
     /// <summary>
+    /// Renders a visual block to an HTML fragment with an additional deterministic ID scope.
+    /// </summary>
+    /// <param name="block">The visual block to render.</param>
+    /// <param name="idScope">A caller-provided scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment.</returns>
+    public static string ToHtmlFragment(this IVisualBlock block, string idScope) => new HtmlVisualBlockRenderer().RenderFragment(block, idScope);
+
+    /// <summary>
     /// Renders a visual block to a complete HTML document.
     /// </summary>
     /// <param name="block">The visual block to render.</param>
@@ -376,6 +400,14 @@ public static partial class ChartExtensions {
     /// <param name="grid">The visual grid to render.</param>
     /// <returns>An HTML fragment.</returns>
     public static string ToHtmlFragment(this VisualGrid grid) => new HtmlVisualGridRenderer().RenderFragment(grid);
+
+    /// <summary>
+    /// Renders a visual grid to an HTML fragment with an additional deterministic ID scope.
+    /// </summary>
+    /// <param name="grid">The visual grid to render.</param>
+    /// <param name="idScope">A caller-provided scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment.</returns>
+    public static string ToHtmlFragment(this VisualGrid grid, string idScope) => new HtmlVisualGridRenderer().RenderFragment(grid, idScope);
 
     /// <summary>
     /// Renders a visual grid to a complete HTML document.

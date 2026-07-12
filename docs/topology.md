@@ -32,6 +32,8 @@ Views can also be composed from generic selectors instead of hardcoded ids. Use 
 Use `TopologyScenario` when the full architecture should remain visible but a user needs to explore one route through it. Scenarios reference existing node and edge ids, so they reuse planned route geometry instead of drawing extra topology links. The topology validator reports missing scenario node or edge references before rendering. Static SVG carries a root scenario index through `data-cfx-scenario-ids` and `data-cfx-scenarios`, and element-level membership through `data-scenario-ids` and `data-scenario-step-indices`; edge steps also mark their source and target nodes so static consumers see the same route membership as interactive HTML. `ActiveScenarioId` or `.WithActiveScenario(...)` applies deterministic highlight/dim styling to SVG and PNG output, and interactive HTML uses the same id as its initial selected scenario. Interactive HTML can render scenario picker controls, activate one scenario at a time, dim unrelated nodes and edges, step through the ordered route, copy an opt-in deep link, and dispatch `cfx-topology-scenario` / `cfx-topology-scenario-clear` / `cfx-topology-scenario-step` events for host dashboards. Hosts can also dispatch `cfx-topology-set-scenario`, `cfx-topology-clear-scenario`, or `cfx-topology-set-scenario-step` on the wrapper. Scenario events include scenario `metadata`, ordered `steps`, step metadata, and resolved node and edge ids, so host dashboards can show route instructions without drawing another layer of lines.
 
 ```csharp
+using ChartForgeX.Interactivity.Html;
+
 chart.AddScenario("client-request-europe", "Europe request", scenario => scenario
     .WithColor("#2563EB")
     .WithMetadata("request.type", "client")
@@ -41,12 +43,12 @@ chart.AddScenario("client-request-europe", "Europe request", scenario => scenari
     .AddEdgeStep("lon-nyc", "Directory")
     .AddNodeStep("nyc-dc1", "Lookup"));
 
-var options = new TopologyRenderOptions { EnableHtmlInteractions = true }
+var options = new TopologyRenderOptions()
     .WithActiveScenario("client-request-europe")
     .WithHtmlScenarioControls()
     .WithHtmlScenarioUrlState();
 
-var html = chart.ToHtmlPage(options);
+var html = chart.ToInteractiveHtmlPage(options);
 ```
 
 Use `TopologyMotionOptions.RoutePulseForScenario(...)` when a scenario route should become a script-free animated asset. SVG output adds native `<animate>` route pulses without JavaScript, while GIF output samples deterministic PNG frames from the same topology model. This is intended for route tours, map arcs, replication flow, failover paths, and README/documentation previews; static SVG, HTML, and PNG remain unchanged unless motion is explicitly enabled.
@@ -262,9 +264,8 @@ vendorSecurity.Vendors.Add("Veeam");
 vendorSecurity.Categories.Add("Backup");
 var filteredPalette = vendorCatalog.ToPaletteChart(vendorSecurity);
 
-var paletteHtml = palette.ToHtmlPage(new TopologyRenderOptions {
-    IconCatalog = vendorCatalog,
-    EnableHtmlInteractions = true
+var paletteHtml = palette.ToInteractiveHtmlPage(new TopologyRenderOptions {
+    IconCatalog = vendorCatalog
 });
 
 var stencilBrowserHtml = vendorCatalog.ToStencilBrowserHtmlPage(new TopologyIconStencilBrowserOptions {
@@ -333,7 +334,11 @@ SVG-to-PNG conversion stays dependency-free inside ChartForgeX for safe inline t
 
 For picker and stencil-browser shells, `GetPackSummaries(...)` and `GetVendorSummaries(...)` produce stable folder data from the same `TopologyIconCatalogQuery` filters used by search and palette charts. Pack summaries expose matching icon counts, categories, tags, built-in/custom source, version, vendor, and manifest source path. Vendor summaries group packs under labels such as `ChartForgeX`, `Microsoft`, `Veeam`, or `Fortinet`, with roll-up pack ids, categories, tags, and icon counts. `ToStencilBrowserHtmlPage(...)` composes those summaries with a palette chart into a ready-to-host browser page with search, vendor filters, pack filters, category filters, click selection, and a details panel. Selecting an icon dispatches `cfx-icon-browser-select` with stable fields such as icon id, pack id, label, shape, artwork type, category, vendor, pack label, and tags. The host still owns the production UI, but it does not need to parse icons manually to build folders, tabs, counters, source badges, or a first-pass stencil picker.
 
-`TopologySvgRenderer` outputs a complete standalone SVG with `viewBox`, `defs`, scoped CSS, groups below edges, edge labels above edges, nodes above labels, status badges, optional legends, optional geographic callouts, and accessibility metadata. `TopologyPngRenderer` draws the same model through ChartForgeX's dependency-free raster canvas for report exports. `TopologyHtmlRenderer` wraps the generated SVG in a neutral `.cfx-topology-wrapper` div with chart metadata. Complete HTML pages are static and script-free by default. Set `TopologyRenderOptions.EnableHtmlInteractions = true` to include the tiny interaction script that marks clicked groups, nodes, or edges and dispatches `cfx-topology-select` / `cfx-topology-clear` events. Selection details include the selected id, kind, status, metadata, metrics, group/node/edge context, callout counts, route diagnostics, geographic route-arc diagnostics, and related node/edge/group ids so HtmlForgeX or TestimoX can populate inspector panels without reparsing SVG markup. Selectable topology elements are keyboard focusable, Enter/Space activates selection, Escape clears selection, pointer/focus hover highlights related elements and dispatches `cfx-topology-hover` / `cfx-topology-hover-clear`, arrow keys cycle focus through related topology elements and dispatch `cfx-topology-navigate`, and hosts can dispatch `cfx-topology-set-selection` or `cfx-topology-clear-selection` on the wrapper to control state. With interactions enabled, set `TopologyRenderOptions.EnableHtmlViewportControls = true` to add opt-in zoom, pan, wheel-zoom, reset, `cfx-topology-viewport`, `cfx-topology-set-viewport`, and `cfx-topology-reset-viewport` support for large diagrams. Set `TopologyRenderOptions.EnableHtmlExportControls = true` to add opt-in SVG/PNG export buttons and `cfx-topology-export` events. Set `TopologyRenderOptions.EnableHtmlSynchronizedState = true` with `HtmlSyncGroupName` to mirror selection clears and viewport state across same-page topology wrappers using `cfx-topology-sync` / `cfx-topology-apply-sync`.
+`TopologySvgRenderer` outputs a complete standalone SVG with `viewBox`, `defs`, scoped CSS, groups below edges, edge labels above edges, nodes above labels, status badges, optional legends, optional geographic callouts, and accessibility metadata. `TopologyPngRenderer` draws the same model through ChartForgeX's dependency-free raster canvas for report exports. Core `TopologyHtmlRenderer` wraps the generated SVG in a neutral `.cfx-topology-wrapper` and always stays static and script-free.
+
+Interactive topology HTML is owned by `ChartForgeX.Interactivity.Html`. Add that package and call `ToInteractiveHtmlFragment`, `ToInteractiveHtmlPage`, or `SaveInteractiveHtml`; `HtmlInteractiveTopologyRenderer.BuildInteractionScript(...)` provides raw JavaScript for hosts that register assets once. Calling the core HTML API with `EnableHtmlInteractions = true` fails with a migration message instead of silently pulling browser behavior into the base package.
+
+The adapter runtime marks clicked groups, nodes, or edges and dispatches `cfx-topology-select` / `cfx-topology-clear` events. Selection details include the selected id, kind, status, metadata, metrics, group/node/edge context, callout counts, route diagnostics, geographic route-arc diagnostics, and related node/edge/group ids so a host can populate inspector panels without reparsing SVG markup. Selectable topology elements are keyboard focusable, Enter/Space activates selection, Escape clears selection, pointer/focus hover highlights related elements and dispatches `cfx-topology-hover` / `cfx-topology-hover-clear`, and arrow keys cycle related topology elements. Set `TopologyRenderOptions.EnableHtmlViewportControls = true` for zoom, pan, fit, and reset; `EnableHtmlExportControls = true` for SVG/PNG export; or `EnableHtmlSynchronizedState = true` with `HtmlSyncGroupName` to mirror selection and viewport state across same-page topology wrappers.
 
 `TopologyRenderOptions` also supports reusable render presets and node display modes:
 
