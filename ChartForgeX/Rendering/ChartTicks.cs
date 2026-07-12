@@ -7,7 +7,7 @@ internal static class ChartTicks {
     private const int MaximumGeneratedTicks = 10_000;
 
     public static IReadOnlyList<double> Generate(double min, double max, int desiredCount) {
-        desiredCount = Math.Max(2, desiredCount);
+        desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
         if (!TryNormalize(ref min, ref max, out var scale, out var normalizedMin, out var normalizedMax)) return new[] { 0d, 1d };
         if (min == max) return ExpandEqualValue(min);
 
@@ -24,11 +24,13 @@ internal static class ChartTicks {
             AddFiniteDistinct(ticks, NormalizeZero(normalizedValue, normalizedStep) * scale);
         }
 
+        PreserveUpperEndpoint(ticks, NormalizeZero(niceMax, normalizedStep) * scale);
+
         return ticks.Count >= 2 ? ticks : DistinctEndpoints(min, max);
     }
 
     public static IReadOnlyList<double> GenerateInside(double min, double max, int desiredCount) {
-        desiredCount = Math.Max(2, desiredCount);
+        desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
         if (!TryNormalize(ref min, ref max, out var scale, out var normalizedMin, out var normalizedMax)) return new[] { 0d, 1d };
         if (min == max) return new[] { min };
 
@@ -36,6 +38,7 @@ internal static class ChartTicks {
         if (IsPositiveFinite(range) && IsCloseToInteger(min) && IsCloseToInteger(max) && range <= Math.Max(6, desiredCount * 2)) {
             var integerTicks = new List<double>();
             for (var value = Math.Ceiling(min); value <= Math.Floor(max) && integerTicks.Count < MaximumGeneratedTicks; value++) integerTicks.Add(value);
+            PreserveUpperEndpoint(integerTicks, max);
             return integerTicks.Count > 0 ? integerTicks : DistinctEndpoints(min, max);
         }
 
@@ -52,7 +55,7 @@ internal static class ChartTicks {
             AddFiniteDistinct(ticks, NormalizeZero(normalizedValue, normalizedStep) * scale);
         }
 
-        if (ticks.Count == 0 || Math.Abs(ticks[ticks.Count - 1] - max) > step * 0.2) AddFiniteDistinct(ticks, max);
+        if (ticks.Count == 0 || Math.Abs(ticks[ticks.Count - 1] - max) > step * 0.2) PreserveUpperEndpoint(ticks, max);
         return ticks.Count > 0 ? ticks : DistinctEndpoints(min, max);
     }
 
@@ -99,6 +102,18 @@ internal static class ChartTicks {
     private static void AddFiniteDistinct(List<double> ticks, double value) {
         if (!IsFinite(value)) return;
         if (ticks.Count == 0 || ticks[ticks.Count - 1] != value) ticks.Add(value);
+    }
+
+    private static void PreserveUpperEndpoint(List<double> ticks, double upperEndpoint) {
+        if (!IsFinite(upperEndpoint)) return;
+        if (ticks.Count == 0) {
+            ticks.Add(upperEndpoint);
+            return;
+        }
+
+        if (ticks[ticks.Count - 1] >= upperEndpoint) return;
+        if (ticks.Count >= MaximumGeneratedTicks) ticks[ticks.Count - 1] = upperEndpoint;
+        else ticks.Add(upperEndpoint);
     }
 
     private static double NormalizeZero(double value, double step) => Math.Abs(value) < step / 1_000_000 ? 0 : value;

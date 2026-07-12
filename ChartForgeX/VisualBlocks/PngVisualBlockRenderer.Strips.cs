@@ -69,7 +69,7 @@ public sealed partial class PngVisualBlockRenderer {
         var theme = options.Theme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
-        var actionWidth = block.ActionLabel.Length == 0 ? 0 : Math.Min(120, RgbaCanvas.MeasureTextEmphasizedWidth(block.ActionSymbol + " " + block.ActionLabel, theme.SubtitleFontSize + 1, null) + 12);
+        var actionWidth = block.ActionLabel.Length == 0 ? 0 : Math.Min(120, canvas.MeasureTextEmphasizedWidth(block.ActionSymbol + " " + block.ActionLabel, theme.SubtitleFontSize + 1) + 12);
         if (block.Title.Length > 0 || block.ActionLabel.Length > 0) {
             var titleSize = Math.Max(14, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 8));
             if (block.Title.Length > 0) DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 10), VisualTextAlignment.Left, theme.Text, titleSize, true);
@@ -106,7 +106,7 @@ public sealed partial class PngVisualBlockRenderer {
         var content = VisualBlockRendering.ContentRect(block.Options);
         var titleSize = Math.Max(16, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 10));
         var actionText = block.ActionLabel.Length == 0 ? string.Empty : (block.ActionSymbol.Length == 0 ? block.ActionLabel : block.ActionSymbol + " " + block.ActionLabel);
-        var actionWidth = actionText.Length == 0 ? 0 : Math.Min(150, RgbaCanvas.MeasureTextEmphasizedWidth(actionText, Math.Max(12, theme.SubtitleFontSize + 1), null) + 12);
+        var actionWidth = actionText.Length == 0 ? 0 : Math.Min(150, canvas.MeasureTextEmphasizedWidth(actionText, Math.Max(12, theme.SubtitleFontSize + 1)) + 12);
         var y = content.Y + (content.Height - titleSize) * 0.48;
         DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 12), VisualTextAlignment.Left, theme.Text, titleSize, true);
         if (actionText.Length > 0) DrawAlignedText(canvas, actionText, content.X + content.Width - actionWidth, y + 1, actionWidth, VisualTextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(12, theme.SubtitleFontSize + 1), true);

@@ -51,12 +51,12 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawHeading(RgbaCanvas canvas, IVisualBlock block, ref double y, double x, double width) {
         var theme = block.Options.Theme;
         if (block.Title.Length > 0) {
-            canvas.DrawTextEmphasized(x, y, FitText(block.Title, theme.TitleFontSize, width), theme.Text, theme.TitleFontSize);
+            canvas.DrawTextEmphasized(x, y, FitText(canvas, block.Title, theme.TitleFontSize, width), theme.Text, theme.TitleFontSize);
             y += theme.TitleFontSize + 8;
         }
 
         if (block.Subtitle.Length > 0) {
-            canvas.DrawText(x, y, FitText(block.Subtitle, theme.SubtitleFontSize, width), theme.MutedText, theme.SubtitleFontSize);
+            canvas.DrawText(x, y, FitText(canvas, block.Subtitle, theme.SubtitleFontSize, width), theme.MutedText, theme.SubtitleFontSize);
             y += theme.SubtitleFontSize + 13;
         } else if (block.Title.Length > 0) {
             y += 8;
@@ -123,7 +123,7 @@ public sealed partial class PngVisualBlockRenderer {
         for (var i = 0; i < list.Items.Count && i < maxRows; i++) {
             var item = list.Items[i];
             DrawMarker(canvas, list, item, i, content.X + 8, y + rowHeight / 2);
-            var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, RgbaCanvas.MeasureTextWidth(item.Value!, 11.5, null) + 10);
+            var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, canvas.MeasureTextWidth(item.Value!, 11.5) + 10);
             DrawAlignedText(canvas, item.Text, content.X + markerWidth, y + 8, content.Width - markerWidth - valueWidth - 6, VisualTextAlignment.Left, theme.Text, list.Dense ? 11 : 12.5, true);
             if (!string.IsNullOrEmpty(item.Value)) DrawAlignedText(canvas, item.Value!, content.X + content.Width - valueWidth, y + 8, valueWidth, VisualTextAlignment.Right, theme.MutedText, list.Dense ? 10.5 : 11.5, true);
             y += rowHeight;
@@ -170,7 +170,7 @@ public sealed partial class PngVisualBlockRenderer {
             if (card.Icon != VisualIcon.None) DrawIcon(canvas, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
             else {
                 var symbolMaxWidth = badgeRadius * 1.62;
-                var symbolSize = MetricSymbolFontSize(card.Symbol, Math.Max(10, badgeRadius * 0.46), symbolMaxWidth);
+                var symbolSize = MetricSymbolFontSize(canvas, card.Symbol, Math.Max(10, badgeRadius * 0.46), symbolMaxWidth);
                 DrawCenteredTextMiddle(canvas, card.Symbol, cx, cy, symbolSize, ChartColorMath.TextOnBackground(badgeColor), true, symbolMaxWidth);
             }
         }
@@ -182,8 +182,8 @@ public sealed partial class PngVisualBlockRenderer {
         var valueWidth = hasMicroVisual ? Math.Max(1, content.Width - microWidth - 18) : content.Width;
         if (heroMicroVisual) valueWidth = content.Width;
         if (valueInsetSurface && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) valueWidth = Math.Max(1, content.Width - 106);
-        var valueSize = MetricValueFontSize(card, baseValueSize, valueWidth);
-        canvas.DrawTextEmphasized(labelX, content.Y, FitText(card.Label, labelSize, labelWidth), theme.MutedText, labelSize);
+        var valueSize = MetricValueFontSize(canvas, card, baseValueSize, valueWidth);
+        canvas.DrawTextEmphasized(labelX, content.Y, FitText(canvas, card.Label, labelSize, labelWidth), theme.MutedText, labelSize);
         if (valueInsetSurface) DrawMetricValueSurface(canvas, card, content, detailBottom, labelSize, valueSize, valueWidth, statusColor);
         else DrawMetricValueText(canvas, card, content.X, content.Y + labelSize + 18 + valueYOffset, valueSize, valueWidth, theme.Text, theme.MutedText);
         var microX = heroMicroVisual ? content.X + 24 : content.X + content.Width - microWidth;
@@ -217,11 +217,11 @@ public sealed partial class PngVisualBlockRenderer {
         var captionSize = Math.Max(10, theme.SubtitleFontSize - 1);
         var y = bottom - (card.Trend.Length > 0 && card.Caption.Length > 0 ? trendSize + 1 : trendSize);
         if (card.Trend.Length > 0) {
-            var trendWidth = Math.Min(width * 0.42, RgbaCanvas.MeasureTextEmphasizedWidth(card.Trend, trendSize, null) + 10);
-            canvas.DrawTextEmphasized(x, y, FitText(card.Trend, trendSize, trendWidth), statusColor, trendSize);
-            if (card.Caption.Length > 0) canvas.DrawText(x + trendWidth + 5, y + 1, FitText(card.Caption, captionSize, Math.Max(1, width - trendWidth - 5)), theme.MutedText, captionSize);
+            var trendWidth = Math.Min(width * 0.42, canvas.MeasureTextEmphasizedWidth(card.Trend, trendSize) + 10);
+            canvas.DrawTextEmphasized(x, y, FitText(canvas, card.Trend, trendSize, trendWidth), statusColor, trendSize);
+            if (card.Caption.Length > 0) canvas.DrawText(x + trendWidth + 5, y + 1, FitText(canvas, card.Caption, captionSize, Math.Max(1, width - trendWidth - 5)), theme.MutedText, captionSize);
         } else if (card.Caption.Length > 0) {
-            canvas.DrawText(x, y, FitText(card.Caption, captionSize, width), theme.MutedText, captionSize);
+            canvas.DrawText(x, y, FitText(canvas, card.Caption, captionSize, width), theme.MutedText, captionSize);
         }
     }
 
@@ -229,9 +229,9 @@ public sealed partial class PngVisualBlockRenderer {
         var theme = card.Options.Theme;
         canvas.DrawLine(0, footerY, card.Options.Size.Width, footerY, theme.PlotBorder, 1);
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
-        var symbolWidth = Math.Min(24, RgbaCanvas.MeasureTextEmphasizedWidth(card.ActionSymbol, fontSize, null) + 6);
+        var symbolWidth = Math.Min(24, canvas.MeasureTextEmphasizedWidth(card.ActionSymbol, fontSize) + 6);
         var y = footerY + (footerHeight - fontSize) * 0.52;
-        canvas.DrawText(x, y, FitText(card.ActionLabel, fontSize, Math.Max(1, width - symbolWidth - 8)), theme.MutedText, fontSize);
+        canvas.DrawText(x, y, FitText(canvas, card.ActionLabel, fontSize, Math.Max(1, width - symbolWidth - 8)), theme.MutedText, fontSize);
         DrawActionSymbol(canvas, card.ActionSymbol, x + width - 14, footerY + footerHeight * 0.5, 12, theme.Text, fontSize);
     }
 
@@ -241,9 +241,9 @@ public sealed partial class PngVisualBlockRenderer {
         }
     }
 
-    private static double MetricSymbolFontSize(string value, double requestedSize, double maxWidth) {
+    private static double MetricSymbolFontSize(RgbaCanvas canvas, string value, double requestedSize, double maxWidth) {
         var fontSize = requestedSize;
-        while (fontSize > 7.5 && RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) > maxWidth) fontSize -= 0.5;
+        while (fontSize > 7.5 && canvas.MeasureTextEmphasizedWidth(value, fontSize) > maxWidth) fontSize -= 0.5;
         return Math.Max(7.5, fontSize);
     }
 
@@ -284,7 +284,7 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.FillRoundedRectVerticalGradient(x, y, cellWidth, height, Math.Min(8, height / 2), ChartSurfacePolish.GradientTop(theme.PlotBackground.WithAlpha(150)), ChartSurfacePolish.GradientBottom(theme.PlotBackground.WithAlpha(150)));
             canvas.StrokeRoundedRect(x, y, cellWidth, height, Math.Min(8, height / 2), theme.CardBorder.WithAlpha(120));
             canvas.DrawCircle(x + 10, y + rowHeight / 2 - 2, 3.2, marker);
-            canvas.DrawTextEmphasized(x + 18, y + rowHeight / 2 - labelSize * 0.45, FitText(detail.Label, labelSize, cellWidth * 0.55), theme.MutedText, labelSize);
+            canvas.DrawTextEmphasized(x + 18, y + rowHeight / 2 - labelSize * 0.45, FitText(canvas, detail.Label, labelSize, cellWidth * 0.55), theme.MutedText, labelSize);
             DrawAlignedText(canvas, detail.Value, x + cellWidth * 0.58, y + rowHeight / 2 - valueSize * 0.35, cellWidth * 0.36, VisualTextAlignment.Right, theme.Text, valueSize, true);
         }
     }
@@ -333,7 +333,7 @@ public sealed partial class PngVisualBlockRenderer {
             DrawAlignedText(canvas, WorkloadAvatar(row), content.X + 1, centerY - Math.Max(9, theme.SubtitleFontSize - 1) * 0.46, avatarSize - 2, VisualTextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 1), true);
             var checkWidth = block.ShowSelectionControls ? 28 : 0;
             var valueText = row.Note.Length > 0 ? row.Note + "  " + VisualBlockRendering.WorkloadDisplayValue(row) : VisualBlockRendering.WorkloadDisplayValue(row);
-            var valueWidth = Math.Min(98, Math.Max(52, RgbaCanvas.MeasureTextEmphasizedWidth(valueText, theme.SubtitleFontSize, null) + 10));
+            var valueWidth = Math.Min(98, Math.Max(52, canvas.MeasureTextEmphasizedWidth(valueText, theme.SubtitleFontSize) + 10));
             var textX = content.X + avatarSize + 14;
             var textWidth = Math.Max(24, content.X + content.Width - textX - valueWidth - checkWidth - 10);
             DrawAlignedText(canvas, row.Label, textX, y + 8, textWidth, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
@@ -409,7 +409,7 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.StrokeRoundedRect(left, eventY, width, eventHeight, radius, color.WithAlpha(130), 1);
             canvas.FillRoundedRect(left, eventY, Math.Min(5, width), eventHeight, Math.Min(3, radius), color);
             var avatarReserve = Math.Min(width * 0.34, item.Avatars.Count == 0 ? 0 : 18 + Math.Min(3, item.Avatars.Count) * 14);
-            var badgeReserve = item.Badge.Length == 0 ? 0 : Math.Min(78, RgbaCanvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize, null) + 18);
+            var badgeReserve = item.Badge.Length == 0 ? 0 : Math.Min(78, canvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize) + 18);
             DrawAlignedText(canvas, item.Title, left + 14, eventY + eventHeight * 0.34, Math.Max(1, width - 20 - avatarReserve - badgeReserve), VisualTextAlignment.Left, color, Math.Max(10, theme.SubtitleFontSize), true);
             if (item.Badge.Length > 0) {
                 var badgeWidth = Math.Min(78, badgeReserve);
@@ -427,7 +427,7 @@ public sealed partial class PngVisualBlockRenderer {
         var cursor = x + width;
         for (var i = block.HeaderActions.Count - 1; i >= 0; i--) {
             var action = block.HeaderActions[i];
-            var actionWidth = Math.Min(140, Math.Max(62, RgbaCanvas.MeasureTextEmphasizedWidth(action, theme.SubtitleFontSize, null) + 28));
+            var actionWidth = Math.Min(140, Math.Max(62, canvas.MeasureTextEmphasizedWidth(action, theme.SubtitleFontSize) + 28));
             actionWidth = Math.Min(actionWidth, Math.Max(0, cursor - x));
             if (actionWidth < 36) break;
             cursor -= actionWidth;
@@ -520,8 +520,8 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, VisualTextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {
-        var fitted = FitText(text, fontSize, Math.Max(1, width));
-        var textWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, fontSize, null) : RgbaCanvas.MeasureTextWidth(fitted, fontSize, null);
+        var fitted = FitText(canvas, text, fontSize, Math.Max(1, width));
+        var textWidth = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, fontSize) : canvas.MeasureTextWidth(fitted, fontSize);
         var textX = alignment == VisualTextAlignment.Center ? x + (width - textWidth) / 2 : alignment == VisualTextAlignment.Right ? x + width - textWidth : x;
         if (emphasized) canvas.DrawTextEmphasized(textX, y, fitted, color, fontSize);
         else canvas.DrawText(textX, y, fitted, color, fontSize);
@@ -559,16 +559,16 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static void DrawCenteredText(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {
-        var fitted = FitText(text, size, Math.Max(1, maxWidth ?? x * 2));
-        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, size, null) : RgbaCanvas.MeasureTextWidth(fitted, size, null);
+        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2));
+        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, size) : canvas.MeasureTextWidth(fitted, size);
         if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y, fitted, color, size);
         else canvas.DrawText(x - width / 2, y, fitted, color, size);
     }
 
     private static void DrawCenteredTextMiddle(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {
-        var fitted = FitText(text, size, Math.Max(1, maxWidth ?? x * 2));
-        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, size, null) : RgbaCanvas.MeasureTextWidth(fitted, size, null);
-        var height = RgbaCanvas.MeasureTextHeight(size, null);
+        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2));
+        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, size) : canvas.MeasureTextWidth(fitted, size);
+        var height = canvas.MeasureTextHeight(size);
         if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y - height / 2, fitted, color, size);
         else canvas.DrawText(x - width / 2, y - height / 2, fitted, color, size);
     }
@@ -582,15 +582,15 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
 
-    private static string FitText(string value, double fontSize, double maxWidth) {
-        if (string.IsNullOrEmpty(value) || RgbaCanvas.MeasureTextWidth(value, fontSize, null) <= maxWidth) return value;
+    private static string FitText(RgbaCanvas canvas, string value, double fontSize, double maxWidth) {
+        if (string.IsNullOrEmpty(value) || canvas.MeasureTextWidth(value, fontSize) <= maxWidth) return value;
         const string suffix = "...";
-        if (RgbaCanvas.MeasureTextWidth(suffix, fontSize, null) > maxWidth) return string.Empty;
+        if (canvas.MeasureTextWidth(suffix, fontSize) > maxWidth) return string.Empty;
         var low = 0;
         var high = value.Length;
         while (low < high) {
             var mid = (low + high + 1) / 2;
-            if (RgbaCanvas.MeasureTextWidth(value.Substring(0, mid) + suffix, fontSize, null) <= maxWidth) low = mid;
+            if (canvas.MeasureTextWidth(value.Substring(0, mid) + suffix, fontSize) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 

@@ -55,14 +55,14 @@ public sealed partial class PngVisualBlockRenderer {
         var buttonHeight = 24.0;
         var cursor = x;
         if (card.LeftControl.Length > 0) {
-            var w = Math.Min(70, RgbaCanvas.MeasureTextEmphasizedWidth(card.LeftControl, theme.SubtitleFontSize, null) + 22);
+            var w = Math.Min(70, canvas.MeasureTextEmphasizedWidth(card.LeftControl, theme.SubtitleFontSize) + 22);
             canvas.FillRoundedRect(cursor, y, w, buttonHeight, 8, theme.PlotBackground);
             DrawAlignedText(canvas, card.LeftControl, cursor, y + 5, w, VisualTextAlignment.Center, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
             cursor += w - 2;
         }
 
         if (card.SelectedControl.Length > 0) {
-            var w = Math.Min(80, RgbaCanvas.MeasureTextEmphasizedWidth(card.SelectedControl, theme.SubtitleFontSize, null) + 24);
+            var w = Math.Min(80, canvas.MeasureTextEmphasizedWidth(card.SelectedControl, theme.SubtitleFontSize) + 24);
             canvas.FillRoundedRect(cursor, y, w, buttonHeight, 8, ChartColor.White);
             canvas.StrokeRoundedRect(cursor, y, w, buttonHeight, 8, theme.CardBorder, 1);
             DrawAlignedText(canvas, card.SelectedControl, cursor, y + 5, w, VisualTextAlignment.Center, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(10, theme.SubtitleFontSize - 1), true);
@@ -72,7 +72,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (card.PeriodLabel.Length > 0) {
             var remaining = Math.Max(0, width - (cursor - x));
             if (remaining < 24) return;
-            var w = Math.Min(remaining, RgbaCanvas.MeasureTextEmphasizedWidth(card.PeriodLabel, theme.SubtitleFontSize, null) + 34);
+            var w = Math.Min(remaining, canvas.MeasureTextEmphasizedWidth(card.PeriodLabel, theme.SubtitleFontSize) + 34);
             canvas.FillRoundedRect(cursor, y, w, buttonHeight, 8, ChartColor.White);
             canvas.StrokeRoundedRect(cursor, y, w, buttonHeight, 8, theme.CardBorder, 1);
             DrawAlignedText(canvas, card.PeriodLabel, cursor + 12, y + 5, w - 24, VisualTextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);

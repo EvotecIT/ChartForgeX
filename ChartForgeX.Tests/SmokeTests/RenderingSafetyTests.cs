@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
@@ -58,5 +60,16 @@ internal static partial class SmokeTests {
             .AddLine("Values", new[] { new ChartPoint(1, 0), new ChartPoint(2, double.Epsilon) })
             .ToSvg();
         Assert(!subnormal.Contains("NaN", StringComparison.Ordinal) && !subnormal.Contains("Infinity", StringComparison.Ordinal), "Subnormal finite bounds should fall back to stable endpoint ticks.");
+    }
+
+    private static void CappedTickGenerationPreservesTheRequestedRange() {
+        var ticks = ChartTicks.Generate(0, 20_000, 20_000);
+        Assert(ticks.Count <= 10_000, "Generated ticks should stay within the deterministic safety cap.");
+        Assert(ticks[0] <= 0 && ticks[ticks.Count - 1] >= 20_000, "Capped tick generation should preserve both ends of the requested axis range.");
+        Assert(ticks.Zip(ticks.Skip(1), (left, right) => right > left).All(increasing => increasing), "Capped ticks should remain strictly increasing after preserving the upper endpoint.");
+
+        var inside = ChartTicks.GenerateInside(0, 20_000, int.MaxValue);
+        Assert(inside.Count <= 10_000, "Inside ticks should stay within the deterministic safety cap for extreme requested counts.");
+        Assert(inside[0] == 0 && inside[inside.Count - 1] == 20_000, "Inside ticks should retain the requested upper endpoint when their safety cap is reached.");
     }
 }

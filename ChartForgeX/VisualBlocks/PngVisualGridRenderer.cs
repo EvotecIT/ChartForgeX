@@ -36,8 +36,8 @@ public sealed class PngVisualGridRenderer {
         }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
-            if (grid.Title.Length > 0) canvas.DrawTextEmphasized(grid.Padding, grid.Padding - theme.TitleFontSize * 0.28, FitText(grid.Title, theme.TitleFontSize, headerWidth), theme.Text, theme.TitleFontSize);
-            if (grid.Subtitle.Length > 0) canvas.DrawText(grid.Padding + 2, grid.Padding + theme.TitleFontSize + theme.SubtitleFontSize * 0.25, FitText(grid.Subtitle, theme.SubtitleFontSize, headerWidth), theme.MutedText, theme.SubtitleFontSize);
+            if (grid.Title.Length > 0) canvas.DrawTextEmphasized(grid.Padding, grid.Padding - theme.TitleFontSize * 0.28, FitText(canvas, grid.Title, theme.TitleFontSize, headerWidth), theme.Text, theme.TitleFontSize);
+            if (grid.Subtitle.Length > 0) canvas.DrawText(grid.Padding + 2, grid.Padding + theme.TitleFontSize + theme.SubtitleFontSize * 0.25, FitText(canvas, grid.Subtitle, theme.SubtitleFontSize, headerWidth), theme.MutedText, theme.SubtitleFontSize);
         }
 
         foreach (var cell in layout.Cells) {
@@ -70,15 +70,15 @@ public sealed class PngVisualGridRenderer {
         }
     }
 
-    private static string FitText(string value, double fontSize, double maxWidth) {
-        if (string.IsNullOrEmpty(value) || RgbaCanvas.MeasureTextWidth(value, fontSize, null) <= maxWidth) return value;
+    private static string FitText(RgbaCanvas canvas, string value, double fontSize, double maxWidth) {
+        if (string.IsNullOrEmpty(value) || canvas.MeasureTextWidth(value, fontSize) <= maxWidth) return value;
         const string suffix = "...";
-        if (RgbaCanvas.MeasureTextWidth(suffix, fontSize, null) > maxWidth) return string.Empty;
+        if (canvas.MeasureTextWidth(suffix, fontSize) > maxWidth) return string.Empty;
         var low = 0;
         var high = value.Length;
         while (low < high) {
             var mid = (low + high + 1) / 2;
-            if (RgbaCanvas.MeasureTextWidth(value.Substring(0, mid) + suffix, fontSize, null) <= maxWidth) low = mid;
+            if (canvas.MeasureTextWidth(value.Substring(0, mid) + suffix, fontSize) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 

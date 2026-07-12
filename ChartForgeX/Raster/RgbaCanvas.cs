@@ -313,13 +313,19 @@ internal sealed partial class RgbaCanvas {
         return MeasureTextTinyWidth(text, FallbackScaleForFontSize(fontSize), null);
     }
 
+    internal double MeasureTextWidth(string text, double fontSize) => MeasureTextWidth(text, fontSize, _outlineFont);
+
     public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont) + EmphasisOffset(fontSize);
+
+    internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);
 
     public static double MeasureTextHeight(double fontSize, TrueTypeFont? outlineFont) {
         var font = outlineFont ?? DefaultOutlineFont;
         if (font != null) return font.LineHeight(Math.Max(1, fontSize));
         return TinyFont.Height * FallbackScaleForFontSize(fontSize);
     }
+
+    internal double MeasureTextHeight(double fontSize) => MeasureTextHeight(fontSize, _outlineFont);
 
     public static double MeasureTextTinyHeight(int scale) {
         return MeasureTextTinyHeight(scale, null);

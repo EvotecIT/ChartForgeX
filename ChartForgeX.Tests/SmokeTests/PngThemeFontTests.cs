@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
@@ -45,5 +46,17 @@ internal static partial class SmokeTests {
             Assert(!string.Equals(serif.ResolvedPath, mono.ResolvedPath, StringComparison.OrdinalIgnoreCase), "Automatic PNG font resolution should select distinct serif and monospace faces when platform fonts are available.");
             Assert(!serifChart.ToPng().SequenceEqual(monoChart.ToPng()), "Theme font-family changes should affect PNG pixels when distinct platform faces are available.");
         }
+    }
+
+    private static void PngCanvasMeasuresWithItsSelectedDrawingFont() {
+        var font = TrueTypeFont.TryLoadForFamily(ChartFontStacks.Mono, out _);
+        if (font == null) return;
+
+        var canvas = new RgbaCanvas(320, 120, 2, font);
+        const string sample = "Metric WWW 012345";
+        const double fontSize = 19;
+        Assert(Math.Abs(canvas.MeasureTextWidth(sample, fontSize) - RgbaCanvas.MeasureTextWidth(sample, fontSize, font)) < 0.000001, "Canvas text fitting should use the same selected font as PNG drawing.");
+        Assert(Math.Abs(canvas.MeasureTextEmphasizedWidth(sample, fontSize) - RgbaCanvas.MeasureTextEmphasizedWidth(sample, fontSize, font)) < 0.000001, "Emphasized canvas text fitting should use the selected drawing font.");
+        Assert(Math.Abs(canvas.MeasureTextHeight(fontSize) - RgbaCanvas.MeasureTextHeight(fontSize, font)) < 0.000001, "Canvas vertical alignment should use the selected drawing font line height.");
     }
 }
