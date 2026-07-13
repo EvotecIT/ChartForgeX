@@ -18,8 +18,12 @@
     if (data.cfxSeries === undefined) return '';
     const root = node.closest('.cfx-interactive-chart');
     if (root) {
-      const legend = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'))
-        .find((item) => (item.dataset || {}).cfxSeries === data.cfxSeries);
+      const legendItems = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
+      const sameSeries = (item) => (item.dataset || {}).cfxSeries === data.cfxSeries;
+      const legend = data.cfxPoint === undefined
+        ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
+        : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
+          || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined);
       if (legend) return (legend.dataset || {}).cfxLabel || legend.getAttribute('aria-label') || legend.textContent || '';
     }
     return 'Series ' + data.cfxSeries;

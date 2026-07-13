@@ -62,6 +62,25 @@ public sealed partial class SvgChartRenderer {
         Add(ref hash, theme.DataLabelFontSize.ToString("R", CultureInfo.InvariantCulture));
         Add(ref hash, theme.MarkerRadius.ToString("R", CultureInfo.InvariantCulture));
         Add(ref hash, theme.FontFamily);
+        AddPictorialIdentity(ref hash, chart);
+    }
+
+    private static void AddPictorialIdentity(ref uint hash, Chart chart) {
+        if (!IsPictorialChart(chart)) return;
+        var options = chart.Options;
+        Add(ref hash, options.PictorialShape.ToString());
+        Add(ref hash, options.PictorialColumns.ToString(CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialMaximum?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty);
+        Add(ref hash, options.PictorialValuePerSymbol?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty);
+        Add(ref hash, options.ShowPictorialValues.ToString(CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialSymbolScale.ToString("R", CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialEmptyOpacity.ToString("R", CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialSvgPathData ?? string.Empty);
+        Add(ref hash, options.PictorialSvgPathViewBox.X.ToString("R", CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialSvgPathViewBox.Y.ToString("R", CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialSvgPathViewBox.Width.ToString("R", CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialSvgPathViewBox.Height.ToString("R", CultureInfo.InvariantCulture));
+        Add(ref hash, options.PictorialPngFallbackShape.ToString());
     }
 
     private static void Add(ref uint hash, string value) {
