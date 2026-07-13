@@ -180,15 +180,6 @@
     });
     return { maxVelocity, acceleration, overlaps, communityPushes };
   };
-  const physicsTick = (root, state, settings, tick) => {
-    const started = Date.now();
-    const result = simulatePhysicsStep(state, settings);
-    root.dataset.cfxGraphPhysicsAcceleration = result.acceleration;
-    applyLayout(root, state);
-    const interval = Math.max(1, num(root, 'data-cfx-performance-telemetry-interval', 30));
-    if (tick % interval === 0) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, communityPushes: result.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'main', sampleMs: Date.now() - started, sampleTicks: 1 });
-    return result.maxVelocity;
-  };
   const canUseWorkerPhysics = (root, state, settings) =>
     typeof Worker !== 'undefined' && typeof Blob !== 'undefined' && typeof URL !== 'undefined' &&
     state.nodes.length >= 160 && physicsAcceleration(state, settings) === 'barnes-hut' && root.__cfxGraphWorkerFailed !== true;
@@ -310,8 +301,9 @@ self.onmessage = event => {
     root.dataset.cfxGraphPhysicsThread = 'main';
     const step = (timestamp) => {
       if (root.__cfxGraphMainPhysics !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
-      const renderStarted = performanceClock(); tick += 1; const velocity = physicsTick(root, state, settings, tick);
-      const renderedAt = performanceClock(); recordFramePerformance(root, Number.isFinite(timestamp) ? timestamp : renderedAt, renderedAt - renderStarted, 'main');
+      tick += 1; const frame = physicsTick(root, state, settings, tick);
+      const renderedAt = performanceClock(); recordFramePerformance(root, Number.isFinite(timestamp) ? timestamp : renderedAt, frame.renderMs, 'main');
+      const velocity = frame.maxVelocity;
       if (tick >= settings.iterations || velocity <= settings.minVelocity) {
         root.dataset.cfxGraphPhysicsState = 'stabilized';
         root.__cfxGraphMainPhysics = null;

@@ -81,6 +81,12 @@ public sealed partial class SvgChartRenderer {
     /// <returns>SVG markup.</returns>
     public string Render(Chart chart, string idScope) {
         ChartGuards.RenderCompatibility(chart);
+        var provisionalId = BuildProvisionalId(chart, idScope);
+        var svg = RenderCore(chart, provisionalId);
+        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx", idScope, string.Empty);
+    }
+
+    private string RenderCore(Chart chart, string id) {
         var o = chart.Options;
         var t = o.Theme;
         var w = o.Size.Width;
@@ -114,7 +120,6 @@ public sealed partial class SvgChartRenderer {
 
         var map = new ChartMapper(plot, range);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange);
-        var id = BuildId(chart, idScope);
         var sb = new StringBuilder();
         AppendSvgStart(sb, writer => writer
             .StartElement("svg")

@@ -4,7 +4,7 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
-    private static string BuildId(Chart chart, string idScope) {
+    private static string BuildProvisionalId(Chart chart, string idScope) {
         unchecked {
             uint hash = 2166136261;
             Add(ref hash, idScope ?? string.Empty);

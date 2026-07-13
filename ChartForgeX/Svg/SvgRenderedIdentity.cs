@@ -12,9 +12,9 @@ internal static class SvgRenderedIdentity {
         return prefix + "-seed-" + StableHash(values);
     }
 
-    public static string Bind(string svg, string provisionalId, string finalPrefix, string idScope) {
+    public static string Bind(string svg, string provisionalId, string finalPrefix, string idScope, string separator = "-") {
         var canonicalSvg = svg.Replace("\r\n", "\n");
-        var finalId = finalPrefix + "-" + StableHash(idScope ?? string.Empty, canonicalSvg);
+        var finalId = finalPrefix + separator + StableHash(idScope ?? string.Empty, canonicalSvg);
         return RebindGeneratedId(svg, provisionalId, finalId);
     }
 

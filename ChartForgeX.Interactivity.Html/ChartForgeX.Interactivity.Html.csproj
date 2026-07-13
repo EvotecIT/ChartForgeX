@@ -62,6 +62,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.12-overview.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js" />
     <EmbeddedResource Include="Assets\graph-explorer.15-hit-testing.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js" />
     <EmbeddedResource Include="Assets\graph-explorer.18-structural-physics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.19-physics-telemetry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.19-physics-telemetry.js" />
     <EmbeddedResource Include="Assets\graph-explorer.20-physics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js" />
     <EmbeddedResource Include="Assets\graph-explorer.25-layout-quality.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-quality.js" />
     <EmbeddedResource Include="Assets\graph-explorer.30-bindings.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js" />

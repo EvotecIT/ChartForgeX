@@ -471,6 +471,8 @@ internal static partial class SmokeTests {
         var lightVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(ChartTheme.Light()).AddLine("Values", Points(10, 20, 30));
         var darkVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(ChartTheme.Dark()).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(lightVariant.ToHtmlFragment() + darkVariant.ToHtmlFragment(), "Unscoped fragments with distinct visual identities");
+        var withoutLegend = Chart.Create().WithTitle("Repeated fragment").WithSize(320, 220).WithLegend(false).AddLine("Values", Points(10, 20, 30));
+        AssertNoDuplicateIds(repeated.ToHtmlFragment() + withoutLegend.ToHtmlFragment(), "Unscoped fragments with distinct layout options");
     }
 
     private static void ExplicitAxisBoundsAffectSvgTicks() {
