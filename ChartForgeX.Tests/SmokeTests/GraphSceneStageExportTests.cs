@@ -62,13 +62,17 @@ internal static partial class SmokeTests {
         Assert(leveledStages.Select(stage => stage.Depth).SequenceEqual(new[] { 0, 1, 3 }) && leveledStages.Select(stage => stage.VisibleNodeIds.Count).SequenceEqual(new[] { 11, 22, 44 }), "Stage planning should use explicit node levels when a hierarchy has no ParentId links instead of collapsing every requested view into one full scene.");
 
         var rasterParity = GraphScene.Create("static-raster-parity", "Static raster parity")
-            .AddNode("left", "Left", node => { node.X = 280; node.Y = 280; node.Size = 24; })
+            .AddNode("left", "Left", node => { node.X = 280; node.Y = 280; node.Size = 24; node.Status = "healthy"; node.BadgeText = "42"; node.Style.LabelBackgroundColor = "#fef3c7"; })
             .AddNode("right", "Right", node => { node.X = 680; node.Y = 280; node.Size = 24; })
             .AddEdge("left-right", "left", "right", configure: edge => edge.Dashed = true);
         var rasterParitySvg = rasterParity.ToGraphSvg();
         Assert(rasterParitySvg.Contains("style=\"stroke-dasharray:8 6\"", StringComparison.Ordinal), "Static SVG should inline the default dashed-edge pattern so dependency-free PNG rendering does not depend on unsupported attribute selectors.");
+        Assert(rasterParitySvg.Contains("class=\"cfx-graph-node-label-bg\"", StringComparison.Ordinal) && rasterParitySvg.Contains("fill:#fef3c7", StringComparison.Ordinal), "Static SVG should preserve explicit node label backgrounds above node marks.");
+        Assert(rasterParitySvg.Contains("style=\"fill:#22c55e;stroke:var(--cfx-color-paper);stroke-width:2\"", StringComparison.Ordinal), "Static SVG should inline semantic status colors so dependency-free PNG rendering does not depend on unsupported attribute selectors.");
+        Assert(rasterParitySvg.Contains("<circle r=\"8\" style=\"fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2\"", StringComparison.Ordinal) && rasterParitySvg.Contains("style=\"fill:var(--cfx-color-paper);stroke:none\"", StringComparison.Ordinal), "Static SVG should emit rasterizable badge fills without CSS priority tokens in color values.");
         var rasterParityPixels = RasterImageDecoder.Decode(rasterParity.ToGraphPng()).Pixels;
         Assert(Enumerable.Range(0, rasterParityPixels.Length / 4).Any(index => Math.Abs(rasterParityPixels[index * 4] - 96) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 1] - 165) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 2] - 250) <= 3), "Static PNG should preserve the plain default node outline color instead of dropping color-mix strokes during rasterization.");
+        Assert(Enumerable.Range(0, rasterParityPixels.Length / 4).Any(index => Math.Abs(rasterParityPixels[index * 4] - 34) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 1] - 197) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 2] - 94) <= 3), "Static PNG should preserve healthy status-dot colors from the SVG node-detail contract.");
 
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-stage-export-" + Guid.NewGuid().ToString("N"));
         try {

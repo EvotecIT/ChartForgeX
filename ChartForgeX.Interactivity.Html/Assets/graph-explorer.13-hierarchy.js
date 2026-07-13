@@ -92,9 +92,7 @@
     clearHiddenSelections(root);
     applyFilters(root);
     if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
-    indexHitTesting(root, state);
-    drawCanvas(root, state);
-    if (typeof updateOverview === 'function') updateOverview(root, state);
+    applyLayout(root, state);
     const shouldFit = options?.fit !== false && attr(root, 'data-cfx-graph-hierarchy-auto-fit') !== 'false';
     if (shouldFit && hasFeature(root, 'Viewport')) {
       root.__cfxGraphViewportTouched = false;

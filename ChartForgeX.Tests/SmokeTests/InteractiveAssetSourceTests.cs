@@ -36,11 +36,19 @@ internal static partial class SmokeTests {
     }
 
     private static void GraphExplorerRuntimePatchesPreserveVisualAndReferenceContracts() {
-        var api = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "Assets", "graph-explorer.40-api.js"));
+        var assetRoot = Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "Assets");
+        var api = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.40-api.js"));
+        var hierarchy = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.13-hierarchy.js"));
         Assert(api.Contains("edges.forEach((edge, edgeId)", StringComparison.Ordinal) && api.Contains("references a missing endpoint", StringComparison.Ordinal), "Browser graph patches should validate every surviving edge against the final node set before mutating the document.");
         Assert(api.Contains("nodePolygonPoints", StringComparison.Ordinal) && api.Contains("nodeDatabasePath", StringComparison.Ordinal) && api.Contains("shape === 'text'", StringComparison.Ordinal), "Browser graph patches should rebuild rich SVG node shapes through the shared graph geometry helpers instead of reducing them to circles.");
         Assert(api.Contains("setGraphAttribute(element, 'marker-start'", StringComparison.Ordinal) && api.Contains("setGraphAttribute(element, 'marker-end'", StringComparison.Ordinal), "Browser graph patches should restore SVG direction markers for upserted edges.");
         Assert(api.Contains("syncGraphPatchClusterMembership", StringComparison.Ordinal) && api.Contains("data-source-cluster-id", StringComparison.Ordinal) && api.Contains("data-target-cluster-id", StringComparison.Ordinal), "Browser graph patches should synchronize node moves across cluster memberships and edge cluster references.");
+        Assert(api.Contains("graphPatchEdgeStyle", StringComparison.Ordinal) && api.Contains("setGraphAttribute(element, 'style', graphPatchEdgeStyle(edge, style))", StringComparison.Ordinal), "Browser graph patches should apply and clear edge stroke, width, dash, and visibility styles on SVG paths.");
+        Assert(api.Contains("graphPatchRoutePoints", StringComparison.Ordinal) && api.Contains("'data-edge-route-points', graphPatchRoutePoints(edge.routePoints)", StringComparison.Ordinal), "Browser graph patches should serialize prepared polyline route points into runtime graph state.");
+        Assert(api.Contains("cfx-graph-node-label-bg", StringComparison.Ordinal) && api.Contains("labelBackgroundColor", StringComparison.Ordinal), "Browser graph patches should rebuild styled node label backgrounds instead of dropping them until a full render.");
+        Assert(api.Contains("--cfx-node-fill", StringComparison.Ordinal) && api.Contains("--cfx-node-stroke", StringComparison.Ordinal) && api.Contains("filter:drop-shadow", StringComparison.Ordinal), "Browser graph patches should apply node colors and shadows through the same reusable style contract as the initial SVG renderer.");
+        Assert(api.Contains("graphPatchArrowMarker", StringComparison.Ordinal) && api.Contains("path.setAttribute('style', `fill:${color};stroke:${color}`)", StringComparison.Ordinal), "Browser graph patches should keep custom-colored arrow markers aligned with their edge stroke.");
+        Assert(hierarchy.Contains("applyLayout(root, state);", StringComparison.Ordinal), "Hierarchy updates should run the shared layout synchronization path so newly patched SVG edges receive visible path geometry.");
     }
 
     private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath) {

@@ -741,14 +741,14 @@
 
 .cfx-graph-node .cfx-graph-node-badge circle,
 .cfx-graph-node-details .cfx-graph-node-badge circle {
-  fill: var(--cfx-color-text) !important;
-  stroke: var(--cfx-color-paper) !important;
-  stroke-width: 2 !important;
+  fill: var(--cfx-color-text);
+  stroke: var(--cfx-color-paper);
+  stroke-width: 2;
 }
 
 .cfx-graph-node .cfx-graph-node-badge text,
 .cfx-graph-node-details .cfx-graph-node-badge text {
-  fill: var(--cfx-color-paper) !important;
+  fill: var(--cfx-color-paper);
   stroke: none;
   font-size: 7px;
   font-weight: 800;
@@ -757,17 +757,17 @@
 
 .cfx-graph-node .cfx-graph-node-status,
 .cfx-graph-node-details .cfx-graph-node-status {
-  fill: #94a3b8 !important;
-  stroke: var(--cfx-color-paper) !important;
-  stroke-width: 2 !important;
+  fill: #94a3b8;
+  stroke: var(--cfx-color-paper);
+  stroke-width: 2;
 }
 
 .cfx-graph-node[data-cfx-status="healthy"] .cfx-graph-node-status,
-.cfx-graph-node-details[data-cfx-status="healthy"] .cfx-graph-node-status { fill: #22c55e !important; }
+.cfx-graph-node-details[data-cfx-status="healthy"] .cfx-graph-node-status { fill: #22c55e; }
 .cfx-graph-node[data-cfx-status="warning"] .cfx-graph-node-status,
-.cfx-graph-node-details[data-cfx-status="warning"] .cfx-graph-node-status { fill: #f59e0b !important; }
+.cfx-graph-node-details[data-cfx-status="warning"] .cfx-graph-node-status { fill: #f59e0b; }
 .cfx-graph-node[data-cfx-status="critical"] .cfx-graph-node-status,
-.cfx-graph-node-details[data-cfx-status="critical"] .cfx-graph-node-status { fill: #ef4444 !important; }
+.cfx-graph-node-details[data-cfx-status="critical"] .cfx-graph-node-status { fill: #ef4444; }
 
 .cfx-graph-cluster {
   cursor: pointer;

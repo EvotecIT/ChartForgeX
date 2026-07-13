@@ -44,7 +44,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append(Number(size * 0.82));
             writer.Append(' ');
             writer.Append(Number(-size * 0.82));
-            writer.Append(")\"><circle r=\"8\"></circle><text y=\"3.5\">");
+            writer.Append(")\"><circle r=\"8\" style=\"fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2\"></circle><text y=\"3.5\" style=\"fill:var(--cfx-color-paper);stroke:none\">");
             writer.Append(Text(badge));
             writer.Append("</text></g>");
         }
@@ -57,7 +57,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append(Number(-size * 0.8));
             writer.Append("\" r=\"");
             writer.Append(Number(statusRadius));
-            writer.Append("\"></circle>");
+            writer.Append('"');
+            Attribute(writer, "style", "fill:" + NodeStatusColor(node.Status) + ";stroke:var(--cfx-color-paper);stroke-width:2");
+            writer.Append("></circle>");
         }
+    }
+
+    private static string NodeStatusColor(string? status) {
+        if (string.Equals(status, "healthy", StringComparison.OrdinalIgnoreCase)) return "#22c55e";
+        if (string.Equals(status, "warning", StringComparison.OrdinalIgnoreCase)) return "#f59e0b";
+        if (string.Equals(status, "critical", StringComparison.OrdinalIgnoreCase)) return "#ef4444";
+        return "#94a3b8";
     }
 }

@@ -17,6 +17,40 @@
   };
   const graphSearchText = (value) => !value || typeof value !== 'object' ? '' : Object.keys(value).sort().map(key => `${key} ${value[key]}`).join(' ');
   const graphPatchPosition = (element, value, name, fallback) => Number.isFinite(Number(value)) ? Number(value) : num(element, name, fallback);
+  const graphPatchRoutePoints = (values) => (values || []).map(point => {
+    const x = Number(point?.x ?? point?.X ?? point?.[0]);
+    const y = Number(point?.y ?? point?.Y ?? point?.[1]);
+    return Number.isFinite(x) && Number.isFinite(y) ? `${x},${y}` : '';
+  }).filter(Boolean).join(';');
+  const graphPatchStatusColor = (value) => {
+    const status = String(value || '').toLowerCase();
+    return status === 'healthy' ? '#22c55e' : status === 'warning' ? '#f59e0b' : status === 'critical' ? '#ef4444' : '#94a3b8';
+  };
+  const graphPatchEdgeStyle = (edge, style) => [
+    style.color ? `--cfx-edge-stroke:${style.color}` : '',
+    style.width !== undefined && style.width !== null && style.width !== '' && Number.isFinite(Number(style.width)) ? `--cfx-edge-width:${Number(style.width)}` : '',
+    edge.dashed === true ? `stroke-dasharray:${style.dashPattern || edge.dashPattern || '8 6'}` : '',
+    style.hidden === true || edge.hidden === true ? 'display:none' : ''
+  ].filter(Boolean).join(';');
+  const graphPatchEdgeLabelStyle = (edge, style) => [
+    style.labelColor ? `--cfx-edge-label-explicit:${style.labelColor}` : '',
+    style.hidden === true || edge.hidden === true ? 'display:none' : ''
+  ].filter(Boolean).join(';');
+  const graphPatchArrowMarker = (root, edgeId, color) => {
+    const scene = root.querySelector('[data-cfx-role="graph-scene"]');
+    const template = scene?.querySelector('defs marker[id]');
+    if (!template || !color) return template?.id || '';
+    const markerId = `${template.id}-patch-${String(edgeId).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+    let marker = scene.querySelector(`marker[id="${markerId}"]`);
+    if (!marker) {
+      marker = template.cloneNode(true);
+      marker.id = markerId;
+      template.parentNode?.appendChild(marker);
+    }
+    const path = marker.querySelector('path');
+    if (path) path.setAttribute('style', `fill:${color};stroke:${color}`);
+    return markerId;
+  };
   const graphPatchNodeMark = (root, element, node) => {
     if (element.__cfxVirtual) return;
     while (element.firstChild) element.removeChild(element.firstChild);
@@ -40,7 +74,7 @@
       mark = svgElement(root, 'circle'); setGraphAttribute(mark, 'r', shape === 'image' && node.imageUrl ? size + 4 : size);
     }
     const style = node.style || {};
-    const markStyle = [style.backgroundColor ? `fill:${style.backgroundColor}` : '', style.borderColor ? `stroke:${style.borderColor}` : ''].filter(Boolean).join(';');
+    const markStyle = [style.backgroundColor ? `--cfx-node-fill:${style.backgroundColor}` : '', style.borderColor ? `--cfx-node-stroke:${style.borderColor}` : '', style.shadow === true ? 'filter:drop-shadow(0 5px 10px rgba(15,23,42,.18))' : ''].filter(Boolean).join(';');
     if (markStyle) mark.setAttribute('style', markStyle);
     element.appendChild(mark);
     if ((shape === 'image' || shape === 'imageRect') && node.imageUrl) {
@@ -66,20 +100,25 @@
     while (details.firstChild) details.removeChild(details.firstChild);
     const size = Math.max(4, Number(node.size) || 8); const shape = node.shape || 'circle';
     details.setAttribute('data-node-details-for', node.id); details.setAttribute('data-cfx-status', node.status || ''); details.setAttribute('transform', `translate(${x} ${y})`);
-    const label = svgElement(root, 'text'); label.classList.add('cfx-graph-node-label'); label.setAttribute('y', shape === 'text' ? '4' : String(size + 18)); label.textContent = node.label || node.id; element.appendChild(label);
+    const labelText = node.label || node.id;
+    if (node.style?.labelBackgroundColor) {
+      const background = svgElement(root, 'rect'); background.classList.add('cfx-graph-node-label-bg'); background.setAttribute('x', String(-Math.max(24, labelText.length * 3.8))); background.setAttribute('y', String(shape === 'text' ? -9 : size + 7)); background.setAttribute('width', String(Math.max(48, labelText.length * 7.6))); background.setAttribute('height', '18'); background.setAttribute('rx', '5'); background.setAttribute('style', `fill:${node.style.labelBackgroundColor};stroke:none;stroke-width:0;pointer-events:none`); details.appendChild(background);
+    }
+    const label = svgElement(root, 'text'); label.classList.add('cfx-graph-node-label'); label.setAttribute('y', shape === 'text' ? '4' : String(size + 18)); label.textContent = labelText;
+    if (node.style?.labelColor) label.setAttribute('style', `--cfx-node-label-explicit:${node.style.labelColor}`);
+    details.appendChild(label);
     if (node.secondaryLabel) {
       const secondary = svgElement(root, 'text'); secondary.classList.add('cfx-graph-node-secondary'); secondary.setAttribute('y', String(shape === 'text' ? 18 : size + 32)); secondary.textContent = node.secondaryLabel; details.appendChild(secondary);
     }
     if (node.badge) {
       const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', `translate(${(size * .82).toFixed(3)} ${(-size * .82).toFixed(3)})`);
-      const circle = svgElement(root, 'circle'); circle.setAttribute('r', '8'); badge.appendChild(circle);
-      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.textContent = String(node.badge).slice(0, 5); badge.appendChild(text); details.appendChild(badge);
+      const circle = svgElement(root, 'circle'); circle.setAttribute('r', '8'); circle.setAttribute('style', 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'); badge.appendChild(circle);
+      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.setAttribute('style', 'fill:var(--cfx-color-paper);stroke:none'); text.textContent = String(node.badge).slice(0, 5); badge.appendChild(text); details.appendChild(badge);
     }
     const status = String(node.status || '').toLowerCase();
     if (status && status !== 'unknown') {
-      const indicator = svgElement(root, 'circle'); indicator.classList.add('cfx-graph-node-status'); indicator.setAttribute('cx', String(-size * .8)); indicator.setAttribute('cy', String(-size * .8)); indicator.setAttribute('r', '4.5'); details.appendChild(indicator);
+      const indicator = svgElement(root, 'circle'); indicator.classList.add('cfx-graph-node-status'); indicator.setAttribute('cx', String(-size * .8)); indicator.setAttribute('cy', String(-size * .8)); indicator.setAttribute('r', String(Math.min(4.5, Math.max(1.35, size * .28)))); indicator.setAttribute('style', `fill:${graphPatchStatusColor(status)};stroke:var(--cfx-color-paper);stroke-width:2`); details.appendChild(indicator);
     }
-    details.insertBefore(label, details.firstChild);
   };
   const upsertGraphNode = (root, node) => {
     const viewportGroup = root.querySelector('[data-cfx-role="graph-viewport"]');
@@ -107,15 +146,15 @@
     }
     const style = edge.style || {};
     const sourceArrow = edge.sourceArrow === true, targetArrow = edge.targetArrow === true || edge.directed === true;
-    setGraphAttribute(element, 'data-edge-id', edge.id); setGraphAttribute(element, 'data-source-node-id', edge.sourceNodeId || edge.source); setGraphAttribute(element, 'data-target-node-id', edge.targetNodeId || edge.target); setGraphAttribute(element, 'data-edge-label', edge.label); setGraphAttribute(element, 'data-edge-kind', edge.kind); setGraphAttribute(element, 'data-cfx-status', edge.status); setGraphAttribute(element, 'data-edge-weight', Number(edge.weight) || 1); setGraphAttribute(element, 'data-edge-length', Number(edge.length) || 0); setGraphAttribute(element, 'data-edge-shape', edge.shape || 'line'); setGraphAttribute(element, 'data-edge-curvature', Number(edge.curvature) || 0); setGraphAttribute(element, 'data-edge-dashed', edge.dashed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-dash-pattern', style.dashPattern || edge.dashPattern); setGraphAttribute(element, 'data-edge-show-label', edge.showLabel === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-directed', edge.directed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-source-arrow', sourceArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-target-arrow', targetArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-physics', style.physics === false || edge.physics === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-color', style.color); setGraphAttribute(element, 'data-edge-label-color', style.labelColor); setGraphAttribute(element, 'data-edge-width', style.width); setGraphAttribute(element, 'data-edge-hidden', style.hidden === true || edge.hidden === true ? 'true' : 'false'); setGraphAttribute(element, 'data-cfx-search', graphSearchText(edge.metadata)); setGraphAttribute(element, 'data-cfx-metadata', graphMetadata(edge.metadata)); setGraphAttribute(element, 'role', 'button'); setGraphAttribute(element, 'aria-pressed', element.classList.contains('cfx-graph-selected') ? 'true' : 'false'); setGraphAttribute(element, 'aria-label', edge.label || `${edge.sourceNodeId || edge.source} to ${edge.targetNodeId || edge.target}`); setGraphAttribute(element, 'tabindex', '-1');
-    const markerId = root.querySelector('[data-cfx-role="graph-scene"] marker[id], marker[id]')?.id;
+    setGraphAttribute(element, 'data-edge-id', edge.id); setGraphAttribute(element, 'data-source-node-id', edge.sourceNodeId || edge.source); setGraphAttribute(element, 'data-target-node-id', edge.targetNodeId || edge.target); setGraphAttribute(element, 'data-edge-label', edge.label); setGraphAttribute(element, 'data-edge-kind', edge.kind); setGraphAttribute(element, 'data-cfx-status', edge.status); setGraphAttribute(element, 'data-edge-weight', Number(edge.weight) || 1); setGraphAttribute(element, 'data-edge-length', Number(edge.length) || 0); setGraphAttribute(element, 'data-edge-shape', edge.shape || 'line'); setGraphAttribute(element, 'data-edge-curvature', Number(edge.curvature) || 0); setGraphAttribute(element, 'data-edge-route-points', graphPatchRoutePoints(edge.routePoints)); setGraphAttribute(element, 'data-edge-dashed', edge.dashed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-dash-pattern', style.dashPattern || edge.dashPattern); setGraphAttribute(element, 'data-edge-show-label', edge.showLabel === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-directed', edge.directed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-source-arrow', sourceArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-target-arrow', targetArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-physics', style.physics === false || edge.physics === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-color', style.color); setGraphAttribute(element, 'data-edge-label-color', style.labelColor); setGraphAttribute(element, 'data-edge-width', style.width); setGraphAttribute(element, 'data-edge-hidden', style.hidden === true || edge.hidden === true ? 'true' : 'false'); setGraphAttribute(element, 'data-cfx-search', graphSearchText(edge.metadata)); setGraphAttribute(element, 'data-cfx-metadata', graphMetadata(edge.metadata)); setGraphAttribute(element, 'role', 'button'); setGraphAttribute(element, 'aria-pressed', element.classList.contains('cfx-graph-selected') ? 'true' : 'false'); setGraphAttribute(element, 'aria-label', edge.label || `${edge.sourceNodeId || edge.source} to ${edge.targetNodeId || edge.target}`); setGraphAttribute(element, 'tabindex', '-1'); setGraphAttribute(element, 'style', graphPatchEdgeStyle(edge, style));
+    const markerId = graphPatchArrowMarker(root, edge.id, style.color);
     setGraphAttribute(element, 'marker-start', sourceArrow && markerId ? `url(#${markerId})` : null);
     setGraphAttribute(element, 'marker-end', targetArrow && markerId ? `url(#${markerId})` : null);
     element.classList.toggle('cfx-graph-hidden', style.hidden === true || edge.hidden === true);
     let label = items(root, '[data-cfx-role="graph-edge-label"]').find(item => attr(item, 'data-edge-label-for') === edge.id);
     if (edge.label && edge.showLabel !== false) {
       if (!label) { label = svgElement(root, 'text'); label.classList.add('cfx-graph-edge-label'); label.setAttribute('data-cfx-role', 'graph-edge-label'); viewportGroup?.insertBefore(label, viewportGroup.querySelector('[data-cfx-role="graph-node"]')); }
-      label.setAttribute('data-edge-label-for', edge.id); label.textContent = edge.label;
+      label.setAttribute('data-edge-label-for', edge.id); label.textContent = edge.label; label.classList.toggle('cfx-graph-hidden', style.hidden === true || edge.hidden === true); setGraphAttribute(label, 'style', graphPatchEdgeLabelStyle(edge, style));
     } else label?.remove();
     bindGraphItemSelection(root, element);
     return element;
