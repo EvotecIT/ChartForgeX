@@ -144,12 +144,21 @@
       const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
       const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
       const color = webGlColor(selected ? palette.selected : related ? '#14b8a6' : edge.strokeColor || palette.edge, dimmed ? .08 : selected ? .95 : related ? .8 : .42);
+      const control = edgeControl(rendered);
       const points = edgeHasRoute(rendered) ? routeRenderPoints(rendered) : [rendered.source, rendered.target];
       for (let index = 1; index < points.length; index++) {
         linePositions.push(points[index - 1].x, points[index - 1].y, points[index].x, points[index].y);
         lineColors.push(...color, ...color);
         lineSizes.push(1, 1);
       }
+      const appendArrow = side => {
+        const arrow = edgeArrowGeometry(rendered, control, side);
+        linePositions.push(arrow.tip.x, arrow.tip.y, arrow.left.x, arrow.left.y, arrow.tip.x, arrow.tip.y, arrow.right.x, arrow.right.y);
+        lineColors.push(...color, ...color, ...color, ...color);
+        lineSizes.push(1, 1, 1, 1);
+      };
+      if (rendered.sourceArrow) appendArrow('source');
+      if (rendered.targetArrow || rendered.directed) appendArrow('target');
     });
     if (linePositions.length) {
       webGlUpload(runtime, linePositions, lineColors, lineSizes, false);

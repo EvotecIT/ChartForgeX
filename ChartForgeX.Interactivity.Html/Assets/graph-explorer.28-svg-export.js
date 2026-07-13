@@ -141,7 +141,8 @@
         'data-node-label': node.label,
         'data-cfx-status': attr(node.el, 'data-cfx-status'),
         transform,
-        tabindex: 0,
+        tabindex: -1,
+        'aria-hidden': 'true',
         'aria-label': node.label
       });
       appendExportedNodeMark(document, group, node);

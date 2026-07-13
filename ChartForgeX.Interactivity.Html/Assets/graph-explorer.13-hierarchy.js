@@ -158,7 +158,7 @@
       if (role === 'graph-cluster' && toggleGraphCluster(root, attr(item, 'data-cluster-id'))) { event.preventDefault(); event.stopPropagation(); }
     });
     stage.addEventListener('keydown', event => {
-      if (event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs')) return;
+      if (event.defaultPrevented || event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs')) return;
       const item = event.target.closest?.('[data-cfx-role="graph-node"],[data-cfx-role="graph-cluster"]');
       if (event.key === 'ArrowRight' && item && attr(item, 'data-cfx-role') === 'graph-node' && drillHierarchyNode(root, attr(item, 'data-node-id'))) event.preventDefault();
       if ((event.key === 'ArrowLeft' || event.key === 'Escape' || event.key === 'Backspace') && navigateHierarchyUp(root)) event.preventDefault();

@@ -203,7 +203,7 @@
       ? { x: (endpoints.source.x + 2 * control.x + endpoints.target.x) / 4, y: (endpoints.source.y + 2 * control.y + endpoints.target.y) / 4 - 7 }
       : { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 - 7 };
   };
-  const drawArrow = (context, edge, control, side, color) => {
+  const edgeArrowGeometry = (edge, control, side, size = 8) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
     const route = edgeHasRoute(edge) ? routeRenderPoints(edge) : null;
     const sourceSide = side === 'source';
@@ -215,14 +215,21 @@
     const unitX = dx / length;
     const unitY = dy / length;
     const angle = Math.atan2(unitY, unitX);
-    const size = 8;
     const inset = loop || route ? 0 : nodeBoundaryInset(sourceSide ? edge.source : edge.target, unitX, unitY);
     const x = target.x - unitX * inset;
     const y = target.y - unitY * inset;
+    return {
+      tip: { x, y },
+      left: { x: x - Math.cos(angle - Math.PI / 6) * size, y: y - Math.sin(angle - Math.PI / 6) * size },
+      right: { x: x - Math.cos(angle + Math.PI / 6) * size, y: y - Math.sin(angle + Math.PI / 6) * size }
+    };
+  };
+  const drawArrow = (context, edge, control, side, color) => {
+    const arrow = edgeArrowGeometry(edge, control, side);
     context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x - Math.cos(angle - Math.PI / 6) * size, y - Math.sin(angle - Math.PI / 6) * size);
-    context.lineTo(x - Math.cos(angle + Math.PI / 6) * size, y - Math.sin(angle + Math.PI / 6) * size);
+    context.moveTo(arrow.tip.x, arrow.tip.y);
+    context.lineTo(arrow.left.x, arrow.left.y);
+    context.lineTo(arrow.right.x, arrow.right.y);
     context.closePath();
     context.fillStyle = color || '#64748b';
     context.fill();

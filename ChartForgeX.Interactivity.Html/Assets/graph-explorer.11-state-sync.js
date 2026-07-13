@@ -1,7 +1,9 @@
   const syncGraphItemTabStops = (root) => {
     const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'svg';
+    const acceleratedSvg = focusableSvg && attr(root, 'data-cfx-graph-accelerated-markup') === 'true';
     const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
     const webgl = root.querySelector('[data-cfx-role="graph-webgl"]');
+    const scene = root.querySelector('[data-cfx-role="graph-scene"]');
     if (canvas) {
       canvas.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
       canvas.setAttribute('role', 'img');
@@ -12,6 +14,11 @@
       webgl.setAttribute('role', 'img');
       webgl.setAttribute('aria-label', webgl.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph WebGL canvas');
     }
+    if (scene) {
+      scene.setAttribute('tabindex', acceleratedSvg ? '0' : '-1');
+      if (acceleratedSvg) scene.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space');
+      else scene.removeAttribute('aria-keyshortcuts');
+    }
     const graphItems = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]');
     const focusableItems = graphItems.filter(item => visible(item) && (attr(item, 'data-cfx-role') !== 'graph-cluster' || attr(item, 'data-cluster-collapsed') === 'true'));
     const itemKey = item => `${attr(item, 'data-cfx-role')}:${attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id')}`;
@@ -20,8 +27,8 @@
       || focusableItems.find(item => item.classList.contains('cfx-graph-selected'))
       || focusableItems[0];
     graphItems.forEach(item => {
-      item.setAttribute('tabindex', focusableSvg && item === active ? '0' : '-1');
-      if (focusableSvg && item === active) item.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space');
+      item.setAttribute('tabindex', focusableSvg && !acceleratedSvg && item === active ? '0' : '-1');
+      if (focusableSvg && !acceleratedSvg && item === active) item.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space');
       else item.removeAttribute('aria-keyshortcuts');
     });
     if (focusableSvg && active) root.dataset.cfxGraphKeyboardItem = itemKey(active);

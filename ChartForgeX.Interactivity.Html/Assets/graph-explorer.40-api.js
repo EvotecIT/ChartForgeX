@@ -271,7 +271,7 @@
     patch = patch || {};
     const graphChanged = ['upsertNodes', 'upsertEdges', 'upsertClusters', 'removeNodeIds', 'removeEdgeIds', 'removeClusterIds'].some(name => Array.isArray(patch[name]) && patch[name].length > 0);
     validateGraphPatch(root, patch);
-    stopWorkerPhysics(root, true); stopMainPhysics(root, true);
+    if (graphChanged) { stopWorkerPhysics(root, true); stopMainPhysics(root, true); }
     const removeNodes = graphPatchIds(patch.removeNodeIds), removeEdges = graphPatchIds(patch.removeEdgeIds), removeClusters = graphPatchIds(patch.removeClusterIds);
     if (patch.removeIncidentReferences !== false && removeNodes.size) items(root, '[data-cfx-role="graph-edge"]').forEach(edge => { if (removeNodes.has(attr(edge, 'data-source-node-id')) || removeNodes.has(attr(edge, 'data-target-node-id'))) removeEdges.add(attr(edge, 'data-edge-id')); });
     items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => { if (removeEdges.has(attr(label, 'data-edge-label-for'))) label.remove(); });
