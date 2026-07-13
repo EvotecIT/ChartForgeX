@@ -1,28 +1,33 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 
 namespace ChartForgeX.SvgRaster;
 
-internal static class SvgRasterRenderer {
+internal static partial class SvgRasterRenderer {
     public static bool TryRenderFragment(string svgBody, string? viewBox, string? preserveAspectRatio, int width, int height, out byte[] rgba) {
         rgba = Array.Empty<byte>();
         if (string.IsNullOrWhiteSpace(svgBody) || width <= 0 || height <= 0) return false;
 
         try {
             var document = SvgRasterParser.ParseFragment(svgBody, viewBox);
-            var definitions = SvgRasterDefinitions.From(document);
-            var canvas = new RgbaCanvas(width, height, 1);
-            var matrix = SvgRasterMatrix.FromFit(document.ViewBox, width, height, preserveAspectRatio);
-            var ancestors = new List<SvgRasterElement>();
-            foreach (var child in document.Children) RenderElement(canvas, child, SvgRasterStyle.Default, matrix, definitions, width, height, 0, ancestors);
-            rgba = canvas.Pixels;
+            rgba = RenderDocument(document, preserveAspectRatio, width, height);
             return HasVisiblePixel(rgba);
         } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
             return false;
         }
+    }
+
+    private static byte[] RenderDocument(SvgRasterDocument document, string? preserveAspectRatio, int width, int height, int imageDepth = 0) {
+        var definitions = SvgRasterDefinitions.From(document);
+        var canvas = new RgbaCanvas(width, height, 1);
+        var matrix = SvgRasterMatrix.FromFit(document.ViewBox, width, height, preserveAspectRatio);
+        var ancestors = new List<SvgRasterElement>();
+        foreach (var child in document.Children) RenderElement(canvas, child, SvgRasterStyle.Default, matrix, definitions, width, height, imageDepth, ancestors);
+        return canvas.Pixels;
     }
 
     private static void RenderElement(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
@@ -32,7 +37,7 @@ internal static class SvgRasterRenderer {
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) matrix = ApplyNestedSvgViewport(element, matrix);
         if (IsDefinitionElement(element.Name)) return;
-        var hasClipPath = definitions.TryGetClipPath(ReferenceId(element, "clip-path"), out var clipPath);
+        var hasClipPath = definitions.TryGetClipPath(ParseReference(style.ClipPath) ?? ReferenceId(element, "clip-path"), out var clipPath);
         var hasMask = definitions.TryGetMask(ReferenceId(element, "mask"), out var maskDefinition);
         if (hasClipPath || hasMask) {
             var content = new RgbaCanvas(width, height, 1);
@@ -68,7 +73,7 @@ internal static class SvgRasterRenderer {
                 RenderUse(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
                 break;
             case "path":
-                RenderPath(canvas, element, style, matrix, definitions);
+                RenderPath(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
                 break;
             case "rect":
                 RenderRect(canvas, element, style, matrix, definitions);
@@ -80,22 +85,92 @@ internal static class SvgRasterRenderer {
                 RenderEllipse(canvas, element.GetDouble("cx"), element.GetDouble("cy"), element.GetDouble("rx"), element.GetDouble("ry"), style, matrix, definitions);
                 break;
             case "line":
-                RenderLine(canvas, element, style, matrix, definitions);
+                RenderLine(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
                 break;
             case "polyline":
-                RenderPointList(canvas, element, style, matrix, definitions, close: false);
+                RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: false);
                 break;
             case "polygon":
-                RenderPointList(canvas, element, style, matrix, definitions, close: true);
+                RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: true);
                 break;
             case "text":
                 RenderText(canvas, element, style, matrix, definitions.StyleSheet, ancestors);
+                return;
+            case "image":
+                RenderImage(canvas, element, style, matrix, referenceDepth);
                 return;
         }
 
         ancestors.Add(element);
         foreach (var child in element.Children) RenderElement(canvas, child, style, matrix, definitions, width, height, referenceDepth, ancestors);
         ancestors.RemoveAt(ancestors.Count - 1);
+    }
+
+    private static void RenderImage(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, int imageDepth) {
+        var width = element.GetDouble("width");
+        var height = element.GetDouble("height");
+        if (width <= 0 || height <= 0 || style.Opacity <= 0) return;
+        var x = element.GetDouble("x");
+        var y = element.GetDouble("y");
+        var corners = new[] {
+            matrix.Transform(new ChartPoint(x, y)), matrix.Transform(new ChartPoint(x + width, y)),
+            matrix.Transform(new ChartPoint(x, y + height)), matrix.Transform(new ChartPoint(x + width, y + height))
+        };
+        var left = (int)Math.Round(Math.Min(Math.Min(corners[0].X, corners[1].X), Math.Min(corners[2].X, corners[3].X)));
+        var top = (int)Math.Round(Math.Min(Math.Min(corners[0].Y, corners[1].Y), Math.Min(corners[2].Y, corners[3].Y)));
+        var right = (int)Math.Round(Math.Max(Math.Max(corners[0].X, corners[1].X), Math.Max(corners[2].X, corners[3].X)));
+        var bottom = (int)Math.Round(Math.Max(Math.Max(corners[0].Y, corners[1].Y), Math.Max(corners[2].Y, corners[3].Y)));
+        if (right <= left || bottom <= top) return;
+        if (!TryDecodeImage(element.Get("href"), imageDepth, right - left, bottom - top, element.Get("preserveAspectRatio"), out var image)) return;
+        var pixels = style.Opacity >= 0.999 ? image.Pixels : ApplyOpacity(image.Pixels, style.Opacity);
+        var destinationWidth = right - left;
+        var destinationHeight = bottom - top;
+        var placement = SvgRasterImagePlacement.Resolve(destinationWidth, destinationHeight, image.Width, image.Height, element.Get("preserveAspectRatio"));
+        var imageBox = new RgbaCanvas(destinationWidth, destinationHeight, 1);
+        imageBox.DrawImageScaled(placement.X, placement.Y, placement.Width, placement.Height, image.Width, image.Height, pixels, placement.SourceX, placement.SourceY, placement.SourceWidth, placement.SourceHeight);
+        if (IsCenteredCircleClipPath(style.ClipPath)) canvas.DrawImageScaledCircle(left, top, destinationWidth, destinationHeight, destinationWidth, destinationHeight, imageBox.Pixels);
+        else canvas.DrawImage(left, top, destinationWidth, destinationHeight, imageBox.Pixels);
+    }
+
+    private static bool IsCenteredCircleClipPath(string? value) {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var compact = value!.Replace(" ", string.Empty).Replace("\t", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
+        return string.Equals(compact, "circle(50%)", StringComparison.OrdinalIgnoreCase) || string.Equals(compact, "circle(closest-side)", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryDecodeImage(string? href, int imageDepth, int targetWidth, int targetHeight, string? preserveAspectRatio, out RgbaImage image) {
+        image = default;
+        if (imageDepth >= 4 || string.IsNullOrWhiteSpace(href) || !href!.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) return false;
+        var comma = href.IndexOf(',');
+        if (comma < 0) return false;
+        var header = href.Substring(5, comma - 5);
+        var payload = href.Substring(comma + 1);
+        try {
+            if (header.StartsWith("image/svg+xml", StringComparison.OrdinalIgnoreCase)) {
+                var markup = header.IndexOf(";base64", StringComparison.OrdinalIgnoreCase) >= 0
+                    ? Encoding.UTF8.GetString(Convert.FromBase64String(payload))
+                    : Uri.UnescapeDataString(payload);
+                var document = SvgRasterParser.ParseDocument(markup);
+                var embeddedWidth = Math.Max(1, targetWidth);
+                var embeddedHeight = Math.Max(1, targetHeight);
+                var rgba = RenderDocument(document, preserveAspectRatio, embeddedWidth, embeddedHeight, imageDepth + 1);
+                image = new RgbaImage(embeddedWidth, embeddedHeight, rgba);
+                return true;
+            }
+            var data = header.IndexOf(";base64", StringComparison.OrdinalIgnoreCase) >= 0
+                ? Convert.FromBase64String(payload)
+                : Encoding.UTF8.GetBytes(Uri.UnescapeDataString(payload));
+            return RasterImageDecoder.TryDecode(data, out image);
+        } catch (Exception ex) when (ex is FormatException || ex is ArgumentException || ex is InvalidOperationException || ex is System.Xml.XmlException) {
+            return false;
+        }
+    }
+
+    private static byte[] ApplyOpacity(byte[] pixels, double opacity) {
+        var result = new byte[pixels.Length];
+        Buffer.BlockCopy(pixels, 0, result, 0, pixels.Length);
+        for (var index = 3; index < result.Length; index += 4) result[index] = (byte)Math.Round(result[index] * Math.Max(0, Math.Min(1, opacity)));
+        return result;
     }
 
     private static void RenderUse(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
@@ -120,11 +195,12 @@ internal static class SvgRasterRenderer {
         RenderElement(canvas, referenced, style, useMatrix, definitions, width, height, referenceDepth + 1, ancestors);
     }
 
-    private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
+    private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
         var d = element.Get("d");
         if (string.IsNullOrWhiteSpace(d)) return;
         var rings = TransformRings(ChartMapPathParser.ParseRings(d!), matrix);
         FillAndStroke(canvas, rings, style, PathHasClose(d!), matrix, definitions);
+        RenderMarkers(canvas, element, style, matrix, definitions, rings, width, height, referenceDepth, ancestors);
     }
 
     private static void RenderRect(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
@@ -143,19 +219,21 @@ internal static class SvgRasterRenderer {
         FillAndStroke(canvas, new[] { TransformRing(EllipseRing(cx, cy, rx, ry, 36), matrix) }, style, true, matrix, definitions);
     }
 
-    private static void RenderLine(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
+    private static void RenderLine(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
         var points = new[] {
             matrix.Transform(new ChartPoint(element.GetDouble("x1"), element.GetDouble("y1"))),
             matrix.Transform(new ChartPoint(element.GetDouble("x2"), element.GetDouble("y2")))
         };
         Stroke(canvas, points, style, matrix.ScaleFactor, definitions);
+        RenderMarkers(canvas, element, style, matrix, definitions, new[] { new List<ChartPoint>(points) }, width, height, referenceDepth, ancestors);
     }
 
-    private static void RenderPointList(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, bool close) {
+    private static void RenderPointList(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, bool close) {
         var points = ReadPointList(element.Get("points"));
         if (points.Count == 0) return;
         var transformed = TransformRing(points, matrix);
         FillAndStroke(canvas, new[] { transformed }, style, close, matrix, definitions);
+        RenderMarkers(canvas, element, style, matrix, definitions, new[] { transformed }, width, height, referenceDepth, ancestors);
     }
 
     private static void RenderText(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {

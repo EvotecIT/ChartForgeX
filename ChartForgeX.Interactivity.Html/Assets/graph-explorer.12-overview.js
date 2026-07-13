@@ -25,6 +25,7 @@
     if (!context) return;
     const currentState = state || graphState(root);
     const metrics = overviewScale(root, currentState);
+    const palette = graphThemePalette(root);
     context.clearRect(0, 0, canvas.width, canvas.height);
     if (!metrics) {
       root.dataset.cfxGraphOverview = 'empty';
@@ -32,14 +33,15 @@
     }
     root.dataset.cfxGraphOverview = 'ready';
     root.dataset.cfxGraphOverviewScale = metrics.scale.toFixed(4);
-    context.fillStyle = 'rgba(248,250,252,.96)';
+    context.fillStyle = palette.paperSoft;
     context.fillRect(0, 0, canvas.width, canvas.height);
-    context.strokeStyle = '#cbd5e1';
+    context.strokeStyle = palette.edge;
     context.lineWidth = 1;
     context.strokeRect(.5, .5, canvas.width - 1, canvas.height - 1);
     const drawableEdges = currentState.edges.filter(edge => visible(edge.el) && edgeHasVisibleEndpoints(edge, currentState.byId));
     const edgeLimit = drawableEdges.length > 1200 ? 1200 : drawableEdges.length;
-    context.strokeStyle = 'rgba(148,163,184,.32)';
+    context.strokeStyle = palette.edge;
+    context.globalAlpha = .32;
     context.lineWidth = .75;
     for (let index = 0; index < edgeLimit; index++) {
       const edge = drawableEdges[index];
@@ -51,6 +53,7 @@
       context.lineTo(target.x, target.y);
       context.stroke();
     }
+    context.globalAlpha = 1;
     currentState.clusters.forEach(cluster => {
       if (!visible(cluster.el) || cluster.el.classList.contains('cfx-graph-cluster-expanded')) return;
       const clusterInfo = clusterMetrics(cluster, currentState.byId);
@@ -58,13 +61,13 @@
       const point = overviewPoint(metrics, clusterInfo.x, clusterInfo.y);
       context.beginPath();
       context.arc(point.x, point.y, Math.max(2.4, Math.min(6.5, clusterInfo.radius * metrics.scale)), 0, Math.PI * 2);
-      context.fillStyle = cluster.el.classList.contains('cfx-graph-selected') ? '#f59e0b' : '#0284c7';
+      context.fillStyle = cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : palette.clusterStroke;
       context.fill();
     });
     currentState.nodes.forEach(node => {
       if (!visible(node.el)) return;
       const point = overviewPoint(metrics, node.x, node.y);
-      context.fillStyle = node.el.classList.contains('cfx-graph-selected') ? '#f59e0b' : '#2563eb';
+      context.fillStyle = node.el.classList.contains('cfx-graph-selected') ? palette.selected : node.backgroundColor || '#2563eb';
       if (node.shape === 'box') context.fillRect(point.x - 2.4, point.y - 1.8, 4.8, 3.6);
       else {
         context.beginPath();
@@ -84,7 +87,7 @@
     const rectY = Math.max(0, Math.min(canvas.height, Math.min(a.y, b.y)));
     const rectW = Math.max(2, Math.min(canvas.width - rectX, Math.abs(b.x - a.x)));
     const rectH = Math.max(2, Math.min(canvas.height - rectY, Math.abs(b.y - a.y)));
-    context.strokeStyle = '#0f172a';
+    context.strokeStyle = palette.text;
     context.lineWidth = 1.4;
     context.strokeRect(rectX, rectY, rectW, rectH);
     root.dataset.cfxGraphOverviewContentWidth = metrics.width.toFixed(3);

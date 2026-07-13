@@ -22,98 +22,28 @@
       selectCanvasNode(event, best);
     });
     canvas.addEventListener('keydown', event => {
-      if (!root.classList.contains('cfx-graph-render-canvas') || !hasFeature(root, 'Selection') || (event.key !== 'Enter' && event.key !== ' ')) return;
+      if (!root.classList.contains('cfx-graph-render-canvas') || !hasFeature(root, 'Selection')) return;
+      if (moveAcceleratedGraphSelection(root, event)) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
       const state = (root.__cfxGraphState || graphState(root));
       const best = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el)) || state.clusters.find(cluster => visible(cluster.el)) || state.edges.find(edge => visible(edge.el));
       if (!best) return;
       event.preventDefault(); select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
     });
   };
-  const bindPointerInteractions = (root) => {
-    const stage = root.querySelector('.cfx-graph-stage');
-    if (!stage) return;
-    let active = null;
-    stage.addEventListener('pointerdown', event => {
-      if (event.button !== 0) return;
-      const point = scenePoint(root, event);
-      const targetNode = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"]') : null;
-      const node = targetNode ? (root.__cfxGraphState || graphState(root)).nodes.find(item => item.el === targetNode) : hitNodeAt(root, point);
-      const graphItem = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-edge-label"],[data-cfx-role="graph-cluster"]') : null;
-      const hitItem = node || graphItem || hitGraphItemAt(root, point);
-      const hitCanSelect = hasFeature(root, 'Selection') && !!hitItem;
-      const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect;
-      root.dataset.cfxGraphLastPointerX = point.x.toFixed(3);
-      root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
-      root.dataset.cfxGraphLastPointerHit = node?.id || '';
-      if (node && hasFeature(root, 'DragNodes')) {
-        event.preventDefault();
-        stage.setPointerCapture?.(event.pointerId);
-        root.dataset.cfxGraphLastPointerMode = 'node';
-        active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, fixed: attr(node.el, 'data-node-fixed'), moved: false };
-        select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
-        root.__cfxGraphPointerSelectionTick = Date.now();
-        root.__cfxGraphPointerSelectionId = node.id;
-        root.__cfxGraphSuppressClickId = node.id;
-      } else if (hasFeature(root, 'Viewport') && !hitBlocksPan) {
-        event.preventDefault();
-        stage.setPointerCapture?.(event.pointerId);
-        root.classList.add('cfx-graph-panning');
-        root.dataset.cfxGraphLastPointerMode = 'pan';
-        active = { mode: 'pan', pointerId: event.pointerId, screenX: point.screenX, screenY: point.screenY, view: viewport(root) };
-      } else {
-        root.dataset.cfxGraphLastPointerMode = 'none';
-      }
-    });
-    stage.addEventListener('pointermove', event => {
-      if (!active || active.pointerId !== event.pointerId) return;
-      const point = scenePoint(root, event);
-      if (active.mode === 'node') {
-        const state = (root.__cfxGraphState || graphState(root));
-        const node = state.nodes.find(item => item.id === active.nodeId);
-        if (!node) return;
-        const dragThreshold = 3;
-        if (!active.moved && Math.hypot(point.x - active.startX, point.y - active.startY) < dragThreshold) return;
-        if (!active.moved) {
-          active.moved = true;
-          root.dataset.cfxGraphPhysicsState = 'paused'; syncPhysicsControls(root);
-          stopWorkerPhysics(root, true);
-          stopMainPhysics(root, true);
-          root.classList.add('cfx-graph-dragging-node');
-          emit(root, 'cfxgraphdragstart', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: node.id, x: node.x, y: node.y });
-        }
-        node.el.setAttribute('data-node-fixed', 'true');
-        node.x = point.x;
-        node.y = point.y;
-        applyLayout(root, state);
-        emit(root, 'cfxgraphdrag', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: node.id, x: node.x, y: node.y });
-      } else if (active.mode === 'pan') {
-        root.__cfxGraphViewportTouched = true;
-        setViewport(root, { x: active.view.x + point.screenX - active.screenX, y: active.view.y + point.screenY - active.screenY, scale: active.view.scale });
-      }
-    });
-    const finish = (event) => {
-      if (!active || active.pointerId !== event.pointerId) return;
-      stage.releasePointerCapture?.(event.pointerId);
-      if (active.mode === 'node' && active.moved) {
-        root.__cfxGraphSuppressClickId = active.nodeId;
-        emit(root, 'cfxgraphdragend', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: active.nodeId });
-      }
-      if (active.mode === 'node' && !active.moved) {
-        const node = (root.__cfxGraphState || graphState(root)).nodes.find(item => item.id === active.nodeId);
-        if (node) node.el.setAttribute('data-node-fixed', active.fixed || 'false');
-      }
-      root.classList.remove('cfx-graph-dragging-node', 'cfx-graph-panning');
-      active = null;
-    };
-    stage.addEventListener('pointerup', finish);
-    stage.addEventListener('pointercancel', finish);
-    stage.addEventListener('wheel', event => {
-      if (!hasFeature(root, 'Viewport')) return;
+  const bindAcceleratedSvgKeyboard = (root) => {
+    const scene = root.querySelector('[data-cfx-role="graph-scene"]');
+    if (!scene) return;
+    scene.addEventListener('keydown', event => {
+      if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !hasFeature(root, 'Selection')) return;
+      if (moveAcceleratedGraphSelection(root, event)) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const state = root.__cfxGraphState || graphState(root);
+      const selected = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el));
+      if (!selected) return;
       event.preventDefault();
-      root.__cfxGraphViewportTouched = true;
-      const point = scenePoint(root, event);
-      zoomViewport(root, event.deltaY < 0 ? 1.12 : 0.88, { x: point.screenX, y: point.screenY });
-    }, { passive: false });
+      select(root, selected.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
+    });
   };
   const exportGraph = async (root, format) => {
     const name = `${attr(root, 'data-cfx-graph-id') || 'graph'}.${format}`;
@@ -163,7 +93,16 @@
   const exportSvgContent = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
     if (!svg) return '';
-    syncSvgLayout(root, (root.__cfxGraphState || graphState(root))); const clone = svg.cloneNode(true);
+    const state = (root.__cfxGraphState || graphState(root));
+    syncSvgLayout(root, state); const clone = svg.cloneNode(true);
+    materializeAcceleratedSvg(root, clone, state);
+    const computed = root.ownerDocument.defaultView?.getComputedStyle(root);
+    if (computed) {
+      for (let index = 0; index < computed.length; index++) {
+        const name = computed[index];
+        if (name.startsWith('--cfx-')) clone.style.setProperty(name, computed.getPropertyValue(name));
+      }
+    }
     ['cfx-graph-lod-compact', 'cfx-graph-lod-hide-edge-labels', 'cfx-graph-neighborhood-active', 'cfx-graph-performance-gated'].forEach(name => {
       if (root.classList.contains(name)) clone.classList.add(name);
     });
@@ -181,7 +120,13 @@
   };
   const syncPhysicsControls = (root) => {
     const pressed = root.dataset.cfxGraphPhysicsState === 'running' ? 'true' : 'false';
-    items(root, "[data-cfx-graph-action='physics']").forEach(button => button.setAttribute('aria-pressed', pressed));
+    items(root, "[data-cfx-graph-action='physics']").forEach(button => {
+      button.setAttribute('aria-pressed', pressed);
+      button.setAttribute('aria-label', pressed === 'true' ? 'Pause physics' : 'Start physics');
+      button.setAttribute('data-cfx-tooltip', pressed === 'true' ? 'Pause physics' : 'Start physics');
+      const label = button.querySelector('.cfx-graph-tool-label');
+      if (label) label.textContent = pressed === 'true' ? 'Pause' : 'Physics';
+    });
   };
   const exportGraphJson = (root) => ({
     graphId: attr(root, 'data-cfx-graph-id'),
@@ -194,7 +139,7 @@
       roles: (root.dataset.cfxGraphSelectionRoles || '').split(',').filter(Boolean),
       primary: root.dataset.cfxGraphSelectionPrimary || ''
     },
-    focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' }, clustering: { mode: attr(root, 'data-cfx-graph-cluster-mode'), adaptive: attr(root, 'data-cfx-graph-cluster-adaptive') === 'true', minimumClusterSize: Number(attr(root, 'data-cfx-graph-cluster-min-size') || 0), targetClusterSize: Number(attr(root, 'data-cfx-graph-cluster-target-size') || 0), collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true', lod: root.dataset.cfxGraphClusterLod || '', state: root.dataset.cfxGraphClusters || '', count: Number(attr(root, 'data-cfx-graph-cluster-count') || 0) }, manipulation: { enabled: attr(root, 'data-cfx-graph-manipulation') === 'true', capabilities: (attr(root, 'data-cfx-graph-manipulation-capabilities') || '').split(',').filter(Boolean) },
+    focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' }, hierarchy: { rootNodeId: root.dataset.cfxGraphHierarchyRoot || '', depth: Number(root.dataset.cfxGraphHierarchyDepth || attr(root, 'data-cfx-graph-hierarchy-depth') || 0), visibleNodeCount: Number(root.dataset.cfxGraphHierarchyVisibleNodes || attr(root, 'data-cfx-graph-node-count') || 0) }, clustering: { mode: attr(root, 'data-cfx-graph-cluster-mode'), adaptive: attr(root, 'data-cfx-graph-cluster-adaptive') === 'true', minimumClusterSize: Number(attr(root, 'data-cfx-graph-cluster-min-size') || 0), targetClusterSize: Number(attr(root, 'data-cfx-graph-cluster-target-size') || 0), collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true', lod: root.dataset.cfxGraphClusterLod || '', state: root.dataset.cfxGraphClusters || '', count: Number(attr(root, 'data-cfx-graph-cluster-count') || 0) }, manipulation: { enabled: attr(root, 'data-cfx-graph-manipulation') === 'true', capabilities: (attr(root, 'data-cfx-graph-manipulation-capabilities') || '').split(',').filter(Boolean) },
     performance: {
       state: root.dataset.cfxGraphPerformance || '', budget: root.dataset.cfxGraphPerformanceBudget || '',
       samples: Number(root.dataset.cfxGraphPerformanceSamples || 0),
@@ -209,10 +154,29 @@
       sampleBudgetMs: Number(root.dataset.cfxGraphPerformanceSampleBudgetMs || 0),
       thread: root.dataset.cfxGraphPerformanceThread || '', acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
     },
-    nodes: (root.__cfxGraphState || graphState(root)).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level')), kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el.querySelector('image'), 'aria-label'), style: { backgroundColor: attr(node.el, 'data-node-background-color'), borderColor: attr(node.el, 'data-node-border-color'), labelColor: attr(node.el, 'data-node-label-color'), labelBackgroundColor: attr(node.el, 'data-node-label-background-color'), shadow: attr(node.el, 'data-node-shadow') === 'true' }, hidden: node.el.classList.contains('cfx-graph-hidden') || node.el.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
+    nodes: (root.__cfxGraphState || graphState(root)).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), secondaryLabel: attr(node.el, 'data-node-secondary-label'), badge: attr(node.el, 'data-node-badge'), parentId: attr(node.el, 'data-node-parent'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level')), kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el, 'data-node-image-alt') || attr(node.el.querySelector('image'), 'aria-label'), style: { backgroundColor: attr(node.el, 'data-node-background-color'), borderColor: attr(node.el, 'data-node-border-color'), labelColor: attr(node.el, 'data-node-label-color'), labelBackgroundColor: attr(node.el, 'data-node-label-background-color'), shadow: attr(node.el, 'data-node-shadow') === 'true' }, hidden: node.el.classList.contains('cfx-graph-hidden') || node.el.classList.contains('cfx-graph-cluster-collapsed-member') || node.el.classList.contains('cfx-graph-hierarchy-hidden'), search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
     edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), routePoints: routePoints(attr(edge, 'data-edge-route-points')), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', dashPattern: attr(edge, 'data-edge-dash-pattern'), showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', sourceArrow: attr(edge, 'data-edge-source-arrow') === 'true', targetArrow: attr(edge, 'data-edge-target-arrow') === 'true', physics: attr(edge, 'data-edge-physics') !== 'false', style: { color: attr(edge, 'data-edge-color'), labelColor: attr(edge, 'data-edge-label-color'), width: Number(attr(edge, 'data-edge-width') || 0) }, hidden: edge.classList.contains('cfx-graph-hidden') || edge.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(edge, 'data-cfx-search'), metadata: metadataDetail(edge) })),
-    clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: cluster.classList.contains('cfx-graph-hidden'), search: attr(cluster, 'data-cfx-search'), metadata: metadataDetail(cluster) }))
+    clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), parentClusterId: attr(cluster, 'data-cluster-parent'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: cluster.classList.contains('cfx-graph-hidden') || cluster.classList.contains('cfx-graph-hierarchy-hidden'), search: attr(cluster, 'data-cfx-search'), metadata: metadataDetail(cluster) }))
   });
+  const bindCommandMenus = (root) => {
+    const menus = Array.from(root.querySelectorAll('.cfx-graph-command-menu'));
+    if (!menus.length) return;
+    root.addEventListener('pointerdown', event => menus.forEach(menu => {
+      if (menu.open && !menu.contains(event.target)) menu.removeAttribute('open');
+    }));
+    menus.forEach(menu => {
+      const summary = menu.querySelector('summary');
+      const sync = () => summary?.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+      menu.addEventListener('toggle', sync);
+      sync();
+      menu.addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || !menu.open) return;
+        event.preventDefault();
+        menu.removeAttribute('open');
+        summary?.focus();
+      });
+    });
+  };
   const downloadExport = (name, mime, content) => {
     const isDataUrl = content.startsWith('data:');
     const url = isDataUrl ? content : URL.createObjectURL(new Blob([content], { type: mime }));
@@ -228,19 +192,23 @@
   };
   const bind = (root) => {
     root.setAttribute('data-cfx-graph-bound', 'true');
+    bindGraphTheme(root);
     indexHitTesting(root, graphState(root));
     if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     else {
-      const useCanvas = attr(root, 'data-cfx-graph-renderer') === 'canvas';
-      root.classList.toggle('cfx-graph-render-canvas', useCanvas);
-      root.classList.toggle('cfx-graph-render-svg', !useCanvas);
-      root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg'; syncRendererAccessibility(root, useCanvas);
+      const configured = attr(root, 'data-cfx-graph-renderer');
+      const renderer = configured === 'webgl' && webGlAvailable(root) ? 'webgl' : configured === 'canvas' || configured === 'webgl' ? 'canvas' : 'svg';
+      root.classList.toggle('cfx-graph-render-canvas', renderer === 'canvas');
+      root.classList.toggle('cfx-graph-render-webgl', renderer === 'webgl');
+      root.classList.toggle('cfx-graph-render-svg', renderer === 'svg');
+      root.dataset.cfxGraphRendererActive = renderer; syncRendererAccessibility(root, renderer);
       syncGraphItemTabStops(root);
     }
+    applySemanticZoom(root, viewport(root).scale);
     performanceGate(root);
     if (hasFeature(root, 'Clustering')) {
-      if (attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true' || (hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true')) applyClusterState(root, true);
-      else applyClusterState(root, undefined);
+      if (attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true' || (hasFeature(root, 'LevelOfDetail') && attr(root, 'data-cfx-lod-collapse-clusters') === 'true')) applyClusterState(root, true, undefined, { reheat: false });
+      else applyClusterState(root, undefined, undefined, { reheat: false });
     } else {
       items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
         cluster.classList.add('cfx-graph-cluster-expanded');
@@ -252,6 +220,7 @@
     }
     syncClusterControls(root);
     syncFocusControls(root);
+    if (hasFeature(root, 'HierarchyNavigation')) applyHierarchyView(root, attr(root, 'data-cfx-graph-hierarchy-root'), num(root, 'data-cfx-graph-hierarchy-depth', 2), { fit: false, restartPhysics: false });
     if (hasFeature(root, 'Viewport')) {
       fitViewport(root);
       const stage = root.querySelector('.cfx-graph-stage');
@@ -270,33 +239,22 @@
       }
     }
     bindCanvasHitTesting(root);
+    bindWebGlHitTesting(root);
+    bindAcceleratedSvgKeyboard(root);
     bindPointerInteractions(root);
     bindOverview(root);
-    items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
-      item.addEventListener('click', event => {
-        const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-        if (id && root.__cfxGraphSuppressClickId === id) {
-          root.__cfxGraphSuppressClickId = '';
-          event.preventDefault();
-          return;
-        }
-        if (id && root.__cfxGraphPointerSelectionId === id && Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
-        select(root, item, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
-      });
-      item.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          select(root, item, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
-        }
-      });
-    });
-    const search = root.querySelector('[data-cfx-graph-search]');
-    if (search) search.addEventListener('input', () => applyFilters(root));
+    bindHierarchyInteractions(root);
+    bindPhysicsConfigurator(root);
+    bindCommandMenus(root);
+    items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => bindGraphItemSelection(root, item));
+    bindGraphSearch(root);
     items(root, '[data-cfx-graph-filter]').forEach(filter => filter.addEventListener('change', () => applyFilters(root)));
     items(root, '[data-cfx-graph-action]').forEach(button => {
       button.addEventListener('click', () => {
         const action = attr(button, 'data-cfx-graph-action');
         if (action === 'clusters') applyClusterState(root, root.dataset.cfxGraphClusters !== 'collapsed');
+        if (action === 'hierarchy-home') applyHierarchyView(root, '', Number(root.dataset.cfxGraphHierarchyDepth || num(root, 'data-cfx-graph-hierarchy-depth', 2)));
+        if (action === 'hierarchy-up') navigateHierarchyUp(root);
         if (action === 'focus') toggleNeighborhoodFocus(root);
         if (action === 'clear-selection') clearSelection(root);
         if (action === 'fit' && hasFeature(root, 'Viewport')) {
@@ -314,13 +272,10 @@
         if (action === 'export-svg') void exportGraph(root, 'svg');
         if (action === 'export-png') void exportGraph(root, 'png');
         if (action === 'export-json') void exportGraph(root, 'json');
+        if (action.startsWith('export-')) button.closest('details')?.removeAttribute('open');
         if (action === 'physics') {
           const running = root.dataset.cfxGraphPhysicsState === 'running';
-          if (running) {
-            root.dataset.cfxGraphPhysicsState = 'paused';
-            stopWorkerPhysics(root, true);
-            stopMainPhysics(root, true);
-          }
+          if (running) pausePhysics(root);
           if (!running) startPhysics(root);
           syncPhysicsControls(root);
         }
@@ -330,8 +285,9 @@
       });
     });
     updateSelectionState(root);
-    if (hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization')) startPhysics(root);
+    if (hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization') && attr(root, 'data-cfx-physics-stabilization-enabled') !== 'false') startPhysics(root, { reason: 'initial-stabilization' });
     syncPhysicsControls(root);
+    syncPhysicsConfigurator(root);
     emit(root, 'cfxgraphready', {
       graphId: attr(root, 'data-cfx-graph-id'),
       renderer: root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer'),

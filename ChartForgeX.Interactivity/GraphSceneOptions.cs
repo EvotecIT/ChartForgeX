@@ -10,6 +10,9 @@ public sealed class GraphSceneOptions {
     /// <summary>Gets graph physics settings for adapters that support runtime or prepared layouts.</summary>
     public GraphPhysicsOptions Physics { get; } = new();
 
+    /// <summary>Gets node dragging and topology-change interaction behavior.</summary>
+    public GraphInteractionOptions Interaction { get; } = new();
+
     /// <summary>Gets large-graph level-of-detail thresholds.</summary>
     public GraphLevelOfDetailOptions LevelOfDetail { get; } = new();
 
@@ -24,6 +27,9 @@ public sealed class GraphSceneOptions {
 
     /// <summary>Gets opt-in graph editing and manipulation capabilities for adapters that support authoring workflows.</summary>
     public GraphManipulationOptions Manipulation { get; } = new();
+
+    /// <summary>Gets hierarchy navigation settings for adapters that support top-level and drill-down graph views.</summary>
+    public GraphHierarchyOptions Hierarchy { get; } = new();
 
     /// <summary>
     /// Determines whether all bits in the requested feature set are enabled.
@@ -105,6 +111,9 @@ public enum GraphSceneFeatures {
 
     /// <summary>The adapter can add, edit, delete, or persist graph structure through an opt-in authoring surface.</summary>
     Manipulation = 16384,
+
+    /// <summary>The adapter can navigate explicit parent-child relationships as top-level and drill-down views.</summary>
+    HierarchyNavigation = 32768,
 
     /// <summary>Common graph explorer surface for dependency-free visual exploration.</summary>
     Explorer = Selection | MultiSelection | Search | Filtering | Viewport | NeighborhoodFocus | Clustering | LevelOfDetail

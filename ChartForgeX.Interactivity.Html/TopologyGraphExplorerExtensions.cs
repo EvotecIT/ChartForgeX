@@ -24,6 +24,7 @@ public static class TopologyGraphExplorerExtensions {
         configure?.Invoke(options);
 
         var ids = TopologyGraphIdMap.Create(chart);
+        var iconCatalog = options.IconCatalog ?? TopologyIconCatalog.Default();
         var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(chart));
         scene.Subtitle = chart.Subtitle;
         if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
@@ -41,8 +42,10 @@ public static class TopologyGraphExplorerExtensions {
 
         var groupIds = new HashSet<string>(chart.Groups.Select(group => ids.GroupId(group.Id)), StringComparer.Ordinal);
         foreach (var node in chart.Nodes) {
-            scene.Nodes.Add(ToGraphNode(chart, node, groupIds, options, ids));
+            scene.Nodes.Add(ToGraphNode(chart, node, groupIds, options, ids, iconCatalog));
         }
+
+        if (scene.Nodes.Any(node => !string.IsNullOrWhiteSpace(node.ParentId))) scene.Options.Enable(GraphSceneFeatures.HierarchyNavigation);
 
         var topologyNodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         for (var index = 0; index < chart.Edges.Count; index++) {
@@ -97,21 +100,28 @@ public static class TopologyGraphExplorerExtensions {
         return chart.ToGraphScene(configureScene).ToGraphExplorerHtmlFragment(configureHtml);
     }
 
-    private static GraphSceneNode ToGraphNode(TopologyChart chart, TopologyNode node, ISet<string> groupIds, TopologyGraphSceneOptions options, TopologyGraphIdMap ids) {
+    private static GraphSceneNode ToGraphNode(TopologyChart chart, TopologyNode node, ISet<string> groupIds, TopologyGraphSceneOptions options, TopologyGraphIdMap ids, TopologyIconCatalog iconCatalog) {
         var groupId = string.IsNullOrWhiteSpace(node.GroupId) ? null : ids.GroupId(node.GroupId!);
+        var icon = string.IsNullOrWhiteSpace(node.IconId) ? null : iconCatalog.Resolve(node.IconId);
+        var artwork = ResolveArtwork(node, icon, options);
+        var imageUrl = ArtworkImageUrl(artwork);
         var graphNode = new GraphSceneNode {
             Id = ids.NodeId(node.Id),
             Label = node.Label,
+            SecondaryLabel = node.Subtitle,
+            BadgeText = node.Badge,
             Kind = Token(node.Kind),
             GroupId = groupId,
             Status = Token(node.Status),
-            Shape = node.DisplayMode == TopologyNodeDisplayMode.Hidden ? GraphNodeShape.Text : NodeShape(node),
+            Shape = node.DisplayMode == TopologyNodeDisplayMode.Hidden ? GraphNodeShape.Text : NodeShape(node, icon, imageUrl),
             Size = NodeSize(node),
-            IconText = FirstText(node.Symbol, node.Badge),
+            IconText = FirstText(node.Symbol, icon?.Symbol),
+            ImageUrl = imageUrl,
             ImageAlt = node.Label,
             Fixed = ShouldPreserveCoordinates(chart, node, options),
             Hidden = node.DisplayMode == TopologyNodeDisplayMode.Hidden
         };
+        ApplyHierarchy(node, graphNode, options, ids);
         if (options.IncludeGroupsAsClusters && options.UseGroupsAsClusterIds && !string.IsNullOrWhiteSpace(groupId) && groupIds.Contains(groupId!)) graphNode.ClusterId = groupId;
         if (ShouldPreserveCoordinates(chart, node, options)) {
             graphNode.X = node.X + node.Width / 2;
@@ -119,10 +129,11 @@ public static class TopologyGraphExplorerExtensions {
         }
 
         var theme = chart.Theme ?? TopologyTheme.Light();
-        var accentColor = string.IsNullOrWhiteSpace(node.Color) ? theme.StatusColor(node.Status) : node.Color!.Trim();
+        var accentColor = FirstText(node.Color, icon?.Color, theme.StatusColor(node.Status))!;
         graphNode.Style.BackgroundColor = TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
         graphNode.Style.BorderColor = accentColor;
         graphNode.Style.LabelColor = accentColor;
+        graphNode.Style.Shadow = node.DisplayMode is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.Artwork;
 
         AddMetadata(graphNode.Metadata, "topology.id", node.Id);
         AddMetadata(graphNode.Metadata, "topology.groupId", node.GroupId);
@@ -130,6 +141,8 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.kind", node.Kind.ToString());
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
         AddMetadata(graphNode.Metadata, "topology.iconId", node.IconId);
+        AddMetadata(graphNode.Metadata, "topology.iconQualifiedId", icon?.QualifiedId);
+        AddMetadata(graphNode.Metadata, "topology.iconCategory", icon?.Category);
         AddMetadata(graphNode.Metadata, "topology.badge", node.Badge);
         AddMetadata(graphNode.Metadata, "topology.href", node.Href);
         AddMetadata(graphNode.Metadata, "topology.tooltip", node.Tooltip);
@@ -211,9 +224,84 @@ public static class TopologyGraphExplorerExtensions {
         scene.Options.Manipulation.EnableEditing();
     }
 
-    private static GraphNodeShape NodeShape(TopologyNode node) {
+    private static GraphNodeShape NodeShape(TopologyNode node, TopologyIconDefinition? icon, string? imageUrl) {
+        if (!string.IsNullOrWhiteSpace(imageUrl)) return node.DisplayMode == TopologyNodeDisplayMode.Artwork ? GraphNodeShape.RectangularImage : GraphNodeShape.Image;
+        if (icon != null) {
+            switch (icon.Shape) {
+                case TopologyIconShape.Database:
+                    return GraphNodeShape.Database;
+                case TopologyIconShape.Cloud:
+                case TopologyIconShape.Domain:
+                case TopologyIconShape.Forest:
+                case TopologyIconShape.Site:
+                    return GraphNodeShape.Ellipse;
+                case TopologyIconShape.Certificate:
+                    return GraphNodeShape.Diamond;
+                case TopologyIconShape.Team:
+                    return GraphNodeShape.Star;
+                case TopologyIconShape.Network:
+                case TopologyIconShape.NetworkSegment:
+                case TopologyIconShape.NetworkSwitch:
+                case TopologyIconShape.Router:
+                case TopologyIconShape.Firewall:
+                case TopologyIconShape.LoadBalancer:
+                    return GraphNodeShape.Square;
+                case TopologyIconShape.Server:
+                case TopologyIconShape.Storage:
+                case TopologyIconShape.DomainController:
+                case TopologyIconShape.ReadOnlyDomainController:
+                case TopologyIconShape.Application:
+                case TopologyIconShape.Service:
+                case TopologyIconShape.Desktop:
+                case TopologyIconShape.Laptop:
+                    return GraphNodeShape.Box;
+            }
+        }
+
         var display = node.DisplayMode ?? TopologyNodeDisplayMode.Card;
         return display == TopologyNodeDisplayMode.Dot || display == TopologyNodeDisplayMode.Icon ? GraphNodeShape.Circle : GraphNodeShape.Box;
+    }
+
+    private static GraphNodeShape NodeShape(TopologyNode node) => NodeShape(node, null, null);
+
+    private static void ApplyHierarchy(TopologyNode source, GraphSceneNode target, TopologyGraphSceneOptions options, TopologyGraphIdMap ids) {
+        if (!options.PreserveHierarchyMetadata) return;
+        if (source.Metadata.TryGetValue("hierarchy.parentId", out var parentId) && ids.TryNodeId(parentId, out var graphParentId)) target.ParentId = graphParentId;
+        if (TryHierarchyLevel(source.Metadata, out var level)) target.Level = level;
+    }
+
+    private static bool TryHierarchyLevel(IReadOnlyDictionary<string, string> metadata, out int level) {
+        if (metadata.TryGetValue("hierarchy.level", out var hierarchyLevel) && int.TryParse(hierarchyLevel, NumberStyles.Integer, CultureInfo.InvariantCulture, out level)) return true;
+        if (metadata.TryGetValue("layer", out var layer) && int.TryParse(layer, NumberStyles.Integer, CultureInfo.InvariantCulture, out level)) return true;
+        level = 0;
+        return false;
+    }
+
+    private static TopologyIconArtwork? ResolveArtwork(TopologyNode node, TopologyIconDefinition? icon, TopologyGraphSceneOptions options) {
+        if (!options.IncludeResolvedIconArtwork) return null;
+        if (node.Artwork != null && node.Artwork.IsSafe) return node.Artwork;
+        return icon?.Artwork != null && icon.Artwork.IsSafe ? icon.Artwork : null;
+    }
+
+    private static string? ArtworkImageUrl(TopologyIconArtwork? artwork) {
+        if (artwork == null) return null;
+        if (artwork.HasImageHref && TopologyIconArtwork.IsSafeImageHref(artwork.ImageHref)) return artwork.ImageHref!.Trim();
+        if (!artwork.HasSvgBody || !TopologyIconArtwork.IsSafeSvgFragment(artwork.SvgBody)) return null;
+        var viewBox = SafeViewBox(artwork.SvgViewBox);
+        var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" + viewBox + "\">" + artwork.SvgBody + "</svg>";
+        return "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svg));
+    }
+
+    private static string SafeViewBox(string? value) {
+        var parts = (value ?? string.Empty).Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 4) return "0 0 24 24";
+        var numbers = new double[4];
+        for (var index = 0; index < parts.Length; index++) {
+            if (!double.TryParse(parts[index], NumberStyles.Float, CultureInfo.InvariantCulture, out numbers[index]) || double.IsNaN(numbers[index]) || double.IsInfinity(numbers[index])) return "0 0 24 24";
+        }
+
+        if (numbers[2] <= 0 || numbers[3] <= 0) return "0 0 24 24";
+        return string.Join(" ", numbers.Select(number => number.ToString("0.###", CultureInfo.InvariantCulture)));
     }
 
     private static double NodeSize(TopologyNode node) {
@@ -333,6 +421,8 @@ public static class TopologyGraphExplorerExtensions {
         }
 
         public string NodeId(string id) => _nodeIds[id];
+
+        public bool TryNodeId(string id, out string graphNodeId) => _nodeIds.TryGetValue(id, out graphNodeId!);
 
         public string EdgeId(int index) => _edgeIds[index];
 

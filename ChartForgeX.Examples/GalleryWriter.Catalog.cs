@@ -214,7 +214,8 @@ public static partial class GalleryWriter {
             "executive-interactive-dashboard",
             "identity-risk-graph-explorer",
             "vis-network-parity-hierarchy",
-            "enterprise-access-graph-benchmark"),
+            "enterprise-access-graph-benchmark",
+            "global-estate-premium-topology"),
         new(
             "Visual Systems",
             "Themes, brand kits, palettes, fonts, and pictorial symbol picker outputs.",

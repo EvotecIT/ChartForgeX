@@ -24,6 +24,18 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--graph-scale-only")) {
+            GraphExplorerScaleExamples.Write(output);
+            Console.WriteLine("Generated graph explorer scale baselines in: " + output);
+            return true;
+        }
+
+        if (HasArg(args, "--graph-explorer-only")) {
+            GraphExplorerExamples.Write(output);
+            Console.WriteLine("Generated graph explorer examples in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--dashboard-patterns-only")) {
             DashboardPatternExamples.Write(output, pngOutputScale);
             GalleryWriter.Write(output);

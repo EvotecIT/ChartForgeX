@@ -39,6 +39,7 @@ internal sealed class SvgRasterStyle {
     public IReadOnlyList<double>? StrokeDashArray { get; set; }
     public string FillRule { get; set; } = "nonzero";
     public string ClipRule { get; set; } = "nonzero";
+    public string? ClipPath { get; set; }
     public double FontSize { get; set; }
     public string FontWeight { get; set; } = "normal";
     public string TextAnchor { get; set; } = "start";
@@ -117,6 +118,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "fill");
         AddAttribute(declarations, element, "fill-rule");
         AddAttribute(declarations, element, "clip-rule");
+        AddAttribute(declarations, element, "clip-path");
         AddAttribute(declarations, element, "stroke");
         AddAttribute(declarations, element, "stroke-width");
         AddAttribute(declarations, element, "stroke-linecap");
@@ -174,6 +176,9 @@ internal sealed class SvgRasterStyle {
                 break;
             case "clip-rule":
                 style.ClipRule = value.Trim();
+                break;
+            case "clip-path":
+                style.ClipPath = value.Trim();
                 break;
             case "stroke":
                 style.Stroke = SvgRasterPaint.Parse(value, style.Color, style.Stroke);

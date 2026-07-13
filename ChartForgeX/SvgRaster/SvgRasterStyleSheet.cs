@@ -64,7 +64,8 @@ internal sealed class SvgRasterStyleSheet {
 
     private static int FindCloseBrace(string value, int start) {
         var quote = '\0';
-        var depth = 0;
+        var parentheses = 0;
+        var braces = 0;
         for (var i = start; i < value.Length; i++) {
             var ch = value[i];
             if (quote != '\0') {
@@ -77,9 +78,13 @@ internal sealed class SvgRasterStyleSheet {
                 continue;
             }
 
-            if (ch == '(') depth++;
-            else if (ch == ')' && depth > 0) depth--;
-            else if (ch == '}' && depth == 0) return i;
+            if (ch == '(') parentheses++;
+            else if (ch == ')' && parentheses > 0) parentheses--;
+            else if (parentheses == 0 && ch == '{') braces++;
+            else if (parentheses == 0 && ch == '}') {
+                if (braces == 0) return i;
+                braces--;
+            }
         }
 
         return -1;

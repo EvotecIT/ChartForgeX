@@ -5,7 +5,7 @@ public static partial class GalleryWriter {
     private static void WriteQualityDashboard(string output, ComparisonAsset[] pairs, int matchingPairs, BaselineSummary baseline) {
         var healthySvgs = pairs.Count(pair => pair.SvgHealth.IsHealthy);
         var healthyPngs = pairs.Count(pair => pair.PngHealth.IsHealthy);
-        var healthyHtmls = pairs.Count(pair => pair.HtmlHealth.IsHealthy);
+        var healthyHtmls = pairs.Count(pair => pair.HtmlPasses);
         var warningCount = pairs.Sum(pair => pair.Warnings.Length);
         var cleanPairs = pairs.Count(pair => pair.Warnings.Length == 0);
         var assigned = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

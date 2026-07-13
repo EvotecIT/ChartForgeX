@@ -1,8 +1,16 @@
   const setNodePosition = (node) => {
-    node.el.setAttribute('transform', `translate(${node.x.toFixed(3)} ${node.y.toFixed(3)})`);
+    const transform = `translate(${node.x.toFixed(3)} ${node.y.toFixed(3)})`;
+    node.el.setAttribute('transform', transform);
+    node.detailsEl?.setAttribute('transform', transform);
     node.el.setAttribute('data-node-x', node.x.toFixed(3));
     node.el.setAttribute('data-node-y', node.y.toFixed(3));
   };
+  const syncNodeDetailLayers = (state) => state.nodes.forEach(node => {
+    if (!node.detailsEl) return;
+    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden', 'cfx-graph-neighborhood-dim', 'cfx-graph-neighborhood-related', 'cfx-graph-neighborhood-primary', 'cfx-graph-selected'].forEach(name => node.detailsEl.classList.toggle(name, node.el.classList.contains(name)));
+    node.detailsEl.setAttribute('data-cfx-status', attr(node.el, 'data-cfx-status'));
+    setNodePosition(node);
+  });
   const updateEdges = (root, edges) => {
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     const state = root.__cfxGraphState || graphState(root);
@@ -20,11 +28,11 @@
     });
   };
   const updateClusters = (clusters, byId) => clusters.forEach(cluster => {
-    const members = cluster.nodeIds.map(id => byId.get(id)).filter(Boolean);
-    if (!members.length) return;
-    const x = members.reduce((sum, node) => sum + node.x, 0) / members.length;
-    const y = members.reduce((sum, node) => sum + node.y, 0) / members.length;
-    cluster.el.setAttribute('transform', `translate(${x.toFixed(3)} ${y.toFixed(3)})`);
+    const metrics = clusterMetrics(cluster, byId);
+    if (!metrics) return;
+    cluster.el.setAttribute('transform', `translate(${metrics.x.toFixed(3)} ${metrics.y.toFixed(3)})`);
+    const circle = cluster.el.querySelector('circle');
+    if (circle) circle.setAttribute('r', metrics.radius.toFixed(3));
   });
   const syncSvgLayout = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
@@ -33,42 +41,57 @@
     updateClusters(state.clusters, byId);
   };
   const applyLayout = (root, state) => {
-    if (root.dataset.cfxGraphRendererActive !== 'canvas') syncSvgLayout(root, state);
+    if (root.dataset.cfxGraphRendererActive === 'svg') syncSvgLayout(root, state);
     indexHitTesting(root, state);
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
   };
-  const syncRendererAccessibility = (root, useCanvas) => {
+  const syncRendererAccessibility = (root, renderer) => {
     const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
+    const webgl = root.querySelector('[data-cfx-role="graph-webgl"]');
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
-    if (canvas) canvas.setAttribute('aria-hidden', useCanvas ? 'false' : 'true');
-    if (svg) svg.setAttribute('aria-hidden', useCanvas ? 'true' : 'false');
+    if (canvas) canvas.setAttribute('aria-hidden', renderer === 'canvas' ? 'false' : 'true');
+    if (webgl) webgl.setAttribute('aria-hidden', renderer === 'webgl' ? 'false' : 'true');
+    if (svg) svg.setAttribute('aria-hidden', renderer === 'svg' ? 'false' : 'true');
   };
   const applyLod = (root) => {
-    const nodes = Number(attr(root, 'data-cfx-graph-node-count'));
-    const edges = Number(attr(root, 'data-cfx-graph-edge-count'));
+    const state = root.__cfxGraphState || graphState(root);
+    const nodes = state.nodes.filter(node => visible(node.el)).length;
+    const edges = state.edges.filter(edge => visible(edge.el)).length;
+    const totalNodes = Number(attr(root, 'data-cfx-graph-node-count'));
+    const totalEdges = Number(attr(root, 'data-cfx-graph-edge-count'));
     const compact = nodes >= num(root, 'data-cfx-lod-compact-node-threshold', 500);
     const hideEdgeLabels = edges >= num(root, 'data-cfx-lod-hide-edge-labels-threshold', 250);
     const preferCanvas = nodes >= num(root, 'data-cfx-lod-canvas-threshold', 1200) || (edges > num(root, 'data-cfx-performance-max-svg-edges', 3000) && edges <= num(root, 'data-cfx-performance-max-canvas-edges', 12000));
+    const preferWebGl = nodes >= num(root, 'data-cfx-lod-webgl-threshold', 3000) || edges > num(root, 'data-cfx-performance-max-canvas-edges', 12000);
     const configured = attr(root, 'data-cfx-graph-renderer');
-    const normalizedRenderer = configured === 'webgl' ? 'canvas' : configured;
-    const useCanvas = normalizedRenderer === 'canvas' || (normalizedRenderer === 'svg' && preferCanvas && attr(root, 'data-cfx-graph-canvas-fallback') !== 'false');
+    const allowFallback = attr(root, 'data-cfx-graph-canvas-fallback') !== 'false';
+    let renderer = configured === 'canvas' ? 'canvas' : configured === 'webgl' && webGlAvailable(root) ? 'webgl' : configured === 'webgl' ? 'canvas' : 'svg';
+    if (configured === 'svg' && allowFallback && preferWebGl && webGlAvailable(root)) renderer = 'webgl';
+    else if (configured === 'svg' && allowFallback && preferCanvas) renderer = 'canvas';
+    const useCanvas = renderer === 'canvas';
+    const useWebGl = renderer === 'webgl';
     root.classList.toggle('cfx-graph-lod-compact', compact);
     root.classList.toggle('cfx-graph-lod-hide-edge-labels', hideEdgeLabels);
     root.classList.toggle('cfx-graph-render-canvas', useCanvas);
-    root.classList.toggle('cfx-graph-render-svg', !useCanvas);
-    root.dataset.cfxGraphLod = preferCanvas ? 'canvas-preferred' : compact ? 'compact' : hideEdgeLabels ? 'edge-labels-hidden' : 'full';
+    root.classList.toggle('cfx-graph-render-webgl', useWebGl);
+    root.classList.toggle('cfx-graph-render-svg', renderer === 'svg');
+    root.dataset.cfxGraphLod = preferWebGl ? 'webgl-preferred' : preferCanvas ? 'canvas-preferred' : compact ? 'compact' : hideEdgeLabels ? 'edge-labels-hidden' : 'full';
     root.dataset.cfxGraphClusterLod = nodes >= num(root, 'data-cfx-lod-cluster-threshold', Number.POSITIVE_INFINITY) ? 'threshold' : 'none';
-    root.dataset.cfxGraphRendererActive = useCanvas ? 'canvas' : 'svg';
-    syncRendererAccessibility(root, useCanvas);
+    root.dataset.cfxGraphRendererActive = renderer;
+    root.dataset.cfxGraphRendererFallback = configured === 'webgl' && renderer !== 'webgl' ? renderer : '';
+    syncRendererAccessibility(root, renderer);
     syncGraphItemTabStops(root);
-    emit(root, 'cfxgraphlod', { graphId: attr(root, 'data-cfx-graph-id'), mode: root.dataset.cfxGraphLod, renderer: root.dataset.cfxGraphRendererActive, nodes, edges });
+    root.dataset.cfxGraphVisibleNodes = String(nodes);
+    root.dataset.cfxGraphVisibleEdges = String(edges);
+    emit(root, 'cfxgraphlod', { graphId: attr(root, 'data-cfx-graph-id'), mode: root.dataset.cfxGraphLod, renderer: root.dataset.cfxGraphRendererActive, nodes, edges, totalNodes, totalEdges });
   };
-  const applyClusterState = (root, collapsed) => {
+  const applyClusterState = (root, collapsed, clusterId, options) => {
     const state = graphState(root);
     const hiddenNodeIds = new Set();
     state.clusters.forEach(cluster => {
-      const isCollapsed = collapsed === undefined ? cluster.collapsed : collapsed;
+      const applies = !clusterId || cluster.id === clusterId;
+      const isCollapsed = applies && collapsed !== undefined ? collapsed : cluster.collapsed;
       cluster.collapsed = isCollapsed;
       cluster.el.classList.toggle('cfx-graph-cluster-expanded', !isCollapsed);
       cluster.el.setAttribute('data-cluster-collapsed', isCollapsed ? 'true' : 'false');
@@ -88,8 +111,9 @@
     items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => label.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdgeIds.has(attr(label, 'data-edge-label-for'))));
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';
     syncGraphItemTabStops(root); clearHiddenSelections(root); if (typeof syncClusterControls === 'function') syncClusterControls(root);
-    emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
+    emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), clusterId: clusterId || '', collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
     applyFilters(root); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
+    if (options?.reheat !== false && attr(root, 'data-cfx-graph-reheat-cluster') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'cluster-change', { rebuild: true, fit: false });
   };
   const metadataDetail = (node) => {
     const raw = attr(node, 'data-cfx-metadata');
@@ -105,6 +129,8 @@
       graphId: attr(root, 'data-cfx-graph-id'),
       id: attr(node, 'data-node-id') || attr(node, 'data-edge-id') || attr(node, 'data-cluster-id'),
       label: attr(node, 'data-node-label') || attr(node, 'data-edge-label') || attr(node, 'data-cluster-label'),
+      secondaryLabel: attr(node, 'data-node-secondary-label'),
+      badge: attr(node, 'data-node-badge'),
       kind: attr(node, 'data-node-kind') || attr(node, 'data-edge-kind') || attr(node, 'data-cluster-kind'),
       status: attr(node, 'data-cfx-status'),
       role: attr(node, 'data-cfx-role'),
@@ -113,6 +139,7 @@
   const selectedItems = (root) => items(root, '.cfx-graph-selected').map(node => selectionDetail(root, node));
   const updateSelectionState = (root) => {
     syncSelectedEdgeLabels(root); const details = selectedItems(root);
+    items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => item.setAttribute('aria-pressed', item.classList.contains('cfx-graph-selected') ? 'true' : 'false'));
     const primaryNode = details.find(item => item.role === 'graph-node');
     root.dataset.cfxGraphSelectionCount = String(details.length);
     root.dataset.cfxGraphSelectionIds = details.map(item => item.id).join(',');
@@ -152,6 +179,8 @@
     const state = graphState(root);
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
+    const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
+    if (announcer) announcer.textContent = node.classList.contains('cfx-graph-selected') ? `${detail.label || detail.id} selected. ${details.length} item${details.length === 1 ? '' : 's'} selected.` : `${detail.label || detail.id} removed from selection.`;
     emit(root, 'cfxgraphselect', { ...detail, selected: node.classList.contains('cfx-graph-selected'), selectionCount: details.length });
   };
   const selectedGraphNodeId = (root) => {
@@ -286,9 +315,13 @@
       cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !hiddenMemberHit);
     });
     clearHiddenSelections(root);
+    const actualVisibleNodes = items(root, '[data-cfx-role="graph-node"]').filter(node => visible(node));
+    const searchStatus = root.querySelector('[data-cfx-role="graph-search-status"]');
+    root.dataset.cfxGraphSearchMatches = String(actualVisibleNodes.length);
+    if (searchStatus) searchStatus.textContent = query ? `${actualVisibleNodes.length} match${actualVisibleNodes.length === 1 ? '' : 'es'}` : '';
     const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
     if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode);
     else { const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
-    emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: visibleNodes.size });
+    emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: actualVisibleNodes.length });
   };
 

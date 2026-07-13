@@ -135,11 +135,19 @@ Useful review entry points:
 - `index.html` - full generated gallery.
 - `catalog.html` - examples grouped by chart family.
 - `topology-demo.html` - focused topology demo hub with the scenario route explorer.
-- `enterprise-access-graph-benchmark.html` - large graph explorer benchmark with 360 nodes, 720 directed edges, Canvas fallback, drag, pan, zoom, LOD, and telemetry.
+- `global-estate-premium-topology.html` - image-backed hierarchy with badges, secondary labels, status overlays, nested clusters, and drill navigation.
+- `graph-2000-interactive.html` plus `graph-2000-stage-01-overview.*` through `graph-2000-stage-05-full.*` - one 2,001-object hierarchy as an interactive WebGL/Barnes-Hut explorer and deterministic static report stages.
+- `enterprise-access-graph-benchmark.html` - accelerated graph explorer benchmark with 360 nodes, 720 directed edges, compact-document rendering, drag, pan, zoom, LOD, and telemetry.
 - `svg-png-comparison.html` - side-by-side renderer parity review.
 - `quality-dashboard.html` - visual health summary.
 
 Example cards link HTML, SVG, PNG, and C# snippets when a checked source sample exists.
+
+For explicit 1k, 5k, and 10k browser scale fixtures, run:
+
+```powershell
+dotnet run --project .\ChartForgeX.Examples\ChartForgeX.Examples.csproj -c Release -- --graph-scale-only
+```
 
 ## Install
 
@@ -158,7 +166,7 @@ Optional visual artifact, markup, Mermaid, and interaction support is split into
 | `ChartForgeX.Markup` | Markdown-friendly v1 ChartForgeX visual fences for chart, timeline, topology, flow, sequence, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
-| `ChartForgeX.Interactivity.Html` | Self-contained chart and topology interaction adapter, including interactive topology pages, the stencil browser, and the graph explorer with SVG output and Canvas runtime fallback. |
+| `ChartForgeX.Interactivity.Html` | Self-contained chart and topology interaction adapter, including interactive topology pages, the stencil browser, and the graph explorer with SVG, Canvas, WebGL, hierarchy navigation, compact large-scene documents, and atomic runtime updates. |
 
 The core package also includes product-neutral visual artifact models for reusable visuals. `Chart` models can be wrapped as artifacts, `FlowArtifact` keeps authored process flows distinct from topology previews, `SequenceArtifact` models interaction diagrams, `TableArtifact` declares capabilities such as search, sort, filter, selection, copy, export, and virtualization, and static previews render deterministically from the core package. Rich interaction belongs in native hosts and adapter packages. See `docs/visual-artifacts.md`, `docs/markup.md`, `docs/markup-v1-reference.md`, and `docs/mermaid.md` for the current contracts.
 
@@ -374,6 +382,53 @@ Supported topology layout modes are `Manual`, `GroupGrid`, `HubAndSpoke`, `Layer
 
 Dotted maps can render both point-to-point route arcs and ordered waypoint routes. Use `AddMapRoute("label", new[] { new ChartMapPoint("Origin", lon, lat), ... })` for paths such as shipping alternatives through the Suez Canal or around the Cape of Good Hope without adding shipping-specific concepts to the renderer. Light report themes render map geography as filled outlines instead of land-dot texture so routes stay readable on white backgrounds.
 
+## Interactive Graph Explorer
+
+`GraphScene` is the product-neutral relationship and large-topology document. It supports image and icon nodes, badges, secondary labels, rich edges, explicit or adaptive clusters, validated parent-child hierarchy, deterministic layouts, runtime physics, level of detail, performance budgets, atomic `GraphScenePatch` updates, and reusable `GraphSceneStage` planning. `ChartForgeX.Interactivity.Html` renders the same scene through SVG, Canvas, or WebGL and can save script-free stage SVG/PNG files without opening a browser.
+
+Small scenes keep complete SVG artwork. Large scenes switch to a compact graph document and batched rendering so they do not carry thousands of hidden SVG marks; SVG export reconstructs the vector scene on demand. The generated 1k/5k/10k fixtures are intended for real-browser release review rather than synthetic model-only claims.
+
+```csharp
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
+
+var graph = GraphScene.Create("estate", "Global estate")
+    .AddNode("global", "Global", node => node.BadgeText = "42")
+    .AddNode("europe", "Europe", node => {
+        node.ParentId = "global";
+        node.SecondaryLabel = "4 sites · 18 workloads";
+        node.Status = "warning";
+    })
+    .AddEdge("global-europe", "global", "europe", configure: edge => edge.Directed = true);
+
+graph.Options.UseSuperTopologyDefaults();
+graph.Options.Hierarchy.InitialRootNodeId = "global";
+graph.Options.Hierarchy.InitialDepth = 1;
+graph.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
+graph.Options.Physics.Stabilization.Iterations = 500;
+graph.Options.Physics.BarnesHut.SpringLength = 82;
+graph.Options.Physics.BarnesHut.AvoidOverlap = 0.7;
+graph.Options.Interaction.NodeDragBehavior = GraphNodeDragBehavior.ReleaseAndReheat;
+
+var html = graph.ToGraphExplorerHtmlPage(options => {
+    options.RenderBackend = HtmlGraphRenderBackend.Svg;
+    options.Theme = HtmlGraphExplorerTheme.System; // Follows the OS until the reader chooses Light or Dark.
+    options.IncludeThemeToggle = true;
+    options.PersistThemePreference = true;
+    options.IncludePhysicsConfigurator = true; // Optional development-time tuning surface.
+});
+
+var stages = graph.SaveGraphStageImages("report-assets", "estate", options => {
+    options.Stages.Depths.AddRange(new[] { 0, 1, 2, 5 });
+    options.Formats = GraphSceneStaticImageFormat.Both;
+    options.Render.MaximumNodeLabels = 160;
+});
+```
+
+The generated explorer uses one responsive control system across SVG, Canvas, and WebGL. Search, filters, and appearance stay in a quiet discovery header; hierarchy and graph actions sit in floating stage controls, with consistent icon geometry, accessible tooltips, and a labeled export-format popover. System, light, and dark themes recolor the complete surface—including labels, edges, minimap, Canvas, and WebGL—not just the page chrome. Model label colors are retained when they remain readable and adapt to the active theme when they do not.
+
+Nodes with children drill directly from the graph. Empty-space double-click, `Escape`, `Backspace`, Left Arrow, or a clickable breadcrumb move back up. Arrow keys move through a single roving graph-item tab stop, so a 2,000-node graph does not add 2,000 stops to the page. Reduced-motion mode removes drag momentum and visible intermediate physics frames; forced colors, increased contrast, live announcements, explicit control names, and strong focus indicators are built in. `PinOnDrop` remains available when manual placement should persist. See [Graph explorer](docs/graph-explorer.md) for themes and accessibility, solver profiles, static stage exports, clustering, hierarchy navigation, the browser API, host events, export behavior, and measured scale fixtures.
+
 ## Chart catalog
 
 The catalog is broad enough for generated reports, dashboards, operational summaries, and static documentation:
@@ -526,6 +581,7 @@ Review the generated pages under `ChartForgeX.Examples/bin/Release/net8.0/output
 - `domain-security-interactive.html`
 - `executive-interactive-dashboard.html`
 - `identity-risk-graph-explorer.html`
+- `global-estate-premium-topology.html`
 
 Only refresh visual baselines after reviewing the generated gallery:
 

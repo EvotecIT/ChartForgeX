@@ -12,8 +12,28 @@
     return { x: size, y: size };
   };
   const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
+  const nodePolygonPoints = (shape, size) => {
+    if (shape === 'diamond') return `0,${-size * 1.35} ${size * 1.35},0 0,${size * 1.35} ${-size * 1.35},0`;
+    if (shape === 'triangle') return `0,${-size * 1.35} ${size * 1.25},${size * 1.05} ${-size * 1.25},${size * 1.05}`;
+    if (shape === 'triangleDown') return `${-size * 1.25},${-size * 1.05} ${size * 1.25},${-size * 1.05} 0,${size * 1.35}`;
+    return `0,${-size * 1.45} ${size * .42},${-size * .45} ${size * 1.4},${-size * .45} ${size * .62},${size * .18} ${size * .9},${size * 1.25} 0,${size * .64} ${-size * .9},${size * 1.25} ${-size * .62},${size * .18} ${-size * 1.4},${-size * .45} ${-size * .42},${-size * .45}`;
+  };
+  const nodeDatabasePath = (size) => {
+    const width = size * 1.25, top = -size * .55, bottom = size * .55, radius = size * .38;
+    return `M ${-width} ${top} C ${-width} ${top - radius} ${width} ${top - radius} ${width} ${top} L ${width} ${bottom} C ${width} ${bottom + radius} ${-width} ${bottom + radius} ${-width} ${bottom} Z M ${-width} ${top} C ${-width} ${top + radius} ${width} ${top + radius} ${width} ${top}`;
+  };
   const nodeHalfWidth = (node) => nodeShapeExtents(node).x;
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
+  const nodeLayoutExtents = (node) => {
+    const mark = nodeShapeExtents(node);
+    const label = attr(node.el, 'data-node-label') || node.label || node.id || '';
+    const secondary = attr(node.el, 'data-node-secondary-label') || node.secondaryLabel || '';
+    const labelHalfWidth = Math.max(24, Math.min(132, label.length * 3.5 + 10), secondary ? Math.min(132, secondary.length * 2.8 + 8) : 0);
+    const labelBottom = node.shape === 'text' ? 9 + (secondary ? 15 : 0) : Math.max(4, node.size || 8) + 24 + (secondary ? 15 : 0);
+    return { x: Math.max(mark.x + 5, labelHalfWidth), y: Math.max(mark.y + 5, labelBottom) };
+  };
+  const nodeLayoutRadius = (node) => Math.max(6, Math.max(nodeLayoutExtents(node).x, nodeLayoutExtents(node).y));
+  const nodeCollisionRadius = (node, includeLabels) => includeLabels ? nodeLayoutRadius(node) : Math.max(6, Math.max(nodeHalfWidth(node), nodeHalfHeight(node)) + 5);
   const nodeBoundaryInset = (node, unitX, unitY) => {
     const size = Math.max(4, node?.size || 8);
     if (nodeUsesRectangularGeometry(node)) {
@@ -183,7 +203,7 @@
       ? { x: (endpoints.source.x + 2 * control.x + endpoints.target.x) / 4, y: (endpoints.source.y + 2 * control.y + endpoints.target.y) / 4 - 7 }
       : { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 - 7 };
   };
-  const drawArrow = (context, edge, control, side, color) => {
+  const edgeArrowGeometry = (edge, control, side, size = 8) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
     const route = edgeHasRoute(edge) ? routeRenderPoints(edge) : null;
     const sourceSide = side === 'source';
@@ -195,14 +215,21 @@
     const unitX = dx / length;
     const unitY = dy / length;
     const angle = Math.atan2(unitY, unitX);
-    const size = 8;
     const inset = loop || route ? 0 : nodeBoundaryInset(sourceSide ? edge.source : edge.target, unitX, unitY);
     const x = target.x - unitX * inset;
     const y = target.y - unitY * inset;
+    return {
+      tip: { x, y },
+      left: { x: x - Math.cos(angle - Math.PI / 6) * size, y: y - Math.sin(angle - Math.PI / 6) * size },
+      right: { x: x - Math.cos(angle + Math.PI / 6) * size, y: y - Math.sin(angle + Math.PI / 6) * size }
+    };
+  };
+  const drawArrow = (context, edge, control, side, color) => {
+    const arrow = edgeArrowGeometry(edge, control, side);
     context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x - Math.cos(angle - Math.PI / 6) * size, y - Math.sin(angle - Math.PI / 6) * size);
-    context.lineTo(x - Math.cos(angle + Math.PI / 6) * size, y - Math.sin(angle + Math.PI / 6) * size);
+    context.moveTo(arrow.tip.x, arrow.tip.y);
+    context.lineTo(arrow.left.x, arrow.left.y);
+    context.lineTo(arrow.right.x, arrow.right.y);
     context.closePath();
     context.fillStyle = color || '#64748b';
     context.fill();
