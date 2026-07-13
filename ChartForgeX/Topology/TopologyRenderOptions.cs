@@ -238,28 +238,28 @@ public sealed class TopologyRenderOptions {
     public string? EdgeTertiaryLabelMetricKey { get; set; }
 
     /// <summary>Gets health statuses to highlight while dimming non-matching topology elements.</summary>
-    public List<TopologyHealthStatus> HighlightStatuses { get; } = new();
+    public List<TopologyHealthStatus> HighlightStatuses { get; private set; } = new();
 
     /// <summary>Gets group ids to highlight while dimming non-matching topology elements.</summary>
-    public List<string> HighlightGroupIds { get; } = new();
+    public List<string> HighlightGroupIds { get; private set; } = new();
 
     /// <summary>Gets node ids to highlight while dimming non-matching topology elements.</summary>
-    public List<string> HighlightNodeIds { get; } = new();
+    public List<string> HighlightNodeIds { get; private set; } = new();
 
     /// <summary>Gets edge ids to highlight while dimming non-matching topology elements.</summary>
-    public List<string> HighlightEdgeIds { get; } = new();
+    public List<string> HighlightEdgeIds { get; private set; } = new();
 
     /// <summary>Gets or sets whether edges connected to highlighted nodes should also be highlighted.</summary>
     public bool HighlightConnectedEdges { get; set; } = true;
 
     /// <summary>Gets group ids to mark as selected without filtering or dimming the topology.</summary>
-    public List<string> SelectedGroupIds { get; } = new();
+    public List<string> SelectedGroupIds { get; private set; } = new();
 
     /// <summary>Gets node ids to mark as selected without filtering or dimming the topology.</summary>
-    public List<string> SelectedNodeIds { get; } = new();
+    public List<string> SelectedNodeIds { get; private set; } = new();
 
     /// <summary>Gets edge ids to mark as selected without filtering or dimming the topology.</summary>
-    public List<string> SelectedEdgeIds { get; } = new();
+    public List<string> SelectedEdgeIds { get; private set; } = new();
 
     /// <summary>Gets or sets the opacity used for non-highlighted elements when highlighting is active.</summary>
     public double DimmedOpacity { get; set; } = 0.28;
@@ -272,6 +272,16 @@ public sealed class TopologyRenderOptions {
 
     internal TopologyRenderOptions ForInteractiveHtmlRendering() {
         var snapshot = (TopologyRenderOptions)MemberwiseClone();
+        snapshot._edgeVisualStyle = _edgeVisualStyle?.Clone();
+        snapshot.Motion = Motion?.Clone();
+        snapshot.View = View?.Clone();
+        snapshot.HighlightStatuses = new List<TopologyHealthStatus>(HighlightStatuses);
+        snapshot.HighlightGroupIds = new List<string>(HighlightGroupIds);
+        snapshot.HighlightNodeIds = new List<string>(HighlightNodeIds);
+        snapshot.HighlightEdgeIds = new List<string>(HighlightEdgeIds);
+        snapshot.SelectedGroupIds = new List<string>(SelectedGroupIds);
+        snapshot.SelectedNodeIds = new List<string>(SelectedNodeIds);
+        snapshot.SelectedEdgeIds = new List<string>(SelectedEdgeIds);
         snapshot.EnableHtmlInteractions = true;
         return snapshot;
     }

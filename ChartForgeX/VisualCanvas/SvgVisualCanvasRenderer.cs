@@ -20,7 +20,12 @@ public sealed class SvgVisualCanvasRenderer {
     public string Render(VisualCanvas canvas, string idScope) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         VisualCanvas.ValidateEnum(canvas.BackdropStyle, nameof(canvas.BackdropStyle));
-        var id = "cfx-visual-canvas-" + StableHash(idScope ?? string.Empty, canvas.Title, canvas.Width.ToString(CultureInfo.InvariantCulture), canvas.Height.ToString(CultureInfo.InvariantCulture));
+        var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-visual-canvas", idScope, canvas.Title, canvas.Width.ToString(CultureInfo.InvariantCulture), canvas.Height.ToString(CultureInfo.InvariantCulture));
+        var svg = RenderCore(canvas, provisionalId);
+        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-visual-canvas", idScope);
+    }
+
+    private string RenderCore(VisualCanvas canvas, string id) {
         var writer = new SvgMarkupWriter(8192);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
@@ -530,23 +535,4 @@ public sealed class SvgVisualCanvasRenderer {
     private static double Measure(string value, double fontSize, bool emphasized) =>
         emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) : RgbaCanvas.MeasureTextWidth(value, fontSize, null);
 
-    private static string StableHash(params string[] values) {
-        unchecked {
-            var hash = 2166136261u;
-            foreach (var value in values) {
-                for (var i = 0; i < value.Length; i++) {
-                    hash ^= value[i];
-                    hash *= 16777619;
-                }
-
-                hash ^= 31;
-                hash *= 16777619;
-            }
-
-            var bytes = BitConverter.GetBytes(hash);
-            var builder = new StringBuilder(bytes.Length * 2);
-            for (var i = 0; i < bytes.Length; i++) builder.Append(bytes[i].ToString("x2", CultureInfo.InvariantCulture));
-            return builder.ToString();
-        }
-    }
 }

@@ -58,12 +58,20 @@ internal sealed partial class TrueTypeFont {
     private static FontFamilyKind ClassifyFamily(string? fontFamily) {
         var family = fontFamily ?? string.Empty;
         if (family.Trim().Length == 0) return FontFamilyKind.SansSerif;
-        if (family.IndexOf("monospace", StringComparison.OrdinalIgnoreCase) >= 0 || family.IndexOf("Consolas", StringComparison.OrdinalIgnoreCase) >= 0 || family.IndexOf("Menlo", StringComparison.OrdinalIgnoreCase) >= 0) return FontFamilyKind.Monospace;
-        if (family.IndexOf(", serif", StringComparison.OrdinalIgnoreCase) >= 0 || family.Trim().Equals("serif", StringComparison.OrdinalIgnoreCase)) return FontFamilyKind.Serif;
+        if (ContainsAny(family, "monospace", "Consolas", "Menlo", "Courier", "Monaco", "DejaVu Sans Mono", "Liberation Mono", "Cascadia Mono")) return FontFamilyKind.Monospace;
+        if (family.IndexOf(", serif", StringComparison.OrdinalIgnoreCase) >= 0 || family.Trim().Equals("serif", StringComparison.OrdinalIgnoreCase) || ContainsAny(family, "Georgia", "Cambria", "Times New Roman", "Charter", "DejaVu Serif", "Liberation Serif")) return FontFamilyKind.Serif;
         if (family.IndexOf("Rounded", StringComparison.OrdinalIgnoreCase) >= 0 || family.IndexOf("Nunito", StringComparison.OrdinalIgnoreCase) >= 0) return FontFamilyKind.Rounded;
         if (family.IndexOf("Aptos", StringComparison.OrdinalIgnoreCase) >= 0 || family.IndexOf("Calibri", StringComparison.OrdinalIgnoreCase) >= 0 || family.IndexOf("Candara", StringComparison.OrdinalIgnoreCase) >= 0) return FontFamilyKind.Humanist;
         if (family.IndexOf("Avenir", StringComparison.OrdinalIgnoreCase) >= 0 || family.IndexOf("Montserrat", StringComparison.OrdinalIgnoreCase) >= 0) return FontFamilyKind.Geometric;
         return FontFamilyKind.SansSerif;
+    }
+
+    private static bool ContainsAny(string value, params string[] candidates) {
+        foreach (var candidate in candidates) {
+            if (value.IndexOf(candidate, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+        }
+
+        return false;
     }
 
     private enum FontFamilyKind {

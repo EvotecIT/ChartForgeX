@@ -20,9 +20,14 @@ public sealed class SvgVisualGridRenderer {
     /// <summary>Renders a visual grid to SVG markup with a caller-provided ID scope.</summary>
     public string Render(VisualGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
+        var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-visual-grid", idScope, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
+        var svg = RenderCore(grid, provisionalId);
+        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-visual-grid", idScope);
+    }
+
+    private string RenderCore(VisualGrid grid, string id) {
         var layout = VisualGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
-        var id = "cfx-visual-grid-" + VisualBlockRendering.StableHash(idScope ?? string.Empty, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")

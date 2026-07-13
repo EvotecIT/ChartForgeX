@@ -38,7 +38,14 @@ internal static class ChartTicks {
         var range = max - min;
         if (IsPositiveFinite(range) && IsCloseToInteger(min) && IsCloseToInteger(max) && range <= Math.Max(6, desiredCount * 2)) {
             var integerTicks = new List<double>();
-            for (var value = Math.Ceiling(min); value <= Math.Floor(max) && integerTicks.Count < MaximumGeneratedTicks; value++) integerTicks.Add(value);
+            var integerMin = Math.Ceiling(min);
+            var integerMax = Math.Floor(max);
+            for (var index = 0; index < MaximumGeneratedTicks; index++) {
+                var value = integerMin + index;
+                if (value > integerMax) break;
+                AddFiniteDistinct(integerTicks, value);
+                if (value >= integerMax) break;
+            }
             PreserveUpperEndpoint(integerTicks, max);
             return integerTicks.Count > 0 ? integerTicks : DistinctEndpoints(min, max);
         }

@@ -28,10 +28,15 @@ public sealed class SvgChartGridRenderer {
     /// <returns>SVG markup.</returns>
     public string Render(ChartGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
+        var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-grid", idScope, grid.Title, grid.Charts.Count.ToString(CultureInfo.InvariantCulture));
+        var svg = RenderCore(grid, provisionalId);
+        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-grid", idScope);
+    }
+
+    private string RenderCore(ChartGrid grid, string id) {
         var layout = ChartGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
-        var id = "cfx-grid-" + StableHash(idScope ?? string.Empty, grid.Title, grid.Charts.Count.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(4096);
         writer
             .StartElement("svg")
@@ -150,26 +155,4 @@ public sealed class SvgChartGridRenderer {
         return width * fontSize;
     }
 
-    private static string StableHash(params string[] values) {
-        unchecked {
-            var hash = 2166136261u;
-            foreach (var value in values) Add(ref hash, value);
-
-            return hash.ToString("x8", CultureInfo.InvariantCulture);
-        }
-    }
-
-    private static void Add(ref uint hash, string value) {
-        AddRaw(ref hash, value.Length.ToString(CultureInfo.InvariantCulture));
-        AddRaw(ref hash, ":");
-        AddRaw(ref hash, value);
-        AddRaw(ref hash, "|");
-    }
-
-    private static void AddRaw(ref uint hash, string value) {
-        foreach (var ch in value) {
-            hash ^= ch;
-            hash *= 16777619u;
-        }
-    }
 }

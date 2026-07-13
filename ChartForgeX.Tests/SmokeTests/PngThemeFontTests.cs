@@ -46,6 +46,13 @@ internal static partial class SmokeTests {
             Assert(!string.Equals(serif.ResolvedPath, mono.ResolvedPath, StringComparison.OrdinalIgnoreCase), "Automatic PNG font resolution should select distinct serif and monospace faces when platform fonts are available.");
             Assert(!serifChart.ToPng().SequenceEqual(monoChart.ToPng()), "Theme font-family changes should affect PNG pixels when distinct platform faces are available.");
         }
+
+        TrueTypeFont.TryLoadForFamily("Georgia", out var explicitSerifPath);
+        TrueTypeFont.TryLoadForFamily(ChartFontStacks.Serif, out var genericSerifPath);
+        TrueTypeFont.TryLoadForFamily("Courier New", out var explicitMonoPath);
+        TrueTypeFont.TryLoadForFamily(ChartFontStacks.Mono, out var genericMonoPath);
+        if (explicitSerifPath != null && genericSerifPath != null) Assert(string.Equals(explicitSerifPath, genericSerifPath, StringComparison.OrdinalIgnoreCase), "Explicit serif family names should select the serif PNG font category.");
+        if (explicitMonoPath != null && genericMonoPath != null) Assert(string.Equals(explicitMonoPath, genericMonoPath, StringComparison.OrdinalIgnoreCase), "Explicit monospace family names should select the monospace PNG font category.");
     }
 
     private static void PngCanvasMeasuresWithItsSelectedDrawingFont() {

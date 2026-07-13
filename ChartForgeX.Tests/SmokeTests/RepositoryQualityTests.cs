@@ -309,6 +309,8 @@ internal static partial class SmokeTests {
         var topologyExamples = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "TopologyExamples.cs"));
         Assert(topologyExamples.Contains("Scenario Route Explorer", StringComparison.Ordinal) && topologyExamples.Contains("visual-replication-mesh-explorer.html?scenario=client-request-europe&amp;scenarioStep=4", StringComparison.Ordinal), "Topology examples should surface the scenario route explorer as an easy deep-linkable demo.");
         Assert(topologyExamples.Contains("topology-demo.html", StringComparison.Ordinal), "Topology examples should copy their focused demo index into the root generated artifact set.");
+        var forceTopologyExamples = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "TopologyVisualExamples.Force.cs"));
+        Assert(forceTopologyExamples.Contains("SaveInteractiveHtml", StringComparison.Ordinal) && !forceTopologyExamples.Contains("chart.SaveHtml", StringComparison.Ordinal), "Force-graph-only examples should route interactive HTML through the adapter package.");
         var coreProjectText = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "ChartForgeX.csproj"));
         var htmlAdapterProjectText = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj"));
         Assert(!coreProjectText.Contains("topology-interaction.js", StringComparison.Ordinal) && htmlAdapterProjectText.Contains("topology-interaction.js", StringComparison.Ordinal), "Topology browser runtimes should be embedded only by ChartForgeX.Interactivity.Html.");

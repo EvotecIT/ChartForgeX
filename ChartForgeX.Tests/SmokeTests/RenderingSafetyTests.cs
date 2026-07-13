@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ChartForgeX;
+using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -48,6 +49,18 @@ internal static partial class SmokeTests {
         var deterministicBlockSvg = lightBlock.ToSvg();
         Assert(deterministicBlockSvg == lightBlock.ToSvg(), "Content-derived visual block IDs should remain deterministic.");
         Assert(!deterministicBlockSvg.Contains("cfx-visual-seed-", StringComparison.Ordinal), "Provisional visual block IDs should not leak into rendered SVG.");
+
+        var chartGridA = ChartGrid.Create().WithTitle("Same grid").Add(Chart.Create().AddLine("Values", Points(1, 2, 3)));
+        var chartGridB = ChartGrid.Create().WithTitle("Same grid").Add(Chart.Create().AddLine("Values", Points(3, 2, 1)));
+        var visualGridA = VisualGrid.Create().WithTitle("Same visual grid").Add(MetricCard.Create().WithMetric("Coverage", "98%"));
+        var visualGridB = VisualGrid.Create().WithTitle("Same visual grid").Add(MetricCard.Create().WithMetric("Coverage", "76%"));
+        var canvasA = VisualCanvas.Create(320, 180).WithTitle("Same canvas").WithBackground(ChartColor.FromHex("#071A35"));
+        var canvasB = VisualCanvas.Create(320, 180).WithTitle("Same canvas").WithBackground(ChartColor.FromHex("#34120A"));
+        AssertNoDuplicateIds(chartGridA.ToSvg() + chartGridB.ToSvg(), "Unscoped chart grids with distinct content");
+        AssertNoDuplicateIds(visualGridA.ToSvg() + visualGridB.ToSvg(), "Unscoped visual grids with distinct content");
+        AssertNoDuplicateIds(canvasA.ToSvg() + canvasB.ToSvg(), "Unscoped visual canvases with distinct themes");
+        Assert(chartGridA.ToSvg() == chartGridA.ToSvg() && visualGridA.ToSvg() == visualGridA.ToSvg() && canvasA.ToSvg() == canvasA.ToSvg(), "Content-derived composite SVG IDs should remain deterministic.");
+        Assert(!chartGridA.ToSvg().Contains("-seed-", StringComparison.Ordinal) && !visualGridA.ToSvg().Contains("-seed-", StringComparison.Ordinal) && !canvasA.ToSvg().Contains("-seed-", StringComparison.Ordinal), "Provisional composite SVG IDs should not leak into rendered output.");
     }
 
     private static void RasterRenderingRejectsUnsafeAllocationsEarly() {
@@ -95,5 +108,10 @@ internal static partial class SmokeTests {
         Assert(extremeTicks.All(value => !double.IsNaN(value) && !double.IsInfinity(value)), "Extreme finite tick ranges should remain finite after magnitude normalization.");
         Assert(extremeTicks[0] <= extremeMinimum && extremeTicks[extremeTicks.Count - 1] == double.MaxValue, "Extreme finite tick ranges should preserve the exact upper data endpoint.");
         Assert(extremeTicks.Zip(extremeTicks.Skip(1), (left, right) => right > left).All(increasing => increasing), "Extreme finite ticks should remain strictly increasing after normalization.");
+
+        var largeIntegerTicks = ChartTicks.GenerateInside(1e16, 1e16 + 4, 6);
+        Assert(largeIntegerTicks.Count <= 3, "Large-magnitude integer ticks should not fill the safety cap when adding one no longer advances a double.");
+        Assert(largeIntegerTicks[0] == 1e16 && largeIntegerTicks[largeIntegerTicks.Count - 1] == 1e16 + 4, "Large-magnitude integer ticks should preserve the exact representable endpoints.");
+        Assert(largeIntegerTicks.Zip(largeIntegerTicks.Skip(1), (left, right) => right > left).All(increasing => increasing), "Large-magnitude integer ticks should remain distinct and strictly increasing.");
     }
 }
