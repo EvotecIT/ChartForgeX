@@ -59,5 +59,21 @@ internal static partial class SmokeTests {
         declaredPatch.UpsertClusters.Add(declaredCluster);
         declared.ApplyPatch(declaredPatch);
         Assert(declared.Clusters.Single().NodeIds.SequenceEqual(new[] { "new-node" }), "Atomic patches should preserve membership declared by a cluster upsert when the same patch adds its nodes without duplicating ClusterId values.");
+
+        var nodeOwned = GraphScene.Create("patch-node-owned-cluster", "Patch node-owned cluster")
+            .AddNode("member", "Member", node => node.ClusterId = "owned")
+            .AddCluster("owned", "Owned", Array.Empty<string>())
+            .AddCluster("owned-child", "Owned child", Array.Empty<string>(), cluster => cluster.ParentClusterId = "owned");
+        nodeOwned.Validate();
+        var failedClusterRemoval = new GraphScenePatch();
+        failedClusterRemoval.RemoveClusterIds.Add("owned");
+        failedClusterRemoval.UpsertEdges.Add(new GraphSceneEdge { Id = "broken-removal", SourceNodeId = "member", TargetNodeId = "missing" });
+        AssertThrows<InvalidOperationException>(() => nodeOwned.ApplyPatch(failedClusterRemoval), "A cluster removal should remain atomic when another change makes the patch invalid.");
+        Assert(nodeOwned.Clusters.Count == 2 && nodeOwned.Clusters.Single(cluster => cluster.Id == "owned-child").ParentClusterId == "owned" && nodeOwned.Nodes.Single().ClusterId == "owned", "A rejected cluster removal should restore node-side and nested-cluster references with the removed cluster.");
+
+        var removeNodeOwnedCluster = new GraphScenePatch();
+        removeNodeOwnedCluster.RemoveClusterIds.Add("owned");
+        var nodeOwnedResult = nodeOwned.ApplyPatch(removeNodeOwnedCluster);
+        Assert(nodeOwnedResult.ClusterCount == 1 && nodeOwned.Nodes.Single().ClusterId == null && nodeOwned.Clusters.Single().ParentClusterId == null, "Removing a cluster should clear node-side ClusterId and child ParentClusterId references within the same atomic patch.");
     }
 }

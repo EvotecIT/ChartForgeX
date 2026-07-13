@@ -192,6 +192,7 @@
       }
     });
     clusters.forEach((cluster, clusterId) => {
+      if (cluster.parentId && removedClusters.has(cluster.parentId) && !clusters.has(cluster.parentId)) cluster.parentId = '';
       if (cluster.parentId && !clusters.has(cluster.parentId)) throw new Error(`Graph patch cluster '${clusterId}' references missing parent '${cluster.parentId}'.`);
       cluster.nodeIds.forEach(nodeId => { if (!nodeIds.has(nodeId)) throw new Error(`Graph patch cluster '${clusterId}' references missing node '${nodeId}'.`); });
     });
@@ -204,12 +205,14 @@
     const nodeIds = new Set(nodes.keys());
     nodes.forEach((node, nodeId) => { if (node.parentId && !nodeIds.has(node.parentId)) throw new Error(`Graph patch node '${nodeId}' references missing parent '${node.parentId}'.`); });
     const clusters = graphPatchClusters(root, patch, nodeIds, removedNodes);
+    const removedClusters = graphPatchIds(patch.removeClusterIds);
     const declaredMembership = new Map();
     clusters.forEach((cluster, clusterId) => cluster.nodeIds.forEach(nodeId => {
       if (declaredMembership.has(nodeId) && declaredMembership.get(nodeId) !== clusterId) throw new Error(`Graph patch node '${nodeId}' belongs to multiple clusters.`);
       declaredMembership.set(nodeId, clusterId);
     }));
     nodes.forEach((node, nodeId) => {
+      if (node.clusterId && removedClusters.has(node.clusterId) && !clusters.has(node.clusterId)) node.clusterId = '';
       if (node.clusterId && !clusters.has(node.clusterId)) throw new Error(`Graph patch node '${nodeId}' references missing cluster '${node.clusterId}'.`);
       if (node.clusterId && declaredMembership.has(nodeId) && declaredMembership.get(nodeId) !== node.clusterId) throw new Error(`Graph patch node '${nodeId}' has conflicting cluster memberships.`);
     });
@@ -226,6 +229,18 @@
       edges.set(String(edge.id), { source, target });
     });
     edges.forEach((edge, edgeId) => { if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) throw new Error(`Graph patch edge '${edgeId}' references a missing endpoint.`); });
+  };
+  const detachGraphPatchRemovedClusters = (root, removedClusters, upsertClusters) => {
+    if (!removedClusters.size) return;
+    const restored = new Set((upsertClusters || []).map(cluster => String(cluster.id)));
+    items(root, '[data-cfx-role="graph-node"]').forEach(node => {
+      const clusterId = attr(node, 'data-node-cluster');
+      if (removedClusters.has(clusterId) && !restored.has(clusterId)) setGraphAttribute(node, 'data-node-cluster', null);
+    });
+    items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
+      const parentId = attr(cluster, 'data-cluster-parent');
+      if (removedClusters.has(parentId) && !restored.has(parentId)) setGraphAttribute(cluster, 'data-cluster-parent', null);
+    });
   };
   const syncGraphPatchClusterMembership = (root, nodes) => {
     const moved = (nodes || []).filter(node => graphPatchHas(node, 'clusterId'));
@@ -264,6 +279,7 @@
     items(root, '[data-cfx-role="graph-node"]').forEach(node => { if (removeNodes.has(attr(node, 'data-node-id'))) node.remove(); });
     items(root, '[data-cfx-role="graph-node-details"]').forEach(details => { if (removeNodes.has(attr(details, 'data-node-details-for'))) details.remove(); });
     items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => { if (removeClusters.has(attr(cluster, 'data-cluster-id'))) cluster.remove(); });
+    detachGraphPatchRemovedClusters(root, removeClusters, patch.upsertClusters);
     if (patch.removeIncidentReferences !== false && removeNodes.size) items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => setGraphAttribute(cluster, 'data-cluster-node-ids', idList(attr(cluster, 'data-cluster-node-ids')).filter(id => !removeNodes.has(id)).join(',')));
     (patch.upsertClusters || []).forEach(cluster => upsertGraphCluster(root, cluster));
     (patch.upsertEdges || []).forEach(edge => upsertGraphEdge(root, edge));

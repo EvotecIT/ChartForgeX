@@ -145,11 +145,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
         CopyDictionary(scene.Metadata, projected.Metadata);
         var frontier = stage == null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(stage.FrontierNodeIds, StringComparer.Ordinal);
         var hiddenDescendants = stage == null ? new Dictionary<string, int>(StringComparer.Ordinal) : HiddenDescendantCounts(scene, visible, frontier);
-        // A hierarchy stage already is a deliberate clustering projection. Preserve explicit
-        // cluster contracts without adding adaptive group hulls that compete with that story.
-        var sourceMembership = BuildClusterMembership(scene, scene.Clusters);
+        // A hierarchy stage already is a deliberate level-of-detail projection. Preserve
+        // explicit and group-derived contracts, but do not add adaptive structural communities
+        // that compete with the stage's overview-to-detail story.
+        var sourceClusters = StaticSourceClusters(scene, stage);
+        var sourceMembership = BuildClusterMembership(scene, sourceClusters);
         var retainedClusterIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var source in scene.Clusters) {
+        foreach (var source in sourceClusters) {
             var members = visible.Where(id => sourceMembership.TryGetValue(id, out var clusterId) && string.Equals(clusterId, source.Id, StringComparison.Ordinal)).OrderBy(id => id, StringComparer.Ordinal).ToArray();
             if (members.Length < 2) continue;
             var cluster = new GraphSceneCluster { Id = source.Id, Label = source.Label, Kind = source.Kind, Collapsed = false };
@@ -173,6 +175,14 @@ public sealed partial class HtmlGraphExplorerRenderer {
         projected.Options.Disable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Manipulation);
         projected.Validate();
         return projected;
+    }
+
+    private static IReadOnlyList<GraphSceneCluster> StaticSourceClusters(GraphScene scene, GraphSceneStage? stage) {
+        var effective = scene.GetEffectiveClusters();
+        if (stage == null) return effective;
+        return effective
+            .Where(cluster => !cluster.Metadata.TryGetValue("cluster.source", out var source) || !string.Equals(source, "adaptive-structure", StringComparison.Ordinal))
+            .ToArray();
     }
 
     private static void ApplyStaticHierarchyBands(GraphScene scene) {
@@ -219,6 +229,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
                 offset += count;
             }
         }
+
+        // Prepared routes use the source scene coordinate system. Once hierarchy bands move
+        // their endpoints, fall back to freshly derived straight paths instead of retaining
+        // disconnected absolute waypoints.
+        foreach (var edge in scene.Edges) edge.RoutePoints.Clear();
     }
 
     private static int ResolveStaticDepth(GraphSceneNode node, IReadOnlyDictionary<string, GraphSceneNode> byId, IDictionary<string, int> depths, ISet<string> visiting) {

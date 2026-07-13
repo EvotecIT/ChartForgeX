@@ -6,10 +6,19 @@
     stage.addEventListener('pointerdown', event => {
       if (event.button !== 0 || chromeTarget(event)) return;
       const point = scenePoint(root, event);
+      const state = root.__cfxGraphState || graphState(root);
       const targetNode = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"]') : null;
-      const node = targetNode ? (root.__cfxGraphState || graphState(root)).nodes.find(item => item.el === targetNode) : hitNodeAt(root, point);
       const graphItem = event.target.closest ? event.target.closest('[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-edge-label"],[data-cfx-role="graph-cluster"]') : null;
-      const hitItem = node || graphItem || hitGraphItemAt(root, point);
+      const runtimeOverlay = graphItem && attr(graphItem, 'data-cfx-runtime-overlay') === 'true';
+      const overlayRole = runtimeOverlay ? attr(graphItem, 'data-cfx-role') : '';
+      const overlayId = runtimeOverlay ? attr(graphItem, 'data-node-id') || attr(graphItem, 'data-edge-id') || attr(graphItem, 'data-cluster-id') : '';
+      const overlayHit = !runtimeOverlay ? null
+        : overlayRole === 'graph-node' ? state.nodes.find(item => item.id === overlayId)
+        : overlayRole === 'graph-edge' ? state.edges.find(item => item.id === overlayId)
+        : overlayRole === 'graph-cluster' ? state.clusters.find(item => item.id === overlayId)
+        : null;
+      const node = targetNode ? state.nodes.find(item => item.el === targetNode) || (overlayHit && state.nodes.find(item => item === overlayHit)) : hitNodeAt(root, point);
+      const hitItem = node || overlayHit || (runtimeOverlay ? hitGraphItemAt(root, point) : graphItem) || hitGraphItemAt(root, point);
       const hitCanSelect = hasFeature(root, 'Selection') && !!hitItem;
       const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect;
       root.dataset.cfxGraphLastPointerX = point.x.toFixed(3); root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
@@ -19,6 +28,10 @@
         active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, lastX: point.x, lastY: point.y, lastAt: performanceClock(), vx: 0, vy: 0, fixed: attr(node.el, 'data-node-fixed'), movingFixed: node.fixed, moved: false };
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now(); root.__cfxGraphPointerSelectionId = node.id; root.__cfxGraphSuppressClickId = node.id;
+      } else if (runtimeOverlay && hitCanSelect && hitItem.el) {
+        event.preventDefault();
+        select(root, hitItem.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
+        root.__cfxGraphPointerSelectionTick = Date.now(); root.__cfxGraphPointerSelectionId = hitItem.id || '';
       } else if (hasFeature(root, 'Viewport') && !hitBlocksPan) {
         event.preventDefault(); stage.setPointerCapture?.(event.pointerId); root.classList.add('cfx-graph-panning'); root.dataset.cfxGraphLastPointerMode = 'pan';
         active = { mode: 'pan', pointerId: event.pointerId, screenX: point.screenX, screenY: point.screenY, view: viewport(root) };

@@ -87,6 +87,7 @@ public static class GraphScenePatchExtensions {
         Upsert(nodes, patch.UpsertNodes, node => node.Id);
         Upsert(clusters, patch.UpsertClusters.Select(CloneCluster), cluster => cluster.Id);
         Upsert(edges, patch.UpsertEdges, edge => edge.Id);
+        DetachRemovedClusterReferences(nodes, clusters, removedClusterIds);
         SynchronizeClusterMembership(clusters, patch.UpsertNodes, patch.UpsertClusters);
 
         try {
@@ -149,6 +150,48 @@ public static class GraphScenePatchExtensions {
             Collapsed = source.Collapsed
         };
         clone.NodeIds.AddRange(source.NodeIds);
+        foreach (var pair in source.Metadata) clone.Metadata[pair.Key] = pair.Value;
+        return clone;
+    }
+
+    private static void DetachRemovedClusterReferences(IList<GraphSceneNode> nodes, IReadOnlyCollection<GraphSceneCluster> clusters, ISet<string> removedClusterIds) {
+        if (removedClusterIds.Count == 0) return;
+        var survivingClusterIds = new HashSet<string>(clusters.Select(cluster => cluster.Id), StringComparer.Ordinal);
+        for (var index = 0; index < nodes.Count; index++) {
+            var node = nodes[index];
+            if (string.IsNullOrWhiteSpace(node.ClusterId) || !removedClusterIds.Contains(node.ClusterId!) || survivingClusterIds.Contains(node.ClusterId!)) continue;
+            nodes[index] = CloneNodeWithoutCluster(node);
+        }
+        foreach (var cluster in clusters) {
+            if (!string.IsNullOrWhiteSpace(cluster.ParentClusterId) && removedClusterIds.Contains(cluster.ParentClusterId!) && !survivingClusterIds.Contains(cluster.ParentClusterId!)) cluster.ParentClusterId = null;
+        }
+    }
+
+    private static GraphSceneNode CloneNodeWithoutCluster(GraphSceneNode source) {
+        var clone = new GraphSceneNode {
+            Id = source.Id,
+            Label = source.Label,
+            Kind = source.Kind,
+            GroupId = source.GroupId,
+            ParentId = source.ParentId,
+            Status = source.Status,
+            Shape = source.Shape,
+            Level = source.Level,
+            ImageUrl = source.ImageUrl,
+            ImageAlt = source.ImageAlt,
+            IconText = source.IconText,
+            SecondaryLabel = source.SecondaryLabel,
+            BadgeText = source.BadgeText,
+            Size = source.Size,
+            Fixed = source.Fixed,
+            Hidden = source.Hidden
+        };
+        if (source.HasExplicitPosition) { clone.X = source.X; clone.Y = source.Y; }
+        clone.Style.BackgroundColor = source.Style.BackgroundColor;
+        clone.Style.BorderColor = source.Style.BorderColor;
+        clone.Style.LabelColor = source.Style.LabelColor;
+        clone.Style.LabelBackgroundColor = source.Style.LabelBackgroundColor;
+        clone.Style.Shadow = source.Style.Shadow;
         foreach (var pair in source.Metadata) clone.Metadata[pair.Key] = pair.Value;
         return clone;
     }

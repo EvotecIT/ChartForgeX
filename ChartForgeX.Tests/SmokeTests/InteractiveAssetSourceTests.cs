@@ -48,7 +48,12 @@ internal static partial class SmokeTests {
         Assert(api.Contains("cfx-graph-node-label-bg", StringComparison.Ordinal) && api.Contains("labelBackgroundColor", StringComparison.Ordinal), "Browser graph patches should rebuild styled node label backgrounds instead of dropping them until a full render.");
         Assert(api.Contains("--cfx-node-fill", StringComparison.Ordinal) && api.Contains("--cfx-node-stroke", StringComparison.Ordinal) && api.Contains("filter:drop-shadow", StringComparison.Ordinal), "Browser graph patches should apply node colors and shadows through the same reusable style contract as the initial SVG renderer.");
         Assert(api.Contains("graphPatchArrowMarker", StringComparison.Ordinal) && api.Contains("path.setAttribute('style', `fill:${color};stroke:${color}`)", StringComparison.Ordinal), "Browser graph patches should keep custom-colored arrow markers aligned with their edge stroke.");
+        Assert(api.Contains("detachGraphPatchRemovedClusters", StringComparison.Ordinal) && api.Contains("setGraphAttribute(node, 'data-node-cluster', null)", StringComparison.Ordinal), "Browser graph patches should mirror core atomic removal semantics by clearing node-side references to removed clusters.");
         Assert(hierarchy.Contains("applyLayout(root, state);", StringComparison.Ordinal), "Hierarchy updates should run the shared layout synchronization path so newly patched SVG edges receive visible path geometry.");
+        var pointers = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.27-pointer-interactions.js"));
+        Assert(pointers.Contains("overlayRole === 'graph-node' ? state.nodes.find(item => item.id === overlayId)", StringComparison.Ordinal) && pointers.Contains("runtimeOverlay && hitCanSelect && hitItem.el", StringComparison.Ordinal), "Accelerated SVG overlays should resolve stable virtual graph ids before deciding selection, dragging, or viewport panning.");
+        var webGl = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.04-webgl.js"));
+        Assert(webGl.Contains("edgeHasRoute(rendered) ? routeRenderPoints(rendered) : [rendered.source, rendered.target]", StringComparison.Ordinal) && webGl.Contains("for (let index = 1; index < points.length; index++)", StringComparison.Ordinal), "WebGL graph rendering should emit every prepared polyline route segment instead of collapsing large-scene routes to one chord.");
     }
 
     private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath) {

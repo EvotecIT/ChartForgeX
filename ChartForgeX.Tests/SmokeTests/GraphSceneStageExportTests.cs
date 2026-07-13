@@ -49,10 +49,23 @@ internal static partial class SmokeTests {
         var clusteredSvg = clustered.ToGraphSvg();
         Assert(clusteredSvg.Contains("data-cluster-id=\"shared\"", StringComparison.Ordinal) && clusteredSvg.Contains("data-cluster-node-ids=\"a,b\"", StringComparison.Ordinal), "Static stage projection should preserve node-side ClusterId membership without duplicated cluster member lists.");
 
+        var grouped = GraphScene.Create("static-group-clusters", "Static group clusters")
+            .AddNode("group-a", "Group A", node => node.GroupId = "platform")
+            .AddNode("group-b", "Group B", node => node.GroupId = "platform");
+        grouped.Options.Cluster.Mode = GraphClusterMode.ByGroup;
+        var groupedSvg = grouped.ToGraphSvg();
+        Assert(groupedSvg.Contains("data-cluster-id=\"group-platform\"", StringComparison.Ordinal) && groupedSvg.Contains("data-cluster-node-ids=\"group-a,group-b\"", StringComparison.Ordinal), "Static exports should materialize the same group-derived cluster hulls as the interactive renderer.");
+
         var leveled = GraphScene.Create("static-levels", "Static declared levels");
         for (var index = 0; index < 44; index++) leveled.AddNode("level-" + index, "Level " + index, node => node.Level = index % 4);
+        leveled.AddEdge("rebased-route", "level-0", "level-3", configure: edge => {
+            edge.Shape = GraphEdgeShape.Polyline;
+            edge.RoutePoints.Add(new GraphScenePoint(9100, 9200));
+            edge.RoutePoints.Add(new GraphScenePoint(9300, 9400));
+        });
         leveled.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
         var leveledSvg = leveled.ToGraphSvg();
+        Assert(!leveledSvg.Contains("data-edge-route-points=", StringComparison.Ordinal) && !leveledSvg.Contains("9100", StringComparison.Ordinal), "Dense static hierarchy rebasing should discard absolute route points from the source coordinate system.");
         var rootPoint = ExtractGraphNodePoint(leveledSvg, "level-0");
         var deepPoint = ExtractGraphNodePoint(leveledSvg, "level-3");
         var rootRadius = Math.Sqrt(Math.Pow(rootPoint.X - 480, 2) + Math.Pow(rootPoint.Y - 280, 2));
