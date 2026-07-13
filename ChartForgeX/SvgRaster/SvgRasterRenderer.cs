@@ -123,8 +123,13 @@ internal static partial class SvgRasterRenderer {
         if (right <= left || bottom <= top) return;
         if (!TryDecodeImage(element.Get("href"), imageDepth, right - left, bottom - top, element.Get("preserveAspectRatio"), out var image)) return;
         var pixels = style.Opacity >= 0.999 ? image.Pixels : ApplyOpacity(image.Pixels, style.Opacity);
-        if (IsCenteredCircleClipPath(style.ClipPath)) canvas.DrawImageScaledCircle(left, top, right - left, bottom - top, image.Width, image.Height, pixels);
-        else canvas.DrawImageScaled(left, top, right - left, bottom - top, image.Width, image.Height, pixels);
+        var destinationWidth = right - left;
+        var destinationHeight = bottom - top;
+        var placement = SvgRasterImagePlacement.Resolve(destinationWidth, destinationHeight, image.Width, image.Height, element.Get("preserveAspectRatio"));
+        var imageBox = new RgbaCanvas(destinationWidth, destinationHeight, 1);
+        imageBox.DrawImageScaled(placement.X, placement.Y, placement.Width, placement.Height, image.Width, image.Height, pixels, placement.SourceX, placement.SourceY, placement.SourceWidth, placement.SourceHeight);
+        if (IsCenteredCircleClipPath(style.ClipPath)) canvas.DrawImageScaledCircle(left, top, destinationWidth, destinationHeight, destinationWidth, destinationHeight, imageBox.Pixels);
+        else canvas.DrawImage(left, top, destinationWidth, destinationHeight, imageBox.Pixels);
     }
 
     private static bool IsCenteredCircleClipPath(string? value) {

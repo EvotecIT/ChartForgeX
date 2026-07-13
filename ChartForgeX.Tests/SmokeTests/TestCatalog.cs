@@ -172,6 +172,7 @@ internal static partial class SmokeTests {
         ("Graph hierarchy contract validates and renders navigation", GraphHierarchyContractValidatesAndRendersNavigation),
         ("Graph scene stages render deterministic static images", GraphSceneStagesRenderDeterministicStaticImages),
         ("SVG raster documents use intrinsic dimensions and CSS image clipping", SvgRasterDocumentsUseIntrinsicDimensionsAndCssImageClipping),
+        ("SVG raster images preserve aspect ratio and ignore media rules", SvgRasterImagesPreserveAspectRatioAndIgnoreMediaRules),
         ("Graph scene patches apply atomically", GraphScenePatchesApplyAtomically),
         ("Topology graph projection carries hierarchy and artwork", TopologyGraphProjectionCarriesHierarchyAndArtwork),
         ("Vis-network compatibility maps options to graph scene", VisNetworkCompatMapsOptionsToGraphScene),

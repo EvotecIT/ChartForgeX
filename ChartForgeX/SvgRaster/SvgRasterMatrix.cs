@@ -50,20 +50,18 @@ internal readonly struct SvgRasterMatrix {
     }
 
     public static SvgRasterMatrix FromFit(SvgRasterViewBox viewBox, int width, int height, string? preserveAspectRatio) {
-        var value = string.IsNullOrWhiteSpace(preserveAspectRatio) ? "xMidYMid meet" : preserveAspectRatio!.Trim();
-        if (string.Equals(value, "none", StringComparison.OrdinalIgnoreCase)) {
+        var aspectRatio = SvgRasterPreserveAspectRatio.Parse(preserveAspectRatio);
+        if (aspectRatio.Stretch) {
             return Scale(width / viewBox.Width, height / viewBox.Height).Multiply(Translate(-viewBox.X, -viewBox.Y));
         }
 
-        var slice = value.IndexOf("slice", StringComparison.OrdinalIgnoreCase) >= 0;
         var scaleX = width / viewBox.Width;
         var scaleY = height / viewBox.Height;
-        var scale = slice ? Math.Max(scaleX, scaleY) : Math.Min(scaleX, scaleY);
+        var scale = aspectRatio.Slice ? Math.Max(scaleX, scaleY) : Math.Min(scaleX, scaleY);
         var drawnWidth = viewBox.Width * scale;
         var drawnHeight = viewBox.Height * scale;
-        var align = value.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
-        var x = align.IndexOf("xMax", StringComparison.OrdinalIgnoreCase) >= 0 ? width - drawnWidth : align.IndexOf("xMid", StringComparison.OrdinalIgnoreCase) >= 0 ? (width - drawnWidth) / 2.0 : 0;
-        var y = align.IndexOf("YMax", StringComparison.OrdinalIgnoreCase) >= 0 ? height - drawnHeight : align.IndexOf("YMid", StringComparison.OrdinalIgnoreCase) >= 0 ? (height - drawnHeight) / 2.0 : 0;
+        var x = aspectRatio.AlignX(width - drawnWidth);
+        var y = aspectRatio.AlignY(height - drawnHeight);
         return Translate(x, y).Multiply(Scale(scale, scale)).Multiply(Translate(-viewBox.X, -viewBox.Y));
     }
 

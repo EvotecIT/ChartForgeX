@@ -120,11 +120,19 @@
       const indicator = svgElement(root, 'circle'); indicator.classList.add('cfx-graph-node-status'); indicator.setAttribute('cx', String(-size * .8)); indicator.setAttribute('cy', String(-size * .8)); indicator.setAttribute('r', String(Math.min(4.5, Math.max(1.35, size * .28)))); indicator.setAttribute('style', `fill:${graphPatchStatusColor(status)};stroke:var(--cfx-color-paper);stroke-width:2`); details.appendChild(indicator);
     }
   };
+  const graphPatchVirtualElement = (root, role, className) => {
+    const virtualItems = ensureGraphDocument(root);
+    const element = graphVirtualElement(role, {}, [className]);
+    virtualItems.push(element);
+    root.__cfxGraphVirtualItems = virtualItems;
+    return element;
+  };
   const upsertGraphNode = (root, node) => {
     const viewportGroup = root.querySelector('[data-cfx-role="graph-viewport"]');
     let element = items(root, '[data-cfx-role="graph-node"]').find(item => attr(item, 'data-node-id') === node.id);
     if (!element) {
-      element = svgElement(root, 'g'); element.classList.add('cfx-graph-node'); element.setAttribute('data-cfx-role', 'graph-node'); viewportGroup?.insertBefore(element, viewportGroup.querySelector('[data-cfx-role="graph-node-details-layer"]'));
+      if (attr(root, 'data-cfx-graph-accelerated-markup') === 'true') element = graphPatchVirtualElement(root, 'graph-node', 'cfx-graph-node');
+      else { element = svgElement(root, 'g'); element.classList.add('cfx-graph-node'); element.setAttribute('data-cfx-role', 'graph-node'); viewportGroup?.insertBefore(element, viewportGroup.querySelector('[data-cfx-role="graph-node-details-layer"]')); }
     }
     const index = items(root, '[data-cfx-role="graph-node"]').indexOf(element);
     const x = graphPatchPosition(element, node.x, 'data-node-x', 160 + Math.max(0, index) * 22);
@@ -140,9 +148,12 @@
     const viewportGroup = root.querySelector('[data-cfx-role="graph-viewport"]');
     let element = items(root, '[data-cfx-role="graph-edge"]').find(item => attr(item, 'data-edge-id') === edge.id);
     if (!element) {
-      element = svgElement(root, 'path'); element.classList.add('cfx-graph-edge'); element.setAttribute('data-cfx-role', 'graph-edge');
-      const firstNode = viewportGroup?.querySelector('[data-cfx-role="graph-node"],[data-cfx-role="graph-node-details-layer"]');
-      viewportGroup?.insertBefore(element, firstNode || null);
+      if (attr(root, 'data-cfx-graph-accelerated-markup') === 'true') element = graphPatchVirtualElement(root, 'graph-edge', 'cfx-graph-edge');
+      else {
+        element = svgElement(root, 'path'); element.classList.add('cfx-graph-edge'); element.setAttribute('data-cfx-role', 'graph-edge');
+        const firstNode = viewportGroup?.querySelector('[data-cfx-role="graph-node"],[data-cfx-role="graph-node-details-layer"]');
+        viewportGroup?.insertBefore(element, firstNode || null);
+      }
     }
     const style = edge.style || {};
     const sourceArrow = edge.sourceArrow === true, targetArrow = edge.targetArrow === true || edge.directed === true;

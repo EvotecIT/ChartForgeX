@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
 
 namespace ChartForgeX.Tests;
@@ -29,6 +30,18 @@ internal static partial class SmokeTests {
         var markerMarkup = "<defs><marker id='arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto'><path d='M0 0 L10 5 L0 10 z' fill='#ff0000'/></marker></defs><path d='M10 50 L90 50' fill='none' stroke='#111111' stroke-width='2' marker-end='url(#arrow)'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(markerMarkup, "0 0 100 100", "none", 100, 100, out var marked), "SVG rasterization should render referenced path markers.");
         Assert(CountPixelsNear(marked, 100, 74, 35, 96, 65, 255, 0, 0) > 20, "Directed SVG markers should remain visible in dependency-free PNG output.");
+    }
+
+    private static void SvgRasterImagesPreserveAspectRatioAndIgnoreMediaRules() {
+        var pixels = new byte[200 * 100 * 4];
+        for (var index = 0; index < pixels.Length; index += 4) { pixels[index] = 255; pixels[index + 3] = 255; }
+        var imageSource = "data:image/png;base64," + Convert.ToBase64String(PngWriter.WriteRgba(new RgbaImage(200, 100, pixels)));
+        Assert(SvgRasterRenderer.TryRenderFragment("<image x='0' y='0' width='100' height='100' href='" + imageSource + "'/>", "0 0 100 100", "none", 100, 100, out var contained), "SVG rasterization should decode self-contained raster images.");
+        Assert(PixelAlpha(contained, 100, 50, 5) == 0 && IsPixelNear(contained, 100, 50, 50, 255, 0, 0), "Default image preserveAspectRatio should contain wide artwork without stretching it into a square.");
+
+        var mediaMarkup = "<style>.target{fill:#ff0000;opacity:.25}@media (prefers-contrast: more){.target{opacity:1}.ignored{fill:#00ff00}}.after{fill:#0000ff}</style><rect class='target' width='40' height='40'/><rect class='after' x='60' width='40' height='40'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(mediaMarkup, "0 0 100 40", "none", 100, 40, out var styled), "SVG rasterization should parse base rules around unsupported media queries.");
+        Assert(PixelAlpha(styled, 100, 20, 20) is >= 62 and <= 66 && IsPixelNear(styled, 100, 80, 20, 0, 0, 255), "Unsupported media blocks should be skipped as a whole without leaking nested contrast rules or hiding following base rules.");
     }
 
     private static string SvgData(string markup) => "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(markup));
