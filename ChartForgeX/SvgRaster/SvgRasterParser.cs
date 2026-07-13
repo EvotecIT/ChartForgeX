@@ -18,7 +18,7 @@ internal static class SvgRasterParser {
         if (markup == null) throw new ArgumentNullException(nameof(markup));
         var root = Load(markup).Root ?? throw new FormatException("SVG document did not contain a root element.");
         if (!string.Equals(root.Name.LocalName, "svg", StringComparison.OrdinalIgnoreCase)) throw new FormatException("SVG document root must be an svg element.");
-        return FromRoot(root, SvgRasterViewBox.Parse(root.Attribute("viewBox")?.Value ?? "0 0 24 24"));
+        return FromRoot(root, SvgRasterViewBox.FromDimensions(root.Attribute("width")?.Value, root.Attribute("height")?.Value));
     }
 
     private static SvgRasterDocument FromRoot(XElement root, SvgRasterViewBox fallbackViewBox) {

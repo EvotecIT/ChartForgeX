@@ -37,7 +37,7 @@ internal static class SvgRasterRenderer {
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) matrix = ApplyNestedSvgViewport(element, matrix);
         if (IsDefinitionElement(element.Name)) return;
-        var hasClipPath = definitions.TryGetClipPath(ReferenceId(element, "clip-path"), out var clipPath);
+        var hasClipPath = definitions.TryGetClipPath(ParseReference(style.ClipPath) ?? ReferenceId(element, "clip-path"), out var clipPath);
         var hasMask = definitions.TryGetMask(ReferenceId(element, "mask"), out var maskDefinition);
         if (hasClipPath || hasMask) {
             var content = new RgbaCanvas(width, height, 1);
@@ -123,7 +123,14 @@ internal static class SvgRasterRenderer {
         var bottom = (int)Math.Round(Math.Max(Math.Max(corners[0].Y, corners[1].Y), Math.Max(corners[2].Y, corners[3].Y)));
         if (right <= left || bottom <= top) return;
         var pixels = style.Opacity >= 0.999 ? image.Pixels : ApplyOpacity(image.Pixels, style.Opacity);
-        canvas.DrawImageScaled(left, top, right - left, bottom - top, image.Width, image.Height, pixels);
+        if (IsCenteredCircleClipPath(style.ClipPath)) canvas.DrawImageScaledCircle(left, top, right - left, bottom - top, image.Width, image.Height, pixels);
+        else canvas.DrawImageScaled(left, top, right - left, bottom - top, image.Width, image.Height, pixels);
+    }
+
+    private static bool IsCenteredCircleClipPath(string? value) {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var compact = value!.Replace(" ", string.Empty).Replace("\t", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
+        return string.Equals(compact, "circle(50%)", StringComparison.OrdinalIgnoreCase) || string.Equals(compact, "circle(closest-side)", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryDecodeImage(string? href, int imageDepth, out RgbaImage image) {

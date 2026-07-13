@@ -90,7 +90,7 @@ internal static partial class SmokeTests {
         var imageShapeScene = imageShapes.ToGraphScene("image-shapes", "Image shapes");
         var imageShapeHtml = imageShapeScene.ToGraphExplorerHtmlFragment();
         Assert(imageShapeScene.Nodes.Single(node => node.Id == "rect").Shape == GraphNodeShape.RectangularImage && imageShapeScene.Nodes.Single(node => node.Id == "circle").Shape == GraphNodeShape.Image, "Vis-network compatibility should keep image and circularImage as distinct graph node shapes.");
-        Assert(imageShapeHtml.Contains("data-node-shape=\"imageRect\"", StringComparison.Ordinal) && imageShapeHtml.Contains("data-node-shape=\"image\"", StringComparison.Ordinal) && imageShapeHtml.Contains("cfx-graph-node-image-rect", StringComparison.Ordinal) && imageShapeHtml.Contains("image:not(.cfx-graph-node-image-rect)", StringComparison.Ordinal), "Graph explorer output should serialize and render rectangular and circular vis image nodes distinctly.");
+        Assert(imageShapeHtml.Contains("data-node-shape=\"imageRect\"", StringComparison.Ordinal) && imageShapeHtml.Contains("data-node-shape=\"image\"", StringComparison.Ordinal) && imageShapeHtml.Contains(".cfx-graph-node image {", StringComparison.Ordinal) && imageShapeHtml.Contains(".cfx-graph-node .cfx-graph-node-image-rect", StringComparison.Ordinal), "Graph explorer output should serialize and render rectangular and circular vis image nodes distinctly.");
 
         var noNavigation = VisNetworkGraph.Create();
         noNavigation.Options.Interaction.NavigationButtons = false;

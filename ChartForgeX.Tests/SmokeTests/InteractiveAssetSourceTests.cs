@@ -31,6 +31,14 @@ internal static partial class SmokeTests {
         Assert(bindings.Contains("indexHitTesting(root, graphState(root))", StringComparison.Ordinal), "Initial graph binding should still build a fresh state before the live cache exists.");
     }
 
+    private static void GraphExplorerRuntimePatchesPreserveVisualAndReferenceContracts() {
+        var api = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "Assets", "graph-explorer.40-api.js"));
+        Assert(api.Contains("edges.forEach((edge, edgeId)", StringComparison.Ordinal) && api.Contains("references a missing endpoint", StringComparison.Ordinal), "Browser graph patches should validate every surviving edge against the final node set before mutating the document.");
+        Assert(api.Contains("graphPatchPolygonPoints", StringComparison.Ordinal) && api.Contains("graphPatchDatabasePath", StringComparison.Ordinal) && api.Contains("shape === 'text'", StringComparison.Ordinal), "Browser graph patches should rebuild rich SVG node shapes instead of reducing them to circles.");
+        Assert(api.Contains("setGraphAttribute(element, 'marker-start'", StringComparison.Ordinal) && api.Contains("setGraphAttribute(element, 'marker-end'", StringComparison.Ordinal), "Browser graph patches should restore SVG direction markers for upserted edges.");
+        Assert(api.Contains("syncGraphPatchClusterMembership", StringComparison.Ordinal) && api.Contains("data-source-cluster-id", StringComparison.Ordinal) && api.Contains("data-target-cluster-id", StringComparison.Ordinal), "Browser graph patches should synchronize node moves across cluster memberships and edge cluster references.");
+    }
+
     private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath) {
         var sourceDirectory = Path.Combine(root, sourceRelativePath);
         var targetPath = Path.Combine(root, targetRelativePath);

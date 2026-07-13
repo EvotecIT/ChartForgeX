@@ -32,6 +32,7 @@ internal static partial class SmokeTests {
         var mark = svg.IndexOf("data-cfx-role=\"graph-node\"", StringComparison.Ordinal);
         var details = svg.IndexOf("data-cfx-role=\"graph-node-details-layer\"", StringComparison.Ordinal);
         Assert(svg.StartsWith("<svg", StringComparison.Ordinal) && svg.Contains("width=\"1200\" height=\"675\"", StringComparison.Ordinal) && !svg.Contains("<script", StringComparison.OrdinalIgnoreCase), "Static graph SVG should be a complete, script-free image with caller-selected dimensions.");
+        Assert(svg.Contains("<g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export\"><title>", StringComparison.Ordinal), "Static graph exports should establish the graph CSS variable scope around markers, edges, nodes, and labels.");
         Assert(mark >= 0 && details > mark && svg.Contains(">+3</text>", StringComparison.Ordinal), "Static hierarchy stages should paint all node details above image marks and badge frontier nodes with hidden descendant counts.");
         Assert(!svg.Contains("data-node-id=\"region\"", StringComparison.Ordinal), "Static overview stages should omit deeper nodes instead of relying on interactive CSS visibility.");
 

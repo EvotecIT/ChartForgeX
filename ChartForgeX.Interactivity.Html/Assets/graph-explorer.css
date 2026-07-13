@@ -701,8 +701,12 @@
   stroke-width: 3;
 }
 
-.cfx-graph-node image:not(.cfx-graph-node-image-rect) {
+.cfx-graph-node image {
   clip-path: circle(50%);
+}
+
+.cfx-graph-node .cfx-graph-node-image-rect {
+  clip-path: none;
 }
 
 .cfx-graph-node text,

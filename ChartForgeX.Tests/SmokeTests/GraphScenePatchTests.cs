@@ -27,5 +27,10 @@ internal static partial class SmokeTests {
         invalid.UpsertEdges.Add(new GraphSceneEdge { Id = "broken", SourceNodeId = "api", TargetNodeId = "missing" });
         AssertThrows<InvalidOperationException>(() => scene.ApplyPatch(invalid), "Invalid graph patches should fail validation.");
         Assert(scene.Nodes.Count == 2 && scene.Edges.Count == 1 && scene.Edges[0].Id == "api-queue", "A failed graph patch should restore the complete previous scene instead of leaving partial mutations.");
+
+        var dangling = new GraphScenePatch { RemoveIncidentReferences = false };
+        dangling.RemoveNodeIds.Add("queue");
+        AssertThrows<InvalidOperationException>(() => scene.ApplyPatch(dangling), "Graph patches should reject node removal that leaves a surviving edge with a missing endpoint.");
+        Assert(scene.Nodes.Count == 2 && scene.Edges.Single().Id == "api-queue", "Rejected dangling-edge patches should preserve the original graph document.");
     }
 }

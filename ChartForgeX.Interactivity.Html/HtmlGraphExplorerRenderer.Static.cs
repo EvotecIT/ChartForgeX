@@ -45,7 +45,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var markerId = SafeId(scene.Id) + "-static-arrow";
         writer.Append("<style>");
         writer.Append(HtmlGraphExplorerAssets.Style);
-        writer.Append("</style><title>");
+        writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export\"><title>");
         writer.Append(Text(scene.Title));
         writer.Append("</title>");
         WriteArrowMarkers(writer, scene, markerId);
@@ -58,7 +58,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteEdges(writer, scene, positions, clusterMembership, emptyPositions, new Dictionary<string, double>(StringComparer.Ordinal), markerId, emptyIds, false);
         WriteEdgeLabels(writer, scene, positions, emptyPositions, new Dictionary<string, double>(StringComparer.Ordinal), emptyIds);
         WriteNodes(writer, scene, positions, clusterMembership, emptyIds, false, false, labeledNodeIds);
-        writer.Append("</g>");
+        writer.Append("</g></g>");
         return writer.ToString();
     }
 
