@@ -43,7 +43,7 @@ public sealed partial class TopologyPngRenderer {
         var height = (int)Math.Ceiling(prepared.Viewport.Height);
         var theme = prepared.Theme ?? TopologyTheme.Light();
         var highlight = TopologyHighlightState.From(prepared, options);
-        var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), null, Math.Max(1, options.PngOutputScale));
+        var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), Math.Max(1, options.PngOutputScale));
         canvas.Clear(Color(theme.Background));
         if (prepared.LayoutMode != TopologyLayoutMode.Geographic) DrawCanvasSurface(canvas, prepared, theme, options);
         if (options.IncludeTitle) DrawHeader(canvas, prepared, theme, options);
@@ -153,7 +153,7 @@ public sealed partial class TopologyPngRenderer {
         if (options.HeaderStyle == TopologyHeaderStyle.CenterBanner && !string.IsNullOrWhiteSpace(chart.Title)) {
             var fontSize = 34.0;
             var availableWidth = Math.Max(0, chart.Viewport.Width - chart.Viewport.Padding * 2);
-            var bannerWidth = Math.Min(availableWidth, Math.Max(360, RgbaCanvas.MeasureTextEmphasizedWidth(chart.Title!, fontSize, null) + 72));
+            var bannerWidth = Math.Min(availableWidth, Math.Max(360, canvas.MeasureTextEmphasizedWidth(chart.Title!, fontSize) + 72));
             var bannerHeight = 58.0;
             var bannerX = (chart.Viewport.Width - bannerWidth) / 2;
             var bannerY = chart.Viewport.Padding + 2;
@@ -187,7 +187,7 @@ public sealed partial class TopologyPngRenderer {
                 var groupLabelWidth = GroupHeaderLabelWidth(group, options, renderSymbol);
                 var groupLabelSize = FitFontSize(group.Label, groupLabelWidth, 16, 12, true);
                 var groupLabel = TrimToEstimatedWidth(group.Label, groupLabelWidth, groupLabelSize, true);
-                var textWidth = RgbaCanvas.MeasureTextEmphasizedWidth(groupLabel, groupLabelSize, null);
+                var textWidth = canvas.MeasureTextEmphasizedWidth(groupLabel, groupLabelSize);
                 if (renderSymbol && !neutralSurface) {
                     var symbolCx = cx - (textWidth + 30) / 2 + 10;
                     canvas.DrawCircle(symbolCx, group.Y + 26, 10, Color(StatusFill(accentValue, theme.Background)));
@@ -406,7 +406,7 @@ public sealed partial class TopologyPngRenderer {
 
     private static void DrawCardSubtitleChip(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
         var subtitle = TrimTo(node.Subtitle!, displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 16);
-        var width = Math.Min(Math.Max(48, RgbaCanvas.MeasureTextEmphasizedWidth(subtitle, 8.5, null) + 18), Math.Max(48, node.Width - 50));
+        var width = Math.Min(Math.Max(48, canvas.MeasureTextEmphasizedWidth(subtitle, 8.5) + 18), Math.Max(48, node.Width - 50));
         var height = 17.0;
         var x = node.X + 42;
         var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : node.Height - 22);
@@ -431,7 +431,7 @@ public sealed partial class TopologyPngRenderer {
 
     private static void DrawTileSubtitle(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, TopologyRenderOptions options) {
         var subtitle = TrimTo(node.Subtitle!, 16);
-        var width = Math.Min(Math.Max(46, RgbaCanvas.MeasureTextEmphasizedWidth(subtitle, 8.5, null) + 18), Math.Max(46, node.Width + 28));
+        var width = Math.Min(Math.Max(46, canvas.MeasureTextEmphasizedWidth(subtitle, 8.5) + 18), Math.Max(46, node.Width + 28));
         var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 10.5, true, options.MaxNodeLabelLines, options).Count;
         var x = CenterX(node) - width / 2;
         var y = node.Y + node.Height + 1 + labelLineCount * 13;
@@ -443,7 +443,7 @@ public sealed partial class TopologyPngRenderer {
     private static void DrawNodeBadge(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor color, TopologyNodeDisplayMode displayMode) {
         var badge = NodeBadge(node);
         if (string.IsNullOrWhiteSpace(badge)) return;
-        var width = Math.Max(18, RgbaCanvas.MeasureTextEmphasizedWidth(badge, 8.5, null) + 12);
+        var width = Math.Max(18, canvas.MeasureTextEmphasizedWidth(badge, 8.5) + 12);
         var height = 18.0;
         var x = displayMode == TopologyNodeDisplayMode.Dot ? CenterX(node) + 8 : displayMode == TopologyNodeDisplayMode.Icon ? CenterX(node) - width / 2 : node.X + node.Width - width - 6;
         var y = displayMode == TopologyNodeDisplayMode.Dot ? CenterY(node) - 21 : displayMode == TopologyNodeDisplayMode.Icon ? node.Y + node.Height + 4 : displayMode == TopologyNodeDisplayMode.Tile ? node.Y - 8 : node.Y + node.Height - height - 6;
@@ -706,18 +706,18 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawCentered(RgbaCanvas canvas, double centerX, double y, string text, ChartColor color, double fontSize, bool emphasized) {
-        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
+        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(text, fontSize) : canvas.MeasureTextWidth(text, fontSize);
         if (emphasized) canvas.DrawTextEmphasized(centerX - width / 2, y, text, color, fontSize);
         else canvas.DrawText(centerX - width / 2, y, text, color, fontSize);
     }
 
     private static void DrawCenteredMiddle(RgbaCanvas canvas, double centerX, double centerY, string text, ChartColor color, double fontSize, bool emphasized) {
-        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
+        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(text, fontSize) : canvas.MeasureTextWidth(text, fontSize);
         DrawTextMiddle(canvas, centerX - width / 2, centerY, text, color, fontSize, emphasized);
     }
 
     private static void DrawTextMiddle(RgbaCanvas canvas, double x, double centerY, string text, ChartColor color, double fontSize, bool emphasized) {
-        var y = centerY - RgbaCanvas.MeasureTextHeight(fontSize, null) / 2;
+        var y = centerY - canvas.MeasureTextHeight(fontSize) / 2;
         if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
         else canvas.DrawText(x, y, text, color, fontSize);
     }
@@ -734,7 +734,7 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawCenteredWithHalo(RgbaCanvas canvas, double centerX, double y, string text, ChartColor color, double fontSize, bool emphasized, ChartColor haloColor) {
-        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
+        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(text, fontSize) : canvas.MeasureTextWidth(text, fontSize);
         var x = centerX - width / 2;
         DrawTextWithReadableHalo(canvas, x, y, text, color, haloColor, fontSize, emphasized);
     }

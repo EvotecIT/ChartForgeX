@@ -128,9 +128,7 @@ public sealed partial class PngChartRenderer {
     private static string FormatSignedValue(Chart chart, double value) => value >= 0 ? "+" + FormatValue(chart, value) : FormatValue(chart, value);
 
     private static double WaterfallY(ChartRect plot, ChartRange bounds, double value) {
-        var span = bounds.MaxY - bounds.MinY;
-        if (Math.Abs(span) < 0.000001) return plot.Top + plot.Height / 2;
-        return plot.Bottom - (value - bounds.MinY) / span * plot.Height;
+        return plot.Bottom - ChartMath.Normalize(value, bounds.MinY, bounds.MaxY) * plot.Height;
     }
 
     private readonly struct WaterfallStep {

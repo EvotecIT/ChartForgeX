@@ -10,11 +10,13 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-nodes.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.05-viewport.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.09-performance.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-layout.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.11-state-sync.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.19-physics-telemetry.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-quality.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js"

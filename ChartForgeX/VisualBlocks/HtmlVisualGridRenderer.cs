@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
 using ChartForgeX.Primitives;
@@ -14,15 +13,21 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual grids as dependency-free static HTML.
 /// </summary>
 public sealed class HtmlVisualGridRenderer {
-    private static long ScopeCounter;
     private readonly SvgChartRenderer _chartRenderer = new();
     private readonly SvgVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid as an embeddable HTML fragment.</summary>
-    public string RenderFragment(VisualGrid grid) {
+    public string RenderFragment(VisualGrid grid) => RenderFragment(grid, string.Empty);
+
+    /// <summary>Renders a visual grid fragment with a caller-provided deterministic ID scope.</summary>
+    /// <param name="grid">The visual grid to render.</param>
+    /// <param name="idScope">A stable scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment containing inline SVG children.</returns>
+    public string RenderFragment(VisualGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
+        if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
-        var scope = NextScope();
+        var scope = idScope;
         var layout = VisualGridLayout.FromGrid(grid);
         var columns = Math.Min(grid.Columns, grid.Items.Count);
         var writer = new HtmlMarkupWriter();
@@ -91,7 +96,7 @@ public sealed class HtmlVisualGridRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(background, theme.Text.ToCss(), theme.MutedText.ToCss(), theme.CardBorder.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(RenderFragment(grid)).Line()
+            .RawTrusted(RenderFragment(grid, "html-page")).Line()
             .EndElement().Line()
             .EndElement();
         return writer.Build();
@@ -164,8 +169,4 @@ public sealed class HtmlVisualGridRenderer {
         return openTag.Substring(0, valueStart) + VisualBlockRendering.Escape(value) + openTag.Substring(valueEnd);
     }
 
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "html-visual-grid-" + value.ToString(CultureInfo.InvariantCulture);
-    }
 }

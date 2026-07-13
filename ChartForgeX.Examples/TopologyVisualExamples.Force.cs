@@ -1,4 +1,5 @@
 using System.Globalization;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
@@ -32,7 +33,7 @@ internal static partial class TopologyVisualExamples {
         Console.WriteLine("Writing " + name + ".svg");
         chart.SaveSvg(Path.Combine(target, name + ".svg"), options);
         Console.WriteLine("Writing " + name + ".html");
-        chart.SaveHtml(Path.Combine(target, name + ".html"), options);
+        chart.SaveInteractiveHtml(Path.Combine(target, name + ".html"), options);
         Console.WriteLine("Writing " + name + ".png");
         chart.SavePng(Path.Combine(target, name + ".png"), options);
         artifacts.Add(new VisualArtifact(name, title, "topology", description));

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -41,7 +42,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-group-icon-id=\"microsoft-ad:site\"", StringComparison.Ordinal), "Topology SVG should expose group icon ids.");
         Assert(svg.Contains("data-node-kind=\"Server\"", StringComparison.Ordinal), "Icon nodes should inherit their generic node kind from the icon definition.");
 
-        var html = chart.ToHtmlPage(options);
+        var html = chart.ToInteractiveHtmlPage(options);
         Assert(html.Contains("iconId: attr(element, 'data-node-icon-id')", StringComparison.Ordinal), "Topology HTML selection payloads should include node icon ids.");
         Assert(html.Contains("iconShape: attr(element, 'data-group-icon-shape')", StringComparison.Ordinal), "Topology HTML selection payloads should include group icon shapes.");
         Assert(chart.ToPng(options).Length > 64, "Topology PNG should render built-in and vendor icon nodes.");
@@ -83,7 +84,7 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains(">DOM<", StringComparison.Ordinal), "Domain icons should use renderer-owned glyphs instead of fallback text.");
         Assert(!svg.Contains(">FSW<", StringComparison.Ordinal), "Vendor switch icons should use renderer-owned switch glyphs instead of fallback text.");
 
-        var html = palette.ToHtmlPage(options);
+        var html = palette.ToInteractiveHtmlPage(options);
         Assert(html.Contains("iconId: attr(element, 'data-node-icon-id')", StringComparison.Ordinal), "Interactive palette HTML should expose selected icon ids.");
         Assert(palette.ToPng(options).Length > 64, "Palette charts should render to PNG.");
     }
@@ -117,7 +118,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("<rect x=\"7\" y=\"10\" width=\"13\"", StringComparison.Ordinal), "SVG renderer should include the vendor artwork fragment instead of only the fallback glyph.");
         Assert(!svg.Contains(">ADF<", StringComparison.Ordinal), "Artwork-backed icons should not fall back to compact text symbols in SVG.");
 
-        var html = palette.ToHtmlPage(renderOptions);
+        var html = palette.ToInteractiveHtmlPage(renderOptions);
         Assert(html.Contains("iconArtwork: attr(element, 'data-node-icon-artwork')", StringComparison.Ordinal), "Interactive palette payloads should include artwork type metadata.");
 
         var json = pack.ToJsonManifest();

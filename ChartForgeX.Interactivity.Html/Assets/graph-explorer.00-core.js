@@ -206,6 +206,7 @@
     context.lineCap = 'round';
     const compact = root.classList.contains('cfx-graph-lod-compact');
     const dense = compact || state.edges.length > 250;
+    const moving = root.dataset.cfxGraphPhysicsState === 'running' && !options?.force;
     state.clusters.forEach(cluster => {
       if (!visible(cluster.el)) return;
       const metrics = clusterMetrics(cluster, byId);
@@ -222,7 +223,7 @@
       if (!metrics.expanded) context.fill();
       context.stroke();
       context.setLineDash([]);
-      if (!metrics.expanded || selected) {
+      if ((!moving && !metrics.expanded) || selected) {
         context.globalAlpha = metrics.expanded ? .55 : 1;
         context.font = '700 12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
@@ -254,13 +255,13 @@
       context.stroke();
       context.setLineDash([]);
       context.globalAlpha = 1;
-      if (edge.sourceArrow || edge.targetArrow || edge.directed) {
+      if ((!moving || selected || related) && (edge.sourceArrow || edge.targetArrow || edge.directed)) {
         context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
         if (edge.sourceArrow) drawArrow(context, rendered, control, 'source', edge.strokeColor);
         if (edge.targetArrow || edge.directed) drawArrow(context, rendered, control, 'target', edge.strokeColor);
         context.globalAlpha = 1;
       }
-      if (edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)) {
+      if ((!moving || selected || related) && edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)) {
         const label = edgeLabelPoint(rendered, control);
         context.font = '11px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
@@ -281,7 +282,7 @@
       const selected = node.el.classList.contains('cfx-graph-selected');
       context.save();
       context.globalAlpha = dimmed ? .18 : 1;
-      drawNodeMark(context, node, selected, compact, root);
+      drawNodeMark(context, node, selected, compact, root, moving);
       if (primary) {
         context.beginPath();
         context.arc(node.x, node.y, node.size + 9, 0, Math.PI * 2);
@@ -289,7 +290,7 @@
         context.lineWidth = 3;
         context.stroke();
       }
-      if (!compact || node.shape === 'text') {
+      if ((!compact && !moving) || node.shape === 'text' || selected || primary) {
         context.font = '12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
         context.textBaseline = node.shape === 'text' ? 'middle' : 'top';

@@ -26,15 +26,16 @@ internal sealed partial class RgbaCanvas {
     public RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont) : this(width, height, scale, outlineFont, 1) { }
 
     public RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont, int outputScale) {
+        var allocation = RasterAllocationGuard.Calculate(width, height, scale, outputScale);
         Width = width;
         Height = height;
-        _supersamplingScale = Math.Max(1, scale);
-        _outputScale = Math.Max(1, outputScale);
-        _scale = _supersamplingScale * _outputScale;
+        _supersamplingScale = scale;
+        _outputScale = outputScale;
+        _scale = allocation.CombinedScale;
         _outlineFont = outlineFont ?? DefaultOutlineFont;
-        _pixelWidth = width * _scale;
-        _pixelHeight = height * _scale;
-        Pixels = new byte[_pixelWidth * _pixelHeight * 4];
+        _pixelWidth = allocation.PixelWidth;
+        _pixelHeight = allocation.PixelHeight;
+        Pixels = new byte[allocation.ByteCount];
     }
 
     public void Clear(ChartColor color) {
@@ -312,13 +313,19 @@ internal sealed partial class RgbaCanvas {
         return MeasureTextTinyWidth(text, FallbackScaleForFontSize(fontSize), null);
     }
 
+    internal double MeasureTextWidth(string text, double fontSize) => MeasureTextWidth(text, fontSize, _outlineFont);
+
     public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont) + EmphasisOffset(fontSize);
+
+    internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);
 
     public static double MeasureTextHeight(double fontSize, TrueTypeFont? outlineFont) {
         var font = outlineFont ?? DefaultOutlineFont;
         if (font != null) return font.LineHeight(Math.Max(1, fontSize));
         return TinyFont.Height * FallbackScaleForFontSize(fontSize);
     }
+
+    internal double MeasureTextHeight(double fontSize) => MeasureTextHeight(fontSize, _outlineFont);
 
     public static double MeasureTextTinyHeight(int scale) {
         return MeasureTextTinyHeight(scale, null);

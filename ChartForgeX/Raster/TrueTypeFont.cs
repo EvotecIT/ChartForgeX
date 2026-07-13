@@ -7,7 +7,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Raster;
 
-internal sealed class TrueTypeFont {
+internal sealed partial class TrueTypeFont {
     private static readonly object FontCacheLock = new();
     private static readonly Dictionary<string, TrueTypeFont?> FontCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly byte[] _data;
@@ -55,7 +55,11 @@ internal sealed class TrueTypeFont {
     }
 
     internal static TrueTypeFont? TryLoadDefault(out string? resolvedPath) {
-        foreach (var path in CandidatePaths()) {
+        return TryLoadForFamily(null, out resolvedPath);
+    }
+
+    internal static TrueTypeFont? TryLoadForFamily(string? fontFamily, out string? resolvedPath) {
+        foreach (var path in CandidatePaths(fontFamily)) {
             var font = TryLoadFromPath(path);
             if (font != null && font.HasGlyphs("ChartForgeX 0123456789")) {
                 resolvedPath = path;
@@ -67,16 +71,16 @@ internal sealed class TrueTypeFont {
         return null;
     }
 
-    internal static PngFontInfo ResolveInfo(string? path, int? collectionIndex, string? faceName) {
+    internal static PngFontInfo ResolveInfo(string? path, int? collectionIndex, string? faceName, string? themeFontFamily) {
         var requestedPath = FullPathOrNull(path);
         if (requestedPath != null) {
             var requested = TryLoadFromPath(requestedPath, collectionIndex, faceName);
-            if (requested != null) return new PngFontInfo(PngFontSource.Requested, requestedPath, collectionIndex, faceName, requestedPath, requested.CollectionIndex, requested.DisplayName);
+            if (requested != null) return new PngFontInfo(PngFontSource.Requested, themeFontFamily, requestedPath, collectionIndex, faceName, requestedPath, requested.CollectionIndex, requested.DisplayName);
         }
 
-        var automatic = TryLoadDefault(out var automaticPath);
-        if (automatic != null) return new PngFontInfo(PngFontSource.Automatic, requestedPath, collectionIndex, faceName, automaticPath, automatic.CollectionIndex, automatic.DisplayName);
-        return new PngFontInfo(PngFontSource.BuiltIn, requestedPath, collectionIndex, faceName, null, null, "ChartForgeX Tiny");
+        var automatic = TryLoadForFamily(themeFontFamily, out var automaticPath);
+        if (automatic != null) return new PngFontInfo(PngFontSource.Automatic, themeFontFamily, requestedPath, collectionIndex, faceName, automaticPath, automatic.CollectionIndex, automatic.DisplayName);
+        return new PngFontInfo(PngFontSource.BuiltIn, themeFontFamily, requestedPath, collectionIndex, faceName, null, null, "ChartForgeX Tiny");
     }
 
     public static TrueTypeFont? TryLoadFromPath(string? path) => TryLoadFromPath(path, null, null);
@@ -687,21 +691,6 @@ internal sealed class TrueTypeFont {
     }
 
     private static GlyphPoint Mid(GlyphPoint left, GlyphPoint right) => new((left.X + right.X) / 2.0, (left.Y + right.Y) / 2.0, true);
-
-    private static IEnumerable<string> CandidatePaths() {
-        yield return "/System/Library/Fonts/SFNS.ttf";
-        yield return "/System/Library/Fonts/SFCompact.ttf";
-        yield return "/System/Library/Fonts/HelveticaNeue.ttc";
-        yield return "/System/Library/Fonts/Geneva.ttf";
-        yield return "/Library/Fonts/Arial.ttf";
-        yield return "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
-        yield return "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf";
-        var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-        if (!string.IsNullOrEmpty(windows)) {
-            yield return Path.Combine(windows, "Fonts", "arial.ttf");
-            yield return Path.Combine(windows, "Fonts", "segoeui.ttf");
-        }
-    }
 
     private static ushort ReadUInt16(byte[] data, int offset) => (ushort)((data[offset] << 8) | data[offset + 1]);
     private static short ReadInt16(byte[] data, int offset) => (short)ReadUInt16(data, offset);

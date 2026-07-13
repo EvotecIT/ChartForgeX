@@ -39,7 +39,7 @@ public sealed partial class PngVisualBlockRenderer {
         canvas.DrawTextEmphasized(x, y, slice.StartBit.ToString(CultureInfo.InvariantCulture), color, fontSize);
         if (slice.EndBit == slice.StartBit) return;
         var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);
-        var endWidth = RgbaCanvas.MeasureTextEmphasizedWidth(end, fontSize, null);
+        var endWidth = canvas.MeasureTextEmphasizedWidth(end, fontSize);
         canvas.DrawTextEmphasized(x + width - endWidth, y, end, color, fontSize);
     }
 }

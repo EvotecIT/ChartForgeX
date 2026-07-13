@@ -14,6 +14,7 @@ public sealed partial class ChartOptions {
     private ChartTheme _theme = ChartTheme.Light();
     private int _tickCount = 6;
     private ChartLabelDensity _xAxisLabelDensity = ChartLabelDensity.Auto;
+    private ChartLabelDensity _yAxisLabelDensity = ChartLabelDensity.Auto;
     private double _xAxisLabelAngle;
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.Bottom;
@@ -304,6 +305,17 @@ public sealed partial class ChartOptions {
         set {
             if (!Enum.IsDefined(typeof(ChartLabelDensity), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown x-axis label density.");
             _xAxisLabelDensity = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the density used for generated y-axis labels.
+    /// </summary>
+    public ChartLabelDensity YAxisLabelDensity {
+        get => _yAxisLabelDensity;
+        set {
+            if (!Enum.IsDefined(typeof(ChartLabelDensity), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown y-axis label density.");
+            _yAxisLabelDensity = value;
         }
     }
 

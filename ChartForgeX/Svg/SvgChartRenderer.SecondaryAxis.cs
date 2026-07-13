@@ -22,7 +22,9 @@ public sealed partial class SvgChartRenderer {
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
         var tickLabelMaxWidth = Math.Max(24, chart.Options.Size.Width - plot.Right - 18);
         var writer = new SvgMarkupWriter(2048);
-        foreach (var yv in yTicks) {
+        for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
+            var yv = yTicks[yIndex];
+            if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) continue;
             var y = map.Y(yv);
             var rawLabel = FormatSecondaryValue(chart, yv);
             var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelMaxWidth, tickFontSize);

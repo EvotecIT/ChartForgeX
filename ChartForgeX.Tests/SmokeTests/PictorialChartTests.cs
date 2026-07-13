@@ -44,6 +44,15 @@ internal static partial class SmokeTests {
         Assert(fiveStarSvg.Contains("data-cfx-empty-opacity=\"0.22\"", StringComparison.Ordinal), "Pictorial charts should expose empty-symbol opacity metadata.");
         Assert(CountOccurrences(fiveStarSvg, "data-cfx-role=\"pictorial-symbol\"") == 10, "Pictorial column settings should control symbol density.");
         Assert(fiveStar.ToPng().Length > 64, "Pictorial column settings should render PNG output.");
+        var tenStar = Chart.Create()
+            .WithSize(520, 260)
+            .WithPictorialColumns(5)
+            .WithPictorialMaximum(10)
+            .AddPictorial("Rating", new[] {
+                new ChartPictorialItem("Product", 3.5),
+                new ChartPictorialItem("Support", 5)
+            }, ChartPictorialShape.Star);
+        AssertNoDuplicateIds(fiveStarSvg + tenStar.ToSvg(), "Unscoped pictorial charts with distinct scaling options");
         var styledPictorial = Chart.Create()
             .WithSize(520, 260)
             .WithPictorialColumns(5)

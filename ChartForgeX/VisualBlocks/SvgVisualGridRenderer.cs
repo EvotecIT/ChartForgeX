@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -12,19 +11,23 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual grids to self-contained SVG.
 /// </summary>
 public sealed class SvgVisualGridRenderer {
-    private static long ScopeCounter;
     private readonly SvgChartRenderer _chartRenderer = new();
     private readonly SvgVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid to SVG markup.</summary>
-    public string Render(VisualGrid grid) => Render(grid, NextScope());
+    public string Render(VisualGrid grid) => Render(grid, string.Empty);
 
     /// <summary>Renders a visual grid to SVG markup with a caller-provided ID scope.</summary>
     public string Render(VisualGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
+        var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-visual-grid", idScope, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
+        var svg = RenderCore(grid, provisionalId);
+        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-visual-grid", idScope);
+    }
+
+    private string RenderCore(VisualGrid grid, string id) {
         var layout = VisualGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
-        var id = "cfx-visual-grid-" + VisualBlockRendering.StableHash(idScope ?? string.Empty, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
@@ -144,8 +147,4 @@ public sealed class SvgVisualGridRenderer {
         return openTag.Substring(0, valueStart) + VisualBlockRendering.Escape(value) + openTag.Substring(valueEnd);
     }
 
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "visual-grid-" + value.ToString(CultureInfo.InvariantCulture);
-    }
 }

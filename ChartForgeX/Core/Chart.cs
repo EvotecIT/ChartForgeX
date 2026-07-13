@@ -326,6 +326,13 @@ public sealed partial class Chart {
     public Chart WithXAxisLabelDensity(ChartLabelDensity density) { Options.XAxisLabelDensity = density; return this; }
 
     /// <summary>
+    /// Sets how aggressively generated y-axis labels should be reduced when vertical space is limited.
+    /// </summary>
+    /// <param name="density">The y-axis label density mode.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithYAxisLabelDensity(ChartLabelDensity density) { Options.YAxisLabelDensity = density; return this; }
+
+    /// <summary>
     /// Sets the x-axis label rotation angle in degrees for capable renderers.
     /// </summary>
     /// <param name="degrees">The label angle in degrees. Values are clamped by renderers when needed.</param>

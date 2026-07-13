@@ -23,7 +23,7 @@ public sealed partial class PngChartRenderer {
     public static PngFontInfo GetFontInfo(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var options = chart.Options;
-        return TrueTypeFont.ResolveInfo(options.PngFontPath, options.PngFontCollectionIndex, options.PngFontFaceName);
+        return TrueTypeFont.ResolveInfo(options.PngFontPath, options.PngFontCollectionIndex, options.PngFontFaceName, options.Theme.FontFamily);
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public sealed partial class PngChartRenderer {
     internal RgbaCanvas RenderCanvas(Chart chart) {
         ChartGuards.RenderCompatibility(chart);
         var o = chart.Options; var t = o.Theme;
-        var outlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName);
+        var outlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName) ?? TrueTypeFont.TryLoadForFamily(t.FontFamily, out _);
         var previousOutlineFont = CurrentOutlineFont;
         CurrentOutlineFont = outlineFont;
         try {
@@ -198,10 +198,11 @@ public sealed partial class PngChartRenderer {
 
             DrawAnnotationBands(c, chart, plot, map);
             var gridStyle = o.GridLineStyle;
-            foreach (var yv in yTicks) {
+            for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
+                var yv = yTicks[yIndex];
                 var y = map.Y(yv);
                 if (o.ShowGrid && gridStyle.ShowHorizontalLines) DrawPngGridLine(c, plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, gridStyle.HorizontalOpacity), gridStyle);
-                if (ShowYAxis(chart)) {
+                if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, PngTickFontSize(chart), o.YAxisLabelDensity)) {
                     var label = FormatValue(chart, yv);
                     var fontSize = PngTickFontSize(chart);
                     DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize + 4, label, o.TickLabelStyle, t.MutedText, fontSize, emphasized: false);

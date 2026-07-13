@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Threading;
 using ChartForgeX.Html;
 
 namespace ChartForgeX.VisualBlocks;
@@ -9,20 +8,26 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual blocks as dependency-free static HTML.
 /// </summary>
 public sealed class HtmlVisualBlockRenderer {
-    private static long ScopeCounter;
     private readonly SvgVisualBlockRenderer _svg = new();
 
     /// <summary>Renders a visual block as an embeddable HTML fragment.</summary>
-    public string RenderFragment(IVisualBlock block) => RenderFragment(block, constrainMaxWidth: true);
+    public string RenderFragment(IVisualBlock block) => RenderFragment(block, string.Empty);
 
-    private string RenderFragment(IVisualBlock block, bool constrainMaxWidth) {
+    /// <summary>Renders a visual block fragment with a caller-provided deterministic ID scope.</summary>
+    /// <param name="block">The visual block to render.</param>
+    /// <param name="idScope">A stable scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment containing inline SVG.</returns>
+    public string RenderFragment(IVisualBlock block, string idScope) => RenderFragment(block, idScope, constrainMaxWidth: true);
+
+    private string RenderFragment(IVisualBlock block, string idScope, bool constrainMaxWidth) {
         VisualBlockRendering.Validate(block);
+        if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         return new HtmlMarkupWriter()
             .StartElement("div")
             .Attribute("class", "chartforgex-visual-block")
             .Attribute("style", (constrainMaxWidth ? "width:100%;max-width:" + block.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;" : string.Empty) + "box-sizing:border-box;overflow:visible")
             .EndStartElement()
-            .RawTrusted(_svg.Render(block, NextScope()))
+            .RawTrusted(_svg.Render(block, idScope))
             .EndElement()
             .Build();
     }
@@ -40,15 +45,10 @@ public sealed class HtmlVisualBlockRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, VisualBlockRendering.CssFontFamily(theme.FontFamily)) + ".chartforgex-visual-block{width:min(100%," + block.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-visual-block svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-visual-block{width:100%;max-width:none}.chartforgex-visual-block svg{width:100%;height:auto}"));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(RenderFragment(block, constrainMaxWidth: false)).Line()
+            .RawTrusted(RenderFragment(block, "html-page", constrainMaxWidth: false)).Line()
             .EndElement().Line()
             .EndElement();
         return writer.Build();
-    }
-
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "html-visual-block-" + value.ToString(CultureInfo.InvariantCulture);
     }
 
 }

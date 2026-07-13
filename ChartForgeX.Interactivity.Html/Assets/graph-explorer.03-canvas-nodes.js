@@ -1,8 +1,8 @@
-  const drawNodeMark = (context, node, selected, compact, root) => {
+  const drawNodeMark = (context, node, selected, compact, root, moving) => {
     context.fillStyle = node.backgroundColor || '#2563eb';
     context.strokeStyle = selected ? '#f59e0b' : node.borderColor || '#eff6ff';
     context.lineWidth = selected ? 5 : compact ? 1.5 : 3;
-    if (node.shadow) {
+    if (node.shadow && !moving) {
       context.shadowColor = 'rgba(15,23,42,.18)';
       context.shadowBlur = 10;
       context.shadowOffsetY = 5;
@@ -54,7 +54,7 @@
     context.shadowColor = 'transparent';
     context.shadowBlur = 0;
     context.shadowOffsetY = 0;
-    if (node.icon) {
+    if (node.icon && !moving) {
       context.font = 'bold 12px Segoe UI, Arial, sans-serif';
       context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = '#ffffff';
       context.fillText(node.icon, node.x, node.y + 1);

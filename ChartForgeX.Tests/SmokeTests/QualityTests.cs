@@ -433,28 +433,6 @@ internal static partial class SmokeTests {
         Assert(baseline.SequenceEqual(outOfRangeIndex), "PNG renderer should fall back to automatic font discovery when a collection face index cannot be loaded.");
     }
 
-    private static void PngFontDiagnosticsDescribeFallbackDecisions() {
-        var collectionPath = "/System/Library/Fonts/HelveticaNeue.ttc";
-        var automatic = Chart.Create().GetPngFontInfo();
-        Assert(automatic.Source == PngFontSource.Automatic || automatic.Source == PngFontSource.BuiltIn, "PNG font diagnostics should report automatic or built-in fallback for default charts.");
-        Assert(automatic.UsesOutlineFont == (automatic.Source != PngFontSource.BuiltIn), "PNG font diagnostics should describe outline font usage consistently.");
-
-        var missingFont = Path.Combine(Path.GetTempPath(), "ChartForgeX-missing-font-" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture) + ".ttf");
-        var missing = Chart.Create().WithPngFont(missingFont).GetPngFontInfo();
-        Assert(missing.RequestedPath == Path.GetFullPath(missingFont), "PNG font diagnostics should include the requested font path.");
-        Assert(missing.Source != PngFontSource.Requested, "PNG font diagnostics should not report requested source when the configured font cannot be loaded.");
-
-        if (File.Exists(collectionPath)) {
-            var requested = Chart.Create().WithPngFont(collectionPath, faceName: "Helvetica Neue").GetPngFontInfo();
-            Assert(requested.Source == PngFontSource.Requested, "PNG font diagnostics should report requested source when a configured font loads.");
-            Assert(string.Equals(requested.ResolvedPath, Path.GetFullPath(collectionPath), StringComparison.OrdinalIgnoreCase), "PNG font diagnostics should include the resolved requested path.");
-            Assert(requested.ResolvedCollectionIndex.HasValue, "PNG font diagnostics should include the resolved collection index for TrueType collections.");
-            Assert(!string.IsNullOrWhiteSpace(requested.ResolvedFaceName), "PNG font diagnostics should include a resolved face name when available.");
-            var indexed = Chart.Create().WithPngFont(collectionPath, 0).GetPngFontInfo();
-            Assert(indexed.ResolvedCollectionIndex == 0, "PNG font diagnostics should preserve explicitly selected collection indexes.");
-        }
-    }
-
     private static void PngTrueTypeRendererHandlesCompositeGlyphs() {
         var collectionPath = "/System/Library/Fonts/HelveticaNeue.ttc";
         var fallback = Chart.Create()

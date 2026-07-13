@@ -582,9 +582,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double ProjectX(double value, ChartRange range, ChartRect plot) {
-        var span = range.MaxX - range.MinX;
-        if (Math.Abs(span) < 0.0000001) return plot.Left + plot.Width / 2;
-        return plot.Left + (value - range.MinX) / span * plot.Width;
+        return plot.Left + ChartMath.Normalize(value, range.MinX, range.MaxX) * plot.Width;
     }
 
     private static string FormatX(Chart chart, double value) {
@@ -625,46 +623,6 @@ public sealed partial class SvgChartRenderer {
         }
 
         return sb.ToString();
-    }
-
-    private static string BuildId(Chart chart, string idScope) {
-        unchecked {
-            uint hash = 2166136261;
-            Add(ref hash, idScope ?? string.Empty);
-            Add(ref hash, chart.Title);
-            Add(ref hash, chart.Subtitle);
-            Add(ref hash, chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture));
-            Add(ref hash, chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture));
-            foreach (var series in chart.Series) {
-                Add(ref hash, series.Name);
-                Add(ref hash, series.Kind.ToString());
-                Add(ref hash, series.ShowInLegend.ToString(CultureInfo.InvariantCulture));
-                Add(ref hash, series.SemanticRole ?? string.Empty);
-                Add(ref hash, series.FillPattern.ToString());
-                foreach (var point in series.Points) {
-                    Add(ref hash, point.X.ToString("R", CultureInfo.InvariantCulture));
-                    Add(ref hash, point.Y.ToString("R", CultureInfo.InvariantCulture));
-                }
-                foreach (var label in series.PointLabels) Add(ref hash, label ?? string.Empty);
-                foreach (var pattern in series.PointFillPatterns) Add(ref hash, pattern?.ToString() ?? string.Empty);
-            }
-
-            return "cfx" + hash.ToString("x8", CultureInfo.InvariantCulture);
-        }
-    }
-
-    private static void Add(ref uint hash, string value) {
-        AddRaw(ref hash, value.Length.ToString(CultureInfo.InvariantCulture));
-        AddRaw(ref hash, ":");
-        AddRaw(ref hash, value);
-        AddRaw(ref hash, "|");
-    }
-
-    private static void AddRaw(ref uint hash, string value) {
-        foreach (var ch in value) {
-            hash ^= ch;
-            hash *= 16777619;
-        }
     }
 
     private static int VisualPointCount(ChartSeries series) {

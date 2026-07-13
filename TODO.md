@@ -36,12 +36,10 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Add denser replication and site-link fixtures that prove routes do not cross node cards in common real-world layouts.
 - Tune label-clearance and route-overlap weights with real dense examples.
 - Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: reusable diagnostics and richer text shaping should be added through typed parser/renderer stages rather than ad hoc string handling.
-- Turn the stencil browser into a small builder demo only if the reusable contract is a `TopologyChart` export, not host UI state.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
 - Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
 - Promote topology artifacts into `visual-baseline.json` only after dense routing and geographic layout polish are stable enough for numeric baselines.
 - Keep dashboard shells outside ChartForgeX; host projects such as HtmlForgeX and TestimoX should own sidebars, filters, inspectors, cards, and collected product data.
-- Unify topology HTML interaction code with `ChartForgeX.Interactivity.Html` only where it reduces duplicated event/control code without changing the static default.
 
 ## Visual Blocks
 

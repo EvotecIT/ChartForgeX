@@ -62,4 +62,25 @@ public sealed class TopologyView {
 
     /// <summary>Gets or sets whether outgoing edges should be traversed when building a neighbor view.</summary>
     public bool IncludeOutgoingEdges { get; set; } = true;
+
+    internal TopologyView Clone() {
+        var copy = new TopologyView {
+            Id = Id,
+            Title = Title,
+            Subtitle = Subtitle,
+            NeighborDepth = NeighborDepth,
+            IncludeConnectedEdges = IncludeConnectedEdges,
+            IncludeNodeGroups = IncludeNodeGroups,
+            IncludeIncomingEdges = IncludeIncomingEdges,
+            IncludeOutgoingEdges = IncludeOutgoingEdges
+        };
+        copy.GroupIds.AddRange(GroupIds);
+        copy.NodeIds.AddRange(NodeIds);
+        copy.EdgeIds.AddRange(EdgeIds);
+        copy.FocusNodeIds.AddRange(FocusNodeIds);
+        copy.NodeKinds.AddRange(NodeKinds);
+        copy.EdgeKinds.AddRange(EdgeKinds);
+        copy.HealthStatuses.AddRange(HealthStatuses);
+        return copy;
+    }
 }

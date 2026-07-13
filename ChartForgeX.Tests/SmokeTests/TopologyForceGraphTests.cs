@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -61,7 +62,7 @@ internal static partial class SmokeTests {
         var options = new TopologyRenderOptions { IncludeLegend = false }
             .WithForceGraphStyle()
             .WithHtmlForceGraphControls();
-        var html = chart.ToHtmlPage(options);
+        var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("data-cfx-force-graph-controls=\"true\"", StringComparison.Ordinal), "Force graph HTML should opt into graph-specific controls.");
         Assert(html.Contains("data-cfx-force-search=\"true\"", StringComparison.Ordinal), "Force graph HTML should expose a search field.");
@@ -97,7 +98,7 @@ internal static partial class SmokeTests {
             }
             .WithForceGraphStyle()
             .WithHtmlForceGraphControls();
-        var html = chart.ToHtmlPage(options);
+        var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("<option value=\"group-01\">Group 2</option>", StringComparison.Ordinal), "Force graph group filters should include groups that remain in the prepared view.");
         Assert(!html.Contains("<option value=\"group-00\">Group 1</option>", StringComparison.Ordinal), "Force graph group filters should omit groups removed by the prepared view.");
@@ -113,7 +114,7 @@ internal static partial class SmokeTests {
             .WithForceGraphStyle()
             .WithHtmlForceGraphControls()
             .WithRelationshipRadialFocus("group-00-hub", maxDepth: 2, maxFanout: 12);
-        var html = chart.ToHtmlPage(options);
+        var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("data-layout-mode=\"RelationshipRadial\"", StringComparison.Ordinal), "Relationship-radial HTML should preserve the graph-exploration layout mode.");
         Assert(html.Contains("data-cfx-force-graph-controls=\"true\"", StringComparison.Ordinal), "Relationship-radial HTML should opt into graph-specific focus controls.");

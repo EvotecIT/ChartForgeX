@@ -142,7 +142,7 @@ public sealed partial class PngChartRenderer {
             if (ShouldDrawDataLabels(chart, series)) {
                 var labelPoint = connector.RoutePoints.Length > 0 ? DottedMapPolylinePoint(DottedMapSmoothRoute(routePoints), 0.36) : DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
-                var textWidth = RgbaCanvas.MeasureTextEmphasizedWidth(label, 12, null);
+                var textWidth = c.MeasureTextEmphasizedWidth(label, 12);
                 c.FillRoundedRect(labelPoint.X - textWidth / 2 - 5, labelPoint.Y + Math.Max(8, dot * 1.7), textWidth + 10, 20, 9, ApplyOpacity(t.PlotBackground, 0.78));
                 c.DrawTextEmphasized(labelPoint.X - textWidth / 2, labelPoint.Y + Math.Max(12, dot * 2.4), label, connector.Color ?? series.Color ?? t.Warning, 12);
             }

@@ -77,7 +77,8 @@ function Update-VisualBaseline {
         [Parameter(Mandatory = $true)] [string] $VisualBaselinePath
     )
 
-    New-VisualBaseline -Comparison $Comparison | ConvertTo-Json -Depth 8 | Set-Content -Path $VisualBaselinePath -Encoding UTF8
+    $json = New-VisualBaseline -Comparison $Comparison | ConvertTo-Json -Depth 8
+    [System.IO.File]::WriteAllText($VisualBaselinePath, $json.Replace("`r`n", "`n").Replace("`r", "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
     Write-Host "Updated SVG/PNG visual baseline: $VisualBaselinePath"
 }
 

@@ -127,6 +127,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-performance-max-canvas-nodes", scene.Options.Performance.MaxInteractiveCanvasNodes.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-performance-max-canvas-edges", scene.Options.Performance.MaxInteractiveCanvasEdges.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-performance-telemetry-interval", scene.Options.Performance.TelemetrySampleInterval.ToString(CultureInfo.InvariantCulture));
+        Attribute(writer, "data-cfx-performance-warmup-frames", scene.Options.Performance.WarmupFrameCount.ToString(CultureInfo.InvariantCulture));
+        Attribute(writer, "data-cfx-performance-worker-progress-interval", scene.Options.Performance.WorkerProgressInterval.ToString(CultureInfo.InvariantCulture));
         writer.Append('>');
         WriteHeader(writer, scene, options, effectiveClusters);
         WriteStage(writer, scene, options, positions, domId, effectiveClusters);
@@ -191,10 +193,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var collapsedNodeRadii = collapsedNodePositions.Count == 0
             ? new Dictionary<string, double>(StringComparer.Ordinal)
             : BuildCollapsedNodeRenderRadii(scene, clusters, positions, clusterMembership, collapseClustersOnLoad);
-        writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\"");
+        writer.Append("<div class=\"cfx-graph-stage\"><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
         Attribute(writer, "aria-label", scene.Title);
         writer.Append("></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas>");
-        writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\"");
+        writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"img\" aria-hidden=\"false\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
         writer.Append("><title");
         Attribute(writer, "id", graphId + "-title");

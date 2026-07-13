@@ -10,7 +10,7 @@ public sealed partial class PngVisualBlockRenderer {
         var theme = table.Options.Theme;
         var color = cell.BadgeColor ?? VisualBlockRendering.StatusColor(theme, cell.BadgeStatus);
         var fontSize = Math.Max(9, table.Dense ? 10.5 : 11.5);
-        var badgeWidth = Math.Min(width, Math.Max(28, RgbaCanvas.MeasureTextEmphasizedWidth(cell.BadgeText, fontSize, null) + 18));
+        var badgeWidth = Math.Min(width, Math.Max(28, canvas.MeasureTextEmphasizedWidth(cell.BadgeText, fontSize) + 18));
         var badgeHeight = Math.Min(22, Math.Max(18, height));
         var badgeX = BadgeX(x, width, badgeWidth, cell.Alignment ?? VisualTextAlignment.Left);
         var badgeY = y + Math.Max(0, (height - badgeHeight) / 2);

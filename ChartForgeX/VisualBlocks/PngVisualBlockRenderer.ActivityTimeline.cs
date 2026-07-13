@@ -47,7 +47,7 @@ public sealed partial class PngVisualBlockRenderer {
 
         var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
         DrawAlignedText(canvas, item.Title, x + 58, y + 5, width - 58, VisualTextAlignment.Left, textColor, theme.SubtitleFontSize, item.Completed ? false : true);
-        if (item.Completed) canvas.DrawLine(x + 58, y + 10, x + Math.Min(width, 58 + RgbaCanvas.MeasureTextWidth(FitText(item.Title, theme.SubtitleFontSize, width - 58), theme.SubtitleFontSize, null)), y + 10, textColor.WithAlpha(140), 1);
+        if (item.Completed) canvas.DrawLine(x + 58, y + 10, x + Math.Min(width, 58 + canvas.MeasureTextWidth(FitText(canvas, item.Title, theme.SubtitleFontSize, width - 58), theme.SubtitleFontSize)), y + 10, textColor.WithAlpha(140), 1);
     }
 
     private static void DrawActivityHiddenSummary(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {
@@ -73,27 +73,27 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.DrawCircleOutline(spineX, y + 15, 10, color, 2);
         }
 
-        var trailingWidth = ActivityTrailingWidth(item, theme.SubtitleFontSize);
+        var trailingWidth = ActivityTrailingWidth(canvas, item, theme.SubtitleFontSize);
         DrawAlignedText(canvas, item.Title, x + 40, y + 5, width - 56 - trailingWidth, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
         if (item.Badge.Length > 0) {
-            var badgeWidth = Math.Min(116, RgbaCanvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize, null) + 18);
+            var badgeWidth = Math.Min(116, canvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize) + 18);
             canvas.FillRoundedRect(x + width - badgeWidth, y, badgeWidth, 22, 8, color.WithAlpha(38));
             DrawAlignedText(canvas, item.Badge, x + width - badgeWidth + 7, y + 5, badgeWidth - 14, VisualTextAlignment.Center, color, theme.SubtitleFontSize, true);
         } else if (item.Timestamp.Length > 0) {
-            var timestampWidth = ActivityTimestampWidth(item.Timestamp, theme.SubtitleFontSize);
+            var timestampWidth = ActivityTimestampWidth(canvas, item.Timestamp, theme.SubtitleFontSize);
             DrawAlignedText(canvas, item.Timestamp, x + width - timestampWidth, y + 5, timestampWidth, VisualTextAlignment.Right, theme.MutedText, theme.SubtitleFontSize, false);
         }
 
         if (item.Detail.Length > 0) DrawAlignedText(canvas, item.Detail, x + 40, y + 24, width - 40, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
     }
 
-    private static double ActivityTrailingWidth(ActivityTimelineItem item, double fontSize) {
-        if (item.Badge.Length > 0) return Math.Min(116, RgbaCanvas.MeasureTextEmphasizedWidth(item.Badge, fontSize, null) + 26);
-        if (item.Timestamp.Length > 0) return ActivityTimestampWidth(item.Timestamp, fontSize) + 10;
+    private static double ActivityTrailingWidth(RgbaCanvas canvas, ActivityTimelineItem item, double fontSize) {
+        if (item.Badge.Length > 0) return Math.Min(116, canvas.MeasureTextEmphasizedWidth(item.Badge, fontSize) + 26);
+        if (item.Timestamp.Length > 0) return ActivityTimestampWidth(canvas, item.Timestamp, fontSize) + 10;
         return 0;
     }
 
-    private static double ActivityTimestampWidth(string timestamp, double fontSize) => Math.Min(190, Math.Max(110, RgbaCanvas.MeasureTextWidth(timestamp, fontSize, null) + 8));
+    private static double ActivityTimestampWidth(RgbaCanvas canvas, string timestamp, double fontSize) => Math.Min(190, Math.Max(110, canvas.MeasureTextWidth(timestamp, fontSize) + 8));
 
     private static double ActivitySpineEnd(ActivityTimelineBlock block, double y, double bottom) {
         var cursor = y;

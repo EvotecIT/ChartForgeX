@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -95,7 +96,7 @@ internal static partial class SmokeTests {
         var htmlOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
         htmlOptions.IconCatalog = catalog;
         htmlOptions.EnableHtmlInteractions = true;
-        var html = chart.ToHtmlPage(htmlOptions);
+        var html = chart.ToInteractiveHtmlPage(htmlOptions);
         Assert(html.Contains("artworkSource: attr(element, 'data-node-artwork-source')", StringComparison.Ordinal), "Interactive topology payloads should include artwork source metadata.");
         Assert(html.Contains("obstacleCount: attr(element, 'data-route-obstacle-count')", StringComparison.Ordinal), "Interactive topology payloads should include route obstacle count metadata.");
         AssertThrows<ArgumentException>(() => chart.WithNodeArtwork("client", TopologyIconArtwork.SvgFile("icons/client.svg")), "Node artwork helper should reject non-embeddable sidecar SVG references.");

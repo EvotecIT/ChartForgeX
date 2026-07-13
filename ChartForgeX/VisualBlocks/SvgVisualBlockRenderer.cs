@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,18 +12,22 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual blocks to self-contained SVG.
 /// </summary>
 public sealed partial class SvgVisualBlockRenderer {
-    private static long ScopeCounter;
-
     /// <summary>Renders a visual block to SVG markup.</summary>
-    public string Render(IVisualBlock block) => Render(block, NextScope());
+    public string Render(IVisualBlock block) => Render(block, string.Empty);
 
     /// <summary>Renders a visual block to SVG markup with a caller-provided ID scope.</summary>
     public string Render(IVisualBlock block, string idScope) {
         VisualBlockRendering.Validate(block);
+        var scope = idScope ?? string.Empty;
+        var provisionalId = BuildProvisionalId(block, scope);
+        var svg = RenderCore(block, provisionalId);
+        return BindVisualIdentity(svg, provisionalId, scope);
+    }
+
+    private static string RenderCore(IVisualBlock block, string id) {
         var options = block.Options;
         var theme = options.Theme;
         var surfaceBackground = VisualBlockRendering.SurfaceBackground(options);
-        var id = "cfx-visual-" + VisualBlockRendering.StableHash(idScope ?? string.Empty, block.AccessibleName, options.Size.Width.ToString(CultureInfo.InvariantCulture), options.Size.Height.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
@@ -622,8 +625,4 @@ public sealed partial class SvgVisualBlockRenderer {
 
     private static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
-    private static string NextScope() {
-        var value = Interlocked.Increment(ref ScopeCounter);
-        return "visual-block-" + value.ToString(CultureInfo.InvariantCulture);
-    }
 }
