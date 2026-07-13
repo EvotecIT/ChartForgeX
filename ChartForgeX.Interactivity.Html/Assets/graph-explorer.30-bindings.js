@@ -82,6 +82,13 @@
     const state = (root.__cfxGraphState || graphState(root));
     syncSvgLayout(root, state); const clone = svg.cloneNode(true);
     materializeAcceleratedSvg(root, clone, state);
+    const computed = root.ownerDocument.defaultView?.getComputedStyle(root);
+    if (computed) {
+      for (let index = 0; index < computed.length; index++) {
+        const name = computed[index];
+        if (name.startsWith('--cfx-')) clone.style.setProperty(name, computed.getPropertyValue(name));
+      }
+    }
     ['cfx-graph-lod-compact', 'cfx-graph-lod-hide-edge-labels', 'cfx-graph-neighborhood-active', 'cfx-graph-performance-gated'].forEach(name => {
       if (root.classList.contains(name)) clone.classList.add(name);
     });

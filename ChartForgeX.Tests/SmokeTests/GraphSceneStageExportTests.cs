@@ -42,6 +42,23 @@ internal static partial class SmokeTests {
         Assert(Enumerable.Range(0, decoded.Pixels.Length / 4).Any(index => decoded.Pixels[index * 4] > 210 && decoded.Pixels[index * 4 + 1] < 110 && decoded.Pixels[index * 4 + 2] < 110 && decoded.Pixels[index * 4 + 3] > 180), "Dependency-free PNG export should preserve self-contained SVG image nodes.");
         Assert(Enumerable.Range(0, decoded.Pixels.Length / 4).All(index => decoded.Pixels[index * 4 + 3] == 255), "Static graph PNG stages should composite transparent letterboxing onto an opaque report-safe background.");
 
+        var clustered = GraphScene.Create("static-node-clusters", "Static node-side clusters")
+            .AddNode("a", "A", node => node.ClusterId = "shared")
+            .AddNode("b", "B", node => node.ClusterId = "shared")
+            .AddCluster("shared", "Shared", Array.Empty<string>());
+        var clusteredSvg = clustered.ToGraphSvg();
+        Assert(clusteredSvg.Contains("data-cluster-id=\"shared\"", StringComparison.Ordinal) && clusteredSvg.Contains("data-cluster-node-ids=\"a,b\"", StringComparison.Ordinal), "Static stage projection should preserve node-side ClusterId membership without duplicated cluster member lists.");
+
+        var leveled = GraphScene.Create("static-levels", "Static declared levels");
+        for (var index = 0; index < 44; index++) leveled.AddNode("level-" + index, "Level " + index, node => node.Level = index % 4);
+        leveled.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        var leveledSvg = leveled.ToGraphSvg();
+        var rootPoint = ExtractGraphNodePoint(leveledSvg, "level-0");
+        var deepPoint = ExtractGraphNodePoint(leveledSvg, "level-3");
+        var rootRadius = Math.Sqrt(Math.Pow(rootPoint.X - 480, 2) + Math.Pow(rootPoint.Y - 280, 2));
+        var deepRadius = Math.Sqrt(Math.Pow(deepPoint.X - 480, 2) + Math.Pow(deepPoint.Y - 280, 2));
+        Assert(rootRadius < 100 && deepRadius > 150, "Dense static hierarchy bands should preserve explicit node levels even when callers do not provide parent links.");
+
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-stage-export-" + Guid.NewGuid().ToString("N"));
         try {
             var files = scene.SaveGraphStageImages(output, "estate", options => {

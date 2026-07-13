@@ -85,8 +85,9 @@ public static class GraphScenePatchExtensions {
         }
 
         Upsert(nodes, patch.UpsertNodes, node => node.Id);
-        Upsert(clusters, patch.UpsertClusters, cluster => cluster.Id);
+        Upsert(clusters, patch.UpsertClusters.Select(CloneCluster), cluster => cluster.Id);
         Upsert(edges, patch.UpsertEdges, edge => edge.Id);
+        SynchronizeClusterMembership(clusters, patch.UpsertNodes);
 
         try {
             Replace(scene.Nodes, nodes);
@@ -150,6 +151,15 @@ public static class GraphScenePatchExtensions {
         clone.NodeIds.AddRange(source.NodeIds);
         foreach (var pair in source.Metadata) clone.Metadata[pair.Key] = pair.Value;
         return clone;
+    }
+
+    private static void SynchronizeClusterMembership(IReadOnlyList<GraphSceneCluster> clusters, IEnumerable<GraphSceneNode> updatedNodes) {
+        foreach (var node in updatedNodes) {
+            foreach (var cluster in clusters) cluster.NodeIds.RemoveAll(id => string.Equals(id, node.Id, StringComparison.Ordinal));
+            if (string.IsNullOrWhiteSpace(node.ClusterId)) continue;
+            var target = clusters.FirstOrDefault(cluster => string.Equals(cluster.Id, node.ClusterId, StringComparison.Ordinal));
+            if (target != null && !target.NodeIds.Contains(node.Id, StringComparer.Ordinal)) target.NodeIds.Add(node.Id);
+        }
     }
 
     private static void Replace<T>(List<T> target, IEnumerable<T> values) {

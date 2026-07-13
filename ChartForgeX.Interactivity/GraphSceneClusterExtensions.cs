@@ -88,10 +88,27 @@ public static class GraphSceneClusterExtensions {
             clusterNumber++;
         }
 
-        if (deferred.Count >= scene.Options.Cluster.MinimumClusterSize) {
-            var members = deferred.OrderBy(id => id, StringComparer.Ordinal).ToArray();
+        AddDeferredClusters(scene, clusters, clusterIds, deferred, ref clusterNumber);
+    }
+
+    private static void AddDeferredClusters(GraphScene scene, ICollection<GraphSceneCluster> clusters, ISet<string> clusterIds, IEnumerable<string> deferred, ref int clusterNumber) {
+        var members = deferred.OrderBy(id => id, StringComparer.Ordinal).ToArray();
+        var minimumSize = scene.Options.Cluster.MinimumClusterSize;
+        var targetSize = scene.Options.Cluster.TargetClusterSize;
+        if (members.Length < minimumSize) return;
+
+        var clusterCount = (int)Math.Ceiling(members.Length / (double)targetSize);
+        var canBalanceAllMembers = members.Length / clusterCount >= minimumSize;
+        var offset = 0;
+        for (var index = 0; index < clusterCount; index++) {
+            var remaining = members.Length - offset;
+            var remainingClusters = clusterCount - index;
+            var count = canBalanceAllMembers ? (int)Math.Ceiling(remaining / (double)remainingClusters) : Math.Min(targetSize, remaining);
+            if (count < minimumSize) break;
             var clusterId = UniqueClusterId("adaptive-" + clusterNumber.ToString(System.Globalization.CultureInfo.InvariantCulture), clusterIds);
-            clusters.Add(CreateDerivedCluster(clusterId, "Community " + clusterNumber.ToString(System.Globalization.CultureInfo.InvariantCulture), "community", "adaptive-structure", members, scene.Options.Cluster.CollapseOnLoad));
+            clusters.Add(CreateDerivedCluster(clusterId, "Community " + clusterNumber.ToString(System.Globalization.CultureInfo.InvariantCulture), "community", "adaptive-structure", members.Skip(offset).Take(count), scene.Options.Cluster.CollapseOnLoad));
+            clusterNumber++;
+            offset += count;
         }
     }
 

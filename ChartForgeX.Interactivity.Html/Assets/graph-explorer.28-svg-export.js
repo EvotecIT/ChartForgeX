@@ -21,6 +21,7 @@
         height: size * 2,
         preserveAspectRatio: 'xMidYMid slice'
       });
+      if (rectangular) image.classList.add('cfx-graph-node-image-rect');
       const alt = attr(node.el, 'data-node-image-alt');
       if (alt) image.setAttribute('aria-label', alt);
       group.appendChild(image);
@@ -76,6 +77,25 @@
     const status = attr(node.el, 'data-cfx-status');
     if (status && status !== 'unknown') group.appendChild(svgNode(document, 'circle', { class: 'cfx-graph-node-status', cx: -node.size * 0.8, cy: -node.size * 0.8, r: 4.5 }));
   };
+  const appendExportedEdgeLabel = (document, group, edge, rendered) => {
+    if (!edge.label || !edge.showLabel) return null;
+    const point = edgeLabelPoint(rendered, edgeControl(rendered));
+    const classes = ['cfx-graph-edge-label'];
+    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden'].forEach(name => {
+      if (edge.el.classList.contains(name)) classes.push(name);
+    });
+    const label = svgNode(document, 'text', {
+      class: classes.join(' '),
+      'data-cfx-role': 'graph-edge-label',
+      'data-edge-label-for': edge.id,
+      x: point.x.toFixed(3),
+      y: point.y.toFixed(3)
+    });
+    if (edge.labelColor) label.style.setProperty('--cfx-edge-label-explicit', edge.labelColor);
+    label.textContent = edge.label;
+    group.appendChild(label);
+    return label;
+  };
   const drawAcceleratedSvgRuntime = (root, state) => {
     if (attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || root.dataset.cfxGraphRendererActive !== 'svg') return false;
     const viewport = root.querySelector('[data-cfx-role="graph-viewport"]');
@@ -84,6 +104,7 @@
     const document = root.ownerDocument;
     const runtime = svgNode(document, 'g', { 'data-cfx-role': 'graph-accelerated-runtime', 'data-cfx-runtime-overlay': 'true' });
     const edges = svgNode(document, 'g', { 'data-cfx-runtime-overlay': 'true' });
+    const edgeLabels = svgNode(document, 'g', { 'data-cfx-runtime-overlay': 'true', 'pointer-events': 'none' });
     const marks = svgNode(document, 'g', { 'data-cfx-runtime-overlay': 'true' });
     const details = svgNode(document, 'g', { class: 'cfx-graph-node-details-layer', 'data-cfx-runtime-overlay': 'true', 'pointer-events': 'none' });
     state.edges.filter(edge => visible(edge.el)).forEach(edge => {
@@ -99,6 +120,7 @@
       if (style) path.setAttribute('style', style);
       ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
       edges.appendChild(path);
+      if (!root.classList.contains('cfx-graph-lod-hide-edge-labels')) appendExportedEdgeLabel(document, edgeLabels, edge, rendered);
     });
     state.nodes.filter(node => visible(node.el)).forEach(node => {
       const transform = `translate(${node.x.toFixed(3)} ${node.y.toFixed(3)})`;
@@ -126,7 +148,7 @@
       appendExportedNodeDetails(document, detail, node);
       details.appendChild(detail);
     });
-    runtime.append(edges, marks, details);
+    runtime.append(edges, edgeLabels, marks, details);
     viewport.appendChild(runtime);
     return true;
   };
@@ -135,12 +157,15 @@
     const document = clone.ownerDocument;
     const viewport = clone.querySelector('[data-cfx-role="graph-viewport"]');
     if (!viewport) return;
+    const edgeLabels = new Map(Array.from(viewport.querySelectorAll('[data-cfx-role="graph-edge-label"]')).map(label => [attr(label, 'data-edge-label-for'), label]));
     state.edges.forEach(edge => {
+      const rendered = visualEdge(edge, state.byId);
       const path = svgNode(document, 'path', { class: attr(edge.el, 'class') || 'cfx-graph-edge', 'data-cfx-role': 'graph-edge', 'data-edge-id': edge.id, d: attr(edge.el, 'd') });
       const style = [`stroke:${edge.strokeColor || '#64748b'}`, `stroke-width:${edge.strokeWidth || 1.25}`, edge.dashed ? `stroke-dasharray:${edge.dashPattern.join(' ')}` : ''].filter(Boolean).join(';');
       if (style) path.setAttribute('style', style);
       ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
       viewport.appendChild(path);
+      if (!edgeLabels.has(edge.id)) appendExportedEdgeLabel(document, viewport, edge, rendered);
     });
     const groups = new Map(Array.from(viewport.querySelectorAll('[data-cfx-role="graph-node"]')).map(group => [attr(group, 'data-node-id'), group]));
     let detailsLayer = viewport.querySelector('[data-cfx-role="graph-node-details-layer"]');

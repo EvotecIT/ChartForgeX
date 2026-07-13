@@ -26,5 +26,17 @@ internal static partial class SmokeTests {
 
         var html = scene.ToGraphExplorerHtmlFragment();
         Assert(html.Contains("data-cluster-id=\"adaptive-1\"", StringComparison.Ordinal) && html.Contains("data-cfx-graph-cluster-count=\"", StringComparison.Ordinal), "The HTML adapter should render materialized adaptive communities as normal per-cluster summaries.");
+
+        var isolated = GraphScene.Create("adaptive-isolated", "Adaptive isolated nodes");
+        for (var index = 0; index < 1000; index++) isolated.AddNode("isolated-" + index, "Isolated " + index);
+        isolated.Options.Cluster.Mode = GraphClusterMode.Adaptive;
+        isolated.Options.Cluster.Adaptive = true;
+        isolated.Options.Cluster.MinimumClusterSize = 3;
+        isolated.Options.Cluster.TargetClusterSize = 160;
+        isolated.Options.LevelOfDetail.ClusterNodeThreshold = 1;
+        isolated.Validate();
+        var isolatedClusters = isolated.GetEffectiveClusters();
+        Assert(isolatedClusters.Count > 1 && isolatedClusters.All(cluster => cluster.NodeIds.Count >= 3 && cluster.NodeIds.Count <= 160), "Adaptive clustering should keep deferred isolated-node summaries within the configured target size.");
+        Assert(isolatedClusters.Sum(cluster => cluster.NodeIds.Count) == 1000, "Balanced adaptive deferred clusters should retain every node when all chunks can satisfy the minimum size.");
     }
 }

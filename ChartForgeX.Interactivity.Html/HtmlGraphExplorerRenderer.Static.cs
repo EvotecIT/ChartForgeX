@@ -145,18 +145,21 @@ public sealed partial class HtmlGraphExplorerRenderer {
         CopyDictionary(scene.Metadata, projected.Metadata);
         var frontier = stage == null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(stage.FrontierNodeIds, StringComparer.Ordinal);
         var hiddenDescendants = stage == null ? new Dictionary<string, int>(StringComparer.Ordinal) : HiddenDescendantCounts(scene, visible, frontier);
-        foreach (var source in scene.Nodes.Where(node => visible.Contains(node.Id))) projected.Nodes.Add(CopyNode(source, visible, hiddenDescendants));
-        foreach (var source in scene.Edges.Where(edge => visible.Contains(edge.SourceNodeId) && visible.Contains(edge.TargetNodeId))) projected.Edges.Add(CopyEdge(source));
         // A hierarchy stage already is a deliberate clustering projection. Preserve explicit
         // cluster contracts without adding adaptive group hulls that compete with that story.
+        var sourceMembership = BuildClusterMembership(scene, scene.Clusters);
+        var retainedClusterIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var source in scene.Clusters) {
-            var members = source.NodeIds.Where(visible.Contains).Distinct(StringComparer.Ordinal).ToArray();
+            var members = visible.Where(id => sourceMembership.TryGetValue(id, out var clusterId) && string.Equals(clusterId, source.Id, StringComparison.Ordinal)).OrderBy(id => id, StringComparer.Ordinal).ToArray();
             if (members.Length < 2) continue;
             var cluster = new GraphSceneCluster { Id = source.Id, Label = source.Label, Kind = source.Kind, Collapsed = false };
             cluster.NodeIds.AddRange(members);
             CopyDictionary(source.Metadata, cluster.Metadata);
             projected.Clusters.Add(cluster);
+            retainedClusterIds.Add(cluster.Id);
         }
+        foreach (var source in scene.Nodes.Where(node => visible.Contains(node.Id))) projected.Nodes.Add(CopyNode(source, visible, hiddenDescendants, retainedClusterIds));
+        foreach (var source in scene.Edges.Where(edge => visible.Contains(edge.SourceNodeId) && visible.Contains(edge.TargetNodeId))) projected.Edges.Add(CopyEdge(source));
         projected.Options.Layout.Mode = scene.Options.Layout.Mode;
         projected.Options.Layout.Direction = scene.Options.Layout.Direction;
         projected.Options.Layout.LevelSeparation = scene.Options.Layout.LevelSeparation;
@@ -221,9 +224,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static int ResolveStaticDepth(GraphSceneNode node, IReadOnlyDictionary<string, GraphSceneNode> byId, IDictionary<string, int> depths, ISet<string> visiting) {
         if (depths.TryGetValue(node.Id, out var known)) return known;
         if (!visiting.Add(node.Id)) return 0;
-        var depth = string.IsNullOrWhiteSpace(node.ParentId) || !byId.TryGetValue(node.ParentId!, out var parent)
-            ? 0
-            : ResolveStaticDepth(parent, byId, depths, visiting) + 1;
+        var depth = node.Level.HasValue
+            ? Math.Max(0, node.Level.Value)
+            : string.IsNullOrWhiteSpace(node.ParentId) || !byId.TryGetValue(node.ParentId!, out var parent)
+                ? 0
+                : ResolveStaticDepth(parent, byId, depths, visiting) + 1;
         visiting.Remove(node.Id);
         depths[node.Id] = depth;
         return depth;
@@ -252,12 +257,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return result;
     }
 
-    private static GraphSceneNode CopyNode(GraphSceneNode source, ISet<string> visible, IReadOnlyDictionary<string, int> hiddenDescendants) {
+    private static GraphSceneNode CopyNode(GraphSceneNode source, ISet<string> visible, IReadOnlyDictionary<string, int> hiddenDescendants, ISet<string> retainedClusterIds) {
         var node = new GraphSceneNode {
             Id = source.Id, Label = source.Label, Kind = source.Kind, GroupId = source.GroupId, Status = source.Status, Shape = source.Shape, Level = source.Level,
             ImageUrl = source.ImageUrl, ImageAlt = source.ImageAlt, IconText = source.IconText, SecondaryLabel = source.SecondaryLabel, BadgeText = source.BadgeText,
             Size = source.Size, Fixed = source.Fixed, Hidden = source.Hidden
         };
+        if (!string.IsNullOrWhiteSpace(source.ClusterId) && retainedClusterIds.Contains(source.ClusterId!)) node.ClusterId = source.ClusterId;
         if (!string.IsNullOrWhiteSpace(source.ParentId) && visible.Contains(source.ParentId!)) node.ParentId = source.ParentId;
         if (source.HasExplicitPosition) { node.X = source.X; node.Y = source.Y; }
         node.Style.BackgroundColor = source.Style.BackgroundColor; node.Style.BorderColor = source.Style.BorderColor; node.Style.LabelColor = source.Style.LabelColor; node.Style.LabelBackgroundColor = source.Style.LabelBackgroundColor; node.Style.Shadow = source.Style.Shadow;

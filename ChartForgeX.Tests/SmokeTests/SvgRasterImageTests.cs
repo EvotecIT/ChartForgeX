@@ -21,6 +21,14 @@ internal static partial class SmokeTests {
         var rectangularMarkup = "<style>.round image{clip-path:circle(50%)}.round .rect{clip-path:none}</style><g class='round'><image class='rect' x='0' y='0' width='100' height='100' href='" + solidSource + "'/></g>";
         Assert(SvgRasterRenderer.TryRenderFragment(rectangularMarkup, "0 0 100 100", "none", 100, 100, out var rectangular), "SVG rasterization should allow a more specific rule to disable image clipping.");
         Assert(IsPixelNear(rectangular, 100, 2, 2, 255, 0, 0), "Rectangular graph images should retain their corners when circular clipping is disabled.");
+
+        var wideSource = SvgData("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'><rect width='200' height='100' fill='#ff0000'/></svg>");
+        Assert(SvgRasterRenderer.TryRenderFragment("<image x='0' y='0' width='200' height='100' href='" + wideSource + "'/>", "0 0 200 100", "none", 200, 100, out var wide), "SVG rasterization should render embedded artwork against its destination aspect ratio.");
+        Assert(IsPixelNear(wide, 200, 100, 5, 255, 0, 0), "Rectangular embedded SVG artwork should not acquire square intermediate letterboxing before destination scaling.");
+
+        var markerMarkup = "<defs><marker id='arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto'><path d='M0 0 L10 5 L0 10 z' fill='#ff0000'/></marker></defs><path d='M10 50 L90 50' fill='none' stroke='#111111' stroke-width='2' marker-end='url(#arrow)'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(markerMarkup, "0 0 100 100", "none", 100, 100, out var marked), "SVG rasterization should render referenced path markers.");
+        Assert(CountPixelsNear(marked, 100, 74, 35, 96, 65, 255, 0, 0) > 20, "Directed SVG markers should remain visible in dependency-free PNG output.");
     }
 
     private static string SvgData(string markup) => "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(markup));
@@ -30,5 +38,11 @@ internal static partial class SmokeTests {
     private static bool IsPixelNear(byte[] rgba, int width, int x, int y, byte red, byte green, byte blue) {
         var index = (y * width + x) * 4;
         return Math.Abs(rgba[index] - red) <= 4 && Math.Abs(rgba[index + 1] - green) <= 4 && Math.Abs(rgba[index + 2] - blue) <= 4 && rgba[index + 3] >= 250;
+    }
+
+    private static int CountPixelsNear(byte[] rgba, int width, int left, int top, int right, int bottom, byte red, byte green, byte blue) {
+        var count = 0;
+        for (var y = top; y <= bottom; y++) for (var x = left; x <= right; x++) if (IsPixelNear(rgba, width, x, y, red, green, blue)) count++;
+        return count;
     }
 }

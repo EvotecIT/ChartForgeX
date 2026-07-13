@@ -32,5 +32,23 @@ internal static partial class SmokeTests {
         dangling.RemoveNodeIds.Add("queue");
         AssertThrows<InvalidOperationException>(() => scene.ApplyPatch(dangling), "Graph patches should reject node removal that leaves a surviving edge with a missing endpoint.");
         Assert(scene.Nodes.Count == 2 && scene.Edges.Single().Id == "api-queue", "Rejected dangling-edge patches should preserve the original graph document.");
+
+        var clustered = GraphScene.Create("patch-clusters", "Patch cluster moves")
+            .AddNode("a", "A")
+            .AddNode("b", "B")
+            .AddNode("c", "C")
+            .AddCluster("left", "Left", new[] { "a", "b" })
+            .AddCluster("right", "Right", new[] { "c" });
+        clustered.Validate();
+        var move = new GraphScenePatch();
+        move.UpsertNodes.Add(new GraphSceneNode { Id = "a", Label = "A", ClusterId = "right" });
+        clustered.ApplyPatch(move);
+        Assert(clustered.Clusters.Single(cluster => cluster.Id == "left").NodeIds.SequenceEqual(new[] { "b" }), "Moving a node with a typed patch should remove stale declared membership from its previous cluster.");
+        Assert(clustered.Clusters.Single(cluster => cluster.Id == "right").NodeIds.OrderBy(id => id).SequenceEqual(new[] { "a", "c" }), "Moving a node with a typed patch should add declared membership to its new cluster.");
+
+        var detach = new GraphScenePatch();
+        detach.UpsertNodes.Add(new GraphSceneNode { Id = "a", Label = "A" });
+        clustered.ApplyPatch(detach);
+        Assert(clustered.Clusters.All(cluster => !cluster.NodeIds.Contains("a")), "Replacing a patched node without a cluster id should detach it from declared cluster membership.");
     }
 }
