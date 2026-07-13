@@ -4,6 +4,7 @@ using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
@@ -30,6 +31,23 @@ internal static partial class SmokeTests {
 
         AssertNoDuplicateIds(block.ToHtmlFragment("block-a") + block.ToHtmlFragment("block-b"), "Explicitly scoped visual block fragments");
         AssertNoDuplicateIds(grid.ToHtmlFragment("grid-a") + grid.ToHtmlFragment("grid-b"), "Explicitly scoped visual grid fragments");
+
+        var lightBlock = MetricCard.Create()
+            .WithMetric("Visual identity", "98.2%")
+            .WithSize(280, 150)
+            .WithTheme(ChartTheme.Light());
+        var darkBlock = MetricCard.Create()
+            .WithMetric("Visual identity", "98.2%")
+            .WithSize(280, 150)
+            .WithTheme(ChartTheme.Dark());
+        var contentVariant = MetricCard.Create()
+            .WithMetric("Visual identity", "76.4%")
+            .WithSize(280, 150)
+            .WithTheme(ChartTheme.Light());
+        AssertNoDuplicateIds(lightBlock.ToHtmlFragment() + darkBlock.ToHtmlFragment() + contentVariant.ToHtmlFragment(), "Unscoped visual blocks with distinct visual identities");
+        var deterministicBlockSvg = lightBlock.ToSvg();
+        Assert(deterministicBlockSvg == lightBlock.ToSvg(), "Content-derived visual block IDs should remain deterministic.");
+        Assert(!deterministicBlockSvg.Contains("cfx-visual-seed-", StringComparison.Ordinal), "Provisional visual block IDs should not leak into rendered SVG.");
     }
 
     private static void RasterRenderingRejectsUnsafeAllocationsEarly() {

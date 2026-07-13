@@ -18,10 +18,16 @@ public sealed partial class SvgVisualBlockRenderer {
     /// <summary>Renders a visual block to SVG markup with a caller-provided ID scope.</summary>
     public string Render(IVisualBlock block, string idScope) {
         VisualBlockRendering.Validate(block);
+        var scope = idScope ?? string.Empty;
+        var provisionalId = BuildProvisionalId(block, scope);
+        var svg = RenderCore(block, provisionalId);
+        return BindVisualIdentity(svg, provisionalId, scope);
+    }
+
+    private static string RenderCore(IVisualBlock block, string id) {
         var options = block.Options;
         var theme = options.Theme;
         var surfaceBackground = VisualBlockRendering.SurfaceBackground(options);
-        var id = "cfx-visual-" + VisualBlockRendering.StableHash(idScope ?? string.Empty, block.AccessibleName, options.Size.Width.ToString(CultureInfo.InvariantCulture), options.Size.Height.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
