@@ -17,16 +17,6 @@
   };
   const graphSearchText = (value) => !value || typeof value !== 'object' ? '' : Object.keys(value).sort().map(key => `${key} ${value[key]}`).join(' ');
   const graphPatchPosition = (element, value, name, fallback) => Number.isFinite(Number(value)) ? Number(value) : num(element, name, fallback);
-  const graphPatchPolygonPoints = (shape, size) => {
-    if (shape === 'diamond') return `0,${-size * 1.35} ${size * 1.35},0 0,${size * 1.35} ${-size * 1.35},0`;
-    if (shape === 'triangle') return `0,${-size * 1.35} ${size * 1.25},${size * 1.05} ${-size * 1.25},${size * 1.05}`;
-    if (shape === 'triangleDown') return `${-size * 1.25},${-size * 1.05} ${size * 1.25},${-size * 1.05} 0,${size * 1.35}`;
-    return `0,${-size * 1.45} ${size * .42},${-size * .45} ${size * 1.4},${-size * .45} ${size * .62},${size * .18} ${size * .9},${size * 1.25} 0,${size * .64} ${-size * .9},${size * 1.25} ${-size * .62},${size * .18} ${-size * 1.4},${-size * .45} ${-size * .42},${-size * .45}`;
-  };
-  const graphPatchDatabasePath = (size) => {
-    const width = size * 1.25, top = -size * .55, bottom = size * .55, radius = size * .38;
-    return `M ${-width} ${top} C ${-width} ${top - radius} ${width} ${top - radius} ${width} ${top} L ${width} ${bottom} C ${width} ${bottom + radius} ${-width} ${bottom + radius} ${-width} ${bottom} Z M ${-width} ${top} C ${-width} ${top + radius} ${width} ${top + radius} ${width} ${top}`;
-  };
   const graphPatchNodeMark = (root, element, node) => {
     if (element.__cfxVirtual) return;
     while (element.firstChild) element.removeChild(element.firstChild);
@@ -41,9 +31,9 @@
     } else if (shape === 'ellipse') {
       mark = svgElement(root, 'ellipse'); setGraphAttribute(mark, 'rx', size * 1.55); setGraphAttribute(mark, 'ry', size);
     } else if (shape === 'database') {
-      mark = svgElement(root, 'path'); setGraphAttribute(mark, 'd', graphPatchDatabasePath(size));
+      mark = svgElement(root, 'path'); setGraphAttribute(mark, 'd', nodeDatabasePath(size));
     } else if (shape === 'diamond' || shape === 'triangle' || shape === 'triangleDown' || shape === 'star') {
-      mark = svgElement(root, 'polygon'); setGraphAttribute(mark, 'points', graphPatchPolygonPoints(shape, size));
+      mark = svgElement(root, 'polygon'); setGraphAttribute(mark, 'points', nodePolygonPoints(shape, size));
     } else if (shape === 'text') {
       mark = svgElement(root, 'circle'); setGraphAttribute(mark, 'r', Math.max(1, size * .18)); setGraphAttribute(mark, 'opacity', '0');
     } else {

@@ -113,7 +113,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(edge.Style.Color)) parts.Add("--cfx-edge-stroke:" + edge.Style.Color);
         if (edge.Style.Width.HasValue) parts.Add("--cfx-edge-width:" + Number(edge.Style.Width.Value));
-        if (edge.Dashed && !string.IsNullOrWhiteSpace(edge.Style.DashPattern)) parts.Add("stroke-dasharray:" + edge.Style.DashPattern);
+        if (edge.Dashed) parts.Add("stroke-dasharray:" + (string.IsNullOrWhiteSpace(edge.Style.DashPattern) ? "8 6" : edge.Style.DashPattern));
         if (edge.Style.Hidden) parts.Add("display:none");
         return string.Join(";", parts);
     }

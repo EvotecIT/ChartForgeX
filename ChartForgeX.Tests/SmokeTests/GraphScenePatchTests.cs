@@ -50,5 +50,14 @@ internal static partial class SmokeTests {
         detach.UpsertNodes.Add(new GraphSceneNode { Id = "a", Label = "A" });
         clustered.ApplyPatch(detach);
         Assert(clustered.Clusters.All(cluster => !cluster.NodeIds.Contains("a")), "Replacing a patched node without a cluster id should detach it from declared cluster membership.");
+
+        var declared = GraphScene.Create("patch-declared-membership", "Patch declared membership");
+        var declaredPatch = new GraphScenePatch();
+        declaredPatch.UpsertNodes.Add(new GraphSceneNode { Id = "new-node", Label = "New node" });
+        var declaredCluster = new GraphSceneCluster { Id = "new-cluster", Label = "New cluster" };
+        declaredCluster.NodeIds.Add("new-node");
+        declaredPatch.UpsertClusters.Add(declaredCluster);
+        declared.ApplyPatch(declaredPatch);
+        Assert(declared.Clusters.Single().NodeIds.SequenceEqual(new[] { "new-node" }), "Atomic patches should preserve membership declared by a cluster upsert when the same patch adds its nodes without duplicating ClusterId values.");
     }
 }

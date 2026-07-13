@@ -12,6 +12,16 @@
     return { x: size, y: size };
   };
   const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
+  const nodePolygonPoints = (shape, size) => {
+    if (shape === 'diamond') return `0,${-size * 1.35} ${size * 1.35},0 0,${size * 1.35} ${-size * 1.35},0`;
+    if (shape === 'triangle') return `0,${-size * 1.35} ${size * 1.25},${size * 1.05} ${-size * 1.25},${size * 1.05}`;
+    if (shape === 'triangleDown') return `${-size * 1.25},${-size * 1.05} ${size * 1.25},${-size * 1.05} 0,${size * 1.35}`;
+    return `0,${-size * 1.45} ${size * .42},${-size * .45} ${size * 1.4},${-size * .45} ${size * .62},${size * .18} ${size * .9},${size * 1.25} 0,${size * .64} ${-size * .9},${size * 1.25} ${-size * .62},${size * .18} ${-size * 1.4},${-size * .45} ${-size * .42},${-size * .45}`;
+  };
+  const nodeDatabasePath = (size) => {
+    const width = size * 1.25, top = -size * .55, bottom = size * .55, radius = size * .38;
+    return `M ${-width} ${top} C ${-width} ${top - radius} ${width} ${top - radius} ${width} ${top} L ${width} ${bottom} C ${width} ${bottom + radius} ${-width} ${bottom + radius} ${-width} ${bottom} Z M ${-width} ${top} C ${-width} ${top + radius} ${width} ${top + radius} ${width} ${top}`;
+  };
   const nodeHalfWidth = (node) => nodeShapeExtents(node).x;
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
   const nodeLayoutExtents = (node) => {

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using ChartForgeX.Interactivity.Html;
 
 namespace ChartForgeX.Tests;
 
@@ -29,12 +30,15 @@ internal static partial class SmokeTests {
         var liveStateUses = (bindings + pointers).Split(new[] { liveState }, StringSplitOptions.None).Length - 1;
         Assert(liveStateUses >= 7, "Canvas dragging and SVG, PNG, and JSON exports should consume live physics coordinates before falling back to hidden SVG attributes.");
         Assert(bindings.Contains("indexHitTesting(root, graphState(root))", StringComparison.Ordinal), "Initial graph binding should still build a fresh state before the live cache exists.");
+        var script = HtmlGraphExplorerRenderer.BuildInteractionScript();
+        var bootstrap = script.IndexOf("const start = () => roots().forEach(bind);", StringComparison.Ordinal);
+        Assert(bootstrap > script.IndexOf("const bindPhysicsConfigurator = (root) =>", StringComparison.Ordinal) && bootstrap > script.IndexOf("window.ChartForgeXGraphExplorer = Object.freeze(graphExplorerApi);", StringComparison.Ordinal), "Graph explorer bootstrap should run after every runtime definition so fragments injected into loaded documents bind without temporal-dead-zone errors.");
     }
 
     private static void GraphExplorerRuntimePatchesPreserveVisualAndReferenceContracts() {
         var api = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "Assets", "graph-explorer.40-api.js"));
         Assert(api.Contains("edges.forEach((edge, edgeId)", StringComparison.Ordinal) && api.Contains("references a missing endpoint", StringComparison.Ordinal), "Browser graph patches should validate every surviving edge against the final node set before mutating the document.");
-        Assert(api.Contains("graphPatchPolygonPoints", StringComparison.Ordinal) && api.Contains("graphPatchDatabasePath", StringComparison.Ordinal) && api.Contains("shape === 'text'", StringComparison.Ordinal), "Browser graph patches should rebuild rich SVG node shapes instead of reducing them to circles.");
+        Assert(api.Contains("nodePolygonPoints", StringComparison.Ordinal) && api.Contains("nodeDatabasePath", StringComparison.Ordinal) && api.Contains("shape === 'text'", StringComparison.Ordinal), "Browser graph patches should rebuild rich SVG node shapes through the shared graph geometry helpers instead of reducing them to circles.");
         Assert(api.Contains("setGraphAttribute(element, 'marker-start'", StringComparison.Ordinal) && api.Contains("setGraphAttribute(element, 'marker-end'", StringComparison.Ordinal), "Browser graph patches should restore SVG direction markers for upserted edges.");
         Assert(api.Contains("syncGraphPatchClusterMembership", StringComparison.Ordinal) && api.Contains("data-source-cluster-id", StringComparison.Ordinal) && api.Contains("data-target-cluster-id", StringComparison.Ordinal), "Browser graph patches should synchronize node moves across cluster memberships and edge cluster references.");
     }

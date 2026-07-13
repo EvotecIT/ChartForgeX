@@ -87,7 +87,7 @@ public static class GraphScenePatchExtensions {
         Upsert(nodes, patch.UpsertNodes, node => node.Id);
         Upsert(clusters, patch.UpsertClusters.Select(CloneCluster), cluster => cluster.Id);
         Upsert(edges, patch.UpsertEdges, edge => edge.Id);
-        SynchronizeClusterMembership(clusters, patch.UpsertNodes);
+        SynchronizeClusterMembership(clusters, patch.UpsertNodes, patch.UpsertClusters);
 
         try {
             Replace(scene.Nodes, nodes);
@@ -153,9 +153,21 @@ public static class GraphScenePatchExtensions {
         return clone;
     }
 
-    private static void SynchronizeClusterMembership(IReadOnlyList<GraphSceneCluster> clusters, IEnumerable<GraphSceneNode> updatedNodes) {
+    private static void SynchronizeClusterMembership(IReadOnlyList<GraphSceneCluster> clusters, IEnumerable<GraphSceneNode> updatedNodes, IEnumerable<GraphSceneCluster> updatedClusters) {
+        var declaredMembership = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        foreach (var cluster in updatedClusters) {
+            foreach (var nodeId in cluster.NodeIds) {
+                if (!declaredMembership.TryGetValue(nodeId, out var clusterIds)) declaredMembership[nodeId] = clusterIds = new HashSet<string>(StringComparer.Ordinal);
+                clusterIds.Add(cluster.Id);
+            }
+        }
+
         foreach (var node in updatedNodes) {
-            foreach (var cluster in clusters) cluster.NodeIds.RemoveAll(id => string.Equals(id, node.Id, StringComparison.Ordinal));
+            declaredMembership.TryGetValue(node.Id, out var declaredClusterIds);
+            foreach (var cluster in clusters) {
+                var preserveDeclaredMembership = string.IsNullOrWhiteSpace(node.ClusterId) && declaredClusterIds != null && declaredClusterIds.Contains(cluster.Id);
+                if (!preserveDeclaredMembership) cluster.NodeIds.RemoveAll(id => string.Equals(id, node.Id, StringComparison.Ordinal));
+            }
             if (string.IsNullOrWhiteSpace(node.ClusterId)) continue;
             var target = clusters.FirstOrDefault(cluster => string.Equals(cluster.Id, node.ClusterId, StringComparison.Ordinal));
             if (target != null && !target.NodeIds.Contains(node.Id, StringComparer.Ordinal)) target.NodeIds.Add(node.Id);

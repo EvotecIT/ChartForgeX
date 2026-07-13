@@ -26,7 +26,11 @@ public static class GraphSceneStagePlanner {
         var roots = string.IsNullOrWhiteSpace(options.RootNodeId)
             ? scene.Nodes.Where(node => string.IsNullOrWhiteSpace(node.ParentId)).Select(node => node.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray()
             : new[] { options.RootNodeId! };
-        var depths = ResolveNodeDepths(roots, children);
+        var hasParentLinks = scene.Nodes.Any(node => !string.IsNullOrWhiteSpace(node.ParentId));
+        var hasDeclaredLevels = scene.Nodes.Any(node => node.Level.HasValue);
+        var depths = !hasParentLinks && hasDeclaredLevels && string.IsNullOrWhiteSpace(options.RootNodeId)
+            ? ResolveDeclaredLevels(scene.Nodes)
+            : ResolveNodeDepths(roots, children);
         var maximumDepth = depths.Count == 0 ? 0 : depths.Values.Max();
         var requestedDepths = ResolveStageDepths(options, maximumDepth);
         var stages = new List<GraphSceneStage>(requestedDepths.Count);
@@ -55,6 +59,12 @@ public static class GraphSceneStagePlanner {
             foreach (var child in children[current.Key]) queue.Enqueue(new KeyValuePair<string, int>(child, current.Value + 1));
         }
         return result;
+    }
+
+    private static Dictionary<string, int> ResolveDeclaredLevels(IEnumerable<GraphSceneNode> nodes) {
+        var source = nodes.ToArray();
+        var firstLevel = source.Where(node => node.Level.HasValue).Select(node => node.Level!.Value).DefaultIfEmpty(0).Min();
+        return source.ToDictionary(node => node.Id, node => Math.Max(0, (node.Level ?? firstLevel) - firstLevel), StringComparer.Ordinal);
     }
 
     private static List<int> ResolveStageDepths(GraphSceneStageOptions options, int maximumDepth) {

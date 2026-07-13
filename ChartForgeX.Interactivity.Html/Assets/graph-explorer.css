@@ -697,7 +697,7 @@
 .cfx-graph-node polygon,
 .cfx-graph-node path {
   fill: var(--cfx-node-fill, #2563eb);
-  stroke: var(--cfx-node-stroke, color-mix(in srgb, var(--cfx-color-paper) 84%, #60a5fa));
+  stroke: var(--cfx-node-stroke, #60a5fa);
   stroke-width: 3;
 }
 

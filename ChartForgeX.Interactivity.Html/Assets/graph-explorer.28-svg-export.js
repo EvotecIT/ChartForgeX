@@ -13,28 +13,37 @@
     const style = exportedNodeStyle(node);
     if ((node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl) {
       const rectangular = node.shape === 'imageRect';
+      if (rectangular) {
+        group.appendChild(svgNode(document, 'rect', { x: -size * 1.3, y: -size * .9, width: size * 2.6, height: size * 1.8, rx: Math.min(8, size * .35), style }));
+      } else {
+        group.appendChild(svgNode(document, 'circle', { r: size + 4, style }));
+      }
+      const width = rectangular ? Math.max(1, size * 2.6 - 6) : size * 2;
+      const height = rectangular ? Math.max(1, size * 1.8 - 6) : size * 2;
       const image = svgNode(document, 'image', {
         href: node.imageUrl,
-        x: rectangular ? -size * 1.5 : -size,
-        y: -size,
-        width: rectangular ? size * 3 : size * 2,
-        height: size * 2,
+        x: -width / 2,
+        y: -height / 2,
+        width,
+        height,
         preserveAspectRatio: 'xMidYMid slice'
       });
       if (rectangular) image.classList.add('cfx-graph-node-image-rect');
       const alt = attr(node.el, 'data-node-image-alt');
       if (alt) image.setAttribute('aria-label', alt);
       group.appendChild(image);
-    } else if (node.shape === 'box' || node.shape === 'square' || node.shape === 'database') {
+    } else if (node.shape === 'box' || node.shape === 'square') {
       const wide = node.shape === 'box' ? 1.45 : 1;
-      group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -size, width: size * wide * 2, height: size * 2, rx: node.shape === 'square' ? 2 : 6, style }));
+      const high = node.shape === 'box' ? 1.05 : 1;
+      group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -size * high, width: size * wide * 2, height: size * high * 2, rx: node.shape === 'square' ? 4 : 6, style }));
     } else if (node.shape === 'ellipse') {
-      group.appendChild(svgNode(document, 'ellipse', { rx: size * 1.35, ry: size, style }));
-    } else if (node.shape === 'diamond') {
-      group.appendChild(svgNode(document, 'polygon', { points: `0,${-size * 1.2} ${size * 1.2},0 0,${size * 1.2} ${-size * 1.2},0`, style }));
-    } else if (node.shape === 'triangle' || node.shape === 'triangleDown') {
-      const direction = node.shape === 'triangleDown' ? -1 : 1;
-      group.appendChild(svgNode(document, 'polygon', { points: `0,${-size * direction} ${size},${size * direction} ${-size},${size * direction}`, style }));
+      group.appendChild(svgNode(document, 'ellipse', { rx: size * 1.55, ry: size, style }));
+    } else if (node.shape === 'database') {
+      group.appendChild(svgNode(document, 'path', { d: nodeDatabasePath(size), style }));
+    } else if (node.shape === 'diamond' || node.shape === 'triangle' || node.shape === 'triangleDown' || node.shape === 'star') {
+      group.appendChild(svgNode(document, 'polygon', { points: nodePolygonPoints(node.shape, size), style }));
+    } else if (node.shape === 'text') {
+      group.appendChild(svgNode(document, 'circle', { r: Math.max(1, size * .18), opacity: 0, style }));
     } else if (node.shape !== 'text') {
       group.appendChild(svgNode(document, 'circle', { r: size, style }));
     }
