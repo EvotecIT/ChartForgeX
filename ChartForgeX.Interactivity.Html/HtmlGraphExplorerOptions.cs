@@ -33,6 +33,32 @@ public sealed class HtmlGraphExplorerOptions {
 
     /// <summary>Gets or sets whether physics controls should be rendered when runtime physics is enabled.</summary>
     public bool IncludePhysicsControls { get; set; } = true;
+
+    /// <summary>Gets or sets whether an expandable development-time physics configurator should be rendered.</summary>
+    public bool IncludePhysicsConfigurator { get; set; }
+
+    /// <summary>Gets or sets the explorer color theme used when the document first opens.</summary>
+    public HtmlGraphExplorerTheme Theme { get; set; } = HtmlGraphExplorerTheme.System;
+
+    /// <summary>Gets or sets whether the built-in appearance control should let people choose system, light, or dark mode.</summary>
+    public bool IncludeThemeToggle { get; set; } = true;
+
+    /// <summary>Gets or sets whether an appearance choice made in the browser should be reused by other graph explorers on the same origin.</summary>
+    public bool PersistThemePreference { get; set; } = true;
+}
+
+/// <summary>
+/// Names the initial color theme of a browser graph explorer.
+/// </summary>
+public enum HtmlGraphExplorerTheme {
+    /// <summary>Follow the browser or operating-system color preference until the user chooses another theme.</summary>
+    System,
+
+    /// <summary>Use the light color theme.</summary>
+    Light,
+
+    /// <summary>Use the dark color theme.</summary>
+    Dark
 }
 
 /// <summary>
@@ -45,6 +71,6 @@ public enum HtmlGraphRenderBackend {
     /// <summary>Reserve the scene for a Canvas-backed runtime renderer.</summary>
     Canvas,
 
-    /// <summary>Request the planned WebGL-backed runtime renderer. Until it ships, the adapter routes this request to Canvas.</summary>
+    /// <summary>Render large graph geometry with the dependency-free WebGL2 runtime, falling back to Canvas when unavailable.</summary>
     WebGl
 }

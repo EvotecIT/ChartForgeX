@@ -1,15 +1,32 @@
   const syncGraphItemTabStops = (root) => {
-    const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive !== 'canvas';
+    const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'svg';
     const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
+    const webgl = root.querySelector('[data-cfx-role="graph-webgl"]');
     if (canvas) {
       canvas.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
       canvas.setAttribute('role', 'img');
       canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph canvas');
     }
-    items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"]').forEach(item => item.setAttribute('tabindex', focusableSvg ? '0' : '-1'));
+    if (webgl) {
+      webgl.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'webgl' ? '0' : '-1');
+      webgl.setAttribute('role', 'img');
+      webgl.setAttribute('aria-label', webgl.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph WebGL canvas');
+    }
+    const graphItems = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]');
+    const focusableItems = graphItems.filter(item => visible(item) && (attr(item, 'data-cfx-role') !== 'graph-cluster' || attr(item, 'data-cluster-collapsed') === 'true'));
+    const itemKey = item => `${attr(item, 'data-cfx-role')}:${attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id')}`;
+    const preferred = root.dataset.cfxGraphKeyboardItem || '';
+    const active = focusableItems.find(item => itemKey(item) === preferred)
+      || focusableItems.find(item => item.classList.contains('cfx-graph-selected'))
+      || focusableItems[0];
+    graphItems.forEach(item => {
+      item.setAttribute('tabindex', focusableSvg && item === active ? '0' : '-1');
+      if (focusableSvg && item === active) item.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space');
+      else item.removeAttribute('aria-keyshortcuts');
+    });
+    if (focusableSvg && active) root.dataset.cfxGraphKeyboardItem = itemKey(active);
     items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
       const collapsed = attr(cluster, 'data-cluster-collapsed') === 'true';
-      cluster.setAttribute('tabindex', focusableSvg && collapsed ? '0' : '-1');
       cluster.setAttribute('aria-hidden', root.dataset.cfxGraphRendererActive === 'canvas' || !collapsed ? 'true' : 'false');
     });
   };
@@ -36,14 +53,22 @@
     const tip = root.querySelector('.cfx-graph-tooltip');
     if (!tip) return;
     const tooltipDetail = details.length === 1 ? details[0] : fallback;
-    tip.textContent = details.length === 1 ? [tooltipDetail.label || tooltipDetail.id, tooltipDetail.kind, tooltipDetail.status].filter(Boolean).join(' / ') : details.length ? `${details.length} selected` : '';
+    tip.textContent = details.length === 1 ? [tooltipDetail.label || tooltipDetail.id, tooltipDetail.secondaryLabel, tooltipDetail.kind, tooltipDetail.status, tooltipDetail.badge ? `Badge ${tooltipDetail.badge}` : ''].filter(Boolean).join(' / ') : details.length ? `${details.length} selected` : '';
     tip.hidden = details.length === 0;
   };
   const syncClusterControls = (root) => {
     const pressed = root.dataset.cfxGraphClusters === 'collapsed' ? 'true' : 'false';
-    items(root, "[data-cfx-graph-action='clusters']").forEach(button => button.setAttribute('aria-pressed', pressed));
+    items(root, "[data-cfx-graph-action='clusters']").forEach(button => {
+      button.setAttribute('aria-pressed', pressed);
+      button.setAttribute('aria-label', pressed === 'true' ? 'Expand clusters' : 'Collapse clusters');
+      button.setAttribute('title', pressed === 'true' ? 'Expand clusters' : 'Collapse clusters');
+    });
   };
   const syncFocusControls = (root) => {
     const pressed = root.dataset.cfxGraphFocus === 'active' ? 'true' : 'false';
-    items(root, "[data-cfx-graph-action='focus']").forEach(button => button.setAttribute('aria-pressed', pressed));
+    items(root, "[data-cfx-graph-action='focus']").forEach(button => {
+      button.setAttribute('aria-pressed', pressed);
+      button.setAttribute('aria-label', pressed === 'true' ? 'Clear neighborhood focus' : 'Focus selected node neighborhood');
+      button.setAttribute('title', pressed === 'true' ? 'Clear neighborhood focus' : 'Focus selected node neighborhood');
+    });
   };

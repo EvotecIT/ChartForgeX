@@ -80,10 +80,19 @@ public sealed class VisNetworkGraph {
         }
 
         scene.Options.Physics.Solver = Options.Physics.Enabled ? Options.Physics.Solver : GraphPhysicsSolver.None;
-        scene.Options.Physics.StabilizationIterations = Options.Physics.StabilizationIterations;
-        scene.Options.Physics.LinkDistance = Options.Physics.LinkDistance;
-        scene.Options.Physics.Repulsion = Options.Physics.Repulsion;
-        scene.Options.Physics.Damping = Options.Physics.Damping;
+        scene.Options.Physics.Stabilization.Iterations = Options.Physics.StabilizationIterations;
+        scene.Options.Physics.BarnesHut.SpringLength = Options.Physics.LinkDistance;
+        scene.Options.Physics.ForceAtlas2.SpringLength = Options.Physics.LinkDistance;
+        scene.Options.Physics.Repulsion.SpringLength = Options.Physics.LinkDistance;
+        scene.Options.Physics.HierarchicalRepulsion.SpringLength = Options.Physics.LinkDistance;
+        scene.Options.Physics.BarnesHut.GravitationalConstant = -Options.Physics.Repulsion;
+        scene.Options.Physics.ForceAtlas2.GravitationalConstant = -Math.Max(1, Options.Physics.Repulsion / 90);
+        scene.Options.Physics.Repulsion.Strength = Options.Physics.Repulsion / 4500;
+        scene.Options.Physics.HierarchicalRepulsion.Strength = Options.Physics.Repulsion / 4500;
+        scene.Options.Physics.BarnesHut.Damping = Options.Physics.Damping;
+        scene.Options.Physics.ForceAtlas2.Damping = Options.Physics.Damping;
+        scene.Options.Physics.Repulsion.Damping = Options.Physics.Damping;
+        scene.Options.Physics.HierarchicalRepulsion.Damping = Options.Physics.Damping;
         scene.Options.Physics.AdaptiveTimestep = Options.Physics.AdaptiveTimestep;
         if (Options.Layout.Hierarchical.Enabled) {
             scene.Options.Layout.Mode = GraphLayoutMode.Hierarchical;

@@ -628,6 +628,7 @@ internal static partial class SmokeTests {
             File.WriteAllText(Path.Combine(output, "zeta.html"), zeta.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "zeta.svg"), zeta.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "zeta.png"), zeta.ToPng());
+            File.WriteAllText(Path.Combine(output, "zeta.static-only"), "Static output may omit HTML.");
             File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "dashboard-chart-portfolio-grid.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
@@ -753,6 +754,7 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"svgMinimumMarkerRadius\": 3", StringComparison.Ordinal), "Comparison manifest should describe the minimum readable SVG marker threshold.");
             Assert(manifest.Contains("\"pngDistinctColors\": 8", StringComparison.Ordinal) && manifest.Contains("\"pngEdgeInkPixels\": 0", StringComparison.Ordinal), "Comparison manifest should describe PNG health thresholds.");
             Assert(manifest.Contains("\"htmlRequiresSurfaceGradient\": true", StringComparison.Ordinal) && manifest.Contains("\"htmlRequiresPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should describe HTML polish health thresholds.");
+            Assert(manifest.Contains("\"htmlMayBeExplicitlyOmitted\": true", StringComparison.Ordinal) && manifest.Contains("\"required\": false", StringComparison.Ordinal), "Comparison manifests should allow explicitly marked standalone SVG/PNG artifacts without weakening HTML checks for normal chart outputs.");
             Assert(manifest.Contains("\"center-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe available parity review modes.");
             Assert(manifest.Contains("\"preset-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe script-free preset wipe review.");
             Assert(manifest.Contains("\"name\": \"alpha\"", StringComparison.Ordinal), "Comparison manifest should list chart assets by name.");

@@ -19,6 +19,12 @@ public sealed class GraphPerformanceOptions {
     /// <summary>Gets or sets the maximum Canvas edge count that should run fully interactive browser physics.</summary>
     public int MaxInteractiveCanvasEdges { get; set; } = 12000;
 
+    /// <summary>Gets or sets the maximum WebGL node count that should remain fully interactive.</summary>
+    public int MaxInteractiveWebGlNodes { get; set; } = 20000;
+
+    /// <summary>Gets or sets the maximum WebGL edge count that should remain fully interactive.</summary>
+    public int MaxInteractiveWebGlEdges { get; set; } = 50000;
+
     /// <summary>Gets or sets how many simulation ticks should pass between telemetry events.</summary>
     public int TelemetrySampleInterval { get; set; } = 30;
 

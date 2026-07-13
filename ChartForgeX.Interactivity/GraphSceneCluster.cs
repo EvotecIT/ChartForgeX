@@ -8,6 +8,7 @@ namespace ChartForgeX.Interactivity;
 public sealed class GraphSceneCluster {
     private string _id = string.Empty;
     private string _label = string.Empty;
+    private string? _parentClusterId;
 
     /// <summary>Gets or sets the stable cluster identifier.</summary>
     public string Id { get => _id; set => _id = ChartInteractionText.RequiredToken(value, nameof(value), "Graph cluster ids"); }
@@ -17,6 +18,9 @@ public sealed class GraphSceneCluster {
 
     /// <summary>Gets or sets an optional cluster kind such as hub, community, group, path, or outlier.</summary>
     public string? Kind { get; set; }
+
+    /// <summary>Gets or sets an optional parent cluster id for nested group navigation.</summary>
+    public string? ParentClusterId { get => _parentClusterId; set => _parentClusterId = ChartInteractionText.OptionalToken(value, nameof(value), "Graph cluster parent ids"); }
 
     /// <summary>Gets node ids contained by this cluster.</summary>
     public List<string> NodeIds { get; } = new();

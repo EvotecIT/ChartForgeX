@@ -1,4 +1,9 @@
   const physicsCommunityKey = (node) => node.cluster ? `cluster:${node.cluster}` : node.groupId ? `group:${node.groupId}` : node.kind ? `kind:${node.kind}` : 'graph';
+  const physicsNodeRadius = (node, includeLabels) => {
+    const mark = Math.max(4, Number(node.size) || 8) * (node.shape === 'box' || node.shape === 'database' ? 1.3 : node.shape === 'image' ? 1.18 : 1);
+    const label = includeLabels ? Math.min(90, Math.max(0, String(node.label || '').length * 3.2)) : 0;
+    return Math.max(mark, label);
+  };
   const physicsCommunityAnchors = (state, layout) => {
     const groups = new Map();
     state.nodes.forEach(node => {
@@ -105,8 +110,9 @@
     return applyCommunityPacking(state, settings);
   };
   const applyOverlapPressure = (nodes, settings) => {
-    if (!settings.overlapPressure || nodes.length < 2) return 0;
-    const cellSize = Math.max(36, Math.min(92, settings.linkDistance * 0.62));
+    if ((!settings.overlapPressure && !settings.avoidOverlap) || nodes.length < 2) return 0;
+    const includeLabels = nodes.length < 500;
+    const cellSize = Math.max(36, Math.min(220, nodes.reduce((maximum, node) => Math.max(maximum, physicsNodeRadius(node, includeLabels) * 2 + 12), settings.linkDistance * 0.62)));
     const grid = new Map();
     nodes.forEach(node => {
       const key = `${Math.floor(node.x / cellSize)},${Math.floor(node.y / cellSize)}`;
@@ -131,7 +137,7 @@
             if (other === node || other.id < node.id) continue;
             pairs += 1;
             if (pairs > maxPairs) { exhausted = true; break; }
-            const minDistance = Math.max(14, (node.size || 8) + (other.size || 8) + 12);
+            const minDistance = (physicsNodeRadius(node, includeLabels) + physicsNodeRadius(other, includeLabels) + 8) * (0.45 + settings.avoidOverlap * 0.55);
             let dx = other.x - node.x;
             let dy = other.y - node.y;
             let distance = Math.sqrt(dx * dx + dy * dy);
@@ -142,7 +148,7 @@
               dy = Math.sin(seed);
               distance = 1;
             }
-            const push = (minDistance - distance) / distance * settings.overlapPressure;
+            const push = (minDistance - distance) / distance * Math.max(settings.overlapPressure, settings.avoidOverlap * 0.08);
             const fx = dx * push;
             const fy = dy * push;
             if (!node.fixed) { node.vx -= fx; node.vy -= fy; }

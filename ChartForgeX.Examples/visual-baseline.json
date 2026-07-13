@@ -285,7 +285,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
-        "minDistinctColors": 709,
+        "minDistinctColors": 714,
         "maxEdgeInkPixels": 0
       }
     },
@@ -301,7 +301,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
-        "minDistinctColors": 1546,
+        "minDistinctColors": 1538,
         "maxEdgeInkPixels": 0
       }
     },
@@ -509,7 +509,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 590400,
-        "minDistinctColors": 1937,
+        "minDistinctColors": 1942,
         "maxEdgeInkPixels": 0
       }
     },
@@ -541,7 +541,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 656000,
-        "minDistinctColors": 507,
+        "minDistinctColors": 504,
         "maxEdgeInkPixels": 0
       }
     },
@@ -716,8 +716,8 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 17363,
-        "minDistinctColors": 878,
+        "minVisiblePixels": 17250,
+        "minDistinctColors": 882,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1133,6 +1133,86 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-2000-stage-01-overview",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 4,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minDistinctColors": 492,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-2000-stage-02-depth-1",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 43,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minDistinctColors": 800,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-2000-stage-03-depth-2",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 145,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minDistinctColors": 1221,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-2000-stage-04-depth-3",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 445,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minDistinctColors": 1795,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-2000-stage-05-full",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 3039,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2125,7 +2205,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 470400,
-        "minDistinctColors": 954,
+        "minDistinctColors": 957,
         "maxEdgeInkPixels": 0
       }
     },

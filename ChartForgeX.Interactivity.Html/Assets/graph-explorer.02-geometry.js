@@ -14,6 +14,16 @@
   const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
   const nodeHalfWidth = (node) => nodeShapeExtents(node).x;
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
+  const nodeLayoutExtents = (node) => {
+    const mark = nodeShapeExtents(node);
+    const label = attr(node.el, 'data-node-label') || node.label || node.id || '';
+    const secondary = attr(node.el, 'data-node-secondary-label') || node.secondaryLabel || '';
+    const labelHalfWidth = Math.max(24, Math.min(132, label.length * 3.5 + 10), secondary ? Math.min(132, secondary.length * 2.8 + 8) : 0);
+    const labelBottom = node.shape === 'text' ? 9 + (secondary ? 15 : 0) : Math.max(4, node.size || 8) + 24 + (secondary ? 15 : 0);
+    return { x: Math.max(mark.x + 5, labelHalfWidth), y: Math.max(mark.y + 5, labelBottom) };
+  };
+  const nodeLayoutRadius = (node) => Math.max(6, Math.max(nodeLayoutExtents(node).x, nodeLayoutExtents(node).y));
+  const nodeCollisionRadius = (node, includeLabels) => includeLabels ? nodeLayoutRadius(node) : Math.max(6, Math.max(nodeHalfWidth(node), nodeHalfHeight(node)) + 5);
   const nodeBoundaryInset = (node, unitX, unitY) => {
     const size = Math.max(4, node?.size || 8);
     if (nodeUsesRectangularGeometry(node)) {

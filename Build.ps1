@@ -754,10 +754,10 @@ var graph = GraphScene.Create("package-graph", "Package graph")
     })
     .AddEdge("api-db", "api", "db", "queries", edge => edge.Kind = "dependency");
 graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization);
-graph.Options.Physics.Solver = GraphPhysicsSolver.ForceDirected;
+graph.Options.Physics.Solver = GraphPhysicsSolver.Repulsion;
 var graphHtml = graph.ToGraphExplorerHtmlPage();
 if (!graphHtml.Contains("data-cfx-graph-id=\"package-graph\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer package surface missing.");
-if (!graphHtml.Contains("data-cfx-graph-physics=\"ForceDirected\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
+if (!graphHtml.Contains("data-cfx-graph-physics=\"Repulsion\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
 
 var mermaid = new MermaidParser().ParseFlowchart("flowchart LR\n  a[Start] --> b[Done]");
 if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");

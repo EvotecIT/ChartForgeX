@@ -22,9 +22,11 @@ internal static partial class SmokeTests {
     }
 
     private static void GraphExplorerCanvasConsumersPreferLivePhysicsState() {
-        var bindings = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "Assets", "graph-explorer.30-bindings.js"));
+        var assetRoot = Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "Assets");
+        var bindings = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.30-bindings.js"));
+        var pointers = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.27-pointer-interactions.js"));
         const string liveState = "root.__cfxGraphState || graphState(root)";
-        var liveStateUses = bindings.Split(new[] { liveState }, StringSplitOptions.None).Length - 1;
+        var liveStateUses = (bindings + pointers).Split(new[] { liveState }, StringSplitOptions.None).Length - 1;
         Assert(liveStateUses >= 7, "Canvas dragging and SVG, PNG, and JSON exports should consume live physics coordinates before falling back to hidden SVG attributes.");
         Assert(bindings.Contains("indexHitTesting(root, graphState(root))", StringComparison.Ordinal), "Initial graph binding should still build a fresh state before the live cache exists.");
     }

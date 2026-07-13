@@ -16,7 +16,7 @@ ChartForgeX targets `net472`, `netstandard2.0`, `net8.0`, and `net10.0`. The cor
 | --- | --- |
 | `ChartForgeX` | Static SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
-| `ChartForgeX.Interactivity.Html` | Self-contained chart and topology interaction adapter, including interactive topology pages, the stencil browser, and the graph explorer with SVG output and Canvas runtime fallback. |
+| `ChartForgeX.Interactivity.Html` | Self-contained chart and topology interaction adapter, including interactive topology pages, the stencil browser, and the graph explorer with SVG, Canvas, WebGL, hierarchy navigation, compact large-scene documents, and runtime patches. |
 
 ## Visual Tour
 
@@ -103,6 +103,7 @@ When you do not need deferred host definitions, build directly with helpers such
 | SVG markup | `chart.ToSvg()` or `chart.SaveSvg("chart.svg")` |
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
 | Interactive topology HTML | `topology.ToInteractiveHtmlFragment()`, `topology.ToInteractiveHtmlPage()`, or `topology.SaveInteractiveHtml("topology.html")` from `ChartForgeX.Interactivity.Html` |
+| Interactive relationship graph | `graph.ToGraphExplorerHtmlFragment()`, `graph.ToGraphExplorerHtmlPage()`, premium system/light/dark themes, accessible keyboard navigation, SVG/Canvas/WebGL backends, worker physics, direct hierarchy navigation, static stage images, and `GraphScenePatch` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
 | GIF, JPEG, and raster file output | `chart.Save("chart.gif")`, `chart.Save("chart.jpg", rasterOptions)`, `chart.SaveRasterImage("chart.tiff")`, or `ImageComposition.FromFile("wallpaper.jpg").Save("wallpaper-output.gif")` |
 | Reusable image composition | `ImageComposition.TryFromBytes(bytes, out var composition)`, `composition.StrokeRectangle(...)`, `composition.DrawCallout(...)`, `composition.Write(stream, RasterImageFormat.Png)`, or `composition.Save(path, RasterImageFormat.Gif)` |

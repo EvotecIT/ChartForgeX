@@ -11,9 +11,12 @@ public sealed class GraphSceneNode {
     private string? _kind;
     private string? _groupId;
     private string? _clusterId;
+    private string? _parentId;
     private string? _imageUrl;
     private string? _imageAlt;
     private string? _iconText;
+    private string? _secondaryLabel;
+    private string? _badgeText;
     private double _x;
     private double _y;
     private bool _hasExplicitPosition;
@@ -33,6 +36,9 @@ public sealed class GraphSceneNode {
     /// <summary>Gets or sets an optional cluster id used for collapsed large-graph summaries.</summary>
     public string? ClusterId { get => _clusterId; set => _clusterId = ChartInteractionText.OptionalToken(value, nameof(value), "Graph node cluster ids"); }
 
+    /// <summary>Gets or sets an optional parent node id used for hierarchy navigation and semantic drill-down.</summary>
+    public string? ParentId { get => _parentId; set => _parentId = ChartInteractionText.OptionalToken(value, nameof(value), "Graph node parent ids"); }
+
     /// <summary>Gets or sets an optional semantic status such as healthy, warning, critical, unknown, or muted.</summary>
     public string? Status { get; set; }
 
@@ -50,6 +56,12 @@ public sealed class GraphSceneNode {
 
     /// <summary>Gets or sets an optional short icon glyph or text shown inside the node mark.</summary>
     public string? IconText { get => _iconText; set => _iconText = ChartInteractionText.OptionalText(value, nameof(value), "Graph node icon text"); }
+
+    /// <summary>Gets or sets an optional secondary label shown in detailed semantic-zoom views and inspectors.</summary>
+    public string? SecondaryLabel { get => _secondaryLabel; set => _secondaryLabel = ChartInteractionText.OptionalText(value, nameof(value), "Graph node secondary labels"); }
+
+    /// <summary>Gets or sets optional short badge text such as a count, role, or alert total.</summary>
+    public string? BadgeText { get => _badgeText; set => _badgeText = ChartInteractionText.OptionalText(value, nameof(value), "Graph node badge text"); }
 
     /// <summary>Gets or sets the current x-coordinate in graph scene space.</summary>
     public double X {

@@ -51,7 +51,7 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct ComparisonAsset {
-        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth, HtmlHealth htmlHealth) {
+        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth, HtmlHealth htmlHealth, bool htmlRequired) {
             Name = name;
             SvgDimensions = svgDimensions;
             PngDimensions = pngDimensions;
@@ -60,6 +60,7 @@ public static partial class GalleryWriter {
             SvgHealth = svgHealth;
             PngHealth = pngHealth;
             HtmlHealth = htmlHealth;
+            HtmlRequired = htmlRequired;
         }
 
         public string Name { get; }
@@ -77,6 +78,10 @@ public static partial class GalleryWriter {
         public PngHealth PngHealth { get; }
 
         public HtmlHealth HtmlHealth { get; }
+
+        public bool HtmlRequired { get; }
+
+        public bool HtmlPasses => !HtmlRequired || HtmlHealth.IsHealthy;
 
         public int PngScale {
             get {
@@ -104,7 +109,7 @@ public static partial class GalleryWriter {
                 if (SvgHealth.ClippedTextNodes > 0) warnings.Add("SVG text bounds warning");
                 if (!PngHealth.IsHealthy) warnings.Add("PNG health warning");
                 if (PngHealth.EdgeInkPixels > MaximumHealthyPngEdgeInkPixels) warnings.Add("PNG edge pressure warning");
-                if (!HtmlHealth.IsHealthy) warnings.Add("HTML health warning");
+                if (!HtmlPasses) warnings.Add("HTML health warning");
                 return warnings.ToArray();
             }
         }

@@ -6,7 +6,11 @@
     const value = Number(raw);
     return Number.isFinite(value) ? value : fallback;
   };
-  const items = (root, selector) => Array.from(root.querySelectorAll(selector));
+  const items = (root, selector) => {
+    const physical = Array.from(root.querySelectorAll(selector)).filter(item => attr(item, 'data-cfx-runtime-overlay') !== 'true');
+    const virtual = (root.__cfxGraphVirtualItems || []).filter(item => !item.__cfxRemoved && graphVirtualMatches(item, selector));
+    return physical.concat(virtual);
+  };
   const emit = (root, name, detail, options) => root.dispatchEvent(new CustomEvent(name, { bubbles: true, cancelable: !!options?.cancelable, detail }));
   const featureGroups = {
     Explorer: ['Selection', 'MultiSelection', 'Search', 'Filtering', 'Viewport', 'NeighborhoodFocus', 'Clustering', 'LevelOfDetail']
@@ -45,28 +49,17 @@
     attr(node, 'data-cfx-search'),
     attr(node, 'data-cfx-status')
   ].join(' ').toLowerCase();
-  const profile = (root) => {
-    const solver = attr(root, 'data-cfx-graph-physics');
-    const base = {
-      solver,
-      iterations: Math.max(1, num(root, 'data-cfx-graph-stabilization-iterations', 400)),
-      minVelocity: Math.max(0.01, num(root, 'data-cfx-graph-min-velocity', 0.1)),
-      maxVelocity: Math.max(1, num(root, 'data-cfx-graph-max-velocity', 50)),
-      damping: Math.min(0.98, Math.max(0.01, num(root, 'data-cfx-graph-damping', 0.09))),
-      linkDistance: Math.max(10, num(root, 'data-cfx-graph-link-distance', 120)),
-      repulsion: Math.max(1, num(root, 'data-cfx-graph-repulsion', 4500)),
-      centerGravity: Math.max(0, num(root, 'data-cfx-graph-center-gravity', 0.01)),
-      timestep: attr(root, 'data-cfx-graph-adaptive-timestep') === 'true' ? 0.8 : 1
-    };
-    if (solver === 'BarnesHut') return { ...base, repulsion: base.repulsion * 1.35, damping: Math.min(0.98, base.damping * 1.15), timestep: base.timestep * 0.9 };
-    if (solver === 'ForceAtlas2') return { ...base, repulsion: base.repulsion * 0.9, linkDistance: base.linkDistance * 0.75, centerGravity: base.centerGravity * 1.8 };
-    if (solver === 'HierarchicalRepulsion') return { ...base, repulsion: base.repulsion * 1.15, linkDistance: base.linkDistance * 1.2, centerGravity: base.centerGravity * 1.25 };
-    return base;
-  };
   const graphState = (root) => {
+    ensureGraphDocument(root);
+    const detailGroups = new Map(items(root, '[data-cfx-role="graph-node-details"]').map(el => [attr(el, 'data-node-details-for'), el]));
     const nodes = items(root, '[data-cfx-role="graph-node"]').map((el, index) => ({
       el,
+      detailsEl: detailGroups.get(attr(el, 'data-node-id')) || null,
       id: attr(el, 'data-node-id'),
+      label: attr(el, 'data-node-label'),
+      secondaryLabel: attr(el, 'data-node-secondary-label'),
+      badge: attr(el, 'data-node-badge'),
+      parentId: attr(el, 'data-node-parent'),
       cluster: attr(el, 'data-node-cluster'),
       groupId: attr(el, 'data-node-group'),
       kind: attr(el, 'data-node-kind'),
@@ -79,6 +72,7 @@
       labelBackgroundColor: attr(el, 'data-node-label-background-color'),
       shadow: attr(el, 'data-node-shadow') === 'true',
       size: Math.max(4, num(el, 'data-node-size', 8)),
+      level: attr(el, 'data-node-level') === '' ? null : num(el, 'data-node-level', 0),
       degree: 0,
       fixed: attr(el, 'data-node-fixed') === 'true',
       x: num(el, 'data-node-x', 160 + index * 22),
@@ -92,6 +86,8 @@
     const clusters = items(root, '[data-cfx-role="graph-cluster"]').map(el => ({
       el,
       id: attr(el, 'data-cluster-id'),
+      label: attr(el, 'data-cluster-label'),
+      parentId: attr(el, 'data-cluster-parent'),
       nodeIds: idList(attr(el, 'data-cluster-node-ids')),
       collapsed: attr(el, 'data-cluster-collapsed') === 'true'
     }));
@@ -101,6 +97,7 @@
       const target = byId.get(attr(el, 'data-target-node-id'));
       return {
         el,
+        id: attr(el, 'data-edge-id'),
         source,
         target,
         sourceCluster: clusterById.get(attr(el, 'data-source-cluster-id') || source?.cluster || ''),
@@ -129,7 +126,7 @@
     });
     return { nodes, edges, clusters, byId, clusterById };
   };
-  const visible = (el) => !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member');
+  const visible = (el) => !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member') && !el.classList.contains('cfx-graph-hierarchy-hidden');
   const viewport = (root) => ({
     x: num(root, 'data-cfx-viewport-x', 0),
     y: num(root, 'data-cfx-viewport-y', 0),
@@ -147,8 +144,9 @@
     const group = root.querySelector('[data-cfx-role="graph-viewport"]');
     if (group) group.setAttribute('transform', `translate(${state.x.toFixed(3)} ${state.y.toFixed(3)}) scale(${state.scale.toFixed(3)})`);
     const renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
-    const currentState = root.__cfxGraphState || (renderer === 'canvas' || typeof updateOverview === 'function' ? graphState(root) : null);
-    if (renderer === 'canvas' && currentState) drawCanvas(root, currentState);
+    const currentState = root.__cfxGraphState || (renderer === 'canvas' || renderer === 'webgl' || typeof updateOverview === 'function' ? graphState(root) : null);
+    if (typeof applySemanticZoom === 'function') applySemanticZoom(root, state.scale);
+    if ((renderer === 'canvas' || renderer === 'webgl') && currentState) drawCanvas(root, currentState);
     if (typeof updateOverview === 'function') updateOverview(root, currentState);
     emit(root, 'cfxgraphviewport', { graphId: attr(root, 'data-cfx-graph-id'), ...state });
   };
@@ -167,8 +165,14 @@
     const stage = root.querySelector('.cfx-graph-stage');
     const rect = (stage || root).getBoundingClientRect();
     const size = sceneSize(root);
-    const sx = (event.clientX - rect.left) * size.width / Math.max(1, rect.width);
-    const sy = (event.clientY - rect.top) * size.height / Math.max(1, rect.height);
+    const renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
+    const uniformScale = renderer === 'svg' ? Math.min(rect.width / size.width, rect.height / size.height) : 0;
+    const contentWidth = uniformScale > 0 ? size.width * uniformScale : rect.width;
+    const contentHeight = uniformScale > 0 ? size.height * uniformScale : rect.height;
+    const offsetX = (rect.width - contentWidth) / 2;
+    const offsetY = (rect.height - contentHeight) / 2;
+    const sx = (event.clientX - rect.left - offsetX) * size.width / Math.max(1, contentWidth);
+    const sy = (event.clientY - rect.top - offsetY) * size.height / Math.max(1, contentHeight);
     const current = viewport(root);
     return { x: (sx - current.x) / current.scale, y: (sy - current.y) / current.scale, screenX: sx, screenY: sy };
   };
@@ -191,20 +195,28 @@
     return { canvas, context };
   };
   const drawCanvas = (root, state, options) => {
+    if (typeof syncNodeDetailLayers === 'function') syncNodeDetailLayers(state);
+    if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'svg' && attr(root, 'data-cfx-graph-accelerated-markup') === 'true' && !options?.force) {
+      if (typeof drawAcceleratedSvgRuntime === 'function' && drawAcceleratedSvgRuntime(root, state)) return;
+    }
+    if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'webgl' && !options?.force) {
+      if (typeof drawWebGl === 'function' && drawWebGl(root, state)) return;
+    }
     if (!root.classList.contains('cfx-graph-render-canvas') && !options?.force) return;
     const surface = canvasContext(root);
     if (!surface) return;
     const { context } = surface;
     const size = sceneSize(root);
+    const palette = graphThemePalette(root);
     context.clearRect(0, 0, size.width, size.height);
-    context.fillStyle = '#ffffff';
+    context.fillStyle = palette.paper;
     context.fillRect(0, 0, size.width, size.height);
     const view = viewport(root);
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     context.save();
     context.transform(view.scale, 0, 0, view.scale, view.x, view.y);
     context.lineCap = 'round';
-    const compact = root.classList.contains('cfx-graph-lod-compact');
+    const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
     const dense = compact || state.edges.length > 250;
     const moving = root.dataset.cfxGraphPhysicsState === 'running' && !options?.force;
     state.clusters.forEach(cluster => {
@@ -216,8 +228,8 @@
       context.beginPath();
       context.arc(metrics.x, metrics.y, metrics.radius, 0, Math.PI * 2);
       context.globalAlpha = metrics.expanded ? .1 : .86;
-      context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : 'rgba(224,242,254,.86)';
-      context.strokeStyle = cluster.el.classList.contains('cfx-graph-selected') ? '#f59e0b' : '#0284c7';
+      context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : palette.clusterFill;
+      context.strokeStyle = cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : palette.clusterStroke;
       context.lineWidth = selected ? 4 : metrics.expanded ? 1.2 : 2;
       context.setLineDash([6, 4]);
       if (!metrics.expanded) context.fill();
@@ -229,8 +241,8 @@
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.lineWidth = 4;
-        context.strokeStyle = '#ffffff';
-        context.fillStyle = '#075985';
+        context.strokeStyle = palette.halo;
+        context.fillStyle = palette.clusterText;
         context.strokeText(label, metrics.x, metrics.y);
         context.fillText(label, metrics.x, metrics.y);
       }
@@ -244,7 +256,8 @@
       const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
       const selected = edge.el.classList.contains('cfx-graph-selected');
       edgeDrawPath(context, rendered, control);
-      context.strokeStyle = selected ? '#f59e0b' : related ? '#0f766e' : edge.strokeColor || '#94a3b8';
+      const edgeColor = selected ? palette.selected : related ? '#14b8a6' : edge.strokeColor || palette.edge;
+      context.strokeStyle = edgeColor;
       context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
       const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
       const styledWidth = edge.strokeWidth > 0 ? edge.strokeWidth : baseWidth;
@@ -257,8 +270,8 @@
       context.globalAlpha = 1;
       if ((!moving || selected || related) && (edge.sourceArrow || edge.targetArrow || edge.directed)) {
         context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
-        if (edge.sourceArrow) drawArrow(context, rendered, control, 'source', edge.strokeColor);
-        if (edge.targetArrow || edge.directed) drawArrow(context, rendered, control, 'target', edge.strokeColor);
+        if (edge.sourceArrow) drawArrow(context, rendered, control, 'source', edgeColor);
+        if (edge.targetArrow || edge.directed) drawArrow(context, rendered, control, 'target', edgeColor);
         context.globalAlpha = 1;
       }
       if ((!moving || selected || related) && edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)) {
@@ -267,55 +280,14 @@
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.lineWidth = 4;
-        context.strokeStyle = '#ffffff';
-        context.fillStyle = edge.labelColor || '#475569';
+        context.strokeStyle = palette.halo;
+        context.fillStyle = graphAdaptiveTextColor(root, edge.labelColor, palette.edgeLabel);
         context.globalAlpha = dimmed ? .16 : 1;
         context.strokeText(edge.label, label.x, label.y);
         context.fillText(edge.label, label.x, label.y);
         context.globalAlpha = 1;
       }
     });
-    state.nodes.forEach(node => {
-      if (!visible(node.el)) return;
-      const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');
-      const primary = node.el.classList.contains('cfx-graph-neighborhood-primary');
-      const selected = node.el.classList.contains('cfx-graph-selected');
-      context.save();
-      context.globalAlpha = dimmed ? .18 : 1;
-      drawNodeMark(context, node, selected, compact, root, moving);
-      if (primary) {
-        context.beginPath();
-        context.arc(node.x, node.y, node.size + 9, 0, Math.PI * 2);
-        context.strokeStyle = '#0f766e';
-        context.lineWidth = 3;
-        context.stroke();
-      }
-      if ((!compact && !moving) || node.shape === 'text' || selected || primary) {
-        context.font = '12px Segoe UI, Arial, sans-serif';
-        context.textAlign = 'center';
-        context.textBaseline = node.shape === 'text' ? 'middle' : 'top';
-        context.lineWidth = 4;
-      context.strokeStyle = '#ffffff';
-      context.fillStyle = node.labelColor || '#334155';
-      const label = attr(node.el, 'data-node-label');
-      const labelY = node.shape === 'text' ? node.y : node.y + node.size + 8;
-      if (node.labelBackgroundColor) {
-        const metrics = context.measureText(label);
-        const width = Math.max(48, metrics.width + 18);
-        const x = node.x - width / 2;
-        const y = node.shape === 'text' ? node.y - 9 : node.y + node.size + 4;
-        context.save();
-        context.fillStyle = node.labelBackgroundColor;
-        context.beginPath();
-        if (context.roundRect) context.roundRect(x, y, width, 18, 5);
-        else context.rect(x, y, width, 18);
-        context.fill();
-        context.restore();
-      }
-      context.strokeText(label, node.x, labelY);
-      context.fillText(label, node.x, labelY);
-      }
-      context.restore();
-    });
+    drawCanvasNodes(context, root, state.nodes, compact, moving);
     context.restore();
   };

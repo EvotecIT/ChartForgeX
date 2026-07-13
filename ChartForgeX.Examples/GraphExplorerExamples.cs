@@ -7,6 +7,7 @@ internal static class GraphExplorerExamples {
         graph.ToGraphExplorerHtmlPage(options => {
             options.PageTitle = "Identity Risk Graph Explorer";
             options.RenderBackend = HtmlGraphRenderBackend.Svg;
+            options.IncludePhysicsConfigurator = true;
         }).SaveText(Path.Combine(output, "identity-risk-graph-explorer.html"));
 
         var visParity = BuildVisNetworkParityHierarchy();
@@ -20,6 +21,9 @@ internal static class GraphExplorerExamples {
             options.PageTitle = "Enterprise Access Graph Benchmark";
             options.RenderBackend = HtmlGraphRenderBackend.Svg;
         }).SaveText(Path.Combine(output, "enterprise-access-graph-benchmark.html"));
+
+        GraphExplorerPremiumTopologyExample.Write(output);
+        GraphExplorerStageExportExample.Write(output);
     }
 
     private static GraphScene BuildEnterpriseAccessBenchmark() {
@@ -29,9 +33,10 @@ internal static class GraphExplorerExamples {
         graph.Subtitle = "Large dependency-free Canvas fallback benchmark with 360 nodes, 720 directed edges, image/icon nodes, drag, pan, zoom, LOD, and performance telemetry.";
         graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry);
         graph.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
-        graph.Options.Physics.StabilizationIterations = 90;
-        graph.Options.Physics.LinkDistance = 58;
-        graph.Options.Physics.Repulsion = 3600;
+        graph.Options.Physics.Stabilization.Iterations = 90;
+        graph.Options.Physics.BarnesHut.SpringLength = 58;
+        graph.Options.Physics.BarnesHut.GravitationalConstant = -3600;
+        graph.Options.Physics.BarnesHut.AvoidOverlap = 0.72;
         graph.Options.LevelOfDetail.ClusterNodeThreshold = 80;
         graph.Options.LevelOfDetail.HideEdgeLabelsThreshold = 260;
         graph.Options.LevelOfDetail.CompactNodeThreshold = 180;
@@ -134,9 +139,10 @@ internal static class GraphExplorerExamples {
         graph.Subtitle = "Product-real service, identity, owner, finding, and evidence relationships with runtime physics, clusters, LOD, and performance telemetry.";
         graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry);
         graph.Options.Physics.Solver = GraphPhysicsSolver.ForceAtlas2;
-        graph.Options.Physics.StabilizationIterations = 700;
-        graph.Options.Physics.LinkDistance = 92;
-        graph.Options.Physics.Repulsion = 5200;
+        graph.Options.Physics.Stabilization.Iterations = 700;
+        graph.Options.Physics.ForceAtlas2.SpringLength = 92;
+        graph.Options.Physics.ForceAtlas2.GravitationalConstant = -72;
+        graph.Options.Physics.ForceAtlas2.AvoidOverlap = 0.82;
         graph.Options.LevelOfDetail.ClusterNodeThreshold = 28;
         graph.Options.LevelOfDetail.HideEdgeLabelsThreshold = 70;
         graph.Options.LevelOfDetail.CompactNodeThreshold = 42;

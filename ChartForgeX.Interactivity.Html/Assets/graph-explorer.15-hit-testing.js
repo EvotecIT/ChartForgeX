@@ -14,7 +14,7 @@
         grid.set(key, bucket);
       }
     });
-    root.__cfxGraphState = state;
+    root.__cfxGraphState = state.fullState || state;
     root.__cfxGraphHitGrid = { cellSize, grid };
     root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
   };

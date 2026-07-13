@@ -4,6 +4,15 @@ namespace ChartForgeX.Interactivity.Html;
 /// Controls how a static <see cref="ChartForgeX.Topology.TopologyChart"/> is projected into a reusable graph exploration scene.
 /// </summary>
 public sealed class TopologyGraphSceneOptions {
+    /// <summary>Gets or sets the icon catalog used to resolve topology icon symbols, colors, shapes, and artwork.</summary>
+    public ChartForgeX.Topology.TopologyIconCatalog? IconCatalog { get; set; }
+
+    /// <summary>Gets or sets whether safe node and catalog artwork should become graph image nodes.</summary>
+    public bool IncludeResolvedIconArtwork { get; set; } = true;
+
+    /// <summary>Gets or sets whether hierarchy parent and level metadata should become native graph hierarchy fields.</summary>
+    public bool PreserveHierarchyMetadata { get; set; } = true;
+
     /// <summary>Gets or sets whether topology groups should become graph clusters.</summary>
     public bool IncludeGroupsAsClusters { get; set; } = true;
 

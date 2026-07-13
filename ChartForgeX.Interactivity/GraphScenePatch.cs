@@ -1,0 +1,159 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace ChartForgeX.Interactivity;
+
+/// <summary>
+/// Describes an atomic set of graph document changes that hosts and interactive adapters can exchange.
+/// </summary>
+public sealed class GraphScenePatch {
+    /// <summary>Gets nodes to add or replace by stable id.</summary>
+    public List<GraphSceneNode> UpsertNodes { get; } = new();
+
+    /// <summary>Gets edges to add or replace by stable id.</summary>
+    public List<GraphSceneEdge> UpsertEdges { get; } = new();
+
+    /// <summary>Gets clusters to add or replace by stable id.</summary>
+    public List<GraphSceneCluster> UpsertClusters { get; } = new();
+
+    /// <summary>Gets node ids to remove.</summary>
+    public List<string> RemoveNodeIds { get; } = new();
+
+    /// <summary>Gets edge ids to remove.</summary>
+    public List<string> RemoveEdgeIds { get; } = new();
+
+    /// <summary>Gets cluster ids to remove.</summary>
+    public List<string> RemoveClusterIds { get; } = new();
+
+    /// <summary>Gets or sets whether removing nodes also removes incident edges and cluster membership.</summary>
+    public bool RemoveIncidentReferences { get; set; } = true;
+}
+
+/// <summary>
+/// Reports the graph document size after an atomic patch succeeds.
+/// </summary>
+public readonly struct GraphScenePatchResult {
+    internal GraphScenePatchResult(int nodeCount, int edgeCount, int clusterCount) {
+        NodeCount = nodeCount;
+        EdgeCount = edgeCount;
+        ClusterCount = clusterCount;
+    }
+
+    /// <summary>Gets the resulting node count.</summary>
+    public int NodeCount { get; }
+
+    /// <summary>Gets the resulting edge count.</summary>
+    public int EdgeCount { get; }
+
+    /// <summary>Gets the resulting cluster count.</summary>
+    public int ClusterCount { get; }
+}
+
+/// <summary>
+/// Applies typed incremental changes to graph scenes.
+/// </summary>
+public static class GraphScenePatchExtensions {
+    /// <summary>
+    /// Applies a patch atomically and validates the complete scene before committing it.
+    /// </summary>
+    /// <param name="scene">The graph document to update.</param>
+    /// <param name="patch">The requested additions, replacements, and removals.</param>
+    /// <returns>The resulting graph document counts.</returns>
+    public static GraphScenePatchResult ApplyPatch(this GraphScene scene, GraphScenePatch patch) {
+        if (scene == null) throw new ArgumentNullException(nameof(scene));
+        if (patch == null) throw new ArgumentNullException(nameof(patch));
+        ValidatePatchIds(patch);
+
+        var originalNodes = scene.Nodes.ToArray();
+        var originalEdges = scene.Edges.ToArray();
+        var originalClusters = scene.Clusters.ToArray();
+        var nodes = originalNodes.ToList();
+        var edges = originalEdges.ToList();
+        var clusters = originalClusters.Select(CloneCluster).ToList();
+
+        var removedNodeIds = TokenSet(patch.RemoveNodeIds);
+        var removedEdgeIds = TokenSet(patch.RemoveEdgeIds);
+        var removedClusterIds = TokenSet(patch.RemoveClusterIds);
+        nodes.RemoveAll(node => removedNodeIds.Contains(node.Id));
+        edges.RemoveAll(edge => removedEdgeIds.Contains(edge.Id));
+        clusters.RemoveAll(cluster => removedClusterIds.Contains(cluster.Id));
+
+        if (patch.RemoveIncidentReferences && removedNodeIds.Count > 0) {
+            edges.RemoveAll(edge => removedNodeIds.Contains(edge.SourceNodeId) || removedNodeIds.Contains(edge.TargetNodeId));
+            foreach (var cluster in clusters) cluster.NodeIds.RemoveAll(removedNodeIds.Contains);
+        }
+
+        Upsert(nodes, patch.UpsertNodes, node => node.Id);
+        Upsert(clusters, patch.UpsertClusters, cluster => cluster.Id);
+        Upsert(edges, patch.UpsertEdges, edge => edge.Id);
+
+        try {
+            Replace(scene.Nodes, nodes);
+            Replace(scene.Edges, edges);
+            Replace(scene.Clusters, clusters);
+            scene.Validate();
+            return new GraphScenePatchResult(scene.Nodes.Count, scene.Edges.Count, scene.Clusters.Count);
+        } catch {
+            Replace(scene.Nodes, originalNodes);
+            Replace(scene.Edges, originalEdges);
+            Replace(scene.Clusters, originalClusters);
+            throw;
+        }
+    }
+
+    private static void ValidatePatchIds(GraphScenePatch patch) {
+        ValidateUnique(patch.UpsertNodes.Select(node => node?.Id), "upsert node");
+        ValidateUnique(patch.UpsertEdges.Select(edge => edge?.Id), "upsert edge");
+        ValidateUnique(patch.UpsertClusters.Select(cluster => cluster?.Id), "upsert cluster");
+        ValidateUnique(patch.RemoveNodeIds, "removed node");
+        ValidateUnique(patch.RemoveEdgeIds, "removed edge");
+        ValidateUnique(patch.RemoveClusterIds, "removed cluster");
+    }
+
+    private static void ValidateUnique(IEnumerable<string?> ids, string kind) {
+        var unique = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var id in ids) {
+            if (string.IsNullOrWhiteSpace(id)) throw new InvalidOperationException("Graph scene patch contains a blank " + kind + " id.");
+            if (!unique.Add(id!)) throw new InvalidOperationException("Graph scene patch contains a duplicate " + kind + " id: " + id);
+        }
+    }
+
+    private static HashSet<string> TokenSet(IEnumerable<string> values) {
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var value in values) {
+            if (string.IsNullOrWhiteSpace(value)) throw new InvalidOperationException("Graph scene patch removal ids must not be blank.");
+            result.Add(value);
+        }
+
+        return result;
+    }
+
+    private static void Upsert<T>(List<T> target, IEnumerable<T> updates, Func<T, string> id) {
+        foreach (var update in updates) {
+            if (update == null) throw new InvalidOperationException("Graph scene patch upserts must not contain null items.");
+            var updateId = id(update);
+            var index = target.FindIndex(item => string.Equals(id(item), updateId, StringComparison.Ordinal));
+            if (index < 0) target.Add(update);
+            else target[index] = update;
+        }
+    }
+
+    private static GraphSceneCluster CloneCluster(GraphSceneCluster source) {
+        var clone = new GraphSceneCluster {
+            Id = source.Id,
+            Label = source.Label,
+            Kind = source.Kind,
+            ParentClusterId = source.ParentClusterId,
+            Collapsed = source.Collapsed
+        };
+        clone.NodeIds.AddRange(source.NodeIds);
+        foreach (var pair in source.Metadata) clone.Metadata[pair.Key] = pair.Value;
+        return clone;
+    }
+
+    private static void Replace<T>(List<T> target, IEnumerable<T> values) {
+        target.Clear();
+        target.AddRange(values);
+    }
+}

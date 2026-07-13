@@ -111,12 +111,13 @@
     return moved;
   };
 
-  const nodeRadius = (node) => Math.max(6, Math.max(nodeHalfWidth(node), nodeHalfHeight(node)) + 5);
+  const nodeRadius = (node, includeLabels) => nodeCollisionRadius(node, includeLabels);
 
   const separateOverlaps = (root, state, passes) => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 2) return 0;
-    const cellSize = Math.max(28, Math.min(72, movable.reduce((max, node) => Math.max(max, nodeRadius(node) * 2 + 10), 0)));
+    const includeLabels = state.nodes.length < 500;
+    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, nodeRadius(node, includeLabels) * 2 + 10), 0)));
     const maxPairs = state.nodes.length >= 3000 ? 120000 : state.nodes.length >= 1000 ? 180000 : 220000;
     let totalResolved = 0;
     for (let pass = 0; pass < passes; pass++) {
@@ -143,7 +144,7 @@
               if (other === node || other.id < node.id) continue;
               pairs += 1;
               if (pairs > maxPairs) { exhausted = true; break; }
-              const minDistance = nodeRadius(node) + nodeRadius(other);
+              const minDistance = nodeRadius(node, includeLabels) + nodeRadius(other, includeLabels);
               let dx = other.x - node.x;
               let dy = other.y - node.y;
               let distance = Math.hypot(dx, dy);
@@ -175,10 +176,11 @@
 
   const countOverlaps = (nodes) => {
     const probe = nodes.slice(0, Math.min(nodes.length, 900));
+    const includeLabels = nodes.length < 500;
     let overlaps = 0;
     for (let i = 0; i < probe.length; i++) {
       for (let j = i + 1; j < probe.length; j++) {
-        const minDistance = nodeRadius(probe[i]) + nodeRadius(probe[j]);
+        const minDistance = nodeRadius(probe[i], includeLabels) + nodeRadius(probe[j], includeLabels);
         if (Math.hypot(probe[j].x - probe[i].x, probe[j].y - probe[i].y) < minDistance) overlaps += 1;
       }
     }
@@ -293,6 +295,30 @@
     root.dataset.cfxGraphLayoutDensityOverlaps = String(overlaps);
   };
 
+  const containLayoutOutliers = (root, state) => {
+    const movable = state.nodes.filter(node => !node.fixed);
+    if (movable.length < 80) return;
+    const xs = movable.map(node => node.x).sort((a, b) => a - b);
+    const ys = movable.map(node => node.y).sort((a, b) => a - b);
+    const middle = Math.floor(movable.length / 2);
+    const centerX = xs[middle];
+    const centerY = ys[middle];
+    const distances = movable.map(node => ({ node, distance: Math.hypot(node.x - centerX, node.y - centerY) })).sort((a, b) => a.distance - b.distance);
+    const percentile = distances[Math.min(distances.length - 1, Math.floor(distances.length * 0.992))].distance;
+    const limit = Math.max(Math.min(sceneSize(root).width, sceneSize(root).height) * 0.3, percentile * 1.18);
+    let contained = 0;
+    distances.forEach(item => {
+      if (item.distance <= limit) return;
+      const scale = limit / Math.max(1, item.distance);
+      item.node.x = centerX + (item.node.x - centerX) * scale;
+      item.node.y = centerY + (item.node.y - centerY) * scale;
+      item.node.vx *= scale;
+      item.node.vy *= scale;
+      contained += 1;
+    });
+    if (contained) root.dataset.cfxGraphLayoutOutliersContained = String(contained);
+  };
+
   const runLayoutQualityPass = (root, state) => {
     spreadHubNeighborhoods(root, state);
     separateOverlaps(root, state, overlapPasses(state, 6));
@@ -302,6 +328,7 @@
     compactStabilizedLayout(root, state);
     expandDenseLayout(root, state);
     separateOverlaps(root, state, overlapPasses(state, 14));
+    containLayoutOutliers(root, state);
     centerLayout(root, state);
     layoutQualityMetrics(root, state);
   };

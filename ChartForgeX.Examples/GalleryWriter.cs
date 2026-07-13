@@ -113,7 +113,7 @@ public static partial class GalleryWriter {
         var matchingPairs = pairs.Count(pair => pair.HasMatchingDimensions);
         var healthySvgs = pairs.Count(pair => pair.SvgHealth.IsHealthy);
         var healthyPngs = pairs.Count(pair => pair.PngHealth.IsHealthy);
-        var healthyHtmls = pairs.Count(pair => pair.HtmlHealth.IsHealthy);
+        var healthyHtmls = pairs.Count(pair => pair.HtmlPasses);
         var warningCount = pairs.Sum(pair => pair.Warnings.Length);
         var baseline = ReadBaselineSummary(output, pairs);
         var groups = BuildComparisonGroups(pairs);
@@ -201,7 +201,8 @@ public static partial class GalleryWriter {
             ReadFileLength(pngFileName),
             ReadSvgHealth(svgFileName),
             ReadPngHealth(pngFileName),
-            ReadHtmlHealth(Path.Combine(output, name + ".html")));
+            ReadHtmlHealth(Path.Combine(output, name + ".html")),
+            !File.Exists(Path.Combine(output, name + ".static-only")));
     }
 
     private static void WriteComparisonManifest(string output, ComparisonAsset[] pairs, int matchingPairs, BaselineSummary baseline) {
@@ -210,7 +211,7 @@ public static partial class GalleryWriter {
             dimensionMatches = matchingPairs,
             healthySvgs = pairs.Count(pair => pair.SvgHealth.IsHealthy),
             healthyPngs = pairs.Count(pair => pair.PngHealth.IsHealthy),
-            healthyHtmls = pairs.Count(pair => pair.HtmlHealth.IsHealthy),
+            healthyHtmls = pairs.Count(pair => pair.HtmlPasses),
             warnings = pairs.Sum(pair => pair.Warnings.Length),
             baseline = new {
                 present = baseline.IsPresent,
@@ -232,7 +233,8 @@ public static partial class GalleryWriter {
                 htmlRequiresSurfaceGradient = true,
                 htmlRequiresTextPolish = true,
                 htmlRequiresVisibleOverflow = true,
-                htmlRequiresPrintCss = true
+                htmlRequiresPrintCss = true,
+                htmlMayBeExplicitlyOmitted = true
             },
             comparisonModes = new[] { "side-by-side", "center-wipe", "preset-wipe" },
             charts = pairs.Select(pair => new {
@@ -279,6 +281,7 @@ public static partial class GalleryWriter {
                     healthy = pair.PngHealth.IsHealthy
                 },
                 html = new {
+                    required = pair.HtmlRequired,
                     bytes = pair.HtmlHealth.Bytes,
                     hasDocumentShell = pair.HtmlHealth.HasDocumentShell,
                     hasViewport = pair.HtmlHealth.HasViewport,
@@ -287,7 +290,7 @@ public static partial class GalleryWriter {
                     hasTextPolish = pair.HtmlHealth.HasTextPolish,
                     hasVisibleOverflow = pair.HtmlHealth.HasVisibleOverflow,
                     hasPrintCss = pair.HtmlHealth.HasPrintCss,
-                    healthy = pair.HtmlHealth.IsHealthy
+                    healthy = pair.HtmlPasses
                 }
             }).ToArray()
         };

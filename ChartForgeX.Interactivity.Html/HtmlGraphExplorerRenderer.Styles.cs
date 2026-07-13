@@ -9,7 +9,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static string Backend(HtmlGraphRenderBackend backend) => backend switch {
         HtmlGraphRenderBackend.Svg => "svg",
         HtmlGraphRenderBackend.Canvas => "canvas",
-        HtmlGraphRenderBackend.WebGl => "canvas",
+        HtmlGraphRenderBackend.WebGl => "webgl",
         _ => throw new InvalidOperationException("Graph explorer render backend is unsupported: " + backend)
     };
 
@@ -105,7 +105,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string NodeLabelStyle(GraphSceneNode node) {
         var parts = new List<string>();
-        if (!string.IsNullOrWhiteSpace(node.Style.LabelColor)) parts.Add("fill:" + node.Style.LabelColor);
+        if (!string.IsNullOrWhiteSpace(node.Style.LabelColor)) parts.Add("--cfx-node-label-explicit:" + node.Style.LabelColor);
         return string.Join(";", parts);
     }
 
@@ -120,7 +120,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string EdgeLabelStyle(GraphSceneEdge edge) {
         var parts = new List<string>();
-        if (!string.IsNullOrWhiteSpace(edge.Style.LabelColor)) parts.Add("fill:" + edge.Style.LabelColor);
+        if (!string.IsNullOrWhiteSpace(edge.Style.LabelColor)) parts.Add("--cfx-edge-label-explicit:" + edge.Style.LabelColor);
         if (edge.Style.Hidden) parts.Add("display:none");
         return string.Join(";", parts);
     }

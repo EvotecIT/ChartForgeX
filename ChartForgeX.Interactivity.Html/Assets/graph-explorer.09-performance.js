@@ -93,14 +93,18 @@
     publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'frame', renderer: root.dataset.cfxGraphRendererActive, thread, sampleMs: frameMs, sampleTicks: 1, renderMs: Math.max(0, renderMs), publish });
   };
   const performanceGate = (root) => {
-    const nodeCount = Number(attr(root, 'data-cfx-graph-node-count'));
-    const edgeCount = Number(attr(root, 'data-cfx-graph-edge-count'));
-    const canvas = root.dataset.cfxGraphRendererActive === 'canvas';
-    const nodeLimit = canvas ? num(root, 'data-cfx-performance-max-canvas-nodes', 5000) : num(root, 'data-cfx-performance-max-svg-nodes', 1200);
-    const edgeLimit = canvas ? num(root, 'data-cfx-performance-max-canvas-edges', 12000) : num(root, 'data-cfx-performance-max-svg-edges', 3000);
+    const totalNodeCount = Number(attr(root, 'data-cfx-graph-node-count'));
+    const totalEdgeCount = Number(attr(root, 'data-cfx-graph-edge-count'));
+    const visibleNodeCount = attr(root, 'data-cfx-graph-visible-nodes');
+    const visibleEdgeCount = attr(root, 'data-cfx-graph-visible-edges');
+    const nodeCount = visibleNodeCount === '' ? totalNodeCount : Number(visibleNodeCount);
+    const edgeCount = visibleEdgeCount === '' ? totalEdgeCount : Number(visibleEdgeCount);
+    const renderer = root.dataset.cfxGraphRendererActive;
+    const nodeLimit = renderer === 'webgl' ? num(root, 'data-cfx-performance-max-webgl-nodes', 20000) : renderer === 'canvas' ? num(root, 'data-cfx-performance-max-canvas-nodes', 5000) : num(root, 'data-cfx-performance-max-svg-nodes', 1200);
+    const edgeLimit = renderer === 'webgl' ? num(root, 'data-cfx-performance-max-webgl-edges', 50000) : renderer === 'canvas' ? num(root, 'data-cfx-performance-max-canvas-edges', 12000) : num(root, 'data-cfx-performance-max-svg-edges', 3000);
     const gated = nodeCount > nodeLimit || edgeCount > edgeLimit;
     root.classList.toggle('cfx-graph-performance-gated', gated);
     root.dataset.cfxGraphPerformance = gated ? 'gated' : 'interactive';
-    if (gated) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'gated', renderer: root.dataset.cfxGraphRendererActive, nodeCount, edgeCount, nodeLimit, edgeLimit });
+    if (gated) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'gated', renderer: root.dataset.cfxGraphRendererActive, nodeCount, edgeCount, totalNodeCount, totalEdgeCount, nodeLimit, edgeLimit });
     return gated;
   };
