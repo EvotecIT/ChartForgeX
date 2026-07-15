@@ -490,9 +490,9 @@ public sealed partial class PngChartRenderer {
             if (ShowYAxis(chart)) DrawHorizontalCategoryLabel(c, chart, plot, FormatX(chart, category), y);
         }
 
+        var zeroX = map.XBaseline();
+        if (ShowYAxisLine(chart) && zeroX > plot.Left && zeroX < plot.Right) DrawPngGuideLine(c, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
         if (ShowXAxis(chart)) {
-            var zeroX = map.XBaseline();
-            if (ShowYAxisLine(chart) && zeroX > plot.Left && zeroX < plot.Right) DrawPngGuideLine(c, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
             if (ShowXAxisLine(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, xLabels), PngXAxisTitleFontSize(chart));
         }

@@ -22,6 +22,12 @@ internal static partial class SmokeTests {
         var positionedLegend = RadarSample().WithLegendPosition(ChartLegendPosition.Right);
         Assert(positionedLegend.ToSvg().Contains("data-cfx-role=\"legend\" data-cfx-position=\"Right\"", System.StringComparison.Ordinal), "Radar charts should use the shared positioned legend.");
         Assert(positionedLegend.ToPng().Length > 64, "Positioned radar legends should render valid PNG output.");
+
+        var axisTicks = RadarSample();
+        axisTicks.Options.XAxis.TickCount = 2;
+        axisTicks.Options.YAxis.TickCount = 10;
+        Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-ring\"") == 10, "Radar value rings should use the y-axis tick count independently from the category x-axis.");
+        Assert(axisTicks.ToPng().Length > 64, "Radar y-axis tick counts should render through the PNG path.");
     }
 
     private static void RadarNegativeExplicitMaximumInfersCompatibleMinimum() {

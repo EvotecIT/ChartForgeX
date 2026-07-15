@@ -101,14 +101,14 @@ internal sealed class ChartRange {
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
-                    if (chart.Options.YAxis.Scale != ChartScaleKind.Logarithmic) range.IncludeY(0);
+                    if (UsesZeroBaseline(chart.Options.YAxis)) range.IncludeY(0);
                     AddStackValue(p.Y >= 0 ? positiveAreaStacks : negativeAreaStacks, p.X, p.Y);
                 } else {
                     range.Include(p);
                 }
             }
 
-            if (chart.Options.YAxis.Scale != ChartScaleKind.Logarithmic &&
+            if (UsesZeroBaseline(chart.Options.YAxis) &&
                 (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop)) range.IncludeY(0);
         }
 
@@ -131,11 +131,7 @@ internal sealed class ChartRange {
         range.ApplyBarPadding(barXValues, chart.Options.XAxis);
         range.ApplyHorizontalBarPadding(horizontalBarYValues);
         if (!hasHorizontalBars) {
-            if (chart.Options.YAxis.Scale != ChartScaleKind.Logarithmic) {
-                if (range.MinY > 0) range.MinY = 0;
-                var padY = (range.MaxY - range.MinY) * .08;
-                if (ChartMath.IsFinite(padY) && ChartMath.IsFinite(range.MaxY + padY)) range.MaxY += padY;
-            }
+            range.ApplyVerticalPadding(chart.Options.YAxis);
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
 
@@ -159,11 +155,7 @@ internal sealed class ChartRange {
         }
 
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) range.MaxY = range.MinY + 1;
-        if (chart.Options.SecondaryYAxis.Scale != ChartScaleKind.Logarithmic) {
-            if (range.MinY > 0) range.MinY = 0;
-            var padY = (range.MaxY - range.MinY) * .08;
-            if (ChartMath.IsFinite(padY) && ChartMath.IsFinite(range.MaxY + padY)) range.MaxY += padY;
-        }
+        range.ApplyVerticalPadding(chart.Options.SecondaryYAxis);
         if (applyOptionBounds) range.ApplySecondaryYAxisOptions(chart);
         return range;
     }
@@ -250,9 +242,25 @@ internal sealed class ChartRange {
         }
 
         foreach (var point in series.Points) range.IncludeY(point.Y);
-        if (axis.Scale != ChartScaleKind.Logarithmic &&
+        if (UsesZeroBaseline(axis) &&
             (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop)) range.IncludeY(0);
     }
+
+    private void ApplyVerticalPadding(ChartAxis axis) {
+        if (axis.Scale == ChartScaleKind.Logarithmic) return;
+        var padY = (MaxY - MinY) * .08;
+        if (!ChartMath.IsFinite(padY)) return;
+        if (axis.Scale == ChartScaleKind.Time) {
+            if (ChartMath.IsFinite(MinY - padY)) MinY -= padY;
+            if (ChartMath.IsFinite(MaxY + padY)) MaxY += padY;
+            return;
+        }
+
+        if (MinY > 0) MinY = 0;
+        if (ChartMath.IsFinite(MaxY + padY)) MaxY += padY;
+    }
+
+    private static bool UsesZeroBaseline(ChartAxis axis) => axis.Scale != ChartScaleKind.Logarithmic && axis.Scale != ChartScaleKind.Time;
 
     private void ApplyBarPadding(List<double> xValues, ChartAxis axis) {
         if (xValues.Count == 0) return;

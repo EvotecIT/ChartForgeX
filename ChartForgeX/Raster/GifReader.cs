@@ -15,7 +15,7 @@ internal static class GifReader {
         var canvasHeight = reader.UInt16();
         RasterAllocationGuard.Calculate(canvasWidth, canvasHeight, 1, 1);
         var screenFlags = reader.Byte();
-        reader.Byte();
+        var backgroundColorIndex = reader.Byte();
         reader.Byte();
         var globalPalette = (screenFlags & 0x80) != 0 ? reader.Palette(1 << ((screenFlags & 0x07) + 1)) : null;
         var transparentIndex = -1;
@@ -53,6 +53,7 @@ internal static class GifReader {
             if ((imageFlags & 0x40) != 0) indices = Deinterlace(indices, width, height);
 
             var pixels = new byte[checked(canvasWidth * canvasHeight * 4)];
+            FillBackground(pixels, globalPalette, backgroundColorIndex);
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var colorIndex = indices[y * width + x];
@@ -70,6 +71,18 @@ internal static class GifReader {
         }
 
         throw new InvalidDataException("GIF image does not contain an image frame.");
+    }
+
+    private static void FillBackground(byte[] pixels, byte[]? palette, int colorIndex) {
+        if (palette == null) return;
+        var paletteOffset = colorIndex * 3;
+        if (paletteOffset + 2 >= palette.Length) throw new InvalidDataException("GIF background references a color outside its global table.");
+        for (var offset = 0; offset < pixels.Length; offset += 4) {
+            pixels[offset] = palette[paletteOffset];
+            pixels[offset + 1] = palette[paletteOffset + 1];
+            pixels[offset + 2] = palette[paletteOffset + 2];
+            pixels[offset + 3] = 255;
+        }
     }
 
     private static byte[] DecodeLzw(byte[] data, int minimumCodeSize, int expectedCount) {

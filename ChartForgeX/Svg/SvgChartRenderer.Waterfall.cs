@@ -15,7 +15,7 @@ public sealed partial class SvgChartRenderer {
 
         var steps = BuildWaterfallSteps(series);
         var bounds = WaterfallBounds(steps);
-        var ticks = ChartTicks.Generate(bounds.MinY, bounds.MaxY, chart.Options.TickCount);
+        var ticks = ChartTicks.Generate(bounds.MinY, bounds.MaxY, chart.Options.YAxis.TickCount);
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var t = chart.Options.Theme;
         var slot = plot.Width / steps.Count;
@@ -64,7 +64,7 @@ public sealed partial class SvgChartRenderer {
                 }
             }
 
-            if (chart.Options.ShowAxes) DrawXAxisLabel(body, chart, plot, WaterfallLabel(chart, step), centerX, plot.Bottom + XAxisLabelOffset(chart), Clamp(chart.Options.XAxisLabelAngle, -80, 80), "waterfall-x-axis-label");
+            if (ShowXAxis(chart)) DrawXAxisLabel(body, chart, plot, WaterfallLabel(chart, step), centerX, plot.Bottom + XAxisLabelOffset(chart), Clamp(chart.Options.XAxisLabelAngle, -80, 80), "waterfall-x-axis-label");
         }
 
         DrawLegend(body, chart, chart.Options.Size.Width, chart.Options.Size.Height);

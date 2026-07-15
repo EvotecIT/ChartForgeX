@@ -19,10 +19,10 @@ public sealed partial class PngChartRenderer {
         if (series == null || series.Points.Count == 0) return;
         var steps = BuildWaterfallSteps(series);
         var bounds = WaterfallBounds(steps);
-        var ticks = ChartTicks.Generate(bounds.MinY, bounds.MaxY, chart.Options.TickCount);
+        var ticks = ChartTicks.Generate(bounds.MinY, bounds.MaxY, chart.Options.YAxis.TickCount);
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var tickFontSize = PngTickFontSize(chart);
-        var bottomReserve = chart.Options.ShowAxes ? (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 32.0 : 60.0) : 0.0;
+        var bottomReserve = ShowXAxis(chart) ? (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 32.0 : 60.0) : 0.0;
         if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += 18 + PngLegendRowCount(chart) * (PngLegendFontSize(chart) + 6);
         plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(1, plot.Height - bottomReserve));
         var slot = plot.Width / steps.Count;
@@ -71,7 +71,7 @@ public sealed partial class PngChartRenderer {
                     DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
             }
 
-            if (ShowYAxis(chart)) {
+            if (ShowXAxis(chart)) {
                 var categoryLabel = step.IsTotal ? "Total" : FormatX(chart, step.XValue);
                 c.DrawText(EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize), plot.Bottom + PngXAxisLabelOffset(chart) - tickFontSize + 1, categoryLabel, chart.Options.Theme.MutedText, tickFontSize);
             }
@@ -85,7 +85,7 @@ public sealed partial class PngChartRenderer {
         foreach (var tick in ticks) {
             var y = WaterfallY(plot, bounds, tick);
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
-            if (chart.Options.ShowAxes) {
+            if (ShowYAxis(chart)) {
                 var label = FormatYAxisValue(chart, tick);
                 c.DrawText(Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize / 2.0, label, chart.Options.Theme.MutedText, fontSize);
             }

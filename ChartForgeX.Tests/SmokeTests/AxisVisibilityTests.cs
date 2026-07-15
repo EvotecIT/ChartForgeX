@@ -46,6 +46,19 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(independentRulesSvg, "stroke=\"#FF00FF\"") == 1, "Disabling one axis rule should not suppress independently enabled axis rules.");
         Assert(independentRules.ToPng().Length > 64, "Independent SVG and PNG axis-rule visibility should stay aligned.");
 
+        var horizontalRules = Chart.Create()
+            .WithSize(420, 260)
+            .WithTheme(theme)
+            .WithGrid(false)
+            .WithLegend(false)
+            .WithXAxisVisible(false)
+            .AddHorizontalBar("Change", Points(-40, 40));
+        horizontalRules.Options.XAxis.ShowLine = false;
+        horizontalRules.Options.YAxis.ShowLine = true;
+        var horizontalRulePixels = ReadPngRgba(horizontalRules.ToPng(), out var horizontalRuleWidth, out _);
+        var horizontalRuleBounds = FindNearColorBounds(horizontalRulePixels, horizontalRuleWidth, 255, 0, 255, 4);
+        Assert(!horizontalRuleBounds.IsEmpty && horizontalRuleBounds.Right - horizontalRuleBounds.Left > 80, "PNG horizontal zero lines should follow the visible y-axis even when x-axis labels are hidden.");
+
         var hiddenSecondary = Chart.Create()
             .WithSize(420, 240)
             .WithSecondaryYAxis("Rate")

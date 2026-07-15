@@ -504,9 +504,7 @@ public sealed partial class SvgChartRenderer {
             if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
         }
 
-        var formatter = chart.Options.YAxis.LabelFormatter ?? chart.Options.ValueFormatter;
-        if (formatter == null) return FormatNumber(value);
-        return formatter(value) ?? string.Empty;
+        return FormatGeneratedAxisValue(chart.Options.YAxis, chart.Options.YAxis.LabelFormatter ?? chart.Options.ValueFormatter, value);
     }
 
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
@@ -522,9 +520,13 @@ public sealed partial class SvgChartRenderer {
             if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
         }
 
-        var formatter = chart.Options.SecondaryYAxisValueFormatter;
-        if (formatter == null) return FormatNumber(value);
-        return formatter(value) ?? string.Empty;
+        return FormatGeneratedAxisValue(chart.Options.SecondaryYAxis, chart.Options.SecondaryYAxisValueFormatter, value);
+    }
+
+    private static string FormatGeneratedAxisValue(ChartAxis axis, Func<double, string>? formatter, double value) {
+        if (formatter != null) return formatter(value) ?? string.Empty;
+        if (axis.Scale == ChartScaleKind.Time) return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        return FormatNumber(value);
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);

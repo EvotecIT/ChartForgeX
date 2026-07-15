@@ -21,7 +21,7 @@ public sealed partial class SvgChartRenderer {
 
         var min = RadarMin(chart);
         var max = RadarMax(chart, seriesItems.Select(item => item.series), min);
-        var ticks = ChartTicks.Generate(min, max, chart.Options.TickCount).Where(tick => tick >= min).ToArray();
+        var ticks = ChartTicks.Generate(min, max, chart.Options.YAxis.TickCount).Where(tick => tick >= min).ToArray();
         max = ticks.Length == 0 ? max : Math.Max(max, ticks[ticks.Length - 1]);
         var t = chart.Options.Theme;
         var cx = plot.Left + plot.Width / 2;

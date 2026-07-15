@@ -19,7 +19,7 @@ public sealed partial class PngChartRenderer {
 
         var min = RadarMin(chart);
         var max = RadarMax(chart, series, min);
-        var ticks = ChartTicks.Generate(min, max, chart.Options.TickCount);
+        var ticks = ChartTicks.Generate(min, max, chart.Options.YAxis.TickCount);
         foreach (var tick in ticks) if (tick > max) max = tick;
         var tickFontSize = PngTickFontSize(chart);
         var cx = plot.Left + plot.Width / 2;

@@ -56,11 +56,11 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawDetailAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, int textScale) {
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
+        if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + 48, PngAxisTitleFontSize(chart));
         }
 
-        DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
+        if (ShowYAxis(chart)) DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
     private static void DrawPngXAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double baselineY, double preferredFontSize) {

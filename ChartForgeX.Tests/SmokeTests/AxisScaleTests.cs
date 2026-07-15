@@ -98,5 +98,30 @@ internal static partial class SmokeTests {
             });
 
         Assert(chart.ToSvg().Contains("2026-07", StringComparison.Ordinal), "Time axes should provide deterministic invariant date labels when no formatter is supplied.");
+
+        var vertical = Chart.Create()
+            .WithSize(620, 320)
+            .ConfigureYAxis(axis => axis.Scale = ChartScaleKind.Time)
+            .AddLine("Primary dates", new[] {
+                new ChartPoint(0, new DateTime(2026, 7, 1).ToOADate()),
+                new ChartPoint(1, new DateTime(2026, 7, 15).ToOADate())
+            });
+        var verticalSvg = vertical.ToSvg();
+        Assert(verticalSvg.Contains("2026-07", StringComparison.Ordinal), "Primary vertical time axes should use the same deterministic date fallback as horizontal time axes.");
+        Assert(vertical.ToPng().Length > 200, "Primary vertical time axes should render through the PNG path.");
+
+        var secondary = Chart.Create()
+            .WithSize(620, 320)
+            .WithSecondaryYAxis("Date")
+            .AddLine("Primary", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) })
+            .AddLine("Secondary dates", new[] {
+                new ChartPoint(0, new DateTime(2026, 8, 1).ToOADate()),
+                new ChartPoint(1, new DateTime(2026, 8, 15).ToOADate())
+            });
+        secondary.Series[1].UseSecondaryYAxis();
+        secondary.Options.SecondaryYAxis.Scale = ChartScaleKind.Time;
+        var secondarySvg = secondary.ToSvg();
+        Assert(secondarySvg.Contains("2026-08", StringComparison.Ordinal), "Secondary vertical time axes should provide deterministic date labels without inheriting primary formatting.");
+        Assert(secondary.ToPng().Length > 200, "Secondary vertical time axes should render through the PNG path.");
     }
 }
