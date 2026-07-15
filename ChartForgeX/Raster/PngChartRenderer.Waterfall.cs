@@ -19,7 +19,7 @@ public sealed partial class PngChartRenderer {
         if (series == null || series.Points.Count == 0) return;
         var steps = BuildWaterfallSteps(series);
         var bounds = WaterfallBounds(steps);
-        var ticks = ChartTicks.Generate(bounds.MinY, bounds.MaxY, chart.Options.YAxis.TickCount);
+        var ticks = ChartTicks.Generate(chart.Options.YAxis, bounds.MinY, bounds.MaxY);
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var tickFontSize = PngTickFontSize(chart);
         var bottomReserve = ShowXAxis(chart) ? (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 32.0 : 60.0) : 0.0;
@@ -36,13 +36,13 @@ public sealed partial class PngChartRenderer {
         for (var i = 0; i < steps.Count; i++) {
             var step = steps[i];
             var centerX = plot.Left + slot * i + slot / 2;
-            var y0 = WaterfallY(plot, bounds, step.Start);
-            var y1 = WaterfallY(plot, bounds, step.End);
+            var y0 = WaterfallY(plot, bounds, chart.Options.YAxis, step.Start);
+            var y1 = WaterfallY(plot, bounds, chart.Options.YAxis, step.End);
             var top = Math.Min(y0, y1);
             var height = Math.Max(2, Math.Abs(y1 - y0));
             var color = step.IsTotal ? total : step.Delta >= 0 ? positive : negative;
             if (i > 0) {
-                var connectorY = WaterfallY(plot, bounds, step.Start);
+                var connectorY = WaterfallY(plot, bounds, chart.Options.YAxis, step.Start);
                 c.DrawDashedLine(centerX - slot + barWidth / 2, connectorY, centerX - barWidth / 2, connectorY, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorStrokeWidth, ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap);
             }
 
@@ -83,7 +83,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawWaterfallGrid(RgbaCanvas c, Chart chart, ChartRect plot, ChartRange bounds, IReadOnlyList<double> ticks, double fontSize) {
         foreach (var tick in ticks) {
-            var y = WaterfallY(plot, bounds, tick);
+            var y = WaterfallY(plot, bounds, chart.Options.YAxis, tick);
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
             if (ShowYAxis(chart)) {
                 var label = FormatYAxisValue(chart, tick);
@@ -91,7 +91,7 @@ public sealed partial class PngChartRenderer {
             }
         }
 
-        var zeroY = WaterfallY(plot, bounds, 0);
+        var zeroY = WaterfallY(plot, bounds, chart.Options.YAxis, 0);
         if (ShowXAxisLine(chart) && zeroY > plot.Top && zeroY < plot.Bottom) c.DrawLine(plot.Left, zeroY, plot.Right, zeroY, chart.Options.Theme.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
         if (!chart.Options.ShowAxes) return;
         if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
@@ -125,8 +125,8 @@ public sealed partial class PngChartRenderer {
 
     private static string FormatSignedValue(Chart chart, double value) => value >= 0 ? "+" + FormatValue(chart, value) : FormatValue(chart, value);
 
-    private static double WaterfallY(ChartRect plot, ChartRange bounds, double value) {
-        return plot.Bottom - ChartMath.Normalize(value, bounds.MinY, bounds.MaxY) * plot.Height;
+    private static double WaterfallY(ChartRect plot, ChartRange bounds, ChartAxis axis, double value) {
+        return plot.Bottom - ChartScaleTransform.Normalize(value, bounds.MinY, bounds.MaxY, axis) * plot.Height;
     }
 
     private readonly struct WaterfallStep {

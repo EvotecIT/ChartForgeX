@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.Tests;
@@ -32,6 +33,14 @@ internal static partial class SmokeTests {
         var png = chart.ToPng();
         Assert(svg.Contains(">10</text>", StringComparison.Ordinal) && svg.Contains(">100</text>", StringComparison.Ordinal), "Logarithmic SVG axes should render power-of-ten ticks.");
         Assert(png.Length > 200 && png[0] == 137 && png[1] == 80, "Logarithmic axes should render through the PNG path.");
+
+        var pie = Chart.Create().WithYAxisScale(ChartScaleKind.Logarithmic).AddPie("Share", new[] { new ChartPoint(0, 70), new ChartPoint(1, 30) });
+        Assert(pie.ToSvg().Contains("data-cfx-role=\"pie-slice\"", StringComparison.Ordinal), "Standalone SVG charts should bypass cartesian logarithmic-axis setup.");
+        Assert(pie.ToPng().Length > 200, "Standalone logarithmic-axis options should remain renderer-neutral.");
+
+        var gauge = Chart.Create().WithYAxisScale(ChartScaleKind.Logarithmic).AddGauge("Score", 87);
+        Assert(gauge.ToSvg().Contains("data-cfx-role=\"gauge\"", StringComparison.Ordinal), "Gauge SVG rendering should bypass unused cartesian logarithmic-axis setup.");
+        Assert(gauge.ToPng().Length > 200, "Gauge logarithmic-axis options should remain renderer-neutral.");
     }
 
     private static void LogarithmicAxesRejectNonPositiveData() {
@@ -87,6 +96,15 @@ internal static partial class SmokeTests {
             .AddStackedArea("Top", new[] { new ChartPoint(1, 30), new ChartPoint(2, 40) });
         Assert(CountOccurrences(stackedAreas.ToSvg(), "data-cfx-role=\"stacked-area\"") == 2, "Stacked logarithmic areas should map their first zero base to the shared positive baseline.");
         Assert(stackedAreas.ToPng().Length > 200, "Stacked logarithmic areas should preserve SVG and PNG rendering parity.");
+
+        var mixedMarks = Chart.Create()
+            .WithXAxisScale(ChartScaleKind.Logarithmic)
+            .AddLine("Earlier", new[] { new ChartPoint(0.1, 10) })
+            .AddBar("Later", new[] { new ChartPoint(10, 20) });
+        var mixedRange = ChartRange.FromChart(mixedMarks);
+        Assert(mixedRange.MinX <= 0.1, "Logarithmic mark padding should not move the plot minimum above earlier positive data from another series.");
+        Assert(mixedMarks.ToSvg().Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Mixed logarithmic marks should preserve the complete x-domain in SVG output.");
+        Assert(mixedMarks.ToPng().Length > 200, "Mixed logarithmic marks should preserve SVG and PNG rendering parity.");
     }
 
     private static void AxisObjectsOwnExplicitLabelsAndFormatterFallbacks() {
@@ -151,5 +169,26 @@ internal static partial class SmokeTests {
         var secondaryPng = secondary.ToPng();
         secondary.Options.SecondaryYAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         Assert(secondaryPng.SequenceEqual(secondary.ToPng()), "Secondary vertical time axes should use the deterministic date fallback in PNG output.");
+
+        var horizontal = Chart.Create()
+            .WithSize(620, 320)
+            .WithXAxisScale(ChartScaleKind.Time)
+            .AddHorizontalBar("Deadlines", new[] {
+                new ChartPoint(0, new DateTime(2026, 9, 1).ToOADate()),
+                new ChartPoint(1, new DateTime(2026, 9, 15).ToOADate())
+            });
+        var horizontalRange = ChartRange.FromChart(horizontal);
+        Assert(horizontalRange.MinX > new DateTime(2026, 1, 1).ToOADate(), "Horizontal time axes should not inject the numeric zero baseline into date ranges.");
+        Assert(horizontal.ToSvg().Contains("2026-09", StringComparison.Ordinal), "Horizontal time bars should render deterministic date ticks without compressing data against the OLE epoch.");
+        Assert(horizontal.ToPng().Length > 200, "Horizontal time bars should preserve SVG and PNG rendering parity.");
+
+        var waterfall = Chart.Create()
+            .WithSize(620, 320)
+            .WithYAxisScale(ChartScaleKind.SymmetricLogarithmic)
+            .AddWaterfall("Delta", new[] { new ChartPoint(0, 1), new ChartPoint(1, 999), new ChartPoint(2, -500) });
+        var waterfallSvg = waterfall.ToSvg();
+        var firstWaterfallBar = SvgDocument.Parse(waterfallSvg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "waterfall-bar");
+        Assert(double.Parse(firstWaterfallBar.GetAttribute("height")!, CultureInfo.InvariantCulture) > 5, "Waterfall geometry should use the configured symmetric-logarithmic transform instead of linear normalization.");
+        Assert(waterfall.ToPng().Length > 200, "Waterfall axis scales should preserve SVG and PNG rendering parity.");
     }
 }

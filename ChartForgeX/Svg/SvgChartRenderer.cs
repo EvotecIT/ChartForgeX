@@ -93,33 +93,37 @@ public sealed partial class SvgChartRenderer {
         var h = o.Size.Height;
         var plot = PlotArea(chart);
         var range = ChartRange.FromChart(chart);
-        IReadOnlyList<double> xTicks;
-        IReadOnlyList<double> yTicks;
+        IReadOnlyList<double> xTicks = Array.Empty<double>();
+        IReadOnlyList<double> yTicks = Array.Empty<double>();
         ChartRange? secondaryRange = null;
         IReadOnlyList<double>? secondaryTicks = null;
-        if (IsHorizontalBarChart(chart)) {
-            xTicks = ChartTicks.Generate(o.XAxis, range.MinX, range.MaxX);
-            ApplyHorizontalValueBounds(chart, range, xTicks);
-            yTicks = GetHorizontalCategoryTicks(chart, range);
-            plot = ApplyHorizontalBarReserve(chart, plot, yTicks);
-            if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, true);
-        } else {
-            yTicks = ChartTicks.Generate(o.YAxis, range.MinY, range.MaxY);
-            range.SetYBounds(yTicks[0], yTicks[yTicks.Count - 1]);
-            if (ShowYAxis(chart)) plot = ApplyYAxisLabelReserve(chart, plot, yTicks);
-            if (HasSecondaryYAxis(chart)) {
-                secondaryRange = ChartRange.FromSecondaryYAxis(chart, range);
-                secondaryTicks = ChartTicks.Generate(o.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-                secondaryRange.SetYBounds(secondaryTicks[0], secondaryTicks[secondaryTicks.Count - 1]);
-                plot = ApplySecondaryYAxisLabelReserve(chart, plot, secondaryTicks);
+        ChartMapper? map = null;
+        ChartMapper? secondaryMap = null;
+        if (ChartSeriesKindTraits.UsesCartesianXAxis(chart)) {
+            if (IsHorizontalBarChart(chart)) {
+                xTicks = ChartTicks.Generate(o.XAxis, range.MinX, range.MaxX);
+                ApplyHorizontalValueBounds(chart, range, xTicks);
+                yTicks = GetHorizontalCategoryTicks(chart, range);
+                plot = ApplyHorizontalBarReserve(chart, plot, yTicks);
+                if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, true);
+            } else {
+                yTicks = ChartTicks.Generate(o.YAxis, range.MinY, range.MaxY);
+                range.SetYBounds(yTicks[0], yTicks[yTicks.Count - 1]);
+                if (ShowYAxis(chart)) plot = ApplyYAxisLabelReserve(chart, plot, yTicks);
+                if (HasSecondaryYAxis(chart)) {
+                    secondaryRange = ChartRange.FromSecondaryYAxis(chart, range);
+                    secondaryTicks = ChartTicks.Generate(o.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+                    secondaryRange.SetYBounds(secondaryTicks[0], secondaryTicks[secondaryTicks.Count - 1]);
+                    plot = ApplySecondaryYAxisLabelReserve(chart, plot, secondaryTicks);
+                }
+
+                xTicks = GetXTicks(chart, range, plot);
+                if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, false);
             }
 
-            xTicks = GetXTicks(chart, range, plot);
-            if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, false);
+            map = new ChartMapper(plot, range, o.XAxis, o.YAxis);
+            secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, o.XAxis, o.SecondaryYAxis);
         }
-
-        var map = new ChartMapper(plot, range, o.XAxis, o.YAxis);
-        var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, o.XAxis, o.SecondaryYAxis);
         var accessibility = chart.Accessibility;
         var sb = new StringBuilder();
         AppendSvgStart(sb, writer => writer
@@ -341,6 +345,7 @@ public sealed partial class SvgChartRenderer {
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
+        if (map == null) throw new InvalidOperationException("The chart does not provide a cartesian rendering path.");
         if (IsHorizontalBarChart(chart)) {
             DrawHorizontalBarGrid(sb, chart, plot, xTicks, yTicks, map);
             AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());

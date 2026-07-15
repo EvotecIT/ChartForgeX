@@ -94,7 +94,7 @@ internal sealed class ChartRange {
                     horizontalBarYValues.Add(p.X);
                     range.IncludeX(p.Y);
                     range.IncludeY(p.X);
-                    if (chart.Options.XAxis.Scale != ChartScaleKind.Logarithmic) range.IncludeX(0);
+                    if (UsesZeroBaseline(chart.Options.XAxis)) range.IncludeX(0);
                     AddStackValue(p.Y >= 0 ? positiveHorizontalBarStacks : negativeHorizontalBarStacks, p.X, p.Y);
                 } else if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop || series.Kind == ChartSeriesKind.RangeBar || series.Kind == ChartSeriesKind.BoxPlot || series.Kind == ChartSeriesKind.Slope) {
                     barXValues.Add(p.X);
@@ -295,7 +295,7 @@ internal sealed class ChartRange {
         var padding = spacing * 0.5;
         if (axis.Scale == ChartScaleKind.Logarithmic) {
             var smallestPositive = xValues.FirstOrDefault(value => value > 0);
-            if (smallestPositive > 0) MinX = Math.Max(smallestPositive * 0.5, MinX - padding);
+            if (smallestPositive > 0) MinX = Math.Min(MinX, Math.Max(smallestPositive * 0.5, MinX - padding));
         } else {
             MinX -= padding;
         }
