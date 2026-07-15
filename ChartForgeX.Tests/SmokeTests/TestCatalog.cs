@@ -104,6 +104,7 @@ internal static partial class SmokeTests {
         ("PNG renderer uses readable axis layout", PngUsesReadableAxisLayout),
         ("PNG renderer uses supersampled edges", PngUsesSupersampledEdges),
         ("PNG supersampling scale is configurable", PngSupersamplingScaleIsConfigurable),
+        ("SVG raster stroke joins honor round bevel and miter", SvgRasterStrokeJoinsHonorRoundBevelAndMiter),
         ("PNG output scale emits high-density assets", PngOutputScaleEmitsHighDensityAssets),
         ("PNG print scale survives dense chart stress", PngPrintScaleSurvivesDenseChartStress),
         ("Overlay preset emits transparent chrome-free PNG", OverlayPresetEmitsTransparentChromeFreePng),

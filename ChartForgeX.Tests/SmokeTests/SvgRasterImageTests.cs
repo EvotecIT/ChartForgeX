@@ -44,6 +44,22 @@ internal static partial class SmokeTests {
         Assert(PixelAlpha(styled, 100, 20, 20) is >= 62 and <= 66 && IsPixelNear(styled, 100, 80, 20, 0, 0, 255), "Unsupported media blocks should be skipped as a whole without leaking nested contrast rules or hiding following base rules.");
     }
 
+    private static void SvgRasterStrokeJoinsHonorRoundBevelAndMiter() {
+        Assert(TryRenderStrokeJoin("bevel", out var bevel), "SVG rasterization should render bevel stroke joins.");
+        Assert(TryRenderStrokeJoin("round", out var round), "SVG rasterization should render round stroke joins.");
+        Assert(TryRenderStrokeJoin("miter", out var miter), "SVG rasterization should render miter stroke joins.");
+
+        Assert(PixelAlpha(bevel, 100, 50, 13) == 0, "Bevel joins should cut off the outer corner at the two offset endpoints.");
+        Assert(PixelAlpha(round, 100, 50, 13) > 0, "Round joins should cover the curved outer corner beyond a bevel join.");
+        Assert(PixelAlpha(miter, 100, 50, 7) > 0, "Miter joins should extend to the intersection of the outer stroke edges.");
+        Assert(PixelAlpha(round, 100, 50, 7) == 0 && PixelAlpha(bevel, 100, 50, 7) == 0, "Round and bevel joins should not inherit the miter tip.");
+    }
+
+    private static bool TryRenderStrokeJoin(string lineJoin, out byte[] pixels) {
+        var markup = "<path d='M20 80 L50 20 L80 80' fill='none' stroke='#ff0000' stroke-width='16' stroke-linecap='butt' stroke-linejoin='" + lineJoin + "'/>";
+        return SvgRasterRenderer.TryRenderFragment(markup, "0 0 100 100", "none", 100, 100, out pixels);
+    }
+
     private static string SvgData(string markup) => "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(markup));
 
     private static byte PixelAlpha(byte[] rgba, int width, int x, int y) => rgba[(y * width + x) * 4 + 3];

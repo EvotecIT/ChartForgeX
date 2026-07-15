@@ -17,6 +17,8 @@ internal enum RasterLineJoin {
 }
 
 internal sealed partial class RgbaCanvas {
+    private const double DefaultMiterLimit = 4.0;
+
     public void DrawPolyline(IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) {
         DrawPolyline(points, color, thickness, RasterLineCap.Round, RasterLineJoin.Round, null);
     }
@@ -43,15 +45,66 @@ internal sealed partial class RgbaCanvas {
             DrawLinePixelsButt(points[i - 1].X * _scale, points[i - 1].Y * _scale, points[i].X * _scale, points[i].Y * _scale, scaledThickness, color);
         }
 
-        if (lineCap != RasterLineCap.Round && lineJoin != RasterLineJoin.Round) return;
         var radius = Math.Max(0.5, scaledThickness / 2.0);
         if (lineCap == RasterLineCap.Round) DrawSoftCirclePixels(points[0].X * _scale, points[0].Y * _scale, radius, color);
         for (var i = 1; i < points.Count - 1; i++) {
-            if (lineJoin == RasterLineJoin.Round && ShouldRoundPolylineJoin(points, i, _scale)) DrawSoftCirclePixels(points[i].X * _scale, points[i].Y * _scale, radius, color);
+            if (lineJoin == RasterLineJoin.Round) {
+                if (ShouldRoundPolylineJoin(points, i, _scale)) DrawSoftCirclePixels(points[i].X * _scale, points[i].Y * _scale, radius, color);
+            } else {
+                DrawPolylineJoin(points, i, color, thickness, lineJoin);
+            }
         }
 
         var last = points[points.Count - 1];
         if (lineCap == RasterLineCap.Round) DrawSoftCirclePixels(last.X * _scale, last.Y * _scale, radius, color);
+    }
+
+    private void DrawPolylineJoin(IReadOnlyList<ChartPoint> points, int index, ChartColor color, double thickness, RasterLineJoin lineJoin) {
+        var previous = points[index - 1];
+        var current = points[index];
+        var next = points[index + 1];
+        var incomingX = current.X - previous.X;
+        var incomingY = current.Y - previous.Y;
+        var outgoingX = next.X - current.X;
+        var outgoingY = next.Y - current.Y;
+        var incomingLength = Math.Sqrt(incomingX * incomingX + incomingY * incomingY);
+        var outgoingLength = Math.Sqrt(outgoingX * outgoingX + outgoingY * outgoingY);
+        if (incomingLength <= 0.000001 || outgoingLength <= 0.000001) return;
+
+        incomingX /= incomingLength;
+        incomingY /= incomingLength;
+        outgoingX /= outgoingLength;
+        outgoingY /= outgoingLength;
+        var cross = incomingX * outgoingY - incomingY * outgoingX;
+        if (Math.Abs(cross) <= 0.000001) return;
+
+        var outerSide = cross > 0 ? -1.0 : 1.0;
+        var radius = Math.Max(0.5 / _scale, thickness / 2.0);
+        var incomingOuter = new ChartPoint(
+            current.X - incomingY * outerSide * radius,
+            current.Y + incomingX * outerSide * radius);
+        var outgoingOuter = new ChartPoint(
+            current.X - outgoingY * outerSide * radius,
+            current.Y + outgoingX * outerSide * radius);
+
+        if (lineJoin == RasterLineJoin.Miter && TryMiterPoint(current, incomingOuter, outgoingOuter, incomingX, incomingY, outgoingX, outgoingY, radius, out var miter)) {
+            FillPolygon(new[] { current, incomingOuter, miter, outgoingOuter }, color);
+            return;
+        }
+
+        FillPolygon(new[] { current, incomingOuter, outgoingOuter }, color);
+    }
+
+    private static bool TryMiterPoint(ChartPoint current, ChartPoint incomingOuter, ChartPoint outgoingOuter, double incomingX, double incomingY, double outgoingX, double outgoingY, double radius, out ChartPoint miter) {
+        var denominator = incomingX * outgoingY - incomingY * outgoingX;
+        var deltaX = outgoingOuter.X - incomingOuter.X;
+        var deltaY = outgoingOuter.Y - incomingOuter.Y;
+        var distance = (deltaX * outgoingY - deltaY * outgoingX) / denominator;
+        miter = new ChartPoint(incomingOuter.X + incomingX * distance, incomingOuter.Y + incomingY * distance);
+        var miterX = miter.X - current.X;
+        var miterY = miter.Y - current.Y;
+        var miterLength = Math.Sqrt(miterX * miterX + miterY * miterY);
+        return !double.IsNaN(miterLength) && !double.IsInfinity(miterLength) && miterLength <= radius * DefaultMiterLimit;
     }
 
     private void DrawDashedPolyline(IReadOnlyList<ChartPoint> points, ChartColor color, double thickness, RasterLineCap lineCap, IReadOnlyList<double> dashArray) {
