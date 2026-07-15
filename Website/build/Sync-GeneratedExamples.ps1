@@ -177,7 +177,7 @@ if (-not $source) {
 }
 
 New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
-foreach ($file in Get-ChildItem -LiteralPath $source.Path -File -Include '*.svg', '*.png', '*.html', '*.csharp.txt', '*.powershell.txt' -Recurse) {
+foreach ($file in Get-ChildItem -LiteralPath $source.Path -File -Include '*.svg', '*.png', '*.gif', '*.apng', '*.html', '*.json', '*.csharp.txt', '*.powershell.txt' -Recurse) {
     $relativePath = [System.IO.Path]::GetRelativePath($source.Path, $file.FullName)
     $targetName = $file.Name
     if ($relativePath -match '[\\/]' -and $file.Name -ieq 'index.html') {

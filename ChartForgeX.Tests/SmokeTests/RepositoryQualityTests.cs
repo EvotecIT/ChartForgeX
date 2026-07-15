@@ -418,6 +418,24 @@ internal static partial class SmokeTests {
         Assert(missing.Length == 0, "Generated examples should be assigned to named catalog families: " + string.Join(", ", missing));
     }
 
+    private static void GeneratedWebsiteLinksResolveToSeedAssets() {
+        var generatedPath = Path.Combine(FindRepositoryRoot(), "Website", "static", "examples", "generated");
+        var missing = new List<string>();
+        foreach (var htmlPath in Directory.EnumerateFiles(generatedPath, "*.html")) {
+            var html = File.ReadAllText(htmlPath);
+            foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(html, "(?:href|src)=\"([^\"]+)\"", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) {
+                var value = match.Groups[1].Value;
+                if (value.StartsWith("#", StringComparison.Ordinal) || value.StartsWith("/", StringComparison.Ordinal) || Uri.TryCreate(value, UriKind.Absolute, out _)) continue;
+                var relativePath = value.Split('?', '#')[0].Replace('/', Path.DirectorySeparatorChar);
+                if (string.IsNullOrWhiteSpace(relativePath)) continue;
+                var assetPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(htmlPath) ?? generatedPath, relativePath));
+                if (!File.Exists(assetPath)) missing.Add(Path.GetFileName(htmlPath) + " -> " + value);
+            }
+        }
+
+        Assert(missing.Count == 0, "Checked-in generated website pages should not link missing seed assets: " + string.Join(", ", missing.OrderBy(value => value, StringComparer.Ordinal)));
+    }
+
     private static void EuropeRevenueMapRoutesTargetRenderedMarkers() {
         var maps = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "MapExamples.cs"));
         Assert(!maps.Contains("London to Warsaw", StringComparison.Ordinal) && !maps.Contains("Madrid to Berlin", StringComparison.Ordinal), "Europe revenue map routes should not use capital-city coordinates when the rendered markers are country market points.");
