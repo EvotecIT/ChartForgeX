@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-795d126b" width="820" height="330" viewBox="0 0 820 330" role="img" aria-labelledby="cfx-visual-795d126b-title cfx-visual-795d126b-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-795d126b-title">Conversion Funnel</title>
-<desc id="cfx-visual-795d126b-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-3c1ab0fb" width="820" height="330" viewBox="0 0 820 330" role="img" aria-labelledby="cfx-visual-3c1ab0fb-title cfx-visual-3c1ab0fb-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-3c1ab0fb-title">Conversion Funnel</title>
+<desc id="cfx-visual-3c1ab0fb-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-795d126b .cfx-guide-stroke,#cfx-visual-795d126b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-795d126b text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-795d126b-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-795d126b-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-795d126b-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-795d126b-visualCardClip"><rect x="0" y="0" width="820" height="330" rx="18"/></clipPath>
+<style>#cfx-visual-3c1ab0fb .cfx-guide-stroke,#cfx-visual-3c1ab0fb .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-3c1ab0fb text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-3c1ab0fb-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-3c1ab0fb-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-3c1ab0fb-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-3c1ab0fb-visualCardClip"><rect x="0" y="0" width="820" height="330" rx="18"/></clipPath>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-795d126b-visualBackground)"/>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="819" height="329" rx="17.5" fill="url(#cfx-visual-795d126b-visualCard)" stroke="#ECEEF2"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-3c1ab0fb-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="819" height="329" rx="17.5" fill="url(#cfx-visual-3c1ab0fb-visualCard)" stroke="#ECEEF2"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="817" height="327" rx="16.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <circle data-cfx-role="segmented-metric-menu-dot" cx="776" cy="44" r="2.1" fill="#7A7D86"/>
 <circle data-cfx-role="segmented-metric-menu-dot" cx="783" cy="44" r="2.1" fill="#7A7D86"/>

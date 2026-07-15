@@ -1,0 +1,46 @@
+using System;
+using System.Linq;
+using ChartForgeX.Markup;
+using ChartForgeX.VisualArtifacts;
+
+var markdown = @"```chartforgex topology v1
+id service-map
+title Service Map
+subtitle TopologyChart parsed from native v1 markup
+viewport 1120x620
+layout layered left-to-right
+
+groups:
+| id | label | status |
+| --- | --- | --- |
+| edge | Edge | healthy |
+| core | Core | warning |
+| data | Data | healthy |
+
+nodes:
+| id | label | kind | status | group | subtitle | badge |
+| --- | --- | --- | --- | --- | --- | --- |
+| portal | Portal | application | healthy | edge | Public entry | TLS |
+| api | API | service | warning | core | Backpressure watched | P95 |
+| worker | Worker | process | healthy | core | Queue consumer | 4 |
+| db | Database | database | healthy | data | Primary store | HA |
+
+edges:
+| from | to | label | kind | status |
+| --- | --- | --- | --- | --- |
+| portal | api | HTTPS | data-flow | healthy |
+| api | worker | async | dependency | warning |
+| worker | db | write | data-flow | healthy |
+| api | db | read | data-flow | healthy |
+```
+";
+
+var result = new VisualMarkupParser().Parse(markdown);
+if (result.HasErrors) {
+    throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+}
+
+var artifact = result.Artifacts.Single();
+artifact.SaveSvg("markup-topology-service-map.svg");
+artifact.SavePng("markup-topology-service-map.png");
+artifact.SaveHtml("markup-topology-service-map.html");

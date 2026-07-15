@@ -44,6 +44,13 @@
       "image": "/examples/generated/audience-pictorial-candy.svg"
     },
     {
+      "category": "charts",
+      "title": "Axis Label Fitting Showcase",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/axis-label-fitting-showcase.svg"
+    },
+    {
       "category": "themes",
       "title": "Brand kit showcase",
       "body": "Executive, Product, Editorial, Accessible kits.",
@@ -614,6 +621,20 @@
       "image": "/examples/generated/forecast-interval-rangearea-light.svg"
     },
     {
+      "category": "charts",
+      "title": "Foundation Typed Facets",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/foundation-typed-facets.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Foundation Typed Log Scale",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/foundation-typed-log-scale.svg"
+    },
+    {
       "category": "topology",
       "title": "Geographic topology",
       "body": "Topology projected onto a real geographic viewport.",
@@ -623,6 +644,41 @@
         "Map"
       ],
       "image": "/examples/generated/geographic-topology.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Graph 2000 Stage 01 Overview",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-2000-stage-01-overview.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Graph 2000 Stage 02 Depth 1",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-2000-stage-02-depth-1.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Graph 2000 Stage 03 Depth 2",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-2000-stage-03-depth-2.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Graph 2000 Stage 04 Depth 3",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-2000-stage-04-depth-3.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Graph 2000 Stage 05 Full",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-2000-stage-05-full.svg"
     },
     {
       "category": "themes",
@@ -732,6 +788,54 @@
     },
     {
       "category": "charts",
+      "title": "Markup Chart Release Trend",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Line"
+      ],
+      "image": "/examples/generated/markup-chart-release-trend.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Markup Flow Approval",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/markup-flow-approval.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Markup Sequence Incident",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/markup-sequence-incident.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Markup Table Release Gates",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/markup-table-release-gates.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Markup Timeline Release Plan",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Timeline"
+      ],
+      "image": "/examples/generated/markup-timeline-release-plan.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Markup Topology Service Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Map"
+      ],
+      "image": "/examples/generated/markup-topology-service-map.svg"
+    },
+    {
+      "category": "charts",
       "title": "Monthly Posture Dark",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
@@ -825,6 +929,27 @@
         "Overlay"
       ],
       "image": "/examples/generated/powerbginfo-endpoint-snapshot.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Powerbginfo Social Preview Canvas",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/powerbginfo-social-preview-canvas.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Premium Desktop Wallpaper Canvas",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/premium-desktop-wallpaper-canvas.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Premium Email Summary Grid",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/premium-email-summary-grid.svg"
     },
     {
       "category": "charts",
@@ -1138,6 +1263,20 @@
       "image": "/examples/generated/visual-evidence-timeline-relationship.svg"
     },
     {
+      "category": "charts",
+      "title": "Visual Force Busy Relationship Graph",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-force-busy-relationship-graph.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Force Relationship Graph",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-force-relationship-graph.svg"
+    },
+    {
       "category": "maps",
       "title": "Visual Geographic Region Map",
       "body": "Generated ChartForgeX visual output.",
@@ -1154,6 +1293,15 @@
         "Map"
       ],
       "image": "/examples/generated/visual-geographic-topology-map.svg"
+    },
+    {
+      "category": "maps",
+      "title": "Visual Identity Mind Map",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Map"
+      ],
+      "image": "/examples/generated/visual-identity-mind-map.svg"
     },
     {
       "category": "topology",
@@ -1207,6 +1355,20 @@
       "image": "/examples/generated/visual-ownership-evidence-bundle.svg"
     },
     {
+      "category": "charts",
+      "title": "Visual Relationship Radial 500 Ego Graph",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-relationship-radial-500-ego-graph.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Visual Relationship Radial Ego Graph",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-relationship-radial-ego-graph.svg"
+    },
+    {
       "category": "topology",
       "title": "Visual Replication Health Hub",
       "body": "Generated ChartForgeX visual output.",
@@ -1219,6 +1381,13 @@
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
       "image": "/examples/generated/visual-replication-mesh-explorer.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Visual Replication Mesh Route Motion",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/visual-replication-mesh-route-motion.svg"
     },
     {
       "category": "topology",

@@ -1,0 +1,29 @@
+using System;
+using System.Linq;
+using ChartForgeX.Markup;
+using ChartForgeX.VisualArtifacts;
+
+var markdown = @"```chartforgex timeline v1
+id release-plan
+title Release Plan
+subtitle Timeline/Gantt chart parsed from native v1 markup
+type gantt
+size 980x560
+today 2026-02-12
+
+task Design 2026-01-05 2026-01-18 progress=1 color=#2563EB
+task Implement 2026-01-15 2026-02-14 progress=0.72 dependsOn=0 color=#14B8A6
+task Validate 2026-02-10 2026-02-28 progress=0.35 dependsOn=1 color=#F59E0B
+milestone Release 2026-03-05 dependsOn=2 color=#059669
+```
+";
+
+var result = new VisualMarkupParser().Parse(markdown);
+if (result.HasErrors) {
+    throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+}
+
+var artifact = result.Artifacts.Single();
+artifact.SaveSvg("markup-timeline-release-plan.svg");
+artifact.SavePng("markup-timeline-release-plan.png");
+artifact.SaveHtml("markup-timeline-release-plan.html");

@@ -1,26 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-1702fdf2" width="1376" height="1525" viewBox="0 0 1376 1525" role="img" aria-labelledby="cfx-visual-grid-1702fdf2-title cfx-visual-grid-1702fdf2-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-1702fdf2-title">Appointment Operations Dashboard</title>
-<desc id="cfx-visual-grid-1702fdf2-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-e6612095" width="1376" height="1525" viewBox="0 0 1376 1525" role="img" aria-labelledby="cfx-visual-grid-e6612095-title cfx-visual-grid-e6612095-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-e6612095-title">Appointment Operations Dashboard</title>
+<desc id="cfx-visual-grid-e6612095-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-1702fdf2 .cfx-guide-stroke,#cfx-visual-grid-1702fdf2 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-1702fdf2 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-grid-1702fdf2-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F8F9F8" stop-opacity="1"/><stop offset="100%" stop-color="#EEF0F0" stop-opacity="1"/></linearGradient>
+<style>#cfx-visual-grid-e6612095 .cfx-guide-stroke,#cfx-visual-grid-e6612095 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-e6612095 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-grid-e6612095-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F8F9F8" stop-opacity="1"/><stop offset="100%" stop-color="#EEF0F0" stop-opacity="1"/></linearGradient>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-grid-1702fdf2-visualGridSurface)"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-grid-e6612095-visualGridSurface)"/>
 <rect data-cfx-role="visual-grid-frame" class="cfx-guide-stroke" x="12" y="12" width="1352" height="1501" rx="26" fill="none" stroke="#EBF1F1" stroke-width="1.4"/>
 <rect data-cfx-role="visual-grid-frame-highlight" class="cfx-guide-stroke" x="13.5" y="13.5" width="1349" height="1498" rx="24" fill="none" stroke="#fff" stroke-opacity="0.42" stroke-width="1"/>
 <text data-cfx-role="visual-grid-title" x="24" y="43.5" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Appointment Operations Dashboard</text>
 <text data-cfx-role="visual-grid-subtitle" x="26" y="64" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Heatmap, peak-hour bars, workload rows, and availability list from the supplied operations design.</text>
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-4d497d1c" width="656" height="456" viewBox="0 0 656 390" role="img" aria-labelledby="cfx-visual-4d497d1c-title cfx-visual-4d497d1c-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="24" y="101" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-4d497d1c-title">Appointment Volume</title>
-<desc id="cfx-visual-4d497d1c-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-9ccda75a" width="656" height="456" viewBox="0 0 656 390" role="img" aria-labelledby="cfx-visual-9ccda75a-title cfx-visual-9ccda75a-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="24" y="101" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-9ccda75a-title">Appointment Volume</title>
+<desc id="cfx-visual-9ccda75a-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-4d497d1c .cfx-guide-stroke,#cfx-visual-4d497d1c .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-4d497d1c text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-4d497d1c-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-4d497d1c-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-4d497d1c-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-4d497d1c-visualCardClip"><rect x="0" y="0" width="656" height="390" rx="16"/></clipPath>
+<style>#cfx-visual-9ccda75a .cfx-guide-stroke,#cfx-visual-9ccda75a .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-9ccda75a text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-9ccda75a-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-9ccda75a-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-9ccda75a-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-9ccda75a-visualCardClip"><rect x="0" y="0" width="656" height="390" rx="16"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="389" rx="15.5" fill="url(#cfx-visual-4d497d1c-visualCard)" stroke="#EBF1F1"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="389" rx="15.5" fill="url(#cfx-visual-9ccda75a-visualCard)" stroke="#EBF1F1"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="653" height="387" rx="14.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="visual-title" x="28" y="45.5" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Appointment Volume</text>
 <text data-cfx-role="visual-subtitle" x="28" y="69.5" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Week 1, Jan 1 - Jan 7</text>
@@ -206,28 +206,28 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="656" height="456" viewBox="0 0 656 360" role="img" aria-labelledby="cfx5165e58d-title cfx5165e58d-desc" preserveAspectRatio="none" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="696" y="101" data-cfx-role="visual-grid-panel">
-<title id="cfx5165e58d-title">Review Peak Hour</title>
-<desc id="cfx5165e58d-desc">Review Peak Hour with 1 data series: Reviews.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="656" height="456" viewBox="0 0 656 360" role="img" aria-labelledby="cfx55e5dddf-title cfx55e5dddf-desc" preserveAspectRatio="none" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="696" y="101" data-cfx-role="visual-grid-panel">
+<title id="cfx55e5dddf-title">Review Peak Hour</title>
+<desc id="cfx55e5dddf-desc">Review Peak Hour with 1 data series: Reviews.</desc>
 <defs>
-<style>#cfx5165e58d text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx5165e58d .cfx-crisp-stroke,#cfx5165e58d .cfx-guide-stroke,#cfx5165e58d .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx5165e58d .cfx-guide-stroke{shape-rendering:crispEdges} #cfx5165e58d .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx5165e58d .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx5165e58d .cfx-interactive-region:hover,#cfx5165e58d .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfx5165e58d-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.018"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.04"/></filter>
-<linearGradient id="cfx5165e58d-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx5165e58d-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx5165e58d-plotClip"><rect x="76" y="112" width="544" height="174" rx="8"/></clipPath>
-<linearGradient id="cfx5165e58d-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#D9DCE3" stop-opacity="0.32"/><stop offset="100%" stop-color="#D9DCE3" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx5165e58d-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DEE0E6" stop-opacity="1"/><stop offset="100%" stop-color="#CCCFD5" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx5165e58d-seriesFill0-point7" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx5165e58d-seriesFill0-point8" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx5165e58d-seriesFill0-point9" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx5165e58d-seriesFill0-point10" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx5165e58d-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10A7BD" stop-opacity="1"/><stop offset="100%" stop-color="#10A7BD" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx5165e58d-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#5FD3D9" stop-opacity="1"/><stop offset="100%" stop-color="#5FD3D9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx5165e58d-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#36C47D" stop-opacity="1"/><stop offset="100%" stop-color="#36C47D" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx5165e58d-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#DE442F" stop-opacity="1"/><stop offset="100%" stop-color="#DE442F" stop-opacity="0.78"/></linearGradient>
+<style>#cfx55e5dddf text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx55e5dddf .cfx-crisp-stroke,#cfx55e5dddf .cfx-guide-stroke,#cfx55e5dddf .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx55e5dddf .cfx-guide-stroke{shape-rendering:crispEdges} #cfx55e5dddf .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx55e5dddf .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx55e5dddf .cfx-interactive-region:hover,#cfx55e5dddf .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx55e5dddf-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.018"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.04"/></filter>
+<linearGradient id="cfx55e5dddf-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx55e5dddf-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx55e5dddf-plotClip"><rect x="76" y="112" width="544" height="174" rx="8"/></clipPath>
+<linearGradient id="cfx55e5dddf-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#D9DCE3" stop-opacity="0.32"/><stop offset="100%" stop-color="#D9DCE3" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx55e5dddf-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DEE0E6" stop-opacity="1"/><stop offset="100%" stop-color="#CCCFD5" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx55e5dddf-seriesFill0-point7" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx55e5dddf-seriesFill0-point8" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx55e5dddf-seriesFill0-point9" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx55e5dddf-seriesFill0-point10" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E25A48" stop-opacity="1"/><stop offset="100%" stop-color="#D1402C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx55e5dddf-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10A7BD" stop-opacity="1"/><stop offset="100%" stop-color="#10A7BD" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx55e5dddf-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#5FD3D9" stop-opacity="1"/><stop offset="100%" stop-color="#5FD3D9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx55e5dddf-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#36C47D" stop-opacity="1"/><stop offset="100%" stop-color="#36C47D" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx55e5dddf-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#DE442F" stop-opacity="1"/><stop offset="100%" stop-color="#DE442F" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfx5165e58d">
-<rect data-cfx-role="card-surface" x="14" y="14" width="628" height="332" rx="16" fill="url(#cfx5165e58d-cardSurface)" filter="url(#cfx5165e58d-softShadow)"/>
+<g id="cfx55e5dddf">
+<rect data-cfx-role="card-surface" x="14" y="14" width="628" height="332" rx="16" fill="url(#cfx55e5dddf-cardSurface)" filter="url(#cfx55e5dddf-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="627" height="331" rx="15.5" fill="none" stroke="#EBF1F1"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="625" height="329" rx="14.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="750">Review Peak Hour</text>
@@ -241,7 +241,7 @@
 <text x="180.615" y="307" text-anchor="middle" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">10am</text>
 <line class="cfx-guide-stroke" x1="264.5" y1="112" x2="264.5" y2="286" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="264.308" y="307" text-anchor="middle" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">12pm</text>
-<line class="cfx-guide-stroke" x1="348.5" y1="112" x2="348.5" y2="286" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
+<line class="cfx-guide-stroke" x1="347.5" y1="112" x2="347.5" y2="286" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="348" y="307" text-anchor="middle" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">2pm</text>
 <line class="cfx-guide-stroke" x1="431.5" y1="112" x2="431.5" y2="286" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="431.692" y="307" text-anchor="middle" fill="#DE442F" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">4pm</text>
@@ -249,7 +249,7 @@
 <text x="515.385" y="307" text-anchor="middle" fill="#DE442F" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">6pm</text>
 <line class="cfx-guide-stroke" x1="599.5" y1="112" x2="599.5" y2="286" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text x="612" y="307" text-anchor="end" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16">8pm</text>
-<g clip-path="url(#cfx5165e58d-plotClip)">
+<g clip-path="url(#cfx55e5dddf-plotClip)">
 <rect data-cfx-role="bar" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-y="3" data-cfx-base="0" x="84.788" y="242.5" width="24.271" height="43.5" rx="0" fill="#D9DCE3" opacity="0.22"/><line data-cfx-role="bar-cap-shadow-soft" data-cfx-series="0" data-cfx-point="0" x1="86.988" y1="251" x2="106.858" y2="251" stroke="#D9DCE3" stroke-width="13" stroke-linecap="round" stroke-opacity="0.072"/><line data-cfx-role="bar-cap-shadow" data-cfx-series="0" data-cfx-point="0" x1="86.988" y1="248" x2="106.858" y2="248" stroke="#D9DCE3" stroke-width="7" stroke-linecap="round" stroke-opacity="0.2"/><line data-cfx-role="bar-cap" data-cfx-series="0" data-cfx-point="0" x1="86.988" y1="246" x2="106.858" y2="246" stroke="#D9DCE3" stroke-width="7" stroke-linecap="round" stroke-opacity="0.96"/><line data-cfx-role="bar-cap-highlight" data-cfx-series="0" data-cfx-point="0" x1="88.528" y1="244.74" x2="105.318" y2="244.74" stroke="#fff" stroke-width="1.68" stroke-linecap="round" stroke-opacity="0.26"/>
 <rect data-cfx-role="bar" data-cfx-series="0" data-cfx-point="1" data-cfx-x="2" data-cfx-y="1" data-cfx-base="0" x="126.634" y="271.5" width="24.271" height="14.5" rx="0" fill="#D9DCE3" opacity="0.22"/><line data-cfx-role="bar-cap-shadow-soft" data-cfx-series="0" data-cfx-point="1" x1="128.834" y1="280" x2="148.705" y2="280" stroke="#D9DCE3" stroke-width="13" stroke-linecap="round" stroke-opacity="0.072"/><line data-cfx-role="bar-cap-shadow" data-cfx-series="0" data-cfx-point="1" x1="128.834" y1="277" x2="148.705" y2="277" stroke="#D9DCE3" stroke-width="7" stroke-linecap="round" stroke-opacity="0.2"/><line data-cfx-role="bar-cap" data-cfx-series="0" data-cfx-point="1" x1="128.834" y1="275" x2="148.705" y2="275" stroke="#D9DCE3" stroke-width="7" stroke-linecap="round" stroke-opacity="0.96"/><line data-cfx-role="bar-cap-highlight" data-cfx-series="0" data-cfx-point="1" x1="130.374" y1="273.74" x2="147.165" y2="273.74" stroke="#fff" stroke-width="1.68" stroke-linecap="round" stroke-opacity="0.26"/>
 <rect data-cfx-role="bar" data-cfx-series="0" data-cfx-point="2" data-cfx-x="3" data-cfx-y="3" data-cfx-base="0" x="168.48" y="242.5" width="24.271" height="43.5" rx="0" fill="#D9DCE3" opacity="0.22"/><line data-cfx-role="bar-cap-shadow-soft" data-cfx-series="0" data-cfx-point="2" x1="170.68" y1="251" x2="190.551" y2="251" stroke="#D9DCE3" stroke-width="13" stroke-linecap="round" stroke-opacity="0.072"/><line data-cfx-role="bar-cap-shadow" data-cfx-series="0" data-cfx-point="2" x1="170.68" y1="248" x2="190.551" y2="248" stroke="#D9DCE3" stroke-width="7" stroke-linecap="round" stroke-opacity="0.2"/><line data-cfx-role="bar-cap" data-cfx-series="0" data-cfx-point="2" x1="170.68" y1="246" x2="190.551" y2="246" stroke="#D9DCE3" stroke-width="7" stroke-linecap="round" stroke-opacity="0.96"/><line data-cfx-role="bar-cap-highlight" data-cfx-series="0" data-cfx-point="2" x1="172.22" y1="244.74" x2="189.011" y2="244.74" stroke="#fff" stroke-width="1.68" stroke-linecap="round" stroke-opacity="0.26"/>
@@ -262,17 +262,17 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-48f3b240" width="656" height="456" viewBox="0 0 656 330" role="img" aria-labelledby="cfx-visual-48f3b240-title cfx-visual-48f3b240-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="24" y="573" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-48f3b240-title">Today Staff Workload</title>
-<desc id="cfx-visual-48f3b240-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-6cd76526" width="656" height="456" viewBox="0 0 656 330" role="img" aria-labelledby="cfx-visual-6cd76526-title cfx-visual-6cd76526-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="24" y="573" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-6cd76526-title">Today Staff Workload</title>
+<desc id="cfx-visual-6cd76526-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-48f3b240 .cfx-guide-stroke,#cfx-visual-48f3b240 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-48f3b240 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-48f3b240-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-48f3b240-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-48f3b240-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-48f3b240-visualCardClip"><rect x="0" y="0" width="656" height="330" rx="16"/></clipPath>
+<style>#cfx-visual-6cd76526 .cfx-guide-stroke,#cfx-visual-6cd76526 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-6cd76526 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-6cd76526-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-6cd76526-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-6cd76526-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-6cd76526-visualCardClip"><rect x="0" y="0" width="656" height="330" rx="16"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="329" rx="15.5" fill="url(#cfx-visual-48f3b240-visualCard)" stroke="#EBF1F1"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="329" rx="15.5" fill="url(#cfx-visual-6cd76526-visualCard)" stroke="#EBF1F1"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="653" height="327" rx="14.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="visual-title" x="22" y="41.5" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Today Staff Workload</text>
 <text data-cfx-role="visual-subtitle" x="22" y="65.5" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Capacity share by staff member</text>
@@ -319,19 +319,19 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-4fca764f" width="320" height="220" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-4fca764f-title cfx-visual-4fca764f-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="696" y="573" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-4fca764f-title">Total Appointment</title>
-<desc id="cfx-visual-4fca764f-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-c342a14d" width="320" height="220" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-c342a14d-title cfx-visual-c342a14d-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="696" y="573" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-c342a14d-title">Total Appointment</title>
+<desc id="cfx-visual-c342a14d-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-4fca764f .cfx-guide-stroke,#cfx-visual-4fca764f .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-4fca764f text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-4fca764f-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-4fca764f-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-4fca764f-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-4fca764f-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="16"/></clipPath>
+<style>#cfx-visual-c342a14d .cfx-guide-stroke,#cfx-visual-c342a14d .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-c342a14d text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-c342a14d-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-c342a14d-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-c342a14d-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-c342a14d-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="16"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="15.5" fill="url(#cfx-visual-4fca764f-visualCard)" stroke="#EBF1F1"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="15.5" fill="url(#cfx-visual-c342a14d-visualCard)" stroke="#EBF1F1"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="517" height="297" rx="14.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
-<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="297" fill="#27C26A" clip-path="url(#cfx-visual-4fca764f-visualCardClip)"/>
+<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="297" fill="#27C26A" clip-path="url(#cfx-visual-c342a14d-visualCardClip)"/>
 <text data-cfx-role="metric-label" x="22" y="36" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="700">Total Appointment</text>
 <text data-cfx-role="metric-value" x="22" y="104" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="54" font-weight="850">24</text>
 <g data-cfx-role="metric-mini-bars" data-cfx-min="0" data-cfx-max="100">
@@ -345,19 +345,19 @@
 <text data-cfx-role="metric-caption" x="69.48" y="273" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="13">vs last week</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-d6d581e3" width="320" height="220" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-d6d581e3-title cfx-visual-d6d581e3-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="1032" y="573" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-d6d581e3-title">Needs owner</title>
-<desc id="cfx-visual-d6d581e3-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-9bf52c43" width="320" height="220" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-9bf52c43-title cfx-visual-9bf52c43-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="1032" y="573" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-9bf52c43-title">Needs owner</title>
+<desc id="cfx-visual-9bf52c43-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-d6d581e3 .cfx-guide-stroke,#cfx-visual-d6d581e3 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-d6d581e3 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-d6d581e3-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-d6d581e3-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-d6d581e3-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-d6d581e3-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="16"/></clipPath>
+<style>#cfx-visual-9bf52c43 .cfx-guide-stroke,#cfx-visual-9bf52c43 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-9bf52c43 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-9bf52c43-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-9bf52c43-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-9bf52c43-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-9bf52c43-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="16"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="15.5" fill="url(#cfx-visual-d6d581e3-visualCard)" stroke="#EBF1F1"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="15.5" fill="url(#cfx-visual-9bf52c43-visualCard)" stroke="#EBF1F1"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="517" height="297" rx="14.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
-<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="297" fill="#FF3B4F" clip-path="url(#cfx-visual-d6d581e3-visualCardClip)"/>
+<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="297" fill="#FF3B4F" clip-path="url(#cfx-visual-9bf52c43-visualCardClip)"/>
 <text data-cfx-role="metric-label" x="22" y="36" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="700">Needs owner</text>
 <text data-cfx-role="metric-value" x="22" y="104" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="54" font-weight="850">6</text>
 <g data-cfx-role="metric-mini-bars" data-cfx-min="0" data-cfx-max="100">
@@ -371,17 +371,17 @@
 <text data-cfx-role="metric-caption" x="69.48" y="273" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="13">vs last week</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-b35ccf8a" width="656" height="456" viewBox="0 0 656 260" role="img" aria-labelledby="cfx-visual-b35ccf8a-title cfx-visual-b35ccf8a-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="696" y="809" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-b35ccf8a-title">Available Staff</title>
-<desc id="cfx-visual-b35ccf8a-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-f388258d" width="656" height="456" viewBox="0 0 656 260" role="img" aria-labelledby="cfx-visual-f388258d-title cfx-visual-f388258d-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="696" y="809" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-f388258d-title">Available Staff</title>
+<desc id="cfx-visual-f388258d-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-b35ccf8a .cfx-guide-stroke,#cfx-visual-b35ccf8a .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-b35ccf8a text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-b35ccf8a-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-b35ccf8a-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-b35ccf8a-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-b35ccf8a-visualCardClip"><rect x="0" y="0" width="656" height="260" rx="16"/></clipPath>
+<style>#cfx-visual-f388258d .cfx-guide-stroke,#cfx-visual-f388258d .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-f388258d text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-f388258d-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-f388258d-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-f388258d-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-f388258d-visualCardClip"><rect x="0" y="0" width="656" height="260" rx="16"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="259" rx="15.5" fill="url(#cfx-visual-b35ccf8a-visualCard)" stroke="#EBF1F1"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="259" rx="15.5" fill="url(#cfx-visual-f388258d-visualCard)" stroke="#EBF1F1"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="653" height="257" rx="14.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="visual-title" x="22" y="41.5" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Available Staff</text>
 <text data-cfx-role="visual-subtitle" x="22" y="65.5" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Shift-ready staff list with service labels.</text>
@@ -399,17 +399,17 @@
 <text data-cfx-role="visual-text" x="634" y="173.5" text-anchor="end" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="10.5" font-weight="600">Reflexology Therapy</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-646284ff" width="656" height="456" viewBox="0 0 656 260" role="img" aria-labelledby="cfx-visual-646284ff-title cfx-visual-646284ff-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="24" y="1045" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-646284ff-title">AI Prediction</title>
-<desc id="cfx-visual-646284ff-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-e14d47a2" width="656" height="456" viewBox="0 0 656 260" role="img" aria-labelledby="cfx-visual-e14d47a2-title cfx-visual-e14d47a2-desc" preserveAspectRatio="none" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="24" y="1045" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-e14d47a2-title">AI Prediction</title>
+<desc id="cfx-visual-e14d47a2-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-646284ff .cfx-guide-stroke,#cfx-visual-646284ff .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-646284ff text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-646284ff-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-646284ff-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-646284ff-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-646284ff-visualCardClip"><rect x="0" y="0" width="656" height="260" rx="16"/></clipPath>
+<style>#cfx-visual-e14d47a2 .cfx-guide-stroke,#cfx-visual-e14d47a2 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-e14d47a2 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-e14d47a2-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-e14d47a2-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-e14d47a2-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-e14d47a2-visualCardClip"><rect x="0" y="0" width="656" height="260" rx="16"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="259" rx="15.5" fill="url(#cfx-visual-646284ff-visualCard)" stroke="#EBF1F1"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="655" height="259" rx="15.5" fill="url(#cfx-visual-e14d47a2-visualCard)" stroke="#EBF1F1"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="653" height="257" rx="14.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="visual-title" x="22" y="41.5" fill="#101820" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">AI Prediction</text>
 <text data-cfx-role="visual-subtitle" x="22" y="65.5" fill="#70777B" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Peak 1h30m from 14:00-18:00.</text>

@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-canvas-8774a322" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="cfx-visual-canvas-8774a322-title cfx-visual-canvas-8774a322-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-canvas-8774a322-title">Premium endpoint desktop wallpaper</title>
+<desc id="cfx-visual-canvas-8774a322-desc">Layered static visual canvas.</desc>
+<defs>
+<linearGradient id="cfx-visual-canvas-8774a322-background" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#020617"/>
+<stop offset="100%" stop-color="#0B2447"/>
+</linearGradient>
+<linearGradient id="cfx-visual-canvas-8774a322-tile-glass" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="rgba(7,21,44,0.91)"/>
+<stop offset="100%" stop-color="rgba(3,10,23,0.878)"/>
+</linearGradient>
+<linearGradient id="cfx-visual-canvas-8774a322-hero-badge" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#0B1C3A"/>
+<stop offset="100%" stop-color="#051021"/>
+</linearGradient>
+<filter id="cfx-visual-canvas-8774a322-soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+<feGaussianBlur stdDeviation="5" result="blur"/>
+<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="cfx-visual-canvas-8774a322-raised-depth" x="-18%" y="-18%" width="136%" height="148%">
+<feDropShadow dx="0" dy="11" stdDeviation="8" flood-color="#000000" flood-opacity="0.42"/>
+<feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#22A7FF" flood-opacity="0.24"/>
+</filter>
+</defs>
+<rect data-cfx-role="visual-canvas-background" width="100%" height="100%" fill="url(#cfx-visual-canvas-8774a322-background)"/>
+<g data-cfx-role="visual-canvas-tech-backdrop">
+<circle cx="0" cy="54" r="4.2" fill="rgba(34,167,255,0.141)"/>
+<circle cx="710.4" cy="144.288" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="1420.8" cy="234.576" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="192" cy="324.864" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="902.4" cy="96.768" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="1612.8" cy="187.056" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="384" cy="277.344" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="1094.4" cy="367.632" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="1804.8" cy="139.536" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="576" cy="229.824" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="1286.4" cy="320.112" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="57.6" cy="92.016" r="4.2" fill="rgba(34,167,255,0.176)"/>
+<circle cx="768" cy="182.304" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="1478.4" cy="272.592" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="249.6" cy="362.88" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="960" cy="134.784" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="1670.4" cy="225.072" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="441.6" cy="315.36" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="1152" cy="87.264" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="1862.4" cy="177.552" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="633.6" cy="267.84" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="1344" cy="358.128" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="115.2" cy="130.032" r="4.2" fill="rgba(34,167,255,0.212)"/>
+<circle cx="825.6" cy="220.32" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="1536" cy="310.608" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="307.2" cy="82.512" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="1017.6" cy="172.8" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="1728" cy="263.088" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="499.2" cy="353.376" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="1209.6" cy="125.28" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="1920" cy="215.568" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="691.2" cy="305.856" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="1401.6" cy="77.76" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="172.8" cy="168.048" r="4.2" fill="rgba(34,167,255,0.243)"/>
+<circle cx="883.2" cy="258.336" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="1593.6" cy="348.624" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="364.8" cy="120.528" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="1075.2" cy="210.816" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="1785.6" cy="301.104" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="556.8" cy="73.008" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="1267.2" cy="163.296" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="38.4" cy="253.584" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="748.8" cy="343.872" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="1459.2" cy="115.776" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="230.4" cy="206.064" r="4.2" fill="rgba(34,167,255,0.278)"/>
+<circle cx="940.8" cy="296.352" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="1651.2" cy="68.256" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="422.4" cy="158.544" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="1132.8" cy="248.832" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="1843.2" cy="339.12" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="614.4" cy="111.024" r="1.8" fill="rgba(34,167,255,0.141)"/>
+<circle cx="1324.8" cy="201.312" r="1.8" fill="rgba(34,167,255,0.176)"/>
+<circle cx="96" cy="291.6" r="1.8" fill="rgba(34,167,255,0.212)"/>
+<circle cx="806.4" cy="63.504" r="1.8" fill="rgba(34,167,255,0.243)"/>
+<circle cx="1516.8" cy="153.792" r="1.8" fill="rgba(34,167,255,0.278)"/>
+<circle cx="288" cy="244.08" r="4.2" fill="rgba(34,167,255,0.141)"/>
+<path d="M 153.6 194.4 C 537.6 114.4, 921.6 314.4, 1305.6 184.4" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 243 C 537.6 163, 921.6 363, 1305.6 233" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 291.6 C 537.6 211.6, 921.6 411.6, 1305.6 281.6" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 340.2 C 537.6 260.2, 921.6 460.2, 1305.6 330.2" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 388.8 C 537.6 308.8, 921.6 508.8, 1305.6 378.8" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 437.4 C 537.6 357.4, 921.6 557.4, 1305.6 427.4" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 486 C 537.6 406, 921.6 606, 1305.6 476" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 534.6 C 537.6 454.6, 921.6 654.6, 1305.6 524.6" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 583.2 C 537.6 503.2, 921.6 703.2, 1305.6 573.2" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path d="M 153.6 631.8 C 537.6 551.8, 921.6 751.8, 1305.6 621.8" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
+<path data-cfx-role="visual-canvas-horizon" d="M 0 842.4 C 384 777.6, 729.6 885.6, 1056 820.8 C 1420.8 756, 1612.8 918, 1920 788.4 L 1920 1080 L 0 1080 Z" fill="rgba(6,18,37,0.776)"/>
+<path data-cfx-role="visual-canvas-road-glow" d="M 960 885.6 C 1382.4 928.8, 1536 1004.4, 1766.4 1080" fill="none" stroke="#22A7FF" stroke-opacity="0.76" stroke-width="5" filter="url(#cfx-visual-canvas-8774a322-soft-glow)"/>
+</g>
+<text data-cfx-role="visual-canvas-text" x="70" y="76" text-anchor="start" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="800">ENDPOINT OVERVIEW</text>
+<text data-cfx-role="visual-canvas-hero-title" x="960" y="432" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="850" letter-spacing="0"><tspan fill="#F8FAFC">DEV-WKS-</tspan><tspan fill="#38BDF8">01</tspan></text>
+<text data-cfx-role="visual-canvas-text" x="960" y="483" text-anchor="middle" fill="#C6D3EA" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="500">Secure, connected, and ready for work</text>
+<g data-cfx-role="visual-canvas-info-tile">
+<rect x="70.5" y="146.5" width="389" height="117" rx="16" fill="url(#cfx-visual-canvas-8774a322-tile-glass)" stroke="rgba(56,189,248,0.722)" stroke-width="1.4"/>
+<rect x="72.5" y="148.5" width="385" height="113" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
+<rect x="93.4" y="178" width="54" height="54" rx="13" fill="rgba(56,189,248,0.18)" stroke="none"/>
+<text x="120.4" y="213.165" text-anchor="middle" fill="#38BDF8" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">OS</text>
+<text x="169.4" y="178" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">OPERATING SYSTEM</text>
+<text x="169.4" y="207" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="650">Windows 11 Enterprise</text>
+<text x="169.4" y="226" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="500">24H2 / build 26100</text>
+</g>
+<g data-cfx-role="visual-canvas-info-tile">
+<rect x="70.5" y="286.5" width="389" height="117" rx="16" fill="url(#cfx-visual-canvas-8774a322-tile-glass)" stroke="rgba(45,212,191,0.722)" stroke-width="1.4"/>
+<rect x="72.5" y="288.5" width="385" height="113" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
+<rect x="93.4" y="318" width="54" height="54" rx="13" fill="rgba(45,212,191,0.18)" stroke="none"/>
+<text x="120.4" y="353.165" text-anchor="middle" fill="#2DD4BF" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">IP</text>
+<text x="169.4" y="318" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">PRIMARY NETWORK</text>
+<text x="169.4" y="347" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="650">10.0.0.42</text>
+<text x="169.4" y="366" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="500">Corporate LAN</text>
+</g>
+<g data-cfx-role="visual-canvas-info-tile">
+<rect x="70.5" y="426.5" width="389" height="117" rx="16" fill="url(#cfx-visual-canvas-8774a322-tile-glass)" stroke="rgba(167,139,250,0.722)" stroke-width="1.4"/>
+<rect x="72.5" y="428.5" width="385" height="113" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
+<rect x="93.4" y="458" width="54" height="54" rx="13" fill="rgba(167,139,250,0.18)" stroke="none"/>
+<text x="120.4" y="493.165" text-anchor="middle" fill="#A78BFA" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">UP</text>
+<text x="169.4" y="458" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">UPTIME</text>
+<text x="169.4" y="487" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="650">8 days 14 hours</text>
+<text x="169.4" y="506" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="500">Last restart: planned</text>
+<rect x="169.4" y="528" width="267.2" height="8" rx="4" fill="rgba(24,52,93,0.922)"/>
+<rect x="169.4" y="528" width="189.712" height="8" rx="4" fill="#A78BFA"/>
+</g>
+<g data-cfx-role="visual-canvas-info-tile">
+<rect x="1460.5" y="146.5" width="389" height="117" rx="16" fill="url(#cfx-visual-canvas-8774a322-tile-glass)" stroke="rgba(56,189,248,0.722)" stroke-width="1.4"/>
+<rect x="1462.5" y="148.5" width="385" height="113" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
+<rect x="1483.4" y="178" width="54" height="54" rx="13" fill="rgba(56,189,248,0.18)" stroke="none"/>
+<text x="1510.4" y="213.165" text-anchor="middle" fill="#38BDF8" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">CPU</text>
+<text x="1559.4" y="178" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">PROCESSOR</text>
+<text x="1559.4" y="207" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="650">Intel Core i7</text>
+<text x="1559.4" y="226" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="500">Average load 23%</text>
+<rect x="1559.4" y="248" width="169.2" height="8" rx="4" fill="rgba(24,52,93,0.922)"/>
+<rect x="1559.4" y="248" width="38.916" height="8" rx="4" fill="#38BDF8"/>
+<g data-cfx-role="visual-canvas-info-tile-mini-chart">
+<rect x="1744.6" y="181.4" width="82" height="46" rx="8" fill="rgba(138,169,214,0.2)"/>
+<path d="M 1748.6 214.52 L 1822.6 214.52 M 1748.6 198.88 L 1822.6 198.88" fill="none" stroke="rgba(138,169,214,0.18)" stroke-width="1"/>
+<path d="M 1751.6 201 L 1768.6 193.067 L 1785.6 197.6 L 1802.6 187.4 L 1819.6 195.333" fill="none" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<g data-cfx-role="visual-canvas-info-tile">
+<rect x="1460.5" y="286.5" width="389" height="117" rx="16" fill="url(#cfx-visual-canvas-8774a322-tile-glass)" stroke="rgba(251,191,36,0.722)" stroke-width="1.4"/>
+<rect x="1462.5" y="288.5" width="385" height="113" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
+<rect x="1483.4" y="318" width="54" height="54" rx="13" fill="rgba(251,191,36,0.18)" stroke="none"/>
+<text x="1510.4" y="353.165" text-anchor="middle" fill="#FBBF24" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">RAM</text>
+<text x="1559.4" y="318" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">MEMORY</text>
+<text x="1559.4" y="347" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="650">22.7 / 32 GB</text>
+<text x="1559.4" y="366" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="500">71% in use</text>
+<rect x="1559.4" y="388" width="169.2" height="8" rx="4" fill="rgba(24,52,93,0.922)"/>
+<rect x="1559.4" y="388" width="120.132" height="8" rx="4" fill="#FBBF24"/>
+<g data-cfx-role="visual-canvas-info-tile-mini-chart">
+<rect x="1744.6" y="321.4" width="82" height="46" rx="8" fill="rgba(138,169,214,0.2)"/>
+<path d="M 1748.6 354.52 L 1822.6 354.52 M 1748.6 338.88 L 1822.6 338.88" fill="none" stroke="rgba(138,169,214,0.18)" stroke-width="1"/>
+<rect x="1751.6" y="343.04" width="11.696" height="18.36" rx="4" fill="rgba(251,191,36,0.82)"/>
+<rect x="1765.676" y="340.66" width="11.696" height="20.74" rx="4" fill="rgba(251,191,36,0.82)"/>
+<rect x="1779.752" y="339.3" width="11.696" height="22.1" rx="4" fill="rgba(251,191,36,0.82)"/>
+<rect x="1793.828" y="338.28" width="11.696" height="23.12" rx="4" fill="rgba(251,191,36,0.82)"/>
+<rect x="1807.904" y="337.26" width="11.696" height="24.14" rx="4" fill="rgba(251,191,36,0.82)"/>
+</g>
+</g>
+<g data-cfx-role="visual-canvas-info-tile">
+<rect x="1460.5" y="426.5" width="389" height="117" rx="16" fill="url(#cfx-visual-canvas-8774a322-tile-glass)" stroke="rgba(52,211,153,0.722)" stroke-width="1.4"/>
+<rect x="1462.5" y="428.5" width="385" height="113" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
+<rect x="1483.4" y="458" width="54" height="54" rx="13" fill="rgba(52,211,153,0.18)" stroke="none"/>
+<text x="1510.4" y="493.165" text-anchor="middle" fill="#34D399" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">SEC</text>
+<text x="1559.4" y="458" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">SECURITY</text>
+<text x="1559.4" y="487" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="650">Protected</text>
+<text x="1559.4" y="506" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="500">No action required</text>
+<rect x="1559.4" y="528" width="267.2" height="8" rx="4" fill="rgba(24,52,93,0.922)"/>
+<rect x="1559.4" y="528" width="267.2" height="8" rx="4" fill="#34D399"/>
+</g>
+<g data-cfx-role="visual-canvas-key-value-block">
+<g data-cfx-role="visual-canvas-key-value-row">
+<text x="650" y="625" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="800">User</text>
+<text x="784" y="625" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="500">CONTOSO\jdoe</text>
+</g>
+<g data-cfx-role="visual-canvas-key-value-row">
+<text x="650" y="647.992" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="800">Device</text>
+<text x="784" y="647.992" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="500">Managed / compliant</text>
+</g>
+<g data-cfx-role="visual-canvas-key-value-row">
+<text x="650" y="670.984" fill="#C4D4EC" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="800">Support</text>
+<text x="784" y="670.984" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="500">support.example.net / +1 555 0100</text>
+</g>
+</g>
+<g data-cfx-role="visual-canvas-feature-strip">
+<text x="645" y="932" text-anchor="middle" fill="#2F80FF" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="800">OK</text>
+<text x="645" y="964" text-anchor="middle" fill="#D7E4F8" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">COMPLIANT</text>
+<line x1="750" y1="910" x2="750" y2="972" stroke="rgba(138,169,214,0.22)"/>
+<text x="855" y="932" text-anchor="middle" fill="#2F80FF" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="800">VPN</text>
+<text x="855" y="964" text-anchor="middle" fill="#D7E4F8" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">CONNECTED</text>
+<line x1="960" y1="910" x2="960" y2="972" stroke="rgba(138,169,214,0.22)"/>
+<text x="1065" y="932" text-anchor="middle" fill="#2F80FF" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="800">EDR</text>
+<text x="1065" y="964" text-anchor="middle" fill="#D7E4F8" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">HEALTHY</text>
+<line x1="1170" y1="910" x2="1170" y2="972" stroke="rgba(138,169,214,0.22)"/>
+<text x="1275" y="932" text-anchor="middle" fill="#2F80FF" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="800">IT</text>
+<text x="1275" y="964" text-anchor="middle" fill="#D7E4F8" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">SUPPORTED</text>
+</g>
+</svg>

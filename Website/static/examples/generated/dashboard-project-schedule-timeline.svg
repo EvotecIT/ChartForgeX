@@ -1,14 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-cc0d0834" width="1320" height="720" viewBox="0 0 1320 720" role="img" aria-labelledby="cfx-visual-cc0d0834-title cfx-visual-cc0d0834-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-cc0d0834-title">Project Timeline</title>
-<desc id="cfx-visual-cc0d0834-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-344e83ef" width="1320" height="720" viewBox="0 0 1320 720" role="img" aria-labelledby="cfx-visual-344e83ef-title cfx-visual-344e83ef-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-344e83ef-title">Project Timeline</title>
+<desc id="cfx-visual-344e83ef-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-cc0d0834 .cfx-guide-stroke,#cfx-visual-cc0d0834 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-cc0d0834 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-cc0d0834-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-cc0d0834-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-cc0d0834-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-cc0d0834-visualCardClip"><rect x="0" y="0" width="1320" height="720" rx="18"/></clipPath>
+<style>#cfx-visual-344e83ef .cfx-guide-stroke,#cfx-visual-344e83ef .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-344e83ef text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-344e83ef-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-344e83ef-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-344e83ef-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-344e83ef-visualCardClip"><rect x="0" y="0" width="1320" height="720" rx="18"/></clipPath>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-cc0d0834-visualBackground)"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-344e83ef-visualBackground)"/>
 <text data-cfx-role="visual-title" x="22" y="41.5" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Project Timeline</text>
 <text data-cfx-role="visual-subtitle" x="22" y="65.5" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Visualize your project schedule, key milestones, and deadlines in a chronological view.</text>
 <rect data-cfx-role="schedule-header-action" x="1236" y="82" width="62" height="30" rx="8" fill="#FFFFFF" stroke="#ECEEF2"/>

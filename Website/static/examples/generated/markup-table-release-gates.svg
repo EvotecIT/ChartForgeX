@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-c4cbb7a3" width="760" height="360" viewBox="0 0 760 360" role="img" aria-labelledby="cfx-visual-c4cbb7a3-title cfx-visual-c4cbb7a3-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-c4cbb7a3-title">Release Gates</title>
+<desc id="cfx-visual-c4cbb7a3-desc">Static ChartForgeX visual block.</desc>
+<defs>
+<style>#cfx-visual-c4cbb7a3 .cfx-guide-stroke,#cfx-visual-c4cbb7a3 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-c4cbb7a3 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-c4cbb7a3-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-c4cbb7a3-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-c4cbb7a3-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-c4cbb7a3-visualCardClip"><rect x="0" y="0" width="760" height="360" rx="12"/></clipPath>
+</defs>
+<text data-cfx-role="visual-title" x="22" y="40.75" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="800">Release Gates</text>
+<text data-cfx-role="visual-subtitle" x="22" y="63.375" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">TableArtifact parsed from native v1 markup with typed columns</text>
+<rect data-cfx-role="table-header" class="cfx-guide-stroke" x="22" y="79.5" width="716" height="32" rx="6" fill="url(#cfx-visual-c4cbb7a3-visualPlot)" stroke="rgba(148,163,184,0.188)"/>
+<text data-cfx-role="visual-text" x="31" y="100.62" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">Gate</text>
+<text data-cfx-role="visual-text" x="210" y="100.62" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">Owner</text>
+<text data-cfx-role="visual-text" x="469.5" y="100.62" text-anchor="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">Status</text>
+<text data-cfx-role="visual-text" x="568" y="100.62" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">Evidence</text>
+<text data-cfx-role="visual-text" x="31" y="135.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">API grammar</text>
+<text data-cfx-role="visual-text" x="210" y="135.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Markup</text>
+<circle data-cfx-role="table-status" cx="390" cy="131" r="4" fill="#10B981"/>
+<text data-cfx-role="visual-text" x="476.5" y="135.96" text-anchor="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">positive</text>
+<text data-cfx-role="visual-text" x="568" y="135.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">v1 reference and parser ...</text>
+<rect data-cfx-role="table-row" x="22" y="146.5" width="716" height="31" rx="4" fill="rgba(248,250,252,0.431)"/>
+<text data-cfx-role="visual-text" x="31" y="166.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Static output</text>
+<text data-cfx-role="visual-text" x="210" y="166.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Core</text>
+<circle data-cfx-role="table-status" cx="390" cy="162" r="4" fill="#10B981"/>
+<text data-cfx-role="visual-text" x="476.5" y="166.96" text-anchor="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">positive</text>
+<text data-cfx-role="visual-text" x="568" y="166.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">SVG and PNG parity</text>
+<text data-cfx-role="visual-text" x="31" y="197.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Package smoke</text>
+<text data-cfx-role="visual-text" x="210" y="197.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Release</text>
+<circle data-cfx-role="table-status" cx="390" cy="193" r="4" fill="#F59E0B"/>
+<text data-cfx-role="visual-text" x="476.5" y="197.96" text-anchor="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">warning</text>
+<text data-cfx-role="visual-text" x="568" y="197.96" text-anchor="start" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Build.ps1 release gate</text>
+</svg>
