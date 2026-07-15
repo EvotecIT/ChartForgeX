@@ -126,8 +126,8 @@ internal sealed class ChartRange {
         foreach (var annotation in chart.Annotations) {
             range.Include(annotation);
         }
-        if (double.IsInfinity(range.MinX)) { range.MinX = 0; range.MaxX = 1; }
-        if (double.IsInfinity(range.MinY)) { range.MinY = 0; range.MaxY = 1; }
+        range.InitializeEmptyX(chart.Options.XAxis);
+        range.InitializeEmptyY(chart.Options.YAxis);
         if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon) range.MaxX = range.MinX + 1;
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) range.MaxY = range.MinY + 1;
         range.ApplyBarPadding(barXValues, chart.Options.XAxis);
@@ -155,10 +155,7 @@ internal sealed class ChartRange {
 
         range.MinX = primaryRange.MinX;
         range.MaxX = primaryRange.MaxX;
-        if (double.IsInfinity(range.MinY)) {
-            range.MinY = 0;
-            range.MaxY = 1;
-        }
+        range.InitializeEmptyY(chart.Options.SecondaryYAxis);
 
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) range.MaxY = range.MinY + 1;
         if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.SecondaryYAxis);
@@ -208,6 +205,18 @@ internal sealed class ChartRange {
     private void IncludeX(double value) {
         if (value < MinX) MinX = value;
         if (value > MaxX) MaxX = value;
+    }
+
+    private void InitializeEmptyX(ChartAxis axis) {
+        if (!double.IsInfinity(MinX)) return;
+        MinX = axis.Scale == ChartScaleKind.Logarithmic ? 1 : 0;
+        MaxX = axis.Scale == ChartScaleKind.Logarithmic ? 10 : 1;
+    }
+
+    private void InitializeEmptyY(ChartAxis axis) {
+        if (!double.IsInfinity(MinY)) return;
+        MinY = axis.Scale == ChartScaleKind.Logarithmic ? 1 : 0;
+        MaxY = axis.Scale == ChartScaleKind.Logarithmic ? 10 : 1;
     }
 
     private void ApplyXAxisOptions(Chart chart) {

@@ -186,7 +186,9 @@ public sealed partial class PngChartRenderer {
                 DrawPlotSurface(c, o, t, plot);
             }
 
-            var map = new ChartMapper(plot, range, o.XAxis, o.YAxis);
+            var map = IsHorizontalBarChart(chart)
+                ? ChartMapper.ForHorizontalBars(plot, range, o.XAxis)
+                : new ChartMapper(plot, range, o.XAxis, o.YAxis);
             var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, o.XAxis, o.SecondaryYAxis);
             if (IsHorizontalBarChart(chart)) {
                 DrawHorizontalBarGrid(c, chart, plot, map, xTicks, yTicks);

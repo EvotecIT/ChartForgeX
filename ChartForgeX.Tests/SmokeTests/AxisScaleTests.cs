@@ -44,6 +44,14 @@ internal static partial class SmokeTests {
         Assert(gauge.ToSvg().Contains("data-cfx-role=\"gauge\"", StringComparison.Ordinal), "Gauge SVG rendering should bypass unused cartesian logarithmic-axis setup.");
         Assert(gauge.ToPng().Length > 200, "Gauge logarithmic-axis options should remain renderer-neutral.");
 
+        var secondaryOnly = Chart.Create()
+            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .WithSecondaryYAxis("Rate")
+            .AddLine("Rate", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
+        secondaryOnly.Series[0].UseSecondaryYAxis();
+        Assert(secondaryOnly.ToSvg().Contains(">Rate</text>", StringComparison.Ordinal), "Secondary-only charts should seed an empty logarithmic primary domain with valid positive bounds.");
+        Assert(secondaryOnly.ToPng().Length > 200, "Empty primary logarithmic domains should preserve SVG and PNG rendering parity.");
+
         var radar = Chart.Create()
             .WithSize(560, 340)
             .WithYAxisScale(ChartScaleKind.Logarithmic)
@@ -96,6 +104,7 @@ internal static partial class SmokeTests {
         var horizontal = Chart.Create()
             .WithSize(420, 260)
             .WithXAxisScale(ChartScaleKind.Logarithmic)
+            .WithYAxisScale(ChartScaleKind.Logarithmic)
             .AddHorizontalBar("Orders", new[] {
                 new ChartPoint(0, 10),
                 new ChartPoint(1, 100)

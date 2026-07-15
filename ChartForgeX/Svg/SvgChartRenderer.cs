@@ -121,7 +121,9 @@ public sealed partial class SvgChartRenderer {
                 if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, false);
             }
 
-            map = new ChartMapper(plot, range, o.XAxis, o.YAxis);
+            map = IsHorizontalBarChart(chart)
+                ? ChartMapper.ForHorizontalBars(plot, range, o.XAxis)
+                : new ChartMapper(plot, range, o.XAxis, o.YAxis);
             secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, o.XAxis, o.SecondaryYAxis);
         }
         var accessibility = chart.Accessibility;

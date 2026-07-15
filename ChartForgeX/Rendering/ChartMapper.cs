@@ -4,6 +4,7 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 internal sealed class ChartMapper {
+    private static readonly ChartAxis LinearCategoryAxis = new ChartAxis();
     private readonly ChartRect _plot;
     private readonly ChartRange _range;
     private readonly ChartAxis _xAxis;
@@ -17,6 +18,10 @@ internal sealed class ChartMapper {
         ValidateRange(range.MinX, range.MaxX, xAxis, "x");
         ValidateRange(range.MinY, range.MaxY, yAxis, "y");
     }
+
+    /// <summary>Creates a mapper whose horizontal-bar category coordinates remain linear.</summary>
+    public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis) =>
+        new ChartMapper(plot, range, valueAxis, LinearCategoryAxis);
 
     public double X(double value) => _plot.Left + ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis) * _plot.Width;
     public double Y(double value) => _plot.Bottom - ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis) * _plot.Height;
