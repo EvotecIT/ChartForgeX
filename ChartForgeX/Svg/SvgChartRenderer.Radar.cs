@@ -61,7 +61,7 @@ public sealed partial class SvgChartRenderer {
             if (chart.Options.ShowGrid) WriteRadarRing(sb, RadarPath(ring), t.Grid.ToCss());
             var isOuterTick = Math.Abs(tick - max) <= Math.Max(0.000001, max * 0.000001);
             if (chart.Options.ShowAxes && !isOuterTick) {
-                var label = FormatValue(chart, tick);
+                var label = FormatYAxisValue(chart, tick);
                 DrawSvgTextLeft(sb, chart, "radar-ring-label", label, cx + 7, cy - ringRadius + 14, t.MutedText, t.TickLabelFontSize, Math.Max(28, plot.Right - cx - 14), "400");
             }
         }

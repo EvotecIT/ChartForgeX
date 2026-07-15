@@ -524,13 +524,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string FormatYAxisValue(Chart chart, double value) {
-        foreach (var label in chart.Options.YAxis.Labels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
-
-        var formatter = chart.Options.YAxis.LabelFormatter ?? chart.Options.ValueFormatter;
-        if (formatter == null) return FormatNumber(value);
-        return formatter(value) ?? string.Empty;
+        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter);
     }
 
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
@@ -539,13 +533,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string FormatSecondaryValue(Chart chart, double value) {
-        foreach (var label in chart.Options.SecondaryYAxis.Labels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
-
-        var formatter = chart.Options.SecondaryYAxisValueFormatter;
-        if (formatter == null) return FormatNumber(value);
-        return formatter(value) ?? string.Empty;
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value);
     }
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));

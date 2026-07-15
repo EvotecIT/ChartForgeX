@@ -83,6 +83,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawSecondaryYAxis(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, IReadOnlyList<double> yTicks) {
+        if (!ShowSecondaryYAxis(chart)) return;
         var theme = chart.Options.Theme;
         var preferredFontSize = PngTickFontSize(chart);
         var labelMaxWidth = Math.Max(24, chart.Options.Size.Width - plot.Right - 12);

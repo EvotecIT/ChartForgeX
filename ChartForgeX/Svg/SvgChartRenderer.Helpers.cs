@@ -500,11 +500,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string FormatYAxisValue(Chart chart, double value) {
-        foreach (var label in chart.Options.YAxis.Labels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
-
-        return FormatGeneratedAxisValue(chart.Options.YAxis, chart.Options.YAxis.LabelFormatter ?? chart.Options.ValueFormatter, value);
+        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter);
     }
 
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
@@ -516,17 +512,7 @@ public sealed partial class SvgChartRenderer {
         string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
     private static string FormatSecondaryValue(Chart chart, double value) {
-        foreach (var label in chart.Options.SecondaryYAxis.Labels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
-
-        return FormatGeneratedAxisValue(chart.Options.SecondaryYAxis, chart.Options.SecondaryYAxisValueFormatter, value);
-    }
-
-    private static string FormatGeneratedAxisValue(ChartAxis axis, Func<double, string>? formatter, double value) {
-        if (formatter != null) return formatter(value) ?? string.Empty;
-        if (axis.Scale == ChartScaleKind.Time) return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        return FormatNumber(value);
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value);
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);

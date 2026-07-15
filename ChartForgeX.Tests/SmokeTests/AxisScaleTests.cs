@@ -132,7 +132,9 @@ internal static partial class SmokeTests {
             });
         var verticalSvg = vertical.ToSvg();
         Assert(verticalSvg.Contains("2026-07", StringComparison.Ordinal), "Primary vertical time axes should use the same deterministic date fallback as horizontal time axes.");
-        Assert(vertical.ToPng().Length > 200, "Primary vertical time axes should render through the PNG path.");
+        var verticalPng = vertical.ToPng();
+        vertical.Options.YAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        Assert(verticalPng.SequenceEqual(vertical.ToPng()), "Primary vertical time axes should use the deterministic date fallback in PNG output.");
 
         var secondary = Chart.Create()
             .WithSize(620, 320)
@@ -146,6 +148,8 @@ internal static partial class SmokeTests {
         secondary.Options.SecondaryYAxis.Scale = ChartScaleKind.Time;
         var secondarySvg = secondary.ToSvg();
         Assert(secondarySvg.Contains("2026-08", StringComparison.Ordinal), "Secondary vertical time axes should provide deterministic date labels without inheriting primary formatting.");
-        Assert(secondary.ToPng().Length > 200, "Secondary vertical time axes should render through the PNG path.");
+        var secondaryPng = secondary.ToPng();
+        secondary.Options.SecondaryYAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        Assert(secondaryPng.SequenceEqual(secondary.ToPng()), "Secondary vertical time axes should use the deterministic date fallback in PNG output.");
     }
 }

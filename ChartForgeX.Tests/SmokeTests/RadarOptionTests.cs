@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 
@@ -28,6 +30,20 @@ internal static partial class SmokeTests {
         axisTicks.Options.YAxis.TickCount = 10;
         Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-ring\"") == 10, "Radar value rings should use the y-axis tick count independently from the category x-axis.");
         Assert(axisTicks.ToPng().Length > 64, "Radar y-axis tick counts should render through the PNG path.");
+
+        var formattedRings = RadarSample().ConfigureYAxis(axis => {
+            axis.WithBounds(0, 100);
+            axis.TickCount = 6;
+            axis.Labels.Add(new ChartAxisLabel(20, "explicit-ring"));
+            axis.LabelFormatter = value => "ring-" + value.ToString("0", CultureInfo.InvariantCulture);
+        });
+        var formattedSvg = formattedRings.ToSvg();
+        Assert(formattedSvg.Contains(">explicit-ring</text>", System.StringComparison.Ordinal), "Radar rings should honor explicit y-axis labels.");
+        Assert(formattedSvg.Contains(">ring-40</text>", System.StringComparison.Ordinal), "Radar rings should honor generated y-axis label formatters.");
+        var formattedPng = formattedRings.ToPng();
+        formattedRings.Options.YAxis.Labels.Clear();
+        formattedRings.Options.YAxis.LabelFormatter = _ => "different-ring";
+        Assert(!formattedPng.SequenceEqual(formattedRings.ToPng()), "PNG radar rings should respond to y-axis label formatting.");
     }
 
     private static void RadarNegativeExplicitMaximumInfersCompatibleMinimum() {

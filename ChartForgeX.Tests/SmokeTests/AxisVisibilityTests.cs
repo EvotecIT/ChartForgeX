@@ -59,8 +59,16 @@ internal static partial class SmokeTests {
         var horizontalRuleBounds = FindNearColorBounds(horizontalRulePixels, horizontalRuleWidth, 255, 0, 255, 4);
         Assert(!horizontalRuleBounds.IsEmpty && horizontalRuleBounds.Right - horizontalRuleBounds.Left > 80, "PNG horizontal zero lines should follow the visible y-axis even when x-axis labels are hidden.");
 
+        var hiddenSecondaryTheme = ChartTheme.ReportLight();
+        hiddenSecondaryTheme.Axis = ChartColor.FromHex("#FF00FF");
+        hiddenSecondaryTheme.MutedText = ChartColor.FromHex("#FF00FF");
         var hiddenSecondary = Chart.Create()
             .WithSize(420, 240)
+            .WithTheme(hiddenSecondaryTheme)
+            .WithGrid(false)
+            .WithLegend(false)
+            .WithXAxisVisible(false)
+            .WithYAxisVisible(false)
             .WithSecondaryYAxis("Rate")
             .AddLine("Primary", Points(2, 4))
             .AddLine("Secondary", Points(20, 40));
@@ -68,6 +76,7 @@ internal static partial class SmokeTests {
         hiddenSecondary.Options.SecondaryYAxis.Visible = false;
         var hiddenSecondarySvg = hiddenSecondary.ToSvg();
         Assert(!hiddenSecondarySvg.Contains("secondary-y-axis", StringComparison.Ordinal), "A hidden secondary axis should suppress its rule, ticks, title, and layout reserve.");
-        Assert(hiddenSecondary.ToPng().Length > 64, "Hiding a secondary axis should keep its data series renderable in PNG output.");
+        var hiddenSecondaryPixels = ReadPngRgba(hiddenSecondary.ToPng(), out var hiddenSecondaryWidth, out _);
+        Assert(FindNearColorBounds(hiddenSecondaryPixels, hiddenSecondaryWidth, 255, 0, 255, 4).IsEmpty, "A hidden secondary axis should suppress its PNG rule, labels, and title.");
     }
 }
