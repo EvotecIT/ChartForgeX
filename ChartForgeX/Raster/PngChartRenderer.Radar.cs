@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -17,20 +18,17 @@ public sealed partial class PngChartRenderer {
         var categories = RadarCategories(series);
         if (categories.Count < 3) return;
 
-        var min = RadarMin(chart);
-        var max = RadarMax(chart, series, min);
-        var ticks = ChartTicks.Generate(min, max, chart.Options.YAxis.TickCount);
-        foreach (var tick in ticks) if (tick > max) max = tick;
+        var scale = RadarValueScale.Create(chart.Options.YAxis, series.Select(item => item.Series));
         var tickFontSize = PngTickFontSize(chart);
         var cx = plot.Left + plot.Width / 2;
         var cy = plot.Top + plot.Height / 2 + 6;
         var radius = Math.Max(32, Math.Min(plot.Width, plot.Height) / 2 - 42);
 
-        DrawRadarGrid(c, chart, categories, ticks, min, max, cx, cy, radius, tickFontSize);
+        DrawRadarGrid(c, chart, categories, scale, cx, cy, radius, tickFontSize);
         for (var seriesOrder = 0; seriesOrder < series.Count; seriesOrder++) {
             var item = series[seriesOrder];
             var color = item.Series.Color ?? chart.Options.Theme.Palette[item.Index % chart.Options.Theme.Palette.Length];
-            var points = RadarPoints(item.Series, categories, min, max, cx, cy, radius);
+            var points = RadarPoints(item.Series, categories, scale, cx, cy, radius);
             c.FillPolygon(points, ApplyOpacity(color, ChartVisualPrimitives.RadarAreaOpacity));
             for (var i = 0; i < points.Count; i++) {
                 var next = points[(i + 1) % points.Count];
@@ -51,14 +49,13 @@ public sealed partial class PngChartRenderer {
         DrawLegend(c, chart);
     }
 
-    private static void DrawRadarGrid(RgbaCanvas c, Chart chart, IReadOnlyList<double> categories, IReadOnlyList<double> ticks, double min, double max, double cx, double cy, double radius, double tickFontSize) {
-        var span = Math.Max(0.000001, max - min);
-        foreach (var tick in ticks) {
-            if (tick <= min) continue;
-            var ringRadius = radius * (tick - min) / span;
+    private static void DrawRadarGrid(RgbaCanvas c, Chart chart, IReadOnlyList<double> categories, RadarValueScale scale, double cx, double cy, double radius, double tickFontSize) {
+        foreach (var tick in scale.Ticks) {
+            if (tick <= scale.Minimum) continue;
+            var ringRadius = radius * scale.Normalize(tick);
             var ring = RadarRing(categories.Count, cx, cy, ringRadius);
             if (chart.Options.ShowGrid) DrawRadarPolyline(c, ring, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.RadarRingOpacity), ChartVisualPrimitives.GridStrokeWidth);
-            var isOuterTick = Math.Abs(tick - max) <= Math.Max(0.000001, max * 0.000001);
+            var isOuterTick = scale.IsMaximum(tick);
             if (chart.Options.ShowAxes && !isOuterTick) {
                 var ringLabelMaxWidth = Math.Max(28, chart.Options.Size.Width - chart.Options.Padding.Right - cx - 14);
                 var ringLabel = FormatYAxisValue(chart, tick);
@@ -106,26 +103,12 @@ public sealed partial class PngChartRenderer {
         return new List<double>(set);
     }
 
-    private static double RadarMin(Chart chart) {
-        if (chart.Options.YAxisMinimum.HasValue) return chart.Options.YAxisMinimum.Value;
-        return chart.Options.YAxisMaximum.HasValue && chart.Options.YAxisMaximum.Value <= 0 ? chart.Options.YAxisMaximum.Value - 1 : 0;
-    }
-
-    private static double RadarMax(Chart chart, IEnumerable<RadarSeriesItem> series, double min) {
-        if (chart.Options.YAxisMaximum.HasValue) return chart.Options.YAxisMaximum.Value > min ? chart.Options.YAxisMaximum.Value : min + 1;
-        var max = 0.0;
-        foreach (var item in series) foreach (var point in item.Series.Points) max = Math.Max(max, point.Y);
-        if (max <= min) max = min + 1;
-        return max;
-    }
-
-    private static List<ChartPoint> RadarPoints(ChartSeries series, IReadOnlyList<double> categories, double min, double max, double cx, double cy, double radius) {
+    private static List<ChartPoint> RadarPoints(ChartSeries series, IReadOnlyList<double> categories, RadarValueScale scale, double cx, double cy, double radius) {
         var points = new List<ChartPoint>(categories.Count);
-        var span = Math.Max(0.000001, max - min);
         for (var i = 0; i < categories.Count; i++) {
-            var value = Clamp(RadarValue(series, categories[i]), min, max);
+            var value = RadarValue(series, categories[i]);
             var angle = RadarAngle(i, categories.Count);
-            var r = radius * (value - min) / span;
+            var r = radius * scale.Normalize(value);
             points.Add(new ChartPoint(cx + Math.Cos(angle) * r, cy + Math.Sin(angle) * r));
         }
 

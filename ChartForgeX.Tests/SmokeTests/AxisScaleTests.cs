@@ -21,6 +21,8 @@ internal static partial class SmokeTests {
         Assert(chart.Options.XAxisMinimum == 1 && chart.Options.XAxisMaximum == 1000, "Legacy bounds should delegate to the shared x-axis object during migration.");
         Assert(chart.Options.XAxis.Scale == ChartScaleKind.Logarithmic, "The x-axis should own its mathematical scale.");
         Assert(chart.Options.YAxis.Scale == ChartScaleKind.SymmetricLogarithmic, "The y-axis should own its mathematical scale.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithXAxisScale((ChartScaleKind)4), "Unimplemented category scale values should be rejected instead of silently rendering as linear.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithXAxisScale((ChartScaleKind)5), "Unimplemented band scale values should be rejected instead of silently rendering as linear.");
     }
 
     private static void LogarithmicAxesRenderWithSvgPngParity() {
@@ -41,6 +43,25 @@ internal static partial class SmokeTests {
         var gauge = Chart.Create().WithYAxisScale(ChartScaleKind.Logarithmic).AddGauge("Score", 87);
         Assert(gauge.ToSvg().Contains("data-cfx-role=\"gauge\"", StringComparison.Ordinal), "Gauge SVG rendering should bypass unused cartesian logarithmic-axis setup.");
         Assert(gauge.ToPng().Length > 200, "Gauge logarithmic-axis options should remain renderer-neutral.");
+
+        var radar = Chart.Create()
+            .WithSize(560, 340)
+            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .AddRadar("Magnitude", new[] { new ChartPoint(0, 1), new ChartPoint(1, 10), new ChartPoint(2, 1000) });
+        var radarRoot = SvgDocument.Parse(radar.ToSvg()).Root;
+        var spoke = radarRoot.FindByTag("line").First(element => element.GetAttribute("data-cfx-role") == "radar-spoke");
+        var centerX = double.Parse(spoke.GetAttribute("x1")!, CultureInfo.InvariantCulture);
+        var centerY = double.Parse(spoke.GetAttribute("y1")!, CultureInfo.InvariantCulture);
+        var radarRadii = radarRoot.FindByTag("circle")
+            .Where(element => element.GetAttribute("data-cfx-role") == "radar-point")
+            .Select(element => {
+                var dx = double.Parse(element.GetAttribute("cx")!, CultureInfo.InvariantCulture) - centerX;
+                var dy = double.Parse(element.GetAttribute("cy")!, CultureInfo.InvariantCulture) - centerY;
+                return Math.Sqrt(dx * dx + dy * dy);
+            })
+            .ToArray();
+        Assert(radarRadii.Length == 3 && radarRadii[1] > radarRadii[0] * 1.5 && radarRadii[1] < radarRadii[2] * 0.75, "Radar geometry should space values through the configured logarithmic Y-axis transform.");
+        Assert(radar.ToPng().Length > 200, "Radar value scales should preserve SVG and PNG rendering parity.");
     }
 
     private static void LogarithmicAxesRejectNonPositiveData() {
@@ -50,6 +71,12 @@ internal static partial class SmokeTests {
 
         AssertThrows<InvalidOperationException>(() => chart.ToSvg(), "Logarithmic axes should reject zero and negative values instead of producing invalid geometry.");
         AssertThrows<InvalidOperationException>(() => chart.ToPng(), "SVG and PNG should enforce the same logarithmic data contract.");
+
+        var radar = Chart.Create()
+            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .AddRadar("Invalid", new[] { new ChartPoint(0, 0), new ChartPoint(1, 10), new ChartPoint(2, 100) });
+        AssertThrows<InvalidOperationException>(() => radar.ToSvg(), "Logarithmic radar axes should reject non-positive values in SVG output.");
+        AssertThrows<InvalidOperationException>(() => radar.ToPng(), "Logarithmic radar axes should reject non-positive values in PNG output.");
     }
 
     private static void LogarithmicBarsKeepPositiveBaselinesAndPadding() {

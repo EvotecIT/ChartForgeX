@@ -15,13 +15,7 @@ public enum ChartScaleKind {
     SymmetricLogarithmic,
 
     /// <summary>Use OLE Automation date values with time-oriented formatting.</summary>
-    Time,
-
-    /// <summary>Use numeric positions associated with explicit category labels.</summary>
-    Category,
-
-    /// <summary>Use centered numeric bands associated with explicit category labels.</summary>
-    Band
+    Time
 }
 
 /// <summary>

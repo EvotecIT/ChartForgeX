@@ -285,6 +285,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">target</text>", StringComparison.Ordinal), "Horizontal annotation label should render.");
         Assert(svg.Contains(">window</text>", StringComparison.Ordinal), "Band annotation label should render.");
         Assert(svg.Contains("stroke-dasharray=\"6 5\"", StringComparison.Ordinal), "Line annotations should render as dashed lines.");
+
+        var annotationOnly = Chart.Create()
+            .WithSize(640, 360)
+            .AddHorizontalLine(100, "standalone target", ChartColor.FromRgb(251, 191, 36));
+        Assert(annotationOnly.ToSvg().Contains("data-cfx-role=\"annotation-line\"", StringComparison.Ordinal), "Annotation-only charts should remain on the cartesian SVG rendering path.");
+        Assert(annotationOnly.ToPng().Length > 64, "Annotation-only charts should preserve SVG and PNG rendering parity.");
     }
 
     private static void StatisticalOverlaysRenderComputedAnnotations() {

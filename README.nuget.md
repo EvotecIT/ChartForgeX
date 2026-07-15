@@ -88,7 +88,7 @@ chart.SaveSvg("cpu.svg");
 record Sample(double Index, double Value);
 ```
 
-`ChartAxis` centralizes bounds, ticks, labels, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, `Time`, `Category`, or `Band` scaling. Direct helpers such as `ChartPoints.FromValues(...)` remain available for small inline datasets.
+`ChartAxis` centralizes bounds, ticks, labels, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, or `Time` scaling. Direct helpers such as `ChartPoints.FromValues(...)` remain available for small inline datasets.
 
 ## Output API
 

@@ -90,7 +90,7 @@ internal static class ChartSeriesKindTraits {
     }
 
     public static bool UsesCartesianXAxis(Chart chart) {
-        if (chart.Series.Count == 0) return false;
+        if (chart.Series.Count == 0) return true;
         foreach (var series in chart.Series) {
             if (series == null || IsExclusive(series.Kind)) return false;
         }
