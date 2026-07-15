@@ -44,9 +44,16 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.Scatter ||
         kind == ChartSeriesKind.Bar ||
         kind == ChartSeriesKind.HorizontalBar ||
-        kind == ChartSeriesKind.Lollipop ||
-        kind == ChartSeriesKind.Slope ||
-        kind == ChartSeriesKind.TrendLine;
+        kind == ChartSeriesKind.Lollipop;
+
+    public static bool UsesVerticalBaseline(ChartSeriesKind kind) =>
+        kind == ChartSeriesKind.Area ||
+        kind == ChartSeriesKind.StepArea ||
+        kind == ChartSeriesKind.StackedArea ||
+        kind == ChartSeriesKind.Bar ||
+        kind == ChartSeriesKind.Lollipop;
+
+    public static bool UsesHorizontalBaseline(ChartSeriesKind kind) => kind == ChartSeriesKind.HorizontalBar;
 
     public static bool RequiresSingleSeries(ChartSeriesKind kind) {
         return kind == ChartSeriesKind.Gauge ||

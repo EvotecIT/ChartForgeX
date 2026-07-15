@@ -31,6 +31,12 @@ internal sealed class ChartMapper {
         return System.Math.Min(_plot.Bottom, System.Math.Max(_plot.Top, Y(0)));
     }
 
+    /// <summary>Maps a stacked value while treating zero as the positive logarithmic baseline.</summary>
+    public double YOrBaseline(double value) {
+        if (_yAxis.Scale == ChartScaleKind.Logarithmic && value == 0) return YBaseline();
+        return Y(value);
+    }
+
     private static void ValidateRange(double minimum, double maximum, ChartAxis axis, string axisName) {
         if (axis.Scale == ChartScaleKind.Logarithmic && (minimum <= 0 || maximum <= 0)) {
             throw new System.InvalidOperationException("The " + axisName + " logarithmic axis requires positive data and bounds.");

@@ -1,6 +1,9 @@
 using System;
+using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Svg;
 
 namespace ChartForgeX.Tests;
 
@@ -51,6 +54,8 @@ internal static partial class SmokeTests {
         var png = chart.ToPng();
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Logarithmic bars should not inject a zero baseline or non-positive x padding.");
         Assert(png.Length > 200 && png[0] == 137 && png[1] == 80, "Logarithmic bar bounds should remain valid in PNG rendering.");
+        var bar = SvgDocument.Parse(svg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "bar");
+        Assert(double.Parse(bar.GetAttribute("height")!, CultureInfo.InvariantCulture) > 1, "The smallest logarithmic bar should retain visible height above a positive baseline.");
 
         var horizontal = Chart.Create()
             .WithSize(420, 260)
@@ -63,6 +68,25 @@ internal static partial class SmokeTests {
         var horizontalPng = horizontal.ToPng();
         Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar\"") == 2, "Horizontal logarithmic bars should use the positive plot edge instead of mapping a zero baseline.");
         Assert(horizontalPng.Length > 200 && horizontalPng[0] == 137 && horizontalPng[1] == 80, "Horizontal logarithmic bars should preserve SVG and PNG rendering parity.");
+        var horizontalBar = SvgDocument.Parse(horizontalSvg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "horizontal-bar");
+        Assert(double.Parse(horizontalBar.GetAttribute("width")!, CultureInfo.InvariantCulture) > 1, "The smallest horizontal logarithmic bar should retain visible width above a positive baseline.");
+
+        var stackedBars = Chart.Create()
+            .WithSize(420, 260)
+            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .WithStackedBars()
+            .AddBar("Base", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) })
+            .AddBar("Top", new[] { new ChartPoint(1, 30), new ChartPoint(2, 40) });
+        Assert(CountOccurrences(stackedBars.ToSvg(), "data-cfx-role=\"bar\"") == 4, "Stacked logarithmic bars should map their first zero base to the shared positive baseline.");
+        Assert(stackedBars.ToPng().Length > 200, "Stacked logarithmic bars should preserve SVG and PNG rendering parity.");
+
+        var stackedAreas = Chart.Create()
+            .WithSize(420, 260)
+            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .AddStackedArea("Base", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) })
+            .AddStackedArea("Top", new[] { new ChartPoint(1, 30), new ChartPoint(2, 40) });
+        Assert(CountOccurrences(stackedAreas.ToSvg(), "data-cfx-role=\"stacked-area\"") == 2, "Stacked logarithmic areas should map their first zero base to the shared positive baseline.");
+        Assert(stackedAreas.ToPng().Length > 200, "Stacked logarithmic areas should preserve SVG and PNG rendering parity.");
     }
 
     private static void AxisObjectsOwnExplicitLabelsAndFormatterFallbacks() {

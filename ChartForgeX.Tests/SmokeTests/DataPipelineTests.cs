@@ -46,6 +46,12 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => Chart.Create().AddSeries("Invalid", ChartSeriesKind.Bubble, rows, row => row.Order, row => row.Value),
             "Typed point mapping should reject tuple-encoded specialized series that need richer contracts.");
+        AssertThrows<ArgumentException>(
+            () => Chart.Create().AddSeries("Invalid slope", ChartSeriesKind.Slope, rows, row => row.Order, row => row.Value),
+            "Typed point mapping should reject derived slope series that require the dedicated two-value contract.");
+        AssertThrows<ArgumentException>(
+            () => Chart.Create().AddSeries("Invalid trend", ChartSeriesKind.TrendLine, rows, row => row.Order, row => row.Value),
+            "Typed point mapping should reject derived trend lines that require least-squares calculation.");
     }
 
     private static void FacetsBuildDeterministicSmallMultiples() {

@@ -89,7 +89,7 @@ public sealed partial class SvgChartRenderer {
         foreach (var point in series.Points) {
             var baseValue = StackAreaBaseValue(chart, index, point);
             upper.Add(new ChartPoint(map.X(point.X), map.Y(baseValue + point.Y)));
-            lower.Add(new ChartPoint(map.X(point.X), map.Y(baseValue)));
+            lower.Add(new ChartPoint(map.X(point.X), map.YOrBaseline(baseValue)));
         }
 
         var upperPath = ChartPathBuilder.FromPoints(upper, ChartSeriesKind.Line, series.Smooth).Flatten(12);
@@ -176,7 +176,7 @@ public sealed partial class SvgChartRenderer {
             var p = s.Points[pointIndex];
             var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackBaseValue(chart, index, p) : 0;
             var y = map.Y(baseValue + p.Y);
-            var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.Y(baseValue) : zeroY;
+            var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
             var top = Math.Min(y, baseY);
             var height = Math.Abs(baseY - y);
             var x = map.X(p.X) + layout.Offset - layout.BarWidth / 2;

@@ -22,6 +22,22 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("preserveAspectRatio=\"xMidYMid meet\"", StringComparison.Ordinal), "Responsive contain mode should preserve the design aspect ratio.");
         Assert(png.Width == 960 && png.Height == 540, "Responsive PNG should render the requested output dimensions.");
         Assert(canvas.AnalyzeLayout().Diagnostics.Count == 0, "Responsive layout analysis should validate layers against design coordinates.");
+
+        var letterboxed = VisualCanvas.Create(320, 320)
+            .WithResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
+            .WithBackground(ChartColor.FromHex("#123456"), ChartColor.FromHex("#214365"));
+        var letterboxedSvg = letterboxed.ToSvg();
+        var letterboxedPng = RasterImageDecoder.Decode(letterboxed.ToPng());
+        Assert(letterboxedSvg.Contains("background-color:#214365", StringComparison.Ordinal), "Opaque responsive SVG contain output should fill its viewport letterbox with the PNG background color.");
+        Assert(letterboxedPng.Pixels[0] == 0x21 && letterboxedPng.Pixels[1] == 0x43 && letterboxedPng.Pixels[2] == 0x65 && letterboxedPng.Pixels[3] == 255, "Opaque responsive PNG contain output should preserve the shared letterbox color.");
+
+        var transparent = VisualCanvas.Create(320, 320)
+            .WithResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent);
+        var transparentSvg = transparent.ToSvg();
+        var transparentPng = RasterImageDecoder.Decode(transparent.ToPng());
+        Assert(!transparentSvg.Contains("background-color:", StringComparison.Ordinal), "Transparent responsive SVG letterboxes should remain transparent.");
+        Assert(transparentPng.Pixels[3] == 0, "Transparent responsive PNG letterboxes should remain transparent.");
     }
 
     private static void VisualCanvasComposesWallpaperStyleArtboards() {

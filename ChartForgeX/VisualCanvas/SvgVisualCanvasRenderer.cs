@@ -41,7 +41,7 @@ public sealed class SvgVisualCanvasRenderer {
             .Attribute("preserveAspectRatio", ResponsivePreserveAspectRatio(canvas.ResponsiveFit))
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision")
-            .Attribute("style", "max-width:100%;height:auto;display:block")
+            .Attribute("style", RootStyle(canvas))
             .EndStartElement()
             .Line();
         if (!accessibility.IsDecorative) {
@@ -146,6 +146,12 @@ public sealed class SvgVisualCanvasRenderer {
         VisualCanvas.ValidateResponsiveFit(fit, nameof(fit));
         if (fit == VisualCanvasImageFit.Stretch) return "none";
         return fit == VisualCanvasImageFit.Cover ? "xMidYMid slice" : "xMidYMid meet";
+    }
+
+    private static string RootStyle(VisualCanvas canvas) {
+        const string layout = "max-width:100%;height:auto;display:block";
+        if (!canvas.IsResponsive || canvas.ResponsiveFit != VisualCanvasImageFit.Contain || canvas.BackdropStyle == VisualCanvasBackdropStyle.Transparent) return layout;
+        return layout + ";background-color:" + canvas.BackgroundBottom.ToCss();
     }
 
     private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text, VisualCanvasTheme theme) {
