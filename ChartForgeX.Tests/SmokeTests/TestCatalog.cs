@@ -77,6 +77,7 @@ internal static partial class SmokeTests {
         ("Typed topology data maps product records deterministically", TypedTopologyDataMapsProductRecordsDeterministically),
         ("Default static renderers stay deterministic", DefaultStaticRenderersStayDeterministic),
         ("Raster rendering rejects unsafe allocations early", RasterRenderingRejectsUnsafeAllocationsEarly),
+        ("Representative rendering stays within release budgets", RepresentativeRenderingStaysWithinReleaseBudgets),
         ("Extreme finite axis bounds render without invalid numbers", ExtremeFiniteAxisBoundsRenderWithoutInvalidNumbers),
         ("Capped tick generation preserves the requested range", CappedTickGenerationPreservesTheRequestedRange),
         ("Axis objects centralize bounds ticks and scales", AxisObjectsCentralizeBoundsTicksAndScales),

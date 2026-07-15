@@ -4,28 +4,6 @@ using System.Collections.Generic;
 namespace ChartForgeX.Mermaid;
 
 /// <summary>
-/// Describes the declared kind of a Mermaid sequence participant.
-/// </summary>
-public enum MermaidSequenceParticipantKind {
-    /// <summary>A standard participant.</summary>
-    Participant,
-    /// <summary>An actor participant.</summary>
-    Actor,
-    /// <summary>A boundary participant.</summary>
-    Boundary,
-    /// <summary>A control participant.</summary>
-    Control,
-    /// <summary>An entity participant.</summary>
-    Entity,
-    /// <summary>A database participant.</summary>
-    Database,
-    /// <summary>A collections participant.</summary>
-    Collections,
-    /// <summary>A queue participant.</summary>
-    Queue
-}
-
-/// <summary>
 /// Defines the kind of a parsed Mermaid sequence block statement.
 /// </summary>
 public enum MermaidSequenceBlockKind {

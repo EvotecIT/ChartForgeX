@@ -1,18 +1,6 @@
 namespace ChartForgeX.Mermaid;
 
 /// <summary>
-/// Defines Mermaid parser diagnostic severity.
-/// </summary>
-public enum MermaidDiagnosticSeverity {
-    /// <summary>Informational note.</summary>
-    Information,
-    /// <summary>Warning that does not block inspection.</summary>
-    Warning,
-    /// <summary>Error that blocks a supported parse result.</summary>
-    Error
-}
-
-/// <summary>
 /// Describes a Mermaid parser diagnostic.
 /// </summary>
 public sealed class MermaidDiagnostic {

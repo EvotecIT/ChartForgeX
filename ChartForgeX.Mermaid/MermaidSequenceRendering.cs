@@ -37,7 +37,7 @@ public static class MermaidSequenceRendering {
         }
 
         foreach (var participant in document.Participants) {
-            sequence.AddParticipant(participant.Id, string.IsNullOrWhiteSpace(participant.Alias) ? participant.Id : participant.Alias, ToParticipantKind(participant.Kind));
+            sequence.AddParticipant(participant.Id, string.IsNullOrWhiteSpace(participant.Alias) ? participant.Id : participant.Alias, participant.Kind);
             var target = sequence.Participants[sequence.Participants.Count - 1];
             target.IsImplicit = participant.IsImplicit;
             target.Metadata["mermaid.id"] = participant.Id;
@@ -167,27 +167,6 @@ public static class MermaidSequenceRendering {
         }
 
         return null;
-    }
-
-    private static SequenceArtifactParticipantKind ToParticipantKind(MermaidSequenceParticipantKind kind) {
-        switch (kind) {
-            case MermaidSequenceParticipantKind.Actor:
-                return SequenceArtifactParticipantKind.Actor;
-            case MermaidSequenceParticipantKind.Boundary:
-                return SequenceArtifactParticipantKind.Boundary;
-            case MermaidSequenceParticipantKind.Control:
-                return SequenceArtifactParticipantKind.Control;
-            case MermaidSequenceParticipantKind.Entity:
-                return SequenceArtifactParticipantKind.Entity;
-            case MermaidSequenceParticipantKind.Database:
-                return SequenceArtifactParticipantKind.Database;
-            case MermaidSequenceParticipantKind.Collections:
-                return SequenceArtifactParticipantKind.Collections;
-            case MermaidSequenceParticipantKind.Queue:
-                return SequenceArtifactParticipantKind.Queue;
-            default:
-                return SequenceArtifactParticipantKind.Participant;
-        }
     }
 
     private static SequenceArtifactMessageLineStyle ToLineStyle(string messageOperator) =>
