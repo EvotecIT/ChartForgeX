@@ -312,7 +312,7 @@ internal static partial class SvgRasterRenderer {
     private static void Stroke(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, SvgRasterStyle style, double scale, SvgRasterDefinitions definitions) {
         var stroke = ResolveColor(style.Stroke, style.Opacity * style.StrokeOpacity, definitions);
         if (stroke.A == 0 || style.StrokeWidth <= 0 || points.Count < 2) return;
-        canvas.DrawPolyline(points, stroke, Math.Max(0.5, style.StrokeWidth * scale), LineCap(style.StrokeLineCap), LineJoin(style.StrokeLineJoin), ScaledDashArray(style.StrokeDashArray, scale));
+        canvas.DrawPolyline(points, stroke, Math.Max(0.5, style.StrokeWidth * scale), LineCap(style.StrokeLineCap), LineJoin(style.StrokeLineJoin), ScaledDashArray(style.StrokeDashArray, scale), style.StrokeMiterLimit);
     }
 
     private static ChartColor ResolveColor(SvgRasterPaint paint, double opacity, SvgRasterDefinitions definitions) {

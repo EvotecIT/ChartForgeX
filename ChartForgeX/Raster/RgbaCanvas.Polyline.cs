@@ -32,7 +32,7 @@ internal sealed partial class RgbaCanvas {
         DrawLinePixelsButt(x0 * _scale, y0 * _scale, x1 * _scale, y1 * _scale, Math.Max(1, thickness * _scale), color);
     }
 
-    internal void DrawPolyline(IReadOnlyList<ChartPoint> points, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray) {
+    internal void DrawPolyline(IReadOnlyList<ChartPoint> points, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray, double miterLimit = DefaultMiterLimit) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         if (points.Count < 2) return;
         var scaledThickness = Math.Max(1, thickness * _scale);
@@ -41,28 +41,39 @@ internal sealed partial class RgbaCanvas {
             return;
         }
 
+        if (double.IsNaN(miterLimit) || double.IsInfinity(miterLimit) || miterLimit < 1) miterLimit = DefaultMiterLimit;
+        var closed = IsClosedPolyline(points);
+
         for (var i = 1; i < points.Count; i++) {
             DrawLinePixelsButt(points[i - 1].X * _scale, points[i - 1].Y * _scale, points[i].X * _scale, points[i].Y * _scale, scaledThickness, color);
         }
 
         var radius = Math.Max(0.5, scaledThickness / 2.0);
-        if (lineCap == RasterLineCap.Round) DrawSoftCirclePixels(points[0].X * _scale, points[0].Y * _scale, radius, color);
+        if (!closed && lineCap == RasterLineCap.Round) DrawSoftCirclePixels(points[0].X * _scale, points[0].Y * _scale, radius, color);
         for (var i = 1; i < points.Count - 1; i++) {
             if (lineJoin == RasterLineJoin.Round) {
-                if (ShouldRoundPolylineJoin(points, i, _scale)) DrawSoftCirclePixels(points[i].X * _scale, points[i].Y * _scale, radius, color);
+                if (ShouldRoundPolylineJoin(points[i - 1], points[i], points[i + 1], _scale)) DrawSoftCirclePixels(points[i].X * _scale, points[i].Y * _scale, radius, color);
             } else {
-                DrawPolylineJoin(points, i, color, thickness, lineJoin);
+                DrawPolylineJoin(points[i - 1], points[i], points[i + 1], color, thickness, lineJoin, miterLimit);
             }
         }
 
         var last = points[points.Count - 1];
-        if (lineCap == RasterLineCap.Round) DrawSoftCirclePixels(last.X * _scale, last.Y * _scale, radius, color);
+        if (closed) {
+            var previous = points[points.Count - 2];
+            var first = points[0];
+            var next = points[1];
+            if (lineJoin == RasterLineJoin.Round) {
+                if (ShouldRoundPolylineJoin(previous, first, next, _scale)) DrawSoftCirclePixels(first.X * _scale, first.Y * _scale, radius, color);
+            } else {
+                DrawPolylineJoin(previous, first, next, color, thickness, lineJoin, miterLimit);
+            }
+        } else if (lineCap == RasterLineCap.Round) {
+            DrawSoftCirclePixels(last.X * _scale, last.Y * _scale, radius, color);
+        }
     }
 
-    private void DrawPolylineJoin(IReadOnlyList<ChartPoint> points, int index, ChartColor color, double thickness, RasterLineJoin lineJoin) {
-        var previous = points[index - 1];
-        var current = points[index];
-        var next = points[index + 1];
+    private void DrawPolylineJoin(ChartPoint previous, ChartPoint current, ChartPoint next, ChartColor color, double thickness, RasterLineJoin lineJoin, double miterLimit) {
         var incomingX = current.X - previous.X;
         var incomingY = current.Y - previous.Y;
         var outgoingX = next.X - current.X;
@@ -87,7 +98,7 @@ internal sealed partial class RgbaCanvas {
             current.X - outgoingY * outerSide * radius,
             current.Y + outgoingX * outerSide * radius);
 
-        if (lineJoin == RasterLineJoin.Miter && TryMiterPoint(current, incomingOuter, outgoingOuter, incomingX, incomingY, outgoingX, outgoingY, radius, out var miter)) {
+        if (lineJoin == RasterLineJoin.Miter && TryMiterPoint(current, incomingOuter, outgoingOuter, incomingX, incomingY, outgoingX, outgoingY, radius, miterLimit, out var miter)) {
             FillPolygon(new[] { current, incomingOuter, miter, outgoingOuter }, color);
             return;
         }
@@ -95,7 +106,7 @@ internal sealed partial class RgbaCanvas {
         FillPolygon(new[] { current, incomingOuter, outgoingOuter }, color);
     }
 
-    private static bool TryMiterPoint(ChartPoint current, ChartPoint incomingOuter, ChartPoint outgoingOuter, double incomingX, double incomingY, double outgoingX, double outgoingY, double radius, out ChartPoint miter) {
+    private static bool TryMiterPoint(ChartPoint current, ChartPoint incomingOuter, ChartPoint outgoingOuter, double incomingX, double incomingY, double outgoingX, double outgoingY, double radius, double miterLimit, out ChartPoint miter) {
         var denominator = incomingX * outgoingY - incomingY * outgoingX;
         var deltaX = outgoingOuter.X - incomingOuter.X;
         var deltaY = outgoingOuter.Y - incomingOuter.Y;
@@ -104,7 +115,7 @@ internal sealed partial class RgbaCanvas {
         var miterX = miter.X - current.X;
         var miterY = miter.Y - current.Y;
         var miterLength = Math.Sqrt(miterX * miterX + miterY * miterY);
-        return !double.IsNaN(miterLength) && !double.IsInfinity(miterLength) && miterLength <= radius * DefaultMiterLimit;
+        return !double.IsNaN(miterLength) && !double.IsInfinity(miterLength) && miterLength <= radius * miterLimit;
     }
 
     private void DrawDashedPolyline(IReadOnlyList<ChartPoint> points, ChartColor color, double thickness, RasterLineCap lineCap, IReadOnlyList<double> dashArray) {
@@ -198,11 +209,20 @@ internal sealed partial class RgbaCanvas {
         }
     }
 
-    private static bool ShouldRoundPolylineJoin(IReadOnlyList<ChartPoint> points, int index, int scale) {
-        var ax = (points[index].X - points[index - 1].X) * scale;
-        var ay = (points[index].Y - points[index - 1].Y) * scale;
-        var bx = (points[index + 1].X - points[index].X) * scale;
-        var by = (points[index + 1].Y - points[index].Y) * scale;
+    private static bool IsClosedPolyline(IReadOnlyList<ChartPoint> points) {
+        if (points.Count < 3) return false;
+        var first = points[0];
+        var last = points[points.Count - 1];
+        var dx = first.X - last.X;
+        var dy = first.Y - last.Y;
+        return dx * dx + dy * dy <= 0.000001;
+    }
+
+    private static bool ShouldRoundPolylineJoin(ChartPoint previous, ChartPoint current, ChartPoint next, int scale) {
+        var ax = (current.X - previous.X) * scale;
+        var ay = (current.Y - previous.Y) * scale;
+        var bx = (next.X - current.X) * scale;
+        var by = (next.Y - current.Y) * scale;
         var aLength = Math.Sqrt(ax * ax + ay * ay);
         var bLength = Math.Sqrt(bx * bx + by * by);
         if (aLength <= 0.000001 || bLength <= 0.000001) return false;

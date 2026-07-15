@@ -18,6 +18,7 @@ internal sealed class SvgRasterStyle {
         StrokeWidth = 1,
         StrokeLineCap = "butt",
         StrokeLineJoin = "miter",
+        StrokeMiterLimit = 4,
         FillRule = "nonzero",
         ClipRule = "nonzero",
         FontSize = 16,
@@ -36,6 +37,7 @@ internal sealed class SvgRasterStyle {
     public double StrokeWidth { get; set; }
     public string StrokeLineCap { get; set; } = "butt";
     public string StrokeLineJoin { get; set; } = "miter";
+    public double StrokeMiterLimit { get; set; } = 4;
     public IReadOnlyList<double>? StrokeDashArray { get; set; }
     public string FillRule { get; set; } = "nonzero";
     public string ClipRule { get; set; } = "nonzero";
@@ -58,6 +60,7 @@ internal sealed class SvgRasterStyle {
             StrokeWidth = StrokeWidth,
             StrokeLineCap = StrokeLineCap,
             StrokeLineJoin = StrokeLineJoin,
+            StrokeMiterLimit = StrokeMiterLimit,
             StrokeDashArray = StrokeDashArray,
             FillRule = FillRule,
             ClipRule = ClipRule,
@@ -123,6 +126,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "stroke-width");
         AddAttribute(declarations, element, "stroke-linecap");
         AddAttribute(declarations, element, "stroke-linejoin");
+        AddAttribute(declarations, element, "stroke-miterlimit");
         AddAttribute(declarations, element, "stroke-dasharray");
         AddAttribute(declarations, element, "opacity");
         AddAttribute(declarations, element, "fill-opacity");
@@ -192,6 +196,9 @@ internal sealed class SvgRasterStyle {
             case "stroke-linejoin":
                 style.StrokeLineJoin = value.Trim();
                 break;
+            case "stroke-miterlimit":
+                style.StrokeMiterLimit = ParseMiterLimit(value, style.StrokeMiterLimit);
+                break;
             case "stroke-dasharray":
                 style.StrokeDashArray = ParseDashArray(value);
                 break;
@@ -240,6 +247,12 @@ internal sealed class SvgRasterStyle {
         if (trimmed.EndsWith("px", StringComparison.OrdinalIgnoreCase)) trimmed = trimmed.Substring(0, trimmed.Length - 2);
         if (double.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)) return parsed;
         return fallback;
+    }
+
+    private static double ParseMiterLimit(string value, double fallback) {
+        if (!double.TryParse(value.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)) return fallback;
+        if (double.IsNaN(parsed) || double.IsInfinity(parsed) || parsed < 1) return fallback;
+        return parsed;
     }
 
     private static IReadOnlyList<double>? ParseDashArray(string value) {
