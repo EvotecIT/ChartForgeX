@@ -56,7 +56,7 @@ public sealed partial class SvgChartRenderer {
             var ring = RadarRing(categories.Count, cx, cy, ringRadius);
             if (chart.Options.ShowGrid) WriteRadarRing(sb, RadarPath(ring), t.Grid.ToCss());
             var isOuterTick = scale.IsMaximum(tick);
-            if (chart.Options.ShowAxes && !isOuterTick) {
+            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !isOuterTick) {
                 var label = FormatYAxisValue(chart, tick);
                 DrawSvgTextLeft(sb, chart, "radar-ring-label", label, cx + 7, cy - ringRadius + 14, t.MutedText, t.TickLabelFontSize, Math.Max(28, plot.Right - cx - 14), "400");
             }
@@ -67,7 +67,7 @@ public sealed partial class SvgChartRenderer {
             var endX = cx + Math.Cos(angle) * radius;
             var endY = cy + Math.Sin(angle) * radius;
             if (chart.Options.ShowGrid) WriteRadarSpoke(sb, cx, cy, endX, endY, t.Grid.ToCss());
-            if (chart.Options.ShowAxes) DrawRadarAxisLabel(sb, chart, plot, categories[i], cx + Math.Cos(angle) * (radius + 24), cy + Math.Sin(angle) * (radius + 24), angle);
+            if (chart.Options.ShowAxes && chart.Options.XAxis.Visible) DrawRadarAxisLabel(sb, chart, plot, categories[i], cx + Math.Cos(angle) * (radius + 24), cy + Math.Sin(angle) * (radius + 24), angle);
         }
     }
 

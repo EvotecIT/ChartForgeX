@@ -21,6 +21,20 @@ internal static partial class SmokeTests {
         Assert(!gridOff.Contains("data-cfx-role=\"radar-ring\"", System.StringComparison.Ordinal), "Radar rings should hide when grid is disabled.");
         Assert(!gridOff.Contains("data-cfx-role=\"radar-spoke\"", System.StringComparison.Ordinal), "Radar spokes should hide when grid is disabled.");
         Assert(RadarSample().WithAxes(false).WithGrid(false).ToPng().Length > 64, "Compact radar options should render valid PNG output.");
+
+        var baselinePng = RadarSample().ToPng();
+        var hiddenValueAxis = RadarSample().ConfigureYAxis(axis => axis.Visible = false);
+        var hiddenValueAxisSvg = hiddenValueAxis.ToSvg();
+        Assert(!hiddenValueAxisSvg.Contains("data-cfx-role=\"radar-ring-label\"", System.StringComparison.Ordinal), "Radar ring labels should follow Y-axis visibility.");
+        Assert(hiddenValueAxisSvg.Contains("data-cfx-role=\"radar-axis-label\"", System.StringComparison.Ordinal), "Hiding the radar value axis should preserve visible category labels.");
+        Assert(!baselinePng.SequenceEqual(hiddenValueAxis.ToPng()), "PNG radar ring labels should follow Y-axis visibility.");
+
+        var hiddenCategoryAxis = RadarSample().ConfigureXAxis(axis => axis.Visible = false);
+        var hiddenCategoryAxisSvg = hiddenCategoryAxis.ToSvg();
+        Assert(!hiddenCategoryAxisSvg.Contains("data-cfx-role=\"radar-axis-label\"", System.StringComparison.Ordinal), "Radar category labels should follow X-axis visibility.");
+        Assert(hiddenCategoryAxisSvg.Contains("data-cfx-role=\"radar-ring-label\"", System.StringComparison.Ordinal), "Hiding radar categories should preserve visible value-axis labels.");
+        Assert(!baselinePng.SequenceEqual(hiddenCategoryAxis.ToPng()), "PNG radar category labels should follow X-axis visibility.");
+
         var positionedLegend = RadarSample().WithLegendPosition(ChartLegendPosition.Right);
         Assert(positionedLegend.ToSvg().Contains("data-cfx-role=\"legend\" data-cfx-position=\"Right\"", System.StringComparison.Ordinal), "Radar charts should use the shared positioned legend.");
         Assert(positionedLegend.ToPng().Length > 64, "Positioned radar legends should render valid PNG output.");

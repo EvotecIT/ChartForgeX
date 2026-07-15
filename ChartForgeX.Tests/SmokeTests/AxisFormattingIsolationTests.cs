@@ -19,6 +19,18 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">generic-value</text>", StringComparison.Ordinal), "Cartesian data labels should keep the generic value formatter.");
         Assert(chart.ToPng().Length > 64, "Independent y-axis and generic value formatters should render through the PNG path.");
 
+        var secondary = Chart.Create()
+            .WithSize(420, 280)
+            .WithValueFormatter(_ => "generic-secondary")
+            .WithSecondaryYAxis("Rate")
+            .AddLine("Rate", Points(20, 40, 60));
+        secondary.Series[0].UseSecondaryYAxis();
+        var secondarySvg = secondary.ToSvg();
+        Assert(secondarySvg.Contains(">generic-secondary</text>", StringComparison.Ordinal), "Secondary y-axis ticks should fall back to the generic value formatter when the axis has no dedicated formatter.");
+        var secondaryPng = secondary.ToPng();
+        secondary.WithValueFormatter(_ => "changed-secondary");
+        Assert(!secondaryPng.AsSpan().SequenceEqual(secondary.ToPng()), "Secondary PNG ticks should use the same generic formatter fallback as SVG output.");
+
         var pieSvg = Chart.Create()
             .WithValueFormatter(_ => "generic-pie-value")
             .ConfigureYAxis(axis => axis.LabelFormatter = _ => "axis-only")

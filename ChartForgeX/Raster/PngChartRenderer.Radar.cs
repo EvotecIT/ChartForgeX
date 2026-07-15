@@ -56,7 +56,7 @@ public sealed partial class PngChartRenderer {
             var ring = RadarRing(categories.Count, cx, cy, ringRadius);
             if (chart.Options.ShowGrid) DrawRadarPolyline(c, ring, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.RadarRingOpacity), ChartVisualPrimitives.GridStrokeWidth);
             var isOuterTick = scale.IsMaximum(tick);
-            if (chart.Options.ShowAxes && !isOuterTick) {
+            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !isOuterTick) {
                 var ringLabelMaxWidth = Math.Max(28, chart.Options.Size.Width - chart.Options.Padding.Right - cx - 14);
                 var ringLabel = FormatYAxisValue(chart, tick);
                 var ringFontSize = TextFontSizeForWidth(ringLabel, ringLabelMaxWidth, tickFontSize);
@@ -70,7 +70,7 @@ public sealed partial class PngChartRenderer {
             var endX = cx + Math.Cos(angle) * radius;
             var endY = cy + Math.Sin(angle) * radius;
             if (chart.Options.ShowGrid) c.DrawLine(cx, cy, endX, endY, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.RadarSpokeOpacity), ChartVisualPrimitives.GridStrokeWidth);
-            if (!chart.Options.ShowAxes) continue;
+            if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
             var rawLabel = FormatX(chart, categories[i]);
             var maxWidth = Math.Max(44, RadarLabelWidth(chart, angle));
             var fontSize = TextFontSizeForEmphasizedWidth(rawLabel, maxWidth, tickFontSize);

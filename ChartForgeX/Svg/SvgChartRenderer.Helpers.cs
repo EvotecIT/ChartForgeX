@@ -512,7 +512,7 @@ public sealed partial class SvgChartRenderer {
         string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
     private static string FormatSecondaryValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value);
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter);
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);

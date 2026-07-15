@@ -164,6 +164,13 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "primary formatter") > 0, "Primary generated ticks should keep their primary formatter.");
         Assert(svg.Contains(">20</text>", StringComparison.Ordinal), "Secondary generated ticks without a formatter should use numeric labels instead of inheriting the primary y-axis formatter.");
         Assert(chart.ToPng().Length > 200, "Axis-owned labels and formatters should render through the PNG path.");
+
+        var invalidPrimary = Chart.Create().AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
+        invalidPrimary.Options.YAxis.Labels.Add(default);
+        AssertThrows<InvalidOperationException>(() => invalidPrimary.ToSvg(), "Mutable primary y-axis labels should reject default entries with null text before rendering.");
+        var invalidSecondary = Chart.Create().AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
+        invalidSecondary.Options.SecondaryYAxis.Labels.Add(default);
+        AssertThrows<InvalidOperationException>(() => invalidSecondary.ToPng(), "Mutable secondary y-axis labels should reject default entries with null text before rendering.");
     }
 
     private static void TimeAxesProvideDeterministicDefaultLabels() {

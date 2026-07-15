@@ -535,7 +535,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string FormatSecondaryValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value);
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter);
     }
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
