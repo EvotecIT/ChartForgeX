@@ -72,5 +72,18 @@ internal static partial class SmokeTests {
             .AddLine("Values", Points(10, 50, 90))
             .ToSvg();
         Assert(CountOccurrences(allSvg, "data-cfx-role=\"y-axis-label\"") == 11, "All y-axis density should preserve every generated label.");
+
+        var secondary = Chart.Create()
+            .WithSize(360, 150)
+            .WithSecondaryYAxis("Rate")
+            .WithSecondaryYAxisBounds(0, 100)
+            .AddLine("Rate", Points(10, 50, 90));
+        secondary.Series[0].UseSecondaryYAxis();
+        secondary.Options.YAxis.LabelDensity = ChartLabelDensity.Relaxed;
+        secondary.Options.SecondaryYAxis.TickCount = 11;
+        secondary.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.All;
+        var secondarySvg = secondary.ToSvg();
+        Assert(CountOccurrences(secondarySvg, "data-cfx-role=\"secondary-y-axis-tick\"") == 11, "Secondary y-axis density should be independent from the primary y-axis density.");
+        Assert(secondary.ToPng().Length > 64, "Secondary y-axis density should render through the PNG path.");
     }
 }

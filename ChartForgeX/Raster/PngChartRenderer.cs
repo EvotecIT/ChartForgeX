@@ -203,7 +203,7 @@ public sealed partial class PngChartRenderer {
                 var y = map.Y(yv);
                 if (o.ShowGrid && gridStyle.ShowHorizontalLines) DrawPngGridLine(c, plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, gridStyle.HorizontalOpacity), gridStyle);
                 if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, PngTickFontSize(chart), o.YAxisLabelDensity)) {
-                    var label = FormatValue(chart, yv);
+                    var label = FormatYAxisValue(chart, yv);
                     var fontSize = PngTickFontSize(chart);
                     DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize + 4, label, o.TickLabelStyle, t.MutedText, fontSize, emphasized: false);
                 }
@@ -491,7 +491,7 @@ public sealed partial class PngChartRenderer {
         }
 
         if (ShowXAxis(chart)) {
-            var zeroX = map.X(0);
+            var zeroX = map.XBaseline();
             if (ShowYAxisLine(chart) && zeroX > plot.Left && zeroX < plot.Right) DrawPngGuideLine(c, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
             if (ShowXAxisLine(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, xLabels), PngXAxisTitleFontSize(chart));
@@ -518,6 +518,12 @@ public sealed partial class PngChartRenderer {
         Math.Abs(style.Gap) < 0.000001;
 
     private static string FormatValue(Chart chart, double value) {
+        var formatter = chart.Options.ValueFormatter;
+        if (formatter == null) return FormatNumber(value);
+        return formatter(value) ?? string.Empty;
+    }
+
+    private static string FormatYAxisValue(Chart chart, double value) {
         foreach (var label in chart.Options.YAxis.Labels) {
             if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
         }

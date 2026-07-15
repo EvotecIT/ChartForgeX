@@ -89,7 +89,7 @@ public sealed partial class PngChartRenderer {
         if (ShowSecondaryYAxisLine(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         for (var tickIndex = 0; tickIndex < yTicks.Count; tickIndex++) {
             var tick = yTicks[tickIndex];
-            if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredFontSize, chart.Options.YAxisLabelDensity)) continue;
+            if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredFontSize, chart.Options.SecondaryYAxis.LabelDensity)) continue;
             var rawLabel = FormatSecondaryValue(chart, tick);
             var fontSize = TextFontSizeForWidth(rawLabel, labelMaxWidth, preferredFontSize);
             var label = TrimPngLabelToWidth(rawLabel, fontSize, labelMaxWidth);
@@ -126,10 +126,10 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartRect ApplyYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
-        if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
+        if (!ShowYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
-        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, tick), fontSize));
+        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatYAxisValue(chart, tick), fontSize));
         var desiredLeft = Math.Max(plot.Left, widest + 54);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
         var adjustedLeft = Math.Min(desiredLeft, maxLeft);
@@ -139,7 +139,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartRect ApplySecondaryYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
-        if (!ShowYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
+        if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
         foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatSecondaryValue(chart, tick), fontSize));

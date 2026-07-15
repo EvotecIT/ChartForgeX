@@ -494,6 +494,12 @@ public sealed partial class SvgChartRenderer {
     private static string FormatNumber(double v) => ChartNumericFormatter.FormatCompact(v);
 
     private static string FormatValue(Chart chart, double value) {
+        var formatter = chart.Options.ValueFormatter;
+        if (formatter == null) return FormatNumber(value);
+        return formatter(value) ?? string.Empty;
+    }
+
+    private static string FormatYAxisValue(Chart chart, double value) {
         foreach (var label in chart.Options.YAxis.Labels) {
             if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
         }

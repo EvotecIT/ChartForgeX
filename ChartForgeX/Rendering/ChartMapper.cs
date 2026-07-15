@@ -21,6 +21,11 @@ internal sealed class ChartMapper {
     public double X(double value) => _plot.Left + ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis) * _plot.Width;
     public double Y(double value) => _plot.Bottom - ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis) * _plot.Height;
 
+    public double XBaseline() {
+        if (_xAxis.Scale == ChartScaleKind.Logarithmic) return _plot.Left;
+        return System.Math.Min(_plot.Right, System.Math.Max(_plot.Left, X(0)));
+    }
+
     public double YBaseline() {
         if (_yAxis.Scale == ChartScaleKind.Logarithmic) return _plot.Bottom;
         return System.Math.Min(_plot.Bottom, System.Math.Max(_plot.Top, Y(0)));

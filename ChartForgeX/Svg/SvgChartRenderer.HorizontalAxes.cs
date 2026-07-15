@@ -31,7 +31,7 @@ public sealed partial class SvgChartRenderer {
             if (ShowYAxis(chart)) DrawHorizontalCategoryLabel(sb, chart, plot, FormatX(chart, category), y);
         }
 
-        var zeroX = map.X(0);
+        var zeroX = map.XBaseline();
         if (ShowYAxisLine(chart) && zeroX > plot.Left && zeroX < plot.Right) {
             WriteHorizontalAxisLine(sb, null, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
         }

@@ -12,12 +12,12 @@ public sealed partial class SvgChartRenderer {
     private static void DrawHorizontalBars(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartMapper map, string id) {
         var s = chart.Series[index];
         var layout = HorizontalBarLayout(chart, plot, index);
-        var zeroX = Math.Min(plot.Right, Math.Max(plot.Left, map.X(0)));
+        var zeroX = map.XBaseline();
         var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
             var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackHorizontalBaseValue(chart, index, p) : 0;
-            var baseX = chart.Options.BarMode == ChartBarMode.Stacked ? map.X(baseValue) : zeroX;
+            var baseX = chart.Options.BarMode == ChartBarMode.Stacked && baseValue != 0 ? map.X(baseValue) : zeroX;
             var valueX = map.X(baseValue + p.Y);
             var left = Math.Min(baseX, valueX);
             var width = Math.Abs(valueX - baseX);

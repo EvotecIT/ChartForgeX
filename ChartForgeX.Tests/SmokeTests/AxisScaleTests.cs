@@ -51,6 +51,18 @@ internal static partial class SmokeTests {
         var png = chart.ToPng();
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Logarithmic bars should not inject a zero baseline or non-positive x padding.");
         Assert(png.Length > 200 && png[0] == 137 && png[1] == 80, "Logarithmic bar bounds should remain valid in PNG rendering.");
+
+        var horizontal = Chart.Create()
+            .WithSize(420, 260)
+            .WithXAxisScale(ChartScaleKind.Logarithmic)
+            .AddHorizontalBar("Orders", new[] {
+                new ChartPoint(0, 10),
+                new ChartPoint(1, 100)
+            });
+        var horizontalSvg = horizontal.ToSvg();
+        var horizontalPng = horizontal.ToPng();
+        Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar\"") == 2, "Horizontal logarithmic bars should use the positive plot edge instead of mapping a zero baseline.");
+        Assert(horizontalPng.Length > 200 && horizontalPng[0] == 137 && horizontalPng[1] == 80, "Horizontal logarithmic bars should preserve SVG and PNG rendering parity.");
     }
 
     private static void AxisObjectsOwnExplicitLabelsAndFormatterFallbacks() {

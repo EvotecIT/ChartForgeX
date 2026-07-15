@@ -24,7 +24,7 @@ public sealed partial class SvgChartRenderer {
         var writer = new SvgMarkupWriter(2048);
         for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
             var yv = yTicks[yIndex];
-            if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) continue;
+            if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.SecondaryYAxis.LabelDensity)) continue;
             var y = map.Y(yv);
             var rawLabel = FormatSecondaryValue(chart, yv);
             var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelMaxWidth, tickFontSize);

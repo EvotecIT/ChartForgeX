@@ -443,7 +443,7 @@ public sealed partial class SvgChartRenderer {
                 AppendSvg(sb, writer => {
                     writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize);
                     WriteSvgTextStyleAttributes(writer, tickStyle);
-                    writer.Text(FormatValue(chart, yv)).EndElement().Line();
+                    writer.Text(FormatYAxisValue(chart, yv)).EndElement().Line();
                 });
             }
         }
@@ -690,7 +690,7 @@ public sealed partial class SvgChartRenderer {
     private static ChartRect ApplyYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
         if (!ShowYAxis(chart) || chart.Options.IsSparkline || IsPieLike(chart) || yTicks.Count == 0) return plot;
         var t = chart.Options.Theme;
-        var widest = yTicks.Max(tick => EstimateTextWidth(FormatValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize)));
+        var widest = yTicks.Max(tick => EstimateTextWidth(FormatYAxisValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize)));
         var desiredLeft = Math.Max(plot.Left, widest + 54);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
         var adjustedLeft = Math.Min(desiredLeft, maxLeft);

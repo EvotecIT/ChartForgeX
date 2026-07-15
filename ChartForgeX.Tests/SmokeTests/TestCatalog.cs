@@ -83,6 +83,8 @@ internal static partial class SmokeTests {
         ("Logarithmic axes render with SVG PNG parity", LogarithmicAxesRenderWithSvgPngParity),
         ("Logarithmic axes reject non-positive data", LogarithmicAxesRejectNonPositiveData),
         ("Logarithmic bars keep positive baselines and padding", LogarithmicBarsKeepPositiveBaselinesAndPadding),
+        ("Y-axis formatting stays isolated from generic values", YAxisFormattingStaysIsolatedFromGenericValues),
+        ("Primary y-axis formatting reserves PNG plot space", PrimaryYAxisFormattingReservesPngPlotSpace),
         ("Axis objects own explicit labels and formatter fallbacks", AxisObjectsOwnExplicitLabelsAndFormatterFallbacks),
         ("Time axes provide deterministic default labels", TimeAxesProvideDeterministicDefaultLabels),
         ("Typed datasets transform without mutating source", TypedDatasetsTransformWithoutMutatingSource),

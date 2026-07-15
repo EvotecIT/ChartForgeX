@@ -86,7 +86,7 @@ public sealed partial class PngChartRenderer {
             var y = WaterfallY(plot, bounds, tick);
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
             if (chart.Options.ShowAxes) {
-                var label = FormatValue(chart, tick);
+                var label = FormatYAxisValue(chart, tick);
                 c.DrawText(Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize / 2.0, label, chart.Options.Theme.MutedText, fontSize);
             }
         }
