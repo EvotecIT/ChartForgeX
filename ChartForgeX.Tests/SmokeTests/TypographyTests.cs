@@ -61,5 +61,16 @@ internal static partial class SmokeTests {
 
         Assert(png.Length > 200, "Shared typography should produce a non-empty composed PNG.");
         Assert(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71, "Shared typography composition should produce PNG output.");
+
+        var multiline = ImageComposition.CreateTransparent(100, 60)
+            .DrawText(2, 2, 96, "First\nSecond", 14, ChartColors.White)
+            .ToImage();
+        var lowerLinePixels = 0;
+        for (var y = 18; y < multiline.Height; y++) {
+            for (var x = 0; x < multiline.Width; x++) {
+                if (multiline.Pixels[(y * multiline.Width + x) * 4 + 3] > 0) lowerLinePixels++;
+            }
+        }
+        Assert(lowerLinePixels > 0, "Simple composition text should preserve explicit line breaks instead of truncating after the first line.");
     }
 }

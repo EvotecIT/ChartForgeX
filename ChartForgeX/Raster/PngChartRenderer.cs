@@ -215,16 +215,16 @@ public sealed partial class PngChartRenderer {
                 if (o.ShowGrid && gridStyle.ShowVerticalLines) DrawPngGridLine(c, x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Grid, gridStyle.VerticalOpacity), gridStyle);
                 if (ShowXAxis(chart)) DrawXAxisTickLabel(c, chart, plot, label, x, xTicks[i], xLabels);
             }
-            if (ShowXAxis(chart) && ShowAxisLines(chart) && o.YAxis.Scale != ChartScaleKind.Logarithmic) {
+            if (ShowXAxisLine(chart) && o.YAxis.Scale != ChartScaleKind.Logarithmic) {
                 var zeroY = map.Y(0);
                 if (zeroY > plot.Top && zeroY < plot.Bottom) DrawPngGuideLine(c, plot.Left, zeroY, plot.Right, zeroY, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
             }
             if (ShowXAxis(chart)) {
-                if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+                if (ShowXAxisLine(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
                 DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, xLabels), PngXAxisTitleFontSize(chart));
             }
             if (ShowYAxis(chart)) {
-                if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+                if (ShowYAxisLine(chart)) DrawPngGuideLine(c, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
                 DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
             }
             if (chart.Options.ShowAxes) {
@@ -356,7 +356,13 @@ public sealed partial class PngChartRenderer {
 
     private static bool ShowYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowYAxis;
 
-    private static bool ShowAxisLines(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowAxisLines;
+    private static bool ShowXAxisLine(Chart chart) => ShowXAxis(chart) && chart.Options.XAxis.ShowLine;
+
+    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine;
+
+    private static bool ShowSecondaryYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.SecondaryYAxis.Visible;
+
+    private static bool ShowSecondaryYAxisLine(Chart chart) => ShowSecondaryYAxis(chart) && chart.Options.SecondaryYAxis.ShowLine;
 
     private static bool IsMapChart(Chart chart) {
         foreach (var series in chart.Series) if (ChartSeriesKindTraits.IsMapKind(series.Kind)) return true;
@@ -486,12 +492,12 @@ public sealed partial class PngChartRenderer {
 
         if (ShowXAxis(chart)) {
             var zeroX = map.X(0);
-            if (ShowAxisLines(chart) && zeroX > plot.Left && zeroX < plot.Right) DrawPngGuideLine(c, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
-            if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowYAxisLine(chart) && zeroX > plot.Left && zeroX < plot.Right) DrawPngGuideLine(c, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
+            if (ShowXAxisLine(chart)) DrawPngGuideLine(c, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, xLabels), PngXAxisTitleFontSize(chart));
         }
         if (ShowYAxis(chart)) {
-            if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowYAxisLine(chart)) DrawPngGuideLine(c, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
             DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
         }
     }
@@ -512,6 +518,10 @@ public sealed partial class PngChartRenderer {
         Math.Abs(style.Gap) < 0.000001;
 
     private static string FormatValue(Chart chart, double value) {
+        foreach (var label in chart.Options.YAxis.Labels) {
+            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
+        }
+
         var formatter = chart.Options.YAxis.LabelFormatter ?? chart.Options.ValueFormatter;
         if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
@@ -523,8 +533,12 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string FormatSecondaryValue(Chart chart, double value) {
+        foreach (var label in chart.Options.SecondaryYAxis.Labels) {
+            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
+        }
+
         var formatter = chart.Options.SecondaryYAxisValueFormatter;
-        if (formatter == null) return FormatValue(chart, value);
+        if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
     }
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);

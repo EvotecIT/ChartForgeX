@@ -16,7 +16,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawSecondaryYAxis(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> yTicks, ChartMapper map) {
         var o = chart.Options;
-        if (!o.ShowAxes) return;
+        if (!ShowSecondaryYAxis(chart)) return;
         var t = o.Theme;
         var tickStyle = o.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
@@ -33,7 +33,7 @@ public sealed partial class SvgChartRenderer {
             WriteSecondaryYAxisTick(writer, chart, tickStyle, yv, plot.Right + 12, y + 4, StyleColor(tickStyle, t.MutedText).ToCss(), labelFontSize, label);
         }
 
-        if (ShowAxisLines(chart)) WriteSecondaryYAxisLine(writer, plot, t.Axis.ToCss());
+        if (ShowSecondaryYAxisLine(chart)) WriteSecondaryYAxisLine(writer, plot, t.Axis.ToCss());
         if (string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle)) {
             sb.Append(writer.Build());
             return;
@@ -113,7 +113,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartRect ApplySecondaryYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
-        if (!chart.Options.ShowAxes || chart.Options.IsSparkline || IsPieLike(chart) || yTicks.Count == 0) return plot;
+        if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || IsPieLike(chart) || yTicks.Count == 0) return plot;
         var t = chart.Options.Theme;
         var widest = yTicks.Max(tick => EstimateTextWidth(FormatSecondaryValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize)));
         var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : t.AxisTitleFontSize + 18;

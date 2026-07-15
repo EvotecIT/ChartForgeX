@@ -17,6 +17,7 @@ public static class MarkupTopologyCSharpEmitter {
     public static string Emit(MarkupTopologyDocument document) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         var sb = new StringBuilder();
+        sb.AppendLine("using ChartForgeX.Primitives;");
         sb.AppendLine("using ChartForgeX.Topology;");
         sb.AppendLine();
         sb.AppendLine("var topology = TopologyChart.Create()");

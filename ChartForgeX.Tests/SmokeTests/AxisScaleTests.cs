@@ -40,6 +40,42 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => chart.ToPng(), "SVG and PNG should enforce the same logarithmic data contract.");
     }
 
+    private static void LogarithmicBarsKeepPositiveBaselinesAndPadding() {
+        var chart = Chart.Create()
+            .WithSize(420, 260)
+            .WithXAxisScale(ChartScaleKind.Logarithmic)
+            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .AddBar("Orders", new[] { new ChartPoint(0.1, 10) });
+
+        var svg = chart.ToSvg();
+        var png = chart.ToPng();
+        Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Logarithmic bars should not inject a zero baseline or non-positive x padding.");
+        Assert(png.Length > 200 && png[0] == 137 && png[1] == 80, "Logarithmic bar bounds should remain valid in PNG rendering.");
+    }
+
+    private static void AxisObjectsOwnExplicitLabelsAndFormatterFallbacks() {
+        var chart = Chart.Create()
+            .WithSize(520, 300)
+            .WithYAxisBounds(0, 10)
+            .WithSecondaryYAxis("Rate", null)
+            .WithSecondaryYAxisBounds(0, 100)
+            .AddLine("Primary", new[] { new ChartPoint(0, 0), new ChartPoint(1, 10) })
+            .AddLine("Secondary", new[] { new ChartPoint(0, 0), new ChartPoint(1, 100) });
+        chart.Series[1].UseSecondaryYAxis();
+        chart.Options.YAxis.Labels.Add(new ChartAxisLabel(0, "Primary low"));
+        chart.Options.YAxis.Labels.Add(new ChartAxisLabel(10, "Primary high"));
+        chart.Options.SecondaryYAxis.Labels.Add(new ChartAxisLabel(0, "Secondary low"));
+        chart.Options.SecondaryYAxis.Labels.Add(new ChartAxisLabel(100, "Secondary high"));
+        chart.Options.YAxis.LabelFormatter = _ => "primary formatter";
+
+        var svg = chart.ToSvg();
+        Assert(svg.Contains("Primary low", StringComparison.Ordinal) && svg.Contains("Primary high", StringComparison.Ordinal), "Primary y-axis labels should override generated formatting.");
+        Assert(svg.Contains("Secondary low", StringComparison.Ordinal) && svg.Contains("Secondary high", StringComparison.Ordinal), "Secondary y-axis labels should render through the same axis contract.");
+        Assert(CountOccurrences(svg, "primary formatter") > 0, "Primary generated ticks should keep their primary formatter.");
+        Assert(svg.Contains(">20</text>", StringComparison.Ordinal), "Secondary generated ticks without a formatter should use numeric labels instead of inheriting the primary y-axis formatter.");
+        Assert(chart.ToPng().Length > 200, "Axis-owned labels and formatters should render through the PNG path.");
+    }
+
     private static void TimeAxesProvideDeterministicDefaultLabels() {
         var chart = Chart.Create()
             .WithSize(620, 320)

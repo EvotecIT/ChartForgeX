@@ -82,6 +82,8 @@ internal static partial class SmokeTests {
         ("Axis objects centralize bounds ticks and scales", AxisObjectsCentralizeBoundsTicksAndScales),
         ("Logarithmic axes render with SVG PNG parity", LogarithmicAxesRenderWithSvgPngParity),
         ("Logarithmic axes reject non-positive data", LogarithmicAxesRejectNonPositiveData),
+        ("Logarithmic bars keep positive baselines and padding", LogarithmicBarsKeepPositiveBaselinesAndPadding),
+        ("Axis objects own explicit labels and formatter fallbacks", AxisObjectsOwnExplicitLabelsAndFormatterFallbacks),
         ("Time axes provide deterministic default labels", TimeAxesProvideDeterministicDefaultLabels),
         ("Typed datasets transform without mutating source", TypedDatasetsTransformWithoutMutatingSource),
         ("Typed datasets build mapped series and histograms", TypedDatasetsBuildMappedSeriesAndHistograms),

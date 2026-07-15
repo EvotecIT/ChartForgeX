@@ -71,7 +71,7 @@ public sealed partial class PngChartRenderer {
                     DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
             }
 
-            if (chart.Options.ShowAxes) {
+            if (ShowYAxis(chart)) {
                 var categoryLabel = step.IsTotal ? "Total" : FormatX(chart, step.XValue);
                 c.DrawText(EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize), plot.Bottom + PngXAxisLabelOffset(chart) - tickFontSize + 1, categoryLabel, chart.Options.Theme.MutedText, tickFontSize);
             }
@@ -92,12 +92,10 @@ public sealed partial class PngChartRenderer {
         }
 
         var zeroY = WaterfallY(plot, bounds, 0);
-        if (ShowAxisLines(chart) && zeroY > plot.Top && zeroY < plot.Bottom) c.DrawLine(plot.Left, zeroY, plot.Right, zeroY, chart.Options.Theme.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
+        if (ShowXAxisLine(chart) && zeroY > plot.Top && zeroY < plot.Bottom) c.DrawLine(plot.Left, zeroY, plot.Right, zeroY, chart.Options.Theme.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
         if (!chart.Options.ShowAxes) return;
-        if (ShowAxisLines(chart)) {
-            c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
-            c.DrawLine(plot.Left, plot.Top, plot.Left, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
-        }
+        if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+        if (ShowYAxisLine(chart)) c.DrawLine(plot.Left, plot.Top, plot.Left, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
     }
 
     private static bool IsWaterfallChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Waterfall);

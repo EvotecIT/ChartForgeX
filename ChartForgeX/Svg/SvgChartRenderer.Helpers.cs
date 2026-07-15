@@ -462,7 +462,13 @@ public sealed partial class SvgChartRenderer {
 
     private static bool ShowYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowYAxis;
 
-    private static bool ShowAxisLines(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowAxisLines;
+    private static bool ShowXAxisLine(Chart chart) => ShowXAxis(chart) && chart.Options.XAxis.ShowLine;
+
+    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine;
+
+    private static bool ShowSecondaryYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.SecondaryYAxis.Visible;
+
+    private static bool ShowSecondaryYAxisLine(Chart chart) => ShowSecondaryYAxis(chart) && chart.Options.SecondaryYAxis.ShowLine;
 
     private static bool IsMapChart(Chart chart) {
         foreach (var series in chart.Series) if (ChartSeriesKindTraits.IsMapKind(series.Kind)) return true;
@@ -488,6 +494,10 @@ public sealed partial class SvgChartRenderer {
     private static string FormatNumber(double v) => ChartNumericFormatter.FormatCompact(v);
 
     private static string FormatValue(Chart chart, double value) {
+        foreach (var label in chart.Options.YAxis.Labels) {
+            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
+        }
+
         var formatter = chart.Options.YAxis.LabelFormatter ?? chart.Options.ValueFormatter;
         if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
@@ -502,8 +512,12 @@ public sealed partial class SvgChartRenderer {
         string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
     private static string FormatSecondaryValue(Chart chart, double value) {
+        foreach (var label in chart.Options.SecondaryYAxis.Labels) {
+            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
+        }
+
         var formatter = chart.Options.SecondaryYAxisValueFormatter;
-        if (formatter == null) return FormatValue(chart, value);
+        if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
     }
 

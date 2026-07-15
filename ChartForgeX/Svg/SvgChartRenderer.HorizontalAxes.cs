@@ -32,16 +32,16 @@ public sealed partial class SvgChartRenderer {
         }
 
         var zeroX = map.X(0);
-        if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroX > plot.Left && zeroX < plot.Right) {
+        if (ShowYAxisLine(chart) && zeroX > plot.Left && zeroX < plot.Right) {
             WriteHorizontalAxisLine(sb, null, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
         }
 
         if (ShowXAxis(chart)) {
-            if (ShowAxisLines(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowXAxisLine(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart, xLabels));
         }
         if (ShowYAxis(chart)) {
-            if (ShowAxisLines(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowYAxisLine(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgYAxisTitle(sb, chart, plot, 26);
         }
     }

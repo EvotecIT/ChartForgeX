@@ -91,7 +91,7 @@ internal sealed class ChartRange {
                     horizontalBarYValues.Add(p.X);
                     range.IncludeX(p.Y);
                     range.IncludeY(p.X);
-                    range.IncludeX(0);
+                    if (chart.Options.XAxis.Scale != ChartScaleKind.Logarithmic) range.IncludeX(0);
                     AddStackValue(p.Y >= 0 ? positiveHorizontalBarStacks : negativeHorizontalBarStacks, p.X, p.Y);
                 } else if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop || series.Kind == ChartSeriesKind.RangeBar || series.Kind == ChartSeriesKind.BoxPlot || series.Kind == ChartSeriesKind.Slope) {
                     barXValues.Add(p.X);
@@ -101,14 +101,15 @@ internal sealed class ChartRange {
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
-                    range.IncludeY(0);
+                    if (chart.Options.YAxis.Scale != ChartScaleKind.Logarithmic) range.IncludeY(0);
                     AddStackValue(p.Y >= 0 ? positiveAreaStacks : negativeAreaStacks, p.X, p.Y);
                 } else {
                     range.Include(p);
                 }
             }
 
-            if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop) range.IncludeY(0);
+            if (chart.Options.YAxis.Scale != ChartScaleKind.Logarithmic &&
+                (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop)) range.IncludeY(0);
         }
 
         if (chart.Options.BarMode == ChartBarMode.Stacked) {
@@ -127,7 +128,7 @@ internal sealed class ChartRange {
         if (double.IsInfinity(range.MinY)) { range.MinY = 0; range.MaxY = 1; }
         if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon) range.MaxX = range.MinX + 1;
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) range.MaxY = range.MinY + 1;
-        range.ApplyBarPadding(barXValues);
+        range.ApplyBarPadding(barXValues, chart.Options.XAxis);
         range.ApplyHorizontalBarPadding(horizontalBarYValues);
         if (!hasHorizontalBars) {
             if (chart.Options.YAxis.Scale != ChartScaleKind.Logarithmic) {
@@ -138,7 +139,7 @@ internal sealed class ChartRange {
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
 
-        range.ApplyBarPadding(bubbleXValues);
+        range.ApplyBarPadding(bubbleXValues, chart.Options.XAxis);
         if (applyOptionBounds) range.ApplyXAxisOptions(chart);
         return range;
     }
@@ -147,7 +148,7 @@ internal sealed class ChartRange {
         var range = new ChartRange();
         foreach (var series in chart.Series) {
             if (series.YAxis != ChartAxisSide.Secondary) continue;
-            IncludeSeriesY(range, series);
+            IncludeSeriesY(range, series, chart.Options.SecondaryYAxis);
         }
 
         range.MinX = primaryRange.MinX;
@@ -237,7 +238,7 @@ internal sealed class ChartRange {
         foreach (var point in series.Points) range.IncludeX(point.X);
     }
 
-    private static void IncludeSeriesY(ChartRange range, ChartSeries series) {
+    private static void IncludeSeriesY(ChartRange range, ChartSeries series, ChartAxis axis) {
         if (series.Kind == ChartSeriesKind.HorizontalBar) {
             foreach (var point in series.Points) range.IncludeY(point.X);
             return;
@@ -249,10 +250,11 @@ internal sealed class ChartRange {
         }
 
         foreach (var point in series.Points) range.IncludeY(point.Y);
-        if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop) range.IncludeY(0);
+        if (axis.Scale != ChartScaleKind.Logarithmic &&
+            (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop)) range.IncludeY(0);
     }
 
-    private void ApplyBarPadding(List<double> xValues) {
+    private void ApplyBarPadding(List<double> xValues, ChartAxis axis) {
         if (xValues.Count == 0) return;
         xValues.Sort();
         var spacing = double.PositiveInfinity;
@@ -263,7 +265,12 @@ internal sealed class ChartRange {
 
         if (double.IsInfinity(spacing)) spacing = 1;
         var padding = spacing * 0.5;
-        MinX -= padding;
+        if (axis.Scale == ChartScaleKind.Logarithmic) {
+            var smallestPositive = xValues.FirstOrDefault(value => value > 0);
+            if (smallestPositive > 0) MinX = Math.Max(smallestPositive * 0.5, MinX - padding);
+        } else {
+            MinX -= padding;
+        }
         MaxX += padding;
     }
 

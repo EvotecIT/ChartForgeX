@@ -1,6 +1,8 @@
 using System;
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
 
@@ -29,5 +31,30 @@ internal static partial class SmokeTests {
         Assert(!verticalSvg.Contains(">Count</text>", StringComparison.Ordinal), "Hiding the y-axis should suppress y-axis titles.");
         Assert(verticalSvg.Contains("text-anchor=\"middle\"", StringComparison.Ordinal), "Hiding the y-axis should keep x-axis labels visible.");
         Assert(vertical.ToPng().Length > 64, "Independent y-axis visibility should render PNG output.");
+
+        var theme = ChartTheme.ReportLight();
+        theme.Axis = ChartColor.FromHex("#FF00FF");
+        var independentRules = Chart.Create()
+            .WithSize(360, 220)
+            .WithTheme(theme)
+            .WithGrid(false)
+            .WithLegend(false)
+            .AddLine("Values", Points(12, 24));
+        independentRules.Options.XAxis.ShowLine = false;
+        independentRules.Options.YAxis.ShowLine = true;
+        var independentRulesSvg = independentRules.ToSvg();
+        Assert(CountOccurrences(independentRulesSvg, "stroke=\"#FF00FF\"") == 1, "Disabling one axis rule should not suppress independently enabled axis rules.");
+        Assert(independentRules.ToPng().Length > 64, "Independent SVG and PNG axis-rule visibility should stay aligned.");
+
+        var hiddenSecondary = Chart.Create()
+            .WithSize(420, 240)
+            .WithSecondaryYAxis("Rate")
+            .AddLine("Primary", Points(2, 4))
+            .AddLine("Secondary", Points(20, 40));
+        hiddenSecondary.Series[1].UseSecondaryYAxis();
+        hiddenSecondary.Options.SecondaryYAxis.Visible = false;
+        var hiddenSecondarySvg = hiddenSecondary.ToSvg();
+        Assert(!hiddenSecondarySvg.Contains("secondary-y-axis", StringComparison.Ordinal), "A hidden secondary axis should suppress its rule, ticks, title, and layout reserve.");
+        Assert(hiddenSecondary.ToPng().Length > 64, "Hiding a secondary axis should keep its data series renderable in PNG output.");
     }
 }

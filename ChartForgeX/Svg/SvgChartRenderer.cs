@@ -456,16 +456,16 @@ public sealed partial class SvgChartRenderer {
         }
         if (o.YAxis.Scale != ChartScaleKind.Logarithmic) {
             var zeroY = map.Y(0);
-            if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroY > plot.Top && zeroY < plot.Bottom) {
+            if (ShowXAxisLine(chart) && zeroY > plot.Top && zeroY < plot.Bottom) {
                 WriteSvgGuideLine(sb, null, plot.Left, zeroY, plot.Right, zeroY, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
             }
         }
         if (ShowXAxis(chart)) {
-            if (ShowAxisLines(chart)) WriteSvgGuideLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowXAxisLine(chart)) WriteSvgGuideLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart, xLabels));
         }
         if (ShowYAxis(chart)) {
-            if (ShowAxisLines(chart)) WriteSvgGuideLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowYAxisLine(chart)) WriteSvgGuideLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgYAxisTitle(sb, chart, plot, 26);
         }
     }

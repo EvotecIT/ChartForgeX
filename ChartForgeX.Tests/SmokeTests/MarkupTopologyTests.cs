@@ -50,6 +50,7 @@ edges:
 
         Assert(!result.HasErrors, "Table topology markup should parse without errors: " + Diagnostics(result));
         var code = MarkupTopologyCSharpEmitter.Emit(result.Document!);
+        Assert(code.StartsWith("using ChartForgeX.Primitives;", System.StringComparison.Ordinal), "C# emitter should import the shared link-direction primitives it emits.");
         Assert(code.Contains("TopologyChart.Create()", System.StringComparison.Ordinal), "C# emitter should create a topology chart.");
         Assert(code.Contains(".AddGroup(\"emea\", \"EMEA\", 0, 0, 260, 160, TopologyHealthStatus.Warning", System.StringComparison.Ordinal), "C# emitter should include parsed groups.");
         Assert(code.Contains(".WithNodeBadge(\"dc-emea\", \"GC\")", System.StringComparison.Ordinal), "C# emitter should include node badge helpers.");
@@ -655,7 +656,7 @@ flowchart LR
 
             var emit = RunMarkupCli("emit", fixture, "--target", "csharp");
             Assert(emit.ExitCode == 0, "CLI emit should succeed for warning-only markup: " + emit.StandardError);
-            Assert(emit.StandardOutput.TrimStart().StartsWith("using ChartForgeX.Topology;", StringComparison.Ordinal), "CLI emit stdout should start with generated C#.");
+            Assert(emit.StandardOutput.TrimStart().StartsWith("using ChartForgeX.Primitives;", StringComparison.Ordinal), "CLI emit stdout should start with generated C# imports.");
             Assert(!emit.StandardOutput.Contains("warning(", StringComparison.OrdinalIgnoreCase), "CLI emit stdout should not be contaminated by diagnostics.");
             Assert(emit.StandardError.Contains("warning(3): Unknown topology command 'unknownThing'.", StringComparison.Ordinal), "CLI emit should write parser warnings to stderr.");
         } finally {

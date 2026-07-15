@@ -156,7 +156,7 @@ public sealed class ImageComposition {
         var style = TextStyle.Create(fontSize, color);
         style.Alignment = alignment;
         style.Font.Weight = emphasized ? 700 : 400;
-        return DrawText(x, y, width, text, style, TextWrapMode.NoWrap, 1, TextTrimming.None);
+        return DrawText(x, y, width, text, style, TextWrapMode.NoWrap, null, TextTrimming.None);
     }
 
     /// <summary>Draws measured and optionally wrapped text with the shared dependency-free typography engine.</summary>

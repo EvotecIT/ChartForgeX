@@ -1,6 +1,7 @@
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Core;
+using ChartForgeX.Composition;
 
 namespace ChartForgeX.Tests;
 
@@ -12,6 +13,8 @@ internal static partial class SmokeTests {
 
         Assert(decoded.Width == 5 && decoded.Height == 3, "GIF input should preserve logical dimensions.");
         Assert(decoded.Pixels[1] > 70 && decoded.Pixels[3] == 255, "GIF input should decode palette colors and opacity.");
+        var composition = ImageComposition.FromBytes(gif);
+        Assert(composition.Width == 5 && composition.Height == 3, "Image composition should accept GIF wallpaper input through the shared decoder.");
     }
 
     private static byte[] SolidPixels(int width, int height, ChartColor color) {

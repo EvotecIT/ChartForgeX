@@ -86,7 +86,7 @@ public sealed partial class PngChartRenderer {
         var theme = chart.Options.Theme;
         var preferredFontSize = PngTickFontSize(chart);
         var labelMaxWidth = Math.Max(24, chart.Options.Size.Width - plot.Right - 12);
-        if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+        if (ShowSecondaryYAxisLine(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         for (var tickIndex = 0; tickIndex < yTicks.Count; tickIndex++) {
             var tick = yTicks[tickIndex];
             if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredFontSize, chart.Options.YAxisLabelDensity)) continue;
@@ -126,7 +126,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartRect ApplyYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
-        if (!ShowYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
+        if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
         foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, tick), fontSize));
