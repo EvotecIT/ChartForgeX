@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
@@ -89,8 +90,8 @@ internal sealed class ChartGridLayout {
         }
     }
 
-    private static ChartGridCell FitCell(Chart chart, int panelX, int panelY, int panelWidth, int panelHeight, ChartGridPanelFit fit) {
-        if (fit == ChartGridPanelFit.Stretch) return new ChartGridCell(chart, panelX, panelY, panelWidth, panelHeight);
+    private static ChartGridCell FitCell(Chart chart, int panelX, int panelY, int panelWidth, int panelHeight, VisualPanelFit fit) {
+        if (fit == VisualPanelFit.Stretch) return new ChartGridCell(chart, panelX, panelY, panelWidth, panelHeight);
         var scale = Math.Min(panelWidth / (double)chart.Options.Size.Width, panelHeight / (double)chart.Options.Size.Height);
         var width = Math.Max(1, (int)Math.Round(chart.Options.Size.Width * scale));
         var height = Math.Max(1, (int)Math.Round(chart.Options.Size.Height * scale));

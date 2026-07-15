@@ -31,13 +31,13 @@ public sealed partial class SvgVisualBlockRenderer {
         var gridY = headerY + cellHeight + 8;
         writer.StartElement("g").Attribute("data-cfx-role", "heatmap-insight-card").EndStartElement().Line();
         for (var column = 0; column < card.Columns.Count; column++) {
-            WriteText(writer, card.Columns[column], matrixX + labelWidth + column * (cellWidth + cellGap), headerY + cellHeight * 0.68, cellWidth, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "750");
+            WriteText(writer, card.Columns[column], matrixX + labelWidth + column * (cellWidth + cellGap), headerY + cellHeight * 0.68, cellWidth, TextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "750");
         }
 
         for (var row = 0; row < card.Rows.Count; row++) {
             var item = card.Rows[row];
             var rowY = gridY + row * (cellHeight + 5);
-            WriteText(writer, item.Label, matrixX, rowY + cellHeight * 0.68, labelWidth - 6, VisualTextAlignment.Right, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "650");
+            WriteText(writer, item.Label, matrixX, rowY + cellHeight * 0.68, labelWidth - 6, TextAlignment.Right, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "650");
             for (var column = 0; column < card.Columns.Count; column++) {
                 var value = item.Values[column];
                 var color = HeatmapInsightColor(card, value);
@@ -53,7 +53,7 @@ public sealed partial class SvgVisualBlockRenderer {
                     .Attribute("rx", Math.Min(5, cellHeight * 0.32))
                     .Attribute("fill", color.ToCss())
                     .EndEmptyElement().Line();
-                WriteText(writer, value.ToString("0", CultureInfo.InvariantCulture), matrixX + labelWidth + column * (cellWidth + cellGap), rowY + cellHeight * 0.68, cellWidth, VisualTextAlignment.Center, ChartColorMath.TextOnBackground(color), theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "800");
+                WriteText(writer, value.ToString("0", CultureInfo.InvariantCulture), matrixX + labelWidth + column * (cellWidth + cellGap), rowY + cellHeight * 0.68, cellWidth, TextAlignment.Center, ChartColorMath.TextOnBackground(color), theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "800");
             }
         }
 
@@ -68,14 +68,14 @@ public sealed partial class SvgVisualBlockRenderer {
         if (card.LeftControl.Length > 0) {
             var w = Math.Min(70, VisualBlockRendering.EstimateTextWidth(card.LeftControl, theme.SubtitleFontSize) + 22);
             writer.StartElement("rect").Attribute("data-cfx-role", "heatmap-control").Attribute("x", cursor).Attribute("y", y).Attribute("width", w).Attribute("height", buttonHeight).Attribute("rx", 8).Attribute("fill", theme.PlotBackground.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, card.LeftControl, cursor, y + 16, w, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "650");
+            WriteText(writer, card.LeftControl, cursor, y + 16, w, TextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "650");
             cursor += w - 2;
         }
 
         if (card.SelectedControl.Length > 0) {
             var w = Math.Min(80, VisualBlockRendering.EstimateTextWidth(card.SelectedControl, theme.SubtitleFontSize) + 24);
             writer.StartElement("rect").Attribute("data-cfx-role", "heatmap-control-selected").Attribute("x", cursor).Attribute("y", y).Attribute("width", w).Attribute("height", buttonHeight).Attribute("rx", 8).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, card.SelectedControl, cursor, y + 16, w, VisualTextAlignment.Center, VisualBlockRendering.PaletteAt(theme, 0), theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "850");
+            WriteText(writer, card.SelectedControl, cursor, y + 16, w, TextAlignment.Center, VisualBlockRendering.PaletteAt(theme, 0), theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "850");
             cursor += w + 14;
         }
 
@@ -84,25 +84,25 @@ public sealed partial class SvgVisualBlockRenderer {
             if (remaining < 24) return;
             var w = Math.Min(remaining, VisualBlockRendering.EstimateTextWidth(card.PeriodLabel, theme.SubtitleFontSize) + 34);
             writer.StartElement("rect").Attribute("data-cfx-role", "heatmap-period-control").Attribute("x", cursor).Attribute("y", y).Attribute("width", w).Attribute("height", buttonHeight).Attribute("rx", 8).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, card.PeriodLabel, cursor + 12, y + 16, w - 24, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "650");
+            WriteText(writer, card.PeriodLabel, cursor + 12, y + 16, w - 24, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "650");
         }
     }
 
     private static void RenderHeatmapInsightRail(SvgMarkupWriter writer, HeatmapInsightCard card, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
         writer.StartElement("g").Attribute("data-cfx-role", "heatmap-insight-rail").EndStartElement().Line();
-        WriteText(writer, card.InsightTitle, x, y + 14, width, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
+        WriteText(writer, card.InsightTitle, x, y + 14, width, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
         var itemY = y + 42;
         foreach (var item in card.Insights) {
-            WriteText(writer, item.Label, x, itemY, width, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
-            WriteText(writer, item.Detail, x, itemY + 18, width, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "500");
+            WriteText(writer, item.Label, x, itemY, width, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
+            WriteText(writer, item.Detail, x, itemY + 18, width, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "500");
             itemY += 48;
         }
 
         var keyY = Math.Min(y + height - 46, Math.Max(itemY + 8, y + 150));
-        WriteText(writer, card.ColorKeyLabel, x, keyY, width, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
+        WriteText(writer, card.ColorKeyLabel, x, keyY, width, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
         keyY += 24;
-        WriteText(writer, card.Minimum.ToString("0", CultureInfo.InvariantCulture), x, keyY + 6, 18, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "600");
+        WriteText(writer, card.Minimum.ToString("0", CultureInfo.InvariantCulture), x, keyY + 6, 18, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "600");
         var keyX = x + 22;
         var keyWidth = Math.Max(30, width - 48);
         var steps = 16;
@@ -114,7 +114,7 @@ public sealed partial class SvgVisualBlockRenderer {
         }
 
         writer.EndElement().Line();
-        WriteText(writer, card.Maximum.ToString("0", CultureInfo.InvariantCulture), x + width - 20, keyY + 6, 20, VisualTextAlignment.Right, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "600");
+        WriteText(writer, card.Maximum.ToString("0", CultureInfo.InvariantCulture), x + width - 20, keyY + 6, 20, TextAlignment.Right, theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "600");
         writer.EndElement().Line();
     }
 

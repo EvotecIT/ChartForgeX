@@ -18,7 +18,7 @@ public sealed partial class PngVisualBlockRenderer {
             var laneY = layout.LaneYs[branch.Name];
             var color = VisualBlockRendering.PaletteAt(theme, index);
             canvas.DrawLine(layout.PlotX, laneY, layout.PlotRight, laneY, color.WithAlpha(115), 2);
-            if (graph.ShowBranchLabels) DrawAlignedText(canvas, branch.Name, content.X, laneY - 7, layout.PlotX - content.X - 10, VisualTextAlignment.Right, theme.MutedText, 11, true);
+            if (graph.ShowBranchLabels) DrawAlignedText(canvas, branch.Name, content.X, laneY - 7, layout.PlotX - content.X - 10, TextAlignment.Right, theme.MutedText, 11, true);
         }
 
         for (var index = 0; index < layout.Placements.Count; index++) DrawGitGraphEdges(canvas, layout, layout.Placements[index], theme.Axis);

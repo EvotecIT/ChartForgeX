@@ -14,9 +14,9 @@ internal static partial class SmokeTests {
             .AddNode("left", "Left", 92, 196, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 54, height: 40, symbol: "DC")
             .AddNode("middle", "Middle", 183, 196, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 54, height: 40, symbol: "DC")
             .AddNode("right", "Right", 274, 196, TopologyNodeKind.Server, TopologyHealthStatus.Critical, width: 54, height: 40, symbol: "DC")
-            .AddEdge("hub-left", "hub", "left", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("hub-middle", "hub", "middle", "112 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("hub-right", "hub", "right", "142 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("hub-left", "hub", "left", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("hub-middle", "hub", "middle", "112 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("hub-right", "hub", "right", "142 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithEdgePorts("hub-left", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
             .WithEdgePorts("hub-middle", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
             .WithEdgePorts("hub-right", TopologyEdgePort.Bottom, TopologyEdgePort.Top);

@@ -491,7 +491,7 @@ public sealed partial class SvgChartRenderer {
         return new DottedMapLabelPlacement(candidate.Placement, safeX, safeY, anchor, new ChartLabelBounds(left, safeY - height / 2, width, height));
     }
 
-    private static void DrawDottedMapDataLabel(StringBuilder sb, Chart chart, ChartTextStyle style, string label, DottedMapLabelPlacement placement, double pointX, double pointY, double dot) {
+    private static void DrawDottedMapDataLabel(StringBuilder sb, Chart chart, TextStyleOverride style, string label, DottedMapLabelPlacement placement, double pointX, double pointY, double dot) {
         var t = chart.Options.Theme;
         var radius = Math.Min(6, placement.Bounds.Height / 2);
         DrawDottedMapLabelLeader(sb, chart, label, placement, pointX, pointY, dot);

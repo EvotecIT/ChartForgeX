@@ -78,7 +78,7 @@ internal static partial class SmokeTests {
         tintedTheme.Background = ChartColor.FromHex("#F4F7FB");
         Assert(!png.SequenceEqual(ChartGrid.Create().WithTitle("Control scorecards").WithSubtitle("Small multiples for a static report").WithTheme(tintedTheme).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200).Add(coverage).Add(readiness).ToPng()), "Chart grid PNG should honor polished export surface colors.");
 
-        var stretched = ChartGrid.Create().WithPanelSize(300, 200).WithPanelFit(ChartGridPanelFit.Stretch).Add(coverage);
+        var stretched = ChartGrid.Create().WithPanelSize(300, 200).WithPanelFit(VisualPanelFit.Stretch).Add(coverage);
         Assert(stretched.ToSvg().Contains("width=\"300\" height=\"200\"", StringComparison.Ordinal), "Stretch panel grids should use the full fixed panel size.");
 
         var compact = ChartGrid.Create()

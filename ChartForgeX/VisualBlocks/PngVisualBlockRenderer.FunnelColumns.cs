@@ -23,8 +23,8 @@ public sealed partial class PngVisualBlockRenderer {
             var color = VisualBlockRendering.SegmentedItemColor(theme, item, stage.Index);
             var value = VisualBlockRendering.SegmentedItemDisplayValue(card, item);
             canvas.FillRoundedRect(stage.X, y + 2, 7, 24, 3.5, color);
-            DrawAlignedText(canvas, item.Label, stage.X + 11, y + 1, Math.Max(48, stage.Width + layout.GroupGap * 0.5), VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize), false);
-            DrawAlignedText(canvas, value, stage.X + 11, y + 20, Math.Max(48, stage.Width + layout.GroupGap * 0.5), VisualTextAlignment.Left, theme.Text, Math.Max(13, theme.SubtitleFontSize + 2), true);
+            DrawAlignedText(canvas, item.Label, stage.X + 11, y + 1, Math.Max(48, stage.Width + layout.GroupGap * 0.5), TextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize), false);
+            DrawAlignedText(canvas, value, stage.X + 11, y + 20, Math.Max(48, stage.Width + layout.GroupGap * 0.5), TextAlignment.Left, theme.Text, Math.Max(13, theme.SubtitleFontSize + 2), true);
             for (var i = 0; i < stage.SegmentCount; i++) {
                 var x = stage.X + i * (layout.BarWidth + layout.BarGap);
                 var radius = Math.Min(4, layout.BarWidth * 0.48);

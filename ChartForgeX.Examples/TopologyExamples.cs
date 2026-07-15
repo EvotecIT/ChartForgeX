@@ -189,11 +189,11 @@ internal static class TopologyExamples {
             .AddNode("in-india", "IN India", 1010, 275, TopologyNodeKind.Branch, TopologyHealthStatus.Unknown, "APAC", "Unknown", "/topology/sites/in-india", null, 128, 62)
             .AddNode("bh-1", "Bridgehead DC 1", 415, 510, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, null, "Healthy", "/topology/bridgeheads/bh-1", null, 128, 62, "BH")
             .AddNode("bh-2", "Bridgehead DC 2", 650, 510, TopologyNodeKind.Server, TopologyHealthStatus.Critical, null, "Degraded", "/topology/bridgeheads/bh-2", null, 128, 62, "BH")
-            .AddEdge("amer-emea", "amer-hub", "lon-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, href: "/topology/links/amer-emea")
-            .AddEdge("emea-apac", "lon-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, href: "/topology/links/emea-apac")
-            .AddEdge("apac-anz", "apac-hub", "anz", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, href: "/topology/links/apac-anz")
-            .AddEdge("amer-bh", "nva-east", "bh-1", "32 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "bridgehead", "/topology/links/amer-bh")
-            .AddEdge("bh-path", "bh-1", "bh-2", "68 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "queue 44", "/topology/links/bh-path");
+            .AddEdge("amer-emea", "amer-hub", "lon-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Straight, href: "/topology/links/amer-emea")
+            .AddEdge("emea-apac", "lon-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Straight, href: "/topology/links/emea-apac")
+            .AddEdge("apac-anz", "apac-hub", "anz", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, href: "/topology/links/apac-anz")
+            .AddEdge("amer-bh", "nva-east", "bh-1", "32 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "bridgehead", "/topology/links/amer-bh")
+            .AddEdge("bh-path", "bh-1", "bh-2", "68 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "queue 44", "/topology/links/bh-path");
     }
 
     private static TopologyChart BuildReplicationMeshChart() {
@@ -218,11 +218,11 @@ internal static class TopologyExamples {
             .AddNode("sfo-dc2", "SFO-DC2", 303, 468, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "SFO-SFO", "DC", "/replication/nodes/sfo-dc2", null, 128, 62, "DC")
             .AddNode("sin-dc1", "SIN-DC1", 685, 468, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "SIN-SIN", "DC", "/replication/nodes/sin-dc1", null, 128, 62, "DC")
             .AddNode("sin-dc2", "SIN-DC2", 773, 468, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "SIN-SIN", "DC", "/replication/nodes/sin-dc2", null, 128, 62, "DC")
-            .AddEdge("nyc-lon", "nyc-dc1", "lon-dc1", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:312; 12m ago", "/replication/paths/nyc-lon")
-            .AddEdge("lon-fra", "lon-dc2", "fra-dc1", "156 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:842; 3m ago", "/replication/paths/lon-fra")
-            .AddEdge("fra-sin", "fra-dc2", "sin-dc1", "238 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:1124; 2m ago", "/replication/paths/fra-sin")
-            .AddEdge("sfo-sin", "sfo-dc2", "sin-dc1", "214 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Q:1552; 1m ago", "/replication/paths/sfo-sin")
-            .AddEdge("lon-sfo", "lon-dc1", "sfo-dc1", "118 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal, "Q:301; 10m ago", "/replication/paths/lon-sfo");
+            .AddEdge("nyc-lon", "nyc-dc1", "lon-dc1", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Q:312; 12m ago", "/replication/paths/nyc-lon")
+            .AddEdge("lon-fra", "lon-dc2", "fra-dc1", "156 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Q:842; 3m ago", "/replication/paths/lon-fra")
+            .AddEdge("fra-sin", "fra-dc2", "sin-dc1", "238 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:1124; 2m ago", "/replication/paths/fra-sin")
+            .AddEdge("sfo-sin", "sfo-dc2", "sin-dc1", "214 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Q:1552; 1m ago", "/replication/paths/sfo-sin")
+            .AddEdge("lon-sfo", "lon-dc1", "sfo-dc1", "118 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal, "Q:301; 10m ago", "/replication/paths/lon-sfo");
         AddReplicationMetrics(chart);
         chart
             .WithEdgePorts("nyc-lon", TopologyEdgePort.Right, TopologyEdgePort.Left)
@@ -258,10 +258,10 @@ internal static class TopologyExamples {
             .AddNode("anz-subnet", "10.20.2.0/24", 855, 290, TopologyNodeKind.NetworkSegment, TopologyHealthStatus.Critical, "APAC", "Overlapping", "/subnets/10.20.2.0-24", null, 128, 62)
             .AddNode("orphan", "172.31.50.0/24", 515, 520, TopologyNodeKind.NetworkSegment, TopologyHealthStatus.Warning, null, "Orphaned", "/subnets/172.31.50.0-24", null, 128, 62)
             .AddNode("bridgehead", "Bridgehead DC", 745, 520, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, null, "172.16.0.0/16", "/subnets/bridgeheads/1", null, 128, 62, "BH")
-            .AddEdge("amer-emea", "amer-hub", "emea-hub", "MPLS $1.20", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, "24 ms", "/subnets/links/amer-emea")
-            .AddEdge("emea-apac", "emea-hub", "apac-hub", "MPLS $1.35", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, "82 ms", "/subnets/links/emea-apac")
-            .AddEdge("apac-anz", "apac-hub", "anz-subnet", "MPLS $1.10", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "62 ms", "/subnets/links/apac-anz")
-            .AddEdge("orphan-bh", "orphan", "bridgehead", "unmapped", TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, TopologyDirection.None, TopologyEdgeRouting.Straight, "needs owner", "/subnets/issues/orphan-bh")
+            .AddEdge("amer-emea", "amer-hub", "emea-hub", "MPLS $1.20", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Straight, "24 ms", "/subnets/links/amer-emea")
+            .AddEdge("emea-apac", "emea-hub", "apac-hub", "MPLS $1.35", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Straight, "82 ms", "/subnets/links/emea-apac")
+            .AddEdge("apac-anz", "apac-hub", "anz-subnet", "MPLS $1.10", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "62 ms", "/subnets/links/apac-anz")
+            .AddEdge("orphan-bh", "orphan", "bridgehead", "unmapped", TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, VisualLinkDirection.None, TopologyEdgeRouting.Straight, "needs owner", "/subnets/issues/orphan-bh")
             .WithEdgePorts("amer-emea", TopologyEdgePort.Right, TopologyEdgePort.Left)
             .WithEdgePorts("emea-apac", TopologyEdgePort.Right, TopologyEdgePort.Left)
             .WithEdgePorts("apac-anz", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
@@ -286,9 +286,9 @@ internal static class TopologyExamples {
             .AddNode("de", "DE Branch", 625, 355, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, null, "Warning", "/geo/sites/de", null, 128, 62)
             .AddNode("sg", "SG DC", 815, 485, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, null, "Healthy", "/geo/sites/sg", null, 128, 62, "DC")
             .AddNode("anz", "ANZ", 960, 485, TopologyNodeKind.Branch, TopologyHealthStatus.Critical, null, "Down", "/geo/sites/anz", null, 128, 62)
-            .AddEdge("amer-emea", "amer", "emea", "68 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "WAN", "/geo/links/amer-emea")
-            .AddEdge("emea-apac", "emea", "apac", "92 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "WAN", "/geo/links/emea-apac")
-            .AddEdge("amer-apac", "amer", "apac", "142 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Curved, "backup", "/geo/links/amer-apac")
+            .AddEdge("amer-emea", "amer", "emea", "68 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved, "WAN", "/geo/links/amer-emea")
+            .AddEdge("emea-apac", "emea", "apac", "92 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved, "WAN", "/geo/links/emea-apac")
+            .AddEdge("amer-apac", "amer", "apac", "142 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved, "backup", "/geo/links/amer-apac")
             .AddEdge("amer-nva", "amer", "nva", "local", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved, href: "/geo/links/amer-nva")
             .AddEdge("apac-anz", "apac", "anz", "down", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved, href: "/geo/links/apac-anz")
             .WithNodeCoordinates("amer", -98.5795, 39.8283)
@@ -329,11 +329,11 @@ internal static class TopologyExamples {
             .AddNode("eu-dc01", "EU-DC01", 905, 150, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "partners", "Schema Master", "/directory/dcs/eu-dc01", symbol: "GC")
             .AddNode("ap-dc01", "AP-DC01", 905, 270, TopologyNodeKind.Server, TopologyHealthStatus.Warning, "partners", "High lag", "/directory/dcs/ap-dc01", symbol: "DC")
             .AddNode("na-dc04", "NA-DC04", 560, 395, TopologyNodeKind.Server, TopologyHealthStatus.Critical, "partners", "LDAP down", "/directory/dcs/na-dc04", symbol: "DC")
-            .AddEdge("na-dc02-na-dc01", "na-dc02", "na-dc01", "LDAP OK", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "Kerberos OK", "/directory/connections/na-dc02-na-dc01")
-            .AddEdge("na-rodc01-na-dc01", "na-rodc01", "na-dc01", "RODC", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "No recent bind", "/directory/connections/na-rodc01-na-dc01")
-            .AddEdge("na-dc01-eu-dc01", "na-dc01", "eu-dc01", "72 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, "RPC", "/directory/connections/na-dc01-eu-dc01")
-            .AddEdge("na-dc01-ap-dc01", "na-dc01", "ap-dc01", "168 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Straight, "Queue 18", "/directory/connections/na-dc01-ap-dc01")
-            .AddEdge("na-dc01-na-dc04", "na-dc01", "na-dc04", "LDAP fail", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "DNS OK", "/directory/connections/na-dc01-na-dc04");
+            .AddEdge("na-dc02-na-dc01", "na-dc02", "na-dc01", "LDAP OK", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Kerberos OK", "/directory/connections/na-dc02-na-dc01")
+            .AddEdge("na-rodc01-na-dc01", "na-rodc01", "na-dc01", "RODC", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "No recent bind", "/directory/connections/na-rodc01-na-dc01")
+            .AddEdge("na-dc01-eu-dc01", "na-dc01", "eu-dc01", "72 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Straight, "RPC", "/directory/connections/na-dc01-eu-dc01")
+            .AddEdge("na-dc01-ap-dc01", "na-dc01", "ap-dc01", "168 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Straight, "Queue 18", "/directory/connections/na-dc01-ap-dc01")
+            .AddEdge("na-dc01-na-dc04", "na-dc01", "na-dc04", "LDAP fail", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "DNS OK", "/directory/connections/na-dc01-na-dc04");
     }
 
     private static void AddReplicationMetrics(TopologyChart chart) {
@@ -370,12 +370,12 @@ internal static class TopologyExamples {
             .AddNode("queue", "Orders Queue", 775, 145, TopologyNodeKind.Queue, TopologyHealthStatus.Warning, "data", "1,284 pending", "/services/orders-queue", symbol: "Q")
             .AddNode("sql", "Orders SQL", 820, 285, TopologyNodeKind.Database, TopologyHealthStatus.Critical, "data", "P95 412 ms", "/services/orders-sql", symbol: "SQL")
             .AddNode("team", "Payments Team", 500, 500, TopologyNodeKind.Team, TopologyHealthStatus.Healthy, null, "Owner", "/teams/payments", symbol: "TM")
-            .AddEdge("gateway-api", "gateway", "api", "18 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "HTTPS", "/service-map/gateway-api")
-            .AddEdge("api-queue", "api", "queue", "34 ms", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "publish", "/service-map/api-queue")
-            .AddEdge("worker-queue", "worker", "queue", "lag 9m", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal, "consume", "/service-map/worker-queue")
-            .AddEdge("worker-sql", "worker", "sql", "412 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Straight, "P95", "/service-map/worker-sql")
-            .AddEdge("team-api", "team", "api", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved, href: "/service-map/team-api")
-            .AddEdge("team-worker", "team", "worker", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved, href: "/service-map/team-worker");
+            .AddEdge("gateway-api", "gateway", "api", "18 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "HTTPS", "/service-map/gateway-api")
+            .AddEdge("api-queue", "api", "queue", "34 ms", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "publish", "/service-map/api-queue")
+            .AddEdge("worker-queue", "worker", "queue", "lag 9m", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal, "consume", "/service-map/worker-queue")
+            .AddEdge("worker-sql", "worker", "sql", "412 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "P95", "/service-map/worker-sql")
+            .AddEdge("team-api", "team", "api", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved, href: "/service-map/team-api")
+            .AddEdge("team-worker", "team", "worker", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved, href: "/service-map/team-worker");
     }
 
     private static string FindRepositoryRoot() {

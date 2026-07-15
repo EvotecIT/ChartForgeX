@@ -164,8 +164,8 @@ public sealed partial class SvgVisualBlockRenderer {
             var centerY = y + rowHeight / 2;
             WriteMarker(writer, list, item, i, content.X + 8, centerY);
             var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, VisualBlockRendering.EstimateTextWidth(item.Value!, 11.5) + 10);
-            WriteText(writer, item.Text, content.X + markerWidth, y + rowHeight * 0.66, content.Width - markerWidth - valueWidth - 6, VisualTextAlignment.Left, theme.Text, theme.FontFamily, list.Dense ? 11 : 12.5, "500");
-            if (!string.IsNullOrEmpty(item.Value)) WriteText(writer, item.Value!, content.X + content.Width - valueWidth, y + rowHeight * 0.66, valueWidth, VisualTextAlignment.Right, theme.MutedText, theme.FontFamily, list.Dense ? 10.5 : 11.5, "600");
+            WriteText(writer, item.Text, content.X + markerWidth, y + rowHeight * 0.66, content.Width - markerWidth - valueWidth - 6, TextAlignment.Left, theme.Text, theme.FontFamily, list.Dense ? 11 : 12.5, "500");
+            if (!string.IsNullOrEmpty(item.Value)) WriteText(writer, item.Value!, content.X + content.Width - valueWidth, y + rowHeight * 0.66, valueWidth, TextAlignment.Right, theme.MutedText, theme.FontFamily, list.Dense ? 10.5 : 11.5, "600");
             y += rowHeight;
         }
     }
@@ -387,7 +387,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var baseline = footerY + footerHeight * 0.64;
         if (url.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "visual-action-link").Attribute("href", url).Attribute("target", "_top").EndStartElement().Line();
-        WriteText(writer, label, x, baseline, Math.Max(1, width - 38), VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, fontSize, "500");
+        WriteText(writer, label, x, baseline, Math.Max(1, width - 38), TextAlignment.Left, theme.MutedText, theme.FontFamily, fontSize, "500");
         RenderActionSymbol(writer, symbol, x + width - 18, footerY + footerHeight * 0.5, 12, theme.Text, theme, fontSize);
         if (url.Length > 0) writer.EndElement().Line();
     }
@@ -417,16 +417,16 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("data-cfx-ratio", VisualBlockRendering.WorkloadRatio(row))
                 .EndStartElement().Line();
             writer.StartElement("circle").Attribute("data-cfx-role", "workload-avatar").Attribute("cx", avatarX + avatarSize / 2).Attribute("cy", centerY).Attribute("r", avatarSize / 2).Attribute("fill", color.WithAlpha(42).ToCss()).Attribute("stroke", color.WithAlpha(105).ToCss()).EndEmptyElement().Line();
-            WriteText(writer, WorkloadAvatar(row), avatarX + 1, centerY + 4, avatarSize - 2, VisualTextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "800");
+            WriteText(writer, WorkloadAvatar(row), avatarX + 1, centerY + 4, avatarSize - 2, TextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "800");
             var checkWidth = block.ShowSelectionControls ? 28 : 0;
             var valueWidth = Math.Min(98, Math.Max(52, VisualBlockRendering.EstimateTextWidth(VisualBlockRendering.WorkloadDisplayValue(row), theme.SubtitleFontSize) + 10));
             var textX = avatarX + avatarSize + 14;
             var controlX = content.X + content.Width - checkWidth + 4;
             var textWidth = Math.Max(24, content.X + content.Width - textX - valueWidth - checkWidth - 10);
-            WriteText(writer, row.Label, textX, y + 15, textWidth, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
-            if (row.Subtitle.Length > 0) WriteText(writer, row.Subtitle, textX, y + 31, textWidth, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "500");
+            WriteText(writer, row.Label, textX, y + 15, textWidth, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
+            if (row.Subtitle.Length > 0) WriteText(writer, row.Subtitle, textX, y + 31, textWidth, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "500");
             var valueText = row.Note.Length > 0 ? row.Note + "  " + VisualBlockRendering.WorkloadDisplayValue(row) : VisualBlockRendering.WorkloadDisplayValue(row);
-            WriteText(writer, valueText, content.X + content.Width - valueWidth - checkWidth, y + 19, valueWidth, VisualTextAlignment.Right, row.Status == VisualStatus.Negative || row.Status == VisualStatus.Warning ? color : theme.Text, theme.FontFamily, theme.SubtitleFontSize, "750");
+            WriteText(writer, valueText, content.X + content.Width - valueWidth - checkWidth, y + 19, valueWidth, TextAlignment.Right, row.Status == VisualStatus.Negative || row.Status == VisualStatus.Warning ? color : theme.Text, theme.FontFamily, theme.SubtitleFontSize, "750");
             if (block.ShowProgressRails) {
                 var railY = y + rowHeight - 13;
                 var railX = textX;
@@ -490,8 +490,8 @@ public sealed partial class SvgVisualBlockRenderer {
         var valueSize = Math.Min(48, Math.Max(23, outerRadius * 0.28));
         var labelSize = Math.Min(18, Math.Max(10, outerRadius * 0.115));
         if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy - valueSize * 1.02, Math.Max(12, outerRadius * 0.10), theme.MutedText);
-        WriteText(writer, card.Value, cx - outerRadius * 0.72, cy - valueSize * 0.12, outerRadius * 1.44, VisualTextAlignment.Center, theme.Text, theme.FontFamily, valueSize, "850");
-        WriteText(writer, card.Label, cx - outerRadius * 0.72, cy + valueSize * 0.72, outerRadius * 1.44, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, labelSize, "700");
+        WriteText(writer, card.Value, cx - outerRadius * 0.72, cy - valueSize * 0.12, outerRadius * 1.44, TextAlignment.Center, theme.Text, theme.FontFamily, valueSize, "850");
+        WriteText(writer, card.Label, cx - outerRadius * 0.72, cy + valueSize * 0.72, outerRadius * 1.44, TextAlignment.Center, theme.MutedText, theme.FontFamily, labelSize, "700");
         writer.EndElement().Line();
     }
 
@@ -521,12 +521,12 @@ public sealed partial class SvgVisualBlockRenderer {
         return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpperInvariant();
     }
 
-    private static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, VisualTextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight) {
+    private static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight) {
         var fitted = VisualBlockRendering.FitText(text, fontSize, Math.Max(1, width));
         var anchor = "start";
         var textX = x;
-        if (alignment == VisualTextAlignment.Center) { anchor = "middle"; textX = x + width / 2; }
-        else if (alignment == VisualTextAlignment.Right) { anchor = "end"; textX = x + width; }
+        if (alignment == TextAlignment.Center) { anchor = "middle"; textX = x + width / 2; }
+        else if (alignment == TextAlignment.Right) { anchor = "end"; textX = x + width; }
         writer.StartElement("text").Attribute("data-cfx-role", "visual-text").Attribute("x", textX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", color.ToCss()).Attribute("font-family", fontFamily).Attribute("font-size", fontSize).Attribute("font-weight", weight).Text(fitted).EndElement().Line();
     }
 

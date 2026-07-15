@@ -87,7 +87,7 @@ public sealed class MermaidWardleyNode {
 /// <summary>Describes a parsed Wardley dependency link.</summary>
 public sealed class MermaidWardleyLink {
     /// <summary>Initializes a parsed Wardley dependency link.</summary>
-    public MermaidWardleyLink(string from, string to, string label, bool dashed, WardleyMapFlow flow, MermaidSourceSpan span) {
+    public MermaidWardleyLink(string from, string to, string label, bool dashed, VisualLinkDirection flow, MermaidSourceSpan span) {
         From = from ?? throw new ArgumentNullException(nameof(from));
         To = to ?? throw new ArgumentNullException(nameof(to));
         Label = label ?? throw new ArgumentNullException(nameof(label));
@@ -109,7 +109,7 @@ public sealed class MermaidWardleyLink {
     public bool Dashed { get; }
 
     /// <summary>Gets the optional Mermaid flow hint.</summary>
-    public WardleyMapFlow Flow { get; }
+    public VisualLinkDirection Flow { get; }
 
     /// <summary>Gets the source span for the link statement.</summary>
     public MermaidSourceSpan Span { get; }

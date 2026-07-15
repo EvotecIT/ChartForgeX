@@ -9,6 +9,37 @@ using ChartForgeX.VisualBlocks;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static void ResponsiveVisualCanvasPreservesDesignLayoutAcrossOutputs() {
+        var canvas = VisualCanvas.Create(960, 540)
+            .WithResponsiveLayout(1920, 1080, VisualCanvasImageFit.Contain)
+            .WithTitle("Responsive wallpaper")
+            .AddText(120, 120, 900, "One design, multiple outputs", 48, ChartColor.White)
+            .AddInfoTile(120, 240, 520, 160, "CPU", "Processor", "42%");
+
+        var svg = canvas.ToSvg();
+        var png = RasterImageDecoder.Decode(canvas.ToPng());
+        Assert(svg.Contains("width=\"960\"", StringComparison.Ordinal) && svg.Contains("viewBox=\"0 0 1920 1080\"", StringComparison.Ordinal), "Responsive SVG should expose output dimensions while preserving design coordinates.");
+        Assert(svg.Contains("preserveAspectRatio=\"xMidYMid meet\"", StringComparison.Ordinal), "Responsive contain mode should preserve the design aspect ratio.");
+        Assert(png.Width == 960 && png.Height == 540, "Responsive PNG should render the requested output dimensions.");
+        Assert(canvas.AnalyzeLayout().Diagnostics.Count == 0, "Responsive layout analysis should validate layers against design coordinates.");
+
+        var letterboxed = VisualCanvas.Create(320, 320)
+            .WithResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
+            .WithBackground(ChartColor.FromHex("#123456"), ChartColor.FromHex("#214365"));
+        var letterboxedSvg = letterboxed.ToSvg();
+        var letterboxedPng = RasterImageDecoder.Decode(letterboxed.ToPng());
+        Assert(letterboxedSvg.Contains("background-color:#214365", StringComparison.Ordinal), "Opaque responsive SVG contain output should fill its viewport letterbox with the PNG background color.");
+        Assert(letterboxedPng.Pixels[0] == 0x21 && letterboxedPng.Pixels[1] == 0x43 && letterboxedPng.Pixels[2] == 0x65 && letterboxedPng.Pixels[3] == 255, "Opaque responsive PNG contain output should preserve the shared letterbox color.");
+
+        var transparent = VisualCanvas.Create(320, 320)
+            .WithResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
+            .WithBackdrop(VisualCanvasBackdropStyle.Transparent);
+        var transparentSvg = transparent.ToSvg();
+        var transparentPng = RasterImageDecoder.Decode(transparent.ToPng());
+        Assert(!transparentSvg.Contains("background-color:", StringComparison.Ordinal), "Transparent responsive SVG letterboxes should remain transparent.");
+        Assert(transparentPng.Pixels[3] == 0, "Transparent responsive PNG letterboxes should remain transparent.");
+    }
+
     private static void VisualCanvasComposesWallpaperStyleArtboards() {
         var canvas = VisualCanvas.CreateSocialPreview()
             .WithTitle("PowerBGInfo social preview")
@@ -23,7 +54,7 @@ internal static partial class SmokeTests {
                 new VisualCanvasTextRun("Power", ChartColor.FromHex("#F8FAFC")),
                 new VisualCanvasTextRun("BGInfo", ChartColor.FromHex("#2F80FF"))
             })
-            .AddText(240, 402, 720, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), VisualCanvasTextAlignment.Center)
+            .AddText(240, 402, 720, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), TextAlignment.Center)
             .AddFeatureStrip(290, 522, 620, 62, new[] {
                 new VisualCanvasFeatureItem("PS", "LIGHTWEIGHT"),
                 new VisualCanvasFeatureItem("OK", "SECURE"),

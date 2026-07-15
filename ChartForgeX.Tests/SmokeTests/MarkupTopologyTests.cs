@@ -50,6 +50,7 @@ edges:
 
         Assert(!result.HasErrors, "Table topology markup should parse without errors: " + Diagnostics(result));
         var code = MarkupTopologyCSharpEmitter.Emit(result.Document!);
+        Assert(code.StartsWith("using ChartForgeX.Primitives;", System.StringComparison.Ordinal), "C# emitter should import the shared link-direction primitives it emits.");
         Assert(code.Contains("TopologyChart.Create()", System.StringComparison.Ordinal), "C# emitter should create a topology chart.");
         Assert(code.Contains(".AddGroup(\"emea\", \"EMEA\", 0, 0, 260, 160, TopologyHealthStatus.Warning", System.StringComparison.Ordinal), "C# emitter should include parsed groups.");
         Assert(code.Contains(".WithNodeBadge(\"dc-emea\", \"GC\")", System.StringComparison.Ordinal), "C# emitter should include node badge helpers.");
@@ -154,7 +155,7 @@ edge api -> db ""status:warning"" status:healthy
         Assert(result.Document.Nodes[0].Display == TopologyNodeDisplayMode.Tile, "Command nodes should map display.");
         Assert(result.Document.Edges[0].Label == "status:warning", "Quoted command edge labels that look like attributes should stay labels.");
         Assert(result.Document.Edges[0].Status == TopologyHealthStatus.Healthy, "Attributes after quoted edge labels should still be parsed.");
-        Assert(result.Document.Edges[0].Direction == TopologyDirection.Forward, "Arrow commands should default -> to forward direction.");
+        Assert(result.Document.Edges[0].Direction == VisualLinkDirection.Forward, "Arrow commands should default -> to forward direction.");
 
         const string sectionSource = @"nodes:
 node api ""API | Gateway"" kind:service status:healthy
@@ -487,7 +488,7 @@ rows:
         Assert(table.Subtitle == "Typed native table", "Typed table markup should map subtitle.");
         Assert(table.Supports(TableArtifactCapabilities.Virtualization), "Typed table markup should map virtualization capability.");
         Assert(table.TotalRowCount == 125, "Typed table markup should map total row count.");
-        Assert(table.Columns[2].Type == TableArtifactColumnType.Number && table.Columns[2].Alignment == VisualTextAlignment.Right, "Typed table columns should map type and alignment.");
+        Assert(table.Columns[2].Type == TableArtifactColumnType.Number && table.Columns[2].Alignment == TextAlignment.Right, "Typed table columns should map type and alignment.");
         Assert(!table.Columns[2].Searchable && table.Columns[2].Sortable && !table.Columns[2].Filterable, "Typed table columns should map host behavior flags.");
         Assert(table.Rows[0].Key == "api" && table.Rows[0].Cells[0].DisplayText == "API", "Typed table rows should use key without rendering it as the first cell.");
         Assert(table.Rows[1].Cells[1].Status == VisualStatus.Warning, "Status columns should map recognized status text to cell status.");
@@ -655,7 +656,7 @@ flowchart LR
 
             var emit = RunMarkupCli("emit", fixture, "--target", "csharp");
             Assert(emit.ExitCode == 0, "CLI emit should succeed for warning-only markup: " + emit.StandardError);
-            Assert(emit.StandardOutput.TrimStart().StartsWith("using ChartForgeX.Topology;", StringComparison.Ordinal), "CLI emit stdout should start with generated C#.");
+            Assert(emit.StandardOutput.TrimStart().StartsWith("using ChartForgeX.Primitives;", StringComparison.Ordinal), "CLI emit stdout should start with generated C# imports.");
             Assert(!emit.StandardOutput.Contains("warning(", StringComparison.OrdinalIgnoreCase), "CLI emit stdout should not be contaminated by diagnostics.");
             Assert(emit.StandardError.Contains("warning(3): Unknown topology command 'unknownThing'.", StringComparison.Ordinal), "CLI emit should write parser warnings to stderr.");
         } finally {

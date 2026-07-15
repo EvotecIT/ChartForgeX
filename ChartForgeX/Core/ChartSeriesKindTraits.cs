@@ -35,6 +35,26 @@ internal static class ChartSeriesKindTraits {
 
     public static bool IsExclusive(ChartSeriesKind kind) => Array.IndexOf(ExclusiveKinds, kind) >= 0;
 
+    public static bool SupportsPointSeriesMapping(ChartSeriesKind kind) =>
+        kind == ChartSeriesKind.Line ||
+        kind == ChartSeriesKind.StepLine ||
+        kind == ChartSeriesKind.Area ||
+        kind == ChartSeriesKind.StepArea ||
+        kind == ChartSeriesKind.StackedArea ||
+        kind == ChartSeriesKind.Scatter ||
+        kind == ChartSeriesKind.Bar ||
+        kind == ChartSeriesKind.HorizontalBar ||
+        kind == ChartSeriesKind.Lollipop;
+
+    public static bool UsesVerticalBaseline(ChartSeriesKind kind) =>
+        kind == ChartSeriesKind.Area ||
+        kind == ChartSeriesKind.StepArea ||
+        kind == ChartSeriesKind.StackedArea ||
+        kind == ChartSeriesKind.Bar ||
+        kind == ChartSeriesKind.Lollipop;
+
+    public static bool UsesHorizontalBaseline(ChartSeriesKind kind) => kind == ChartSeriesKind.HorizontalBar;
+
     public static bool RequiresSingleSeries(ChartSeriesKind kind) {
         return kind == ChartSeriesKind.Gauge ||
             kind == ChartSeriesKind.CalendarHeatmap ||
@@ -70,7 +90,7 @@ internal static class ChartSeriesKindTraits {
     }
 
     public static bool UsesCartesianXAxis(Chart chart) {
-        if (chart.Series.Count == 0) return false;
+        if (chart.Series.Count == 0) return true;
         foreach (var series in chart.Series) {
             if (series == null || IsExclusive(series.Kind)) return false;
         }

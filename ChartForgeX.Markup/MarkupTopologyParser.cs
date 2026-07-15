@@ -274,11 +274,11 @@ public sealed class MarkupTopologyParser {
             firstAttribute = 5;
         }
 
-        var defaultDirection = tokens[2] == "->" ? TopologyDirection.Forward : TopologyDirection.None;
+        var defaultDirection = tokens[2] == "->" ? VisualLinkDirection.Forward : VisualLinkDirection.None;
         AddEdge(document, string.Empty, tokens[1], tokens[3], label, Attributes(tokens, firstAttribute), defaultDirection);
     }
 
-    private static void AddEdge(MarkupTopologyDocument document, string id, string source, string target, string? label, Dictionary<string, string> attributes, TopologyDirection defaultDirection = TopologyDirection.None) {
+    private static void AddEdge(MarkupTopologyDocument document, string id, string source, string target, string? label, Dictionary<string, string> attributes, VisualLinkDirection defaultDirection = VisualLinkDirection.None) {
         var edgeId = string.IsNullOrWhiteSpace(id) ? Value(attributes, "id", MakeEdgeId(document, source, target)) : id;
         document.Edges.Add(new MarkupTopologyEdge {
             Id = edgeId,
@@ -287,7 +287,7 @@ public sealed class MarkupTopologyParser {
             Label = label,
             Kind = ParseEnum<TopologyEdgeKind>(Value(attributes, "kind", "dependency")),
             Status = ParseEnum<TopologyHealthStatus>(Value(attributes, "status", "unknown")),
-            Direction = attributes.TryGetValue("direction", out var direction) && !string.IsNullOrWhiteSpace(direction) ? ParseEnum<TopologyDirection>(direction) : defaultDirection,
+            Direction = attributes.TryGetValue("direction", out var direction) && !string.IsNullOrWhiteSpace(direction) ? ParseEnum<VisualLinkDirection>(direction) : defaultDirection,
             Routing = ParseEnum<TopologyEdgeRouting>(Value(attributes, "routing", "orthogonal"))
         });
     }

@@ -12,17 +12,17 @@ public sealed partial class PngVisualBlockRenderer {
         var fontSize = Math.Max(9, table.Dense ? 10.5 : 11.5);
         var badgeWidth = Math.Min(width, Math.Max(28, canvas.MeasureTextEmphasizedWidth(cell.BadgeText, fontSize) + 18));
         var badgeHeight = Math.Min(22, Math.Max(18, height));
-        var badgeX = BadgeX(x, width, badgeWidth, cell.Alignment ?? VisualTextAlignment.Left);
+        var badgeX = BadgeX(x, width, badgeWidth, cell.Alignment ?? TextAlignment.Left);
         var badgeY = y + Math.Max(0, (height - badgeHeight) / 2);
         BadgeColors(theme, color, cell.BadgeStyle, out var fill, out var stroke, out var text);
         if (fill.A > 0) canvas.FillRoundedRect(badgeX, badgeY, badgeWidth, badgeHeight, Math.Min(8, badgeHeight / 2), fill);
         canvas.StrokeRoundedRect(badgeX, badgeY, badgeWidth, badgeHeight, Math.Min(8, badgeHeight / 2), stroke, 1);
-        DrawAlignedText(canvas, cell.BadgeText, badgeX + 7, badgeY + (badgeHeight - fontSize) * 0.52, badgeWidth - 14, VisualTextAlignment.Center, text, fontSize, true);
+        DrawAlignedText(canvas, cell.BadgeText, badgeX + 7, badgeY + (badgeHeight - fontSize) * 0.52, badgeWidth - 14, TextAlignment.Center, text, fontSize, true);
     }
 
-    private static double BadgeX(double x, double width, double badgeWidth, VisualTextAlignment alignment) {
-        if (alignment == VisualTextAlignment.Center) return x + (width - badgeWidth) / 2;
-        if (alignment == VisualTextAlignment.Right) return x + width - badgeWidth;
+    private static double BadgeX(double x, double width, double badgeWidth, TextAlignment alignment) {
+        if (alignment == TextAlignment.Center) return x + (width - badgeWidth) / 2;
+        if (alignment == TextAlignment.Right) return x + width - badgeWidth;
         return x;
     }
 

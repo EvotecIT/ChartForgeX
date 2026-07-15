@@ -82,8 +82,14 @@ internal static class ChartGuards {
             if (chart.Annotations[i] == null) throw new InvalidOperationException("Chart annotations collection must not contain null entries.");
         }
 
-        foreach (var label in chart.Options.XAxisLabels) {
-            if (label.Text == null) throw new InvalidOperationException("X-axis labels must not contain null text.");
+        ValidateAxisLabels(chart.Options.XAxis, "X-axis");
+        ValidateAxisLabels(chart.Options.YAxis, "Y-axis");
+        ValidateAxisLabels(chart.Options.SecondaryYAxis, "Secondary y-axis");
+    }
+
+    private static void ValidateAxisLabels(ChartAxis axis, string axisName) {
+        foreach (var label in axis.Labels) {
+            if (label.Text == null) throw new InvalidOperationException(axisName + " labels must not contain null text.");
         }
     }
 

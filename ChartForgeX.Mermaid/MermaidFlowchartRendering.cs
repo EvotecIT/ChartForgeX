@@ -25,7 +25,7 @@ public static class MermaidFlowchartRendering {
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.Layered, ToTopologyDirection(document.Direction));
+            .WithLayout(TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
 
         for (var index = 0; index < document.Subgraphs.Count; index++) {
             var subgraph = document.Subgraphs[index];
@@ -82,7 +82,7 @@ public static class MermaidFlowchartRendering {
                 edge.Label,
                 TopologyEdgeKind.Dependency,
                 TopologyHealthStatus.Unknown,
-                ToTopologyDirection(edge.Operator),
+                ToVisualLinkDirection(edge.Operator),
                 TopologyEdgeRouting.Orthogonal);
 
             var target = chart.Edges[chart.Edges.Count - 1];
@@ -174,7 +174,7 @@ public static class MermaidFlowchartRendering {
         return null;
     }
 
-    private static TopologyLayoutDirection ToTopologyDirection(MermaidFlowchartDirection direction) {
+    private static TopologyLayoutDirection ToVisualLinkDirection(MermaidFlowchartDirection direction) {
         switch (direction) {
             case MermaidFlowchartDirection.LeftToRight:
                 return TopologyLayoutDirection.LeftToRight;
@@ -190,11 +190,11 @@ public static class MermaidFlowchartRendering {
         }
     }
 
-    private static TopologyDirection ToTopologyDirection(string edgeOperator) {
-        if (edgeOperator.IndexOf("<", StringComparison.Ordinal) >= 0 && edgeOperator.IndexOf(">", StringComparison.Ordinal) >= 0) return TopologyDirection.Bidirectional;
-        if (edgeOperator.IndexOf("<", StringComparison.Ordinal) >= 0) return TopologyDirection.Backward;
-        if (edgeOperator.IndexOf(">", StringComparison.Ordinal) >= 0 || edgeOperator.IndexOf("x", StringComparison.Ordinal) >= 0 || edgeOperator.IndexOf("o", StringComparison.Ordinal) >= 0) return TopologyDirection.Forward;
-        return TopologyDirection.None;
+    private static VisualLinkDirection ToVisualLinkDirection(string edgeOperator) {
+        if (edgeOperator.IndexOf("<", StringComparison.Ordinal) >= 0 && edgeOperator.IndexOf(">", StringComparison.Ordinal) >= 0) return VisualLinkDirection.Bidirectional;
+        if (edgeOperator.IndexOf("<", StringComparison.Ordinal) >= 0) return VisualLinkDirection.Backward;
+        if (edgeOperator.IndexOf(">", StringComparison.Ordinal) >= 0 || edgeOperator.IndexOf("x", StringComparison.Ordinal) >= 0 || edgeOperator.IndexOf("o", StringComparison.Ordinal) >= 0) return VisualLinkDirection.Forward;
+        return VisualLinkDirection.None;
     }
 
     private static TopologyEdgeLineStyle ToLineStyle(string edgeOperator) {

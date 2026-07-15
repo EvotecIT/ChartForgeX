@@ -39,7 +39,7 @@ public sealed partial class SvgVisualBlockRenderer {
 
     private static void RenderActivitySection(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width) {
         var theme = block.Options.Theme;
-        WriteText(writer, item.Title.ToUpperInvariant(), x + 40, y + 14, width - 40, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
+        WriteText(writer, item.Title.ToUpperInvariant(), x + 40, y + 14, width - 40, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-section-node").Attribute("cx", spineX).Attribute("cy", y + 10).Attribute("r", 4).Attribute("fill", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
     }
 
@@ -48,14 +48,14 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-check-node").Attribute("cx", spineX + 24).Attribute("cy", y + 11).Attribute("r", 4).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
         if (item.Completed) writer.StartElement("polyline").Attribute("data-cfx-role", "activity-checkmark").Attribute("points", FormatPoint(spineX + 20, y + 11) + " " + FormatPoint(spineX + 23, y + 15) + " " + FormatPoint(spineX + 29, y + 7)).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", 1.5).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
         var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
-        WriteText(writer, item.Title, x + 58, y + 15, width - 58, VisualTextAlignment.Left, textColor, theme.FontFamily, theme.SubtitleFontSize, item.Completed ? "500" : "650");
+        WriteText(writer, item.Title, x + 58, y + 15, width - 58, TextAlignment.Left, textColor, theme.FontFamily, theme.SubtitleFontSize, item.Completed ? "500" : "650");
         if (item.Completed) writer.StartElement("line").Attribute("data-cfx-role", "activity-check-strike").Attribute("x1", x + 58).Attribute("y1", y + 10).Attribute("x2", x + Math.Min(width, 58 + VisualBlockRendering.EstimateTextWidth(item.Title, theme.SubtitleFontSize))).Attribute("y2", y + 10).Attribute("stroke", textColor.ToCss()).Attribute("stroke-opacity", 0.55).EndEmptyElement().Line();
     }
 
     private static void RenderActivityHiddenSummary(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {
         var theme = block.Options.Theme;
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-hidden-node").Attribute("cx", spineX).Attribute("cy", y + 13).Attribute("r", 8).Attribute("fill", color.WithAlpha(42).ToCss()).Attribute("stroke", color.ToCss()).EndEmptyElement().Line();
-        WriteText(writer, item.HiddenCount.ToString(CultureInfo.InvariantCulture) + " " + item.Title, x + 40, y + 17, width - 40, VisualTextAlignment.Left, color, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize), "750");
+        WriteText(writer, item.HiddenCount.ToString(CultureInfo.InvariantCulture) + " " + item.Title, x + 40, y + 17, width - 40, TextAlignment.Left, color, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize), "750");
     }
 
     private static void RenderActivityEvent(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double rowHeight, double spineX, double x, double width, ChartColor color) {
@@ -77,20 +77,20 @@ public sealed partial class SvgVisualBlockRenderer {
         var nodeRadius = item.Symbol.Length > 0 ? 11 : 10;
         var nodeFill = item.Symbol.Length > 0 ? color : color.WithAlpha(52);
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-event-node").Attribute("cx", spineX).Attribute("cy", y + 15).Attribute("r", nodeRadius).Attribute("fill", nodeFill.ToCss()).Attribute("stroke", color.ToCss()).Attribute("stroke-width", item.Symbol.Length > 0 ? 0 : 2).EndEmptyElement().Line();
-        if (item.Symbol.Length > 0) WriteText(writer, item.Symbol, spineX - nodeRadius, y + 19, nodeRadius * 2, VisualTextAlignment.Center, ChartColor.White, theme.FontFamily, Math.Max(8, theme.SubtitleFontSize - 3), "850");
+        if (item.Symbol.Length > 0) WriteText(writer, item.Symbol, spineX - nodeRadius, y + 19, nodeRadius * 2, TextAlignment.Center, ChartColor.White, theme.FontFamily, Math.Max(8, theme.SubtitleFontSize - 3), "850");
 
         var trailingWidth = ActivityTrailingWidth(item, theme.SubtitleFontSize);
-        WriteText(writer, item.Title, x + 40, y + 15, width - 56 - trailingWidth, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "800");
+        WriteText(writer, item.Title, x + 40, y + 15, width - 56 - trailingWidth, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "800");
         if (item.Badge.Length > 0) {
             var badgeWidth = Math.Min(116, VisualBlockRendering.EstimateTextWidth(item.Badge, theme.SubtitleFontSize) + 18);
             writer.StartElement("rect").Attribute("data-cfx-role", "activity-badge").Attribute("x", x + width - badgeWidth).Attribute("y", y).Attribute("width", badgeWidth).Attribute("height", 22).Attribute("rx", 8).Attribute("fill", color.WithAlpha(38).ToCss()).EndEmptyElement().Line();
-            WriteText(writer, item.Badge, x + width - badgeWidth + 7, y + 15, badgeWidth - 14, VisualTextAlignment.Center, color, theme.FontFamily, theme.SubtitleFontSize, "750");
+            WriteText(writer, item.Badge, x + width - badgeWidth + 7, y + 15, badgeWidth - 14, TextAlignment.Center, color, theme.FontFamily, theme.SubtitleFontSize, "750");
         } else if (item.Timestamp.Length > 0) {
             var timestampWidth = ActivityTimestampWidth(item.Timestamp, theme.SubtitleFontSize);
-            WriteText(writer, item.Timestamp, x + width - timestampWidth, y + 15, timestampWidth, VisualTextAlignment.Right, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
+            WriteText(writer, item.Timestamp, x + width - timestampWidth, y + 15, timestampWidth, TextAlignment.Right, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
         }
 
-        if (item.Detail.Length > 0) WriteText(writer, item.Detail, x + 40, y + 34, width - 40, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
+        if (item.Detail.Length > 0) WriteText(writer, item.Detail, x + 40, y + 34, width - 40, TextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
     }
 
     private static double ActivityTrailingWidth(ActivityTimelineItem item, double fontSize) {

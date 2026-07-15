@@ -34,7 +34,7 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawActivitySection(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width) {
         var theme = block.Options.Theme;
         canvas.DrawCircle(spineX, y + 10, 4, theme.PlotBorder);
-        DrawAlignedText(canvas, item.Title.ToUpperInvariant(), x + 40, y + 4, width - 40, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
+        DrawAlignedText(canvas, item.Title.ToUpperInvariant(), x + 40, y + 4, width - 40, TextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
     }
 
     private static void DrawActivityChecklistItem(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {
@@ -46,7 +46,7 @@ public sealed partial class PngVisualBlockRenderer {
         }
 
         var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
-        DrawAlignedText(canvas, item.Title, x + 58, y + 5, width - 58, VisualTextAlignment.Left, textColor, theme.SubtitleFontSize, item.Completed ? false : true);
+        DrawAlignedText(canvas, item.Title, x + 58, y + 5, width - 58, TextAlignment.Left, textColor, theme.SubtitleFontSize, item.Completed ? false : true);
         if (item.Completed) canvas.DrawLine(x + 58, y + 10, x + Math.Min(width, 58 + canvas.MeasureTextWidth(FitText(canvas, item.Title, theme.SubtitleFontSize, width - 58), theme.SubtitleFontSize)), y + 10, textColor.WithAlpha(140), 1);
     }
 
@@ -54,7 +54,7 @@ public sealed partial class PngVisualBlockRenderer {
         var theme = block.Options.Theme;
         canvas.DrawCircle(spineX, y + 13, 8, color.WithAlpha(42));
         canvas.DrawCircleOutline(spineX, y + 13, 8, color, 1);
-        DrawAlignedText(canvas, item.HiddenCount.ToString(CultureInfo.InvariantCulture) + " " + item.Title, x + 40, y + 6, width - 40, VisualTextAlignment.Left, color, Math.Max(12, theme.SubtitleFontSize), true);
+        DrawAlignedText(canvas, item.HiddenCount.ToString(CultureInfo.InvariantCulture) + " " + item.Title, x + 40, y + 6, width - 40, TextAlignment.Left, color, Math.Max(12, theme.SubtitleFontSize), true);
     }
 
     private static void DrawActivityEvent(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double rowHeight, double spineX, double x, double width, ChartColor color) {
@@ -67,24 +67,24 @@ public sealed partial class PngVisualBlockRenderer {
         var nodeRadius = item.Symbol.Length > 0 ? 11 : 10;
         if (item.Symbol.Length > 0) {
             canvas.DrawCircle(spineX, y + 15, nodeRadius, color);
-            DrawAlignedText(canvas, item.Symbol, spineX - nodeRadius, y + 9, nodeRadius * 2, VisualTextAlignment.Center, ChartColor.White, Math.Max(8, theme.SubtitleFontSize - 3), true);
+            DrawAlignedText(canvas, item.Symbol, spineX - nodeRadius, y + 9, nodeRadius * 2, TextAlignment.Center, ChartColor.White, Math.Max(8, theme.SubtitleFontSize - 3), true);
         } else {
             canvas.DrawCircle(spineX, y + 15, 10, color.WithAlpha(52));
             canvas.DrawCircleOutline(spineX, y + 15, 10, color, 2);
         }
 
         var trailingWidth = ActivityTrailingWidth(canvas, item, theme.SubtitleFontSize);
-        DrawAlignedText(canvas, item.Title, x + 40, y + 5, width - 56 - trailingWidth, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
+        DrawAlignedText(canvas, item.Title, x + 40, y + 5, width - 56 - trailingWidth, TextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
         if (item.Badge.Length > 0) {
             var badgeWidth = Math.Min(116, canvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize) + 18);
             canvas.FillRoundedRect(x + width - badgeWidth, y, badgeWidth, 22, 8, color.WithAlpha(38));
-            DrawAlignedText(canvas, item.Badge, x + width - badgeWidth + 7, y + 5, badgeWidth - 14, VisualTextAlignment.Center, color, theme.SubtitleFontSize, true);
+            DrawAlignedText(canvas, item.Badge, x + width - badgeWidth + 7, y + 5, badgeWidth - 14, TextAlignment.Center, color, theme.SubtitleFontSize, true);
         } else if (item.Timestamp.Length > 0) {
             var timestampWidth = ActivityTimestampWidth(canvas, item.Timestamp, theme.SubtitleFontSize);
-            DrawAlignedText(canvas, item.Timestamp, x + width - timestampWidth, y + 5, timestampWidth, VisualTextAlignment.Right, theme.MutedText, theme.SubtitleFontSize, false);
+            DrawAlignedText(canvas, item.Timestamp, x + width - timestampWidth, y + 5, timestampWidth, TextAlignment.Right, theme.MutedText, theme.SubtitleFontSize, false);
         }
 
-        if (item.Detail.Length > 0) DrawAlignedText(canvas, item.Detail, x + 40, y + 24, width - 40, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
+        if (item.Detail.Length > 0) DrawAlignedText(canvas, item.Detail, x + 40, y + 24, width - 40, TextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
     }
 
     private static double ActivityTrailingWidth(RgbaCanvas canvas, ActivityTimelineItem item, double fontSize) {

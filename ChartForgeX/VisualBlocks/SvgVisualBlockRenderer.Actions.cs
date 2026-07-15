@@ -27,6 +27,6 @@ public sealed partial class SvgVisualBlockRenderer {
             return;
         }
 
-        WriteText(writer, symbol, centerX - 14, centerY + fontSize * 0.34, 28, VisualTextAlignment.Right, color, theme.FontFamily, fontSize, "800");
+        WriteText(writer, symbol, centerX - 14, centerY + fontSize * 0.34, 28, TextAlignment.Right, color, theme.FontFamily, fontSize, "800");
     }
 }

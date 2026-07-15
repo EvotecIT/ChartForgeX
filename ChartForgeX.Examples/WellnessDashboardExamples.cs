@@ -45,7 +45,7 @@ internal static class WellnessDashboardExamples {
                 new VisualCanvasTextRun("Power", ChartColor.FromHex("#F8FAFC")),
                 new VisualCanvasTextRun("BGInfo", ChartColor.FromHex("#2F80FF"))
             })
-            .AddText(240, 402, 720, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), VisualCanvasTextAlignment.Center)
+            .AddText(240, 402, 720, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), TextAlignment.Center)
             .AddFeatureStrip(290, 522, 620, 62, new[] {
                 new VisualCanvasFeatureItem("PS", "LIGHTWEIGHT"),
                 new VisualCanvasFeatureItem("OK", "SECURE"),

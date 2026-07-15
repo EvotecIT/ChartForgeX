@@ -24,8 +24,8 @@ public sealed partial class SvgVisualBlockRenderer {
             var value = VisualBlockRendering.SegmentedItemDisplayValue(card, item);
             writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-funnel-stage").Attribute("data-cfx-label", item.Label).Attribute("data-cfx-value", item.Value).Attribute("data-cfx-segments", stage.SegmentCount).Attribute("data-cfx-x", stage.X).Attribute("data-cfx-width", stage.Width).EndStartElement().Line();
             writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-funnel-marker").Attribute("x", stage.X).Attribute("y", y + 2).Attribute("width", 7).Attribute("height", 24).Attribute("rx", 3.5).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, item.Label, stage.X + 11, y + 16, Math.Max(48, stage.Width + layout.GroupGap * 0.5), VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "500");
-            WriteText(writer, value, stage.X + 11, y + 35, Math.Max(48, stage.Width + layout.GroupGap * 0.5), VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 2), "850");
+            WriteText(writer, item.Label, stage.X + 11, y + 16, Math.Max(48, stage.Width + layout.GroupGap * 0.5), TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "500");
+            WriteText(writer, value, stage.X + 11, y + 35, Math.Max(48, stage.Width + layout.GroupGap * 0.5), TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 2), "850");
             for (var i = 0; i < stage.SegmentCount; i++) {
                 var x = stage.X + i * (layout.BarWidth + layout.BarGap);
                 writer.StartElement("rect")

@@ -83,20 +83,6 @@ public enum FlowArtifactConnectorKind {
 }
 
 /// <summary>
-/// Defines connector arrow behavior for workflow and process artifacts.
-/// </summary>
-public enum FlowArtifactConnectorDirection {
-    /// <summary>No direction marker.</summary>
-    None,
-    /// <summary>Source to target direction marker.</summary>
-    Forward,
-    /// <summary>Target to source direction marker.</summary>
-    Backward,
-    /// <summary>Bidirectional markers.</summary>
-    Bidirectional
-}
-
-/// <summary>
 /// Represents a product-neutral workflow or process flow artifact.
 /// </summary>
 public sealed class FlowArtifact {
@@ -198,7 +184,7 @@ public sealed class FlowArtifact {
     }
 
     /// <summary>Adds a flow connector.</summary>
-    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, FlowArtifactConnectorDirection direction = FlowArtifactConnectorDirection.Forward, VisualStatus status = VisualStatus.None, string? color = null) {
+    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, VisualLinkDirection direction = VisualLinkDirection.Forward, VisualStatus status = VisualStatus.None, string? color = null) {
         if (!ContainsStep(sourceId)) throw new ArgumentException("Flow connector source step does not exist: " + sourceId + ".", nameof(sourceId));
         if (!ContainsStep(targetId)) throw new ArgumentException("Flow connector target step does not exist: " + targetId + ".", nameof(targetId));
         var id = sourceId + "-" + targetId + "-" + (_connectors.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -365,7 +351,7 @@ public sealed class FlowArtifactConnector {
     public FlowArtifactConnectorKind Kind { get; set; }
 
     /// <summary>Gets or sets connector direction marker behavior.</summary>
-    public FlowArtifactConnectorDirection Direction { get; set; } = FlowArtifactConnectorDirection.Forward;
+    public VisualLinkDirection Direction { get; set; } = VisualLinkDirection.Forward;
 
     /// <summary>Gets or sets connector status.</summary>
     public VisualStatus Status { get; set; }

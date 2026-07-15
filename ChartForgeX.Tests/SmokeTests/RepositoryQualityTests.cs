@@ -3,10 +3,62 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static void PublicApiKeepsOneTypePerReusableConcept() {
+        var assembly = typeof(Chart).Assembly;
+        var exportedTypes = assembly.GetExportedTypes();
+        var exportedNames = exportedTypes.Select(type => type.FullName ?? type.Name).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var required in new[] {
+            "ChartForgeX.Accessibility.VisualAccessibility",
+            "ChartForgeX.Core.ChartAxis",
+            "ChartForgeX.Data.ChartDataset`1",
+            "ChartForgeX.Primitives.VisualLinkDirection",
+            "ChartForgeX.Primitives.VisualPanelFit",
+            "ChartForgeX.Themes.VisualDesignTokens",
+            "ChartForgeX.Typography.FontSpec",
+            "ChartForgeX.Typography.TextAlignment",
+            "ChartForgeX.Typography.TextStyle",
+            "ChartForgeX.Typography.TextStyleOverride"
+        }) {
+            Assert(exportedNames.Contains(required), "The 1.0 public API should expose " + required + ".");
+        }
+
+        foreach (var removed in new[] {
+            "ChartForgeX.Core.ChartGridPanelFit",
+            "ChartForgeX.Core.ChartTextStyle",
+            "ChartForgeX.Topology.TopologyDirection",
+            "ChartForgeX.VisualArtifacts.FlowArtifactConnectorDirection",
+            "ChartForgeX.VisualArtifacts.VisualArtifactRect",
+            "ChartForgeX.VisualBlocks.VisualGridPanelFit",
+            "ChartForgeX.VisualBlocks.VisualTextAlignment",
+            "ChartForgeX.VisualBlocks.WardleyMapFlow",
+            "ChartForgeX.VisualCanvas.VisualCanvasTextAlignment"
+        }) {
+            Assert(!exportedNames.Contains(removed), "Removed pre-1.0 duplicate type should not return: " + removed + ".");
+        }
+
+        Assert(!exportedTypes.Any(type => type.Namespace != null && type.Namespace.StartsWith("ChartForgeX.Simple", StringComparison.Ordinal)), "ChartForgeX.Simple should not return as a second chart-construction surface.");
+
+        var duplicateEnums = exportedTypes
+            .Where(type => type.IsEnum)
+            .GroupBy(type => string.Join("|", Enum.GetNames(type)), StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group => string.Join(", ", group.Select(type => type.FullName).OrderBy(name => name, StringComparer.Ordinal)))
+            .ToArray();
+        Assert(duplicateEnums.Length == 0, "Public enums with identical member sets require one shared owner: " + string.Join("; ", duplicateEnums));
+
+        var drawingReferences = assembly.GetReferencedAssemblies()
+            .Where(reference => reference.Name != null && reference.Name.StartsWith("System.Drawing", StringComparison.OrdinalIgnoreCase))
+            .Select(reference => reference.FullName)
+            .ToArray();
+        Assert(drawingReferences.Length == 0, "The dependency-free core must not reference System.Drawing: " + string.Join(", ", drawingReferences));
+    }
+
     private static void SourceFilesStayUnderArchitectureLineBudget() {
         const int lineBudget = 800;
         var root = FindRepositoryRoot();
@@ -235,7 +287,7 @@ internal static partial class SmokeTests {
         var gantt = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Gantt.cs"));
         var dottedMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.DottedMap.cs"));
 
-        Assert(writerHelpers.Contains("ChartTextStyle? style", StringComparison.Ordinal) && writerHelpers.Contains("WriteSvgTextStyleAttributes", StringComparison.Ordinal), "SVG markup-writer text helpers should support shared fitting and text-style attributes.");
+        Assert(writerHelpers.Contains("TextStyleOverride? style", StringComparison.Ordinal) && writerHelpers.Contains("WriteSvgTextStyleAttributes", StringComparison.Ordinal), "SVG markup-writer text helpers should support shared fitting and text-style attributes.");
         Assert(timeline.Contains("DrawSvgTextCenteredX(writer", StringComparison.Ordinal) && gantt.Contains("DrawSvgTextCenteredX(writer", StringComparison.Ordinal), "Timeline and Gantt centered labels should use the shared SVG fitted-text helper.");
         Assert(!timeline.Contains("DrawTimelineSvgTextCenteredX", StringComparison.Ordinal) && !gantt.Contains("DrawGanttSvgTextCenteredX", StringComparison.Ordinal), "Specialized SVG renderers should not keep duplicate fitted centered-text helpers.");
         Assert(!timeline.Contains("WriteTimelineSvgTextStyleAttributes", StringComparison.Ordinal) && !gantt.Contains("WriteGanttSvgTextStyleAttributes", StringComparison.Ordinal), "Specialized SVG renderers should not duplicate text-style attribute writers.");
@@ -605,7 +657,7 @@ internal static partial class SmokeTests {
             "WithLegendPosition",
             "WithPointLegend",
             "ChartTextRole",
-            "ChartTextStyle",
+            "TextStyleOverride",
             "WithTextStyle",
             "WithTitleStyle",
             "WithSubtitleStyle",

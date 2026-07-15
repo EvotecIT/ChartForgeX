@@ -11,12 +11,12 @@ public sealed partial class PngChartRenderer {
         var s = chart.Series[index]; var color = SeriesColor(chart, index);
         if (s.Kind == ChartSeriesKind.HorizontalBar) {
             var layout = HorizontalBarLayout(chart, plot, index);
-            var zeroX = Math.Min(plot.Right, Math.Max(plot.Left, map.X(0)));
+            var zeroX = map.XBaseline();
             var reservedLabels = new List<ChartLabelBounds>();
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
                 var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackHorizontalBaseValue(chart, index, p) : 0;
-                var baseX = chart.Options.BarMode == ChartBarMode.Stacked ? map.X(baseValue) : zeroX;
+                var baseX = chart.Options.BarMode == ChartBarMode.Stacked && baseValue != 0 ? map.X(baseValue) : zeroX;
                 var valueX = map.X(baseValue + p.Y);
                 var left = Math.Min(baseX, valueX);
                 var width = Math.Abs(valueX - baseX);
@@ -62,13 +62,13 @@ public sealed partial class PngChartRenderer {
 
         if (s.Kind == ChartSeriesKind.Bar) {
             var layout = BarLayout(chart, plot, index);
-            var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+            var zeroY = map.YBaseline();
             var reservedLabels = new List<ChartLabelBounds>();
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
                 var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackBaseValue(chart, index, p) : 0;
                 var y = map.Y(baseValue + p.Y);
-                var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.Y(baseValue) : zeroY;
+                var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
                 var barX = map.X(p.X) + layout.Offset - layout.BarWidth / 2;
                 var barY = Math.Min(y, baseY);
                 var barHeight = Math.Abs(baseY - y);
@@ -108,7 +108,7 @@ public sealed partial class PngChartRenderer {
             return;
         }
         if (s.Kind == ChartSeriesKind.Lollipop) {
-            var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+            var zeroY = map.YBaseline();
             var markerRadius = Math.Max(4, chart.Options.Theme.MarkerRadius + 2.25);
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
@@ -229,7 +229,7 @@ public sealed partial class PngChartRenderer {
             return;
         }
         if ((s.Kind == ChartSeriesKind.Area || s.Kind == ChartSeriesKind.StepArea) && s.Points.Count > 0) {
-            var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+            var zeroY = map.YBaseline();
             var pathPoints = MapSeriesPathPoints(s, map);
             var polygon = new List<ChartPoint>(pathPoints.Count + 2) {
                 new(pathPoints[0].X, zeroY)
@@ -330,7 +330,7 @@ public sealed partial class PngChartRenderer {
         foreach (var point in series.Points) {
             var baseValue = StackAreaBaseValue(chart, index, point);
             upper.Add(new ChartPoint(map.X(point.X), map.Y(baseValue + point.Y)));
-            lower.Add(new ChartPoint(map.X(point.X), map.Y(baseValue)));
+            lower.Add(new ChartPoint(map.X(point.X), map.YOrBaseline(baseValue)));
         }
 
         var upperPath = ChartPathBuilder.FromPoints(upper, ChartSeriesKind.Line, series.Smooth).Flatten(12);

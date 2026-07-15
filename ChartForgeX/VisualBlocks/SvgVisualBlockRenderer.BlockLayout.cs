@@ -73,7 +73,7 @@ public sealed partial class SvgVisualBlockRenderer {
         }
 
         var fontSize = Math.Max(10, Math.Min(14, rect.Height * 0.26));
-        WriteText(writer, item.Label, rect.X + 8, rect.Y + rect.Height * 0.56, Math.Max(1, rect.Width - 16), VisualTextAlignment.Center, theme.Text, theme.FontFamily, fontSize, "700");
+        WriteText(writer, item.Label, rect.X + 8, rect.Y + rect.Height * 0.56, Math.Max(1, rect.Width - 16), TextAlignment.Center, theme.Text, theme.FontFamily, fontSize, "700");
     }
 
     private static void WriteBlockLayoutEdge(SvgMarkupWriter writer, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {
@@ -94,7 +94,7 @@ public sealed partial class SvgVisualBlockRenderer {
 
         if (edge.Directed) WriteBlockArrowHead(writer, route, theme.Axis);
         if (edge.Label.Length == 0) return;
-        WriteText(writer, edge.Label, (route.X1 + route.X2) / 2 - 45, (route.Y1 + route.Y2) / 2 - 5, 90, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, 10.5, "600");
+        WriteText(writer, edge.Label, (route.X1 + route.X2) / 2 - 45, (route.Y1 + route.Y2) / 2 - 5, 90, TextAlignment.Center, theme.MutedText, theme.FontFamily, 10.5, "600");
     }
 
     private static void WriteBlockArrowHead(SvgMarkupWriter writer, BlockLayoutEdgeRoute route, ChartColor color) {

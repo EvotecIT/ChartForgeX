@@ -122,7 +122,7 @@ public sealed class TableArtifact {
     }
 
     /// <summary>Adds a table column.</summary>
-    public TableArtifact AddColumn(string id, string label, TableArtifactColumnType type = TableArtifactColumnType.Text, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null) {
+    public TableArtifact AddColumn(string id, string label, TableArtifactColumnType type = TableArtifactColumnType.Text, TextAlignment alignment = TextAlignment.Left, double? width = null) {
         if (_rows.Count > 0) throw new InvalidOperationException("Table artifact columns cannot be added after rows have been populated.");
         if (ContainsColumn(id)) throw new ArgumentException("Table artifact column ids must be unique.", nameof(id));
         _columns.Add(new TableArtifactColumn(id, label, type, alignment, width));
@@ -171,11 +171,11 @@ public sealed class TableArtifactColumn {
     private string _id;
     private string _label;
     private TableArtifactColumnType _type;
-    private VisualTextAlignment _alignment;
+    private TextAlignment _alignment;
     private double? _width;
 
     /// <summary>Initializes a table artifact column.</summary>
-    public TableArtifactColumn(string id, string label, TableArtifactColumnType type = TableArtifactColumnType.Text, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null) {
+    public TableArtifactColumn(string id, string label, TableArtifactColumnType type = TableArtifactColumnType.Text, TextAlignment alignment = TextAlignment.Left, double? width = null) {
         _id = RequireToken(id, nameof(id));
         _label = label ?? throw new ArgumentNullException(nameof(label));
         TableArtifactGuards.EnumDefined(type, nameof(type));
@@ -202,7 +202,7 @@ public sealed class TableArtifactColumn {
     }
 
     /// <summary>Gets or sets the static preview text alignment.</summary>
-    public VisualTextAlignment Alignment {
+    public TextAlignment Alignment {
         get => _alignment;
         set {
             TableArtifactGuards.EnumDefined(value, nameof(value));

@@ -225,9 +225,9 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartColor DataLabelConnectorColor(Chart chart) => chart.Options.DataLabelConnectorColor ?? chart.Options.Theme.MutedText;
 
-    private static ChartTextStyle SeriesDataLabelStyle(Chart chart, ChartSeries? series) => DataLabelStyle(chart, series);
+    private static TextStyleOverride SeriesDataLabelStyle(Chart chart, ChartSeries? series) => DataLabelStyle(chart, series);
 
-    private static ChartTextStyle DataLabelStyle(Chart chart, ChartSeries? series, int pointIndex = -1) {
+    private static TextStyleOverride DataLabelStyle(Chart chart, ChartSeries? series, int pointIndex = -1) {
         if (series != null && pointIndex >= 0 && pointIndex < series.PointDataLabelStyles.Count) {
             var pointStyle = series.PointDataLabelStyles[pointIndex];
             if (pointStyle != null && pointStyle.HasOverrides) return pointStyle;
@@ -366,15 +366,15 @@ public sealed partial class SvgChartRenderer {
         return Math.Max(minFontSize, fontSize);
     }
 
-    private static ChartColor StyleColor(ChartTextStyle? style, ChartColor fallback) => style?.Color ?? fallback;
+    private static ChartColor StyleColor(TextStyleOverride? style, ChartColor fallback) => style?.Color ?? fallback;
 
-    private static double StyleFontSize(ChartTextStyle? style, double fallback) => style?.FontSize ?? fallback;
+    private static double StyleFontSize(TextStyleOverride? style, double fallback) => style?.FontSize ?? fallback;
 
-    private static string StyleWeight(ChartTextStyle? style, string fallback) => style?.FontWeight ?? fallback;
+    private static string StyleWeight(TextStyleOverride? style, string fallback) => style?.FontWeight ?? fallback;
 
-    private static string StyleFontFamily(Chart chart, ChartTextStyle? style) => style?.FontFamily ?? chart.Options.Theme.FontFamily;
+    private static string StyleFontFamily(Chart chart, TextStyleOverride? style) => style?.FontFamily ?? chart.Options.Theme.FontFamily;
 
-    private static string SvgTextStyleAttributes(ChartTextStyle? style) {
+    private static string SvgTextStyleAttributes(TextStyleOverride? style) {
         if (style == null) return string.Empty;
         var value = string.Empty;
         if (style.Italic) value += " font-style=\"italic\"";
@@ -462,7 +462,13 @@ public sealed partial class SvgChartRenderer {
 
     private static bool ShowYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowYAxis;
 
-    private static bool ShowAxisLines(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.ShowAxisLines;
+    private static bool ShowXAxisLine(Chart chart) => ShowXAxis(chart) && chart.Options.XAxis.ShowLine;
+
+    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine;
+
+    private static bool ShowSecondaryYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.SecondaryYAxis.Visible;
+
+    private static bool ShowSecondaryYAxisLine(Chart chart) => ShowSecondaryYAxis(chart) && chart.Options.SecondaryYAxis.ShowLine;
 
     private static bool IsMapChart(Chart chart) {
         foreach (var series in chart.Series) if (ChartSeriesKindTraits.IsMapKind(series.Kind)) return true;
@@ -493,6 +499,10 @@ public sealed partial class SvgChartRenderer {
         return formatter(value) ?? string.Empty;
     }
 
+    private static string FormatYAxisValue(Chart chart, double value) {
+        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter);
+    }
+
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
         if (pointIndex >= 0 && pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null) return series.PointLabels[pointIndex]!;
         return FormatValue(chart, value);
@@ -502,9 +512,7 @@ public sealed partial class SvgChartRenderer {
         string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
     private static string FormatSecondaryValue(Chart chart, double value) {
-        var formatter = chart.Options.SecondaryYAxisValueFormatter;
-        if (formatter == null) return FormatValue(chart, value);
-        return formatter(value) ?? string.Empty;
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter);
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
@@ -517,7 +525,7 @@ public sealed partial class SvgChartRenderer {
 
     private static IReadOnlyList<double> GetXTicks(Chart chart, ChartRange range, ChartRect plot) {
         if (chart.Options.XAxisLabels.Count == 0) {
-            var ticks = ChartTicks.GenerateInside(range.MinX, range.MaxX, chart.Options.TickCount);
+            var ticks = ChartTicks.GenerateInside(chart.Options.XAxis, range.MinX, range.MaxX);
             if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || ticks.Count < 3) return ticks;
             var generatedLabels = ticks.Select(tick => new ChartAxisLabel(tick, FormatXAxisValue(chart, tick))).ToArray();
             return SelectXAxisTickValues(chart, range, plot, generatedLabels);
@@ -536,35 +544,35 @@ public sealed partial class SvgChartRenderer {
         var densityFactor = chart.Options.XAxisLabelDensity == ChartLabelDensity.Dense ? 0.72 : chart.Options.XAxisLabelDensity == ChartLabelDensity.Relaxed ? 1.35 : 1.0;
         var minSpacing = Math.Max(28, (widest + 18) * densityFactor);
         var maxCount = Math.Max(2, (int)Math.Floor(plot.Width / minSpacing) + 1);
-        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.Theme.TickLabelFontSize, 6)) return labels.Select(label => label.Value).ToArray();
+        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize, 6)) return labels.Select(label => label.Value).ToArray();
 
         var lastLabel = labels[labels.Count - 1];
         var step = Math.Max(1, (int)Math.Ceiling((labels.Count - 1) / (double)(maxCount - 1)));
         var selected = new List<ChartAxisLabel>();
         selected.Add(labels[0]);
         for (var i = step; i < labels.Count - 1; i += step) {
-            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.Theme.TickLabelFontSize) >= 6 &&
-                LabelGap(labels[i], lastLabel, range, plot, chart.Options.Theme.TickLabelFontSize) >= 6) selected.Add(labels[i]);
+            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize) >= 6 &&
+                LabelGap(labels[i], lastLabel, range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize) >= 6) selected.Add(labels[i]);
         }
 
-        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.Theme.TickLabelFontSize) < 6) selected.RemoveAt(selected.Count - 1);
+        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize) < 6) selected.RemoveAt(selected.Count - 1);
         selected.Add(lastLabel);
         return selected.Select(label => label.Value).ToArray();
     }
 
-    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, double fontSize, double minGap) {
+    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, double minGap) {
         for (var i = 1; i < labels.Count; i++) {
-            if (LabelGap(labels[i - 1], labels[i], range, plot, fontSize) < minGap) return false;
+            if (LabelGap(labels[i - 1], labels[i], range, plot, axis, fontSize) < minGap) return false;
         }
 
         return true;
     }
 
-    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, double fontSize) {
+    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize) {
         var leftWidth = EstimateTextWidth(left.Text, fontSize);
         var rightWidth = EstimateTextWidth(right.Text, fontSize);
-        var leftX = Clamp(ProjectX(left.Value, range, plot) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
-        var rightX = Clamp(ProjectX(right.Value, range, plot) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
+        var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
+        var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
         return rightX - (leftX + leftWidth);
     }
 
@@ -578,11 +586,11 @@ public sealed partial class SvgChartRenderer {
         }
 
         if (categories.Count > 0) return categories.ToArray();
-        return ChartTicks.GenerateInside(range.MinY, range.MaxY, chart.Options.TickCount);
+        return ChartTicks.GenerateInside(chart.Options.YAxis, range.MinY, range.MaxY);
     }
 
-    private static double ProjectX(double value, ChartRange range, ChartRect plot) {
-        return plot.Left + ChartMath.Normalize(value, range.MinX, range.MaxX) * plot.Width;
+    private static double ProjectX(double value, ChartRange range, ChartRect plot, ChartAxis axis) {
+        return plot.Left + ChartScaleTransform.Normalize(value, range.MinX, range.MaxX, axis) * plot.Width;
     }
 
     private static string FormatX(Chart chart, double value) {
@@ -595,6 +603,7 @@ public sealed partial class SvgChartRenderer {
 
     private static string FormatXAxisValue(Chart chart, double value) {
         var formatter = chart.Options.XAxisValueFormatter;
+        if (formatter == null && chart.Options.XAxis.Scale == ChartScaleKind.Time) return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
     }

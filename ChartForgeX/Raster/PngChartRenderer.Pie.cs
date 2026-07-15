@@ -247,7 +247,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private sealed class PieLabelCandidate {
-        public PieLabelCandidate(int pointIndex, string text, double angle, double anchorX, double centerY, double width, double height, double fontSize, ChartTextStyle style, double sliceCx, double sliceCy, bool isLeftSide) {
+        public PieLabelCandidate(int pointIndex, string text, double angle, double anchorX, double centerY, double width, double height, double fontSize, TextStyleOverride style, double sliceCx, double sliceCy, bool isLeftSide) {
             PointIndex = pointIndex;
             Text = text;
             Angle = angle;
@@ -278,7 +278,7 @@ public sealed partial class PngChartRenderer {
 
         public double FontSize { get; }
 
-        public ChartTextStyle Style { get; }
+        public TextStyleOverride Style { get; }
 
         public double SliceCx { get; }
 

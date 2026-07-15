@@ -1,11 +1,26 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
 
 internal static class ChartTicks {
     private const int MaximumGeneratedTicks = 10_000;
     private const double DirectMagnitudeLimit = 1e150;
+
+    public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
+        if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, false);
+        if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return Generate(min, max, axis.TickCount);
+        return GenerateTransformed(axis, min, max, axis.TickCount, false);
+    }
+
+    public static IReadOnlyList<double> GenerateInside(ChartAxis axis, double min, double max) {
+        if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, true);
+        if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return GenerateInside(min, max, axis.TickCount);
+        return GenerateTransformed(axis, min, max, axis.TickCount, true);
+    }
 
     public static IReadOnlyList<double> Generate(double min, double max, int desiredCount) {
         desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
@@ -64,6 +79,29 @@ internal static class ChartTicks {
         }
 
         if (ticks.Count == 0 || Math.Abs(ticks[ticks.Count - 1] - max) > step * 0.2) PreserveUpperEndpoint(ticks, max);
+        return ticks.Count > 0 ? ticks : DistinctEndpoints(min, max);
+    }
+
+    private static IReadOnlyList<double> GenerateTransformed(ChartAxis axis, double min, double max, int desiredCount, bool inside) {
+        var transformedMin = ChartScaleTransform.Forward(min, axis);
+        var transformedMax = ChartScaleTransform.Forward(max, axis);
+        var transformed = inside ? GenerateInside(transformedMin, transformedMax, desiredCount) : Generate(transformedMin, transformedMax, desiredCount);
+        var ticks = new List<double>(transformed.Count);
+        for (var i = 0; i < transformed.Count; i++) ticks.Add(ChartScaleTransform.Inverse(transformed[i], axis));
+        return ticks;
+    }
+
+    private static IReadOnlyList<double> GenerateLogarithmic(double min, double max, int desiredCount, bool inside) {
+        if (!IsPositiveFinite(min) || !IsPositiveFinite(max)) throw new InvalidOperationException("Logarithmic axes require positive data and bounds.");
+        if (min > max) (min, max) = (max, min);
+        var firstExponent = (int)Math.Ceiling(Math.Log10(min));
+        var lastExponent = (int)Math.Floor(Math.Log10(max));
+        var ticks = new List<double>();
+        var exponentCount = Math.Max(0, lastExponent - firstExponent + 1);
+        var stride = Math.Max(1, (int)Math.Ceiling(exponentCount / (double)Math.Max(2, desiredCount)));
+        for (var exponent = firstExponent; exponent <= lastExponent; exponent += stride) AddFiniteDistinct(ticks, Math.Pow(10, exponent));
+        if (!inside && (ticks.Count == 0 || ticks[0] > min)) ticks.Insert(0, min);
+        if (!inside && (ticks.Count == 0 || ticks[ticks.Count - 1] < max)) ticks.Add(max);
         return ticks.Count > 0 ? ticks : DistinctEndpoints(min, max);
     }
 

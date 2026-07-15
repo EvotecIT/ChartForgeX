@@ -50,21 +50,26 @@ public sealed partial class TopologySvgRenderer {
         var w = options.FitContentToViewport ? requestedWidth : sourceW;
         var h = options.FitContentToViewport ? requestedHeight : sourceH;
         var highlight = TopologyHighlightState.From(prepared, options);
+        var accessibility = prepared.Accessibility;
         var document = SvgDocument.Create(w, h, "0 0 " + F(sourceW) + " " + F(sourceH));
         document.Root
-            .Attribute("role", "img")
-            .Attribute("aria-labelledby", id + "-title " + id + "-desc")
+            .Attribute("role", accessibility.IsDecorative ? null : "img")
+            .Attribute("aria-hidden", accessibility.IsDecorative ? "true" : null)
+            .Attribute("aria-labelledby", accessibility.IsDecorative ? null : id + "-title " + id + "-desc")
+            .Attribute("lang", accessibility.Language)
             .Attribute("preserveAspectRatio", options.FitContentToViewport ? "xMinYMin meet" : null)
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision");
         if (options.UseResponsiveSvg) document.Root.Attribute("style", "max-width:100%;height:auto;display:block");
 
-        document.Root.Element("title", title => title
-            .Attribute("id", id + "-title")
-            .Text(string.IsNullOrWhiteSpace(prepared.Title) ? "ChartForgeX topology" : prepared.Title!));
-        document.Root.Element("desc", desc => desc
-            .Attribute("id", id + "-desc")
-            .Text(BuildDescription(prepared)));
+        if (!accessibility.IsDecorative) {
+            document.Root.Element("title", title => title
+                .Attribute("id", id + "-title")
+                .Text(accessibility.Name ?? (string.IsNullOrWhiteSpace(prepared.Title) ? "ChartForgeX topology" : prepared.Title!)));
+            document.Root.Element("desc", desc => desc
+                .Attribute("id", id + "-desc")
+                .Text(accessibility.Description ?? BuildDescription(prepared)));
+        }
         document.Root.AddElement(BuildDefs(id, prefix, prepared, theme, options));
         document.Root.Element("g", root => {
             root

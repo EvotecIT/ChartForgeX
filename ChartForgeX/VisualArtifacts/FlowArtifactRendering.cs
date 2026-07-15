@@ -21,7 +21,7 @@ public static class FlowArtifactRendering {
             .WithTitle(flow.Title)
             .WithSubtitle(flow.Subtitle)
             .WithViewport(flow.Width, flow.Height, flow.Padding)
-            .WithLayout(ToTopologyLayout(flow.LayoutMode), ToTopologyDirection(flow.Direction));
+            .WithLayout(ToTopologyLayout(flow.LayoutMode), ToVisualLinkDirection(flow.Direction));
 
         for (var i = 0; i < flow.Lanes.Count; i++) {
             var lane = flow.Lanes[i];
@@ -37,7 +37,7 @@ public static class FlowArtifactRendering {
 
         for (var i = 0; i < flow.Connectors.Count; i++) {
             var connector = flow.Connectors[i];
-            chart.AddEdge(connector.Id, connector.SourceId, connector.TargetId, connector.Label, ToTopologyKind(connector.Kind), ToTopologyStatus(connector.Status), ToTopologyDirection(connector.Direction), TopologyEdgeRouting.Orthogonal, color: connector.Color);
+            chart.AddEdge(connector.Id, connector.SourceId, connector.TargetId, connector.Label, ToTopologyKind(connector.Kind), ToTopologyStatus(connector.Status), ToVisualLinkDirection(connector.Direction), TopologyEdgeRouting.Orthogonal, color: connector.Color);
         }
 
         return chart;
@@ -97,7 +97,7 @@ public static class FlowArtifactRendering {
         }
     }
 
-    private static TopologyLayoutDirection ToTopologyDirection(FlowArtifactDirection direction) {
+    private static TopologyLayoutDirection ToVisualLinkDirection(FlowArtifactDirection direction) {
         switch (direction) {
             case FlowArtifactDirection.TopToBottom:
                 return TopologyLayoutDirection.TopToBottom;
@@ -110,16 +110,16 @@ public static class FlowArtifactRendering {
         }
     }
 
-    private static TopologyDirection ToTopologyDirection(FlowArtifactConnectorDirection direction) {
+    private static VisualLinkDirection ToVisualLinkDirection(VisualLinkDirection direction) {
         switch (direction) {
-            case FlowArtifactConnectorDirection.None:
-                return TopologyDirection.None;
-            case FlowArtifactConnectorDirection.Backward:
-                return TopologyDirection.Backward;
-            case FlowArtifactConnectorDirection.Bidirectional:
-                return TopologyDirection.Bidirectional;
+            case VisualLinkDirection.None:
+                return VisualLinkDirection.None;
+            case VisualLinkDirection.Backward:
+                return VisualLinkDirection.Backward;
+            case VisualLinkDirection.Bidirectional:
+                return VisualLinkDirection.Bidirectional;
             default:
-                return TopologyDirection.Forward;
+                return VisualLinkDirection.Forward;
         }
     }
 

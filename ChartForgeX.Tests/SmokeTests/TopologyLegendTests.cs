@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
             .AddNode("cert-a", "Certificate A", 90, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy, symbol: "TLS")
             .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "TLS")
             .AddNode("risk", "Risk", 300, 220, TopologyNodeKind.Process, TopologyHealthStatus.Critical, symbol: "!")
-            .AddEdge("cert-risk", "cert-a", "risk", "flags", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, TopologyDirection.Forward)
+            .AddEdge("cert-risk", "cert-a", "risk", "flags", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
             .WithNodesOfKind(TopologyNodeKind.Certificate, color: "#2563EB", backgroundColor: "#EFF6FF");
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
@@ -38,8 +38,8 @@ internal static partial class SmokeTests {
             .AddNode("app", "Application", 80, 110, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, symbol: "APP")
             .AddNode("db", "Database", 300, 90, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, symbol: "SQL")
             .AddNode("queue", "Queue", 300, 180, TopologyNodeKind.Service, TopologyHealthStatus.Warning, symbol: "Q")
-            .AddEdge("app-db", "app", "db", "reads", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
-            .AddEdge("app-queue", "app", "queue", "publishes", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward)
+            .AddEdge("app-db", "app", "db", "reads", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
+            .AddEdge("app-queue", "app", "queue", "publishes", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
             .WithEdgesOfKind(TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dotted, color: "#64748B");
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
@@ -64,7 +64,7 @@ internal static partial class SmokeTests {
             .AddNode("cert-a", "Certificate A", 90, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy)
             .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning)
             .AddNode("owner", "Owner", 300, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
-            .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
+            .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .WithNodesOfKind(TopologyNodeKind.Certificate, color: "#2563EB", backgroundColor: "#EFF6FF")
             .WithNodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog)
             .WithEdgesOfKind(TopologyEdgeKind.Ownership, lineStyle: TopologyEdgeLineStyle.Dashed, color: "#7C3AED");

@@ -59,15 +59,19 @@ internal static class PngReader {
         }
 
         if (width <= 0 || height <= 0) throw new InvalidDataException("PNG image is missing a valid IHDR chunk.");
-        if (bitDepth != 8) throw new NotSupportedException("Only 8-bit PNG images are supported.");
         var components = ComponentsFor(colorType);
+        if (bitDepth != 8 && !((colorType == 0 || colorType == 3) && (bitDepth == 1 || bitDepth == 2 || bitDepth == 4))) {
+            throw new NotSupportedException("Supported PNG bit depths are 8-bit for all recognized color types and 1, 2, or 4-bit grayscale and indexed images.");
+        }
         if (colorType == 3 && palette == null) throw new InvalidDataException("Indexed PNG image is missing a palette.");
         var raw = InflateZlib(idat.ToArray());
-        var stride = checked(width * components);
+        var bitsPerPixel = checked(components * bitDepth);
+        var stride = checked((width * bitsPerPixel + 7) / 8);
         var expected = checked(height * (stride + 1));
         if (raw.Length < expected) throw new InvalidDataException("PNG image data is shorter than expected.");
-        var unfiltered = Unfilter(raw, width, height, components, stride);
-        return ToRgba(unfiltered, width, height, colorType, palette, transparency);
+        var unfiltered = Unfilter(raw, width, height, Math.Max(1, (bitsPerPixel + 7) / 8), stride);
+        var samples = bitDepth == 8 ? unfiltered : ExpandPackedSamples(unfiltered, width, height, bitDepth, colorType == 0);
+        return ToRgba(samples, width, height, colorType, bitDepth, palette, transparency);
     }
 
     private static int ComponentsFor(int colorType) {
@@ -133,7 +137,22 @@ internal static class PngReader {
         return pb <= pc ? up : upLeft;
     }
 
-    private static RgbaImage ToRgba(byte[] pixels, int width, int height, int colorType, byte[]? palette, byte[]? transparency) {
+    private static byte[] ExpandPackedSamples(byte[] pixels, int width, int height, int bitDepth, bool scaleToByte) {
+        var samples = new byte[checked(width * height)];
+        var mask = (1 << bitDepth) - 1;
+        var stride = checked((width * bitDepth + 7) / 8);
+        for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+                var bit = x * bitDepth;
+                var shift = 8 - bitDepth - (bit & 7);
+                var sample = (pixels[y * stride + (bit >> 3)] >> shift) & mask;
+                samples[y * width + x] = scaleToByte ? (byte)((sample * 255 + mask / 2) / mask) : (byte)sample;
+            }
+        }
+        return samples;
+    }
+
+    private static RgbaImage ToRgba(byte[] pixels, int width, int height, int colorType, int bitDepth, byte[]? palette, byte[]? transparency) {
         var rgba = new byte[checked(width * height * 4)];
         var source = 0;
         var target = 0;
@@ -142,7 +161,7 @@ internal static class PngReader {
                 case 0:
                     var gray = pixels[source++];
                     rgba[target++] = gray; rgba[target++] = gray; rgba[target++] = gray; rgba[target++] = 255;
-                    if (transparency != null && transparency.Length >= 2 && gray == ReadUInt16LowByte(transparency, 0)) rgba[target - 1] = 0;
+                    if (transparency != null && transparency.Length >= 2 && gray == GrayscaleTransparency(transparency, bitDepth)) rgba[target - 1] = 0;
                     break;
                 case 2:
                     var r = pixels[source++];
@@ -175,6 +194,13 @@ internal static class PngReader {
         ((uint)data[offset] << 24) | ((uint)data[offset + 1] << 16) | ((uint)data[offset + 2] << 8) | data[offset + 3];
 
     private static byte ReadUInt16LowByte(byte[] data, int offset) => data[offset + 1];
+
+    private static byte GrayscaleTransparency(byte[] data, int bitDepth) {
+        var sample = ReadUInt16LowByte(data, 0);
+        if (bitDepth == 8) return sample;
+        var mask = (1 << bitDepth) - 1;
+        return (byte)((sample * 255 + mask / 2) / mask);
+    }
 
     private static uint Adler32(byte[] data) {
         const uint mod = 65521;

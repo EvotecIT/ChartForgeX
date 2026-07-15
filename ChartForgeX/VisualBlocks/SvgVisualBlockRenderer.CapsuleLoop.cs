@@ -132,8 +132,8 @@ public sealed partial class SvgVisualBlockRenderer {
             var color = VisualBlockRendering.SegmentedItemColor(theme, item, i);
             var value = VisualBlockRendering.SegmentedCapsuleLegendValue(card, item, total);
             writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-capsule-swatch").Attribute("x", x).Attribute("y", y + rowHeight * 0.26).Attribute("width", 12).Attribute("height", 12).Attribute("rx", 3).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, item.Label, x + 22, y + rowHeight * 0.68, width * 0.56, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "550");
-            WriteText(writer, value, x + width * 0.60, y + rowHeight * 0.68, width * 0.40, VisualTextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
+            WriteText(writer, item.Label, x + 22, y + rowHeight * 0.68, width * 0.56, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "550");
+            WriteText(writer, value, x + width * 0.60, y + rowHeight * 0.68, width * 0.40, TextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
             y += rowHeight;
         }
 

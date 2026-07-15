@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -165,39 +166,10 @@ public sealed class VisualArtifactRegion {
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the region bounds when known.</summary>
-    public VisualArtifactRect? Bounds { get; set; }
+    public ChartRect? Bounds { get; set; }
 
     /// <summary>Gets region metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
-}
-
-/// <summary>
-/// Describes rectangular bounds inside an artifact.
-/// </summary>
-public readonly struct VisualArtifactRect {
-    /// <summary>Initializes new artifact bounds.</summary>
-    public VisualArtifactRect(double x, double y, double width, double height) {
-        if (double.IsNaN(x) || double.IsInfinity(x)) throw new ArgumentOutOfRangeException(nameof(x), x, "Region x-coordinate must be finite.");
-        if (double.IsNaN(y) || double.IsInfinity(y)) throw new ArgumentOutOfRangeException(nameof(y), y, "Region y-coordinate must be finite.");
-        if (double.IsNaN(width) || double.IsInfinity(width) || width < 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Region width must be finite and non-negative.");
-        if (double.IsNaN(height) || double.IsInfinity(height) || height < 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Region height must be finite and non-negative.");
-        X = x;
-        Y = y;
-        Width = width;
-        Height = height;
-    }
-
-    /// <summary>Gets the left coordinate.</summary>
-    public double X { get; }
-
-    /// <summary>Gets the top coordinate.</summary>
-    public double Y { get; }
-
-    /// <summary>Gets the width.</summary>
-    public double Width { get; }
-
-    /// <summary>Gets the height.</summary>
-    public double Height { get; }
 }
 
 /// <summary>

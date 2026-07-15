@@ -87,7 +87,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", -40, 20, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 300, 20, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
-            .AddEdge("left-right", "left", "right", "42 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("left-right", "left", "right", "42 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("viewBox=\"0 0 500 180\"", StringComparison.Ordinal), "Topology renderer should expand the viewport horizontally when manual content exceeds the original width.");
@@ -137,8 +137,8 @@ internal static partial class SmokeTests {
             .AddNode("namespace", "Tenant", 0, 0, TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, symbol: "T")
             .AddNode("service", "API", 0, 0, TopologyNodeKind.Service, TopologyHealthStatus.Warning, symbol: "API")
             .AddNode("database", "SQL", 0, 0, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, symbol: "SQL")
-            .AddEdge("tenant-api", "namespace", "service", "auth", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
-            .AddEdge("api-sql", "service", "database", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward);
+            .AddEdge("tenant-api", "namespace", "service", "auth", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
+            .AddEdge("api-sql", "service", "database", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("data-layout-direction=\"LeftToRight\"", StringComparison.Ordinal), "Topology SVG should expose layout direction for host adapters.");
@@ -168,8 +168,8 @@ internal static partial class SmokeTests {
             .AddNode("apac-hub", "APAC Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Critical, "apac", width: 92, height: 52)
             .AddNode("apac-sin", "Singapore", 0, 0, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "apac", width: 82, height: 46)
             .AddNode("apac-syd", "Sydney", 0, 0, TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "apac", width: 72, height: 46)
-            .AddEdge("amer-emea", "amer-hub", "emea-hub", "68 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .AddEdge("emea-apac", "emea-hub", "apac-hub", "92 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("amer-emea", "amer-hub", "emea-hub", "68 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("emea-apac", "emea-hub", "apac-hub", "92 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .WithEdgePorts("amer-emea", TopologyEdgePort.Right, TopologyEdgePort.Left)
             .WithEdgePorts("emea-apac", TopologyEdgePort.Right, TopologyEdgePort.Left);
 
@@ -230,8 +230,8 @@ internal static partial class SmokeTests {
             .AddGroup("right", "Right", 0, 0, 0, 0, TopologyHealthStatus.Healthy)
             .AddNode("left-hub", "Left Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left", width: 72, height: 42)
             .AddNode("right-hub", "Right Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "right", width: 72, height: 42)
-            .AddEdge("a-link", "left-hub", "right-hub", "primary", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .AddEdge("b-link", "left-hub", "right-hub", "backup", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+            .AddEdge("a-link", "left-hub", "right-hub", "primary", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("b-link", "left-hub", "right-hub", "backup", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
         Assert(svg.Contains("data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"-9\"", StringComparison.Ordinal), "Dense grouped layout should assign outside-facing ports and a negative lane to the first repeated inter-group edge.");
@@ -250,7 +250,7 @@ internal static partial class SmokeTests {
             .AddGroup("bottom", "Bottom", 0, 0, 0, 0, TopologyHealthStatus.Healthy)
             .AddNode("top-hub", "Top Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "top", width: 72, height: 42)
             .AddNode("bottom-hub", "Bottom Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "bottom", width: 72, height: 42)
-            .AddEdge("explicit", "top-hub", "bottom-hub", "manual", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("explicit", "top-hub", "bottom-hub", "manual", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .WithEdgePorts("explicit", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
             .WithEdgeRouteLane("explicit", 42);
         var explicitSvg = explicitChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
@@ -357,7 +357,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new TopologyNode { Width = 0 }, "Topology node models should reject non-positive dimensions close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TopologyNode { Longitude = 181 }, "Topology node models should reject out-of-range longitudes close to the caller.");
         AssertThrows<ArgumentNullException>(() => new TopologyEdge { SourceNodeId = null! }, "Topology edge models should reject null endpoint ids close to the caller.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { Direction = (TopologyDirection)999 }, "Topology edge models should reject undefined directions close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { Direction = (VisualLinkDirection)999 }, "Topology edge models should reject undefined directions close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { SourcePort = (TopologyEdgePort)999 }, "Topology edge models should reject undefined ports close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { RouteLane = double.NaN }, "Topology edge models should reject non-finite route lanes close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TopologyEdge { LayoutInference = (TopologyEdgeLayoutInference)8 }, "Topology edge models should reject undefined layout-inference flag bits close to the caller.");
@@ -415,9 +415,9 @@ internal static partial class SmokeTests {
             .AddNode("api", "API", 230, 140, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, symbol: "API")
             .AddNode("queue", "Queue", 400, 70, TopologyNodeKind.Queue, TopologyHealthStatus.Warning, symbol: "Q")
             .AddNode("sql", "SQL", 400, 210, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, symbol: "SQL")
-            .AddEdge("gateway-api", "gateway", "api", "18 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
-            .AddEdge("api-queue", "api", "queue", "lag 9m", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, TopologyDirection.Forward)
-            .AddEdge("api-sql", "api", "sql", "412 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Forward);
+            .AddEdge("gateway-api", "gateway", "api", "18 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
+            .AddEdge("api-queue", "api", "queue", "lag 9m", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
+            .AddEdge("api-sql", "api", "sql", "412 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Forward);
 
         var neighbor = chart.ToSvg(new TopologyRenderOptions {
             View = TopologyView.AroundNode("api", 1),
@@ -454,7 +454,7 @@ internal static partial class SmokeTests {
             .AddNode("left", "Left", 40, 120, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("middle", "Middle", 180, 120, TopologyNodeKind.Queue, TopologyHealthStatus.Warning)
             .AddNode("right", "Right", 320, 120, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
-            .AddEdge("left-right", "left", "right", "blocked", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("left-right", "left", "right", "blocked", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("data-edge-id=\"left-right\" data-label-x=\"240\" data-label-y=\"92\"", StringComparison.Ordinal), "Topology edge labels should move away from node boxes when their midpoint overlaps a node.");
@@ -470,8 +470,8 @@ internal static partial class SmokeTests {
             .AddNode("bottom", "Bottom", 200, 240, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("left", "Left", 40, 140, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 420, 140, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy)
-            .AddEdge("vertical", "top", "bottom", "latency", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
-            .AddEdge("horizontal", "left", "right", null, TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.None, TopologyEdgeRouting.Straight);
+            .AddEdge("vertical", "top", "bottom", "latency", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("horizontal", "left", "right", null, TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.None, TopologyEdgeRouting.Straight);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("data-edge-id=\"vertical\" data-label-x=\"260\" data-label-y=\"142\"", StringComparison.Ordinal), "Topology edge labels should avoid unrelated edge segments when selecting deterministic label positions.");
@@ -485,8 +485,8 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", 80, 130, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 340, 130, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
-            .AddEdge("left-right", "left", "right", "send", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
-            .AddEdge("right-left", "right", "left", "ack", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("left-right", "left", "right", "send", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("right-left", "right", "left", "ack", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("data-edge-id=\"left-right\"", StringComparison.Ordinal), "Topology parallel edge test should render the forward path.");
@@ -505,7 +505,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", 40, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 360, 40, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
-            .AddEdge("left-right", "left", "right", "via route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("left-right", "left", "right", "via route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithEdgeWaypoints("left-right", new ChartForgeX.Primitives.ChartPoint(200, 180), new ChartForgeX.Primitives.ChartPoint(300, 180));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
@@ -526,7 +526,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", 80, 120, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 340, 120, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
-            .AddEdge("left-right", "left", "right", "port", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("left-right", "left", "right", "port", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
             .WithEdgePorts("left-right", TopologyEdgePort.Right, TopologyEdgePort.Left)
             .WithEdgeLineStyle("left-right", TopologyEdgeLineStyle.Dashed);
 
@@ -542,7 +542,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("source", "Source", 80, 80, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("target", "Target", 320, 240, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
-            .AddEdge("source-target", "source", "target", "lane", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("source-target", "source", "target", "lane", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithEdgePorts("source-target", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
             .WithEdgeRouteLane("source-target", 24);
         var laneSvg = lane.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
@@ -555,7 +555,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("source", "Source", 270, 210, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 150, height: 70)
             .AddNode("target", "Target", 480, 70, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 150, height: 70)
-            .AddEdge("source-target", "source", "target", "ported", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal).WithEdgePorts("source-target", TopologyEdgePort.Right, TopologyEdgePort.Left);
+            .AddEdge("source-target", "source", "target", "ported", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal).WithEdgePorts("source-target", TopologyEdgePort.Right, TopologyEdgePort.Left);
         var obstacleAwareSvg = obstacleAware.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(obstacleAwareSvg.Contains("data-route-corridor=\"", StringComparison.Ordinal), "Obstacle-aware topology routing should expose the selected route corridor.");
         var obstacleAwarePoints = ParseSvgPathPoints(ExtractEdgePathData(obstacleAwareSvg, "source-target"));
@@ -572,7 +572,7 @@ internal static partial class SmokeTests {
             .AddNode("left", "Left", 40, 120, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 100, height: 60)
             .AddNode("blocker", "Blocker", 210, 120, TopologyNodeKind.Service, TopologyHealthStatus.Warning, width: 100, height: 60)
             .AddNode("right", "Right", 360, 120, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, width: 100, height: 60)
-            .AddEdge("left-right", "left", "right", "avoid", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("left-right", "left", "right", "avoid", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .WithEdgePorts("left-right", TopologyEdgePort.Right, TopologyEdgePort.Left);
         chart.Edges[0].Metadata["owner"] = "routing";
         chart.Edges[0].Metrics["lag"] = "64";
@@ -602,7 +602,7 @@ internal static partial class SmokeTests {
             .AddGroup("middle", "Bridgehead Region", 225, 95, 170, 120, TopologyHealthStatus.Warning)
             .AddNode("left", "Left Hub", 40, 115, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 100, height: 60)
             .AddNode("right", "Right Hub", 420, 115, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 100, height: 60)
-            .AddEdge("hub-link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("hub-link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .WithEdgePorts("hub-link", TopologyEdgePort.Right, TopologyEdgePort.Left);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
@@ -692,7 +692,7 @@ internal static partial class SmokeTests {
             .AddNode("hub", "Hub", 95, 135, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "site", symbol: "H")
             .AddNode("cluster", "Worker Pool", 270, 132, TopologyNodeKind.Service, TopologyHealthStatus.Warning, "site", symbol: "API")
             .AddNode("queue", "Queue", 335, 134, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, "site", symbol: "Q")
-            .AddEdge("hub-cluster", "hub", "cluster", "18 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, TopologyDirection.Forward)
+            .AddEdge("hub-cluster", "hub", "cluster", "18 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
             .WithNodesDisplay(TopologyNodeKind.Service, TopologyNodeDisplayMode.Dot, "+")
             .WithNodeDisplay("cluster", TopologyNodeDisplayMode.Dot, "+12");
 
@@ -714,7 +714,7 @@ internal static partial class SmokeTests {
             .WithViewport(520, 320, 20)
             .AddNode("api", "API", 80, 120, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, symbol: "API")
             .AddNode("sql", "SQL", 300, 120, TopologyNodeKind.Database, TopologyHealthStatus.Warning, symbol: "SQL")
-            .AddEdge("api-sql", "api", "sql", "14 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward);
+            .AddEdge("api-sql", "api", "sql", "14 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
         Assert(svg.Contains("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal), "Topology auto legend should render when requested.");
@@ -792,8 +792,8 @@ internal static partial class SmokeTests {
         chart.Nodes.Add(new TopologyNode { Id = "nva-east", Label = "NVA East", Subtitle = "Branch", Kind = TopologyNodeKind.Branch, Status = TopologyHealthStatus.Healthy, GroupId = "AMER", X = 95, Y = 245, Href = "/topology/sites/nva-east" });
         chart.Nodes.Add(new TopologyNode { Id = "emea-hub", Label = "EMEA Hub", Subtitle = "Hub site", Kind = TopologyNodeKind.Hub, Status = TopologyHealthStatus.Healthy, GroupId = "EMEA", X = 445, Y = 160, Href = "/topology/sites/emea-hub" });
         chart.Nodes.Add(new TopologyNode { Id = "tr-branch", Label = "TR Branch", Subtitle = "Critical", Kind = TopologyNodeKind.Branch, Status = TopologyHealthStatus.Critical, GroupId = "EMEA", X = 445, Y = 245, Href = "/topology/sites/tr-branch" });
-        chart.Edges.Add(new TopologyEdge { Id = "amer-emea", SourceNodeId = "amer-hub", TargetNodeId = "emea-hub", Kind = TopologyEdgeKind.Link, Status = TopologyHealthStatus.Healthy, Direction = TopologyDirection.Bidirectional, Routing = TopologyEdgeRouting.Straight, Label = "24 ms", Href = "/topology/links/amer-emea" });
-        chart.Edges.Add(new TopologyEdge { Id = "emea-tr", SourceNodeId = "emea-hub", TargetNodeId = "tr-branch", Kind = TopologyEdgeKind.Replication, Status = TopologyHealthStatus.Critical, Direction = TopologyDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal, Label = "142 ms", SecondaryLabel = "queue 44" });
+        chart.Edges.Add(new TopologyEdge { Id = "amer-emea", SourceNodeId = "amer-hub", TargetNodeId = "emea-hub", Kind = TopologyEdgeKind.Link, Status = TopologyHealthStatus.Healthy, Direction = VisualLinkDirection.Bidirectional, Routing = TopologyEdgeRouting.Straight, Label = "24 ms", Href = "/topology/links/amer-emea" });
+        chart.Edges.Add(new TopologyEdge { Id = "emea-tr", SourceNodeId = "emea-hub", TargetNodeId = "tr-branch", Kind = TopologyEdgeKind.Replication, Status = TopologyHealthStatus.Critical, Direction = VisualLinkDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal, Label = "142 ms", SecondaryLabel = "queue 44" });
         return chart;
     }
 }

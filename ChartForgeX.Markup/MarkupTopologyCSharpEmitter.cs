@@ -17,6 +17,7 @@ public static class MarkupTopologyCSharpEmitter {
     public static string Emit(MarkupTopologyDocument document) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         var sb = new StringBuilder();
+        sb.AppendLine("using ChartForgeX.Primitives;");
         sb.AppendLine("using ChartForgeX.Topology;");
         sb.AppendLine();
         sb.AppendLine("var topology = TopologyChart.Create()");
@@ -51,7 +52,7 @@ public static class MarkupTopologyCSharpEmitter {
         foreach (var edge in document.Edges) {
             sb.Append("    .AddEdge(").Append(Literal(edge.Id)).Append(", ").Append(Literal(edge.Source)).Append(", ").Append(Literal(edge.Target)).Append(", ");
             sb.Append(edge.Label == null ? "null" : Literal(edge.Label)).Append(", TopologyEdgeKind.").Append(edge.Kind).Append(", TopologyHealthStatus.").Append(edge.Status);
-            sb.Append(", TopologyDirection.").Append(edge.Direction).Append(", TopologyEdgeRouting.").Append(edge.Routing).AppendLine(")");
+            sb.Append(", VisualLinkDirection.").Append(edge.Direction).Append(", TopologyEdgeRouting.").Append(edge.Routing).AppendLine(")");
         }
 
         sb.Length -= Environment.NewLine.Length;

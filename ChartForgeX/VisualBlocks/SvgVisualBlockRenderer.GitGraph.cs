@@ -30,7 +30,7 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("stroke-linecap", "round")
                 .EndEmptyElement()
                 .Line();
-            if (graph.ShowBranchLabels) WriteText(writer, branch.Name, content.X, laneY + 4, layout.PlotX - content.X - 10, VisualTextAlignment.Right, theme.MutedText, theme.FontFamily, 11, "700");
+            if (graph.ShowBranchLabels) WriteText(writer, branch.Name, content.X, laneY + 4, layout.PlotX - content.X - 10, TextAlignment.Right, theme.MutedText, theme.FontFamily, 11, "700");
         }
 
         for (var index = 0; index < layout.Placements.Count; index++) WriteGitGraphEdges(writer, layout, layout.Placements[index], theme);
@@ -87,7 +87,7 @@ public sealed partial class SvgVisualBlockRenderer {
 
         if (graph.ShowCommitLabels) {
             var label = commit.Label.Length == 0 ? commit.Id : commit.Label;
-            WriteText(writer, label, placement.X - 38, placement.Y + radius + 14, 76, VisualTextAlignment.Center, theme.Text, theme.FontFamily, 10.5, "650");
+            WriteText(writer, label, placement.X - 38, placement.Y + radius + 14, 76, TextAlignment.Center, theme.Text, theme.FontFamily, 10.5, "650");
         }
 
         if (commit.Tag.Length > 0) WriteGitGraphTag(writer, placement.X, placement.Y - radius - 24, commit.Tag, theme);
@@ -97,7 +97,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var width = System.Math.Min(96, System.Math.Max(38, tag.Length * 6.2 + 18));
         var x = centerX - width / 2;
         writer.StartElement("rect").Attribute("data-cfx-role", "git-tag").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("width", F(width)).Attribute("height", 18).Attribute("rx", 7).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
-        WriteText(writer, tag, x + 5, y + 12.5, width - 10, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, 9.5, "700");
+        WriteText(writer, tag, x + 5, y + 12.5, width - 10, TextAlignment.Center, theme.MutedText, theme.FontFamily, 9.5, "700");
     }
 
     private static int BranchIndex(VisualBlockRendering.GitGraphLayout layout, string branchName) {

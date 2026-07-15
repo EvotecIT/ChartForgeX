@@ -20,13 +20,13 @@ public sealed partial class PngVisualBlockRenderer {
             var accent = VisualBlockRendering.SegmentedItemColor(theme, row, rowIndex);
             var rowLayout = VisualBlockRendering.SegmentedProgressRowLayout(card, row, content, y, layout.RowHeight, accent);
             if (!VisualBlockRendering.CanRenderProgressRow(rowLayout, layout.Bottom)) break;
-            DrawAlignedText(canvas, row.Label, content.X, y, rowLayout.LabelWidth, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
+            DrawAlignedText(canvas, row.Label, content.X, y, rowLayout.LabelWidth, TextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
             if (row.Delta.Length > 0) {
                 canvas.FillRoundedRect(rowLayout.DeltaX, y - 2, rowLayout.DeltaWidth, 22, 11, rowLayout.DeltaColor.WithAlpha(34));
-                DrawAlignedText(canvas, row.Delta, rowLayout.DeltaX + 6, y + 3, rowLayout.DeltaWidth - 12, VisualTextAlignment.Center, rowLayout.DeltaColor, theme.SubtitleFontSize, true);
+                DrawAlignedText(canvas, row.Delta, rowLayout.DeltaX + 6, y + 3, rowLayout.DeltaWidth - 12, TextAlignment.Center, rowLayout.DeltaColor, theme.SubtitleFontSize, true);
             }
 
-            DrawAlignedText(canvas, rowLayout.ValueText, rowLayout.ValueX, y, rowLayout.ValueWidth, VisualTextAlignment.Right, theme.Text, rowLayout.ValueFontSize, true);
+            DrawAlignedText(canvas, rowLayout.ValueText, rowLayout.ValueX, y, rowLayout.ValueWidth, TextAlignment.Right, theme.Text, rowLayout.ValueFontSize, true);
             DrawSegmentedStrip(canvas, row, content.X, rowLayout.StripY, content.Width, rowLayout.StripHeight, accent, theme);
             y += layout.RowHeight;
         }
@@ -45,7 +45,7 @@ public sealed partial class PngVisualBlockRenderer {
         canvas.FillRoundedRect(x, footerY + 1, width, Math.Max(1, footerHeight - inset - 1), Math.Min(10, Math.Max(2, footerHeight * 0.18)), fill);
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var y = footerY + (footerHeight - fontSize) * 0.52;
-        DrawAlignedText(canvas, card.ActionLabel, x, y, Math.Max(1, width - 38), VisualTextAlignment.Left, foreground, fontSize, false);
+        DrawAlignedText(canvas, card.ActionLabel, x, y, Math.Max(1, width - 38), TextAlignment.Left, foreground, fontSize, false);
         DrawActionSymbol(canvas, card.ActionSymbol, x + width - 18, footerY + footerHeight * 0.5, 12, foreground, fontSize);
     }
 

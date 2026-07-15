@@ -229,13 +229,15 @@ public static partial class GalleryWriter {
             "data-label-placement-showcase-grid",
             "axis-label-fitting-showcase",
             "point-color-customization-showcase-grid",
-            "text-style-showcase-editorial"),
+            "text-style-showcase-editorial",
+            "foundation-typed-log-scale"),
         new(
             "Matrices and Small Multiples",
             "Dense review surfaces for grids, heatmaps, and shared-axis panels.",
             "control-coverage-heatmap-dark",
             "developer-consistency-calendar-light",
             "control-scorecards-grid",
+            "foundation-typed-facets",
             "shared-axis-coverage-grid",
             "domain-signal-mix-stacked-area-dark")
     };

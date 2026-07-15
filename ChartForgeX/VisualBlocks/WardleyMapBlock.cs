@@ -66,7 +66,7 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     }
 
     /// <summary>Adds a dependency link between nodes.</summary>
-    public WardleyMapLink AddLink(string fromId, string toId, string? label = null, bool dashed = false, WardleyMapFlow flow = WardleyMapFlow.None) {
+    public WardleyMapLink AddLink(string fromId, string toId, string? label = null, bool dashed = false, VisualLinkDirection flow = VisualLinkDirection.None) {
         var link = new WardleyMapLink(fromId, toId, label ?? string.Empty, dashed, flow);
         _links.Add(link);
         return link;
@@ -116,18 +116,6 @@ public enum WardleyMapNodeKind {
     Anchor,
     /// <summary>A component that belongs to a pipeline group.</summary>
     PipelineComponent
-}
-
-/// <summary>Identifies a Wardley link flow hint.</summary>
-public enum WardleyMapFlow {
-    /// <summary>No explicit flow hint was declared.</summary>
-    None,
-    /// <summary>Flow moves from the source toward the target.</summary>
-    Forward,
-    /// <summary>Flow moves from the target back toward the source.</summary>
-    Backward,
-    /// <summary>Flow is bidirectional.</summary>
-    Bidirectional
 }
 
 /// <summary>Identifies a Wardley marker kind.</summary>
@@ -183,7 +171,7 @@ public sealed class WardleyMapNode {
 /// <summary>Describes a dependency link between Wardley map nodes.</summary>
 public sealed class WardleyMapLink {
     /// <summary>Initializes a Wardley map dependency link.</summary>
-    public WardleyMapLink(string fromId, string toId, string label, bool dashed, WardleyMapFlow flow) {
+    public WardleyMapLink(string fromId, string toId, string label, bool dashed, VisualLinkDirection flow) {
         FromId = fromId ?? throw new ArgumentNullException(nameof(fromId));
         ToId = toId ?? throw new ArgumentNullException(nameof(toId));
         Label = label ?? throw new ArgumentNullException(nameof(label));
@@ -204,7 +192,7 @@ public sealed class WardleyMapLink {
     public bool Dashed { get; }
 
     /// <summary>Gets the optional flow hint.</summary>
-    public WardleyMapFlow Flow { get; }
+    public VisualLinkDirection Flow { get; }
 }
 
 /// <summary>Describes a Wardley node evolution trend.</summary>

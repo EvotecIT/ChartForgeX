@@ -18,15 +18,15 @@ public sealed partial class PngVisualBlockRenderer {
         if (layout.BadgeSize > 0) {
             canvas.FillRoundedRectVerticalGradient(x, y, layout.BadgeSize, layout.BadgeSize, 14, ChartSurfacePolish.GradientTop(ChartColor.White), ChartSurfacePolish.GradientBottom(ChartColor.White));
             canvas.StrokeRoundedRect(x, y, layout.BadgeSize, layout.BadgeSize, 14, theme.CardBorder, 1);
-            DrawAlignedText(canvas, card.HeaderSymbol, x, y + 12, layout.BadgeSize, VisualTextAlignment.Center, theme.Text, 18, true);
+            DrawAlignedText(canvas, card.HeaderSymbol, x, y + 12, layout.BadgeSize, TextAlignment.Center, theme.Text, 18, true);
         }
 
         if (card.ShowMenu) {
             for (var i = 0; i < 3; i++) canvas.DrawCircle(layout.MenuDotStartX + i * 7, layout.MenuDotY, 2.1, theme.MutedText);
         }
 
-        if (card.Title.Length > 0) DrawAlignedText(canvas, card.Title, layout.TextX, layout.TitleTop, layout.TextWidth, VisualTextAlignment.Left, theme.Text, theme.TitleFontSize, true);
-        if (card.Subtitle.Length > 0) DrawAlignedText(canvas, card.Subtitle, layout.TextX, layout.SubtitleTop, layout.TextWidth, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
+        if (card.Title.Length > 0) DrawAlignedText(canvas, card.Title, layout.TextX, layout.TitleTop, layout.TextWidth, TextAlignment.Left, theme.Text, theme.TitleFontSize, true);
+        if (card.Subtitle.Length > 0) DrawAlignedText(canvas, card.Subtitle, layout.TextX, layout.SubtitleTop, layout.TextWidth, TextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
         canvas.DrawLine(x, layout.DividerY, x + width, layout.DividerY, theme.PlotBorder, 1);
         y = layout.NextY;
     }

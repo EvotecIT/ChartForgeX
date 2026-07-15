@@ -42,8 +42,8 @@ public sealed partial class PngChartRenderer {
         return Math.Max(64, Math.Min(plot.Width, slotWidth * angleFactor));
     }
 
-    private static double ProjectX(double value, ChartRange range, ChartRect plot) {
-        return plot.Left + ChartMath.Normalize(value, range.MinX, range.MaxX) * plot.Width;
+    private static double ProjectX(double value, ChartRange range, ChartRect plot, ChartAxis axis) {
+        return plot.Left + ChartScaleTransform.Normalize(value, range.MinX, range.MaxX, axis) * plot.Width;
     }
 
     private static void DrawAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, IReadOnlyList<string>? xAxisLabels = null) {
@@ -56,11 +56,11 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawDetailAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, int textScale) {
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
+        if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + 48, PngAxisTitleFontSize(chart));
         }
 
-        DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
+        if (ShowYAxis(chart)) DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
     private static void DrawPngXAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double baselineY, double preferredFontSize) {
@@ -83,13 +83,14 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawSecondaryYAxis(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, IReadOnlyList<double> yTicks) {
+        if (!ShowSecondaryYAxis(chart)) return;
         var theme = chart.Options.Theme;
         var preferredFontSize = PngTickFontSize(chart);
         var labelMaxWidth = Math.Max(24, chart.Options.Size.Width - plot.Right - 12);
-        if (ShowAxisLines(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+        if (ShowSecondaryYAxisLine(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         for (var tickIndex = 0; tickIndex < yTicks.Count; tickIndex++) {
             var tick = yTicks[tickIndex];
-            if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredFontSize, chart.Options.YAxisLabelDensity)) continue;
+            if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredFontSize, chart.Options.SecondaryYAxis.LabelDensity)) continue;
             var rawLabel = FormatSecondaryValue(chart, tick);
             var fontSize = TextFontSizeForWidth(rawLabel, labelMaxWidth, preferredFontSize);
             var label = TrimPngLabelToWidth(rawLabel, fontSize, labelMaxWidth);
@@ -129,7 +130,7 @@ public sealed partial class PngChartRenderer {
         if (!ShowYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
-        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, tick), fontSize));
+        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatYAxisValue(chart, tick), fontSize));
         var desiredLeft = Math.Max(plot.Left, widest + 54);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
         var adjustedLeft = Math.Min(desiredLeft, maxLeft);
@@ -139,7 +140,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartRect ApplySecondaryYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
-        if (!ShowYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
+        if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
         foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatSecondaryValue(chart, tick), fontSize));

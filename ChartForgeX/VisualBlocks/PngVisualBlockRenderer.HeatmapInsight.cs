@@ -31,19 +31,19 @@ public sealed partial class PngVisualBlockRenderer {
         var gridY = headerY + cellHeight + 8;
 
         for (var column = 0; column < card.Columns.Count; column++) {
-            DrawAlignedText(canvas, card.Columns[column], matrixX + labelWidth + column * (cellWidth + cellGap), headerY + cellHeight * 0.18, cellWidth, VisualTextAlignment.Center, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
+            DrawAlignedText(canvas, card.Columns[column], matrixX + labelWidth + column * (cellWidth + cellGap), headerY + cellHeight * 0.18, cellWidth, TextAlignment.Center, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
         }
 
         for (var row = 0; row < card.Rows.Count; row++) {
             var item = card.Rows[row];
             var rowY = gridY + row * (cellHeight + 5);
-            DrawAlignedText(canvas, item.Label, matrixX, rowY + cellHeight * 0.2, labelWidth - 6, VisualTextAlignment.Right, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
+            DrawAlignedText(canvas, item.Label, matrixX, rowY + cellHeight * 0.2, labelWidth - 6, TextAlignment.Right, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
             for (var column = 0; column < card.Columns.Count; column++) {
                 var value = item.Values[column];
                 var color = HeatmapInsightColorForPng(card, value);
                 var x = matrixX + labelWidth + column * (cellWidth + cellGap);
                 canvas.FillRoundedRect(x, rowY, cellWidth, cellHeight, Math.Min(5, cellHeight * 0.32), color);
-                DrawAlignedText(canvas, value.ToString("0", CultureInfo.InvariantCulture), x, rowY + cellHeight * 0.2, cellWidth, VisualTextAlignment.Center, ChartColorMath.TextOnBackground(color), Math.Max(9, theme.SubtitleFontSize - 2), true);
+                DrawAlignedText(canvas, value.ToString("0", CultureInfo.InvariantCulture), x, rowY + cellHeight * 0.2, cellWidth, TextAlignment.Center, ChartColorMath.TextOnBackground(color), Math.Max(9, theme.SubtitleFontSize - 2), true);
             }
         }
 
@@ -57,7 +57,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (card.LeftControl.Length > 0) {
             var w = Math.Min(70, canvas.MeasureTextEmphasizedWidth(card.LeftControl, theme.SubtitleFontSize) + 22);
             canvas.FillRoundedRect(cursor, y, w, buttonHeight, 8, theme.PlotBackground);
-            DrawAlignedText(canvas, card.LeftControl, cursor, y + 5, w, VisualTextAlignment.Center, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
+            DrawAlignedText(canvas, card.LeftControl, cursor, y + 5, w, TextAlignment.Center, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
             cursor += w - 2;
         }
 
@@ -65,7 +65,7 @@ public sealed partial class PngVisualBlockRenderer {
             var w = Math.Min(80, canvas.MeasureTextEmphasizedWidth(card.SelectedControl, theme.SubtitleFontSize) + 24);
             canvas.FillRoundedRect(cursor, y, w, buttonHeight, 8, ChartColor.White);
             canvas.StrokeRoundedRect(cursor, y, w, buttonHeight, 8, theme.CardBorder, 1);
-            DrawAlignedText(canvas, card.SelectedControl, cursor, y + 5, w, VisualTextAlignment.Center, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(10, theme.SubtitleFontSize - 1), true);
+            DrawAlignedText(canvas, card.SelectedControl, cursor, y + 5, w, TextAlignment.Center, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(10, theme.SubtitleFontSize - 1), true);
             cursor += w + 14;
         }
 
@@ -75,24 +75,24 @@ public sealed partial class PngVisualBlockRenderer {
             var w = Math.Min(remaining, canvas.MeasureTextEmphasizedWidth(card.PeriodLabel, theme.SubtitleFontSize) + 34);
             canvas.FillRoundedRect(cursor, y, w, buttonHeight, 8, ChartColor.White);
             canvas.StrokeRoundedRect(cursor, y, w, buttonHeight, 8, theme.CardBorder, 1);
-            DrawAlignedText(canvas, card.PeriodLabel, cursor + 12, y + 5, w - 24, VisualTextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
+            DrawAlignedText(canvas, card.PeriodLabel, cursor + 12, y + 5, w - 24, TextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
         }
     }
 
     private static void DrawHeatmapInsightRail(RgbaCanvas canvas, HeatmapInsightCard card, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
-        DrawAlignedText(canvas, card.InsightTitle, x, y + 2, width, VisualTextAlignment.Left, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
+        DrawAlignedText(canvas, card.InsightTitle, x, y + 2, width, TextAlignment.Left, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
         var itemY = y + 42;
         foreach (var item in card.Insights) {
-            DrawAlignedText(canvas, item.Label, x, itemY - 10, width, VisualTextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
-            DrawAlignedText(canvas, item.Detail, x, itemY + 8, width, VisualTextAlignment.Left, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), false);
+            DrawAlignedText(canvas, item.Label, x, itemY - 10, width, TextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize - 1), true);
+            DrawAlignedText(canvas, item.Detail, x, itemY + 8, width, TextAlignment.Left, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), false);
             itemY += 48;
         }
 
         var keyY = Math.Min(y + height - 46, Math.Max(itemY + 8, y + 150));
-        DrawAlignedText(canvas, card.ColorKeyLabel, x, keyY - 12, width, VisualTextAlignment.Left, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
+        DrawAlignedText(canvas, card.ColorKeyLabel, x, keyY - 12, width, TextAlignment.Left, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
         keyY += 12;
-        DrawAlignedText(canvas, card.Minimum.ToString("0", CultureInfo.InvariantCulture), x, keyY - 4, 18, VisualTextAlignment.Left, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
+        DrawAlignedText(canvas, card.Minimum.ToString("0", CultureInfo.InvariantCulture), x, keyY - 4, 18, TextAlignment.Left, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
         var keyX = x + 22;
         var keyWidth = Math.Max(30, width - 48);
         var steps = 16;
@@ -102,7 +102,7 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.FillRoundedRect(keyX + step * stepWidth, keyY, stepWidth + 0.6, 7, step == 0 || step == steps - 1 ? 4 : 0, HeatmapInsightColorForPng(card, value));
         }
 
-        DrawAlignedText(canvas, card.Maximum.ToString("0", CultureInfo.InvariantCulture), x + width - 20, keyY - 4, 20, VisualTextAlignment.Right, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
+        DrawAlignedText(canvas, card.Maximum.ToString("0", CultureInfo.InvariantCulture), x + width - 20, keyY - 4, 20, TextAlignment.Right, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 2), true);
     }
 
     private static ChartColor HeatmapInsightColorForPng(HeatmapInsightCard card, double value) {

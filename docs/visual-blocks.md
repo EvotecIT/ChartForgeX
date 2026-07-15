@@ -28,6 +28,7 @@ Example:
 ```csharp
 using ChartForgeX;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 
 var table = ChartTable.Create()
@@ -35,8 +36,8 @@ var table = ChartTable.Create()
     .WithTheme(ChartTheme.TransparentOverlayDark())
     .WithTransparentBackground()
     .AddColumn("Drive")
-    .AddColumn("Used", VisualTextAlignment.Right, format: "0%")
-    .AddColumn("Free", VisualTextAlignment.Right)
+    .AddColumn("Used", TextAlignment.Right, format: "0%")
+    .AddColumn("Free", TextAlignment.Right)
     .AddColumn("Status")
     .AddRow("C:", 0.72, "128 GB", "OK")
     .AddRow("D:", 0.91, "34 GB", "Warning")

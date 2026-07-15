@@ -8,18 +8,6 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
-/// Horizontal text alignment used by visual blocks.
-/// </summary>
-public enum VisualTextAlignment {
-    /// <summary>Align text to the leading edge.</summary>
-    Left,
-    /// <summary>Center text in the available space.</summary>
-    Center,
-    /// <summary>Align text to the trailing edge.</summary>
-    Right
-}
-
-/// <summary>
 /// Generic semantic status used by visual blocks.
 /// </summary>
 public enum VisualStatus {
@@ -51,16 +39,6 @@ public enum VisualListMarker {
     Check,
     /// <summary>Render status-colored markers.</summary>
     Status
-}
-
-/// <summary>
-/// Fit behavior for visual grid panels.
-/// </summary>
-public enum VisualGridPanelFit {
-    /// <summary>Preserve the child aspect ratio inside the panel.</summary>
-    Contain,
-    /// <summary>Stretch the child to the full panel dimensions.</summary>
-    Stretch
 }
 
 /// <summary>
@@ -297,13 +275,13 @@ public sealed class ChartTable : VisualBlock<ChartTable> {
     }
 
     /// <summary>Adds one table column.</summary>
-    public ChartTable AddColumn(string header, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null, string? format = null) {
+    public ChartTable AddColumn(string header, TextAlignment alignment = TextAlignment.Left, double? width = null, string? format = null) {
         if (_rows.Count > 0) throw new InvalidOperationException("Table columns cannot be added after rows have been populated. Use WithColumns to replace the full column set with the same count.");
         AddColumnCore(header, alignment, width, format);
         return this;
     }
 
-    private void AddColumnCore(string header, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null, string? format = null) {
+    private void AddColumnCore(string header, TextAlignment alignment = TextAlignment.Left, double? width = null, string? format = null) {
         if (header == null) throw new ArgumentNullException(nameof(header));
         if (width.HasValue && (double.IsNaN(width.Value) || double.IsInfinity(width.Value) || width.Value <= 0)) throw new ArgumentOutOfRangeException(nameof(width), width, "Column width must be finite and greater than zero.");
         _columns.Add(new ChartTableColumn(header, alignment, width, format));
@@ -359,7 +337,7 @@ public sealed class ChartTable : VisualBlock<ChartTable> {
 /// </summary>
 public sealed class ChartTableColumn {
     /// <summary>Initializes a table column.</summary>
-    public ChartTableColumn(string header, VisualTextAlignment alignment = VisualTextAlignment.Left, double? width = null, string? format = null) {
+    public ChartTableColumn(string header, TextAlignment alignment = TextAlignment.Left, double? width = null, string? format = null) {
         Header = header ?? throw new ArgumentNullException(nameof(header));
         VisualBlockGuards.EnumDefined(alignment, nameof(alignment));
         if (width.HasValue) VisualBlockGuards.PositiveFinite(width.Value, nameof(width));
@@ -372,7 +350,7 @@ public sealed class ChartTableColumn {
     public string Header { get; }
 
     /// <summary>Gets the default text alignment.</summary>
-    public VisualTextAlignment Alignment { get; }
+    public TextAlignment Alignment { get; }
 
     /// <summary>Gets an optional fixed width in pixels.</summary>
     public double? Width { get; }
@@ -400,7 +378,7 @@ public sealed class ChartTableRow {
 /// </summary>
 public sealed partial class ChartTableCell {
     private string _text;
-    private VisualTextAlignment? _alignment;
+    private TextAlignment? _alignment;
     private VisualStatus _status;
 
     /// <summary>Initializes a table cell.</summary>
@@ -413,7 +391,7 @@ public sealed partial class ChartTableCell {
     }
 
     /// <summary>Gets or sets an optional text alignment override.</summary>
-    public VisualTextAlignment? Alignment {
+    public TextAlignment? Alignment {
         get => _alignment;
         set {
             if (value.HasValue) VisualBlockGuards.EnumDefined(value.Value, nameof(value));
@@ -617,7 +595,7 @@ public sealed class VisualGrid {
     private int _padding = 24;
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;
-    private VisualGridPanelFit _panelFit = VisualGridPanelFit.Contain;
+    private VisualPanelFit _panelFit = VisualPanelFit.Contain;
     private bool _adaptiveRowHeights;
     private bool _frameVisible;
 
@@ -652,7 +630,7 @@ public sealed class VisualGrid {
     }
 
     /// <summary>Gets or sets how children fit fixed panels.</summary>
-    public VisualGridPanelFit PanelFit {
+    public VisualPanelFit PanelFit {
         get => _panelFit;
         set {
             VisualBlockGuards.EnumDefined(value, nameof(value));
@@ -715,7 +693,7 @@ public sealed class VisualGrid {
     public VisualGrid WithPanelSize(int width, int height) { PanelSize = new ChartSize(width, height); return this; }
 
     /// <summary>Sets how children fit fixed panels.</summary>
-    public VisualGrid WithPanelFit(VisualGridPanelFit fit) { PanelFit = fit; return this; }
+    public VisualGrid WithPanelFit(VisualPanelFit fit) { PanelFit = fit; return this; }
 
     /// <summary>Sets whether rows without a fixed panel size use their natural item heights.</summary>
     public VisualGrid WithAdaptiveRowHeights(bool enabled = true) { AdaptiveRowHeights = enabled; return this; }

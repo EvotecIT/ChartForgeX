@@ -9,7 +9,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Describes a dependency-free small-multiple report made from multiple charts.
 /// </summary>
-public sealed class ChartGrid {
+public sealed partial class ChartGrid {
     private readonly List<Chart> _charts = new();
     private readonly List<ChartGridPanelSpan> _panelSpans = new();
     private string _title = string.Empty;
@@ -19,7 +19,7 @@ public sealed class ChartGrid {
     private int _padding = 24;
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;
-    private ChartGridPanelFit _panelFit = ChartGridPanelFit.Contain;
+    private VisualPanelFit _panelFit = VisualPanelFit.Contain;
     private ChartTheme? _theme;
 
     /// <summary>
@@ -96,10 +96,10 @@ public sealed class ChartGrid {
     /// <summary>
     /// Gets or sets how charts fit inside fixed-size grid panels.
     /// </summary>
-    public ChartGridPanelFit PanelFit {
+    public VisualPanelFit PanelFit {
         get => _panelFit;
         set {
-            if (!Enum.IsDefined(typeof(ChartGridPanelFit), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown chart grid panel fit.");
+            if (!Enum.IsDefined(typeof(VisualPanelFit), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown chart grid panel fit.");
             _panelFit = value;
         }
     }
@@ -115,12 +115,12 @@ public sealed class ChartGrid {
     /// <summary>
     /// Gets the text style used for the grid title.
     /// </summary>
-    public ChartTextStyle TitleStyle { get; } = new();
+    public TextStyleOverride TitleStyle { get; } = new();
 
     /// <summary>
     /// Gets the text style used for the grid subtitle.
     /// </summary>
-    public ChartTextStyle SubtitleStyle { get; } = new();
+    public TextStyleOverride SubtitleStyle { get; } = new();
 
     /// <summary>
     /// Gets the charts included in the grid.
@@ -157,7 +157,7 @@ public sealed class ChartGrid {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithTitleStyle(Action<ChartTextStyle> configure) {
+    public ChartGrid WithTitleStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(TitleStyle);
         return this;
@@ -168,7 +168,7 @@ public sealed class ChartGrid {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithSubtitleStyle(Action<ChartTextStyle> configure) {
+    public ChartGrid WithSubtitleStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(SubtitleStyle);
         return this;
@@ -222,7 +222,7 @@ public sealed class ChartGrid {
     /// </summary>
     /// <param name="fit">The panel fit behavior.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPanelFit(ChartGridPanelFit fit) { PanelFit = fit; return this; }
+    public ChartGrid WithPanelFit(VisualPanelFit fit) { PanelFit = fit; return this; }
 
     /// <summary>
     /// Clears the fixed panel size so composed exports use the largest chart dimensions.

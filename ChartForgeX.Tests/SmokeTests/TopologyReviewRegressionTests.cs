@@ -46,7 +46,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", 40, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 360, 40, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
-            .AddEdge("left-right", "left", "right", "via route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("left-right", "left", "right", "via route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithEdgeWaypoints("left-right", new ChartPoint(200, 180), new ChartPoint(200, 180), new ChartPoint(300, 180));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
@@ -61,8 +61,8 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", 40, 72, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 48, height: 42)
             .AddNode("right", "Right", 260, 72, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 48, height: 42)
-            .AddEdge("dup", "left", "right", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
-            .AddEdge("dup", "right", "left", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("dup", "left", "right", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("dup", "right", "left", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var options = new TopologyRenderOptions { IncludeLegend = false };
         var svg = chart.ToSvg(options);
@@ -79,8 +79,8 @@ internal static partial class SmokeTests {
             .AddNode("hub", "Hub", 70, 82, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 52, height: 52)
             .AddNode("a", "A", 230, 48, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 42, height: 38)
             .AddNode("b", "B", 230, 122, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 42, height: 38)
-            .AddEdge("dup", "hub", "a", "A", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("dup", "hub", "b", "B", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            .AddEdge("dup", "hub", "a", "A", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("dup", "hub", "b", "B", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
         foreach (var edge in chart.Edges) {
             edge.SourcePort = TopologyEdgePort.Right;
             edge.TargetPort = TopologyEdgePort.Left;
@@ -100,8 +100,8 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", 70, 64, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 52, height: 42)
             .AddNode("right", "Right", 286, 160, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 52, height: 42)
-            .AddEdge("primary", "left", "right", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            .AddEdge("primary", "left", "right", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
 
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var primary = TopologyRenderPrimitives.EdgePoints(chart, chart.Edges[0], nodes);
@@ -117,8 +117,8 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("left", "Left", 70, 64, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 52, height: 42)
             .AddNode("right", "Right", 286, 160, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 52, height: 42)
-            .AddEdge("center", "left", "right", "center", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("center", "left", "right", "center", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithEdgeRouteLane("center", 0);
 
         Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[0])) < 0.0001, "Explicit zero route lanes should stay centered instead of being replaced by inferred parallel offsets.");
@@ -133,7 +133,7 @@ internal static partial class SmokeTests {
             .AddGroup("middle", "Hidden Header", 150, 118, 100, 80, TopologyHealthStatus.Warning)
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
-            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var headerless = TopologyRenderPrimitives.EdgeLabelLayouts(headerChart, new TopologyRenderOptions { IncludeLegend = false, IncludeGroupLabels = false }).Single();
         Assert(Math.Abs(headerless.CenterY - 150) < 0.01, "Hidden group headers should not reserve phantom edge-label obstacles.");
@@ -148,7 +148,7 @@ internal static partial class SmokeTests {
             .AddGroup("right-group", "Right Group", 205, 110, 90, 90, TopologyHealthStatus.Warning)
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left-group", width: 40, height: 40)
             .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "right-group", width: 40, height: 40)
-            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var groupless = TopologyRenderPrimitives.EdgeLabelLayouts(groupChart, new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGroupLabels = false }).Single();
         Assert(Math.Abs(groupless.CenterY - 150) < 0.01, "Hidden group surfaces should not reserve phantom edge-label obstacles.");
@@ -162,7 +162,7 @@ internal static partial class SmokeTests {
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("owner", "Payments Platform Owner", 176, 88, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 48, height: 42)
-            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
             .WithNodeDisplay("owner", TopologyNodeDisplayMode.Icon);
 
         var hiddenIconLabel = TopologyRenderPrimitives.EdgeLabelLayouts(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false, IncludeIconLabels = true }).Single();
@@ -191,7 +191,7 @@ internal static partial class SmokeTests {
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("anchor", "Anchor", 176, 139, TopologyNodeKind.Location, TopologyHealthStatus.Critical, width: 48, height: 22)
-            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
             .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
 
         var label = TopologyRenderPrimitives.EdgeLabelLayouts(labelChart, new TopologyRenderOptions { IncludeLegend = false }).Single();
@@ -270,7 +270,7 @@ internal static partial class SmokeTests {
             .AddGroup("g", "Group", 40, 40, 160, 100, TopologyHealthStatus.Healthy)
             .AddNode("a", "A", 60, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "g", width: 42, height: 36)
             .AddNode("b", "B", 200, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "g", width: 42, height: 36)
-            .AddEdge("a-b", "a", "b", null, TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight);
+            .AddEdge("a-b", "a", "b", null, TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
         var activeHighlight = TopologyHighlightState.From(chart, new TopologyRenderOptions { HighlightStatuses = { TopologyHealthStatus.Critical }, DimmedOpacity = 0.25 });
         var inactiveHighlight = TopologyHighlightState.From(chart, new TopologyRenderOptions { DimmedOpacity = 0.25 });
 
@@ -322,9 +322,9 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("a", "A", 82, 86, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
             .AddNode("b", "B", 228, 86, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 44, height: 44, symbol: "DC")
-            .AddEdge("z-center", "a", "b", "center", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("a-left", "a", "b", "left", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .AddEdge("m-right", "b", "a", "right", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("z-center", "a", "b", "center", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("a-left", "a", "b", "left", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("m-right", "b", "a", "right", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithReciprocalEdgeRouteBundles(20);
 
         var center = chart.Edges.Single(edge => edge.Id == "z-center");

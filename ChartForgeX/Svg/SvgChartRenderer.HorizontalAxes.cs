@@ -31,17 +31,17 @@ public sealed partial class SvgChartRenderer {
             if (ShowYAxis(chart)) DrawHorizontalCategoryLabel(sb, chart, plot, FormatX(chart, category), y);
         }
 
-        var zeroX = map.X(0);
-        if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroX > plot.Left && zeroX < plot.Right) {
+        var zeroX = map.XBaseline();
+        if (ShowYAxisLine(chart) && zeroX > plot.Left && zeroX < plot.Right) {
             WriteHorizontalAxisLine(sb, null, zeroX, plot.Top, zeroX, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
         }
 
         if (ShowXAxis(chart)) {
-            if (ShowAxisLines(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowXAxisLine(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart, xLabels));
         }
         if (ShowYAxis(chart)) {
-            if (ShowAxisLines(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowYAxisLine(chart)) WriteHorizontalAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
             DrawSvgYAxisTitle(sb, chart, plot, 26);
         }
     }
@@ -96,7 +96,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHorizontalCategoryLabelLine(StringBuilder sb, Chart chart, ChartTextStyle style, int lineIndex, double x, double y, string fill, double fontSize, string label) {
+    private static void WriteHorizontalCategoryLabelLine(StringBuilder sb, Chart chart, TextStyleOverride style, int lineIndex, double x, double y, string fill, double fontSize, string label) {
         var writer = new SvgMarkupWriter(384);
         writer
             .StartElement("text")

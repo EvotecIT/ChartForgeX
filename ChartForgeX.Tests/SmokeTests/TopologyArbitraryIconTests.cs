@@ -47,8 +47,8 @@ internal static partial class SmokeTests {
             .AddNode("cleared", "Cleared", 604, 40, TopologyNodeKind.Application, TopologyHealthStatus.Healthy, width: 72, height: 52, symbol: "CLR", iconId: "access-sample:destination")
             .AddNode("unsafe-direct", "Unsafe Direct", 604, 224, TopologyNodeKind.Application, TopologyHealthStatus.Warning, width: 72, height: 52, symbol: "BAD", iconId: "access-sample:destination")
             .AddNode("unsafe-standalone", "Unsafe Standalone", 520, 224, TopologyNodeKind.Application, TopologyHealthStatus.Warning, width: 72, height: 52, symbol: "BAD")
-            .AddEdge("client-gateway", "client", "gateway", "policy", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .AddEdge("gateway-destination", "gateway", "destination", "route", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("client-gateway", "client", "gateway", "policy", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("gateway-destination", "gateway", "destination", "route", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .WithNodeDisplay("client", TopologyNodeDisplayMode.Tile)
             .WithNodeDisplay("gateway", TopologyNodeDisplayMode.Pill)
             .WithNodeArtwork("override", imageArtwork, TopologyNodeDisplayMode.Card)
@@ -297,7 +297,7 @@ internal static partial class SmokeTests {
             .WithLayout(TopologyLayoutMode.Layered)
             .AddAutoArtworkNode("auto-art", "Auto Artwork", backdropArtwork, TopologyNodeKind.Cloud, TopologyHealthStatus.Healthy, width: 112, height: 72, symbol: "ART")
             .AddAutoNode("auto-target", "Target", TopologyNodeKind.Application, TopologyHealthStatus.Healthy, width: 96, height: 64, symbol: "APP")
-            .AddEdge("auto-route", "auto-art", "auto-target", "auto", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+            .AddEdge("auto-route", "auto-art", "auto-target", "auto", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
         var autoSvg = autoChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(autoSvg.Contains("data-layout-mode=\"Layered\"", StringComparison.Ordinal), "Auto artwork nodes should participate in deterministic layout modes.");
         Assert(autoSvg.Contains("data-node-id=\"auto-art\"", StringComparison.Ordinal) && autoSvg.Contains("data-node-artwork-source=\"node\"", StringComparison.Ordinal), "Auto artwork nodes should preserve node-supplied artwork metadata after layout.");
@@ -309,7 +309,7 @@ internal static partial class SmokeTests {
             .AddNode("source", "Source", 36, 62, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 54, height: 38, symbol: "S")
             .AddNode("backdrop", "Backdrop", 112, 24, TopologyNodeKind.Cloud, TopologyHealthStatus.Unknown, width: 140, height: 112, symbol: "BG")
             .AddNode("target", "Target", 280, 62, TopologyNodeKind.Application, TopologyHealthStatus.Healthy, width: 54, height: 38, symbol: "T")
-            .AddEdge("through-backdrop", "source", "target", null, TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+            .AddEdge("through-backdrop", "source", "target", null, TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
         foreach (var node in inferredBackdropChart.Nodes) {
             if (!string.Equals(node.Id, "backdrop", StringComparison.Ordinal)) continue;
             node.Artwork = backdropArtwork;
@@ -326,7 +326,7 @@ internal static partial class SmokeTests {
             .AddNode("source", "Source", 36, 62, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 54, height: 38, symbol: "S")
             .AddNode("card", "Card", 136, 38, TopologyNodeKind.Application, TopologyHealthStatus.Healthy, width: 88, height: 78, symbol: "C")
             .AddNode("target", "Target", 280, 62, TopologyNodeKind.Application, TopologyHealthStatus.Healthy, width: 54, height: 38, symbol: "T")
-            .AddEdge("around-card", "source", "target", null, TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("around-card", "source", "target", null, TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .WithNodeArtwork("card", imageArtwork, TopologyNodeDisplayMode.Card);
         var cardArtworkSvg = cardArtworkObstacleChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         var cardArtworkEdgeTag = TopologyEdgeStartTag(cardArtworkSvg, "card-artwork-route", "around-card");

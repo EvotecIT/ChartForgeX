@@ -28,7 +28,7 @@ public sealed partial class PngVisualBlockRenderer {
         for (var index = 0; index < branch.Children.Count; index++) {
             var child = branch.Children[index];
             canvas.DrawLine(child.AnchorX, child.AnchorY, child.EndX, child.EndY, theme.Axis.WithAlpha(145), Math.Max(1, 1.5 - child.Depth * 0.08));
-            DrawAlignedText(canvas, child.Cause.Label, child.LabelX, child.LabelY - 7, child.LabelWidth, VisualTextAlignment.Right, theme.MutedText, Math.Max(8.5, theme.SubtitleFontSize - child.Depth), true);
+            DrawAlignedText(canvas, child.Cause.Label, child.LabelX, child.LabelY - 7, child.LabelWidth, TextAlignment.Right, theme.MutedText, Math.Max(8.5, theme.SubtitleFontSize - child.Depth), true);
         }
     }
 }

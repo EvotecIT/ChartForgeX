@@ -11,18 +11,29 @@ public sealed class PngVisualCanvasRenderer {
     /// <summary>Renders a visual canvas to PNG bytes.</summary>
     public byte[] Render(VisualCanvas canvas) => PngWriter.WriteRgba(RenderImage(canvas));
 
-    internal RgbaImage RenderImage(VisualCanvas canvas) => RenderCanvas(canvas).ToImage();
+    internal RgbaImage RenderImage(VisualCanvas canvas) {
+        var source = RenderCanvas(canvas).ToImage();
+        if (!canvas.IsResponsive) return source;
+
+        var scale = canvas.PngOutputScale;
+        var background = canvas.BackdropStyle == VisualCanvasBackdropStyle.Transparent ? ChartColor.Transparent : canvas.BackgroundBottom;
+        return ImageComposition.Create(canvas.Width * scale, canvas.Height * scale, background)
+            .DrawImage(source, 0, 0, canvas.Width * scale, canvas.Height * scale, canvas.ResponsiveFit)
+            .ToImage();
+    }
 
     internal RgbaCanvas RenderCanvas(VisualCanvas canvas) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         VisualCanvas.ValidateEnum(canvas.BackdropStyle, nameof(canvas.BackdropStyle));
-        var output = new RgbaCanvas(canvas.Width, canvas.Height, 2, null, canvas.PngOutputScale);
+        var width = canvas.DesignWidth;
+        var height = canvas.DesignHeight;
+        var output = new RgbaCanvas(width, height, 2, null, canvas.PngOutputScale);
         output.Clear(ChartColor.Transparent);
         if (canvas.BackdropStyle != VisualCanvasBackdropStyle.Transparent) {
-            output.FillRoundedRectVerticalGradient(0, 0, canvas.Width, canvas.Height, 0, canvas.BackgroundTop, canvas.BackgroundBottom);
+            output.FillRoundedRectVerticalGradient(0, 0, width, height, 0, canvas.BackgroundTop, canvas.BackgroundBottom);
         }
         var theme = canvas.Theme ?? new VisualCanvasTheme();
-        if (canvas.BackdropStyle == VisualCanvasBackdropStyle.TechHorizon) RenderTechBackdrop(output, canvas, theme);
+        if (canvas.BackdropStyle == VisualCanvasBackdropStyle.TechHorizon) RenderTechBackdrop(output, width, height, theme);
         foreach (var layer in canvas.Layers) RenderLayer(output, layer, theme);
         return output;
     }
@@ -47,37 +58,37 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void RenderTechBackdrop(RgbaCanvas canvas, VisualCanvas visual, VisualCanvasTheme theme) {
+    private static void RenderTechBackdrop(RgbaCanvas canvas, double width, double height, VisualCanvasTheme theme) {
         var accent = theme.SecondaryAccent;
         for (var i = 0; i < 56; i++) {
-            var x = (visual.Width * ((i * 37) % 101)) / 100.0;
-            var y = visual.Height * (0.05 + (((i * 19) % 67) / 100.0) * 0.44);
+            var x = (width * ((i * 37) % 101)) / 100.0;
+            var y = height * (0.05 + (((i * 19) % 67) / 100.0) * 0.44);
             var opacity = 0.14 + ((i % 5) * 0.035);
             canvas.DrawCircle(x, y, i % 11 == 0 ? 4.2 : 1.8, accent.WithOpacity(opacity));
         }
 
         for (var i = 0; i < 10; i++) {
-            var y = visual.Height * (0.18 + i * 0.045);
-            DrawCurve(canvas, visual.Width * 0.08, y, visual.Width * 0.28, y - 80, visual.Width * 0.48, y + 120, visual.Width * 0.68, y - 10, accent.WithOpacity(0.11), 1.1);
+            var y = height * (0.18 + i * 0.045);
+            DrawCurve(canvas, width * 0.08, y, width * 0.28, y - 80, width * 0.48, y + 120, width * 0.68, y - 10, accent.WithOpacity(0.11), 1.1);
         }
 
         var horizon = new[] {
-            new ChartPoint(0, visual.Height),
-            new ChartPoint(0, visual.Height * 0.78),
-            new ChartPoint(visual.Width * 0.20, visual.Height * 0.72),
-            new ChartPoint(visual.Width * 0.38, visual.Height * 0.82),
-            new ChartPoint(visual.Width * 0.55, visual.Height * 0.76),
-            new ChartPoint(visual.Width * 0.74, visual.Height * 0.70),
-            new ChartPoint(visual.Width * 0.84, visual.Height * 0.85),
-            new ChartPoint(visual.Width, visual.Height * 0.73),
-            new ChartPoint(visual.Width, visual.Height)
+            new ChartPoint(0, height),
+            new ChartPoint(0, height * 0.78),
+            new ChartPoint(width * 0.20, height * 0.72),
+            new ChartPoint(width * 0.38, height * 0.82),
+            new ChartPoint(width * 0.55, height * 0.76),
+            new ChartPoint(width * 0.74, height * 0.70),
+            new ChartPoint(width * 0.84, height * 0.85),
+            new ChartPoint(width, height * 0.73),
+            new ChartPoint(width, height)
         };
         canvas.FillPolygon(horizon, theme.TechHorizonFill);
-        DrawCurve(canvas, visual.Width * 0.50, visual.Height * 0.82, visual.Width * 0.72, visual.Height * 0.86, visual.Width * 0.80, visual.Height * 0.93, visual.Width * 0.92, visual.Height, accent.WithOpacity(0.48), 9);
-        DrawCurve(canvas, visual.Width * 0.50, visual.Height * 0.82, visual.Width * 0.72, visual.Height * 0.86, visual.Width * 0.80, visual.Height * 0.93, visual.Width * 0.92, visual.Height, accent.WithOpacity(0.88), 3.5);
+        DrawCurve(canvas, width * 0.50, height * 0.82, width * 0.72, height * 0.86, width * 0.80, height * 0.93, width * 0.92, height, accent.WithOpacity(0.48), 9);
+        DrawCurve(canvas, width * 0.50, height * 0.82, width * 0.72, height * 0.86, width * 0.80, height * 0.93, width * 0.92, height, accent.WithOpacity(0.88), 3.5);
     }
 
-    private static void DrawText(RgbaCanvas canvas, double x, double y, double width, string text, double fontSize, ChartColor color, VisualCanvasTextAlignment alignment, bool emphasized) {
+    private static void DrawText(RgbaCanvas canvas, double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment, bool emphasized) {
         var fitted = FitText(text, fontSize, Math.Max(4, width), emphasized);
         var textWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, fontSize, null) : RgbaCanvas.MeasureTextWidth(fitted, fontSize, null);
         var drawX = AlignedX(x, width, textWidth, alignment);
@@ -243,7 +254,7 @@ public sealed class PngVisualCanvasRenderer {
     private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color) {
         if (kind == VisualCanvasInfoTileIconKind.Text) {
             var iconFont = Math.Min(25, size * (text.Length > 3 ? 0.34 : 0.42));
-            DrawText(canvas, x, y + (size - iconFont) / 2 - 1, size, text, iconFont, color, VisualCanvasTextAlignment.Center, true);
+            DrawText(canvas, x, y + (size - iconFont) / 2 - 1, size, text, iconFont, color, TextAlignment.Center, true);
             return;
         }
 
@@ -355,7 +366,7 @@ public sealed class PngVisualCanvasRenderer {
         }
 
         var fontSize = Math.Max(24, badge.Height * 0.42);
-        DrawText(canvas, badge.X, badge.Y + badge.Height / 2 - fontSize * 0.40, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, VisualCanvasTextAlignment.Center, true);
+        DrawText(canvas, badge.X, badge.Y + badge.Height / 2 - fontSize * 0.40, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, TextAlignment.Center, true);
     }
 
     private static void DrawImage(RgbaCanvas canvas, VisualCanvasImageLayer image, VisualCanvasTheme theme) {
@@ -438,8 +449,8 @@ public sealed class PngVisualCanvasRenderer {
             var item = strip.Items[i];
             var slotX = strip.X + slot * i;
             if (i > 0) canvas.DrawLine(slotX, strip.Y + 4, slotX, strip.Y + strip.Height - 4, theme.FeatureDividerColor, 1);
-            DrawText(canvas, slotX, strip.Y + 2, slot, item.Icon, 22, strip.Accent, VisualCanvasTextAlignment.Center, true);
-            DrawText(canvas, slotX + 6, strip.Y + 38, slot - 12, item.Label, 15, theme.FeatureLabelColor, VisualCanvasTextAlignment.Center, true);
+            DrawText(canvas, slotX, strip.Y + 2, slot, item.Icon, 22, strip.Accent, TextAlignment.Center, true);
+            DrawText(canvas, slotX + 6, strip.Y + 38, slot - 12, item.Label, 15, theme.FeatureLabelColor, TextAlignment.Center, true);
         }
     }
 
@@ -476,11 +487,11 @@ public sealed class PngVisualCanvasRenderer {
     private static double Measure(string value, double fontSize, bool emphasized) =>
         emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) : RgbaCanvas.MeasureTextWidth(value, fontSize, null);
 
-    private static double AlignedX(double x, double width, double textWidth, VisualCanvasTextAlignment alignment) {
+    private static double AlignedX(double x, double width, double textWidth, TextAlignment alignment) {
         VisualCanvas.ValidateEnum(alignment, nameof(alignment));
         switch (alignment) {
-            case VisualCanvasTextAlignment.Center: return x + (width - textWidth) / 2;
-            case VisualCanvasTextAlignment.Right: return x + width - textWidth;
+            case TextAlignment.Center: return x + (width - textWidth) / 2;
+            case TextAlignment.Right: return x + width - textWidth;
             default: return x;
         }
     }

@@ -14,7 +14,7 @@ internal static partial class SmokeTests {
         map.AddNode("Portal", "Portal", 0.80, 0.35).Inertia = true;
         map.AddNode("API", "API", 0.70, 0.45).Strategy = "build";
         map.AddLink("User", "Portal");
-        map.AddLink("Portal", "API", "uses", dashed: false, WardleyMapFlow.Forward);
+        map.AddLink("Portal", "API", "uses", dashed: false, VisualLinkDirection.Forward);
         map.AddEvolution("API", 0.75);
         map.AddNote("Operational pressure", 0.35, 0.75);
 
@@ -65,8 +65,8 @@ internal static partial class SmokeTests {
         map.AddNode("API", "API", 0.70, 0.45);
         map.AddNode("Database", "Database", 0.55, 0.65);
         map.AddLink("Portal", "API", dashed: true);
-        map.AddLink("API", "Database", flow: WardleyMapFlow.Forward);
-        map.AddLink("Database", "Portal", flow: WardleyMapFlow.Bidirectional);
+        map.AddLink("API", "Database", flow: VisualLinkDirection.Forward);
+        map.AddLink("Database", "Portal", flow: VisualLinkDirection.Bidirectional);
 
         var svg = map.ToSvg();
         var png = map.ToPng();

@@ -22,7 +22,7 @@ public sealed class TopologyMindMapOptions {
     public TopologyHealthStatus EdgeStatus { get; set; } = TopologyHealthStatus.Healthy;
 
     /// <summary>Gets or sets the generated branch edge direction.</summary>
-    public TopologyDirection EdgeDirection { get; set; } = TopologyDirection.None;
+    public VisualLinkDirection EdgeDirection { get; set; } = VisualLinkDirection.None;
 
     /// <summary>Gets or sets the generated branch edge routing.</summary>
     public TopologyEdgeRouting EdgeRouting { get; set; } = TopologyEdgeRouting.Orthogonal;

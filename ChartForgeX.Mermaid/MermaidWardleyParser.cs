@@ -124,7 +124,7 @@ internal static class MermaidWardleyParser {
             return true;
         }
 
-        var flow = WardleyMapFlow.None;
+        var flow = VisualLinkDirection.None;
         var flowMatch = Regex.Match(arrow, @"^\+'(?<label>[^']*)'(?<direction><>|<|>)$");
         if (flowMatch.Success) {
             label = flowMatch.Groups["label"].Value;
@@ -298,11 +298,11 @@ internal static class MermaidWardleyParser {
         return start >= 0 && end > start ? text.Substring(start + 1, end - start - 1).Trim().ToLowerInvariant() : string.Empty;
     }
 
-    private static WardleyMapFlow FlowFromSymbol(string value) {
-        if (value == "<>") return WardleyMapFlow.Bidirectional;
-        if (value == "<") return WardleyMapFlow.Backward;
-        if (value == ">") return WardleyMapFlow.Forward;
-        return WardleyMapFlow.None;
+    private static VisualLinkDirection FlowFromSymbol(string value) {
+        if (value == "<>") return VisualLinkDirection.Bidirectional;
+        if (value == "<") return VisualLinkDirection.Backward;
+        if (value == ">") return VisualLinkDirection.Forward;
+        return VisualLinkDirection.None;
     }
 
     private static int LastWhitespace(string text) {

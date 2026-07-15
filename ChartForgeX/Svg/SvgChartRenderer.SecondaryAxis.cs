@@ -16,7 +16,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawSecondaryYAxis(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> yTicks, ChartMapper map) {
         var o = chart.Options;
-        if (!o.ShowAxes) return;
+        if (!ShowSecondaryYAxis(chart)) return;
         var t = o.Theme;
         var tickStyle = o.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
@@ -24,7 +24,7 @@ public sealed partial class SvgChartRenderer {
         var writer = new SvgMarkupWriter(2048);
         for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
             var yv = yTicks[yIndex];
-            if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) continue;
+            if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.SecondaryYAxis.LabelDensity)) continue;
             var y = map.Y(yv);
             var rawLabel = FormatSecondaryValue(chart, yv);
             var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelMaxWidth, tickFontSize);
@@ -33,7 +33,7 @@ public sealed partial class SvgChartRenderer {
             WriteSecondaryYAxisTick(writer, chart, tickStyle, yv, plot.Right + 12, y + 4, StyleColor(tickStyle, t.MutedText).ToCss(), labelFontSize, label);
         }
 
-        if (ShowAxisLines(chart)) WriteSecondaryYAxisLine(writer, plot, t.Axis.ToCss());
+        if (ShowSecondaryYAxisLine(chart)) WriteSecondaryYAxisLine(writer, plot, t.Axis.ToCss());
         if (string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle)) {
             sb.Append(writer.Build());
             return;
@@ -59,7 +59,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteSecondaryYAxisTick(SvgMarkupWriter writer, Chart chart, ChartTextStyle tickStyle, double value, double x, double y, string color, double fontSize, string label) {
+    private static void WriteSecondaryYAxisTick(SvgMarkupWriter writer, Chart chart, TextStyleOverride tickStyle, double value, double x, double y, string color, double fontSize, string label) {
         writer
             .StartElement("text")
             .Attribute("data-cfx-role", "secondary-y-axis-tick")
@@ -91,7 +91,7 @@ public sealed partial class SvgChartRenderer {
             .Line();
     }
 
-    private static void WriteSecondaryYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartTextStyle style, string rawTitle, string title, double x, double y, string color, double fontSize) {
+    private static void WriteSecondaryYAxisTitle(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string rawTitle, string title, double x, double y, string color, double fontSize) {
         writer
             .StartElement("text")
             .Attribute("data-cfx-role", "secondary-y-axis-title")
@@ -113,7 +113,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartRect ApplySecondaryYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
-        if (!chart.Options.ShowAxes || chart.Options.IsSparkline || IsPieLike(chart) || yTicks.Count == 0) return plot;
+        if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || IsPieLike(chart) || yTicks.Count == 0) return plot;
         var t = chart.Options.Theme;
         var widest = yTicks.Max(tick => EstimateTextWidth(FormatSecondaryValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize)));
         var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : t.AxisTitleFontSize + 18;

@@ -15,7 +15,7 @@ public sealed partial class SvgChartRenderer {
 
         var steps = BuildWaterfallSteps(series);
         var bounds = WaterfallBounds(steps);
-        var ticks = ChartTicks.Generate(bounds.MinY, bounds.MaxY, chart.Options.TickCount);
+        var ticks = ChartTicks.Generate(chart.Options.YAxis, bounds.MinY, bounds.MaxY);
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var t = chart.Options.Theme;
         var slot = plot.Width / steps.Count;
@@ -30,15 +30,15 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < steps.Count; i++) {
             var step = steps[i];
             var centerX = plot.Left + slot * i + slot / 2;
-            var y0 = WaterfallY(plot, bounds, step.Start);
-            var y1 = WaterfallY(plot, bounds, step.End);
+            var y0 = WaterfallY(plot, bounds, chart.Options.YAxis, step.Start);
+            var y1 = WaterfallY(plot, bounds, chart.Options.YAxis, step.End);
             var top = Math.Min(y0, y1);
             var height = Math.Max(2, Math.Abs(y1 - y0));
             var status = WaterfallStatus(step);
             var color = step.IsTotal ? totalColor : step.Delta >= 0 ? positive : negative;
             var summary = WaterfallLabel(chart, step) + ": " + (step.IsTotal ? FormatValue(chart, step.End) : FormatSignedValue(chart, step.Delta)) + ", " + status;
             if (i > 0) {
-                var connectorY = WaterfallY(plot, bounds, step.Start);
+                var connectorY = WaterfallY(plot, bounds, chart.Options.YAxis, step.Start);
                 WriteWaterfallConnector(body, centerX - slot + barWidth / 2, connectorY, centerX - barWidth / 2, connectorY, t.Axis);
             }
 
@@ -64,7 +64,7 @@ public sealed partial class SvgChartRenderer {
                 }
             }
 
-            if (chart.Options.ShowAxes) DrawXAxisLabel(body, chart, plot, WaterfallLabel(chart, step), centerX, plot.Bottom + XAxisLabelOffset(chart), Clamp(chart.Options.XAxisLabelAngle, -80, 80), "waterfall-x-axis-label");
+            if (ShowXAxis(chart)) DrawXAxisLabel(body, chart, plot, WaterfallLabel(chart, step), centerX, plot.Bottom + XAxisLabelOffset(chart), Clamp(chart.Options.XAxisLabelAngle, -80, 80), "waterfall-x-axis-label");
         }
 
         DrawLegend(body, chart, chart.Options.Size.Width, chart.Options.Size.Height);
@@ -82,21 +82,19 @@ public sealed partial class SvgChartRenderer {
     private static void DrawWaterfallGrid(StringBuilder sb, Chart chart, ChartRect plot, ChartRange bounds, IReadOnlyList<double> ticks) {
         var t = chart.Options.Theme;
         foreach (var tick in ticks) {
-            var y = WaterfallY(plot, bounds, tick);
+            var y = WaterfallY(plot, bounds, chart.Options.YAxis, tick);
             if (chart.Options.ShowGrid) WriteWaterfallGridLine(sb, plot.Left, y, plot.Right, y, t.Grid, ChartVisualPrimitives.GridStrokeWidth);
-            if (chart.Options.ShowAxes) WriteWaterfallYAxisLabel(sb, chart, plot.Left - 12, y + 4, FormatValue(chart, tick));
+            if (ShowYAxis(chart)) WriteWaterfallYAxisLabel(sb, chart, plot.Left - 12, y + 4, FormatYAxisValue(chart, tick));
         }
 
-        var zeroY = WaterfallY(plot, bounds, 0);
-        if (ShowAxisLines(chart) && zeroY > plot.Top && zeroY < plot.Bottom) WriteWaterfallAxisLine(sb, "waterfall-zero-axis", plot.Left, zeroY, plot.Right, zeroY, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
+        var zeroY = WaterfallY(plot, bounds, chart.Options.YAxis, 0);
+        if (ShowXAxisLine(chart) && zeroY > plot.Top && zeroY < plot.Bottom) WriteWaterfallAxisLine(sb, "waterfall-zero-axis", plot.Left, zeroY, plot.Right, zeroY, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
         if (!chart.Options.ShowAxes) return;
-        if (ShowAxisLines(chart)) {
-            WriteWaterfallAxisLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
-            WriteWaterfallAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
-        }
-        DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart), "waterfall-x-axis-title");
-        if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
-            var widestTick = ticks.Max(tick => EstimateTextWidth(FormatValue(chart, tick), t.TickLabelFontSize));
+        if (ShowXAxisLine(chart)) WriteWaterfallAxisLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+        if (ShowYAxisLine(chart)) WriteWaterfallAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+        if (ShowXAxis(chart)) DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart), "waterfall-x-axis-title");
+        if (ShowYAxis(chart) && !string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
+            var widestTick = ticks.Max(tick => EstimateTextWidth(FormatYAxisValue(chart, tick), t.TickLabelFontSize));
             var axisX = Math.Max(24, plot.Left - widestTick - 48);
             DrawSvgYAxisTitle(sb, chart, plot, axisX, "waterfall-y-axis-title");
         }
@@ -222,8 +220,8 @@ public sealed partial class SvgChartRenderer {
 
     private static string WaterfallStatus(WaterfallStep step) => step.IsTotal ? "total" : step.Delta >= 0 ? "positive" : "negative";
 
-    private static double WaterfallY(ChartRect plot, ChartRange bounds, double value) {
-        return plot.Bottom - ChartMath.Normalize(value, bounds.MinY, bounds.MaxY) * plot.Height;
+    private static double WaterfallY(ChartRect plot, ChartRange bounds, ChartAxis axis, double value) {
+        return plot.Bottom - ChartScaleTransform.Normalize(value, bounds.MinY, bounds.MaxY, axis) * plot.Height;
     }
 
     private readonly struct WaterfallStep {

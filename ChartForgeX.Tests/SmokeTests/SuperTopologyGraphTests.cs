@@ -18,8 +18,8 @@ internal static partial class SmokeTests {
             .AddNode("api", "API", 64, 82, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, groupId: "core", subtitle: "Public API", symbol: "API", iconId: "common:service")
             .AddNode("db", "Database", 180, 84, TopologyNodeKind.Database, TopologyHealthStatus.Warning, groupId: "core", subtitle: "SQL", symbol: "SQL")
             .AddNode("cdn", "CDN", 440, 92, TopologyNodeKind.Network, TopologyHealthStatus.Healthy, groupId: "edge", subtitle: "Ingress", symbol: "NET")
-            .AddEdge("cdn-api", "cdn", "api", "routes", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved)
-            .AddEdge("api-db", "api", "db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, secondaryLabel: "32 ms");
+            .AddEdge("cdn-api", "cdn", "api", "routes", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
+            .AddEdge("api-db", "api", "db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, secondaryLabel: "32 ms");
         topology.WithNodeColor("api", "#0F766E").WithNodeBackground("api", "#CCFBF1").WithEdgeColor("cdn-api", "#7C3AED").WithEdgeEmphasis("cdn-api", TopologyEdgeEmphasis.Strong);
         topology.Nodes[0].Metadata["owner"] = "identity";
         topology.Nodes[1].Metrics["latency"] = "32";
@@ -70,7 +70,7 @@ internal static partial class SmokeTests {
             .AddNode("anchor", "Anchor", 140, 20, TopologyNodeKind.Network, TopologyHealthStatus.Unknown)
             .AddNode("target", "Target", 260, 20, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddEdge("source-anchor", "source", "anchor", "route", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy)
-            .AddEdge("anchor-target", "anchor", "target", "route", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional);
+            .AddEdge("anchor-target", "anchor", "target", "route", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional);
         anchored.WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
         var anchoredScene = anchored.ToGraphScene();
         Assert(anchoredScene.Nodes.Single(node => node.Id == "anchor").Hidden && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").SourceArrow && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").TargetArrow, "Topology graph bridge should preserve hidden routing anchors and bidirectional edge markers.");
@@ -124,7 +124,7 @@ internal static partial class SmokeTests {
             .WithLayout(TopologyLayoutMode.Manual)
             .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddAutoNode("free-target", "Free target", TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
-            .AddEdge("free-route", "auto", "free-target", "free", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            .AddEdge("free-route", "auto", "free-target", "free", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
         var freeAutoOriginScene = freeAutoOrigin.ToGraphScene();
         Assert(!freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && !freeAutoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition, "Topology graph bridge should not pin untouched AddAutoNode placeholder coordinates at the origin.");
         Assert(freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").RoutePoints.Count == 0 && freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").Shape == GraphEdgeShape.Polyline, "Topology graph bridge should not emit prepared route points when generated node positions will use a different coordinate space.");
@@ -133,7 +133,7 @@ internal static partial class SmokeTests {
             .WithLayout(TopologyLayoutMode.Manual)
             .AddNode("left", "Left", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 260, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
-            .AddEdge("curved-route", "left", "right", "manual", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Curved)
+            .AddEdge("curved-route", "left", "right", "manual", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
             .WithEdgeWaypoints("curved-route", new ChartForgeX.Primitives.ChartPoint(130, 20), new ChartForgeX.Primitives.ChartPoint(170, 120));
         var curvedWaypointEdge = curvedWaypoint.ToGraphScene().Edges.Single(edge => edge.Id == "curved-route");
         Assert(curvedWaypointEdge.Shape == GraphEdgeShape.Polyline && curvedWaypointEdge.RoutePoints.Count >= 4, "Topology graph bridge should preserve caller-specified manual waypoints even when the edge routing remains curved.");
@@ -143,7 +143,7 @@ internal static partial class SmokeTests {
             .AddGroup("core services", "Core Services", 0, 0, 240, 160, TopologyHealthStatus.Healthy)
             .AddNode("app server", "App Server", 40, 50, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, groupId: "core services")
             .AddNode("sql db", "SQL DB", 160, 50, TopologyNodeKind.Database, TopologyHealthStatus.Warning, groupId: "core services")
-            .AddEdge("app link", "app server", "sql db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward);
+            .AddEdge("app link", "app server", "sql db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward);
         var friendlyScene = friendlyIds.ToGraphScene();
         friendlyScene.Validate();
         Assert(friendlyScene.Id == "app-map" && friendlyScene.Nodes.Any(node => node.Id == "app-server" && node.Metadata["topology.id"] == "app server") && friendlyScene.Clusters.Any(cluster => cluster.Id == "core-services" && cluster.Metadata["topology.id"] == "core services"), "Topology graph bridge should normalize friendly topology ids while preserving original ids in metadata.");

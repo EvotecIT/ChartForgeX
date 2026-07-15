@@ -124,8 +124,8 @@ public sealed partial class PngVisualBlockRenderer {
             var item = list.Items[i];
             DrawMarker(canvas, list, item, i, content.X + 8, y + rowHeight / 2);
             var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, canvas.MeasureTextWidth(item.Value!, 11.5) + 10);
-            DrawAlignedText(canvas, item.Text, content.X + markerWidth, y + 8, content.Width - markerWidth - valueWidth - 6, VisualTextAlignment.Left, theme.Text, list.Dense ? 11 : 12.5, true);
-            if (!string.IsNullOrEmpty(item.Value)) DrawAlignedText(canvas, item.Value!, content.X + content.Width - valueWidth, y + 8, valueWidth, VisualTextAlignment.Right, theme.MutedText, list.Dense ? 10.5 : 11.5, true);
+            DrawAlignedText(canvas, item.Text, content.X + markerWidth, y + 8, content.Width - markerWidth - valueWidth - 6, TextAlignment.Left, theme.Text, list.Dense ? 11 : 12.5, true);
+            if (!string.IsNullOrEmpty(item.Value)) DrawAlignedText(canvas, item.Value!, content.X + content.Width - valueWidth, y + 8, valueWidth, TextAlignment.Right, theme.MutedText, list.Dense ? 10.5 : 11.5, true);
             y += rowHeight;
         }
     }
@@ -285,7 +285,7 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.StrokeRoundedRect(x, y, cellWidth, height, Math.Min(8, height / 2), theme.CardBorder.WithAlpha(120));
             canvas.DrawCircle(x + 10, y + rowHeight / 2 - 2, 3.2, marker);
             canvas.DrawTextEmphasized(x + 18, y + rowHeight / 2 - labelSize * 0.45, FitText(canvas, detail.Label, labelSize, cellWidth * 0.55), theme.MutedText, labelSize);
-            DrawAlignedText(canvas, detail.Value, x + cellWidth * 0.58, y + rowHeight / 2 - valueSize * 0.35, cellWidth * 0.36, VisualTextAlignment.Right, theme.Text, valueSize, true);
+            DrawAlignedText(canvas, detail.Value, x + cellWidth * 0.58, y + rowHeight / 2 - valueSize * 0.35, cellWidth * 0.36, TextAlignment.Right, theme.Text, valueSize, true);
         }
     }
 
@@ -330,15 +330,15 @@ public sealed partial class PngVisualBlockRenderer {
             var centerY = y + rowHeight * 0.42;
             canvas.DrawCircle(content.X + avatarSize / 2, centerY, avatarSize / 2, color.WithAlpha(42));
             canvas.DrawCircleOutline(content.X + avatarSize / 2, centerY, avatarSize / 2, color.WithAlpha(105), 1);
-            DrawAlignedText(canvas, WorkloadAvatar(row), content.X + 1, centerY - Math.Max(9, theme.SubtitleFontSize - 1) * 0.46, avatarSize - 2, VisualTextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 1), true);
+            DrawAlignedText(canvas, WorkloadAvatar(row), content.X + 1, centerY - Math.Max(9, theme.SubtitleFontSize - 1) * 0.46, avatarSize - 2, TextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 1), true);
             var checkWidth = block.ShowSelectionControls ? 28 : 0;
             var valueText = row.Note.Length > 0 ? row.Note + "  " + VisualBlockRendering.WorkloadDisplayValue(row) : VisualBlockRendering.WorkloadDisplayValue(row);
             var valueWidth = Math.Min(98, Math.Max(52, canvas.MeasureTextEmphasizedWidth(valueText, theme.SubtitleFontSize) + 10));
             var textX = content.X + avatarSize + 14;
             var textWidth = Math.Max(24, content.X + content.Width - textX - valueWidth - checkWidth - 10);
-            DrawAlignedText(canvas, row.Label, textX, y + 8, textWidth, VisualTextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
-            if (row.Subtitle.Length > 0) DrawAlignedText(canvas, row.Subtitle, textX, y + 24, textWidth, VisualTextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), false);
-            DrawAlignedText(canvas, valueText, content.X + content.Width - valueWidth - checkWidth, y + 11, valueWidth, VisualTextAlignment.Right, row.Status == VisualStatus.Negative || row.Status == VisualStatus.Warning ? color : theme.Text, theme.SubtitleFontSize, true);
+            DrawAlignedText(canvas, row.Label, textX, y + 8, textWidth, TextAlignment.Left, theme.Text, Math.Max(12, theme.SubtitleFontSize + 1), true);
+            if (row.Subtitle.Length > 0) DrawAlignedText(canvas, row.Subtitle, textX, y + 24, textWidth, TextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), false);
+            DrawAlignedText(canvas, valueText, content.X + content.Width - valueWidth - checkWidth, y + 11, valueWidth, TextAlignment.Right, row.Status == VisualStatus.Negative || row.Status == VisualStatus.Warning ? color : theme.Text, theme.SubtitleFontSize, true);
             if (block.ShowProgressRails) {
                 var railY = y + rowHeight - 13;
                 var railWidth = Math.Max(18, content.X + content.Width - textX - checkWidth);
@@ -379,7 +379,7 @@ public sealed partial class PngVisualBlockRenderer {
         foreach (var tick in VisualBlockRendering.ScheduleTicks(block)) {
             var x = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, tick);
             if (block.ShowGrid) canvas.DrawDashedLine(x, plotTop, x, plotTop + plotHeight, theme.Grid.WithAlpha(140), 1, 4, 5);
-            DrawAlignedText(canvas, VisualBlockRendering.FormatScheduleHour(tick), Math.Max(content.X, Math.Min(content.X + content.Width - 88, x - 44)), y + 7, 88, VisualTextAlignment.Center, theme.MutedText, Math.Max(10, theme.SubtitleFontSize), true);
+            DrawAlignedText(canvas, VisualBlockRendering.FormatScheduleHour(tick), Math.Max(content.X, Math.Min(content.X + content.Width - 88, x - 44)), y + 7, 88, TextAlignment.Center, theme.MutedText, Math.Max(10, theme.SubtitleFontSize), true);
         }
 
         for (var lane = 0; lane < laneCount; lane++) {
@@ -410,11 +410,11 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.FillRoundedRect(left, eventY, Math.Min(5, width), eventHeight, Math.Min(3, radius), color);
             var avatarReserve = Math.Min(width * 0.34, item.Avatars.Count == 0 ? 0 : 18 + Math.Min(3, item.Avatars.Count) * 14);
             var badgeReserve = item.Badge.Length == 0 ? 0 : Math.Min(78, canvas.MeasureTextEmphasizedWidth(item.Badge, theme.SubtitleFontSize) + 18);
-            DrawAlignedText(canvas, item.Title, left + 14, eventY + eventHeight * 0.34, Math.Max(1, width - 20 - avatarReserve - badgeReserve), VisualTextAlignment.Left, color, Math.Max(10, theme.SubtitleFontSize), true);
+            DrawAlignedText(canvas, item.Title, left + 14, eventY + eventHeight * 0.34, Math.Max(1, width - 20 - avatarReserve - badgeReserve), TextAlignment.Left, color, Math.Max(10, theme.SubtitleFontSize), true);
             if (item.Badge.Length > 0) {
                 var badgeWidth = Math.Min(78, badgeReserve);
                 canvas.FillRoundedRect(left + width - avatarReserve - badgeWidth - 6, eventY + 7, badgeWidth, eventHeight - 14, 7, color.WithAlpha(50));
-                DrawAlignedText(canvas, item.Badge, left + width - avatarReserve - badgeWidth, eventY + eventHeight * 0.36, badgeWidth - 10, VisualTextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 1), true);
+                DrawAlignedText(canvas, item.Badge, left + width - avatarReserve - badgeWidth, eventY + eventHeight * 0.36, badgeWidth - 10, TextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 1), true);
             }
 
             DrawScheduleAvatars(canvas, item, color, theme, left + width - avatarReserve + 3, eventY + eventHeight / 2);
@@ -433,7 +433,7 @@ public sealed partial class PngVisualBlockRenderer {
             cursor -= actionWidth;
             canvas.FillRoundedRect(cursor, y, actionWidth, 30, 8, ChartColor.White);
             canvas.StrokeRoundedRect(cursor, y, actionWidth, 30, 8, theme.CardBorder, 1);
-            DrawAlignedText(canvas, action, cursor + 12, y + 8, actionWidth - 24, VisualTextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize), true);
+            DrawAlignedText(canvas, action, cursor + 12, y + 8, actionWidth - 24, TextAlignment.Left, theme.Text, Math.Max(10, theme.SubtitleFontSize), true);
             cursor -= 8;
         }
 
@@ -446,14 +446,14 @@ public sealed partial class PngVisualBlockRenderer {
             var cx = x + i * 14;
             canvas.DrawCircle(cx, y, 8, theme.CardBackground);
             canvas.DrawCircleOutline(cx, y, 8, color, 1);
-            DrawAlignedText(canvas, item.Avatars[i], cx - 7, y - 4, 14, VisualTextAlignment.Center, color, 8, true);
+            DrawAlignedText(canvas, item.Avatars[i], cx - 7, y - 4, 14, TextAlignment.Center, color, 8, true);
         }
 
         if (item.Avatars.Count > count) {
             var cx = x + count * 14;
             canvas.DrawCircle(cx, y, 8, color.WithAlpha(45));
             canvas.DrawCircleOutline(cx, y, 8, color, 1);
-            DrawAlignedText(canvas, "+" + (item.Avatars.Count - count).ToString(System.Globalization.CultureInfo.InvariantCulture), cx - 7, y - 4, 14, VisualTextAlignment.Center, color, 8, true);
+            DrawAlignedText(canvas, "+" + (item.Avatars.Count - count).ToString(System.Globalization.CultureInfo.InvariantCulture), cx - 7, y - 4, 14, TextAlignment.Center, color, 8, true);
         }
     }
 
@@ -519,10 +519,10 @@ public sealed partial class PngVisualBlockRenderer {
         return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpperInvariant();
     }
 
-    private static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, VisualTextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {
+    private static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {
         var fitted = FitText(canvas, text, fontSize, Math.Max(1, width));
         var textWidth = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, fontSize) : canvas.MeasureTextWidth(fitted, fontSize);
-        var textX = alignment == VisualTextAlignment.Center ? x + (width - textWidth) / 2 : alignment == VisualTextAlignment.Right ? x + width - textWidth : x;
+        var textX = alignment == TextAlignment.Center ? x + (width - textWidth) / 2 : alignment == TextAlignment.Right ? x + width - textWidth : x;
         if (emphasized) canvas.DrawTextEmphasized(textX, y, fitted, color, fontSize);
         else canvas.DrawText(textX, y, fitted, color, fontSize);
     }
