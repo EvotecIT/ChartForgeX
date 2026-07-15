@@ -140,8 +140,11 @@ Useful review entry points:
 - `enterprise-access-graph-benchmark.html` - accelerated graph explorer benchmark with 360 nodes, 720 directed edges, compact-document rendering, drag, pan, zoom, LOD, and telemetry.
 - `svg-png-comparison.html` - side-by-side renderer parity review.
 - `quality-dashboard.html` - visual health summary.
+- `premium-surface-manifest.json` - exact wallpaper, social preview, compact email, report strip, and transparent overlay contracts used by the release build.
 
 Example cards link HTML, SVG, PNG, and C# snippets when a checked source sample exists.
+
+The release quality loop compares every generated SVG/PNG pair, including the full topology catalog, against the shared numeric visual baseline. It also renders real host-sized fixtures at high PNG density: a 1920x1080 desktop wallpaper, 1200x630 social preview, compact email grid, report strip, and transparent overlay. Dimension, readability, renderer-health, and alpha regressions fail the build.
 
 For explicit 1k, 5k, and 10k browser scale fixtures, run:
 

@@ -162,8 +162,9 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct PngHealth {
-        public PngHealth(long visiblePixels, long foregroundPixels, PngContentBounds contentBounds, int distinctColors, long edgeInkPixels, long edgeBandPixels) {
+        public PngHealth(long visiblePixels, long transparentPixels, long foregroundPixels, PngContentBounds contentBounds, int distinctColors, long edgeInkPixels, long edgeBandPixels) {
             VisiblePixels = visiblePixels;
+            TransparentPixels = transparentPixels;
             ForegroundPixels = foregroundPixels;
             ContentBounds = contentBounds;
             DistinctColors = distinctColors;
@@ -172,6 +173,8 @@ public static partial class GalleryWriter {
         }
 
         public long VisiblePixels { get; }
+
+        public long TransparentPixels { get; }
 
         public long ForegroundPixels { get; }
 

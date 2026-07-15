@@ -23,7 +23,7 @@ function Assert-VisualComparisonHealth {
         [Parameter(Mandatory = $true)] [string] $ComparisonManifest
     )
 
-    $minimumChartPairs = 50
+    $minimumChartPairs = 175
     if ($Comparison.chartPairs -lt $minimumChartPairs) {
         throw "SVG/PNG comparison generated only $($Comparison.chartPairs) chart pair(s); expected at least $minimumChartPairs. See $ComparisonManifest."
     }
@@ -59,6 +59,7 @@ function New-VisualBaseline {
             png = [ordered]@{
                 outputScale = [int]$chart.png.scale
                 minVisiblePixels = [long][Math]::Max(64, [long][Math]::Floor([double]$chart.png.visiblePixels * 0.5))
+                minTransparentPixels = [long][Math]::Floor([double]$chart.png.transparentPixels * 0.5)
                 minDistinctColors = [int][Math]::Max(8, [int][Math]::Floor([double]$chart.png.distinctColors * 0.5))
                 maxEdgeInkPixels = [long]$chart.png.edgeInkPixels
             }
@@ -122,8 +123,9 @@ function Assert-VisualBaseline {
             throw "SVG text-edge baseline regressed for $($expected.name): clipped $($actual.svg.clippedTextNodes), near-edge $($actual.svg.nearEdgeTextNodes). See $ComparisonManifest."
         }
 
-        if ($actual.png.visiblePixels -lt $expected.png.minVisiblePixels -or $actual.png.distinctColors -lt $expected.png.minDistinctColors) {
-            throw "PNG visibility baseline dropped for $($expected.name): $($actual.png.visiblePixels) visible pixel(s), $($actual.png.distinctColors) color(s). See $ComparisonManifest."
+        $minTransparentPixels = if ($expected.png.PSObject.Properties.Name -contains 'minTransparentPixels') { [long]$expected.png.minTransparentPixels } else { 0 }
+        if ($actual.png.visiblePixels -lt $expected.png.minVisiblePixels -or $actual.png.transparentPixels -lt $minTransparentPixels -or $actual.png.distinctColors -lt $expected.png.minDistinctColors) {
+            throw "PNG visibility baseline dropped for $($expected.name): $($actual.png.visiblePixels) visible pixel(s), $($actual.png.transparentPixels) transparent pixel(s), $($actual.png.distinctColors) color(s). See $ComparisonManifest."
         }
 
         $maxEdgeInkPixels = if ($expected.png.PSObject.Properties.Name -contains 'maxEdgeInkPixels') { [long]$expected.png.maxEdgeInkPixels } else { 0 }
@@ -141,7 +143,8 @@ function Assert-VisualBaseline {
 
 function Assert-TopologyVisualCoverage {
     param(
-        [Parameter(Mandatory = $true)] [string] $TopologyOutput
+        [Parameter(Mandatory = $true)] [string] $TopologyOutput,
+        [Parameter(Mandatory = $true)] $Comparison
     )
 
     $manifestPath = Join-Path $TopologyOutput 'visual-capability-manifest.json'
@@ -150,17 +153,12 @@ function Assert-TopologyVisualCoverage {
     }
 
     $manifest = Get-Content -Path $manifestPath -Raw | ConvertFrom-Json
-    if ([string]::IsNullOrWhiteSpace([string]$manifest.baselinePolicy) -or [string]$manifest.baselinePolicy -notlike '*outside visual-baseline.json*') {
-        throw "Topology visual coverage manifest must document why topology artifacts are gated outside visual-baseline.json. See $manifestPath."
+    if ([string]::IsNullOrWhiteSpace([string]$manifest.baselinePolicy) -or [string]$manifest.baselinePolicy -notlike '*visual-baseline.json*') {
+        throw "Topology visual coverage manifest must document the shared visual-baseline.json gate. See $manifestPath."
     }
 
-    if ([string]$manifest.baselineScope -ne 'visual-capability-manifest') {
-        throw "Topology visual coverage manifest must use baselineScope 'visual-capability-manifest'. See $manifestPath."
-    }
-
-    $baselineCandidates = @($manifest.baselineCandidates)
-    if ($baselineCandidates.Count -lt 4 -or -not ($baselineCandidates -contains 'visual-geographic-topology-map')) {
-        throw "Topology visual coverage manifest must list topology baseline candidates for future numeric baselines. See $manifestPath."
+    if ([string]$manifest.baselineScope -ne 'shared-visual-baseline-and-capability-manifest') {
+        throw "Topology visual coverage manifest must use the shared numeric baseline and capability-manifest scope. See $manifestPath."
     }
 
     $artifacts = @($manifest.artifacts)
@@ -185,6 +183,22 @@ function Assert-TopologyVisualCoverage {
             if ($extension -eq 'png' -and (Get-Item $filePath).Length -le 64) {
                 throw "Topology visual PNG artifact is unexpectedly small: $filePath"
             }
+        }
+    }
+
+    $comparisonNames = @{}
+    foreach ($chart in $Comparison.charts) {
+        $comparisonNames[[string]$chart.name] = $chart
+    }
+
+    foreach ($svgFile in Get-ChildItem -Path $TopologyOutput -Filter '*.svg' -File) {
+        $name = $svgFile.BaseName
+        if (-not (Test-Path (Join-Path $TopologyOutput ($name + '.png')))) {
+            continue
+        }
+
+        if (-not $comparisonNames.ContainsKey($name)) {
+            throw "Topology SVG/PNG pair is missing from the shared visual comparison and numeric baseline: $name. See $manifestPath."
         }
     }
 
@@ -279,6 +293,76 @@ function Assert-TopologyVisualCoverage {
         if (-not $geographicSource.Contains($requiredFragment)) {
             throw "Topology geographic visual artifact is missing required SVG fragment '$requiredFragment'. See $geographicSvg."
         }
+    }
+}
+
+function Assert-PremiumSurfaceCoverage {
+    param(
+        [Parameter(Mandatory = $true)] [string] $Output,
+        [Parameter(Mandatory = $true)] $Comparison
+    )
+
+    $manifestPath = Join-Path $Output 'premium-surface-manifest.json'
+    if (-not (Test-Path $manifestPath)) {
+        throw "Premium host-surface manifest was not generated: $manifestPath"
+    }
+
+    $manifest = Get-Content -Path $manifestPath -Raw | ConvertFrom-Json
+    $surfaces = @($manifest.surfaces)
+    $requiredUseCases = @('desktop-wallpaper', 'social-preview', 'compact-email', 'report-strip', 'transparent-overlay')
+    $comparisonNames = @{}
+    foreach ($chart in $Comparison.charts) {
+        $comparisonNames[[string]$chart.name] = $chart
+    }
+
+    $seenUseCases = @{}
+    $seenNames = @{}
+    foreach ($surface in $surfaces) {
+        $useCase = [string]$surface.useCase
+        $name = [string]$surface.name
+        if ([string]::IsNullOrWhiteSpace($useCase) -or [string]::IsNullOrWhiteSpace($name) -or $seenUseCases.ContainsKey($useCase) -or $seenNames.ContainsKey($name)) {
+            throw "Premium host-surface manifest contains a missing or duplicate use case/name. See $manifestPath."
+        }
+
+        $seenUseCases[$useCase] = $surface
+        $seenNames[$name] = $surface
+        if (-not $comparisonNames.ContainsKey($name)) {
+            throw "Premium host surface is missing from the shared visual comparison and numeric baseline: $name. See $manifestPath."
+        }
+
+        $actual = $comparisonNames[$name]
+        if ($actual.svg.width -ne [int]$surface.width -or $actual.svg.height -ne [int]$surface.height) {
+            throw "Premium host-surface dimensions changed for $name. Expected $($surface.width)x$($surface.height). See $manifestPath."
+        }
+
+        if ($actual.png.scale -lt [int]$surface.minimumPngScale) {
+            throw "Premium host-surface PNG density dropped for $name. Expected at least $($surface.minimumPngScale)x. See $manifestPath."
+        }
+
+        if ([bool]$surface.requiresTransparency -and $actual.png.transparentPixels -le 0) {
+            throw "Premium transparent host surface became opaque: $name. See $manifestPath."
+        }
+
+        foreach ($extension in @('svg', 'html', 'png')) {
+            $filePath = Join-Path $Output ($name + '.' + $extension)
+            if (-not (Test-Path $filePath)) {
+                throw "Premium host-surface artifact was not generated: $filePath"
+            }
+        }
+    }
+
+    foreach ($useCase in $requiredUseCases) {
+        if (-not $seenUseCases.ContainsKey($useCase)) {
+            throw "Premium host-surface manifest is missing required use case: $useCase. See $manifestPath."
+        }
+    }
+
+    if ([int]$seenUseCases['desktop-wallpaper'].width -ne 1920 -or [int]$seenUseCases['desktop-wallpaper'].height -ne 1080) {
+        throw "Desktop-wallpaper contract must remain 1920x1080. See $manifestPath."
+    }
+
+    if ([int]$seenUseCases['compact-email'].width -gt 640) {
+        throw "Compact-email contract must remain no wider than 640 pixels. See $manifestPath."
     }
 }
 
@@ -580,7 +664,9 @@ try {
 
         Assert-VisualBaseline -Comparison $comparison -VisualBaselinePath $visualBaselinePath -ComparisonManifest $comparisonManifest
         $topologyOutput = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output/topology-demo"
-        Assert-TopologyVisualCoverage -TopologyOutput $topologyOutput
+        Assert-TopologyVisualCoverage -TopologyOutput $topologyOutput -Comparison $comparison
+        $exampleOutput = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output"
+        Assert-PremiumSurfaceCoverage -Output $exampleOutput -Comparison $comparison
     }
 
     if (-not $SkipPack) {

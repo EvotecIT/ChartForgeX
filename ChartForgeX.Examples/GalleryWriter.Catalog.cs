@@ -90,8 +90,6 @@ public static partial class GalleryWriter {
             "dashboard-premium-trend-style",
             "dashboard-segmented-column-style",
             "dashboard-segmented-horizontal-style",
-            "report-summary-metric-strip",
-            "transparent-report-summary-metric-strip",
             "powerbginfo-endpoint-snapshot",
             "dashboard-restaurant-reports-range-strip",
             "dashboard-restaurant-order-status",
@@ -100,6 +98,14 @@ public static partial class GalleryWriter {
             "dashboard-restaurant-weekly-summary",
             "dashboard-restaurant-overview-grid",
             "dashboard-chart-portfolio-grid"),
+        new(
+            "Host Surface Contracts",
+            "Release-gated wallpaper, social preview, compact email, report-strip, and transparent overlay outputs for real host dimensions.",
+            "premium-desktop-wallpaper-canvas",
+            "powerbginfo-social-preview-canvas",
+            "premium-email-summary-grid",
+            "report-summary-metric-strip",
+            "transparent-report-summary-metric-strip"),
         new(
             "Dashboard Inspiration",
             "Screenshot-inspired operations, project, HR, and payment analytics compositions used to drive the next visual-block capabilities.",

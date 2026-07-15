@@ -157,7 +157,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("y2", map.Bottom)
                 .Attribute("stroke", theme.Border)
                 .Attribute("stroke-opacity", softMap ? 0.22 : 0.42)
-                .Attribute("stroke-width", softMap ? 0.55 : 0.8));
+                .Attribute("stroke-width", MinimumReadableFineStrokeWidth));
         }
 
         for (var i = 1; i < 3; i++) {
@@ -173,7 +173,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("y2", y)
                 .Attribute("stroke", theme.Border)
                 .Attribute("stroke-opacity", softMap ? 0.18 : 0.34)
-                .Attribute("stroke-width", softMap ? 0.55 : 0.8));
+                .Attribute("stroke-width", MinimumReadableFineStrokeWidth));
         }
 
         root.AddElement(layer);
@@ -200,7 +200,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("fill", "none")
                 .Attribute("stroke", landFill)
                 .Attribute("stroke-opacity", softMap ? 0.16 : 0.22)
-                .Attribute("stroke-width", softMap ? 0.62 : 0.75)
+                .Attribute("stroke-width", MinimumReadableFineStrokeWidth)
                 .Attribute("stroke-linejoin", "round")
                 .Attribute("stroke-linecap", "round"));
         }

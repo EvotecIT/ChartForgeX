@@ -105,6 +105,8 @@ canvas
 
 `Contain`, `Cover`, and `Stretch` use the same design-space transform in SVG and PNG. This lets a host reuse one wallpaper, report-cover, or social-preview composition without recalculating every layer position.
 
+The generated example gallery includes a native 1920x1080 endpoint wallpaper and a 1200x630 social preview. Both are rendered as SVG, static HTML, and 2x-density PNG and participate in the shared visual baseline, so layout and renderer parity are checked at the dimensions real hosts consume.
+
 To start from an existing background image without `System.Drawing` or platform-specific graphics APIs, decode it through the reusable raster input path and place it as the first canvas layer:
 
 ```csharp

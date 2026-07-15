@@ -73,13 +73,13 @@ public sealed partial class TopologyPngRenderer {
         for (var i = 1; i < 4; i++) {
             var longitude = chart.MapViewport.MinimumLongitude + (chart.MapViewport.MaximumLongitude - chart.MapViewport.MinimumLongitude) * i / 4.0;
             var x = TopologyMapProjection.Project(map, chart.MapViewport, longitude, chart.MapViewport.MinimumLatitude).X;
-            canvas.DrawLine(x, map.Top, x, map.Bottom, WithAlpha(Color(theme.Border), softMap ? (byte)58 : (byte)110), softMap ? 0.55 : 0.8);
+            canvas.DrawLine(x, map.Top, x, map.Bottom, WithAlpha(Color(theme.Border), softMap ? (byte)58 : (byte)110), MinimumReadableFineStrokeWidth);
         }
 
         for (var i = 1; i < 3; i++) {
             var latitude = chart.MapViewport.MinimumLatitude + (chart.MapViewport.MaximumLatitude - chart.MapViewport.MinimumLatitude) * i / 3.0;
             var y = TopologyMapProjection.Project(map, chart.MapViewport, chart.MapViewport.MinimumLongitude, latitude).Y;
-            canvas.DrawLine(map.Left, y, map.Right, y, WithAlpha(Color(theme.Border), softMap ? (byte)46 : (byte)88), softMap ? 0.55 : 0.8);
+            canvas.DrawLine(map.Left, y, map.Right, y, WithAlpha(Color(theme.Border), softMap ? (byte)46 : (byte)88), MinimumReadableFineStrokeWidth);
         }
     }
 
@@ -91,7 +91,7 @@ public sealed partial class TopologyPngRenderer {
         foreach (var boundary in boundaries) {
             var points = ProjectBoundary(boundary, map, chart.MapViewport);
             if (TopologyMapProjection.CanFillBoundary(boundary)) canvas.FillPolygon(points, land);
-            for (var i = 1; i < points.Count; i++) canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, boundaryColor, softMap ? 0.62 : 0.75);
+            for (var i = 1; i < points.Count; i++) canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, boundaryColor, MinimumReadableFineStrokeWidth);
         }
 
         if (softMap && boundaries.Length > 0) return;
@@ -470,7 +470,7 @@ public sealed partial class TopologyPngRenderer {
             return;
         }
 
-        DrawCenteredMiddle(canvas, cx, cy, TrimTo(symbol, 2), ChartColor.White, 5.8, true);
+        DrawCenteredMiddle(canvas, cx, cy, TrimTo(symbol, 2), ChartColor.White, DotNodeSymbolFontSize, true);
     }
 
     private static void DrawNodeIcon(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor status, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
@@ -688,7 +688,7 @@ public sealed partial class TopologyPngRenderer {
                 canvas.FillRoundedRect(itemX, markerCenterY - 11, 22, 22, 6, Color(fill));
                 canvas.StrokeRoundedRect(itemX, markerCenterY - 11, 22, 22, 6, color, 1);
                 var legendNode = LegendNode(item);
-                if (!DrawInfrastructureGlyph(canvas, legendNode, itemX + 11, markerCenterY, color, options)) DrawCenteredMiddle(canvas, itemX + 11, markerCenterY, NodeGlyph(legendNode, options), color, 6.5, true);
+                if (!DrawInfrastructureGlyph(canvas, legendNode, itemX + 11, markerCenterY, color, options)) DrawCenteredMiddle(canvas, itemX + 11, markerCenterY, NodeGlyph(legendNode, options), color, 8, true);
             } else canvas.DrawCircle(itemX + 8, markerCenterY, 6, color);
             DrawTextMiddle(canvas, itemX + (item.Kind == TopologyLegendItemKind.Node ? 38 : 32), markerCenterY, item.Label, Color(theme.MutedForeground), 11, false);
         }

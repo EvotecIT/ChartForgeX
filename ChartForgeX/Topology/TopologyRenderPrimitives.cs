@@ -24,7 +24,7 @@ internal static partial class TopologyRenderPrimitives {
         UseNeutralGroupSurface(options) ? theme.Card : StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.055 : 0.10);
 
     public static double EdgeStrokeWidth(TopologyEdge edge, bool selected, TopologyRenderOptions options) {
-        if (options.UseForceGraphPresentation) return selected ? 2.1 : edge.Emphasis == TopologyEdgeEmphasis.Strong ? 1.25 : edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle ? 0.65 : 0.82;
+        if (options.UseForceGraphPresentation) return selected ? 2.1 : edge.Emphasis == TopologyEdgeEmphasis.Strong ? 1.25 : edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle ? MinimumReadableFineStrokeWidth : ForceGraphNormalEdgeStrokeWidth;
         if (!IsMonitoringDashboardStyle(options)) return selected ? 3.4 : edge.IsMuted ? 1.45 : 2.2;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !selected) return 1.05;
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong && !selected) return 2.15;
