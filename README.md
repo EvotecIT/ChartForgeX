@@ -194,45 +194,42 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 
 `Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.gif`, `.jpg`, `.jpeg`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Topology `Save(path, options)` also infers animated `.gif` and `.apng` when `TopologyMotionOptions` describes a route. Animated GIF output uses an adaptive palette, error diffusion, and cropped delta frames for compatibility-friendly previews. APNG keeps full RGBA color and also crops unchanged frame regions for high-fidelity animated raster output, while SVG remains the highest-fidelity script-free animated surface. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` controls JPEG quality, PNG compression level, and the background used when alpha must be flattened.
 
-## Simple Definitions
+## Typed Data, Axes, and Facets
 
-`ChartForgeX.Simple` is the supported lightweight construction layer for script, UI, and host libraries that should not own chart DTOs. It only carries deferred chart definitions; enums, themes, rendering options, point helpers, bubble helpers, and output still come from the core ChartForgeX API. The result is a native `ChartForgeX.Core.Chart`, so callers can keep customizing or rendering it with the normal fluent API.
+ChartForgeX has one chart construction surface. Hosts can keep their own records, transform them through immutable `ChartDataset<T>` values, and map them directly into native charts without maintaining a second set of chart DTOs.
 
 ```csharp
-using ChartForgeX;
 using ChartForgeX.Core;
-using ChartForgeX.Primitives;
-using ChartForgeX.Simple;
+using ChartForgeX.Data;
 
-var chart = Charts.Build(
-    new ChartDefinition[] {
-        new ChartLine("CPU", new double[] { 35, 42, 58, 61 }, ChartColor.FromHex("#22C55E"), smooth: true)
-    },
-    width: 420,
-    height: 260,
-    showGrid: true,
-    options: new ChartRenderOptions {
-        UseOverlay = true,
-        ShowLegend = true
-    });
+var samples = ChartDataset<CpuSample>.From(new[] {
+    new CpuSample("Warsaw", 1, 35),
+    new CpuSample("Warsaw", 2, 42),
+    new CpuSample("London", 1, 48),
+    new CpuSample("London", 2, 61)
+});
 
-chart.SavePng("cpu-overlay.png");
-chart.SaveSvg("cpu-overlay.svg");
+var report = ChartGrid.FromFacets(
+    samples,
+    sample => sample.Site,
+    (site, rows) => Chart.Create()
+        .WithTitle(site)
+        .WithYAxis("CPU (%)")
+        .ConfigureYAxis(axis => axis.WithBounds(0, 100))
+        .AddLine("CPU", rows, sample => sample.Minute, sample => sample.Cpu),
+    columns: 2);
+
+report.SavePng("cpu-by-site.png");
+report.SaveSvg("cpu-by-site.svg");
+
+record CpuSample(string Site, double Minute, double Cpu);
 ```
 
-`UseOverlay` applies ChartForgeX transparent composition defaults: transparent background, no card, no plot fill, and quiet axes/grid. Explicit options still win, so callers can turn legends, axes, or data labels back on for wallpaper, report, and image-composition scenarios.
-
-When a host does not need deferred definitions, use core helpers directly:
-
-```csharp
-var direct = Chart.Create()
-    .AddSmoothLine("CPU", ChartPoints.FromValues(35, 42, 58, 61))
-    .AddBubble("Latency", ChartBubbles.FromXYSize(new[] { 1d, 2d }, new[] { 48d, 63d }, new[] { 8d, 14d }));
-```
+`ChartAxis` owns bounds, tick count, label density, formatting, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, `Time`, `Category`, or `Band` scaling. Direct helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)` remain available when a typed data pipeline is unnecessary.
 
 ## Project Status
 
-ChartForgeX is pre-1.0, but the current public surface is intended to be useful and stable where it models real charting, topology, visual block, rendering, and package concepts. Active follow-up work belongs in `TODO.md`; release notes belong in GitHub Releases and short NuGet package notes.
+The ChartForgeX 1.0 surface uses one typed construction, typography, geometry, direction, and layout vocabulary. Pre-release duplicate APIs have been removed; see the [1.0 migration guide](docs/1.0-migration.md) for intentional breaking changes. Active follow-up work belongs in `TODO.md`; release notes belong in GitHub Releases and short NuGet package notes.
 
 ## Quick Start
 
@@ -247,7 +244,11 @@ var chart = Chart.Create()
     .WithSubtitle("Dependency-free SVG, HTML, and PNG chart rendering")
     .WithXAxis("Run")
     .WithYAxis("Checks")
-    .WithTheme(ChartTheme.ReportDark())
+    .WithDesignTokens(VisualDesignTokens.Dark())
+    .WithAccessibility(accessibility => accessibility.WithTextAlternative(
+        "Domain security checks",
+        "Passed checks rise during the week while warnings and failures decline.",
+        "en"))
     .WithSize(1180, 640)
     .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230))
@@ -292,14 +293,14 @@ Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts ins
 
 ```csharp
 using ChartForgeX.Core;
-using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 
 var drives = ChartTable.Create()
     .WithTitle("Drive Summary")
     .AddColumn("Drive")
-    .AddColumn("Used", VisualTextAlignment.Right, format: "0%")
-    .AddColumn("Free", VisualTextAlignment.Right)
+    .AddColumn("Used", TextAlignment.Right, format: "0%")
+    .AddColumn("Free", TextAlignment.Right)
     .AddColumn("Status")
     .AddRow("C:", 0.72, "128 GB", "OK")
     .AddRow("D:", 0.91, "34 GB", "Warning")
@@ -356,6 +357,7 @@ var funnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
 `ChartForgeX.Topology` is for reusable deterministic diagrams. It owns the product-neutral model, validation, layout helpers, SVG rendering, PNG rendering, and static HTML wrapper. Host projects own dashboard shells, data collection, filters, inspectors, and product-specific calculations.
 
 ```csharp
+using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 
 var topology = TopologyChart.Create()
@@ -368,7 +370,7 @@ var topology = TopologyChart.Create()
         .AddEdgeKind("Dependency", TopologyEdgeKind.Dependency))
     .AddNode("api", "API", 0, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, symbol: "API")
     .AddNode("database", "Database", 0, 0, TopologyNodeKind.Database, TopologyHealthStatus.Warning, symbol: "SQL")
-    .AddEdge("api-database", "api", "database", "32 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward);
+    .AddEdge("api-database", "api", "database", "32 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward);
 
 topology.SaveSvg("service-map.svg");
 topology.SaveHtml("service-map.html");
@@ -379,6 +381,8 @@ topology.SaveTiff("service-map.tiff");
 ```
 
 Supported topology layout modes are `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`. Geographic topology uses `ChartMapViewport` with typed coordinates, route arcs, region hulls, and optional callouts while keeping the model reusable across infrastructure, cloud, tenant, inventory, and domain-specific hosts.
+
+When the host already owns node and edge records, use `TopologyChart.FromData<TNode, TEdge>(...)` to map stable ids, labels, endpoints, and product-neutral visual properties. The mapper preserves input order and rejects duplicates or dangling endpoints before rendering.
 
 Dotted maps can render both point-to-point route arcs and ordered waypoint routes. Use `AddMapRoute("label", new[] { new ChartMapPoint("Origin", lon, lat), ... })` for paths such as shipping alternatives through the Suez Canal or around the Cape of Good Hope without adding shipping-specific concepts to the renderer. Light report themes render map geography as filled outlines instead of land-dot texture so routes stay readable on white backgrounds.
 
@@ -443,7 +447,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddRadialBar`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolarArea` |
 | Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `ChartSankeyLink`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
 | Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
-| Text, labels, and legends | `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `ChartTextStyle`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
+| Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
 
@@ -591,6 +595,7 @@ Only refresh visual baselines after reviewing the generated gallery:
 
 ## Documentation
 
+- [1.0 migration guide](docs/1.0-migration.md)
 - [Architecture notes](docs/architecture.md)
 - [Graph explorer reference](docs/graph-explorer.md)
 - [Interactivity reference](docs/interactivity.md)

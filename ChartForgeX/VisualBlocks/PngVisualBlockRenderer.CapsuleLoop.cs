@@ -53,11 +53,11 @@ public sealed partial class PngVisualBlockRenderer {
         var labelX = point.X - Math.Max(18, stroke * 0.95);
         var labelY = point.Y - fontSize * 0.46;
         var labelWidth = Math.Max(36, stroke * 1.9);
-        DrawAlignedText(canvas, label, labelX - 0.7, labelY, labelWidth, VisualTextAlignment.Center, halo, fontSize, true);
-        DrawAlignedText(canvas, label, labelX + 0.7, labelY, labelWidth, VisualTextAlignment.Center, halo, fontSize, true);
-        DrawAlignedText(canvas, label, labelX, labelY - 0.7, labelWidth, VisualTextAlignment.Center, halo, fontSize, true);
-        DrawAlignedText(canvas, label, labelX, labelY + 0.7, labelWidth, VisualTextAlignment.Center, halo, fontSize, true);
-        DrawAlignedText(canvas, label, labelX, labelY, labelWidth, VisualTextAlignment.Center, foreground, fontSize, true);
+        DrawAlignedText(canvas, label, labelX - 0.7, labelY, labelWidth, TextAlignment.Center, halo, fontSize, true);
+        DrawAlignedText(canvas, label, labelX + 0.7, labelY, labelWidth, TextAlignment.Center, halo, fontSize, true);
+        DrawAlignedText(canvas, label, labelX, labelY - 0.7, labelWidth, TextAlignment.Center, halo, fontSize, true);
+        DrawAlignedText(canvas, label, labelX, labelY + 0.7, labelWidth, TextAlignment.Center, halo, fontSize, true);
+        DrawAlignedText(canvas, label, labelX, labelY, labelWidth, TextAlignment.Center, foreground, fontSize, true);
     }
 
     private static void DrawCapsuleLoopStroke(RgbaCanvas canvas, double x, double y, double width, double height, double stroke, double start, double end, ChartColor color, RasterLineCap lineCap) {
@@ -81,8 +81,8 @@ public sealed partial class PngVisualBlockRenderer {
             var color = VisualBlockRendering.SegmentedItemColor(theme, item, i);
             var value = VisualBlockRendering.SegmentedCapsuleLegendValue(card, item, total);
             canvas.FillRoundedRect(x, y + rowHeight * 0.26, 12, 12, 3, color);
-            DrawAlignedText(canvas, item.Label, x + 22, y + rowHeight * 0.24, width * 0.56, VisualTextAlignment.Left, theme.MutedText, Math.Max(11, theme.SubtitleFontSize), true);
-            DrawAlignedText(canvas, value, x + width * 0.60, y + rowHeight * 0.24, width * 0.40, VisualTextAlignment.Right, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
+            DrawAlignedText(canvas, item.Label, x + 22, y + rowHeight * 0.24, width * 0.56, TextAlignment.Left, theme.MutedText, Math.Max(11, theme.SubtitleFontSize), true);
+            DrawAlignedText(canvas, value, x + width * 0.60, y + rowHeight * 0.24, width * 0.40, TextAlignment.Right, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
             y += rowHeight;
         }
     }

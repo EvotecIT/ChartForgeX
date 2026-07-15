@@ -167,7 +167,7 @@ public sealed class MarkupTopologyEdge {
     public TopologyHealthStatus Status { get; set; } = TopologyHealthStatus.Unknown;
 
     /// <summary>Gets or sets the edge direction.</summary>
-    public TopologyDirection Direction { get; set; } = TopologyDirection.None;
+    public VisualLinkDirection Direction { get; set; } = VisualLinkDirection.None;
 
     /// <summary>Gets or sets the edge routing.</summary>
     public TopologyEdgeRouting Routing { get; set; } = TopologyEdgeRouting.Orthogonal;

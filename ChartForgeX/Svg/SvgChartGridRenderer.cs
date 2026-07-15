@@ -94,7 +94,7 @@ public sealed class SvgChartGridRenderer {
         return writer.Build();
     }
 
-    private static void WriteGridText(SvgMarkupWriter writer, string role, double x, double y, string fill, string fontFamily, double fontSize, string fontWeight, ChartTextStyle style, string text) {
+    private static void WriteGridText(SvgMarkupWriter writer, string role, double x, double y, string fill, string fontFamily, double fontSize, string fontWeight, TextStyleOverride style, string text) {
         writer
             .StartElement("text")
             .Attribute("data-cfx-role", role)
@@ -112,15 +112,15 @@ public sealed class SvgChartGridRenderer {
 
     private static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 
-    private static ChartColor StyleColor(ChartTextStyle style, ChartColor fallback) => style.Color ?? fallback;
+    private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 
-    private static double StyleFontSize(ChartTextStyle style, double fallback) => style.FontSize ?? fallback;
+    private static double StyleFontSize(TextStyleOverride style, double fallback) => style.FontSize ?? fallback;
 
-    private static string StyleFontFamily(ChartTextStyle style, string fallback) => style.FontFamily ?? fallback;
+    private static string StyleFontFamily(TextStyleOverride style, string fallback) => style.FontFamily ?? fallback;
 
-    private static string StyleWeight(ChartTextStyle style, string fallback) => style.FontWeight ?? fallback;
+    private static string StyleWeight(TextStyleOverride style, string fallback) => style.FontWeight ?? fallback;
 
-    private static string SvgTextStyleAttributes(ChartTextStyle style) {
+    private static string SvgTextStyleAttributes(TextStyleOverride style) {
         var value = string.Empty;
         if (style.Italic) value += " font-style=\"italic\"";
         if (style.Underline) value += " text-decoration=\"underline\"";

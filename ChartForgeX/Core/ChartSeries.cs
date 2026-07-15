@@ -72,7 +72,7 @@ public sealed class ChartSeries {
     /// <summary>
     /// Gets optional point-level data-label styles. Null entries fall back to the series or chart data-label style.
     /// </summary>
-    public List<ChartTextStyle?> PointDataLabelStyles { get; } = new();
+    public List<TextStyleOverride?> PointDataLabelStyles { get; } = new();
 
     /// <summary>
     /// Gets optional point-level pie/donut slice offset ratios. Zero entries use the default slice position.
@@ -118,7 +118,7 @@ public sealed class ChartSeries {
     /// <summary>
     /// Gets the series-specific data-label style. When empty, the chart-level data-label style is used.
     /// </summary>
-    public ChartTextStyle DataLabelStyle { get; } = new();
+    public TextStyleOverride DataLabelStyle { get; } = new();
 
     /// <summary>
     /// Gets or sets the vertical axis used for cartesian rendering.
@@ -370,7 +370,7 @@ public sealed class ChartSeries {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithDataLabelStyle(Action<ChartTextStyle> configure) {
+    public ChartSeries WithDataLabelStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(DataLabelStyle);
         return this;
@@ -382,11 +382,11 @@ public sealed class ChartSeries {
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointDataLabelStyle(int pointIndex, Action<ChartTextStyle> configure) {
+    public ChartSeries WithPointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
         ValidatePointIndex(pointIndex);
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         while (PointDataLabelStyles.Count <= pointIndex) PointDataLabelStyles.Add(null);
-        var style = PointDataLabelStyles[pointIndex] ?? new ChartTextStyle();
+        var style = PointDataLabelStyles[pointIndex] ?? new TextStyleOverride();
         configure(style);
         PointDataLabelStyles[pointIndex] = style;
         return this;

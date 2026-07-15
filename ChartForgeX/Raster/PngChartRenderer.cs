@@ -164,19 +164,19 @@ public sealed partial class PngChartRenderer {
             ChartRange? secondaryRange = null;
             IReadOnlyList<double>? secondaryTicks = null;
             if (IsHorizontalBarChart(chart)) {
-                xTicks = ChartTicks.Generate(range.MinX, range.MaxX, o.TickCount);
+                xTicks = ChartTicks.Generate(o.XAxis, range.MinX, range.MaxX);
                 ApplyHorizontalValueBounds(chart, range, xTicks);
                 yTicks = GetHorizontalCategoryTicks(chart, range);
                 plot = ApplyHorizontalBarReserve(chart, plot, yTicks);
                 if (ShowXAxis(chart)) plot = ApplyBottomReserve(chart, plot, xTicks, true);
                 DrawPlotSurface(c, o, t, plot);
             } else {
-                yTicks = ChartTicks.Generate(range.MinY, range.MaxY, o.TickCount);
+                yTicks = ChartTicks.Generate(o.YAxis, range.MinY, range.MaxY);
                 range.SetYBounds(yTicks[0], yTicks[yTicks.Count - 1]);
                 if (ShowYAxis(chart)) plot = ApplyYAxisLabelReserve(chart, plot, yTicks);
                 if (HasSecondaryYAxis(chart)) {
                     secondaryRange = ChartRange.FromSecondaryYAxis(chart, range);
-                    secondaryTicks = ChartTicks.Generate(secondaryRange.MinY, secondaryRange.MaxY, o.TickCount);
+                    secondaryTicks = ChartTicks.Generate(o.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
                     secondaryRange.SetYBounds(secondaryTicks[0], secondaryTicks[secondaryTicks.Count - 1]);
                     plot = ApplySecondaryYAxisLabelReserve(chart, plot, secondaryTicks);
                 }
@@ -186,8 +186,8 @@ public sealed partial class PngChartRenderer {
                 DrawPlotSurface(c, o, t, plot);
             }
 
-            var map = new ChartMapper(plot, range);
-            var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange);
+            var map = new ChartMapper(plot, range, o.XAxis, o.YAxis);
+            var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, o.XAxis, o.SecondaryYAxis);
             if (IsHorizontalBarChart(chart)) {
                 DrawHorizontalBarGrid(c, chart, plot, map, xTicks, yTicks);
                 for (var i = 0; i < chart.Series.Count; i++) DrawSeries(c, chart, i, plot, map);
@@ -215,7 +215,7 @@ public sealed partial class PngChartRenderer {
                 if (o.ShowGrid && gridStyle.ShowVerticalLines) DrawPngGridLine(c, x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Grid, gridStyle.VerticalOpacity), gridStyle);
                 if (ShowXAxis(chart)) DrawXAxisTickLabel(c, chart, plot, label, x, xTicks[i], xLabels);
             }
-            if (ShowXAxis(chart) && ShowAxisLines(chart)) {
+            if (ShowXAxis(chart) && ShowAxisLines(chart) && o.YAxis.Scale != ChartScaleKind.Logarithmic) {
                 var zeroY = map.Y(0);
                 if (zeroY > plot.Top && zeroY < plot.Bottom) DrawPngGuideLine(c, plot.Left, zeroY, plot.Right, zeroY, t.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
             }
@@ -512,7 +512,7 @@ public sealed partial class PngChartRenderer {
         Math.Abs(style.Gap) < 0.000001;
 
     private static string FormatValue(Chart chart, double value) {
-        var formatter = chart.Options.ValueFormatter;
+        var formatter = chart.Options.YAxis.LabelFormatter ?? chart.Options.ValueFormatter;
         if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
     }
@@ -532,7 +532,7 @@ public sealed partial class PngChartRenderer {
 
     private static IReadOnlyList<double> GetXTicks(Chart chart, ChartRange range, ChartRect plot) {
         if (chart.Options.XAxisLabels.Count == 0) {
-            var ticks = ChartTicks.GenerateInside(range.MinX, range.MaxX, chart.Options.TickCount);
+            var ticks = ChartTicks.GenerateInside(chart.Options.XAxis, range.MinX, range.MaxX);
             if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || ticks.Count < 3) return ticks;
             var generatedLabels = new List<ChartAxisLabel>(ticks.Count);
             foreach (var tick in ticks) generatedLabels.Add(new ChartAxisLabel(tick, FormatXAxisValue(chart, tick)));
@@ -557,34 +557,34 @@ public sealed partial class PngChartRenderer {
         var densityFactor = chart.Options.XAxisLabelDensity == ChartLabelDensity.Dense ? 0.72 : chart.Options.XAxisLabelDensity == ChartLabelDensity.Relaxed ? 1.35 : 1.0;
         var minSpacing = Math.Max(28, (widest + 18) * densityFactor);
         var maxCount = Math.Max(2, (int)Math.Floor(plot.Width / minSpacing) + 1);
-        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, fontSize, 6)) return LabelValues(labels);
+        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.XAxis, fontSize, 6)) return LabelValues(labels);
 
         var lastLabel = labels[labels.Count - 1];
         var step = Math.Max(1, (int)Math.Ceiling((labels.Count - 1) / (double)(maxCount - 1)));
         var selected = new List<ChartAxisLabel>();
         selected.Add(labels[0]);
         for (var i = step; i < labels.Count - 1; i += step) {
-            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, fontSize) >= 6 && LabelGap(labels[i], lastLabel, range, plot, fontSize) >= 6) selected.Add(labels[i]);
+            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, fontSize) >= 6 && LabelGap(labels[i], lastLabel, range, plot, chart.Options.XAxis, fontSize) >= 6) selected.Add(labels[i]);
         }
 
-        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, fontSize) < 6) selected.RemoveAt(selected.Count - 1);
+        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, fontSize) < 6) selected.RemoveAt(selected.Count - 1);
         selected.Add(lastLabel);
         return LabelValues(selected);
     }
 
-    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, double fontSize, double minGap) {
+    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, double minGap) {
         for (var i = 1; i < labels.Count; i++) {
-            if (LabelGap(labels[i - 1], labels[i], range, plot, fontSize) < minGap) return false;
+            if (LabelGap(labels[i - 1], labels[i], range, plot, axis, fontSize) < minGap) return false;
         }
 
         return true;
     }
 
-    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, double fontSize) {
+    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize) {
         var leftWidth = EstimatePngTextWidth(left.Text, fontSize);
         var rightWidth = EstimatePngTextWidth(right.Text, fontSize);
-        var leftX = Clamp(ProjectX(left.Value, range, plot) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
-        var rightX = Clamp(ProjectX(right.Value, range, plot) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
+        var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
+        var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
         return rightX - (leftX + leftWidth);
     }
 
@@ -609,7 +609,7 @@ public sealed partial class PngChartRenderer {
             return values;
         }
 
-        return ChartTicks.GenerateInside(range.MinY, range.MaxY, chart.Options.TickCount);
+        return ChartTicks.GenerateInside(chart.Options.YAxis, range.MinY, range.MaxY);
     }
 
     private static string FormatX(Chart chart, double value) {
@@ -628,6 +628,7 @@ public sealed partial class PngChartRenderer {
 
     private static string FormatXAxisValue(Chart chart, double value) {
         var formatter = chart.Options.XAxisValueFormatter;
+        if (formatter == null && chart.Options.XAxis.Scale == ChartScaleKind.Time) return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
     }

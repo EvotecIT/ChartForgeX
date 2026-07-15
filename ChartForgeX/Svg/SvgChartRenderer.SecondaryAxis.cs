@@ -59,7 +59,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteSecondaryYAxisTick(SvgMarkupWriter writer, Chart chart, ChartTextStyle tickStyle, double value, double x, double y, string color, double fontSize, string label) {
+    private static void WriteSecondaryYAxisTick(SvgMarkupWriter writer, Chart chart, TextStyleOverride tickStyle, double value, double x, double y, string color, double fontSize, string label) {
         writer
             .StartElement("text")
             .Attribute("data-cfx-role", "secondary-y-axis-tick")
@@ -91,7 +91,7 @@ public sealed partial class SvgChartRenderer {
             .Line();
     }
 
-    private static void WriteSecondaryYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartTextStyle style, string rawTitle, string title, double x, double y, string color, double fontSize) {
+    private static void WriteSecondaryYAxisTitle(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string rawTitle, string title, double x, double y, string color, double fontSize) {
         writer
             .StartElement("text")
             .Attribute("data-cfx-role", "secondary-y-axis-title")

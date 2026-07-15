@@ -36,7 +36,7 @@ public static class SequenceArtifactRendering {
                 Id = participant.Participant.Id,
                 Kind = "sequence-participant",
                 Label = participant.Participant.Label,
-                Bounds = new VisualArtifactRect(participant.BoxX, layout.ParticipantBoxY, participant.BoxWidth, SequenceLayout.ParticipantBoxHeight)
+                Bounds = new ChartRect(participant.BoxX, layout.ParticipantBoxY, participant.BoxWidth, SequenceLayout.ParticipantBoxHeight)
             });
         }
 

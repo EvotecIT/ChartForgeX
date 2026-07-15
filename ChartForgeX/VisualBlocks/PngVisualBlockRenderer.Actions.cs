@@ -11,7 +11,7 @@ public sealed partial class PngVisualBlockRenderer {
         canvas.DrawLine(x, footerY, x + width, footerY, theme.PlotBorder, 1);
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var y = footerY + (footerHeight - fontSize) * 0.52;
-        DrawAlignedText(canvas, label, x, y, Math.Max(1, width - 38), VisualTextAlignment.Left, theme.MutedText, fontSize, false);
+        DrawAlignedText(canvas, label, x, y, Math.Max(1, width - 38), TextAlignment.Left, theme.MutedText, fontSize, false);
         DrawActionSymbol(canvas, symbol, x + width - 18, footerY + footerHeight * 0.5, 12, theme.Text, fontSize);
     }
 
@@ -23,6 +23,6 @@ public sealed partial class PngVisualBlockRenderer {
             return;
         }
 
-        DrawAlignedText(canvas, symbol, centerX - 14, centerY - fontSize * 0.5, 28, VisualTextAlignment.Right, color, fontSize, true);
+        DrawAlignedText(canvas, symbol, centerX - 14, centerY - fontSize * 0.5, 28, TextAlignment.Right, color, fontSize, true);
     }
 }

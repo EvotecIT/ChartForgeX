@@ -141,30 +141,6 @@ internal sealed partial class RgbaCanvas {
         FillRingSlicePixels(cx * _scale, cy * _scale, outerRadius * _scale, innerRadius * _scale, startAngle, endAngle, color);
     }
 
-    public void DrawTextTiny(double x, double y, string text, ChartColor color, int scale = 2) {
-        var font = _outlineFont;
-        if (font != null && font.Draw(this, x, y, text, color, OutlineFontSize(scale))) return;
-
-        var cursor = (int)Math.Round(x * _scale);
-        var glyphScale = Math.Max(1, scale * _scale);
-        foreach (var ch in text) {
-            DrawGlyph(cursor, (int)Math.Round(y * _scale), ch, color, glyphScale);
-            cursor += TinyFont.AdvanceFor(ch) * glyphScale;
-        }
-    }
-
-    public void DrawText(double x, double y, string text, ChartColor color, double fontSize) {
-        var font = _outlineFont;
-        if (font != null && font.Draw(this, x, y, text, color, Math.Max(1, fontSize))) return;
-        DrawTextTiny(x, y, text, color, FallbackScaleForFontSize(fontSize));
-    }
-
-    public void DrawTextEmphasized(double x, double y, string text, ChartColor color, double fontSize) {
-        if (string.IsNullOrEmpty(text) || color.A == 0) return;
-        DrawText(x, y, text, color, fontSize);
-        DrawText(x + EmphasisOffset(fontSize), y, text, color, fontSize);
-    }
-
     public void DrawImage(int x, int y, int width, int height, byte[] rgba) {
         if (rgba == null) throw new ArgumentNullException(nameof(rgba));
         if (width <= 0 || height <= 0) return;

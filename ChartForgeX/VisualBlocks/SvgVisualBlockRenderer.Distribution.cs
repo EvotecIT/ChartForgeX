@@ -21,9 +21,9 @@ public sealed partial class SvgVisualBlockRenderer {
             .Attribute("data-cfx-role", "segmented-metric-distribution")
             .Attribute("data-cfx-total", VisualBlockRendering.SegmentedTotal(card))
             .EndStartElement().Line();
-        WriteText(writer, card.Label, content.X, y + theme.SubtitleFontSize, content.Width - layout.CaptionWidth - 10, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "650");
-        if (card.Caption.Length > 0) WriteText(writer, card.Caption, content.X + content.Width - layout.CaptionWidth, y + theme.SubtitleFontSize, layout.CaptionWidth, VisualTextAlignment.Right, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
-        WriteText(writer, card.Value, content.X, y + theme.SubtitleFontSize + layout.MetricSize + 12, content.Width, VisualTextAlignment.Left, theme.Text, theme.FontFamily, layout.MetricSize, "850");
+        WriteText(writer, card.Label, content.X, y + theme.SubtitleFontSize, content.Width - layout.CaptionWidth - 10, TextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "650");
+        if (card.Caption.Length > 0) WriteText(writer, card.Caption, content.X + content.Width - layout.CaptionWidth, y + theme.SubtitleFontSize, layout.CaptionWidth, TextAlignment.Right, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
+        WriteText(writer, card.Value, content.X, y + theme.SubtitleFontSize + layout.MetricSize + 12, content.Width, TextAlignment.Left, theme.Text, theme.FontFamily, layout.MetricSize, "850");
         RenderDistributionStack(writer, card, content.X, layout.StripY, content.Width, layout.StripHeight);
         RenderDistributionLegend(writer, card, layout);
         y = layout.RowsY;
@@ -81,7 +81,7 @@ public sealed partial class SvgVisualBlockRenderer {
             var color = VisualBlockRendering.SegmentedItemColor(theme, chip.Item, chip.Index);
             writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-distribution-chip").Attribute("data-cfx-label", chip.Item.Label).EndStartElement().Line();
             writer.StartElement("circle").Attribute("cx", chip.X + 4).Attribute("cy", chip.Y + 8).Attribute("r", 4).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, chip.Label, chip.X + 13, chip.Y + 12, chip.Width - 13, VisualTextAlignment.Left, theme.Text, theme.FontFamily, chip.FontSize, "650");
+            WriteText(writer, chip.Label, chip.X + 13, chip.Y + 12, chip.Width - 13, TextAlignment.Left, theme.Text, theme.FontFamily, chip.FontSize, "650");
             writer.EndElement().Line();
         }
 
@@ -100,10 +100,10 @@ public sealed partial class SvgVisualBlockRenderer {
             .Attribute("data-cfx-share", layout.Share)
             .EndStartElement().Line();
         writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-distribution-symbol-badge").Attribute("x", x).Attribute("y", layout.Y - layout.BadgeSize / 2).Attribute("width", layout.BadgeSize).Attribute("height", layout.BadgeSize).Attribute("rx", Math.Min(7, layout.BadgeSize * 0.32)).Attribute("fill", color.WithAlpha(34).ToCss()).Attribute("stroke", color.WithAlpha(110).ToCss()).EndEmptyElement().Line();
-        WriteText(writer, layout.SymbolText, x + 2, layout.Y + 4, layout.BadgeSize - 4, VisualTextAlignment.Center, color, theme.FontFamily, Math.Max(8, layout.BadgeSize * 0.42), "850");
-        WriteText(writer, segment.Label, x + layout.BadgeSize + 12, layout.Y + 4, layout.LabelWidth, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "650");
-        if (segment.DisplayValue.Length > 0) WriteText(writer, segment.DisplayValue, x + width - layout.DisplayValueWidth, layout.Y + 4, layout.DisplayValueWidth, VisualTextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "750");
-        WriteText(writer, layout.PercentText, x + width - layout.DisplayValueWidth - layout.PercentWidth - 6, layout.Y + 4, layout.PercentWidth, VisualTextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
+        WriteText(writer, layout.SymbolText, x + 2, layout.Y + 4, layout.BadgeSize - 4, TextAlignment.Center, color, theme.FontFamily, Math.Max(8, layout.BadgeSize * 0.42), "850");
+        WriteText(writer, segment.Label, x + layout.BadgeSize + 12, layout.Y + 4, layout.LabelWidth, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "650");
+        if (segment.DisplayValue.Length > 0) WriteText(writer, segment.DisplayValue, x + width - layout.DisplayValueWidth, layout.Y + 4, layout.DisplayValueWidth, TextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "750");
+        WriteText(writer, layout.PercentText, x + width - layout.DisplayValueWidth - layout.PercentWidth - 6, layout.Y + 4, layout.PercentWidth, TextAlignment.Right, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
         RenderDistributionRing(writer, x + width - layout.DisplayValueWidth - layout.PercentWidth - 24, layout.Y, layout.RingRadius, layout.Share, color, theme.PlotBorder);
         writer.EndElement().Line();
     }

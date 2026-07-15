@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <ChartForgeXProductVersion>1.0.0</ChartForgeXProductVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'ChartForgeX' Or '$(MSBuildProjectName)' == 'ChartForgeX.Interactivity' Or '$(MSBuildProjectName)' == 'ChartForgeX.Interactivity.Html' Or '$(MSBuildProjectName)' == 'ChartForgeX.Markup' Or '$(MSBuildProjectName)' == 'ChartForgeX.Mermaid' Or '$(MSBuildProjectName)' == 'ChartForgeX.Markup.Mermaid'">
+    <AssemblyVersion>$(ChartForgeXProductVersion).0</AssemblyVersion>
+    <FileVersion>$(ChartForgeXProductVersion).0</FileVersion>
+    <InformationalVersion>$(ChartForgeXProductVersion)</InformationalVersion>
+  </PropertyGroup>
+</Project>

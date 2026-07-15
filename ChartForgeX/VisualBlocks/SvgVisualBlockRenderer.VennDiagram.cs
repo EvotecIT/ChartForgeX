@@ -33,7 +33,7 @@ public sealed partial class SvgVisualBlockRenderer {
 
         foreach (var placement in placements) {
             var labelY = placement.Y - placement.Radius * 0.52;
-            WriteText(writer, placement.Set.Label, placement.X - placement.Radius * 0.58, labelY, placement.Radius * 1.16, VisualTextAlignment.Center, placement.Set.TextColor ?? theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize + 1), "800");
+            WriteText(writer, placement.Set.Label, placement.X - placement.Radius * 0.58, labelY, placement.Radius * 1.16, TextAlignment.Center, placement.Set.TextColor ?? theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize + 1), "800");
         }
 
         foreach (var intersection in block.Intersections) WriteVennIntersectionStyle(writer, placements, intersection);
@@ -63,6 +63,6 @@ public sealed partial class SvgVisualBlockRenderer {
         var center = VisualBlockRendering.VennRegionCenter(placements, setIds);
         var maxWidth = Math.Max(42, placements[0].Radius * (setIds.Count == 1 ? 0.95 : 0.72));
         var yOffset = setIds.Count == 1 ? placements[0].Radius * 0.12 : setIds.Count == 2 ? 5 : 18;
-        WriteText(writer, label, center.X - maxWidth / 2, center.Y + yOffset, maxWidth, VisualTextAlignment.Center, color, fontFamily, fontSize, weight);
+        WriteText(writer, label, center.X - maxWidth / 2, center.Y + yOffset, maxWidth, TextAlignment.Center, color, fontFamily, fontSize, weight);
     }
 }

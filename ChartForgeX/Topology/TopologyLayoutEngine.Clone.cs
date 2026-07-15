@@ -13,6 +13,10 @@ internal static partial class TopologyLayoutEngine {
             Legend = chart.Legend,
             Theme = chart.Theme
         };
+        copy.Accessibility.Name = chart.Accessibility.Name;
+        copy.Accessibility.Description = chart.Accessibility.Description;
+        copy.Accessibility.Language = chart.Accessibility.Language;
+        copy.Accessibility.IsDecorative = chart.Accessibility.IsDecorative;
         foreach (var group in chart.Groups) copy.Groups.Add(Clone(group));
         foreach (var node in chart.Nodes) copy.Nodes.Add(Clone(node));
         foreach (var edge in chart.Edges) copy.Edges.Add(Clone(edge));

@@ -47,11 +47,11 @@ public sealed class PngChartGridRenderer {
         return output;
     }
 
-    private static double StyleFontSize(ChartTextStyle style, double fallback) => style.FontSize ?? fallback;
+    private static double StyleFontSize(TextStyleOverride style, double fallback) => style.FontSize ?? fallback;
 
-    private static ChartColor StyleColor(ChartTextStyle style, ChartColor fallback) => style.Color ?? fallback;
+    private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 
-    private static void DrawStyledText(RgbaCanvas canvas, double x, double y, string text, ChartTextStyle style, ChartColor fallback, double fontSize, bool emphasized) {
+    private static void DrawStyledText(RgbaCanvas canvas, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
         var color = StyleColor(style, fallback);
         if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
         else canvas.DrawText(x, y, text, color, fontSize);

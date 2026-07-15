@@ -15,8 +15,8 @@ public sealed partial class PngVisualBlockRenderer {
         DrawSegmentedMetricHeading(canvas, card, ref y, content.X, content.Width);
         var hasAction = card.ActionLabel.Length > 0;
         var layout = VisualBlockRendering.SegmentedCompositionLayout(card, content, y, hasAction);
-        DrawAlignedText(canvas, card.Label, content.X, y, content.Width * 0.58, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
-        DrawAlignedText(canvas, card.Value, content.X + content.Width * 0.58, y + layout.MetricSize * 0.08, content.Width * 0.42, VisualTextAlignment.Right, theme.Text, layout.MetricSize, true);
+        DrawAlignedText(canvas, card.Label, content.X, y, content.Width * 0.58, TextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
+        DrawAlignedText(canvas, card.Value, content.X + content.Width * 0.58, y + layout.MetricSize * 0.08, content.Width * 0.42, TextAlignment.Right, theme.Text, layout.MetricSize, true);
         y = layout.StripY;
         DrawCompositionStrip(canvas, card, content.X, y, content.Width, layout.StripHeight);
         y = layout.LegendY;
@@ -33,8 +33,8 @@ public sealed partial class PngVisualBlockRenderer {
             var swatchSize = Math.Max(8, Math.Min(14, rowHeight * 0.55));
             var rowFont = Math.Max(10, Math.Min(theme.SubtitleFontSize, rowHeight * 0.58));
             canvas.FillRoundedRect(content.X, y + (rowHeight - swatchSize) / 2, swatchSize, swatchSize, Math.Min(4, swatchSize * 0.32), color);
-            DrawAlignedText(canvas, segment.Label, content.X + swatchSize + 10, y + (rowHeight - rowFont) * 0.44, content.Width * 0.58, VisualTextAlignment.Left, theme.Text, rowFont, true);
-            DrawAlignedText(canvas, VisualBlockRendering.SegmentedCompositionValueText(card, segment, total), content.X + content.Width * 0.66, y + (rowHeight - rowFont) * 0.44, content.Width * 0.34, VisualTextAlignment.Right, theme.Text, rowFont, true);
+            DrawAlignedText(canvas, segment.Label, content.X + swatchSize + 10, y + (rowHeight - rowFont) * 0.44, content.Width * 0.58, TextAlignment.Left, theme.Text, rowFont, true);
+            DrawAlignedText(canvas, VisualBlockRendering.SegmentedCompositionValueText(card, segment, total), content.X + content.Width * 0.66, y + (rowHeight - rowFont) * 0.44, content.Width * 0.34, TextAlignment.Right, theme.Text, rowFont, true);
             y += rowHeight;
         }
     }

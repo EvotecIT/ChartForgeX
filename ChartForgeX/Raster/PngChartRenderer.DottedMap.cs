@@ -486,7 +486,7 @@ public sealed partial class PngChartRenderer {
         return new DottedMapPngLabelPlacement(new ChartLabelBounds(left, top, width, height));
     }
 
-    private static void DrawDottedMapPngDataLabel(RgbaCanvas c, Chart chart, string label, double fontSize, ChartTextStyle style, DottedMapPngLabelPlacement placement, double pointX, double pointY, double dot) {
+    private static void DrawDottedMapPngDataLabel(RgbaCanvas c, Chart chart, string label, double fontSize, TextStyleOverride style, DottedMapPngLabelPlacement placement, double pointX, double pointY, double dot) {
         DrawDottedMapPngLabelLeader(c, chart, placement.Bounds, pointX, pointY, dot);
         c.FillRoundedRect(placement.Bounds.X, placement.Bounds.Y, placement.Bounds.Width, placement.Bounds.Height, Math.Min(6, placement.Bounds.Height / 2), ApplyOpacity(ReadableLabelHalo(chart), 0.86));
         DrawReadablePngLabel(c, placement.Bounds.X + 4, placement.Bounds.Y + 3, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);

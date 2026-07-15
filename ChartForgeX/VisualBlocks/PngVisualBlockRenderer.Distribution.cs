@@ -17,9 +17,9 @@ public sealed partial class PngVisualBlockRenderer {
         var hasAction = card.ActionLabel.Length > 0;
         var layout = VisualBlockRendering.SegmentedDistributionLayout(card, content, y, hasAction);
 
-        DrawAlignedText(canvas, card.Label, content.X, y, content.Width - layout.CaptionWidth - 10, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
-        if (card.Caption.Length > 0) DrawAlignedText(canvas, card.Caption, content.X + content.Width - layout.CaptionWidth, y, layout.CaptionWidth, VisualTextAlignment.Right, theme.MutedText, theme.SubtitleFontSize, true);
-        DrawAlignedText(canvas, card.Value, content.X, y + theme.SubtitleFontSize + 16, content.Width, VisualTextAlignment.Left, theme.Text, layout.MetricSize, true);
+        DrawAlignedText(canvas, card.Label, content.X, y, content.Width - layout.CaptionWidth - 10, TextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, true);
+        if (card.Caption.Length > 0) DrawAlignedText(canvas, card.Caption, content.X + content.Width - layout.CaptionWidth, y, layout.CaptionWidth, TextAlignment.Right, theme.MutedText, theme.SubtitleFontSize, true);
+        DrawAlignedText(canvas, card.Value, content.X, y + theme.SubtitleFontSize + 16, content.Width, TextAlignment.Left, theme.Text, layout.MetricSize, true);
         DrawDistributionStack(canvas, card, content.X, layout.StripY, content.Width, layout.StripHeight);
         DrawDistributionLegend(canvas, card, layout);
         y = layout.RowsY;
@@ -48,7 +48,7 @@ public sealed partial class PngVisualBlockRenderer {
         foreach (var chip in layout.LegendChips) {
             var color = VisualBlockRendering.SegmentedItemColor(theme, chip.Item, chip.Index);
             canvas.DrawCircle(chip.X + 4, chip.Y + 8, 4, color);
-            DrawAlignedText(canvas, chip.Label, chip.X + 13, chip.Y + 2, chip.Width - 13, VisualTextAlignment.Left, theme.Text, chip.FontSize, true);
+            DrawAlignedText(canvas, chip.Label, chip.X + 13, chip.Y + 2, chip.Width - 13, TextAlignment.Left, theme.Text, chip.FontSize, true);
         }
     }
 
@@ -59,10 +59,10 @@ public sealed partial class PngVisualBlockRenderer {
 
         canvas.FillRoundedRect(x, layout.Y - layout.BadgeSize / 2, layout.BadgeSize, layout.BadgeSize, Math.Min(7, layout.BadgeSize * 0.32), color.WithAlpha(34));
         canvas.StrokeRoundedRect(x, layout.Y - layout.BadgeSize / 2, layout.BadgeSize, layout.BadgeSize, Math.Min(7, layout.BadgeSize * 0.32), color.WithAlpha(110), 1);
-        DrawAlignedText(canvas, layout.SymbolText, x + 2, layout.Y - layout.BadgeSize * 0.22, layout.BadgeSize - 4, VisualTextAlignment.Center, color, Math.Max(8, layout.BadgeSize * 0.42), true);
-        DrawAlignedText(canvas, segment.Label, x + layout.BadgeSize + 12, layout.Y - theme.SubtitleFontSize * 0.36, layout.LabelWidth, VisualTextAlignment.Left, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
-        if (segment.DisplayValue.Length > 0) DrawAlignedText(canvas, segment.DisplayValue, x + width - layout.DisplayValueWidth, layout.Y - theme.SubtitleFontSize * 0.36, layout.DisplayValueWidth, VisualTextAlignment.Right, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
-        DrawAlignedText(canvas, layout.PercentText, x + width - layout.DisplayValueWidth - layout.PercentWidth - 6, layout.Y - theme.SubtitleFontSize * 0.36, layout.PercentWidth, VisualTextAlignment.Right, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
+        DrawAlignedText(canvas, layout.SymbolText, x + 2, layout.Y - layout.BadgeSize * 0.22, layout.BadgeSize - 4, TextAlignment.Center, color, Math.Max(8, layout.BadgeSize * 0.42), true);
+        DrawAlignedText(canvas, segment.Label, x + layout.BadgeSize + 12, layout.Y - theme.SubtitleFontSize * 0.36, layout.LabelWidth, TextAlignment.Left, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
+        if (segment.DisplayValue.Length > 0) DrawAlignedText(canvas, segment.DisplayValue, x + width - layout.DisplayValueWidth, layout.Y - theme.SubtitleFontSize * 0.36, layout.DisplayValueWidth, TextAlignment.Right, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
+        DrawAlignedText(canvas, layout.PercentText, x + width - layout.DisplayValueWidth - layout.PercentWidth - 6, layout.Y - theme.SubtitleFontSize * 0.36, layout.PercentWidth, TextAlignment.Right, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
         DrawDistributionRing(canvas, x + width - layout.DisplayValueWidth - layout.PercentWidth - 24, layout.Y, layout.RingRadius, layout.Share, color, theme.PlotBorder);
     }
 

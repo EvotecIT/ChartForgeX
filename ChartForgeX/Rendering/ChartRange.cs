@@ -130,9 +130,11 @@ internal sealed class ChartRange {
         range.ApplyBarPadding(barXValues);
         range.ApplyHorizontalBarPadding(horizontalBarYValues);
         if (!hasHorizontalBars) {
-            if (range.MinY > 0) range.MinY = 0;
-            var padY = (range.MaxY - range.MinY) * .08;
-            if (ChartMath.IsFinite(padY) && ChartMath.IsFinite(range.MaxY + padY)) range.MaxY += padY;
+            if (chart.Options.YAxis.Scale != ChartScaleKind.Logarithmic) {
+                if (range.MinY > 0) range.MinY = 0;
+                var padY = (range.MaxY - range.MinY) * .08;
+                if (ChartMath.IsFinite(padY) && ChartMath.IsFinite(range.MaxY + padY)) range.MaxY += padY;
+            }
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
 
@@ -156,9 +158,11 @@ internal sealed class ChartRange {
         }
 
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) range.MaxY = range.MinY + 1;
-        if (range.MinY > 0) range.MinY = 0;
-        var padY = (range.MaxY - range.MinY) * .08;
-        if (ChartMath.IsFinite(padY) && ChartMath.IsFinite(range.MaxY + padY)) range.MaxY += padY;
+        if (chart.Options.SecondaryYAxis.Scale != ChartScaleKind.Logarithmic) {
+            if (range.MinY > 0) range.MinY = 0;
+            var padY = (range.MaxY - range.MinY) * .08;
+            if (ChartMath.IsFinite(padY) && ChartMath.IsFinite(range.MaxY + padY)) range.MaxY += padY;
+        }
         if (applyOptionBounds) range.ApplySecondaryYAxisOptions(chart);
         return range;
     }

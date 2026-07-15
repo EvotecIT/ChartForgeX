@@ -74,7 +74,7 @@ internal static class VisualCanvasLayoutAnalyzer {
     public static VisualCanvasLayoutReport Analyze(VisualCanvas canvas) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var diagnostics = new List<VisualCanvasLayoutDiagnostic>();
-        var canvasBounds = new ChartRect(0, 0, canvas.Width, canvas.Height);
+        var canvasBounds = new ChartRect(0, 0, canvas.DesignWidth, canvas.DesignHeight);
         for (var i = 0; i < canvas.Layers.Count; i++) {
             var layer = canvas.Layers[i];
             var bounds = layer.Bounds;

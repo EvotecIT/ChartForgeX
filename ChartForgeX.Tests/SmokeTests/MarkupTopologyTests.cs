@@ -154,7 +154,7 @@ edge api -> db ""status:warning"" status:healthy
         Assert(result.Document.Nodes[0].Display == TopologyNodeDisplayMode.Tile, "Command nodes should map display.");
         Assert(result.Document.Edges[0].Label == "status:warning", "Quoted command edge labels that look like attributes should stay labels.");
         Assert(result.Document.Edges[0].Status == TopologyHealthStatus.Healthy, "Attributes after quoted edge labels should still be parsed.");
-        Assert(result.Document.Edges[0].Direction == TopologyDirection.Forward, "Arrow commands should default -> to forward direction.");
+        Assert(result.Document.Edges[0].Direction == VisualLinkDirection.Forward, "Arrow commands should default -> to forward direction.");
 
         const string sectionSource = @"nodes:
 node api ""API | Gateway"" kind:service status:healthy
@@ -487,7 +487,7 @@ rows:
         Assert(table.Subtitle == "Typed native table", "Typed table markup should map subtitle.");
         Assert(table.Supports(TableArtifactCapabilities.Virtualization), "Typed table markup should map virtualization capability.");
         Assert(table.TotalRowCount == 125, "Typed table markup should map total row count.");
-        Assert(table.Columns[2].Type == TableArtifactColumnType.Number && table.Columns[2].Alignment == VisualTextAlignment.Right, "Typed table columns should map type and alignment.");
+        Assert(table.Columns[2].Type == TableArtifactColumnType.Number && table.Columns[2].Alignment == TextAlignment.Right, "Typed table columns should map type and alignment.");
         Assert(!table.Columns[2].Searchable && table.Columns[2].Sortable && !table.Columns[2].Filterable, "Typed table columns should map host behavior flags.");
         Assert(table.Rows[0].Key == "api" && table.Rows[0].Cells[0].DisplayText == "API", "Typed table rows should use key without rendering it as the first cell.");
         Assert(table.Rows[1].Cells[1].Status == VisualStatus.Warning, "Status columns should map recognized status text to cell status.");

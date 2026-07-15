@@ -106,8 +106,8 @@ internal sealed class VisualGridLayout {
         throw new InvalidOperationException("Visual grid items must contain a chart or visual block.");
     }
 
-    private static VisualGridCell FitCell(VisualGridItem item, int panelX, int panelY, int panelWidth, int panelHeight, bool fixedPanel, VisualGridPanelFit fit) {
-        if (fixedPanel && fit == VisualGridPanelFit.Stretch) return new VisualGridCell(item, panelX, panelY, panelWidth, panelHeight);
+    private static VisualGridCell FitCell(VisualGridItem item, int panelX, int panelY, int panelWidth, int panelHeight, bool fixedPanel, VisualPanelFit fit) {
+        if (fixedPanel && fit == VisualPanelFit.Stretch) return new VisualGridCell(item, panelX, panelY, panelWidth, panelHeight);
         var size = ItemSize(item);
         if (!fixedPanel) return new VisualGridCell(item, panelX + (panelWidth - size.Width) / 2, panelY + (panelHeight - size.Height) / 2, size.Width, size.Height);
         var scale = Math.Min(panelWidth / (double)size.Width, panelHeight / (double)size.Height);

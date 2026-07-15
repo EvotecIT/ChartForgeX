@@ -156,10 +156,10 @@ public static class TopologyGraphExplorerExtensions {
     private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options, int index) {
         var sourceNodeId = ids.NodeId(edge.SourceNodeId);
         var targetNodeId = ids.NodeId(edge.TargetNodeId);
-        var directed = edge.Direction == TopologyDirection.Forward || edge.Direction == TopologyDirection.Backward || edge.Direction == TopologyDirection.Bidirectional;
-        var sourceArrow = edge.Direction == TopologyDirection.Bidirectional;
+        var directed = edge.Direction == VisualLinkDirection.Forward || edge.Direction == VisualLinkDirection.Backward || edge.Direction == VisualLinkDirection.Bidirectional;
+        var sourceArrow = edge.Direction == VisualLinkDirection.Bidirectional;
         var targetArrow = directed;
-        if (edge.Direction == TopologyDirection.Backward) {
+        if (edge.Direction == VisualLinkDirection.Backward) {
             sourceNodeId = ids.NodeId(edge.TargetNodeId);
             targetNodeId = ids.NodeId(edge.SourceNodeId);
         }
@@ -332,8 +332,8 @@ public static class TopologyGraphExplorerExtensions {
         if (!topologyNodes.TryGetValue(edge.SourceNodeId, out var source) || !topologyNodes.TryGetValue(edge.TargetNodeId, out var target)) return;
         if (!ShouldPreserveCoordinates(chart, source, options) || !ShouldPreserveCoordinates(chart, target, options)) return;
         var points = TopologyRenderPrimitives.EdgePoints(chart, edge, topologyNodes);
-        if (edge.Direction == TopologyDirection.Backward) points.Reverse();
-        AlignRouteEndpointsToGraphNodes(points, edge.Direction == TopologyDirection.Backward ? target : source, edge.Direction == TopologyDirection.Backward ? source : target);
+        if (edge.Direction == VisualLinkDirection.Backward) points.Reverse();
+        AlignRouteEndpointsToGraphNodes(points, edge.Direction == VisualLinkDirection.Backward ? target : source, edge.Direction == VisualLinkDirection.Backward ? source : target);
         foreach (var point in points) graphEdge.RoutePoints.Add(new GraphScenePoint(point.X, point.Y));
         graphEdge.Metadata["topology.routePointCount"] = graphEdge.RoutePoints.Count.ToString(CultureInfo.InvariantCulture);
     }

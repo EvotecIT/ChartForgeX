@@ -35,6 +35,19 @@ internal static class ChartSeriesKindTraits {
 
     public static bool IsExclusive(ChartSeriesKind kind) => Array.IndexOf(ExclusiveKinds, kind) >= 0;
 
+    public static bool SupportsPointSeriesMapping(ChartSeriesKind kind) =>
+        kind == ChartSeriesKind.Line ||
+        kind == ChartSeriesKind.StepLine ||
+        kind == ChartSeriesKind.Area ||
+        kind == ChartSeriesKind.StepArea ||
+        kind == ChartSeriesKind.StackedArea ||
+        kind == ChartSeriesKind.Scatter ||
+        kind == ChartSeriesKind.Bar ||
+        kind == ChartSeriesKind.HorizontalBar ||
+        kind == ChartSeriesKind.Lollipop ||
+        kind == ChartSeriesKind.Slope ||
+        kind == ChartSeriesKind.TrendLine;
+
     public static bool RequiresSingleSeries(ChartSeriesKind kind) {
         return kind == ChartSeriesKind.Gauge ||
             kind == ChartSeriesKind.CalendarHeatmap ||

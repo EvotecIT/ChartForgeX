@@ -12,10 +12,6 @@ public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
     private ChartPadding _padding = new(76, 78, 36, 74);
     private ChartTheme _theme = ChartTheme.Light();
-    private int _tickCount = 6;
-    private ChartLabelDensity _xAxisLabelDensity = ChartLabelDensity.Auto;
-    private ChartLabelDensity _yAxisLabelDensity = ChartLabelDensity.Auto;
-    private double _xAxisLabelAngle;
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.Bottom;
     private ChartPictorialShape _pictorialShape = ChartPictorialShape.Circle;
@@ -40,12 +36,6 @@ public sealed partial class ChartOptions {
     private int? _pngFontCollectionIndex;
     private int _pngSupersamplingScale = 2;
     private int _pngOutputScale = 1;
-    private double? _xAxisMinimum;
-    private double? _xAxisMaximum;
-    private double? _yAxisMinimum;
-    private double? _yAxisMaximum;
-    private double? _secondaryYAxisMinimum;
-    private double? _secondaryYAxisMaximum;
     private double? _ganttToday;
     private double _donutInnerRadiusRatio = 0.58;
     private string? _donutCenterValue;
@@ -154,78 +144,6 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets the explicit minimum value for the cartesian x-axis.
-    /// </summary>
-    public double? XAxisMinimum {
-        get => _xAxisMinimum;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            ValidateAxisBounds(value, _xAxisMaximum, nameof(value), "X-axis");
-            _xAxisMinimum = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the explicit maximum value for the cartesian x-axis.
-    /// </summary>
-    public double? XAxisMaximum {
-        get => _xAxisMaximum;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            ValidateAxisBounds(_xAxisMinimum, value, nameof(value), "X-axis");
-            _xAxisMaximum = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the explicit minimum value for the cartesian y-axis.
-    /// </summary>
-    public double? YAxisMinimum {
-        get => _yAxisMinimum;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            ValidateAxisBounds(value, _yAxisMaximum, nameof(value), "Y-axis");
-            _yAxisMinimum = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the explicit maximum value for the cartesian y-axis.
-    /// </summary>
-    public double? YAxisMaximum {
-        get => _yAxisMaximum;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            ValidateAxisBounds(_yAxisMinimum, value, nameof(value), "Y-axis");
-            _yAxisMaximum = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the explicit minimum value for the secondary cartesian y-axis.
-    /// </summary>
-    public double? SecondaryYAxisMinimum {
-        get => _secondaryYAxisMinimum;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            ValidateAxisBounds(value, _secondaryYAxisMaximum, nameof(value), "Secondary y-axis");
-            _secondaryYAxisMinimum = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the explicit maximum value for the secondary cartesian y-axis.
-    /// </summary>
-    public double? SecondaryYAxisMaximum {
-        get => _secondaryYAxisMaximum;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            ValidateAxisBounds(_secondaryYAxisMinimum, value, nameof(value), "Secondary y-axis");
-            _secondaryYAxisMaximum = value;
-        }
-    }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the legend is rendered.
     /// </summary>
     public bool ShowLegend { get; set; } = true;
@@ -265,70 +183,6 @@ public sealed partial class ChartOptions {
     /// Gets or sets a value indicating whether grid lines are rendered.
     /// </summary>
     public bool ShowGrid { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether axes, tick labels, and axis titles are rendered.
-    /// </summary>
-    public bool ShowAxes { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the x-axis, x tick labels, and x-axis title are rendered when axes are enabled.
-    /// </summary>
-    public bool ShowXAxis { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the y-axis, y tick labels, and y-axis title are rendered when axes are enabled.
-    /// </summary>
-    public bool ShowYAxis { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether axis rules and zero-axis lines are rendered when axes are enabled.
-    /// </summary>
-    public bool ShowAxisLines { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the preferred number of axis ticks.
-    /// </summary>
-    public int TickCount {
-        get => _tickCount;
-        set {
-            if (value < 2) throw new ArgumentOutOfRangeException(nameof(value), value, "Tick count must be at least two.");
-            _tickCount = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the density used for explicit x-axis labels.
-    /// </summary>
-    public ChartLabelDensity XAxisLabelDensity {
-        get => _xAxisLabelDensity;
-        set {
-            if (!Enum.IsDefined(typeof(ChartLabelDensity), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown x-axis label density.");
-            _xAxisLabelDensity = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the density used for generated y-axis labels.
-    /// </summary>
-    public ChartLabelDensity YAxisLabelDensity {
-        get => _yAxisLabelDensity;
-        set {
-            if (!Enum.IsDefined(typeof(ChartLabelDensity), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown y-axis label density.");
-            _yAxisLabelDensity = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the x-axis label rotation angle in degrees for capable renderers.
-    /// </summary>
-    public double XAxisLabelAngle {
-        get => _xAxisLabelAngle;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            _xAxisLabelAngle = value;
-        }
-    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the chart background should be transparent.
@@ -694,67 +548,13 @@ public sealed partial class ChartOptions {
     public Func<double, string>? ValueFormatter { get; set; }
 
     /// <summary>
-    /// Gets or sets a formatter used for secondary y-axis ticks.
-    /// </summary>
-    public Func<double, string>? SecondaryYAxisValueFormatter { get; set; }
-
-    /// <summary>
-    /// Gets or sets a formatter used for generated numeric x-axis tick labels.
-    /// </summary>
-    public Func<double, string>? XAxisValueFormatter { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the chart is rendered as a compact sparkline.
     /// </summary>
     public bool IsSparkline { get; set; }
 
-    /// <summary>
-    /// Gets explicit labels for x-axis values.
-    /// </summary>
-    public List<ChartAxisLabel> XAxisLabels { get; } = new();
-
     internal List<string> SankeyNodeLabels { get; } = new();
 
     internal List<string> TreeNodeLabels { get; } = new();
-
-    internal void SetXAxisBounds(double minimum, double maximum) {
-        ChartGuards.Finite(minimum, nameof(minimum));
-        ChartGuards.Finite(maximum, nameof(maximum));
-        if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "X-axis maximum must be greater than minimum.");
-        _xAxisMinimum = minimum;
-        _xAxisMaximum = maximum;
-    }
-
-    internal void ClearXAxisBounds() {
-        _xAxisMinimum = null;
-        _xAxisMaximum = null;
-    }
-
-    internal void SetYAxisBounds(double minimum, double maximum) {
-        ChartGuards.Finite(minimum, nameof(minimum));
-        ChartGuards.Finite(maximum, nameof(maximum));
-        if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Y-axis maximum must be greater than minimum.");
-        _yAxisMinimum = minimum;
-        _yAxisMaximum = maximum;
-    }
-
-    internal void ClearYAxisBounds() {
-        _yAxisMinimum = null;
-        _yAxisMaximum = null;
-    }
-
-    internal void SetSecondaryYAxisBounds(double minimum, double maximum) {
-        ChartGuards.Finite(minimum, nameof(minimum));
-        ChartGuards.Finite(maximum, nameof(maximum));
-        if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Secondary y-axis maximum must be greater than minimum.");
-        _secondaryYAxisMinimum = minimum;
-        _secondaryYAxisMaximum = maximum;
-    }
-
-    internal void ClearSecondaryYAxisBounds() {
-        _secondaryYAxisMinimum = null;
-        _secondaryYAxisMaximum = null;
-    }
 
     internal void SetWordCloudFontRange(double minimum, double maximum) {
         ChartGuards.Finite(minimum, nameof(minimum));
@@ -773,12 +573,6 @@ public sealed partial class ChartOptions {
 
     private static void ValidateNullableFinite(double? value, string parameterName) {
         if (value.HasValue) ChartGuards.Finite(value.Value, parameterName);
-    }
-
-    private static void ValidateAxisBounds(double? minimum, double? maximum, string parameterName, string axisName) {
-        if (minimum.HasValue && maximum.HasValue && maximum.Value <= minimum.Value) {
-            throw new ArgumentOutOfRangeException(parameterName, maximum.Value, axisName + " maximum must be greater than minimum.");
-        }
     }
 
     private static void ValidateSvgPathData(string value, string parameterName) {

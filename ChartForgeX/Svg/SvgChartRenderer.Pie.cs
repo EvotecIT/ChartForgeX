@@ -384,7 +384,7 @@ public sealed partial class SvgChartRenderer {
     private static ChartColor PieConnectorColor(Chart chart, ChartSeries series, int pointIndex) =>
         chart.Options.DataLabelConnectorColor ?? PieSliceColor(chart, series, pointIndex);
 
-    private static void WritePieTextStyleAttributes(SvgMarkupWriter writer, ChartTextStyle? style) {
+    private static void WritePieTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride? style) {
         if (style == null) return;
         if (style.Italic) writer.Attribute("font-style", "italic");
         if (style.Underline) writer.Attribute("text-decoration", "underline");

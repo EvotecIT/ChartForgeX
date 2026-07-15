@@ -30,11 +30,12 @@ public static class RasterImageDecoder {
         if (data == null) throw new ArgumentNullException(nameof(data));
         if (PngReader.IsPng(data)) return PngReader.Decode(data);
         if (JpegReader.IsJpeg(data)) return JpegReader.Decode(data);
+        if (GifReader.IsGif(data)) return GifReader.Decode(data);
         if (BmpReader.IsBmp(data)) return BmpReader.Decode(data);
         if (PpmReader.IsPpm(data)) return PpmReader.Decode(data);
         if (TiffReader.IsTiff(data)) return TiffReader.Decode(data);
 
-        throw new NotSupportedException("Unsupported raster image format. Supported dependency-free input formats are baseline JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF.");
+        throw new NotSupportedException("Unsupported raster image format. Supported dependency-free input formats are baseline JPEG, PNG, GIF, BMP, PPM, and uncompressed RGB TIFF.");
     }
 
     /// <summary>Attempts to read and decode a raster image file.</summary>
@@ -99,6 +100,7 @@ public static class RasterImageDecoder {
         if (data != null) {
             if (PngReader.IsPng(data)) return "image/png";
             if (JpegReader.IsJpeg(data)) return "image/jpeg";
+            if (GifReader.IsGif(data)) return "image/gif";
             if (BmpReader.IsBmp(data)) return "image/bmp";
             if (PpmReader.IsPpm(data)) return "image/x-portable-pixmap";
             if (TiffReader.IsTiff(data)) return "image/tiff";
@@ -109,6 +111,7 @@ public static class RasterImageDecoder {
             case ".png": return "image/png";
             case ".jpg":
             case ".jpeg": return "image/jpeg";
+            case ".gif": return "image/gif";
             case ".bmp": return "image/bmp";
             case ".ppm":
             case ".pnm": return "image/x-portable-pixmap";

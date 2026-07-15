@@ -133,11 +133,11 @@ internal static partial class SmokeTests {
         for (var i = 0; i < 5; i++) {
             var first = "first-" + i.ToString("00", CultureInfo.InvariantCulture);
             chart.AddAutoNode(first, "First " + i.ToString(CultureInfo.InvariantCulture), TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 30, height: 30, symbol: "1")
-                .AddEdge("root-" + first, "root", first, "talks", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional);
+                .AddEdge("root-" + first, "root", first, "talks", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional);
             for (var j = 0; j < 2; j++) {
                 var second = first + "-second-" + j.ToString("00", CultureInfo.InvariantCulture);
                 chart.AddAutoNode(second, "Second " + i.ToString(CultureInfo.InvariantCulture) + "-" + j.ToString(CultureInfo.InvariantCulture), TopologyNodeKind.Database, TopologyHealthStatus.Healthy, width: 24, height: 24, symbol: "2")
-                    .AddEdge(first + "-" + second, first, second, "next", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+                    .AddEdge(first + "-" + second, first, second, "next", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
             }
         }
 
@@ -169,12 +169,12 @@ internal static partial class SmokeTests {
             .WithLayout(TopologyLayoutMode.RelationshipRadial)
             .AddAutoNode("root", "Root", TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 42, height: 42)
             .AddAutoNode("branch", "Branch", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 30, height: 30)
-            .AddEdge("root-branch", "root", "branch", "root edge", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional);
+            .AddEdge("root-branch", "root", "branch", "root edge", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional);
 
         for (var i = 0; i < 3; i++) {
             var leaf = "leaf-" + i.ToString("00", CultureInfo.InvariantCulture);
             chart.AddAutoNode(leaf, "Leaf " + i.ToString(CultureInfo.InvariantCulture), TopologyNodeKind.Person, TopologyHealthStatus.Healthy, width: 24, height: 24)
-                .AddEdge("branch-" + leaf, "branch", leaf, "leaf", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+                .AddEdge("branch-" + leaf, "branch", leaf, "leaf", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
         }
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }.WithRelationshipRadialFocus("root", maxDepth: 2, maxFanout: 3));
@@ -196,11 +196,11 @@ internal static partial class SmokeTests {
         for (var branch = 0; branch < 36; branch++) {
             var branchId = "branch-" + branch.ToString("00", CultureInfo.InvariantCulture);
             chart.AddAutoNode(branchId, "Branch " + branch.ToString(CultureInfo.InvariantCulture), TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 28, height: 28, symbol: "B")
-                .AddEdge("root-" + branchId, "root", branchId, "talks", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional);
+                .AddEdge("root-" + branchId, "root", branchId, "talks", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional);
             for (var leaf = 0; leaf < 13; leaf++) {
                 var leafId = branchId + "-leaf-" + leaf.ToString("00", CultureInfo.InvariantCulture);
                 chart.AddAutoNode(leafId, "Leaf " + branch.ToString(CultureInfo.InvariantCulture) + "." + leaf.ToString(CultureInfo.InvariantCulture), TopologyNodeKind.Person, TopologyHealthStatus.Healthy, width: 20, height: 20, symbol: "L")
-                    .AddEdge(branchId + "-" + leaf.ToString("00", CultureInfo.InvariantCulture), branchId, leafId, "leaf", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+                    .AddEdge(branchId + "-" + leaf.ToString("00", CultureInfo.InvariantCulture), branchId, leafId, "leaf", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
             }
         }
 
@@ -237,8 +237,8 @@ internal static partial class SmokeTests {
             for (var nodeIndex = 0; nodeIndex < nodesPerGroup; nodeIndex++) {
                 var nodeId = groupId + "-n" + nodeIndex.ToString("00", CultureInfo.InvariantCulture);
                 chart.AddAutoNode(nodeId, "Node " + groupIndex.ToString(CultureInfo.InvariantCulture) + "-" + nodeIndex.ToString(CultureInfo.InvariantCulture), TopologyNodeKind.Team, nodeIndex % 5 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, groupId, "cohort", width: 54, height: 42, symbol: string.Empty);
-                chart.AddEdge(groupId + "-member-" + nodeIndex.ToString("00", CultureInfo.InvariantCulture), groupId + "-hub", nodeId, "member", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
-                if (nodeIndex > 0) chart.AddEdge(groupId + "-peer-" + nodeIndex.ToString("00", CultureInfo.InvariantCulture), groupId + "-n" + (nodeIndex - 1).ToString("00", CultureInfo.InvariantCulture), nodeId, "peer", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional);
+                chart.AddEdge(groupId + "-member-" + nodeIndex.ToString("00", CultureInfo.InvariantCulture), groupId + "-hub", nodeId, "member", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
+                if (nodeIndex > 0) chart.AddEdge(groupId + "-peer-" + nodeIndex.ToString("00", CultureInfo.InvariantCulture), groupId + "-n" + (nodeIndex - 1).ToString("00", CultureInfo.InvariantCulture), nodeId, "peer", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional);
             }
         }
 
@@ -251,7 +251,7 @@ internal static partial class SmokeTests {
                 "bridge",
                 TopologyEdgeKind.Dependency,
                 TopologyHealthStatus.Warning,
-                TopologyDirection.Bidirectional);
+                VisualLinkDirection.Bidirectional);
         }
 
         return chart;
@@ -274,7 +274,7 @@ internal static partial class SmokeTests {
                     "cross",
                     nodeIndex % 4 == 0 ? TopologyEdgeKind.AuthenticationPath : TopologyEdgeKind.Dependency,
                     nodeIndex % 6 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy,
-                    TopologyDirection.Forward);
+                    VisualLinkDirection.Forward);
             }
         }
 
@@ -287,7 +287,7 @@ internal static partial class SmokeTests {
                 "hub",
                 TopologyEdgeKind.Link,
                 groupIndex % 3 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy,
-                TopologyDirection.Bidirectional);
+                VisualLinkDirection.Bidirectional);
         }
 
         return chart;

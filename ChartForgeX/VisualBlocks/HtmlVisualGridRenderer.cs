@@ -52,7 +52,7 @@ public sealed class HtmlVisualGridRenderer {
                 .Attribute("aria-label", ItemTitle(item))
                 .Attribute("style", PanelSpanStyle(columnSpan, item.RowSpan, grid.PanelSize.HasValue))
                 .EndStartElement()
-                .RawTrusted(PrepareChildSvg(childSvg, grid.PanelSize.HasValue && grid.PanelFit == VisualGridPanelFit.Stretch))
+                .RawTrusted(PrepareChildSvg(childSvg, grid.PanelSize.HasValue && grid.PanelFit == VisualPanelFit.Stretch))
                 .EndElement();
         }
 
@@ -114,7 +114,7 @@ public sealed class HtmlVisualGridRenderer {
     private static string GridClass(VisualGrid grid) {
         var value = "chartforgex-visual-grid";
         if (grid.PanelSize.HasValue) value += " has-fixed-panels";
-        if (grid.PanelSize.HasValue && grid.PanelFit == VisualGridPanelFit.Stretch) value += " fit-stretch";
+        if (grid.PanelSize.HasValue && grid.PanelFit == VisualPanelFit.Stretch) value += " fit-stretch";
         if (grid.FrameVisible) value += " has-frame";
         return value;
     }

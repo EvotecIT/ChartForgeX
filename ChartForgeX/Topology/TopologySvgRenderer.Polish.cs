@@ -45,8 +45,8 @@ public sealed partial class TopologySvgRenderer {
             var opacity = EdgeOpacity(edge, options) * layerOpacity;
             if (opacity < 1) path.Attribute("opacity", opacity);
             if (!foreground) return;
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, markerColor) + ")");
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, markerColor) + ")");
+            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Backward or VisualLinkDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, markerColor) + ")");
+            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Forward or VisualLinkDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, markerColor) + ")");
         });
     }
 
@@ -70,8 +70,8 @@ public sealed partial class TopologySvgRenderer {
             var opacity = EdgeOpacity(edge, options) * layerOpacity;
             if (opacity < 1) path.Attribute("opacity", opacity);
             if (!foreground) return;
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, color) + ")");
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, color) + ")");
+            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Backward or VisualLinkDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, color) + ")");
+            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Forward or VisualLinkDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, color) + ")");
         });
     }
 

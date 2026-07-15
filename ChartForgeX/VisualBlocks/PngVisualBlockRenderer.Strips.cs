@@ -21,7 +21,7 @@ public sealed partial class PngVisualBlockRenderer {
                 canvas.DrawLine(content.X + 5, y + 9, content.X + 17, y + 9, theme.Text, 1.4);
                 canvas.DrawCircle(content.X + 8, y + 15, 1.5, theme.Text);
                 canvas.DrawCircle(content.X + 14, y + 15, 1.5, theme.Text);
-                DrawAlignedText(canvas, block.Header, content.X + 32, y + 7, Math.Max(1, content.Width - 32 - navReserve), VisualTextAlignment.Left, theme.Text, Math.Max(13, theme.SubtitleFontSize + 1), true);
+                DrawAlignedText(canvas, block.Header, content.X + 32, y + 7, Math.Max(1, content.Width - 32 - navReserve), TextAlignment.Left, theme.Text, Math.Max(13, theme.SubtitleFontSize + 1), true);
             }
 
             if (block.ShowNavigation) {
@@ -51,17 +51,17 @@ public sealed partial class PngVisualBlockRenderer {
             var itemRadius = Math.Min(24, pillWidth * 0.48);
             canvas.FillRoundedRect(x, innerY, pillWidth, innerHeight, itemRadius, item.Selected ? theme.CardBackground.WithAlpha(230) : theme.CardBackground.WithAlpha(160));
             canvas.StrokeRoundedRect(x, innerY, pillWidth, innerHeight, itemRadius, item.Selected ? theme.CardBorder.WithAlpha(95) : theme.CardBorder.WithAlpha(70), 1);
-            DrawAlignedText(canvas, item.Label, x, innerY + 7, pillWidth, VisualTextAlignment.Center, item.Selected ? textColor : theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
+            DrawAlignedText(canvas, item.Label, x, innerY + 7, pillWidth, TextAlignment.Center, item.Selected ? textColor : theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
             canvas.DrawCircle(x + pillWidth / 2, innerY + innerHeight - 18, 17, item.Selected ? accent : theme.Background.WithAlpha(170));
             canvas.DrawCircleOutline(x + pillWidth / 2, innerY + innerHeight - 18, 17, item.Selected ? ChartColor.White.WithAlpha(130) : theme.CardBorder.WithAlpha(70), 1);
-            DrawAlignedText(canvas, item.Value, x, innerY + innerHeight - 24, pillWidth, VisualTextAlignment.Center, valueTextColor, Math.Max(11, theme.SubtitleFontSize), true);
+            DrawAlignedText(canvas, item.Value, x, innerY + innerHeight - 24, pillWidth, TextAlignment.Center, valueTextColor, Math.Max(11, theme.SubtitleFontSize), true);
         }
     }
 
     private static void DrawDateNavButton(RgbaCanvas canvas, string symbol, double x, double y, double size, ChartForgeX.Themes.ChartTheme theme, bool muted) {
         canvas.DrawCircle(x + size / 2, y + size / 2, size / 2, muted ? ChartColor.White.WithAlpha(150) : ChartColor.White);
         canvas.DrawCircleOutline(x + size / 2, y + size / 2, size / 2, theme.CardBorder.WithAlpha(90), 1);
-        DrawAlignedText(canvas, symbol, x, y + 6, size, VisualTextAlignment.Center, muted ? theme.MutedText : theme.Text, 15, true);
+        DrawAlignedText(canvas, symbol, x, y + 6, size, TextAlignment.Center, muted ? theme.MutedText : theme.Text, 15, true);
     }
 
     private static void DrawEntityStrip(RgbaCanvas canvas, EntityStripBlock block) {
@@ -72,13 +72,13 @@ public sealed partial class PngVisualBlockRenderer {
         var actionWidth = block.ActionLabel.Length == 0 ? 0 : Math.Min(120, canvas.MeasureTextEmphasizedWidth(block.ActionSymbol + " " + block.ActionLabel, theme.SubtitleFontSize + 1) + 12);
         if (block.Title.Length > 0 || block.ActionLabel.Length > 0) {
             var titleSize = Math.Max(14, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 8));
-            if (block.Title.Length > 0) DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 10), VisualTextAlignment.Left, theme.Text, titleSize, true);
-            if (block.ActionLabel.Length > 0) DrawAlignedText(canvas, block.ActionSymbol + " " + block.ActionLabel, content.X + content.Width - actionWidth, y + 1, actionWidth, VisualTextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(12, theme.SubtitleFontSize + 1), true);
+            if (block.Title.Length > 0) DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 10), TextAlignment.Left, theme.Text, titleSize, true);
+            if (block.ActionLabel.Length > 0) DrawAlignedText(canvas, block.ActionSymbol + " " + block.ActionLabel, content.X + content.Width - actionWidth, y + 1, actionWidth, TextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(12, theme.SubtitleFontSize + 1), true);
             y += titleSize + 14;
         }
 
         if (block.Subtitle.Length > 0) {
-            DrawAlignedText(canvas, block.Subtitle, content.X, y, content.Width, VisualTextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
+            DrawAlignedText(canvas, block.Subtitle, content.X, y, content.Width, TextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
             y += theme.SubtitleFontSize + 12;
         }
 
@@ -95,9 +95,9 @@ public sealed partial class PngVisualBlockRenderer {
             var color = item.Color ?? (item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
             canvas.DrawCircle(centerX, y + 28, avatarRadius, color.WithAlpha(45));
             canvas.DrawCircleOutline(centerX, y + 28, avatarRadius, color.WithAlpha(115), 1);
-            if (item.AvatarText.Length > 0) DrawAlignedText(canvas, item.AvatarText, centerX - avatarRadius, y + 28 - Math.Max(9, theme.SubtitleFontSize - 2) * 0.45, avatarRadius * 2, VisualTextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 2), true);
+            if (item.AvatarText.Length > 0) DrawAlignedText(canvas, item.AvatarText, centerX - avatarRadius, y + 28 - Math.Max(9, theme.SubtitleFontSize - 2) * 0.45, avatarRadius * 2, TextAlignment.Center, color, Math.Max(9, theme.SubtitleFontSize - 2), true);
             else DrawIcon(canvas, VisualIcon.Person, centerX, y + 28, avatarRadius * 0.56, color);
-            DrawAlignedText(canvas, item.Label, x, y + stripHeight - 24, cellWidth, VisualTextAlignment.Center, theme.Text, Math.Max(10, theme.SubtitleFontSize), false);
+            DrawAlignedText(canvas, item.Label, x, y + stripHeight - 24, cellWidth, TextAlignment.Center, theme.Text, Math.Max(10, theme.SubtitleFontSize), false);
         }
     }
 
@@ -108,7 +108,7 @@ public sealed partial class PngVisualBlockRenderer {
         var actionText = block.ActionLabel.Length == 0 ? string.Empty : (block.ActionSymbol.Length == 0 ? block.ActionLabel : block.ActionSymbol + " " + block.ActionLabel);
         var actionWidth = actionText.Length == 0 ? 0 : Math.Min(150, canvas.MeasureTextEmphasizedWidth(actionText, Math.Max(12, theme.SubtitleFontSize + 1)) + 12);
         var y = content.Y + (content.Height - titleSize) * 0.48;
-        DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 12), VisualTextAlignment.Left, theme.Text, titleSize, true);
-        if (actionText.Length > 0) DrawAlignedText(canvas, actionText, content.X + content.Width - actionWidth, y + 1, actionWidth, VisualTextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(12, theme.SubtitleFontSize + 1), true);
+        DrawAlignedText(canvas, block.Title, content.X, y, Math.Max(1, content.Width - actionWidth - 12), TextAlignment.Left, theme.Text, titleSize, true);
+        if (actionText.Length > 0) DrawAlignedText(canvas, actionText, content.X + content.Width - actionWidth, y + 1, actionWidth, TextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), Math.Max(12, theme.SubtitleFontSize + 1), true);
     }
 }

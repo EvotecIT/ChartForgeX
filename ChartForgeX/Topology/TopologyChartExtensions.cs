@@ -442,14 +442,14 @@ public static partial class TopologyChartExtensions {
     /// <param name="tertiaryLabel">The optional tertiary label.</param>
     /// <param name="color">The optional edge color independent from health status.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddEdge(this TopologyChart chart, string id, string sourceNodeId, string targetNodeId, string? label = null, TopologyEdgeKind kind = TopologyEdgeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, TopologyDirection direction = TopologyDirection.None, TopologyEdgeRouting routing = TopologyEdgeRouting.Orthogonal, string? secondaryLabel = null, string? href = null, string? tooltip = null, string? cssClass = null, string? tertiaryLabel = null, string? color = null) {
+    public static TopologyChart AddEdge(this TopologyChart chart, string id, string sourceNodeId, string targetNodeId, string? label = null, TopologyEdgeKind kind = TopologyEdgeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, VisualLinkDirection direction = VisualLinkDirection.None, TopologyEdgeRouting routing = TopologyEdgeRouting.Orthogonal, string? secondaryLabel = null, string? href = null, string? tooltip = null, string? cssClass = null, string? tertiaryLabel = null, string? color = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var edgeId = RequiredText(id, nameof(id), "Topology edge ids");
         var sourceId = RequiredText(sourceNodeId, nameof(sourceNodeId), "Topology edge source node ids");
         var targetId = RequiredText(targetNodeId, nameof(targetNodeId), "Topology edge target node ids");
         ValidateEnum(typeof(TopologyEdgeKind), kind, nameof(kind), "Topology edge kinds");
         ValidateEnum(typeof(TopologyHealthStatus), status, nameof(status), "Topology health statuses");
-        ValidateEnum(typeof(TopologyDirection), direction, nameof(direction), "Topology directions");
+        ValidateEnum(typeof(VisualLinkDirection), direction, nameof(direction), "Topology directions");
         ValidateEnum(typeof(TopologyEdgeRouting), routing, nameof(routing), "Topology edge routing modes");
         chart.Edges.Add(new TopologyEdge { Id = edgeId, SourceNodeId = sourceId, TargetNodeId = targetId, Label = label, Kind = kind, Status = status, Direction = direction, Routing = routing, SecondaryLabel = secondaryLabel, TertiaryLabel = tertiaryLabel, Href = href, Tooltip = tooltip, CssClass = cssClass, Color = color });
         return chart;

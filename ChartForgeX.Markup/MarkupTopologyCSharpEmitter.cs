@@ -51,7 +51,7 @@ public static class MarkupTopologyCSharpEmitter {
         foreach (var edge in document.Edges) {
             sb.Append("    .AddEdge(").Append(Literal(edge.Id)).Append(", ").Append(Literal(edge.Source)).Append(", ").Append(Literal(edge.Target)).Append(", ");
             sb.Append(edge.Label == null ? "null" : Literal(edge.Label)).Append(", TopologyEdgeKind.").Append(edge.Kind).Append(", TopologyHealthStatus.").Append(edge.Status);
-            sb.Append(", TopologyDirection.").Append(edge.Direction).Append(", TopologyEdgeRouting.").Append(edge.Routing).AppendLine(")");
+            sb.Append(", VisualLinkDirection.").Append(edge.Direction).Append(", TopologyEdgeRouting.").Append(edge.Routing).AppendLine(")");
         }
 
         sb.Length -= Environment.NewLine.Length;

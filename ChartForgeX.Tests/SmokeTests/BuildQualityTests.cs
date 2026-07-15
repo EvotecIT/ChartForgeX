@@ -73,6 +73,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("visual-baseline.json", StringComparison.Ordinal), "Build script should verify generated visuals against the checked-in baseline.");
         Assert(script.Contains("[switch] $UpdateVisualBaseline", StringComparison.Ordinal), "Build script should offer an intentional visual-baseline refresh switch.");
         Assert(script.Contains("Visual baseline updates require examples to run", StringComparison.Ordinal), "Build script should reject visual-baseline updates when examples are skipped.");
+        Assert(script.Contains("-getProperty:PackageVersion", StringComparison.Ordinal), "Build script should inspect the evaluated package version instead of treating composed MSBuild properties as literal filenames.");
         Assert(script.Contains("ConvertTo-Json -Depth 8", StringComparison.Ordinal), "Build script should write refreshed visual baselines as JSON.");
         Assert(script.Contains("minDistinctColors = [int][Math]::Max", StringComparison.Ordinal), "Build script should keep refreshed PNG color-diversity baselines meaningful.");
         Assert(script.Contains("maxClippedTextNodes", StringComparison.Ordinal), "Build script should baseline SVG text-edge quality.");
@@ -98,8 +99,14 @@ internal static partial class SmokeTests {
             "ChartForgeX.Mermaid",
             "ChartForgeX.Markup.Mermaid"
         }) {
-            Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), "0.1.X", StringComparison.Ordinal), "Build-Project manifest should track package project: " + packageProject + ".");
+            Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), "1.0.X", StringComparison.Ordinal), "Build-Project manifest should track package project: " + packageProject + ".");
+            var projectFile = File.ReadAllText(Path.Combine(FindRepositoryRoot(), packageProject, packageProject + ".csproj"));
+            Assert(projectFile.Contains("<Version>$(ChartForgeXProductVersion)</Version>", StringComparison.Ordinal), "Package project should consume the shared ChartForgeX product version: " + packageProject + ".");
         }
+
+        var directoryBuildProps = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Directory.Build.props"));
+        Assert(directoryBuildProps.Contains("<ChartForgeXProductVersion>1.0.0</ChartForgeXProductVersion>", StringComparison.Ordinal), "Directory.Build.props should own the ChartForgeX product version.");
+        Assert(directoryBuildProps.Contains("<AssemblyVersion>$(ChartForgeXProductVersion).0</AssemblyVersion>", StringComparison.Ordinal), "ChartForgeX assembly identity should be isolated from host build version properties.");
 
         var qualityWorkflow = File.ReadAllText(Path.Combine(FindRepositoryRoot(), ".github", "workflows", "quality.yml"));
         Assert(qualityWorkflow.Contains("Install Native AOT prerequisites", StringComparison.Ordinal), "Quality workflow should install Native AOT prerequisites before running the release gate.");

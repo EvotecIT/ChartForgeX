@@ -414,20 +414,6 @@ public enum TopologyEdgeKind {
 }
 
 /// <summary>
-/// Describes edge direction marker behavior.
-/// </summary>
-public enum TopologyDirection {
-    /// <summary>No direction marker.</summary>
-    None,
-    /// <summary>Source to target direction marker.</summary>
-    Forward,
-    /// <summary>Target to source direction marker.</summary>
-    Backward,
-    /// <summary>Bidirectional markers.</summary>
-    Bidirectional
-}
-
-/// <summary>
 /// Describes edge path routing.
 /// </summary>
 public enum TopologyEdgeRouting {

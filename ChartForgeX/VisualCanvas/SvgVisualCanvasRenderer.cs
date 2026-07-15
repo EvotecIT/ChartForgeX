@@ -26,25 +26,28 @@ public sealed class SvgVisualCanvasRenderer {
     }
 
     private string RenderCore(VisualCanvas canvas, string id) {
+        var accessibility = canvas.Accessibility;
         var writer = new SvgMarkupWriter(8192);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
             .Attribute("id", id)
             .Attribute("width", canvas.Width)
             .Attribute("height", canvas.Height)
-            .Attribute("viewBox", "0 0 " + canvas.Width.ToString(CultureInfo.InvariantCulture) + " " + canvas.Height.ToString(CultureInfo.InvariantCulture))
-            .Attribute("role", "img")
-            .Attribute("aria-labelledby", id + "-title " + id + "-desc")
-            .Attribute("preserveAspectRatio", "xMidYMid meet")
+            .Attribute("viewBox", "0 0 " + canvas.DesignWidth.ToString(CultureInfo.InvariantCulture) + " " + canvas.DesignHeight.ToString(CultureInfo.InvariantCulture))
+            .Attribute("role", accessibility.IsDecorative ? null : "img")
+            .Attribute("aria-hidden", accessibility.IsDecorative ? "true" : null)
+            .Attribute("aria-labelledby", accessibility.IsDecorative ? null : id + "-title " + id + "-desc")
+            .Attribute("lang", accessibility.Language)
+            .Attribute("preserveAspectRatio", ResponsivePreserveAspectRatio(canvas.ResponsiveFit))
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision")
             .Attribute("style", "max-width:100%;height:auto;display:block")
             .EndStartElement()
-            .Line()
-            .StartElement("title").Attribute("id", id + "-title").Text(canvas.Title).EndElement()
-            .Line()
-            .StartElement("desc").Attribute("id", id + "-desc").Text("Layered static visual canvas.").EndElement()
             .Line();
+        if (!accessibility.IsDecorative) {
+            writer.StartElement("title").Attribute("id", id + "-title").Text(accessibility.Name ?? canvas.Title).EndElement().Line();
+            writer.StartElement("desc").Attribute("id", id + "-desc").Text(accessibility.Description ?? "Layered static visual canvas.").EndElement().Line();
+        }
         writer.StartElement("defs").EndStartElement().Line();
         writer.StartElement("linearGradient").Attribute("id", id + "-background").Attribute("x1", "0").Attribute("y1", "0").Attribute("x2", "0").Attribute("y2", "1").EndStartElement().Line();
         writer.StartElement("stop").Attribute("offset", "0%").Attribute("stop-color", canvas.BackgroundTop.ToCss()).EndEmptyElement().Line();
@@ -82,9 +85,9 @@ public sealed class SvgVisualCanvasRenderer {
 
     private static void RenderLayer(SvgMarkupWriter writer, VisualCanvasLayer layer, string id, VisualCanvasTheme theme, int layerIndex) {
         if (layer is VisualCanvasTextLayer text) {
-            RenderText(writer, text);
+            RenderText(writer, text, theme);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
-            RenderHeroTitle(writer, hero);
+            RenderHeroTitle(writer, hero, theme);
         } else if (layer is VisualCanvasKeyValueBlockLayer keyValue) {
             RenderKeyValueBlock(writer, keyValue, theme);
         } else if (layer is VisualCanvasInfoTileLayer tile) {
@@ -102,18 +105,20 @@ public sealed class SvgVisualCanvasRenderer {
 
     private static void RenderTechBackdrop(SvgMarkupWriter writer, VisualCanvas canvas, string id, VisualCanvasTheme theme) {
         var accent = theme.SecondaryAccent;
+        var width = canvas.DesignWidth;
+        var height = canvas.DesignHeight;
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-tech-backdrop").EndStartElement().Line();
         for (var i = 0; i < 56; i++) {
-            var x = (canvas.Width * ((i * 37) % 101)) / 100.0;
-            var y = canvas.Height * (0.05 + (((i * 19) % 67) / 100.0) * 0.44);
+            var x = (width * ((i * 37) % 101)) / 100.0;
+            var y = height * (0.05 + (((i * 19) % 67) / 100.0) * 0.44);
             var opacity = 0.14 + ((i % 5) * 0.035);
             writer.StartElement("circle").Attribute("cx", x).Attribute("cy", y).Attribute("r", i % 11 == 0 ? 4.2 : 1.8).Attribute("fill", accent.WithOpacity(opacity).ToCss()).EndEmptyElement().Line();
         }
 
         for (var i = 0; i < 10; i++) {
-            var y = canvas.Height * (0.18 + i * 0.045);
+            var y = height * (0.18 + i * 0.045);
             writer.StartElement("path")
-                .Attribute("d", "M " + F(canvas.Width * 0.08) + " " + F(y) + " C " + F(canvas.Width * 0.28) + " " + F(y - 80) + ", " + F(canvas.Width * 0.48) + " " + F(y + 120) + ", " + F(canvas.Width * 0.68) + " " + F(y - 10))
+                .Attribute("d", "M " + F(width * 0.08) + " " + F(y) + " C " + F(width * 0.28) + " " + F(y - 80) + ", " + F(width * 0.48) + " " + F(y + 120) + ", " + F(width * 0.68) + " " + F(y - 10))
                 .Attribute("fill", "none")
                 .Attribute("stroke", accent.WithOpacity(0.11).ToCss())
                 .Attribute("stroke-width", 1.1)
@@ -122,12 +127,12 @@ public sealed class SvgVisualCanvasRenderer {
 
         writer.StartElement("path")
             .Attribute("data-cfx-role", "visual-canvas-horizon")
-            .Attribute("d", "M 0 " + F(canvas.Height * 0.78) + " C " + F(canvas.Width * 0.20) + " " + F(canvas.Height * 0.72) + ", " + F(canvas.Width * 0.38) + " " + F(canvas.Height * 0.82) + ", " + F(canvas.Width * 0.55) + " " + F(canvas.Height * 0.76) + " C " + F(canvas.Width * 0.74) + " " + F(canvas.Height * 0.70) + ", " + F(canvas.Width * 0.84) + " " + F(canvas.Height * 0.85) + ", " + F(canvas.Width) + " " + F(canvas.Height * 0.73) + " L " + F(canvas.Width) + " " + F(canvas.Height) + " L 0 " + F(canvas.Height) + " Z")
+            .Attribute("d", "M 0 " + F(height * 0.78) + " C " + F(width * 0.20) + " " + F(height * 0.72) + ", " + F(width * 0.38) + " " + F(height * 0.82) + ", " + F(width * 0.55) + " " + F(height * 0.76) + " C " + F(width * 0.74) + " " + F(height * 0.70) + ", " + F(width * 0.84) + " " + F(height * 0.85) + ", " + F(width) + " " + F(height * 0.73) + " L " + F(width) + " " + F(height) + " L 0 " + F(height) + " Z")
             .Attribute("fill", theme.TechHorizonFill.ToCss())
             .EndEmptyElement().Line();
         writer.StartElement("path")
             .Attribute("data-cfx-role", "visual-canvas-road-glow")
-            .Attribute("d", "M " + F(canvas.Width * 0.50) + " " + F(canvas.Height * 0.82) + " C " + F(canvas.Width * 0.72) + " " + F(canvas.Height * 0.86) + ", " + F(canvas.Width * 0.80) + " " + F(canvas.Height * 0.93) + ", " + F(canvas.Width * 0.92) + " " + F(canvas.Height))
+            .Attribute("d", "M " + F(width * 0.50) + " " + F(height * 0.82) + " C " + F(width * 0.72) + " " + F(height * 0.86) + ", " + F(width * 0.80) + " " + F(height * 0.93) + ", " + F(width * 0.92) + " " + F(height))
             .Attribute("fill", "none")
             .Attribute("stroke", accent.ToCss())
             .Attribute("stroke-opacity", 0.76)
@@ -137,7 +142,13 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text) {
+    private static string ResponsivePreserveAspectRatio(VisualCanvasImageFit fit) {
+        VisualCanvas.ValidateResponsiveFit(fit, nameof(fit));
+        if (fit == VisualCanvasImageFit.Stretch) return "none";
+        return fit == VisualCanvasImageFit.Cover ? "xMidYMid slice" : "xMidYMid meet";
+    }
+
+    private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text, VisualCanvasTheme theme) {
         var anchor = Anchor(text.Alignment);
         var x = AlignedX(text.X, text.Width, text.Alignment);
         var fitted = FitText(text.Text, text.FontSize, Math.Max(4, text.Width), text.Emphasized);
@@ -147,7 +158,7 @@ public sealed class SvgVisualCanvasRenderer {
             .Attribute("y", text.Y + text.FontSize)
             .Attribute("text-anchor", anchor)
             .Attribute("fill", text.Color.ToCss())
-            .Attribute("font-family", "Segoe UI, Arial, sans-serif")
+            .Attribute("font-family", theme.FontFamily)
             .Attribute("font-size", text.FontSize)
             .Attribute("font-weight", text.Emphasized ? "800" : "500")
             .Text(fitted)
@@ -155,7 +166,7 @@ public sealed class SvgVisualCanvasRenderer {
             .Line();
     }
 
-    private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero) {
+    private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
         var anchor = Anchor(hero.Alignment);
         var x = AlignedX(hero.X, hero.Width, hero.Alignment);
         writer.StartElement("text")
@@ -163,7 +174,7 @@ public sealed class SvgVisualCanvasRenderer {
             .Attribute("x", x)
             .Attribute("y", hero.Y + hero.FontSize)
             .Attribute("text-anchor", anchor)
-            .Attribute("font-family", "Segoe UI, Arial, sans-serif")
+            .Attribute("font-family", theme.FontFamily)
             .Attribute("font-size", hero.FontSize)
             .Attribute("font-weight", "850")
             .Attribute("letter-spacing", "0")
@@ -176,7 +187,7 @@ public sealed class SvgVisualCanvasRenderer {
         var layout = VisualCanvasKeyValueBlockLayout.Build(block);
         var labelColor = block.LabelColorOverride ?? theme.TileLabelColor;
         var valueColor = block.ValueColorOverride ?? theme.TileValueColor;
-        var fontFamily = string.IsNullOrWhiteSpace(block.FontFamilyName) ? "Segoe UI, Arial, sans-serif" : block.FontFamilyName;
+        var fontFamily = string.IsNullOrWhiteSpace(block.FontFamilyName) ? theme.FontFamily : block.FontFamilyName;
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-key-value-block").EndStartElement().Line();
         foreach (var row in layout.Rows) {
             writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-key-value-row").EndStartElement().Line();
@@ -244,7 +255,7 @@ public sealed class SvgVisualCanvasRenderer {
         var iconY = metrics.IconY;
         var iconFont = Math.Min(25, iconBox * (tile.Icon.Length > 3 ? 0.34 : 0.42));
         writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", isFilled ? accent.WithOpacity(isRaised ? 0.25 : 0.18).ToCss() : "none").Attribute("stroke", isRaised ? accent.WithOpacity(0.32).ToCss() : (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? accent.WithOpacity(0.38).ToCss() : "none")).EndEmptyElement().Line();
-        RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, accent);
+        RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, accent, theme.FontFamily);
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
@@ -253,7 +264,7 @@ public sealed class SvgVisualCanvasRenderer {
                 .Attribute("x", line.X)
                 .Attribute("y", line.Y + line.FontSize)
                 .Attribute("fill", TileTextColor(line.Role, theme).ToCss())
-                .Attribute("font-family", "Segoe UI, Arial, sans-serif")
+                .Attribute("font-family", theme.FontFamily)
                 .Attribute("font-size", line.FontSize)
                 .Attribute("font-weight", line.Role == VisualCanvasInfoTileTextRole.Label ? "700" : line.Role == VisualCanvasInfoTileTextRole.Value ? "650" : "500")
                 .Text(line.Text)
@@ -327,7 +338,7 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderTileIcon(SvgMarkupWriter writer, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, double iconFont, ChartColor color) {
+    private static void RenderTileIcon(SvgMarkupWriter writer, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, double iconFont, ChartColor color, string fontFamily) {
         var stroke = color.ToCss();
         var thick = Math.Max(1.6, size * 0.045);
         var cx = x + size / 2;
@@ -337,7 +348,7 @@ public sealed class SvgVisualCanvasRenderer {
         var top = y + size * 0.24;
         var bottom = y + size * 0.76;
         if (kind == VisualCanvasInfoTileIconKind.Text) {
-            writer.StartElement("text").Attribute("x", cx).Attribute("y", cy + iconFont * 0.36).Attribute("text-anchor", "middle").Attribute("fill", stroke).Attribute("font-family", "Segoe UI, Arial, sans-serif").Attribute("font-size", iconFont).Attribute("font-weight", "800").Text(text).EndElement().Line();
+            writer.StartElement("text").Attribute("x", cx).Attribute("y", cy + iconFont * 0.36).Attribute("text-anchor", "middle").Attribute("fill", stroke).Attribute("font-family", fontFamily).Attribute("font-size", iconFont).Attribute("font-weight", "800").Text(text).EndElement().Line();
             return;
         }
 
@@ -386,7 +397,7 @@ public sealed class SvgVisualCanvasRenderer {
                 break;
             default:
                 writer.EndElement().Line();
-                RenderTileIcon(writer, VisualCanvasInfoTileIconKind.Text, text, x, y, size, iconFont, color);
+                RenderTileIcon(writer, VisualCanvasInfoTileIconKind.Text, text, x, y, size, iconFont, color, fontFamily);
                 return;
         }
         writer.EndElement().Line();
@@ -412,7 +423,7 @@ public sealed class SvgVisualCanvasRenderer {
             return;
         }
 
-        writer.StartElement("text").Attribute("x", badge.X + badge.Width / 2).Attribute("y", badge.Y + badge.Height / 2 + badge.Height * 0.17).Attribute("text-anchor", "middle").Attribute("fill", theme.HeroBadgeTextColor.ToCss()).Attribute("font-family", "Cascadia Mono, Consolas, monospace").Attribute("font-size", Math.Max(24, badge.Height * 0.42)).Attribute("font-weight", "850").Text(badge.Symbol).EndElement().Line();
+        writer.StartElement("text").Attribute("x", badge.X + badge.Width / 2).Attribute("y", badge.Y + badge.Height / 2 + badge.Height * 0.17).Attribute("text-anchor", "middle").Attribute("fill", theme.HeroBadgeTextColor.ToCss()).Attribute("font-family", theme.MonospaceFontFamily).Attribute("font-size", Math.Max(24, badge.Height * 0.42)).Attribute("font-weight", "850").Text(badge.Symbol).EndElement().Line();
         writer.EndElement().Line();
     }
 
@@ -491,26 +502,26 @@ public sealed class SvgVisualCanvasRenderer {
             var item = strip.Items[i];
             var cx = strip.X + slot * i + slot / 2;
             if (i > 0) writer.StartElement("line").Attribute("x1", strip.X + slot * i).Attribute("y1", strip.Y + 4).Attribute("x2", strip.X + slot * i).Attribute("y2", strip.Y + strip.Height - 4).Attribute("stroke", theme.FeatureDividerColor.ToCss()).EndEmptyElement().Line();
-            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 26).Attribute("text-anchor", "middle").Attribute("fill", strip.Accent.ToCss()).Attribute("font-family", "Segoe UI, Arial, sans-serif").Attribute("font-size", 22).Attribute("font-weight", "800").Text(FitText(item.Icon, 22, Math.Max(8, slot - 12), true)).EndElement().Line();
-            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 58).Attribute("text-anchor", "middle").Attribute("fill", theme.FeatureLabelColor.ToCss()).Attribute("font-family", "Segoe UI, Arial, sans-serif").Attribute("font-size", 15).Attribute("font-weight", "700").Text(FitText(item.Label, 15, Math.Max(8, slot - 12), true)).EndElement().Line();
+            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 26).Attribute("text-anchor", "middle").Attribute("fill", strip.Accent.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 22).Attribute("font-weight", "800").Text(FitText(item.Icon, 22, Math.Max(8, slot - 12), true)).EndElement().Line();
+            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 58).Attribute("text-anchor", "middle").Attribute("fill", theme.FeatureLabelColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 15).Attribute("font-weight", "700").Text(FitText(item.Label, 15, Math.Max(8, slot - 12), true)).EndElement().Line();
         }
 
         writer.EndElement().Line();
     }
 
-    private static string Anchor(VisualCanvasTextAlignment alignment) {
+    private static string Anchor(TextAlignment alignment) {
         VisualCanvas.ValidateEnum(alignment, nameof(alignment));
         switch (alignment) {
-            case VisualCanvasTextAlignment.Center: return "middle";
-            case VisualCanvasTextAlignment.Right: return "end";
+            case TextAlignment.Center: return "middle";
+            case TextAlignment.Right: return "end";
             default: return "start";
         }
     }
 
-    private static double AlignedX(double x, double width, VisualCanvasTextAlignment alignment) {
+    private static double AlignedX(double x, double width, TextAlignment alignment) {
         switch (alignment) {
-            case VisualCanvasTextAlignment.Center: return x + width / 2;
-            case VisualCanvasTextAlignment.Right: return x + width;
+            case TextAlignment.Center: return x + width / 2;
+            case TextAlignment.Right: return x + width;
             default: return x;
         }
     }

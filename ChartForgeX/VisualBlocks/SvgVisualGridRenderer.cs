@@ -95,7 +95,7 @@ public sealed class SvgVisualGridRenderer {
             var cell = layout.Cells[i];
             var childScope = id + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
             var childSvg = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, childScope) : RenderChildBlock(cell.Item.Block!, childScope);
-            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualGridPanelFit.Stretch)).Line();
+            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualPanelFit.Stretch)).Line();
         }
 
         writer.EndElement().Line();

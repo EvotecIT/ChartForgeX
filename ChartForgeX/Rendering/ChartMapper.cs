@@ -1,11 +1,34 @@
 using ChartForgeX.Primitives;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
 
 internal sealed class ChartMapper {
     private readonly ChartRect _plot;
     private readonly ChartRange _range;
-    public ChartMapper(ChartRect plot, ChartRange range) { _plot = plot; _range = range; }
-    public double X(double value) => _plot.Left + ChartMath.Normalize(value, _range.MinX, _range.MaxX) * _plot.Width;
-    public double Y(double value) => _plot.Bottom - ChartMath.Normalize(value, _range.MinY, _range.MaxY) * _plot.Height;
+    private readonly ChartAxis _xAxis;
+    private readonly ChartAxis _yAxis;
+
+    public ChartMapper(ChartRect plot, ChartRange range, ChartAxis xAxis, ChartAxis yAxis) {
+        _plot = plot;
+        _range = range;
+        _xAxis = xAxis;
+        _yAxis = yAxis;
+        ValidateRange(range.MinX, range.MaxX, xAxis, "x");
+        ValidateRange(range.MinY, range.MaxY, yAxis, "y");
+    }
+
+    public double X(double value) => _plot.Left + ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis) * _plot.Width;
+    public double Y(double value) => _plot.Bottom - ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis) * _plot.Height;
+
+    public double YBaseline() {
+        if (_yAxis.Scale == ChartScaleKind.Logarithmic) return _plot.Bottom;
+        return System.Math.Min(_plot.Bottom, System.Math.Max(_plot.Top, Y(0)));
+    }
+
+    private static void ValidateRange(double minimum, double maximum, ChartAxis axis, string axisName) {
+        if (axis.Scale == ChartScaleKind.Logarithmic && (minimum <= 0 || maximum <= 0)) {
+            throw new System.InvalidOperationException("The " + axisName + " logarithmic axis requires positive data and bounds.");
+        }
+    }
 }

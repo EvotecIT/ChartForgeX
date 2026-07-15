@@ -1138,6 +1138,38 @@
       }
     },
     {
+      "name": "foundation-typed-facets",
+      "width": 926,
+      "height": 444,
+      "svg": {
+        "minVisualNodes": 56,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 822288,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "foundation-typed-log-scale",
+      "width": 920,
+      "height": 540,
+      "svg": {
+        "minVisualNodes": 29,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 926549,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "graph-2000-stage-01-overview",
       "width": 1600,
       "height": 900,

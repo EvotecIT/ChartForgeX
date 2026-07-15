@@ -111,7 +111,7 @@ public sealed class TopologyHierarchyOptions {
     public TopologyHealthStatus EdgeStatus { get; set; } = TopologyHealthStatus.Unknown;
 
     /// <summary>Gets or sets the generated hierarchy edge direction.</summary>
-    public TopologyDirection EdgeDirection { get; set; } = TopologyDirection.Forward;
+    public VisualLinkDirection EdgeDirection { get; set; } = VisualLinkDirection.Forward;
 
     /// <summary>Gets or sets the generated hierarchy edge routing.</summary>
     public TopologyEdgeRouting EdgeRouting { get; set; } = TopologyEdgeRouting.Orthogonal;
@@ -258,7 +258,7 @@ public static class TopologyHierarchyExtensions {
             hierarchy.Add(item);
         }
 
-        return chart.AddHierarchy(hierarchy, new TopologyHierarchyOptions { MinLevel = options.MinLevel, MaxLevel = options.MaxLevel, IncludeAncestorContext = options.IncludeAncestorContext, NodeDisplayMode = options.NodeDisplayMode, LayoutDirection = options.LayoutDirection, EdgeKind = options.EdgeKind, EdgeStatus = TopologyHealthStatus.Healthy, EdgeDirection = TopologyDirection.Forward, NodeWidth = 164, NodeHeight = 64 });
+        return chart.AddHierarchy(hierarchy, new TopologyHierarchyOptions { MinLevel = options.MinLevel, MaxLevel = options.MaxLevel, IncludeAncestorContext = options.IncludeAncestorContext, NodeDisplayMode = options.NodeDisplayMode, LayoutDirection = options.LayoutDirection, EdgeKind = options.EdgeKind, EdgeStatus = TopologyHealthStatus.Healthy, EdgeDirection = VisualLinkDirection.Forward, NodeWidth = 164, NodeHeight = 64 });
     }
 
     private static void ValidateOptions(TopologyHierarchyOptions options) {

@@ -123,7 +123,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawLollipops(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartMapper map) {
         var s = chart.Series[index];
-        var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+        var zeroY = map.YBaseline();
         var radius = Math.Max(4, chart.Options.Theme.MarkerRadius + 2.25);
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
@@ -170,7 +170,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawBars(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
         var s = chart.Series[index];
         var layout = BarLayout(chart, plot, index);
-        var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+        var zeroY = map.YBaseline();
         var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];

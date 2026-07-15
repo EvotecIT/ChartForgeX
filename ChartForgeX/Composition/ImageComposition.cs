@@ -4,6 +4,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Composition;
@@ -150,18 +151,34 @@ public sealed class ImageComposition {
     }
 
     /// <summary>Draws text inside a fixed-width region.</summary>
-    public ImageComposition DrawText(double x, double y, double width, string text, double fontSize, ChartColor color, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Left, bool emphasized = false) {
+    public ImageComposition DrawText(double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment = TextAlignment.Left, bool emphasized = false) {
+        VisualCanvas.ValidateEnum(alignment, nameof(alignment));
+        var style = TextStyle.Create(fontSize, color);
+        style.Alignment = alignment;
+        style.Font.Weight = emphasized ? 700 : 400;
+        return DrawText(x, y, width, text, style, TextWrapMode.NoWrap, 1, TextTrimming.None);
+    }
+
+    /// <summary>Draws measured and optionally wrapped text with the shared dependency-free typography engine.</summary>
+    public ImageComposition DrawText(double x, double y, double width, string text, TextStyle style, TextWrapMode wrapMode = TextWrapMode.Word, int? maximumLines = null, TextTrimming trimming = TextTrimming.Ellipsis) {
         ValidateFinite(x, nameof(x));
         ValidateFinite(y, nameof(y));
         ValidatePositive(width, nameof(width));
-        ValidatePositive(fontSize, nameof(fontSize));
-        VisualCanvas.ValidateEnum(alignment, nameof(alignment));
         if (text == null) throw new ArgumentNullException(nameof(text));
-        if (text.Length == 0 || color.A == 0) return this;
-        var textWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
-        var drawX = ResolveAlignedX(x, width, textWidth, alignment);
-        if (emphasized) _canvas.DrawTextEmphasized(drawX, y, text, color, fontSize);
-        else _canvas.DrawText(drawX, y, text, color, fontSize);
+        if (style == null) throw new ArgumentNullException(nameof(style));
+        if (text.Length == 0 || style.Color.A == 0) return this;
+
+        var layout = TextLayoutEngine.Layout(text, width, style, wrapMode, maximumLines, trimming);
+        var font = TypographyFontResolver.Resolve(style.Font);
+        for (var index = 0; index < layout.Lines.Count; index++) {
+            var line = layout.Lines[index];
+            var drawX = ResolveAlignedX(x, width, line.Width, style.Alignment);
+            var drawY = y + index * layout.Metrics.LineHeight;
+            if (style.Font.Weight >= 600) _canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, style.FontSize, font);
+            else _canvas.DrawText(drawX, drawY, line.Text, style.Color, style.FontSize, font);
+            if (style.Underline && line.Width > 0) _canvas.DrawLine(drawX, drawY + style.FontSize * 1.05, drawX + line.Width, drawY + style.FontSize * 1.05, style.Color, Math.Max(1, style.FontSize / 16));
+        }
+
         return this;
     }
 
@@ -388,11 +405,11 @@ public sealed class ImageComposition {
         return copy;
     }
 
-    private static double ResolveAlignedX(double x, double width, double textWidth, VisualCanvasTextAlignment alignment) {
+    private static double ResolveAlignedX(double x, double width, double textWidth, TextAlignment alignment) {
         switch (alignment) {
-            case VisualCanvasTextAlignment.Center:
+            case TextAlignment.Center:
                 return x + (width - textWidth) / 2;
-            case VisualCanvasTextAlignment.Right:
+            case TextAlignment.Right:
                 return x + width - textWidth;
             default:
                 return x;

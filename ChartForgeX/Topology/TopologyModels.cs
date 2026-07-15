@@ -8,7 +8,7 @@ namespace ChartForgeX.Topology;
 /// <summary>
 /// Represents a renderer-independent topology diagram.
 /// </summary>
-public sealed class TopologyChart {
+public sealed partial class TopologyChart {
     private TopologyLayoutMode _layoutMode = TopologyLayoutMode.Manual;
     private TopologyLayoutDirection _layoutDirection = TopologyLayoutDirection.TopToBottom;
     private TopologyViewport _viewport = new();
@@ -398,7 +398,7 @@ public sealed class TopologyEdge {
     private string _targetNodeId = string.Empty;
     private TopologyEdgeKind _kind = TopologyEdgeKind.Generic;
     private TopologyHealthStatus _status = TopologyHealthStatus.Unknown;
-    private TopologyDirection _direction = TopologyDirection.None;
+    private VisualLinkDirection _direction = VisualLinkDirection.None;
     private TopologyEdgeRouting _routing = TopologyEdgeRouting.Orthogonal;
     private TopologyEdgeLineStyle _lineStyle = TopologyEdgeLineStyle.Auto;
     private TopologyEdgeEmphasis _emphasis = TopologyEdgeEmphasis.Normal;
@@ -440,7 +440,7 @@ public sealed class TopologyEdge {
     }
 
     /// <summary>Gets or sets the edge direction.</summary>
-    public TopologyDirection Direction {
+    public VisualLinkDirection Direction {
         get => _direction;
         set {
             TopologyModelGuards.EnumDefined(value, nameof(value));

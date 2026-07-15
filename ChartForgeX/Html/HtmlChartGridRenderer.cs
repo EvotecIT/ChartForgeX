@@ -34,7 +34,7 @@ public sealed class HtmlChartGridRenderer {
 
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
-            .Attribute("class", grid.PanelFit == ChartGridPanelFit.Stretch ? "chartforgex-grid fit-stretch" : "chartforgex-grid")
+            .Attribute("class", grid.PanelFit == VisualPanelFit.Stretch ? "chartforgex-grid fit-stretch" : "chartforgex-grid")
             .Attribute("style", GridStyle(grid))
             .EndStartElement();
         if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
@@ -133,7 +133,7 @@ public sealed class HtmlChartGridRenderer {
         return value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
     }
 
-    private static string GridTextStyle(ChartTextStyle style, string fallbackColor, string fallbackFontFamily, double fallbackFontSize, string fallbackWeight) {
+    private static string GridTextStyle(TextStyleOverride style, string fallbackColor, string fallbackFontFamily, double fallbackFontSize, string fallbackWeight) {
         var css = new StringBuilder();
         css.Append("color:").Append(style.Color?.ToCss() ?? fallbackColor);
         css.Append(";font-family:").Append(CssFontFamily(style.FontFamily ?? fallbackFontFamily));

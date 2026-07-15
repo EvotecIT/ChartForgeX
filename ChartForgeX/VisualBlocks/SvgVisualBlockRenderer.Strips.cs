@@ -22,7 +22,7 @@ public sealed partial class SvgVisualBlockRenderer {
                 writer.StartElement("line").Attribute("x1", content.X + 5).Attribute("y1", y + 9).Attribute("x2", content.X + 17).Attribute("y2", y + 9).Attribute("stroke", theme.Text.ToCss()).Attribute("stroke-width", 1.4).EndEmptyElement().Line();
                 writer.StartElement("circle").Attribute("cx", content.X + 8).Attribute("cy", y + 15).Attribute("r", 1.5).Attribute("fill", theme.Text.ToCss()).EndEmptyElement().Line();
                 writer.StartElement("circle").Attribute("cx", content.X + 14).Attribute("cy", y + 15).Attribute("r", 1.5).Attribute("fill", theme.Text.ToCss()).EndEmptyElement().Line();
-                WriteText(writer, block.Header, content.X + 32, y + 22, Math.Max(1, content.Width - 32 - navReserve), VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 1), "750");
+                WriteText(writer, block.Header, content.X + 32, y + 22, Math.Max(1, content.Width - 32 - navReserve), TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(13, theme.SubtitleFontSize + 1), "750");
             }
 
             if (block.ShowNavigation) {
@@ -54,9 +54,9 @@ public sealed partial class SvgVisualBlockRenderer {
             var itemRadius = Math.Min(24, pillWidth * 0.48);
             writer.StartElement("g").Attribute("data-cfx-role", "date-strip-item").Attribute("data-cfx-selected", item.Selected ? "true" : "false").EndStartElement().Line();
             writer.StartElement("rect").Attribute("x", x).Attribute("y", innerY).Attribute("width", pillWidth).Attribute("height", innerHeight).Attribute("rx", itemRadius).Attribute("fill", (item.Selected ? theme.CardBackground.WithAlpha(230) : theme.CardBackground.WithAlpha(160)).ToCss()).Attribute("stroke", (item.Selected ? theme.CardBorder.WithAlpha(95) : theme.CardBorder.WithAlpha(70)).ToCss()).EndEmptyElement().Line();
-            WriteText(writer, item.Label, x, innerY + 18, pillWidth, VisualTextAlignment.Center, item.Selected ? textColor : theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
+            WriteText(writer, item.Label, x, innerY + 18, pillWidth, TextAlignment.Center, item.Selected ? textColor : theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
             writer.StartElement("circle").Attribute("data-cfx-role", "date-strip-value-badge").Attribute("cx", x + pillWidth / 2).Attribute("cy", innerY + innerHeight - 18).Attribute("r", 17).Attribute("fill", item.Selected ? accent.ToCss() : theme.Background.WithAlpha(170).ToCss()).Attribute("stroke", item.Selected ? ChartColor.White.WithAlpha(130).ToCss() : theme.CardBorder.WithAlpha(70).ToCss()).EndEmptyElement().Line();
-            WriteText(writer, item.Value, x, innerY + innerHeight - 13, pillWidth, VisualTextAlignment.Center, valueTextColor, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
+            WriteText(writer, item.Value, x, innerY + innerHeight - 13, pillWidth, TextAlignment.Center, valueTextColor, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
             writer.EndElement().Line();
         }
 
@@ -66,7 +66,7 @@ public sealed partial class SvgVisualBlockRenderer {
     private static void RenderDateNavButton(SvgMarkupWriter writer, string symbol, double x, double y, double size, ChartForgeX.Themes.ChartTheme theme, bool muted) {
         writer.StartElement("g").Attribute("data-cfx-role", "date-strip-nav").EndStartElement().Line();
         writer.StartElement("circle").Attribute("cx", x + size / 2).Attribute("cy", y + size / 2).Attribute("r", size / 2).Attribute("fill", muted ? ChartColor.White.WithAlpha(150).ToCss() : ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.WithAlpha(90).ToCss()).EndEmptyElement().Line();
-        WriteText(writer, symbol, x, y + size * 0.66, size, VisualTextAlignment.Center, muted ? theme.MutedText : theme.Text, theme.FontFamily, 15, "900");
+        WriteText(writer, symbol, x, y + size * 0.66, size, TextAlignment.Center, muted ? theme.MutedText : theme.Text, theme.FontFamily, 15, "900");
         writer.EndElement().Line();
     }
 
@@ -78,10 +78,10 @@ public sealed partial class SvgVisualBlockRenderer {
         var actionWidth = block.ActionLabel.Length == 0 ? 0 : Math.Min(120, VisualBlockRendering.EstimateTextWidth(block.ActionSymbol + " " + block.ActionLabel, theme.SubtitleFontSize + 1) + 12);
         if (block.Title.Length > 0 || block.ActionLabel.Length > 0) {
             var titleSize = Math.Max(14, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 8));
-            if (block.Title.Length > 0) WriteText(writer, block.Title, content.X, y + titleSize * 0.75, Math.Max(1, content.Width - actionWidth - 10), VisualTextAlignment.Left, theme.Text, theme.FontFamily, titleSize, "800");
+            if (block.Title.Length > 0) WriteText(writer, block.Title, content.X, y + titleSize * 0.75, Math.Max(1, content.Width - actionWidth - 10), TextAlignment.Left, theme.Text, theme.FontFamily, titleSize, "800");
             if (block.ActionLabel.Length > 0) {
                 if (block.ActionUrl.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "entity-strip-action-link").Attribute("href", block.ActionUrl).Attribute("target", "_top").EndStartElement().Line();
-                WriteText(writer, block.ActionSymbol + " " + block.ActionLabel, content.X + content.Width - actionWidth, y + titleSize * 0.75, actionWidth, VisualTextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
+                WriteText(writer, block.ActionSymbol + " " + block.ActionLabel, content.X + content.Width - actionWidth, y + titleSize * 0.75, actionWidth, TextAlignment.Right, VisualBlockRendering.PaletteAt(theme, 0), theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
                 if (block.ActionUrl.Length > 0) writer.EndElement().Line();
             }
 
@@ -89,7 +89,7 @@ public sealed partial class SvgVisualBlockRenderer {
         }
 
         if (block.Subtitle.Length > 0) {
-            WriteText(writer, block.Subtitle, content.X, y + theme.SubtitleFontSize * 0.75, content.Width, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
+            WriteText(writer, block.Subtitle, content.X, y + theme.SubtitleFontSize * 0.75, content.Width, TextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
             y += theme.SubtitleFontSize + 12;
         }
 
@@ -106,9 +106,9 @@ public sealed partial class SvgVisualBlockRenderer {
             var color = item.Color ?? (item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
             writer.StartElement("g").Attribute("data-cfx-role", "entity-strip-item").Attribute("data-cfx-label", item.Label).EndStartElement().Line();
             writer.StartElement("circle").Attribute("data-cfx-role", "entity-strip-avatar").Attribute("cx", centerX).Attribute("cy", y + 28).Attribute("r", avatarRadius).Attribute("fill", color.WithAlpha(45).ToCss()).Attribute("stroke", color.WithAlpha(115).ToCss()).EndEmptyElement().Line();
-            if (item.AvatarText.Length > 0) WriteText(writer, item.AvatarText, centerX - avatarRadius, y + 33, avatarRadius * 2, VisualTextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "850");
+            if (item.AvatarText.Length > 0) WriteText(writer, item.AvatarText, centerX - avatarRadius, y + 33, avatarRadius * 2, TextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "850");
             else WriteIcon(writer, VisualIcon.Person, centerX, y + 28, avatarRadius * 0.56, color);
-            WriteText(writer, item.Label, x, y + stripHeight - 11, cellWidth, VisualTextAlignment.Center, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "500");
+            WriteText(writer, item.Label, x, y + stripHeight - 11, cellWidth, TextAlignment.Center, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "500");
             writer.EndElement().Line();
         }
 

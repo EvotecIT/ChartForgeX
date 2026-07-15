@@ -287,8 +287,8 @@ public sealed partial class TopologyPngRenderer {
             if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) canvas.DrawPolyline(routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4));
             DrawPremiumEdgeRoute(canvas, routePoints, color, width, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap, edge, options, isSelected);
 
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Forward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, options);
-            if (options.IncludeDirectionMarkers && edge.Direction is TopologyDirection.Backward or TopologyDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color, options);
+            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Forward or VisualLinkDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, options);
+            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Backward or VisualLinkDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color, options);
         }
     }
 

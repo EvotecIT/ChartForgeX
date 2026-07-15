@@ -12,7 +12,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var fontSize = Math.Max(9, table.Dense ? 10.5 : 11.5);
         var badgeWidth = Math.Min(width, Math.Max(28, VisualBlockRendering.EstimateTextWidth(cell.BadgeText, fontSize) + 18));
         var badgeHeight = Math.Min(22, Math.Max(18, height));
-        var badgeX = BadgeX(x, width, badgeWidth, cell.Alignment ?? VisualTextAlignment.Left);
+        var badgeX = BadgeX(x, width, badgeWidth, cell.Alignment ?? TextAlignment.Left);
         var badgeY = y + Math.Max(0, (height - badgeHeight) / 2);
         BadgeColors(theme, color, cell.BadgeStyle, out var fill, out var stroke, out var text);
         writer.StartElement("rect")
@@ -26,12 +26,12 @@ public sealed partial class SvgVisualBlockRenderer {
             .Attribute("fill", fill.ToCss())
             .Attribute("stroke", stroke.ToCss())
             .EndEmptyElement().Line();
-        WriteText(writer, cell.BadgeText, badgeX + 7, badgeY + badgeHeight * 0.66, badgeWidth - 14, VisualTextAlignment.Center, text, theme.FontFamily, fontSize, "750");
+        WriteText(writer, cell.BadgeText, badgeX + 7, badgeY + badgeHeight * 0.66, badgeWidth - 14, TextAlignment.Center, text, theme.FontFamily, fontSize, "750");
     }
 
-    private static double BadgeX(double x, double width, double badgeWidth, VisualTextAlignment alignment) {
-        if (alignment == VisualTextAlignment.Center) return x + (width - badgeWidth) / 2;
-        if (alignment == VisualTextAlignment.Right) return x + width - badgeWidth;
+    private static double BadgeX(double x, double width, double badgeWidth, TextAlignment alignment) {
+        if (alignment == TextAlignment.Center) return x + (width - badgeWidth) / 2;
+        if (alignment == TextAlignment.Right) return x + width - badgeWidth;
         return x;
     }
 

@@ -15,8 +15,8 @@ internal static partial class SmokeTests {
             .AddNode("domain", "ad.evotec.xyz\nPrimary Domain", 240, 96, TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "Confidence 92%\n24 linked records", width: 168, height: 86, symbol: "D", iconId: "chartforgex-identity-directory:domain")
             .AddNode("cert", "CN: ad.evotec.xyz\nLet's Encrypt R3", 40, 64, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy, subtitle: "Valid\n62 days left", width: 172, height: 88, symbol: "TLS", iconId: "chartforgex-identity-directory:certificate")
             .AddNode("finding", "Finding Bundle\n3 Critical + 4 High", 430, 64, TopologyNodeKind.Process, TopologyHealthStatus.Critical, subtitle: "TLSv1.0 observed\nEvidence linked", width: 174, height: 88, symbol: "!", color: "#EF4444")
-            .AddEdge("cert-domain", "cert", "domain", "Certificate", TopologyEdgeKind.CertificateChain, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "SAN match")
-            .AddEdge("domain-finding", "domain", "finding", "Observed", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "3 sources")
+            .AddEdge("cert-domain", "cert", "domain", "Certificate", TopologyEdgeKind.CertificateChain, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "SAN match")
+            .AddEdge("domain-finding", "domain", "finding", "Observed", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "3 sources")
             .WithEdgeLineStyle("cert-domain", TopologyEdgeLineStyle.Dashed)
             .WithEdgeLineStyle("domain-finding", TopologyEdgeLineStyle.Dotted)
             .WithEdgeColor("domain-finding", "#DC2626");
@@ -52,7 +52,7 @@ internal static partial class SmokeTests {
             .WithViewport(460, 240, 20)
             .AddNode("source", "Source", 52, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 112, height: 62)
             .AddNode("target", "Target", 292, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 112, height: 62)
-            .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
+            .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
             .WithEdgeLabelOffset("source-target", 0, -78)
             .WithEdgeColor("source-target", "#2563EB");
 
@@ -71,7 +71,7 @@ internal static partial class SmokeTests {
             .WithViewport(520, 260, 20)
             .AddNode("source", "Source", 54, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 122, height: 64)
             .AddNode("target", "Target", 330, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 122, height: 64)
-            .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
+            .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
             .WithEdgeLabelOffset("source-target", 0, -86)
             .WithEdgeLabelAnchorNode("source-target", "target");
 
@@ -99,7 +99,7 @@ internal static partial class SmokeTests {
             .WithViewport(360, 230, 20)
             .AddNode("source", "Source", 0, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 92, height: 54)
             .AddNode("target", "Target", 180, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 92, height: 54)
-            .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
             .WithEdgeLabelOffset("source-target", 0, -64)
             .WithEdgeLabelAnchor("source-target", 100, 30);
 
@@ -114,7 +114,7 @@ internal static partial class SmokeTests {
             .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.RightToLeft)
             .AddAutoNode("source", "Source", TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, width: 92, height: 54)
             .AddAutoNode("target", "Target", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 92, height: 54)
-            .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithEdgeLabelOffset("source-target", 0, -64)
             .WithEdgeLabelAnchor("source-target", 90, 120);
         mirrored.Nodes[0].Metadata["layer"] = "0";

@@ -96,7 +96,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHorizontalCategoryLabelLine(StringBuilder sb, Chart chart, ChartTextStyle style, int lineIndex, double x, double y, string fill, double fontSize, string label) {
+    private static void WriteHorizontalCategoryLabelLine(StringBuilder sb, Chart chart, TextStyleOverride style, int lineIndex, double x, double y, string fill, double fontSize, string label) {
         var writer = new SvgMarkupWriter(384);
         writer
             .StartElement("text")

@@ -15,7 +15,7 @@ The first canvas primitives are intentionally generic:
 - information tiles for side rails, with glass, outline, or raised surfaces, text or built-in icons, progress rails, and compact right-side mini charts
 - hero badges for logos, terminal prompts, or product marks
 - image layers using SVG hrefs and host-provided RGBA pixels for raster output, with `Stretch`, `Contain`, `Cover`, `Center`, and `Tile` fit modes
-- dependency-free raster image input for baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF files or byte arrays
+- dependency-free raster image input for baseline/progressive JPEG, PNG, GIF first frames, BMP, PPM, and uncompressed RGB TIFF files or byte arrays
 - rendered ChartForgeX layers for charts, chart grids, visual blocks, visual grids, and topology diagrams
 - anchor-based placement for all built-in canvas layers and rendered ChartForgeX layers
 - feature strips for compact bottom rows
@@ -28,6 +28,7 @@ using ChartForgeX;
 using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 using ChartForgeX.Raster;
 using System.IO;
 using ChartForgeX.VisualBlocks;
@@ -80,7 +81,7 @@ var canvas = VisualCanvas.CreateSocialPreview()
         new VisualCanvasTextRun("Power", ChartColor.FromHex("#F8FAFC")),
         new VisualCanvasTextRun("BGInfo", ChartColor.FromHex("#2F80FF"))
     })
-    .AddText(330, 402, 540, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), VisualCanvasTextAlignment.Center)
+    .AddText(330, 402, 540, "Desktop background insights for Windows and PowerShell", 24, ChartColor.FromHex("#C6D3EA"), TextAlignment.Center)
     .AddChart(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomCenter, -160, 50), 220, 120, cpuChart, VisualCanvasImageFit.Contain)
     .AddVisualBlock(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 106, 74), 180, 104, ramCard, VisualCanvasImageFit.Center);
 
@@ -90,6 +91,19 @@ canvas.Save("powerbginfo-social-preview.gif");
 canvas.Save("powerbginfo-social-preview.jpg", new RasterImageOptions { JpegQuality = 92, PngCompressionLevel = 9 });
 canvas.SaveBmp("powerbginfo-social-preview.bmp");
 ```
+
+## Responsive output
+
+Keep layer coordinates in one design space while producing multiple target sizes with `WithResponsiveLayout(...)` and `WithOutputSize(...)`:
+
+```csharp
+canvas
+    .WithResponsiveLayout(1200, 630, VisualCanvasImageFit.Cover)
+    .WithOutputSize(1920, 1080)
+    .SavePng("powerbginfo-wallpaper.png");
+```
+
+`Contain`, `Cover`, and `Stretch` use the same design-space transform in SVG and PNG. This lets a host reuse one wallpaper, report-cover, or social-preview composition without recalculating every layer position.
 
 To start from an existing background image without `System.Drawing` or platform-specific graphics APIs, decode it through the reusable raster input path and place it as the first canvas layer:
 

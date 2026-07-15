@@ -18,18 +18,6 @@ public enum VisualCanvasBackdropStyle {
 }
 
 /// <summary>
-/// Horizontal text alignment used by visual canvas layers.
-/// </summary>
-public enum VisualCanvasTextAlignment {
-    /// <summary>Align text to the leading edge.</summary>
-    Left,
-    /// <summary>Center text in the available width.</summary>
-    Center,
-    /// <summary>Align text to the trailing edge.</summary>
-    Right
-}
-
-/// <summary>
 /// Defines the reference point used when placing visual canvas layers.
 /// </summary>
 public enum VisualCanvasAnchor {
@@ -205,6 +193,10 @@ public enum VisualCanvasInfoTileMiniChartKind {
 /// Theme colors for reusable visual canvas layers.
 /// </summary>
 public sealed class VisualCanvasTheme {
+    /// <summary>Gets or sets the primary font family used by SVG canvas text.</summary>
+    public string FontFamily { get; set; } = "Segoe UI, Arial, sans-serif";
+    /// <summary>Gets or sets the monospace font family used by symbolic badge text.</summary>
+    public string MonospaceFontFamily { get; set; } = "Cascadia Mono, Consolas, monospace";
     /// <summary>Gets or sets the primary accent used by built-in decorative elements.</summary>
     public ChartColor Accent { get; set; } = ChartColor.FromHex("#2F80FF");
     /// <summary>Gets or sets the secondary accent used by hero badges and backdrop highlights.</summary>
@@ -259,7 +251,7 @@ public sealed class VisualCanvasTheme {
 /// <summary>
 /// A fixed-size layered visual surface for wallpapers, social images, report covers, and hero graphics.
 /// </summary>
-public sealed class VisualCanvas {
+public sealed partial class VisualCanvas {
     private readonly List<VisualCanvasLayer> _layers = new();
     private VisualCanvasTheme _theme = new();
     private int _width;
@@ -352,27 +344,27 @@ public sealed class VisualCanvas {
     }
 
     /// <summary>Resolves anchor-based placement against the full canvas.</summary>
-    public ChartRect ResolvePlacement(VisualCanvasPlacement placement, double width, double height) => placement.Resolve(Width, Height, width, height);
+    public ChartRect ResolvePlacement(VisualCanvasPlacement placement, double width, double height) => placement.Resolve(DesignWidth, DesignHeight, width, height);
 
     /// <summary>Analyzes canvas layer bounds and built-in text fitting decisions without rendering.</summary>
     public VisualCanvasLayoutReport AnalyzeLayout() => VisualCanvasLayoutAnalyzer.Analyze(this);
 
     /// <summary>Adds a plain text layer.</summary>
-    public VisualCanvas AddText(double x, double y, double width, string text, double fontSize, ChartColor color, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Left, bool emphasized = false) =>
+    public VisualCanvas AddText(double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment = TextAlignment.Left, bool emphasized = false) =>
         AddLayer(new VisualCanvasTextLayer(x, y, width, text, fontSize, color) { Alignment = alignment, Emphasized = emphasized });
 
     /// <summary>Adds a plain text layer using anchor-based placement.</summary>
-    public VisualCanvas AddText(VisualCanvasPlacement placement, double width, string text, double fontSize, ChartColor color, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Left, bool emphasized = false) {
+    public VisualCanvas AddText(VisualCanvasPlacement placement, double width, string text, double fontSize, ChartColor color, TextAlignment alignment = TextAlignment.Left, bool emphasized = false) {
         var bounds = ResolvePlacement(placement, width, Math.Max(1, fontSize * 1.25));
         return AddText(bounds.X, bounds.Y, bounds.Width, text, fontSize, color, alignment, emphasized);
     }
 
     /// <summary>Adds a multi-color hero title layer.</summary>
-    public VisualCanvas AddHeroTitle(double x, double y, double width, double fontSize, IEnumerable<VisualCanvasTextRun> runs, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Center) =>
+    public VisualCanvas AddHeroTitle(double x, double y, double width, double fontSize, IEnumerable<VisualCanvasTextRun> runs, TextAlignment alignment = TextAlignment.Center) =>
         AddLayer(new VisualCanvasHeroTitleLayer(x, y, width, fontSize, runs) { Alignment = alignment });
 
     /// <summary>Adds a multi-color hero title layer using anchor-based placement.</summary>
-    public VisualCanvas AddHeroTitle(VisualCanvasPlacement placement, double width, double fontSize, IEnumerable<VisualCanvasTextRun> runs, VisualCanvasTextAlignment alignment = VisualCanvasTextAlignment.Center) {
+    public VisualCanvas AddHeroTitle(VisualCanvasPlacement placement, double width, double fontSize, IEnumerable<VisualCanvasTextRun> runs, TextAlignment alignment = TextAlignment.Center) {
         var bounds = ResolvePlacement(placement, width, Math.Max(1, fontSize * 1.25));
         return AddHeroTitle(bounds.X, bounds.Y, bounds.Width, fontSize, runs, alignment);
     }
@@ -592,7 +584,7 @@ public sealed class VisualCanvasTextLayer : VisualCanvasLayer {
     /// <summary>Gets or sets the text color.</summary>
     public ChartColor Color { get; set; }
     /// <summary>Gets or sets the text alignment.</summary>
-    public VisualCanvasTextAlignment Alignment { get; set; }
+    public TextAlignment Alignment { get; set; }
     /// <summary>Gets or sets whether the text should use the emphasized raster/SVG treatment.</summary>
     public bool Emphasized { get; set; }
 }
@@ -620,7 +612,7 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
     /// <summary>Gets or sets the title font size.</summary>
     public double FontSize { get => _fontSize; set { ValidatePositive(value, nameof(value)); _fontSize = value; Height = Math.Max(Height, value * 1.25); } }
     /// <summary>Gets or sets the title alignment.</summary>
-    public VisualCanvasTextAlignment Alignment { get; set; } = VisualCanvasTextAlignment.Center;
+    public TextAlignment Alignment { get; set; } = TextAlignment.Center;
 }
 
 /// <summary>Reusable information tile layer.</summary>

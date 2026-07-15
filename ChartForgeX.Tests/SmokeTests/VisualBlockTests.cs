@@ -15,8 +15,8 @@ internal static partial class SmokeTests {
             .WithTheme(ChartTheme.TransparentOverlayDark())
             .WithTransparentBackground()
             .AddColumn("Drive")
-            .AddColumn("Used", VisualTextAlignment.Right, format: "0%")
-            .AddColumn("Free", VisualTextAlignment.Right)
+            .AddColumn("Used", TextAlignment.Right, format: "0%")
+            .AddColumn("Free", TextAlignment.Right)
             .AddColumn("Status")
             .AddRow("C:", 0.72, "128 GB", "OK")
             .AddRow("D:", 0.91, "34 GB", "Warning")
@@ -648,7 +648,7 @@ internal static partial class SmokeTests {
             .WithColumns(1)
             .WithPadding(24)
             .WithPanelSize(160, 100)
-            .WithPanelFit(VisualGridPanelFit.Stretch)
+            .WithPanelFit(VisualPanelFit.Stretch)
             .Add(backgroundTrapBlock);
         var backgroundTrapSvg = backgroundTrapGrid.ToSvg("visual-grid-background-trap");
         var backgroundTrapHtml = backgroundTrapGrid.ToHtmlFragment();
@@ -660,7 +660,7 @@ internal static partial class SmokeTests {
 
         var stretchGrid = VisualGrid.Create()
             .WithPanelSize(500, 320)
-            .WithPanelFit(VisualGridPanelFit.Stretch)
+            .WithPanelFit(VisualPanelFit.Stretch)
             .Add(chart);
         var stretchSvg = stretchGrid.ToSvg("visual-grid-stretch");
         Assert(stretchSvg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal) && stretchSvg.Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "VisualGrid SVG stretch mode should remove child aspect-ratio locking.");
@@ -701,11 +701,11 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ChartTable.Create().AddRow("orphan"), "ChartTable should require columns before rows.");
         AssertThrows<ArgumentException>(() => ChartTable.Create().WithColumns(), "ChartTable should reject empty column sets.");
         AssertThrows<ArgumentException>(() => ChartTable.Create().WithColumns("A").AddRow("a", "b"), "ChartTable should reject row values that do not match columns.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartTable.Create().AddColumn("Bad", (VisualTextAlignment)999), "ChartTable columns should reject unknown alignments.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartTable.Create().AddColumn("Bad", (TextAlignment)999), "ChartTable columns should reject unknown alignments.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableColumn("Bad", width: -1), "ChartTableColumn should reject invalid widths even when constructed directly.");
         AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").AddColumn("B"), "ChartTable should reject adding columns after rows exist.");
         AssertThrows<ArgumentNullException>(() => new ChartTableCell("ok").Text = null!, "ChartTable cells should reject null text through the public setter.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Alignment = (VisualTextAlignment)999, "ChartTable cells should reject unknown alignment overrides.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Alignment = (TextAlignment)999, "ChartTable cells should reject unknown alignment overrides.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Status = (VisualStatus)999, "ChartTable cells should reject unknown status values.");
         AssertThrows<ArgumentException>(() => new ChartTableCell("bad").WithMiniBars(Array.Empty<double>()), "ChartTable cell mini bars should reject empty value sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").WithMiniBars(new[] { double.NaN }), "ChartTable cell mini bars should reject non-finite values.");
@@ -792,7 +792,7 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithHeaderActions(new string('x', 25)).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock header actions should stay compact.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ScheduleTimelineEvent("Bad", 8, 9) { Status = (VisualStatus)999 }, "ScheduleTimelineEvent should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().WithColumns(0), "VisualGrid should reject non-positive column counts.");
-        AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().PanelFit = (VisualGridPanelFit)999, "VisualGrid panel fit property should reject unknown values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().PanelFit = (VisualPanelFit)999, "VisualGrid panel fit property should reject unknown values.");
         AssertThrows<InvalidOperationException>(() => VisualGrid.Create().ToSvg(), "VisualGrid should require at least one item.");
         AssertThrows<ArgumentException>(() => VisualGrid.CreateMetricStrip("Empty", Array.Empty<MetricCard>()), "Metric strip preset should require at least one card.");
         AssertThrows<ArgumentException>(() => VisualGrid.CreateMetricStrip("Bad", new MetricCard[] { null! }), "Metric strip preset should reject null cards.");

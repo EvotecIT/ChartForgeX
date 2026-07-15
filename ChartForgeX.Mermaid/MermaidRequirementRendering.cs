@@ -46,7 +46,7 @@ public static class MermaidRequirementRendering {
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var relationship = document.Relationships[index];
-            chart.AddEdge("mermaid-requirement-edge-" + index.ToString(CultureInfo.InvariantCulture), relationship.SourceName, relationship.TargetName, relationship.RelationshipType, ToEdgeKind(relationship.RelationshipType), TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge("mermaid-requirement-edge-" + index.ToString(CultureInfo.InvariantCulture), relationship.SourceName, relationship.TargetName, relationship.RelationshipType, ToEdgeKind(relationship.RelationshipType), TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.relationship"] = relationship.RelationshipType;
         }
 

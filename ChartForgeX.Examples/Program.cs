@@ -4,7 +4,6 @@ using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
-
 var output = Path.Combine(AppContext.BaseDirectory, "output");
 if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
 Directory.CreateDirectory(output);
@@ -128,6 +127,7 @@ var heatmap = Chart.Create()
     .AddHeatmapRow("Acquired domains", Points(58, 43, 36, 28, 25, 52));
 
 SaveChart(heatmap, "control-coverage-heatmap-dark");
+FoundationExamples.Write(output, DemoPngOutputScale);
 MapExamples.Write(output, DemoPngOutputScale, ExampleProgramOptions.HasArg(args, "--include-external-map-examples"));
 if (!ExampleProgramOptions.HasArg(args, "--skip-topology")) TopologyExamples.Write(output); MarkupExamples.Write(output); GraphExplorerExamples.Write(output);
 

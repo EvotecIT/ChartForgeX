@@ -42,8 +42,8 @@ public sealed partial class PngChartRenderer {
         return Math.Max(64, Math.Min(plot.Width, slotWidth * angleFactor));
     }
 
-    private static double ProjectX(double value, ChartRange range, ChartRect plot) {
-        return plot.Left + ChartMath.Normalize(value, range.MinX, range.MaxX) * plot.Width;
+    private static double ProjectX(double value, ChartRange range, ChartRect plot, ChartAxis axis) {
+        return plot.Left + ChartScaleTransform.Normalize(value, range.MinX, range.MaxX, axis) * plot.Width;
     }
 
     private static void DrawAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, IReadOnlyList<string>? xAxisLabels = null) {

@@ -24,13 +24,13 @@ public sealed partial class SvgVisualBlockRenderer {
             var accent = VisualBlockRendering.SegmentedItemColor(theme, row, rowIndex);
             var rowLayout = VisualBlockRendering.SegmentedProgressRowLayout(card, row, content, y, layout.RowHeight, accent);
             if (!VisualBlockRendering.CanRenderProgressRow(rowLayout, layout.Bottom)) break;
-            WriteText(writer, row.Label, content.X, y + theme.SubtitleFontSize, rowLayout.LabelWidth, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
+            WriteText(writer, row.Label, content.X, y + theme.SubtitleFontSize, rowLayout.LabelWidth, TextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
             if (row.Delta.Length > 0) {
                 writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-delta-pill").Attribute("x", rowLayout.DeltaX).Attribute("y", y).Attribute("width", rowLayout.DeltaWidth).Attribute("height", 22).Attribute("rx", 11).Attribute("fill", rowLayout.DeltaColor.WithAlpha(34).ToCss()).EndEmptyElement().Line();
-                WriteText(writer, row.Delta, rowLayout.DeltaX + 6, y + 15.5, rowLayout.DeltaWidth - 12, VisualTextAlignment.Center, rowLayout.DeltaColor, theme.FontFamily, theme.SubtitleFontSize, "800");
+                WriteText(writer, row.Delta, rowLayout.DeltaX + 6, y + 15.5, rowLayout.DeltaWidth - 12, TextAlignment.Center, rowLayout.DeltaColor, theme.FontFamily, theme.SubtitleFontSize, "800");
             }
 
-            WriteText(writer, rowLayout.ValueText, rowLayout.ValueX, y + theme.SubtitleFontSize, rowLayout.ValueWidth, VisualTextAlignment.Right, theme.Text, theme.FontFamily, rowLayout.ValueFontSize, "850");
+            WriteText(writer, rowLayout.ValueText, rowLayout.ValueX, y + theme.SubtitleFontSize, rowLayout.ValueWidth, TextAlignment.Right, theme.Text, theme.FontFamily, rowLayout.ValueFontSize, "850");
             RenderSegmentedStrip(writer, row, content.X, rowLayout.StripY, content.Width, rowLayout.StripHeight, accent, theme);
             y += layout.RowHeight;
         }
@@ -51,7 +51,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var baseline = footerY + footerHeight * 0.64;
         if (card.ActionUrl.Length > 0) writer.StartElement("a").Attribute("data-cfx-role", "visual-action-link").Attribute("href", card.ActionUrl).Attribute("target", "_top").EndStartElement().Line();
-        WriteText(writer, card.ActionLabel, x, baseline, Math.Max(1, width - 38), VisualTextAlignment.Left, foreground, theme.FontFamily, fontSize, "500");
+        WriteText(writer, card.ActionLabel, x, baseline, Math.Max(1, width - 38), TextAlignment.Left, foreground, theme.FontFamily, fontSize, "500");
         RenderActionSymbol(writer, card.ActionSymbol, x + width - 18, footerY + footerHeight * 0.5, 12, foreground, theme, fontSize);
         if (card.ActionUrl.Length > 0) writer.EndElement().Line();
     }

@@ -57,6 +57,7 @@ var svg = flow.ToSvg();
 ```csharp
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
+using ChartForgeX.Typography;
 
 var table = TableArtifact.Create("alerts")
     .WithTitle("Open Alerts")
@@ -70,7 +71,7 @@ var table = TableArtifact.Create("alerts")
         TableArtifactCapabilities.Virtualization)
     .AddColumn("severity", "Severity", TableArtifactColumnType.Status)
     .AddColumn("system", "System")
-    .AddColumn("count", "Count", TableArtifactColumnType.Number, VisualTextAlignment.Right)
+    .AddColumn("count", "Count", TableArtifactColumnType.Number, TextAlignment.Right)
     .AddRow("row-1", "warning", "Directory", 12)
     .AddRow("row-2", "healthy", "Mail routing", 3);
 

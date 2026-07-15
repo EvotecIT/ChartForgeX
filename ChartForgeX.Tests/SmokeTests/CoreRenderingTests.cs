@@ -709,7 +709,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithPadding(-1), "Chart grids should reject negative padding.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithPanelSize(0, 200), "Chart grids should reject non-positive panel widths.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().PanelSize = default(ChartSize), "Chart grid panel size setters should reject non-positive dimensions.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithPanelFit((ChartGridPanelFit)999), "Chart grids should reject unknown panel fit values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithPanelFit((VisualPanelFit)999), "Chart grids should reject unknown panel fit values.");
         AssertThrows<ArgumentNullException>(() => ChartGrid.Create().WithTheme(null!), "Chart grids should reject null themes.");
         AssertThrows<InvalidOperationException>(() => ChartGrid.Create().WithSharedXAxis(), "Shared x-axis grids should reject empty grids.");
         AssertThrows<InvalidOperationException>(() => ChartGrid.Create().Add(Chart.Create().AddGauge("Score", 87)).WithSharedXAxis(), "Shared x-axis grids should require cartesian charts.");

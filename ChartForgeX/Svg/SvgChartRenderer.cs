@@ -34,7 +34,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append('<').Append('/').Append(name).Append('>').AppendLine();
     }
 
-    private static void WriteSvgTextStyleAttributes(SvgMarkupWriter writer, ChartTextStyle? style) {
+    private static void WriteSvgTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride? style) {
         if (style == null) return;
         if (style.Italic) writer.Attribute("font-style", "italic");
         if (style.Underline) writer.Attribute("text-decoration", "underline");
@@ -98,18 +98,18 @@ public sealed partial class SvgChartRenderer {
         ChartRange? secondaryRange = null;
         IReadOnlyList<double>? secondaryTicks = null;
         if (IsHorizontalBarChart(chart)) {
-            xTicks = ChartTicks.Generate(range.MinX, range.MaxX, o.TickCount);
+            xTicks = ChartTicks.Generate(o.XAxis, range.MinX, range.MaxX);
             ApplyHorizontalValueBounds(chart, range, xTicks);
             yTicks = GetHorizontalCategoryTicks(chart, range);
             plot = ApplyHorizontalBarReserve(chart, plot, yTicks);
             if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, true);
         } else {
-            yTicks = ChartTicks.Generate(range.MinY, range.MaxY, o.TickCount);
+            yTicks = ChartTicks.Generate(o.YAxis, range.MinY, range.MaxY);
             range.SetYBounds(yTicks[0], yTicks[yTicks.Count - 1]);
             if (ShowYAxis(chart)) plot = ApplyYAxisLabelReserve(chart, plot, yTicks);
             if (HasSecondaryYAxis(chart)) {
                 secondaryRange = ChartRange.FromSecondaryYAxis(chart, range);
-                secondaryTicks = ChartTicks.Generate(secondaryRange.MinY, secondaryRange.MaxY, o.TickCount);
+                secondaryTicks = ChartTicks.Generate(o.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
                 secondaryRange.SetYBounds(secondaryTicks[0], secondaryTicks[secondaryTicks.Count - 1]);
                 plot = ApplySecondaryYAxisLabelReserve(chart, plot, secondaryTicks);
             }
@@ -118,8 +118,9 @@ public sealed partial class SvgChartRenderer {
             if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, false);
         }
 
-        var map = new ChartMapper(plot, range);
-        var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange);
+        var map = new ChartMapper(plot, range, o.XAxis, o.YAxis);
+        var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, o.XAxis, o.SecondaryYAxis);
+        var accessibility = chart.Accessibility;
         var sb = new StringBuilder();
         AppendSvgStart(sb, writer => writer
             .StartElement("svg")
@@ -127,26 +128,30 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", w)
             .Attribute("height", h)
             .Attribute("viewBox", $"0 0 {F(w)} {F(h)}")
-            .Attribute("role", "img")
-            .Attribute("aria-labelledby", $"{id}-title {id}-desc")
+            .Attribute("role", accessibility.IsDecorative ? null : "img")
+            .Attribute("aria-hidden", accessibility.IsDecorative ? "true" : null)
+            .Attribute("aria-labelledby", accessibility.IsDecorative ? null : $"{id}-title {id}-desc")
+            .Attribute("lang", accessibility.Language)
             .Attribute("preserveAspectRatio", "xMidYMid meet")
             .Attribute("style", "max-width:100%;height:auto;display:block")
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision")
             .EndStartElement()
             .Line());
-        AppendSvg(sb, writer => writer
-            .StartElement("title")
-            .Attribute("id", $"{id}-title")
-            .Text(string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX chart" : chart.Title)
-            .EndElement()
-            .Line());
-        AppendSvg(sb, writer => writer
-            .StartElement("desc")
-            .Attribute("id", $"{id}-desc")
-            .Text(BuildDescription(chart))
-            .EndElement()
-            .Line());
+        if (!accessibility.IsDecorative) {
+            AppendSvg(sb, writer => writer
+                .StartElement("title")
+                .Attribute("id", $"{id}-title")
+                .Text(accessibility.Name ?? (string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX chart" : chart.Title))
+                .EndElement()
+                .Line());
+            AppendSvg(sb, writer => writer
+                .StartElement("desc")
+                .Attribute("id", $"{id}-desc")
+                .Text(accessibility.Description ?? BuildDescription(chart))
+                .EndElement()
+                .Line());
+        }
         AppendSvgStart(sb, writer => writer.StartElement("defs").EndStartElement().Line());
         AppendSvg(sb, writer => writer
             .StartElement("style")
@@ -449,9 +454,11 @@ public sealed partial class SvgChartRenderer {
             var labelColor = o.TryGetXAxisLabelHighlight(xv, out var highlight) ? highlight : (ChartColor?)null;
             if (ShowXAxis(chart)) DrawXAxisLabel(sb, chart, plot, xLabels[i], x, xLabelY, xLabelAngle, maxWidth: xLabelMaxWidth, color: labelColor);
         }
-        var zeroY = map.Y(0);
-        if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroY > plot.Top && zeroY < plot.Bottom) {
-            WriteSvgGuideLine(sb, null, plot.Left, zeroY, plot.Right, zeroY, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
+        if (o.YAxis.Scale != ChartScaleKind.Logarithmic) {
+            var zeroY = map.Y(0);
+            if (ShowXAxis(chart) && ShowAxisLines(chart) && zeroY > plot.Top && zeroY < plot.Bottom) {
+                WriteSvgGuideLine(sb, null, plot.Left, zeroY, plot.Right, zeroY, t.Axis.ToCss(), ChartVisualPrimitives.ZeroAxisStrokeWidth);
+            }
         }
         if (ShowXAxis(chart)) {
             if (ShowAxisLines(chart)) WriteSvgGuideLine(sb, null, plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis.ToCss(), ChartVisualPrimitives.AxisStrokeWidth);
@@ -606,7 +613,7 @@ public sealed partial class SvgChartRenderer {
         var mapped = s.Points.Select(p => new ChartPoint(map.X(p.X), map.Y(p.Y))).ToArray();
         if (s.Kind == ChartSeriesKind.Area || s.Kind == ChartSeriesKind.StepArea) {
             var first = mapped[0]; var last = mapped[mapped.Length - 1];
-            var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+            var zeroY = map.YBaseline();
             var areaTop = s.Kind == ChartSeriesKind.StepArea ? BuildStepLinePath(mapped) : BuildLinePath(mapped, s.Smooth);
             var area = $"{areaTop} L {F(last.X)} {F(zeroY)} L {F(first.X)} {F(zeroY)} Z";
             var areaRole = s.Kind == ChartSeriesKind.StepArea ? "step-area" : "area";

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
@@ -293,17 +294,17 @@ public sealed class MarkupTableParser {
         }
     }
 
-    private static VisualTextAlignment ParseAlignment(string value) {
+    private static TextAlignment ParseAlignment(string value) {
         switch (NormalizeKey(value)) {
             case "left":
-                return VisualTextAlignment.Left;
+                return TextAlignment.Left;
             case "center":
             case "middle":
-                return VisualTextAlignment.Center;
+                return TextAlignment.Center;
             case "right":
-                return VisualTextAlignment.Right;
+                return TextAlignment.Right;
             default:
-                throw new ArgumentException("Unknown VisualTextAlignment value '" + value + "'.");
+                throw new ArgumentException("Unknown TextAlignment value '" + value + "'.");
         }
     }
 

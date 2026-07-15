@@ -62,7 +62,7 @@ public sealed partial class PngChartRenderer {
 
         if (s.Kind == ChartSeriesKind.Bar) {
             var layout = BarLayout(chart, plot, index);
-            var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+            var zeroY = map.YBaseline();
             var reservedLabels = new List<ChartLabelBounds>();
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
@@ -108,7 +108,7 @@ public sealed partial class PngChartRenderer {
             return;
         }
         if (s.Kind == ChartSeriesKind.Lollipop) {
-            var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+            var zeroY = map.YBaseline();
             var markerRadius = Math.Max(4, chart.Options.Theme.MarkerRadius + 2.25);
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
@@ -229,7 +229,7 @@ public sealed partial class PngChartRenderer {
             return;
         }
         if ((s.Kind == ChartSeriesKind.Area || s.Kind == ChartSeriesKind.StepArea) && s.Points.Count > 0) {
-            var zeroY = Math.Min(plot.Bottom, Math.Max(plot.Top, map.Y(0)));
+            var zeroY = map.YBaseline();
             var pathPoints = MapSeriesPathPoints(s, map);
             var polygon = new List<ChartPoint>(pathPoints.Count + 2) {
                 new(pathPoints[0].X, zeroY)

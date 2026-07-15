@@ -22,7 +22,7 @@ internal static partial class SmokeTests {
                 TableArtifactCapabilities.Virtualization)
             .AddColumn("name", "Name")
             .AddColumn("status", "Status", TableArtifactColumnType.Status)
-            .AddColumn("latency", "Latency", TableArtifactColumnType.Number, VisualTextAlignment.Right)
+            .AddColumn("latency", "Latency", TableArtifactColumnType.Number, TextAlignment.Right)
             .AddRow("api", "API", "Healthy", 24)
             .AddRow("worker", "Worker", "Warning", 91);
 
@@ -36,7 +36,7 @@ internal static partial class SmokeTests {
         Assert(table.Supports(TableArtifactCapabilities.Search), "TableArtifact should declare full-table search capability.");
         Assert(table.Supports(TableArtifactCapabilities.Virtualization), "TableArtifact should declare virtualization capability.");
         Assert(table.SupportsExport(VisualArtifactExportFormat.Csv), "TableArtifact should declare data export formats independently from static previews.");
-        Assert(table.Columns[2].Alignment == VisualTextAlignment.Right, "TableArtifact columns should preserve static preview alignment hints.");
+        Assert(table.Columns[2].Alignment == TextAlignment.Right, "TableArtifact columns should preserve static preview alignment hints.");
         Assert(table.Columns[1].Metadata["facet"] == "health", "TableArtifact columns should preserve host metadata.");
         Assert(table.Rows[1].Status == VisualStatus.Warning, "TableArtifact rows should carry status for selection and preview hosts.");
         Assert(table.Rows[1].Cells[1].Status == VisualStatus.Warning, "TableArtifact cells should carry status for selection and preview hosts.");
@@ -134,7 +134,7 @@ internal static partial class SmokeTests {
             .AddLane("ops", "Operations")
             .AddStep("start", "Start", FlowArtifactStepKind.Start, "ops", VisualStatus.Positive)
             .AddStep("review", "Review", FlowArtifactStepKind.Decision, "ops", VisualStatus.Warning)
-            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, FlowArtifactConnectorDirection.Forward, VisualStatus.Positive, "#EF4444");
+            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, VisualLinkDirection.Forward, VisualStatus.Positive, "#EF4444");
 
         var artifact = flow.ToVisualArtifact();
         var svg = flow.ToSvg();

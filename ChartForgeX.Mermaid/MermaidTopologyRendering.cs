@@ -26,7 +26,7 @@ public static class MermaidTopologyRendering {
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var item = document.Relationships[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, ToClassEdgeKind(item.Connector), TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, ToClassEdgeKind(item.Connector), TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
             edge.LineStyle = item.Connector.IndexOf(".", StringComparison.Ordinal) >= 0 ? TopologyEdgeLineStyle.Dotted : TopologyEdgeLineStyle.Solid;
             edge.Metadata["mermaid.connector"] = item.Connector;
@@ -57,7 +57,7 @@ public static class MermaidTopologyRendering {
 
         for (var index = 0; index < document.Transitions.Count; index++) {
             var item = document.Transitions[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
         }
 
         return chart;
@@ -77,7 +77,7 @@ public static class MermaidTopologyRendering {
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var item = document.Relationships[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal);
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.cardinality"] = item.Connector;
         }
 
@@ -97,7 +97,7 @@ public static class MermaidTopologyRendering {
             node.Metadata["mermaid.level"] = item.Level.ToString(CultureInfo.InvariantCulture);
             if (item.Classes.Count > 0) node.Metadata["mermaid.classes"] = string.Join(",", item.Classes);
             if (item.Icons.Count > 0) node.Metadata["mermaid.icons"] = string.Join(",", item.Icons);
-            if (item.ParentId != null) chart.AddEdge("mindmap-edge-" + item.Id, item.ParentId, item.Id, null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Curved);
+            if (item.ParentId != null) chart.AddEdge("mindmap-edge-" + item.Id, item.ParentId, item.Id, null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved);
         }
 
         return chart;
@@ -116,7 +116,7 @@ public static class MermaidTopologyRendering {
             node.Metadata["mermaid.level"] = item.Level.ToString(CultureInfo.InvariantCulture);
             node.Metadata["mermaid.indent"] = item.Indent.ToString(CultureInfo.InvariantCulture);
             node.Metadata["mermaid.kind"] = item.IsBranch ? "branch" : "leaf";
-            if (item.Parent != null) chart.AddEdge("treeview-edge-" + item.Id, item.Parent.Id, item.Id, null, TopologyEdgeKind.Ownership, TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Curved);
+            if (item.Parent != null) chart.AddEdge("treeview-edge-" + item.Id, item.Parent.Id, item.Id, null, TopologyEdgeKind.Ownership, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved);
         }
 
         return chart;

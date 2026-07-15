@@ -28,11 +28,11 @@ internal static partial class SmokeTests {
             .AddAutoNode("apac-anz", "ANZ", TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "apac", "10.20.2.0/24", width: 72, height: 46, symbol: "S")
             .AddAutoNode("apac-in", "IN India", TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "apac", "10.20.3.0/24", width: 72, height: 46, symbol: "S")
             .AddAutoNode("apac-subnet", "SYD Subnet", TopologyNodeKind.Network, TopologyHealthStatus.Critical, "apac", "10.20.2.0/24", width: 72, height: 46, symbol: "NET")
-            .AddEdge("amer-emea-site-link", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
-            .AddEdge("emea-apac-site-link", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
-            .AddEdge("amer-branch-replication", "amer-east", "emea-west", "32 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "Q:128", tertiaryLabel: "2m ago")
-            .AddEdge("apac-critical-replication", "apac-hub", "apac-anz", "142 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:915", tertiaryLabel: "Just now")
-            .AddEdge("subnet-overlap", "emea-subnet", "apac-subnet", "Overlap", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "10.20.2.0/24")
+            .AddEdge("amer-emea-site-link", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
+            .AddEdge("emea-apac-site-link", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
+            .AddEdge("amer-branch-replication", "amer-east", "emea-west", "32 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "Q:128", tertiaryLabel: "2m ago")
+            .AddEdge("apac-critical-replication", "apac-hub", "apac-anz", "142 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:915", tertiaryLabel: "Just now")
+            .AddEdge("subnet-overlap", "emea-subnet", "apac-subnet", "Overlap", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "10.20.2.0/24")
             .WithGroupLayout("amer", TopologyGroupLayoutPolicy.Grid)
             .WithGroupLayout("emea", TopologyGroupLayoutPolicy.Grid)
             .WithGroupLayout("apac", TopologyGroupLayoutPolicy.Grid);
@@ -68,9 +68,9 @@ internal static partial class SmokeTests {
         for (var i = 0; i < 18; i++) {
             var id = "segment-" + i.ToString("00", CultureInfo.InvariantCulture);
             chart.AddAutoNode(id, "Segment " + (i + 1).ToString(CultureInfo.InvariantCulture), TopologyNodeKind.Team, i % 7 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, "segments", (100 + i * 270).ToString(CultureInfo.InvariantCulture) + " users", width: 86, height: 48, symbol: "G");
-            chart.AddEdge("membership-" + i.ToString("00", CultureInfo.InvariantCulture), "directory", id, (100 + i * 270).ToString(CultureInfo.InvariantCulture), TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+            chart.AddEdge("membership-" + i.ToString("00", CultureInfo.InvariantCulture), "directory", id, (100 + i * 270).ToString(CultureInfo.InvariantCulture), TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
             if (i > 0 && i % 4 == 0) {
-                chart.AddEdge("cross-segment-" + i.ToString("00", CultureInfo.InvariantCulture), id, "segment-" + (i - 3).ToString("00", CultureInfo.InvariantCulture), "shared", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional);
+                chart.AddEdge("cross-segment-" + i.ToString("00", CultureInfo.InvariantCulture), id, "segment-" + (i - 3).ToString("00", CultureInfo.InvariantCulture), "shared", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional);
             }
         }
 
@@ -108,7 +108,7 @@ internal static partial class SmokeTests {
         for (var i = 0; i < 10; i++) {
             var id = "cohort-" + i.ToString("00", CultureInfo.InvariantCulture);
             chart.AddAutoNode(id, "Cohort " + i.ToString("00", CultureInfo.InvariantCulture), TopologyNodeKind.Person, TopologyHealthStatus.Healthy, "population", "500 users", width: 82, height: 46, symbol: "U")
-                .AddEdge("membership-" + i.ToString("00", CultureInfo.InvariantCulture), "population-root", id, "500", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+                .AddEdge("membership-" + i.ToString("00", CultureInfo.InvariantCulture), "population-root", id, "500", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
         }
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
@@ -142,7 +142,7 @@ internal static partial class SmokeTests {
             .AddAutoNode("left-2", "Left 2", TopologyNodeKind.Person, TopologyHealthStatus.Healthy, "left")
             .AddAutoNode("right-1", "Right 1", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "right")
             .AddAutoNode("right-2", "Right 2", TopologyNodeKind.Person, TopologyHealthStatus.Warning, "right")
-            .AddEdge("cross", "left-1", "right-1", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional);
+            .AddEdge("cross", "left-1", "right-1", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
         var left = prepared.Groups.Single(group => group.Id == "left");
@@ -188,7 +188,7 @@ internal static partial class SmokeTests {
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("origin-node", "Origin", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "origin")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "auto")
-            .AddEdge("origin-auto", "origin-node", "auto-node", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional);
+            .AddEdge("origin-auto", "origin-node", "auto-node", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
         var origin = prepared.Groups.Single(group => group.Id == "origin");
@@ -208,7 +208,7 @@ internal static partial class SmokeTests {
             .AddGroup("right", "Right", 0, 0, 160, 120, TopologyHealthStatus.Warning)
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "left")
             .AddAutoNode("right-node", "Right", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "right")
-            .AddEdge("left-right", "left-node", "right-node", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional);
+            .AddEdge("left-right", "left-node", "right-node", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
         var left = prepared.Groups.Single(group => group.Id == "left");
@@ -291,7 +291,7 @@ internal static partial class SmokeTests {
                 (95 + i * 17).ToString(CultureInfo.InvariantCulture) + " ms",
                 TopologyEdgeKind.Replication,
                 i % 3 == 0 ? TopologyHealthStatus.Critical : TopologyHealthStatus.Warning,
-                TopologyDirection.Forward,
+                VisualLinkDirection.Forward,
                 TopologyEdgeRouting.ObstacleAvoidingOrthogonal,
                 "Q:" + (180 + i * 41).ToString(CultureInfo.InvariantCulture),
                 tertiaryLabel: (i + 2).ToString(CultureInfo.InvariantCulture) + "m ago");
@@ -333,9 +333,9 @@ internal static partial class SmokeTests {
         var emeaSites = AddDenseSitesAndSubnets(chart, "emea", "EMEA", 56, 122, 20);
         var apacSites = AddDenseSitesAndSubnets(chart, "apac", "APAC", 39, 86, 30);
         chart
-            .AddEdge("site-link-amer-emea", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
-            .AddEdge("site-link-emea-apac", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
-            .AddEdge("site-link-amer-apac", "amer-hub", "apac-hub", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "Backup");
+            .AddEdge("site-link-amer-emea", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
+            .AddEdge("site-link-emea-apac", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS")
+            .AddEdge("site-link-amer-apac", "amer-hub", "apac-hub", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "Backup");
 
         AddReplicationPairs(chart, amerSites, emeaSites, "amer-emea-repl", 18, TopologyHealthStatus.Healthy);
         AddReplicationPairs(chart, emeaSites, apacSites, "emea-apac-repl", 18, TopologyHealthStatus.Warning);
@@ -389,7 +389,7 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("amer", "AMER Hub", 70, 86, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 96, height: 56)
             .AddNode("emea", "EMEA Hub", 354, 86, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 96, height: 56)
-            .AddEdge("amer-emea", "amer", "emea", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal);
+            .AddEdge("amer-emea", "amer", "emea", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal);
 
         var options = new TopologyRenderOptions {
             IncludeLegend = false,
@@ -526,8 +526,8 @@ internal static partial class SmokeTests {
             .AddAutoNode("amer-hub", "AMER Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "amer")
             .AddAutoNode("emea-hub", "EMEA Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "emea")
             .AddAutoNode("apac-hub", "APAC Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "apac")
-            .AddEdge("amer-emea", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .AddEdge("emea-apac", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+            .AddEdge("amer-emea", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("emea-apac", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
         var amer = prepared.Groups.Single(group => group.Id == "amer");
@@ -551,7 +551,7 @@ internal static partial class SmokeTests {
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
-            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
+            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
             .WithId("dense-explicit-btt")
             .WithViewport(760, 520, 24)
@@ -561,7 +561,7 @@ internal static partial class SmokeTests {
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
-            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
+            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
         var rtlPinned = rightToLeft.Groups.Single(group => group.Id == "pinned");
         var bttPinned = bottomToTop.Groups.Single(group => group.Id == "pinned");
 
@@ -581,7 +581,7 @@ internal static partial class SmokeTests {
             .AddGroup("right", "Right", 0, 0, 180, 150, TopologyHealthStatus.Warning)
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
             .AddAutoNode("right-node", "Right", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "right")
-            .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
+            .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
         var left = prepared.Groups.Single(group => group.Id == "left");
         var right = prepared.Groups.Single(group => group.Id == "right");
 
@@ -600,7 +600,7 @@ internal static partial class SmokeTests {
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
-            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
             .WithEdgeWaypoints("link", new ChartForgeX.Primitives.ChartPoint(260, 180)), options: new TopologyRenderOptions { IncludeLegend = false });
         var edge = prepared.Edges.Single(item => item.Id == "link");
         var pinned = prepared.Groups.Single(group => group.Id == "pinned");
@@ -622,7 +622,7 @@ internal static partial class SmokeTests {
             .AddAutoGroup("right", "Right", TopologyHealthStatus.Warning)
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
             .AddAutoNode("right-node", "Right", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "right")
-            .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
             .WithEdgeRouteLane("link", 24), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
             .WithId("btt-route-lane")
@@ -633,7 +633,7 @@ internal static partial class SmokeTests {
             .AddAutoGroup("bottom", "Bottom", TopologyHealthStatus.Warning)
             .AddAutoNode("top-node", "Top", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "top")
             .AddAutoNode("bottom-node", "Bottom", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "bottom")
-            .AddEdge("link", "top-node", "bottom-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
+            .AddEdge("link", "top-node", "bottom-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
             .WithEdgeRouteLane("link", 18), options: new TopologyRenderOptions { IncludeLegend = false });
 
         Assert(Math.Abs(rightToLeft.Edges.Single().RouteLane + 24) < 0.001, "Right-to-left mirroring should invert the route-lane sign for regenerated edge geometry.");
@@ -652,8 +652,8 @@ internal static partial class SmokeTests {
             .AddAutoNode("core-hub", "Core Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "core")
             .AddAutoNode("middle-hub", "Middle Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "middle")
             .AddAutoNode("edge-hub", "Edge Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Critical, "edge")
-            .AddEdge("core-middle", "core-hub", "middle-hub", "32 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .AddEdge("middle-edge", "middle-hub", "edge-hub", "58 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+            .AddEdge("core-middle", "core-hub", "middle-hub", "32 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("middle-edge", "middle-hub", "edge-hub", "58 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
         var core = prepared.Groups.Single(group => group.Id == "core");
@@ -711,7 +711,7 @@ internal static partial class SmokeTests {
             var status = i % 43 == 0 ? TopologyHealthStatus.Critical : i % 17 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy;
             chart
                 .AddAutoNode(subnet, labelPrefix + " Subnet " + i.ToString("000", CultureInfo.InvariantCulture), TopologyNodeKind.Network, status, groupId, cidrOctet.ToString(CultureInfo.InvariantCulture) + "." + (i / 255).ToString(CultureInfo.InvariantCulture) + "." + (i % 255).ToString(CultureInfo.InvariantCulture) + ".0/24", width: 48, height: 36, symbol: "N")
-                .AddEdge("map-" + subnet, subnet, site, null, TopologyEdgeKind.Mapping, status, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+                .AddEdge("map-" + subnet, subnet, site, null, TopologyEdgeKind.Mapping, status, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
         }
 
         return siteIds;
@@ -719,7 +719,7 @@ internal static partial class SmokeTests {
 
     private static void AddReplicationPairs(TopologyChart chart, IReadOnlyList<string> sourceSites, IReadOnlyList<string> targetSites, string prefix, int count, TopologyHealthStatus status) {
         for (var i = 0; i < count; i++) {
-            chart.AddEdge(prefix + "-" + i.ToString("000", CultureInfo.InvariantCulture), sourceSites[(i * 5) % sourceSites.Count], targetSites[(i * 7) % targetSites.Count], (32 + i * 3).ToString(CultureInfo.InvariantCulture) + " ms", TopologyEdgeKind.Replication, status, TopologyDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "Q:" + (100 + i * 13).ToString(CultureInfo.InvariantCulture), tertiaryLabel: (i + 1).ToString(CultureInfo.InvariantCulture) + "m ago");
+            chart.AddEdge(prefix + "-" + i.ToString("000", CultureInfo.InvariantCulture), sourceSites[(i * 5) % sourceSites.Count], targetSites[(i * 7) % targetSites.Count], (32 + i * 3).ToString(CultureInfo.InvariantCulture) + " ms", TopologyEdgeKind.Replication, status, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "Q:" + (100 + i * 13).ToString(CultureInfo.InvariantCulture), tertiaryLabel: (i + 1).ToString(CultureInfo.InvariantCulture) + "m ago");
         }
     }
 

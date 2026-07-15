@@ -100,10 +100,10 @@ public static class MermaidArchitectureRendering {
 
     private static MermaidArchitectureEndpoint ResolveTarget(MermaidArchitectureEdge edge) => edge.Operator.StartsWith("<", StringComparison.Ordinal) && !edge.Operator.EndsWith(">", StringComparison.Ordinal) ? edge.Left : edge.Right;
 
-    private static TopologyDirection Direction(string op) {
-        if (op == "<-->") return TopologyDirection.Bidirectional;
-        if (op == "--") return TopologyDirection.None;
-        return TopologyDirection.Forward;
+    private static VisualLinkDirection Direction(string op) {
+        if (op == "<-->") return VisualLinkDirection.Bidirectional;
+        if (op == "--") return VisualLinkDirection.None;
+        return VisualLinkDirection.Forward;
     }
 
     private static void ApplyEndpointMetadata(System.Collections.Generic.IDictionary<string, string> metadata, string prefix, MermaidArchitectureEndpoint endpoint) {

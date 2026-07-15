@@ -47,7 +47,7 @@ public static class MermaidEventModelingRendering {
 
         for (var index = 0; index < document.Relations.Count; index++) {
             var relation = document.Relations[index];
-            chart.AddEdge("eventmodeling-edge-" + index.ToString(CultureInfo.InvariantCulture), relation.SourceNumber, relation.TargetNumber, relation.IsInferred ? null : "explicit", TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, TopologyDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge("eventmodeling-edge-" + index.ToString(CultureInfo.InvariantCulture), relation.SourceNumber, relation.TargetNumber, relation.IsInferred ? null : "explicit", TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.inferred"] = relation.IsInferred ? "true" : "false";
         }
 

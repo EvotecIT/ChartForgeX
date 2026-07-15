@@ -70,10 +70,10 @@ internal static partial class TopologyVisualExamples {
         AddForceRing(chart, "owner", "identity", 6, TopologyEdgeKind.Membership, "member");
 
         chart
-            .AddEdge("force-critical-app-data", "application-03", "data-04", "critical dependency", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional)
-            .AddEdge("force-warning-id-app", "identity-07", "application-08", "privileged path", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, TopologyDirection.Forward)
-            .AddEdge("force-warning-endpoint-data", "endpoint-06", "data-01", "direct data path", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, TopologyDirection.Forward)
-            .AddEdge("force-owner-data", "owner-02", "data-06", "steward", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
+            .AddEdge("force-critical-app-data", "application-03", "data-04", "critical dependency", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional)
+            .AddEdge("force-warning-id-app", "identity-07", "application-08", "privileged path", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
+            .AddEdge("force-warning-endpoint-data", "endpoint-06", "data-01", "direct data path", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
+            .AddEdge("force-owner-data", "owner-02", "data-06", "steward", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .WithEdgeEmphasis("force-critical-app-data", TopologyEdgeEmphasis.Strong)
             .WithEdgeEmphasis("force-warning-id-app", TopologyEdgeEmphasis.Strong)
             .WithEdgeEmphasis("force-warning-endpoint-data", TopologyEdgeEmphasis.Strong);
@@ -120,11 +120,11 @@ internal static partial class TopologyVisualExamples {
         AddForceRing(chart, "control", 14, "data", 20, 22, TopologyEdgeKind.DataFlow, "governs");
 
         chart
-            .AddEdge("busy-critical-app-data", "application-03", "data-17", "critical dependency", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Bidirectional)
-            .AddEdge("busy-warning-id-app", "identity-19", "application-08", "privileged path", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, TopologyDirection.Forward)
-            .AddEdge("busy-warning-endpoint-data", "endpoint-16", "data-01", "direct data path", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, TopologyDirection.Forward)
-            .AddEdge("busy-critical-control-network", "control-05", "network-12", "policy gap", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, TopologyDirection.Forward)
-            .AddEdge("busy-owner-data", "owner-11", "data-06", "steward", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
+            .AddEdge("busy-critical-app-data", "application-03", "data-17", "critical dependency", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional)
+            .AddEdge("busy-warning-id-app", "identity-19", "application-08", "privileged path", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
+            .AddEdge("busy-warning-endpoint-data", "endpoint-16", "data-01", "direct data path", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
+            .AddEdge("busy-critical-control-network", "control-05", "network-12", "policy gap", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
+            .AddEdge("busy-owner-data", "owner-11", "data-06", "steward", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .WithEdgeEmphasis("busy-critical-app-data", TopologyEdgeEmphasis.Strong)
             .WithEdgeEmphasis("busy-warning-id-app", TopologyEdgeEmphasis.Strong)
             .WithEdgeEmphasis("busy-warning-endpoint-data", TopologyEdgeEmphasis.Strong)
@@ -152,11 +152,11 @@ internal static partial class TopologyVisualExamples {
             .AddAutoNode("data-payroll", "Payroll DB", TopologyNodeKind.Database, TopologyHealthStatus.Critical, "data", "reads", width: 34, height: 34, symbol: "DB", color: "#059669")
             .AddAutoNode("control-mfa", "MFA policy", TopologyNodeKind.Process, TopologyHealthStatus.Warning, "control", "governs", width: 34, height: 34, symbol: "CTL", color: "#DC2626")
             .AddAutoNode("owner-hr", "HR owners", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "owner", "owns", width: 34, height: 34, symbol: "TM", color: "#EA580C")
-            .AddEdge("radial-admins-api", "application-03", "identity-admins", "sign-in", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, TopologyDirection.Bidirectional)
-            .AddEdge("radial-endpoint-api", "application-03", "endpoint-admin", "calls", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional)
-            .AddEdge("radial-api-db", "application-03", "data-payroll", "reads", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Critical, TopologyDirection.Forward)
-            .AddEdge("radial-policy-api", "application-03", "control-mfa", "governs", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, TopologyDirection.Forward)
-            .AddEdge("radial-owner-api", "application-03", "owner-hr", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
+            .AddEdge("radial-admins-api", "application-03", "identity-admins", "sign-in", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
+            .AddEdge("radial-endpoint-api", "application-03", "endpoint-admin", "calls", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional)
+            .AddEdge("radial-api-db", "application-03", "data-payroll", "reads", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
+            .AddEdge("radial-policy-api", "application-03", "control-mfa", "governs", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
+            .AddEdge("radial-owner-api", "application-03", "owner-hr", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .WithEdgeEmphasis("radial-api-db", TopologyEdgeEmphasis.Strong)
             .WithEdgeEmphasis("radial-admins-api", TopologyEdgeEmphasis.Strong);
 
@@ -173,7 +173,7 @@ internal static partial class TopologyVisualExamples {
 
     private static void AddRadialSecondHop(TopologyChart chart, string parentId, string nodeId, string label, TopologyNodeKind kind, string groupId, string edgeLabel, string color) {
         chart.AddAutoNode(nodeId, label, kind, TopologyHealthStatus.Healthy, groupId, edgeLabel, width: 28, height: 28, symbol: label.Substring(0, 1).ToUpperInvariant(), color: color)
-            .AddEdge("radial-" + parentId + "-" + nodeId, parentId, nodeId, edgeLabel, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+            .AddEdge("radial-" + parentId + "-" + nodeId, parentId, nodeId, edgeLabel, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
     }
 
     private static TopologyChart BuildLargeRelationshipRadialEgoGraph() {
@@ -193,12 +193,12 @@ internal static partial class TopologyVisualExamples {
             var branchId = groupId + "-hub";
             chart.AddAutoGroup(groupId, "Conversation " + (branch + 1).ToString(CultureInfo.InvariantCulture), branch % 8 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, "14 nodes", color: color);
             chart.AddAutoNode(branchId, "Hop " + (branch + 1).ToString(CultureInfo.InvariantCulture), BranchKind(branch), branch % 7 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, groupId, "direct", width: 28, height: 28, symbol: BranchSymbol(branch), color: color);
-            chart.AddEdge("large-root-" + branchId, "app-root", branchId, BranchEdgeLabel(branch), BranchEdgeKind(branch), branch % 7 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, TopologyDirection.Bidirectional);
+            chart.AddEdge("large-root-" + branchId, "app-root", branchId, BranchEdgeLabel(branch), BranchEdgeKind(branch), branch % 7 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional);
 
             for (var leaf = 0; leaf < 13; leaf++) {
                 var leafId = groupId + "-leaf-" + leaf.ToString("00", CultureInfo.InvariantCulture);
                 chart.AddAutoNode(leafId, "Leaf " + (branch + 1).ToString(CultureInfo.InvariantCulture) + "." + (leaf + 1).ToString(CultureInfo.InvariantCulture), LeafKind(leaf), leaf % 11 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, groupId, LeafEdgeLabel(leaf), width: 20, height: 20, symbol: LeafSymbol(leaf), color: color);
-                chart.AddEdge("large-" + branchId + "-" + leaf.ToString("00", CultureInfo.InvariantCulture), branchId, leafId, LeafEdgeLabel(leaf), LeafEdgeKind(leaf), leaf % 11 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, TopologyDirection.Forward);
+                chart.AddEdge("large-" + branchId + "-" + leaf.ToString("00", CultureInfo.InvariantCulture), branchId, leafId, LeafEdgeLabel(leaf), LeafEdgeKind(leaf), leaf % 11 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
             }
         }
 
@@ -277,10 +277,10 @@ internal static partial class TopologyVisualExamples {
             var id = groupId + "-" + i.ToString("00", CultureInfo.InvariantCulture);
             var status = i % 9 == 4 ? TopologyHealthStatus.Critical : i % 5 == 2 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy;
             chart.AddAutoNode(id, label + " " + (i + 1).ToString(CultureInfo.InvariantCulture), kind, status, groupId, status.ToString(), width: 32, height: 32, symbol: label.Substring(0, 1).ToUpperInvariant(), color: color);
-            chart.AddEdge(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), groupId + "-hub", id, "cluster", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, TopologyDirection.None)
+            chart.AddEdge(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), groupId + "-hub", id, "cluster", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, VisualLinkDirection.None)
                 .WithEdgeEmphasis(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), TopologyEdgeEmphasis.Subtle);
             if (i > 0 && i % 3 != 0) {
-                chart.AddEdge(groupId + "-peer-" + i.ToString("00", CultureInfo.InvariantCulture), groupId + "-" + (i - 1).ToString("00", CultureInfo.InvariantCulture), id, "peer", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, TopologyDirection.None)
+                chart.AddEdge(groupId + "-peer-" + i.ToString("00", CultureInfo.InvariantCulture), groupId + "-" + (i - 1).ToString("00", CultureInfo.InvariantCulture), id, "peer", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.None)
                     .WithEdgeEmphasis(groupId + "-peer-" + i.ToString("00", CultureInfo.InvariantCulture), TopologyEdgeEmphasis.Subtle);
             }
         }
@@ -302,7 +302,7 @@ internal static partial class TopologyVisualExamples {
                 label,
                 kind,
                 status,
-                TopologyDirection.Forward);
+                VisualLinkDirection.Forward);
         }
     }
 

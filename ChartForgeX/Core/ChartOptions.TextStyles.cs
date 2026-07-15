@@ -6,37 +6,37 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets the text style used for chart titles.
     /// </summary>
-    public ChartTextStyle TitleStyle { get; } = new();
+    public TextStyleOverride TitleStyle { get; } = new();
 
     /// <summary>
     /// Gets the text style used for chart subtitles.
     /// </summary>
-    public ChartTextStyle SubtitleStyle { get; } = new();
+    public TextStyleOverride SubtitleStyle { get; } = new();
 
     /// <summary>
     /// Gets the text style used for axis titles.
     /// </summary>
-    public ChartTextStyle AxisTitleStyle { get; } = new();
+    public TextStyleOverride AxisTitleStyle { get; } = new();
 
     /// <summary>
     /// Gets the text style used for axis tick and category labels.
     /// </summary>
-    public ChartTextStyle TickLabelStyle { get; } = new();
+    public TextStyleOverride TickLabelStyle { get; } = new();
 
     /// <summary>
     /// Gets the text style used for legend labels.
     /// </summary>
-    public ChartTextStyle LegendStyle { get; } = new();
+    public TextStyleOverride LegendStyle { get; } = new();
 
     /// <summary>
     /// Gets the text style used for data labels.
     /// </summary>
-    public ChartTextStyle DataLabelStyle { get; } = new();
+    public TextStyleOverride DataLabelStyle { get; } = new();
 
     /// <summary>
     /// Gets the text style for the requested role.
     /// </summary>
-    public ChartTextStyle GetTextStyle(ChartTextRole role) {
+    public TextStyleOverride GetTextStyle(ChartTextRole role) {
         if (!Enum.IsDefined(typeof(ChartTextRole), role)) throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown text role.");
         if (role == ChartTextRole.Title) return TitleStyle;
         if (role == ChartTextRole.Subtitle) return SubtitleStyle;

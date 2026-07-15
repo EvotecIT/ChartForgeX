@@ -27,7 +27,7 @@ internal static partial class SmokeTests {
             .AddIconNode("switch1", "Core Switch", "network:switch", 178, 120, TopologyHealthStatus.Warning, "directory", catalog: catalog)
             .AddIconNode("backup1", "VBR01", "veeam:backup-server", 360, 120, TopologyHealthStatus.Healthy, groupId: null, catalog: catalog)
             .AddEdge("dc-switch", "dc1", "switch1", "LDAP", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy)
-            .AddEdge("switch-backup", "switch1", "backup1", "backup", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, TopologyDirection.Forward);
+            .AddEdge("switch-backup", "switch1", "backup1", "backup", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward);
 
         var options = new TopologyRenderOptions {
             IncludeLegend = false,

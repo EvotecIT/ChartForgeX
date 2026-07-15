@@ -133,10 +133,10 @@ public static class MermaidC4Rendering {
 
     private static double NodeWidth(MermaidC4Element element) => Has(element.Kind, "person") ? 148 : 174;
 
-    private static TopologyDirection Direction(MermaidC4Relationship relationship) {
-        if (relationship.Kind == "birel") return TopologyDirection.Bidirectional;
-        if (relationship.Kind == "relback") return TopologyDirection.Backward;
-        return TopologyDirection.Forward;
+    private static VisualLinkDirection Direction(MermaidC4Relationship relationship) {
+        if (relationship.Kind == "birel") return VisualLinkDirection.Bidirectional;
+        if (relationship.Kind == "relback") return VisualLinkDirection.Backward;
+        return VisualLinkDirection.Forward;
     }
 
     private static TopologyLayoutDirection ToLayoutDirection(string? direction) {

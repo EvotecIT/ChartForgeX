@@ -17,7 +17,7 @@ internal static partial class SmokeTests {
 
         var (deR, deG, deB, deA) = ChartColors.Emerald400.WithAlpha(128);
         Assert(deR == 52 && deG == 211 && deB == 153 && deA == 128, "Chart colors should deconstruct into RGBA channels.");
-        Assert(ChartColors.GetNamedColors().Count >= 142, "ChartForgeX should expose the stable System.Drawing/CSS named color set.");
+        Assert(ChartColors.GetNamedColors().Count >= 142, "ChartForgeX should expose the stable CSS named color set.");
         Assert(ChartColors.TryGet("RebeccaPurple", out var rebecca) && rebecca.ToHex() == "#663399", "Named color lookup should include modern CSS colors.");
         Assert(ChartColor.Parse("DarkSlateGrey").ToHex() == ChartColors.DarkSlateGray.ToHex(), "Named color parsing should support grey aliases.");
         Assert(!ChartColors.TryGet("ActiveCaption", out _), "Dynamic Windows system colors should stay out of the deterministic ChartForgeX named color map.");

@@ -283,7 +283,7 @@ public sealed class MarkupFlowParser {
 
     private static void AddConnector(FlowArtifact flow, string source, string target, string label, Dictionary<string, string> attributes) {
         var kind = attributes.TryGetValue("kind", out var kindValue) || attributes.TryGetValue("type", out kindValue) ? ParseConnectorKind(kindValue) : FlowArtifactConnectorKind.Flow;
-        var direction = attributes.TryGetValue("direction", out var directionValue) ? ParseConnectorDirection(directionValue) : FlowArtifactConnectorDirection.Forward;
+        var direction = attributes.TryGetValue("direction", out var directionValue) ? ParseConnectorDirection(directionValue) : VisualLinkDirection.Forward;
         var status = ParseStatus(Value(attributes, "status", string.Empty));
         flow.AddConnector(source, target, label, kind, direction, status, ValidatedColorOrNull(attributes, "Flow connector color"));
     }
@@ -377,15 +377,15 @@ public sealed class MarkupFlowParser {
         }
     }
 
-    private static FlowArtifactConnectorDirection ParseConnectorDirection(string value) {
+    private static VisualLinkDirection ParseConnectorDirection(string value) {
         switch (NormalizeKey(value)) {
-            case "none": return FlowArtifactConnectorDirection.None;
+            case "none": return VisualLinkDirection.None;
             case "forward":
-            case "to": return FlowArtifactConnectorDirection.Forward;
+            case "to": return VisualLinkDirection.Forward;
             case "back":
-            case "backward": return FlowArtifactConnectorDirection.Backward;
+            case "backward": return VisualLinkDirection.Backward;
             case "both":
-            case "bidirectional": return FlowArtifactConnectorDirection.Bidirectional;
+            case "bidirectional": return VisualLinkDirection.Bidirectional;
             default:
                 throw new ArgumentException("Unknown flow connector direction '" + value + "'.");
         }

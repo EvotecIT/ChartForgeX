@@ -15,8 +15,8 @@ public sealed partial class SvgVisualBlockRenderer {
         RenderSegmentedMetricHeading(writer, card, ref y, content.X, content.Width);
         var hasAction = card.ActionLabel.Length > 0;
         var layout = VisualBlockRendering.SegmentedCompositionLayout(card, content, y, hasAction);
-        WriteText(writer, card.Label, content.X, y + theme.SubtitleFontSize, content.Width * 0.58, VisualTextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
-        WriteText(writer, card.Value, content.X + content.Width * 0.58, y + layout.MetricSize * 0.82, content.Width * 0.42, VisualTextAlignment.Right, theme.Text, theme.FontFamily, layout.MetricSize, "850");
+        WriteText(writer, card.Label, content.X, y + theme.SubtitleFontSize, content.Width * 0.58, TextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "600");
+        WriteText(writer, card.Value, content.X + content.Width * 0.58, y + layout.MetricSize * 0.82, content.Width * 0.42, TextAlignment.Right, theme.Text, theme.FontFamily, layout.MetricSize, "850");
         y = layout.StripY;
         RenderCompositionStrip(writer, card, content.X, y, content.Width, layout.StripHeight);
         y = layout.LegendY;
@@ -34,8 +34,8 @@ public sealed partial class SvgVisualBlockRenderer {
             var swatchSize = Math.Max(8, Math.Min(14, rowHeight * 0.55));
             var rowFont = Math.Max(10, Math.Min(theme.SubtitleFontSize, rowHeight * 0.58));
             writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-legend-swatch").Attribute("x", content.X).Attribute("y", y + (rowHeight - swatchSize) / 2).Attribute("width", swatchSize).Attribute("height", swatchSize).Attribute("rx", Math.Min(4, swatchSize * 0.32)).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, segment.Label, content.X + swatchSize + 10, y + rowHeight * 0.66, content.Width * 0.58, VisualTextAlignment.Left, theme.Text, theme.FontFamily, rowFont, "500");
-            WriteText(writer, VisualBlockRendering.SegmentedCompositionValueText(card, segment, total), content.X + content.Width * 0.66, y + rowHeight * 0.66, content.Width * 0.34, VisualTextAlignment.Right, theme.Text, theme.FontFamily, rowFont, "750");
+            WriteText(writer, segment.Label, content.X + swatchSize + 10, y + rowHeight * 0.66, content.Width * 0.58, TextAlignment.Left, theme.Text, theme.FontFamily, rowFont, "500");
+            WriteText(writer, VisualBlockRendering.SegmentedCompositionValueText(card, segment, total), content.X + content.Width * 0.66, y + rowHeight * 0.66, content.Width * 0.34, TextAlignment.Right, theme.Text, theme.FontFamily, rowFont, "750");
             y += rowHeight;
         }
 

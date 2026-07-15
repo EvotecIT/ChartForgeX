@@ -13,7 +13,7 @@ internal static partial class SmokeTests {
             .AddNode("cert-a", "Certificate A", 72, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy)
             .AddNode("cert-b", "Certificate B", 250, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "CRT", color: "#1D4ED8")
             .AddNode("owner", "Owner", 250, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
-            .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, TopologyDirection.Forward)
+            .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .WithNodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog);
 
         Assert(chart.Nodes[0].Symbol == "TLS", "Bulk node-kind icon styling should fill missing node symbols from the icon.");

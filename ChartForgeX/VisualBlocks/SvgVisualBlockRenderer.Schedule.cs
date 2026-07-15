@@ -24,7 +24,7 @@ public sealed partial class SvgVisualBlockRenderer {
         foreach (var tick in VisualBlockRendering.ScheduleTicks(block)) {
             var x = content.X + content.Width * VisualBlockRendering.ScheduleRatio(block, tick);
             if (block.ShowGrid) writer.StartElement("line").Attribute("data-cfx-role", "schedule-grid-line").Attribute("x1", x).Attribute("y1", plotTop).Attribute("x2", x).Attribute("y2", plotTop + plotHeight).Attribute("stroke", theme.Grid.ToCss()).Attribute("stroke-opacity", 0.56).Attribute("stroke-dasharray", "4 5").EndEmptyElement().Line();
-            WriteText(writer, VisualBlockRendering.FormatScheduleHour(tick), Math.Max(content.X, Math.Min(content.X + content.Width - 88, x - 44)), y + 18, 88, VisualTextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "600");
+            WriteText(writer, VisualBlockRendering.FormatScheduleHour(tick), Math.Max(content.X, Math.Min(content.X + content.Width - 88, x - 44)), y + 18, 88, TextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "600");
         }
 
         for (var lane = 0; lane < laneCount; lane++) {
@@ -65,11 +65,11 @@ public sealed partial class SvgVisualBlockRenderer {
             writer.StartElement("rect").Attribute("data-cfx-role", "schedule-event-stripe").Attribute("x", left).Attribute("y", eventY).Attribute("width", Math.Min(5, width)).Attribute("height", eventHeight).Attribute("rx", Math.Min(3, radius)).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
             var avatarReserve = Math.Min(width * 0.34, item.Avatars.Count == 0 ? 0 : 18 + Math.Min(3, item.Avatars.Count) * 14);
             var badgeReserve = item.Badge.Length == 0 ? 0 : Math.Min(78, VisualBlockRendering.EstimateTextWidth(item.Badge, theme.SubtitleFontSize) + 18);
-            WriteText(writer, item.Title, left + 14, eventY + eventHeight * 0.62, Math.Max(1, width - 20 - avatarReserve - badgeReserve), VisualTextAlignment.Left, color, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "750");
+            WriteText(writer, item.Title, left + 14, eventY + eventHeight * 0.62, Math.Max(1, width - 20 - avatarReserve - badgeReserve), TextAlignment.Left, color, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "750");
             if (item.Badge.Length > 0) {
                 var badgeWidth = Math.Min(78, badgeReserve);
                 writer.StartElement("rect").Attribute("data-cfx-role", "schedule-event-badge").Attribute("x", left + width - avatarReserve - badgeWidth - 6).Attribute("y", eventY + 7).Attribute("width", badgeWidth).Attribute("height", eventHeight - 14).Attribute("rx", 7).Attribute("fill", color.WithAlpha(50).ToCss()).EndEmptyElement().Line();
-                WriteText(writer, item.Badge, left + width - avatarReserve - badgeWidth, eventY + eventHeight * 0.62, badgeWidth - 10, VisualTextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "800");
+                WriteText(writer, item.Badge, left + width - avatarReserve - badgeWidth, eventY + eventHeight * 0.62, badgeWidth - 10, TextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "800");
             }
 
             RenderScheduleAvatars(writer, item, color, theme, left + width - avatarReserve + 3, eventY + eventHeight / 2);
@@ -90,7 +90,7 @@ public sealed partial class SvgVisualBlockRenderer {
             if (actionWidth < 36) break;
             cursor -= actionWidth;
             writer.StartElement("rect").Attribute("data-cfx-role", "schedule-header-action").Attribute("x", cursor).Attribute("y", y).Attribute("width", actionWidth).Attribute("height", 30).Attribute("rx", 8).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, action, cursor + 12, y + 20, actionWidth - 24, VisualTextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "650");
+            WriteText(writer, action, cursor + 12, y + 20, actionWidth - 24, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "650");
             cursor -= 8;
         }
 
@@ -102,13 +102,13 @@ public sealed partial class SvgVisualBlockRenderer {
         for (var i = 0; i < count; i++) {
             var cx = x + i * 14;
             writer.StartElement("circle").Attribute("data-cfx-role", "schedule-avatar").Attribute("cx", cx).Attribute("cy", y).Attribute("r", 8).Attribute("fill", theme.CardBackground.ToCss()).Attribute("stroke", color.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, item.Avatars[i], cx - 7, y + 3, 14, VisualTextAlignment.Center, color, theme.FontFamily, 8, "800");
+            WriteText(writer, item.Avatars[i], cx - 7, y + 3, 14, TextAlignment.Center, color, theme.FontFamily, 8, "800");
         }
 
         if (item.Avatars.Count > count) {
             var cx = x + count * 14;
             writer.StartElement("circle").Attribute("data-cfx-role", "schedule-avatar-more").Attribute("cx", cx).Attribute("cy", y).Attribute("r", 8).Attribute("fill", color.WithAlpha(45).ToCss()).Attribute("stroke", color.ToCss()).EndEmptyElement().Line();
-            WriteText(writer, "+" + (item.Avatars.Count - count).ToString(CultureInfo.InvariantCulture), cx - 7, y + 3, 14, VisualTextAlignment.Center, color, theme.FontFamily, 8, "800");
+            WriteText(writer, "+" + (item.Avatars.Count - count).ToString(CultureInfo.InvariantCulture), cx - 7, y + 3, 14, TextAlignment.Center, color, theme.FontFamily, 8, "800");
         }
     }
 }

@@ -303,15 +303,17 @@ function Invoke-DotNetCommand {
         [Parameter(Mandatory = $true)] [string[]] $Arguments,
         [Parameter(Mandatory = $true)] [string] $Description,
         [Parameter(Mandatory = $true)] [int] $TimeoutSeconds,
-        [switch] $Quiet
+        [switch] $Quiet,
+        [switch] $PassThruOutput
     )
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = 'dotnet'
     $startInfo.WorkingDirectory = (Get-Location).ProviderPath
     $startInfo.UseShellExecute = $false
-    $startInfo.RedirectStandardOutput = [bool]$Quiet
-    $startInfo.RedirectStandardError = [bool]$Quiet
+    $captureOutput = $Quiet -or $PassThruOutput
+    $startInfo.RedirectStandardOutput = [bool]$captureOutput
+    $startInfo.RedirectStandardError = [bool]$captureOutput
     if ($null -ne $startInfo.ArgumentList) {
         foreach ($argument in $Arguments) {
             [void] $startInfo.ArgumentList.Add($argument)
@@ -323,7 +325,7 @@ function Invoke-DotNetCommand {
     $process = [System.Diagnostics.Process]::Start($startInfo)
     $standardOutput = $null
     $standardError = $null
-    if ($Quiet) {
+    if ($captureOutput) {
         $standardOutput = $process.StandardOutput.ReadToEndAsync()
         $standardError = $process.StandardError.ReadToEndAsync()
     }
@@ -339,7 +341,7 @@ function Invoke-DotNetCommand {
     }
 
     if ($process.ExitCode -ne 0) {
-        if ($Quiet) {
+        if ($captureOutput) {
             $output = $standardOutput.GetAwaiter().GetResult()
             $errorOutput = $standardError.GetAwaiter().GetResult()
             $tail = (($output, $errorOutput) -join [Environment]::NewLine).Trim()
@@ -349,6 +351,10 @@ function Invoke-DotNetCommand {
         }
 
         throw "$Description failed with exit code $($process.ExitCode)."
+    }
+
+    if ($PassThruOutput) {
+        return $standardOutput.GetAwaiter().GetResult().Trim()
     }
 }
 
@@ -613,8 +619,7 @@ try {
         $mermaidPackageVersion = $null
         $markupMermaidPackageVersion = $null
         foreach ($packageProject in $packageProjects) {
-            [xml] $projectXml = Get-Content -Path $packageProject.Project
-            $packageVersion = [string] $projectXml.Project.PropertyGroup.Version
+            $packageVersion = Invoke-DotNetCommand -Arguments @('msbuild', $packageProject.Project, '-nologo', '-getProperty:PackageVersion', "-p:Configuration=$Configuration") -Description "$($packageProject.Id) package-version evaluation" -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet -PassThruOutput
             if ([string]::IsNullOrWhiteSpace($packageVersion)) {
                 throw "Package version is missing for $($packageProject.Project)."
             }
