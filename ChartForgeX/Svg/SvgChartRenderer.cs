@@ -253,6 +253,12 @@ public sealed partial class SvgChartRenderer {
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
+        if (IsPolarChart(chart)) {
+            DrawPolar(sb, chart, plot);
+            AppendSvgEnd(sb, "g");
+            AppendSvgEnd(sb, "svg");
+            return sb.ToString();
+        }
         if (IsPolarAreaChart(chart)) {
             DrawPolarArea(sb, chart, plot, id);
             AppendSvgEnd(sb, "g");

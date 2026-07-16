@@ -664,6 +664,7 @@ internal static partial class SmokeTests {
             "AddBullet",
             "AddWaterfall",
             "AddRadar",
+            "AddPolar",
             "AddPolarArea",
             "AddFunnel",
             "AddTreemap",

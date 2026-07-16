@@ -5,11 +5,11 @@ using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
 
-/// <summary>Owns renderer-neutral bounds, ticks, and normalization for radar value axes.</summary>
-internal sealed class RadarValueScale {
+/// <summary>Owns renderer-neutral bounds, ticks, and normalization for radial value axes.</summary>
+internal sealed class RadialValueScale {
     private readonly ChartAxis _axis;
 
-    private RadarValueScale(ChartAxis axis, double minimum, double maximum, IReadOnlyList<double> ticks) {
+    private RadialValueScale(ChartAxis axis, double minimum, double maximum, IReadOnlyList<double> ticks) {
         _axis = axis;
         Minimum = minimum;
         Maximum = maximum;
@@ -22,15 +22,16 @@ internal sealed class RadarValueScale {
 
     public IReadOnlyList<double> Ticks { get; }
 
-    /// <summary>Builds one shared radar scale from the configured value axis and rendered series.</summary>
-    public static RadarValueScale Create(ChartAxis axis, IEnumerable<ChartSeries> series) {
+    /// <summary>Builds one shared radial scale from the configured value axis and rendered series.</summary>
+    public static RadialValueScale Create(ChartAxis axis, IEnumerable<ChartSeries> series, string chartName) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (series == null) throw new ArgumentNullException(nameof(series));
+        if (string.IsNullOrWhiteSpace(chartName)) throw new ArgumentException("Chart name cannot be empty.", nameof(chartName));
 
         var values = series.SelectMany(item => item.Points).Select(point => point.Y).ToArray();
-        if (values.Length == 0) throw new InvalidOperationException("Radar charts require at least one value.");
+        if (values.Length == 0) throw new InvalidOperationException(chartName + " charts require at least one value.");
         if (axis.Scale == ChartScaleKind.Logarithmic && values.Any(value => value <= 0)) {
-            throw new InvalidOperationException("Radar charts with logarithmic value axes require positive values only.");
+            throw new InvalidOperationException(chartName + " charts with logarithmic value axes require positive values only.");
         }
 
         var minimum = axis.Minimum ?? AutomaticMinimum(axis, values);
@@ -39,10 +40,10 @@ internal sealed class RadarValueScale {
 
         var ticks = ChartTicks.Generate(axis, minimum, maximum).Where(tick => tick >= minimum).ToArray();
         if (ticks.Length > 0) maximum = Math.Max(maximum, ticks[ticks.Length - 1]);
-        return new RadarValueScale(axis, minimum, maximum, ticks);
+        return new RadialValueScale(axis, minimum, maximum, ticks);
     }
 
-    /// <summary>Maps a radar value into the configured scale after constraining it to the visible domain.</summary>
+    /// <summary>Maps a radial value into the configured scale after constraining it to the visible domain.</summary>
     public double Normalize(double value) {
         var bounded = Math.Min(Maximum, Math.Max(Minimum, value));
         return ChartScaleTransform.Normalize(bounded, Minimum, Maximum, _axis);

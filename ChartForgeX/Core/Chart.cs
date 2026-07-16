@@ -629,6 +629,15 @@ public sealed partial class Chart {
     public Chart AddRadar(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) => Add(name, ChartSeriesKind.Radar, points, color);
 
     /// <summary>
+    /// Adds a polar line series using angle/radius coordinates.
+    /// </summary>
+    /// <param name="name">The series name.</param>
+    /// <param name="points">The ordered polar points. X values are angles in radians and Y values are non-negative radii.</param>
+    /// <param name="color">An optional series color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddPolar(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) => Add(name, ChartSeriesKind.Polar, points, color);
+
+    /// <summary>
     /// Adds a funnel series for descending stage or conversion values.
     /// </summary>
     /// <param name="name">The series name.</param>

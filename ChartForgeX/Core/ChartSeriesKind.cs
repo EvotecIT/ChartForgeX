@@ -232,5 +232,10 @@ public enum ChartSeriesKind {
     /// <summary>
     /// Renders a computed least-squares trend line.
     /// </summary>
-    TrendLine
+    TrendLine,
+
+    /// <summary>
+    /// Renders ordered angle/radius points on a polar coordinate plane.
+    /// </summary>
+    Polar
 }

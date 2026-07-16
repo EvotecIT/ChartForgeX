@@ -18,6 +18,7 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.Bullet,
         ChartSeriesKind.Waterfall,
         ChartSeriesKind.Radar,
+        ChartSeriesKind.Polar,
         ChartSeriesKind.Funnel,
         ChartSeriesKind.Treemap,
         ChartSeriesKind.Timeline,
@@ -128,6 +129,7 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.Dumbbell ||
         kind == ChartSeriesKind.ErrorBar ||
         kind == ChartSeriesKind.Radar ||
+        kind == ChartSeriesKind.Polar ||
         kind == ChartSeriesKind.TrendLine;
 
     public static bool ContainsKind(Chart chart, ChartSeriesKind kind) {

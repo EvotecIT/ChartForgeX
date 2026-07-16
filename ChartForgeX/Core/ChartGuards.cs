@@ -69,6 +69,16 @@ internal static class ChartGuards {
             if (categoryCount < 3) throw new InvalidOperationException("Radar charts require at least three categories.");
         }
 
+        if (exclusiveKinds[0] == ChartSeriesKind.Polar) {
+            if (chart.Options.YAxis.Minimum.HasValue && chart.Options.YAxis.Minimum.Value < 0) {
+                throw new InvalidOperationException("Polar charts require a non-negative radial-axis minimum.");
+            }
+
+            if (!chart.Series.SelectMany(series => series.Points).Any(point => point.Y > 0)) {
+                throw new InvalidOperationException("Polar charts require at least one positive radius.");
+            }
+        }
+
         ValidateSpecializedShape(chart, exclusiveKinds[0]);
     }
 
@@ -173,6 +183,10 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) ValidateScalePair(chart.Series[0], kind.ToString());
         else if (kind == ChartSeriesKind.RadialBar) ValidateRadialBar(chart.Series[0]);
         else if (kind == ChartSeriesKind.LayeredRadial) ValidateLayeredRadial(chart.Series[0]);
+        else if (kind == ChartSeriesKind.Polar) {
+            ValidateMinimumPointCount(chart.Series, kind, 1);
+            foreach (var series in chart.Series) ValidateNonNegativeValues(series, kind);
+        }
         else if (kind == ChartSeriesKind.Bullet) ValidateBullets(chart.Series);
         else if (kind == ChartSeriesKind.Timeline) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);

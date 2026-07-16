@@ -722,6 +722,8 @@ internal static partial class SmokeTests {
         ("Radar series render polar polygons", RadarSeriesRenderPolarPolygons),
         ("Radar honors axes and grid visibility", RadarHonorsAxesAndGridVisibility),
         ("Radar negative explicit maximum infers compatible minimum", RadarNegativeExplicitMaximumInfersCompatibleMinimum),
+        ("Polar uses angle-radius coordinates", PolarUsesAngleRadiusCoordinates),
+        ("Polar honors radial options and validation", PolarHonorsRadialOptionsAndValidation),
         ("Polar-area series render radial segments", PolarAreaSeriesRenderRadialSegments),
         ("Polar-area honors grid visibility", PolarAreaHonorsGridVisibility),
         ("Funnel series render staged segments", FunnelSeriesRenderStagedSegments),

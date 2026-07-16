@@ -36,7 +36,7 @@ public sealed partial class SvgChartRenderer {
         });
     }
 
-    private static void DrawPremiumSvgLinePath(StringBuilder sb, string role, int seriesIndex, int pointCount, string path, ChartColor color, double strokeWidth, ChartLineVisualStyle style) {
+    private static void DrawPremiumSvgLinePath(StringBuilder sb, string role, int seriesIndex, int pointCount, string path, ChartColor color, double strokeWidth, ChartLineVisualStyle style, Action<SvgMarkupWriter>? foregroundAttributes = null) {
         foreach (var layer in ChartLineVisualLayers.Build(color, strokeWidth, style)) {
             if (!layer.IsVisible) continue;
             AppendSvg(sb, writer => {
@@ -52,6 +52,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("stroke-width", layer.StrokeWidth)
                     .Attribute("stroke-linecap", "round")
                     .Attribute("stroke-linejoin", "round");
+                if (layer.IsForeground) foregroundAttributes?.Invoke(writer);
                 if (layer.Opacity < 1) writer.Attribute("opacity", layer.Opacity);
                 writer.EndEmptyElement().Line();
             });
