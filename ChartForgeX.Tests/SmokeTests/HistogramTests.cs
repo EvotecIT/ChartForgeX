@@ -45,8 +45,37 @@ internal static partial class SmokeTests {
         var boundaryLayout = ChartHistogramBinLayout.FromWidth(0.1, 0.5, 0.1);
         var boundaryChart = Chart.Create().AddHistogram("Decimal boundaries", new[] { 0.1, 0.2, 0.3, 0.4, 0.5 }, boundaryLayout);
         Assert(boundaryChart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 1d, 1d, 1d, 2d }), "Decimal values on exact bin boundaries should be assigned to the following bin.");
+        var belowHalf = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(0.5) - 1);
+        var adjacentBoundaryChart = Chart.Create().AddHistogram("Adjacent boundary values", new[] { belowHalf, 0.5 }, ChartHistogramBinLayout.FromWidth(0, 1, 0.1));
+        Assert(adjacentBoundaryChart.Series[0].Points[4].Y == 1 && adjacentBoundaryChart.Series[0].Points[5].Y == 1, "Histogram binning should preserve a representable value immediately below a boundary without moving it into the following bin.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(0, 10, 0), "Histogram layouts should reject zero bin widths.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddHistogram("Outside", new[] { 11d }, layout), "Shared histogram layouts should reject values outside their bounds.");
+    }
+
+    private static void HistogramBarsGroupWithRegularBars() {
+        var layout = ChartHistogramBinLayout.FromWidth(0, 2, 1);
+        var grouped = Chart.Create()
+            .WithSize(640, 360)
+            .AddHistogram("Observed", new[] { 0.25, 0.75, 1.25, 1.75 }, layout)
+            .AddBar("Target", new[] { new ChartPoint(0.5, 3), new ChartPoint(1.5, 2) });
+        var bars = SvgDocument.Parse(grouped.ToSvg()).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        var histogramLeft = double.Parse(bars[0].GetAttribute("x")!, CultureInfo.InvariantCulture);
+        var histogramWidth = double.Parse(bars[0].GetAttribute("width")!, CultureInfo.InvariantCulture);
+        var regularLeft = double.Parse(bars[2].GetAttribute("x")!, CultureInfo.InvariantCulture);
+        Assert(histogramLeft + histogramWidth <= regularLeft + 0.001, "Grouped histogram and regular bars at the same numeric coordinate should receive distinct slots.");
+        Assert(grouped.ToPng().Length > 64, "Mixed histogram and regular bars should preserve PNG rendering parity.");
+
+        var stacked = Chart.Create()
+            .WithSize(640, 360)
+            .WithStackedBars()
+            .AddHistogram("Observed", new[] { 0.25, 0.75, 1.25, 1.75 }, layout)
+            .AddBar("Target", new[] { new ChartPoint(0.5, 3), new ChartPoint(1.5, 2) });
+        var stackedBars = SvgDocument.Parse(stacked.ToSvg()).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        Assert(stackedBars[2].GetAttribute("data-cfx-base") == "2", "Stacked regular bars should start at the matching histogram count.");
     }
 
     private static void SeriesKindCapabilitiesExposeExclusiveRenderingOwnership() {

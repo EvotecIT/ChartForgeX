@@ -516,7 +516,6 @@ public sealed partial class PngChartRenderer {
         for (var i = 0; i < seriesIndex; i++) {
             var series = chart.Series[i];
             if (series.Kind != ChartSeriesKind.Bar) continue;
-            if ((series.HistogramBinLayout == null) != (chart.Series[seriesIndex].HistogramBinLayout == null)) continue;
             foreach (var candidate in series.Points) {
                 if (Math.Abs(candidate.X - point.X) >= 0.000001) continue;
                 if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;

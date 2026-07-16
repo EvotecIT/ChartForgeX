@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace ChartForgeX.Core;
 
@@ -6,11 +7,18 @@ namespace ChartForgeX.Core;
 /// Defines one reusable histogram binning scheme so multiple series can share identical bounds.
 /// </summary>
 public sealed class ChartHistogramBinLayout {
+    private readonly decimal? _decimalMinimum;
+    private readonly decimal? _decimalWidth;
+
     private ChartHistogramBinLayout(double minimum, double maximum, int count, double width) {
         Minimum = minimum;
         Maximum = maximum;
         Count = count;
         Width = width;
+        if (width > 0 && TryConvertRoundTripDecimal(minimum, out var decimalMinimum) && TryConvertRoundTripDecimal(width, out var decimalWidth)) {
+            _decimalMinimum = decimalMinimum;
+            _decimalWidth = decimalWidth;
+        }
     }
 
     /// <summary>Gets the inclusive minimum covered by the layout.</summary>
@@ -75,9 +83,27 @@ public sealed class ChartHistogramBinLayout {
         }
 
         if (Count == 1 || value >= Maximum) return Count - 1;
-        var quotient = NormalizeNearInteger((value - Minimum) / Width);
+        if (TryGetDecimalIndex(value, out var decimalIndex)) return Math.Max(0, Math.Min(Count - 1, decimalIndex));
+        var quotient = (value - Minimum) / Width;
         return Math.Max(0, Math.Min(Count - 1, (int)Math.Floor(quotient)));
     }
+
+    private bool TryGetDecimalIndex(double value, out int index) {
+        index = 0;
+        if (!_decimalMinimum.HasValue || !_decimalWidth.HasValue || !TryConvertRoundTripDecimal(value, out var decimalValue)) return false;
+
+        try {
+            var quotient = (decimalValue - _decimalMinimum.Value) / _decimalWidth.Value;
+            if (quotient < 0 || quotient > int.MaxValue) return false;
+            index = decimal.ToInt32(decimal.Floor(quotient));
+            return true;
+        } catch (OverflowException) {
+            return false;
+        }
+    }
+
+    private static bool TryConvertRoundTripDecimal(double value, out decimal result) =>
+        decimal.TryParse(value.ToString("R", CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture, out result);
 
     private static void ValidateRange(double minimum, double maximum) {
         ChartGuards.Finite(minimum, nameof(minimum));
