@@ -71,7 +71,7 @@ public sealed partial class PngChartRenderer {
                 var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
                 var barWidth = layout.BarWidth;
                 var barX = map.X(p.X) + layout.Offset - barWidth / 2;
-                if (ChartHistogramBarSlot.TryResolve(chart, index, pointIndex, map, out var histogramX, out var histogramWidth)) {
+                if (ChartHistogramBarSlot.TryResolve(chart, barCoordinateMap, index, pointIndex, map, out var histogramX, out var histogramWidth)) {
                     barX = histogramX;
                     barWidth = histogramWidth;
                 }

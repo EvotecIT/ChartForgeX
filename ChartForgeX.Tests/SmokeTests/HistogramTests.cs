@@ -147,6 +147,20 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(chainedSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Transitive coordinate chains should emit one combined stack-total label.");
         Assert(chainedLayouts.ToPng().Length > 64, "Transitive coordinate chain aggregation should preserve PNG rendering parity.");
 
+        var groupedChain = Chart.Create()
+            .AddHistogram("Grouped chain start", new[] { chainCenter }, ChartHistogramBinLayout.FromCount(0, chainCenter * 2, 1))
+            .AddHistogram("Grouped chain middle", new[] { chainMiddle }, ChartHistogramBinLayout.FromCount(0, chainMiddle * 2, 1))
+            .AddHistogram("Grouped chain end", new[] { chainEnd }, ChartHistogramBinLayout.FromCount(0, chainEnd * 2, 1));
+        var groupedChainBars = SvgDocument.Parse(groupedChain.ToSvg()).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        var groupedChainLeft = groupedChainBars.Select(bar => double.Parse(bar.GetAttribute("x")!, CultureInfo.InvariantCulture)).ToArray();
+        var groupedChainWidth = groupedChainBars.Select(bar => double.Parse(bar.GetAttribute("width")!, CultureInfo.InvariantCulture)).ToArray();
+        Assert(groupedChainWidth.Max() - groupedChainWidth.Min() < 0.001, "Transitive grouped layouts should use one shared bar width.");
+        Assert(groupedChainLeft[0] + groupedChainWidth[0] <= groupedChainLeft[1] + 0.001 && groupedChainLeft[1] + groupedChainWidth[1] <= groupedChainLeft[2] + 0.001,
+            "Transitive grouped layouts should use stable non-overlapping positions.");
+        Assert(groupedChain.ToPng().Length > 64, "Transitive grouped layout geometry should preserve PNG rendering parity.");
+
         var adjacentMinimum = 1.0;
         var adjacentMaximum = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(adjacentMinimum) + 8);
         var adjacentLayout = ChartHistogramBinLayout.FromCount(adjacentMinimum, adjacentMaximum, 2);
@@ -164,6 +178,27 @@ internal static partial class SmokeTests {
         Assert(ChartRange.FromChart(adjacentBins).MaxY >= 6, "Adjacent ultra-narrow bins should preserve their independent range totals.");
         Assert(CountOccurrences(adjacentSvg, "data-cfx-role=\"stack-total-label\"") == 2, "Adjacent ultra-narrow bins should emit independent stack-total labels.");
         Assert(adjacentBins.ToPng().Length > 64, "Adjacent ultra-narrow bins should preserve PNG rendering parity.");
+
+        var epsilonLayout = ChartHistogramBinLayout.FromCount(0, double.Epsilon * 8, 2);
+        var epsilonBoundary = double.Epsilon * 4;
+        var mixedBoundary = Chart.Create()
+            .WithStackedBars()
+            .AddHistogram("Epsilon bins", new[] { 0d, double.Epsilon * 8, double.Epsilon * 8 }, epsilonLayout)
+            .AddBar("Boundary target", new[] { new ChartPoint(epsilonBoundary, 3) });
+        var mixedBoundaryBars = SvgDocument.Parse(mixedBoundary.ToSvg()).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        Assert(mixedBoundaryBars[2].GetAttribute("data-cfx-base") == "1", "An ambiguous regular coordinate should stack with the same ultra-narrow bin used for geometry.");
+        Assert(mixedBoundaryBars[2].GetAttribute("x") == mixedBoundaryBars[0].GetAttribute("x") && mixedBoundaryBars[2].GetAttribute("width") == mixedBoundaryBars[0].GetAttribute("width"),
+            "Mixed ultra-narrow bar geometry should use the coordinate map's selected histogram slot.");
+        Assert(mixedBoundary.ToPng().Length > 64, "Mixed ultra-narrow slot identity should preserve PNG rendering parity.");
+
+        var reorderedHistogram = Chart.Create().AddHistogram("Reordered", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2));
+        reorderedHistogram.Series[0].Points.Reverse();
+        AssertThrows<InvalidOperationException>(() => reorderedHistogram.ToSvg(), "Histogram rendering should reject point order that no longer matches the stored layout.");
+        var resizedHistogram = Chart.Create().AddHistogram("Resized", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2));
+        resizedHistogram.Series[0].Points.RemoveAt(0);
+        AssertThrows<InvalidOperationException>(() => resizedHistogram.ToPng(), "Histogram rendering should reject point counts that no longer match the stored layout.");
 
         var constantLayout = ChartHistogramBinLayout.FromCount(5, 5, 1);
         var constant = Chart.Create()

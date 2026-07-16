@@ -181,7 +181,7 @@ public sealed partial class SvgChartRenderer {
             var height = Math.Abs(baseY - y);
             var barWidth = layout.BarWidth;
             var x = map.X(p.X) + layout.Offset - barWidth / 2;
-            if (ChartHistogramBarSlot.TryResolve(chart, index, pointIndex, map, out var histogramX, out var histogramWidth)) {
+            if (ChartHistogramBarSlot.TryResolve(chart, barCoordinateMap, index, pointIndex, map, out var histogramX, out var histogramWidth)) {
                 x = histogramX;
                 barWidth = histogramWidth;
             }

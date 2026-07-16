@@ -12,15 +12,20 @@ namespace ChartForgeX.Rendering;
 /// </summary>
 internal sealed class ChartBarCoordinateMap {
     private readonly ChartBarCoordinateKey[][] _keys;
+    private readonly Dictionary<int, HistogramSlot> _histogramSlots;
+    private readonly Dictionary<int, int[]> _seriesIndices;
 
-    private ChartBarCoordinateMap(ChartBarCoordinateKey[][] keys) {
+    private ChartBarCoordinateMap(ChartBarCoordinateKey[][] keys, Dictionary<int, HistogramSlot> histogramSlots, Dictionary<int, int[]> seriesIndices) {
         _keys = keys;
+        _histogramSlots = histogramSlots;
+        _seriesIndices = seriesIndices;
     }
 
     internal static ChartBarCoordinateMap Create(Chart chart) {
         var keys = chart.Series.Select(series => new ChartBarCoordinateKey[series.Points.Count]).ToArray();
         var nodes = CreateNodes(chart).OrderBy(node => node.Coordinate).ThenBy(node => node.SeriesIndex).ThenBy(node => node.PointIndex).ToArray();
         var activeGroups = new List<CoordinateGroup>();
+        var allGroups = new List<CoordinateGroup>();
         var nextId = 0;
         foreach (var node in nodes) {
             activeGroups.RemoveAll(group => !ChartMath.SameCoordinate(group.LastCoordinate, node.Coordinate));
@@ -28,16 +33,35 @@ internal sealed class ChartBarCoordinateMap {
             if (group == null) {
                 group = new CoordinateGroup(new ChartBarCoordinateKey(nextId++, node.Coordinate));
                 activeGroups.Add(group);
+                allGroups.Add(group);
             }
 
             group.Add(node);
             keys[node.SeriesIndex][node.PointIndex] = group.Key;
         }
 
-        return new ChartBarCoordinateMap(keys);
+        var histogramSlots = allGroups
+            .Where(group => group.RepresentativeHistogramNode.HasValue)
+            .ToDictionary(group => group.Key.Id, group => new HistogramSlot(group.RepresentativeHistogramNode!.Value.Layout!, group.RepresentativeHistogramNode.Value.BinIndex));
+        var seriesIndices = allGroups.ToDictionary(group => group.Key.Id, group => group.SeriesIndices.OrderBy(index => index).ToArray());
+        return new ChartBarCoordinateMap(keys, histogramSlots, seriesIndices);
     }
 
     internal ChartBarCoordinateKey Resolve(int seriesIndex, int pointIndex) => _keys[seriesIndex][pointIndex];
+
+    internal IReadOnlyList<int> SeriesIndices(int seriesIndex, int pointIndex) => _seriesIndices[Resolve(seriesIndex, pointIndex).Id];
+
+    internal bool TryResolveHistogramSlot(int seriesIndex, int pointIndex, out ChartHistogramBinLayout layout, out int binIndex) {
+        if (_histogramSlots.TryGetValue(Resolve(seriesIndex, pointIndex).Id, out var slot)) {
+            layout = slot.Layout;
+            binIndex = slot.BinIndex;
+            return true;
+        }
+
+        layout = null!;
+        binIndex = -1;
+        return false;
+    }
 
     private static IEnumerable<CoordinateNode> CreateNodes(Chart chart) {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
@@ -79,10 +103,17 @@ internal sealed class ChartBarCoordinateMap {
 
         internal double LastCoordinate { get; private set; }
 
+        internal IEnumerable<int> SeriesIndices => _seriesIndices;
+
+        internal CoordinateNode? RepresentativeHistogramNode { get; private set; }
+
         internal void Add(CoordinateNode node) {
             _seriesIndices.Add(node.SeriesIndex);
             LastCoordinate = node.Coordinate;
-            if (node.Layout != null) _lastHistogramNode = node;
+            if (node.Layout != null) {
+                if (!RepresentativeHistogramNode.HasValue) RepresentativeHistogramNode = node;
+                _lastHistogramNode = node;
+            }
         }
 
         internal bool TryGetCompatibility(CoordinateNode node, out int rank, out double distance) {
@@ -122,6 +153,16 @@ internal sealed class ChartBarCoordinateMap {
         internal int PointIndex { get; }
         internal double Coordinate { get; }
         internal ChartHistogramBinLayout? Layout { get; }
+        internal int BinIndex { get; }
+    }
+
+    private readonly struct HistogramSlot {
+        internal HistogramSlot(ChartHistogramBinLayout layout, int binIndex) {
+            Layout = layout;
+            BinIndex = binIndex;
+        }
+
+        internal ChartHistogramBinLayout Layout { get; }
         internal int BinIndex { get; }
     }
 
