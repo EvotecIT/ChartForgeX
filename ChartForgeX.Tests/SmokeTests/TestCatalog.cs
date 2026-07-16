@@ -251,6 +251,7 @@ internal static partial class SmokeTests {
         ("Default numeric compact formatter is shared", DefaultNumericCompactFormatterIsShared),
         ("Legend rows wrap without leaving the layout implicit", LegendRowsWrapWithRoleMarkers),
         ("Histogram values render as binned bars", HistogramValuesRenderAsBinnedBars),
+        ("Histogram bin width preserves requested intervals", HistogramBinWidthPreservesRequestedIntervals),
         ("Lollipop series render stems and markers", LollipopSeriesRenderStemsAndMarkers),
         ("Range bar series render intervals", RangeBarSeriesRenderIntervals),
         ("Box plot series render statistical summaries", BoxPlotSeriesRenderStatisticalSummaries),

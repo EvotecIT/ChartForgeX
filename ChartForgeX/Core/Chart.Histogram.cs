@@ -20,35 +20,50 @@ public sealed partial class Chart {
         if (binCount < 1) throw new ArgumentOutOfRangeException(nameof(binCount), binCount, "Histogram bin count must be at least one.");
 
         var materialized = values.ToArray();
-        if (materialized.Length == 0) throw new ArgumentException("Histogram values must contain at least one value.", nameof(values));
-        for (var i = 0; i < materialized.Length; i++) ChartGuards.Finite(materialized[i], nameof(values));
+        ValidateHistogramValues(materialized, nameof(values));
+        return AddHistogramCore(name, materialized, ChartHistogramBinLayout.FromCount(materialized.Min(), materialized.Max(), binCount), color);
+    }
 
-        var min = materialized.Min();
-        var max = materialized.Max();
-        if (Math.Abs(max - min) < 0.000001) {
-            Options.XAxisLabels.Clear();
-            Options.XAxisLabels.Add(new ChartAxisLabel(min, FormatHistogramNumber(min)));
-            return Add(name, ChartSeriesKind.Bar, new[] { new ChartPoint(min, materialized.Length) }, color);
-        }
+    /// <summary>
+    /// Adds a histogram series using a reusable layout, allowing multiple series to share exact bin bounds.
+    /// </summary>
+    /// <param name="name">The series name.</param>
+    /// <param name="values">The raw numeric values to bin.</param>
+    /// <param name="layout">The shared bin layout.</param>
+    /// <param name="color">An optional series color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddHistogram(string name, IEnumerable<double> values, ChartHistogramBinLayout layout, ChartColor? color = null) {
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        if (layout == null) throw new ArgumentNullException(nameof(layout));
 
-        var counts = new int[binCount];
-        var width = (max - min) / binCount;
-        foreach (var value in materialized) {
-            var index = value >= max ? binCount - 1 : (int)Math.Floor((value - min) / width);
-            counts[Math.Max(0, Math.Min(binCount - 1, index))]++;
-        }
+        var materialized = values.ToArray();
+        ValidateHistogramValues(materialized, nameof(values));
+        return AddHistogramCore(name, materialized, layout, color);
+    }
 
-        var points = new List<ChartPoint>(binCount);
+    private Chart AddHistogramCore(string name, double[] values, ChartHistogramBinLayout layout, ChartColor? color) {
+        var counts = new int[layout.Count];
+        foreach (var value in values) counts[layout.GetIndex(value)]++;
+
+        var points = new List<ChartPoint>(layout.Count);
         Options.XAxisLabels.Clear();
-        for (var i = 0; i < binCount; i++) {
-            var start = min + width * i;
-            var end = i == binCount - 1 ? max : start + width;
-            var center = start + (end - start) / 2.0;
+        for (var i = 0; i < layout.Count; i++) {
+            var start = layout.GetLowerBound(i);
+            var end = layout.GetUpperBound(i);
+            var center = layout.GetCenter(i);
             points.Add(new ChartPoint(center, counts[i]));
-            Options.XAxisLabels.Add(new ChartAxisLabel(center, FormatHistogramNumber(start) + "-" + FormatHistogramNumber(end)));
+            var label = layout.Minimum == layout.Maximum
+                ? FormatHistogramNumber(start)
+                : FormatHistogramNumber(start) + "-" + FormatHistogramNumber(end);
+            Options.XAxisLabels.Add(new ChartAxisLabel(center, label));
         }
 
         return Add(name, ChartSeriesKind.Bar, points, color);
+    }
+
+    private static void ValidateHistogramValues(double[] values, string parameterName) {
+        if (values.Length == 0) throw new ArgumentException("Histogram values must contain at least one value.", parameterName);
+        for (var i = 0; i < values.Length; i++) ChartGuards.Finite(values[i], parameterName);
     }
 
     private static string FormatHistogramNumber(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
