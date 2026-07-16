@@ -65,6 +65,11 @@ public sealed class ChartSeries {
     internal int? HeatmapColumnCount { get; set; }
 
     /// <summary>
+    /// Gets or sets the shared histogram layout whose numeric bounds determine this bar series geometry.
+    /// </summary>
+    internal ChartHistogramBinLayout? HistogramBinLayout { get; set; }
+
+    /// <summary>
     /// Gets optional point-level data labels. Null entries use the formatted point value.
     /// </summary>
     public List<string?> PointLabels { get; } = new();

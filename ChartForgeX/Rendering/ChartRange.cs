@@ -34,6 +34,23 @@ internal sealed class ChartRange {
 
             if (ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) usesVerticalBaseline = true;
 
+            if (series.Kind == ChartSeriesKind.Bar && series.HistogramBinLayout != null) {
+                if (series.HistogramBinLayout.Minimum == series.HistogramBinLayout.Maximum) {
+                    range.IncludeX(series.HistogramBinLayout.Minimum - 0.5);
+                    range.IncludeX(series.HistogramBinLayout.Maximum + 0.5);
+                } else {
+                    range.IncludeX(series.HistogramBinLayout.Minimum);
+                    range.IncludeX(series.HistogramBinLayout.Maximum);
+                }
+                foreach (var point in series.Points) {
+                    range.IncludeY(point.Y);
+                    AddStackValue(point.Y >= 0 ? positiveBarStacks : negativeBarStacks, point.X, point.Y);
+                }
+
+                if (UsesZeroBaseline(chart.Options.YAxis)) range.IncludeY(0);
+                continue;
+            }
+
             if (series.Kind == ChartSeriesKind.Bubble) {
                 for (var i = 0; i + 1 < series.Points.Count; i += 2) {
                     var center = series.Points[i];
@@ -238,6 +255,12 @@ internal sealed class ChartRange {
     }
 
     private static void IncludeSeriesX(ChartRange range, ChartSeries series) {
+        if (series.Kind == ChartSeriesKind.Bar && series.HistogramBinLayout != null) {
+            range.IncludeX(series.HistogramBinLayout.Minimum);
+            range.IncludeX(series.HistogramBinLayout.Maximum);
+            return;
+        }
+
         if (series.Kind == ChartSeriesKind.HorizontalBar) {
             foreach (var point in series.Points) range.IncludeX(point.Y);
             return;

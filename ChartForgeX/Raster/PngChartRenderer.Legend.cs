@@ -20,7 +20,7 @@ public sealed partial class PngChartRenderer {
             var x = PngLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
-                DrawLegendSymbol(c, chart.Series[item.SeriesIndex].Kind, itemX, y - 5, item.Color, theme.CardBackground);
+                DrawLegendSymbol(c, chart.Series[item.SeriesIndex].Kind, itemX, y - 5, item.Color, theme.CardBackground, chart.Options.Theme.MarkerRadius > 0);
                 var labelMaxWidth = System.Math.Max(8, item.Width - symbolWidth - 14);
                 var labelFontSize = TextFontSizeForEmphasizedWidth(item.Label, labelMaxWidth, fontSize);
                 var label = TrimReadablePngLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
@@ -243,11 +243,13 @@ public sealed partial class PngChartRenderer {
         public ChartColor Color { get; }
     }
 
-    private static void DrawLegendSymbol(RgbaCanvas c, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background) {
+    private static void DrawLegendSymbol(RgbaCanvas c, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background, bool showOptionalLineMarker) {
         if (IsLineLikeLegend(kind)) {
             c.DrawLine(x, y, x + 18, y, color, ChartVisualPrimitives.LegendLineStrokeWidth);
-            c.DrawCircle(x + 9, y, ChartVisualPrimitives.PngLegendMarkerOutlineRadius, background);
-            c.DrawCircle(x + 9, y, ChartVisualPrimitives.PngLegendLineMarkerRadius, color);
+            if (!UsesOptionalLineMarker(kind) || showOptionalLineMarker) {
+                c.DrawCircle(x + 9, y, ChartVisualPrimitives.PngLegendMarkerOutlineRadius, background);
+                c.DrawCircle(x + 9, y, ChartVisualPrimitives.PngLegendLineMarkerRadius, color);
+            }
         } else if (kind == ChartSeriesKind.Scatter || kind == ChartSeriesKind.Bubble) {
             c.DrawCircle(x + 9, y, ChartVisualPrimitives.PngLegendMarkerOutlineRadius, background);
             c.DrawCircle(x + 9, y, ChartVisualPrimitives.LegendMarkerRadius, color);
@@ -258,4 +260,6 @@ public sealed partial class PngChartRenderer {
             c.FillRoundedRect(x, y - ChartVisualPrimitives.LegendSwatchSize / 2, ChartVisualPrimitives.LegendSwatchSize, ChartVisualPrimitives.LegendSwatchSize, ChartVisualPrimitives.LegendSwatchRadius, color);
         }
     }
+
+    private static bool UsesOptionalLineMarker(ChartSeriesKind kind) => kind == ChartSeriesKind.Line || kind == ChartSeriesKind.StepLine;
 }

@@ -179,10 +179,15 @@ public sealed partial class SvgChartRenderer {
             var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
             var top = Math.Min(y, baseY);
             var height = Math.Abs(baseY - y);
-            var x = map.X(p.X) + layout.Offset - layout.BarWidth / 2;
-            var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
+            var barWidth = layout.BarWidth;
+            var x = map.X(p.X) + layout.Offset - barWidth / 2;
+            if (ChartHistogramBarSlot.TryResolve(chart, index, pointIndex, map, out var histogramX, out var histogramWidth)) {
+                x = histogramX;
+                barWidth = histogramWidth;
+            }
+            var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, barWidth / 2) : Math.Min(7, barWidth / 2);
             if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, x, top, layout.BarWidth, height);
+                DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, x, top, barWidth, height);
             } else {
                 AppendSvg(sb, writer => writer
                     .StartElement("rect")
@@ -195,21 +200,21 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-color", PointColor(chart, s, index, pointIndex).ToHex())
                     .Attribute("x", x)
                     .Attribute("y", top)
-                    .Attribute("width", layout.BarWidth)
+                    .Attribute("width", barWidth)
                     .Attribute("height", height)
                     .Attribute("rx", radius)
                     .Attribute("fill", BarFill(chart, s, index, pointIndex, id))
                     .Attribute("opacity", ChartVisualPrimitives.BarFillOpacity)
                     .EndEmptyElement()
                     .Line());
-                DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, x, top, layout.BarWidth, height, radius, "bar-pattern");
-                DrawSvgBarHighlight(sb, x, top, layout.BarWidth, height);
+                DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, x, top, barWidth, height, radius, "bar-pattern");
+                DrawSvgBarHighlight(sb, x, top, barWidth, height);
             }
             if (ShouldDrawDataLabels(chart, s)) {
                 var label = FormatDataLabel(chart, s, pointIndex, p.Y);
                 var placement = DataLabelPlacement(chart, s);
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
-                    var labelX = placement == ChartDataLabelPlacement.Right ? x + layout.BarWidth + 8 : x - 8;
+                    var labelX = placement == ChartDataLabelPlacement.Right ? x + barWidth + 8 : x - 8;
                     var anchor = placement == ChartDataLabelPlacement.Right ? "start" : "end";
                     if (!ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels)) continue;
                     DrawHorizontalValueLabel(sb, chart, label, labelX, top + height / 2, anchor, plot, s, pointIndex);
@@ -225,8 +230,8 @@ public sealed partial class SvgChartRenderer {
                         : inside
                             ? top + height / 2
                             : p.Y >= 0 ? top - 10 : top + height + 10;
-                if (!ReserveSvgLabel(label, x + layout.BarWidth / 2, labelY, chart, plot, reservedLabels)) continue;
-                DrawDataLabel(sb, chart, label, x + layout.BarWidth / 2, labelY, plot, series: s, pointIndex: pointIndex);
+                if (!ReserveSvgLabel(label, x + barWidth / 2, labelY, chart, plot, reservedLabels)) continue;
+                DrawDataLabel(sb, chart, label, x + barWidth / 2, labelY, plot, series: s, pointIndex: pointIndex);
             }
         }
     }
@@ -279,7 +284,7 @@ public sealed partial class SvgChartRenderer {
     private static BarLayoutInfo BarLayout(Chart chart, ChartRect plot, int seriesIndex) {
         var barSeries = chart.Series
             .Select((series, index) => new { series, index })
-            .Where(item => item.series.Kind == ChartSeriesKind.Bar)
+            .Where(item => item.series.Kind == ChartSeriesKind.Bar && item.series.HistogramBinLayout == null)
             .Select(item => item.index)
             .ToArray();
         var groupCount = chart.Options.BarMode == ChartBarMode.Stacked ? 1 : Math.Max(1, barSeries.Length);
@@ -303,6 +308,7 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < seriesIndex; i++) {
             var series = chart.Series[i];
             if (series.Kind != ChartSeriesKind.Bar) continue;
+            if ((series.HistogramBinLayout == null) != (chart.Series[seriesIndex].HistogramBinLayout == null)) continue;
             foreach (var candidate in series.Points) {
                 if (Math.Abs(candidate.X - point.X) >= 0.000001) continue;
                 if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;

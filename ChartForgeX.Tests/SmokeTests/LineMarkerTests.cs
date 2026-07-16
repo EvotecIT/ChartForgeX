@@ -28,6 +28,7 @@ internal static partial class SmokeTests {
             .AddLine("Values", points, color);
         var markerlessSvg = markerless.ToSvg();
         Assert(!markerlessSvg.Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "A zero marker radius should omit optional SVG line markers.");
+        Assert(!SvgDocument.Parse(markerlessSvg).Root.FindByTag("circle").Any(), "A markerless line should not advertise a point marker in its SVG legend.");
 
         var pixels = ReadPngRgba(markerless.ToPng(), out var width, out _);
         var middleX = double.Parse(referenceMarkers[1].GetAttribute("cx")!, CultureInfo.InvariantCulture);

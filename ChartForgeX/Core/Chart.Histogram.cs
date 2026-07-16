@@ -58,7 +58,9 @@ public sealed partial class Chart {
             Options.XAxisLabels.Add(new ChartAxisLabel(center, label));
         }
 
-        return Add(name, ChartSeriesKind.Bar, points, color);
+        Add(name, ChartSeriesKind.Bar, points, color);
+        Series[Series.Count - 1].HistogramBinLayout = layout;
+        return this;
     }
 
     private static void ValidateHistogramValues(double[] values, string parameterName) {

@@ -41,10 +41,7 @@ public sealed class ChartHistogramBinLayout {
         if (binWidth <= 0) throw new ArgumentOutOfRangeException(nameof(binWidth), binWidth, "Histogram bin width must be greater than zero.");
         if (minimum == maximum) return new ChartHistogramBinLayout(minimum, maximum, 1, binWidth);
 
-        var quotient = (maximum - minimum) / binWidth;
-        var nearestInteger = Math.Round(quotient);
-        var tolerance = Math.Max(1d, Math.Abs(quotient)) * 1e-12;
-        if (Math.Abs(quotient - nearestInteger) <= tolerance) quotient = nearestInteger;
+        var quotient = NormalizeNearInteger((maximum - minimum) / binWidth);
         if (double.IsInfinity(quotient) || quotient > int.MaxValue) {
             throw new ArgumentOutOfRangeException(nameof(binWidth), binWidth, "Histogram bin width produces too many bins.");
         }
@@ -78,7 +75,8 @@ public sealed class ChartHistogramBinLayout {
         }
 
         if (Count == 1 || value >= Maximum) return Count - 1;
-        return Math.Max(0, Math.Min(Count - 1, (int)Math.Floor((value - Minimum) / Width)));
+        var quotient = NormalizeNearInteger((value - Minimum) / Width);
+        return Math.Max(0, Math.Min(Count - 1, (int)Math.Floor(quotient)));
     }
 
     private static void ValidateRange(double minimum, double maximum) {
@@ -86,6 +84,16 @@ public sealed class ChartHistogramBinLayout {
         ChartGuards.Finite(maximum, nameof(maximum));
         if (maximum < minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Histogram maximum must be greater than or equal to its minimum.");
         if (double.IsInfinity(maximum - minimum)) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Histogram range must be finite.");
+    }
+
+    private static double NormalizeNearInteger(double value) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) return value;
+        var nearestInteger = Math.Round(value);
+        var magnitude = Math.Max(1d, Math.Abs(value));
+        var bits = BitConverter.DoubleToInt64Bits(magnitude);
+        var next = BitConverter.Int64BitsToDouble(bits + 1);
+        var tolerance = (next - magnitude) * 4;
+        return Math.Abs(value - nearestInteger) <= tolerance ? nearestInteger : value;
     }
 
     private void ValidateIndex(int index) {

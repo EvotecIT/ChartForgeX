@@ -554,7 +554,7 @@ var latencyDistribution = Chart.Create()
     .WithTheme(ChartTheme.ReportLight())
     .WithSize(760, 460)
     .WithDataLabels()
-    .AddHistogram("P95 samples", new[] { 28d, 31d, 36d, 42d, 47d, 58d, 64d, 72d, 86d, 91d, 118d, 146d, 182d }, 5, ChartColor.FromRgb(37, 99, 235));
+    .AddHistogram("P95 samples", new[] { 28d, 31d, 36d, 42d, 47d, 58d, 64d, 72d, 86d, 91d, 118d, 146d, 182d }, ChartHistogramBinLayout.FromWidth(28, 182, 35), ChartColor.FromRgb(37, 99, 235));
 
 SaveChart(latencyDistribution, "endpoint-latency-histogram-light");
 
