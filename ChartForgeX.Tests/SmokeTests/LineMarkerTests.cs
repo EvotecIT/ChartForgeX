@@ -41,5 +41,21 @@ internal static partial class SmokeTests {
         var offset = (sampleY * width + sampleX) * 4;
         Assert(Math.Abs(pixels[offset] - color.R) <= 48 && Math.Abs(pixels[offset + 1] - color.G) <= 48 && Math.Abs(pixels[offset + 2] - color.B) <= 48,
             "A zero marker radius should not punch marker-outline holes through PNG line paths.");
+
+        var markedArea = Chart.Create()
+            .WithSize(320, 200)
+            .WithTheme(theme => theme.WithMarkerRadius(4))
+            .AddArea("Area", points, color);
+        var markerlessArea = Chart.Create()
+            .WithSize(320, 200)
+            .WithTheme(theme => theme.WithMarkerRadius(0))
+            .AddArea("Area", points, color);
+        Assert(!SvgDocument.Parse(markerlessArea.ToSvg()).Root.FindByTag("circle").Any(), "A markerless area should not advertise a point marker in its SVG legend.");
+        var markedAreaPixels = ReadPngRgba(markedArea.ToPng(), out var areaWidth, out var areaHeight);
+        var markerlessAreaPixels = ReadPngRgba(markerlessArea.ToPng(), out _, out _);
+        var legendTop = areaHeight * 3 / 4;
+        var markedLegendInk = CountNearColorInRect(markedAreaPixels, areaWidth, 0, legendTop, areaWidth, areaHeight - legendTop, color.R, color.G, color.B, 24);
+        var markerlessLegendInk = CountNearColorInRect(markerlessAreaPixels, areaWidth, 0, legendTop, areaWidth, areaHeight - legendTop, color.R, color.G, color.B, 24);
+        Assert(markerlessLegendInk < markedLegendInk, "A markerless area should omit the PNG legend marker while retaining its line symbol.");
     }
 }

@@ -247,7 +247,7 @@ public sealed partial class PngChartRenderer {
         if (s.Kind != ChartSeriesKind.Scatter) {
             DrawPremiumPngLinePath(c, linePoints, color, s.StrokeWidth, chart.Options.LineVisualStyle);
         }
-        if (s.Kind == ChartSeriesKind.Scatter || (!chart.Options.IsSparkline && (s.Kind == ChartSeriesKind.Line || s.Kind == ChartSeriesKind.StepLine))) {
+        if (s.Kind == ChartSeriesKind.Scatter || (!chart.Options.IsSparkline && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind))) {
             var markerRadius = s.Kind == ChartSeriesKind.Scatter ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra) : chart.Options.Theme.MarkerRadius;
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];

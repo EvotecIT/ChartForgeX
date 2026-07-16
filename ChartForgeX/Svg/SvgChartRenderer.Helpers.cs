@@ -165,7 +165,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawLegendSymbol(SvgMarkupWriter writer, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background, bool showOptionalLineMarker) {
         if (IsLineLikeLegend(kind)) {
             WriteLegendLineSymbol(writer, x, y, color);
-            if (!UsesOptionalLineMarker(kind) || showOptionalLineMarker) WriteLegendCircleSymbol(writer, x, y, color, background);
+            if (!ChartSeriesKindTraits.UsesOptionalLineMarker(kind) || showOptionalLineMarker) WriteLegendCircleSymbol(writer, x, y, color, background);
         } else if (kind == ChartSeriesKind.Scatter || kind == ChartSeriesKind.Bubble) {
             WriteLegendCircleSymbol(writer, x, y, color, background);
         } else if (kind == ChartSeriesKind.Candlestick || kind == ChartSeriesKind.Ohlc) {
@@ -175,8 +175,6 @@ public sealed partial class SvgChartRenderer {
             writer.StartElement("rect").Attribute("x", x).Attribute("y", y - 5).Attribute("width", "10").Attribute("height", "10").Attribute("rx", "2").Attribute("fill", color.ToCss()).EndEmptyElement().Line();
         }
     }
-
-    private static bool UsesOptionalLineMarker(ChartSeriesKind kind) => kind == ChartSeriesKind.Line || kind == ChartSeriesKind.StepLine;
 
     private static void WriteLegendLineSymbol(SvgMarkupWriter writer, double x, double y, ChartColor color) {
         writer.StartElement("line").Attribute("x1", x).Attribute("y1", y).Attribute("x2", x + 18).Attribute("y2", y).Attribute("stroke", color.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.LegendLineStrokeWidth).Attribute("stroke-linecap", "round").EndEmptyElement().Line();

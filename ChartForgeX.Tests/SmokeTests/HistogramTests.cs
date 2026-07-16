@@ -52,5 +52,6 @@ internal static partial class SmokeTests {
     private static void SeriesKindCapabilitiesExposeExclusiveRenderingOwnership() {
         Assert(ChartSeriesKindCapabilities.IsExclusive(ChartSeriesKind.Heatmap), "Shared kind capabilities should classify exclusive rendering surfaces.");
         Assert(!ChartSeriesKindCapabilities.IsExclusive(ChartSeriesKind.Line), "Shared kind capabilities should keep cartesian line series non-exclusive.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartSeriesKindCapabilities.IsExclusive((ChartSeriesKind)999), "Shared kind capabilities should reject undefined series kinds.");
     }
 }

@@ -1,3 +1,5 @@
+using System;
+
 namespace ChartForgeX.Core;
 
 /// <summary>
@@ -9,5 +11,9 @@ public static class ChartSeriesKindCapabilities {
     /// </summary>
     /// <param name="kind">The series kind to classify.</param>
     /// <returns><see langword="true"/> when the kind uses an exclusive rendering surface; otherwise <see langword="false"/>.</returns>
-    public static bool IsExclusive(ChartSeriesKind kind) => ChartSeriesKindTraits.IsExclusive(kind);
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="kind"/> is not a defined series kind.</exception>
+    public static bool IsExclusive(ChartSeriesKind kind) {
+        if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown chart series kind.");
+        return ChartSeriesKindTraits.IsExclusive(kind);
+    }
 }

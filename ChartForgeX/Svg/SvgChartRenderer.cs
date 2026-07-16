@@ -644,7 +644,7 @@ public sealed partial class SvgChartRenderer {
             if (s.Kind == ChartSeriesKind.StepArea) line = BuildStepLinePath(mapped);
             var lineRole = s.Kind == ChartSeriesKind.StepLine ? "step-line" : s.Kind == ChartSeriesKind.StepArea ? "step-area-line" : s.Kind == ChartSeriesKind.Area ? "area-line" : "line";
             DrawPremiumSvgLinePath(sb, lineRole, index, mapped.Length, line, c, s.StrokeWidth, chart.Options.LineVisualStyle);
-            if (!chart.Options.IsSparkline && chart.Options.Theme.MarkerRadius > 0) {
+            if (!chart.Options.IsSparkline && chart.Options.Theme.MarkerRadius > 0 && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind)) {
                 for (var pointIndex = 0; pointIndex < mapped.Length; pointIndex++) {
                     var p = mapped[pointIndex];
                     var raw = s.Points[pointIndex];

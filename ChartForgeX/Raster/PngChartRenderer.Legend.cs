@@ -246,7 +246,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawLegendSymbol(RgbaCanvas c, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background, bool showOptionalLineMarker) {
         if (IsLineLikeLegend(kind)) {
             c.DrawLine(x, y, x + 18, y, color, ChartVisualPrimitives.LegendLineStrokeWidth);
-            if (!UsesOptionalLineMarker(kind) || showOptionalLineMarker) {
+            if (!ChartSeriesKindTraits.UsesOptionalLineMarker(kind) || showOptionalLineMarker) {
                 c.DrawCircle(x + 9, y, ChartVisualPrimitives.PngLegendMarkerOutlineRadius, background);
                 c.DrawCircle(x + 9, y, ChartVisualPrimitives.PngLegendLineMarkerRadius, color);
             }
@@ -260,6 +260,4 @@ public sealed partial class PngChartRenderer {
             c.FillRoundedRect(x, y - ChartVisualPrimitives.LegendSwatchSize / 2, ChartVisualPrimitives.LegendSwatchSize, ChartVisualPrimitives.LegendSwatchSize, ChartVisualPrimitives.LegendSwatchRadius, color);
         }
     }
-
-    private static bool UsesOptionalLineMarker(ChartSeriesKind kind) => kind == ChartSeriesKind.Line || kind == ChartSeriesKind.StepLine;
 }
