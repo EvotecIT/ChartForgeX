@@ -84,8 +84,6 @@ public sealed class PngVisualCanvasRenderer {
             new ChartPoint(width, height)
         };
         canvas.FillPolygon(horizon, theme.TechHorizonFill);
-        DrawCurve(canvas, width * 0.50, height * 0.82, width * 0.72, height * 0.86, width * 0.80, height * 0.93, width * 0.92, height, accent.WithOpacity(0.48), 9);
-        DrawCurve(canvas, width * 0.50, height * 0.82, width * 0.72, height * 0.86, width * 0.80, height * 0.93, width * 0.92, height, accent.WithOpacity(0.88), 3.5);
     }
 
     private static void DrawText(RgbaCanvas canvas, double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment, bool emphasized) {

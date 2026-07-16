@@ -130,15 +130,6 @@ public sealed class SvgVisualCanvasRenderer {
             .Attribute("d", "M 0 " + F(height * 0.78) + " C " + F(width * 0.20) + " " + F(height * 0.72) + ", " + F(width * 0.38) + " " + F(height * 0.82) + ", " + F(width * 0.55) + " " + F(height * 0.76) + " C " + F(width * 0.74) + " " + F(height * 0.70) + ", " + F(width * 0.84) + " " + F(height * 0.85) + ", " + F(width) + " " + F(height * 0.73) + " L " + F(width) + " " + F(height) + " L 0 " + F(height) + " Z")
             .Attribute("fill", theme.TechHorizonFill.ToCss())
             .EndEmptyElement().Line();
-        writer.StartElement("path")
-            .Attribute("data-cfx-role", "visual-canvas-road-glow")
-            .Attribute("d", "M " + F(width * 0.50) + " " + F(height * 0.82) + " C " + F(width * 0.72) + " " + F(height * 0.86) + ", " + F(width * 0.80) + " " + F(height * 0.93) + ", " + F(width * 0.92) + " " + F(height))
-            .Attribute("fill", "none")
-            .Attribute("stroke", accent.ToCss())
-            .Attribute("stroke-opacity", 0.76)
-            .Attribute("stroke-width", 5)
-            .Attribute("filter", "url(#" + id + "-soft-glow)")
-            .EndEmptyElement().Line();
         writer.EndElement().Line();
     }
 

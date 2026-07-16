@@ -64,6 +64,8 @@ internal static partial class SmokeTests {
 
         var svg = canvas.ToSvg("visual-canvas-smoke");
         Assert(svg.Contains("data-cfx-role=\"visual-canvas-background\"", StringComparison.Ordinal), "VisualCanvas should render a background role in SVG.");
+        Assert(svg.Contains("data-cfx-role=\"visual-canvas-tech-backdrop\"", StringComparison.Ordinal) && svg.Contains("data-cfx-role=\"visual-canvas-horizon\"", StringComparison.Ordinal), "TechHorizon should retain its quiet star, contour, and horizon backdrop.");
+        Assert(!svg.Contains("visual-canvas-road-glow", StringComparison.Ordinal), "TechHorizon should keep its lower foreground clear instead of drawing a decorative road streak across content.");
         Assert(svg.Contains("data-cfx-role=\"visual-canvas-info-tile\"", StringComparison.Ordinal), "VisualCanvas should render info tile layers in SVG.");
         Assert(svg.Contains("data-cfx-role=\"visual-canvas-info-tile-mini-chart\"", StringComparison.Ordinal), "VisualCanvas should render info tile mini chart layers in SVG.");
         Assert(svg.Contains("data-cfx-role=\"visual-canvas-hero-title\"", StringComparison.Ordinal), "VisualCanvas should render multi-run hero titles in SVG.");
