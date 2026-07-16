@@ -70,6 +70,42 @@ public static class VisualMarkupScanner {
     /// <returns>The supported visual blocks.</returns>
     public static List<VisualMarkupBlock> ExtractBlocks(string text) => Scan(text).Blocks;
 
+    /// <summary>
+    /// Validates and projects a visual fence that was already discovered by another Markdown parser.
+    /// </summary>
+    /// <param name="fenceInfo">The full fence info string after the opening marker.</param>
+    /// <param name="payload">The fence payload.</param>
+    /// <param name="fenceLine">The one-based source line containing the opening fence.</param>
+    /// <param name="payloadStartLine">The one-based source line where the payload starts.</param>
+    /// <param name="payloadEndLine">The one-based source line where the payload ends.</param>
+    /// <returns>A scan result containing the projected block or validation diagnostics.</returns>
+    public static VisualMarkupScanResult ParseFenceBlock(
+        string fenceInfo,
+        string payload,
+        int fenceLine,
+        int payloadStartLine,
+        int payloadEndLine) {
+        if (fenceInfo == null) throw new ArgumentNullException(nameof(fenceInfo));
+        if (payload == null) throw new ArgumentNullException(nameof(payload));
+
+        var normalizedFenceLine = Math.Max(1, fenceLine);
+        var normalizedStartLine = Math.Max(1, payloadStartLine);
+        var normalizedEndLine = Math.Max(normalizedStartLine, payloadEndLine);
+        var result = new VisualMarkupScanResult();
+        var descriptor = ResolveFence(result, fenceInfo, normalizedFenceLine);
+        if (descriptor.HasValue) {
+            result.Blocks.Add(CreateBlock(
+                descriptor.Value,
+                fenceInfo,
+                payload,
+                normalizedFenceLine,
+                normalizedStartLine,
+                normalizedEndLine));
+        }
+
+        return result;
+    }
+
     internal static bool TryResolveFence(string info, out VisualMarkupKind kind, out string fenceName) {
         var descriptor = ResolveFence(null, info, 1);
         if (descriptor.HasValue) {
@@ -84,12 +120,22 @@ public static class VisualMarkupScanner {
     }
 
     private static VisualMarkupBlock CreateBlock(VisualMarkupFenceDescriptor descriptor, string fenceInfo, List<string> payload, int fenceLine, int payloadStartLine, int payloadEndLine) {
+        return CreateBlock(
+            descriptor,
+            fenceInfo,
+            string.Join("\n", payload),
+            fenceLine,
+            payloadStartLine,
+            payloadEndLine);
+    }
+
+    private static VisualMarkupBlock CreateBlock(VisualMarkupFenceDescriptor descriptor, string fenceInfo, string payload, int fenceLine, int payloadStartLine, int payloadEndLine) {
         return new VisualMarkupBlock(
             descriptor.Kind,
             descriptor.Name,
             fenceInfo.Trim(),
             descriptor.SchemaVersion,
-            string.Join("\n", payload),
+            payload,
             fenceLine,
             payloadStartLine,
             payloadEndLine < payloadStartLine ? payloadStartLine : payloadEndLine,

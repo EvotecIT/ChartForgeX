@@ -164,6 +164,6 @@ These capabilities describe what a production host or adapter may expose. They d
 
 ## API Surface
 
-Use `VisualMarkupParser.Parse(markdown)` when ChartForgeX should scan Markdown itself. Use `VisualMarkupScanner.Scan(markdown)` or `VisualMarkupParser.ParseBlocks(blocks)` when another Markdown host owns fence discovery.
+Use `VisualMarkupParser.Parse(markdown)` when ChartForgeX should scan Markdown itself. When another Markdown host owns fence discovery, use `VisualMarkupScanner.ParseFenceBlock(...)` to validate and project its fence metadata, then pass the returned blocks to `VisualMarkupParser.ParseBlocks(blocks)`.
 
 `VisualArtifact` exposes `ToSvg()`, `ToHtmlPage()`, `ToPng()`, `SaveSvg()`, `SaveHtml()`, and `SavePng()` for supported static models. The artifact envelope preserves the artifact kind, source language, title, subtitle, natural size, export formats, regions, legend entries, and metadata.

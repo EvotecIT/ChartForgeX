@@ -474,6 +474,7 @@ internal static partial class SmokeTests {
         ("Markup topology rejects mismatched section commands", MarkupTopologyRejectsMismatchedSectionCommands),
         ("Markup topology handles editing-friendly Markdown fences", MarkupTopologyHandlesEditingFriendlyMarkdownFences),
         ("Visual markup scanner extracts supported visual fences", VisualMarkupScannerExtractsSupportedVisualFences),
+        ("Visual markup scanner parses host-discovered fence blocks", VisualMarkupScannerParsesHostDiscoveredFenceBlocks),
         ("Visual markup scanner reports unsupported ChartForgeX fences", VisualMarkupScannerReportsUnsupportedChartForgeXFences),
         ("Visual markup scanner requires ChartForgeX schema version", VisualMarkupScannerRequiresChartForgeXSchemaVersion),
         ("Visual markup scanner keeps topology compatibility", VisualMarkupScannerKeepsTopologyCompatibility),
