@@ -72,13 +72,17 @@ internal static partial class SmokeTests {
         var stacked = Chart.Create()
             .WithSize(640, 360)
             .WithStackedBars()
+            .WithStackTotals()
             .AddHistogram("Observed", new[] { 0.11, 0.12, 0.25 }, decimalLayout)
             .AddBar("Target", new[] { new ChartPoint(0.15, 3), new ChartPoint(0.25, 2) });
-        var stackedBars = SvgDocument.Parse(stacked.ToSvg()).Root.FindByTag("rect")
+        var stackedSvg = stacked.ToSvg();
+        var stackedBars = SvgDocument.Parse(stackedSvg).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(stackedBars[2].GetAttribute("data-cfx-base") == "2", "Stacked regular bars should start at the matching histogram count.");
         Assert(ChartRange.FromChart(stacked).MaxY >= 5, "Stacked range calculation should include decimal-equivalent histogram and regular bar coordinates together.");
+        Assert(CountOccurrences(stackedSvg, "data-cfx-role=\"stack-total-label\"") == 2, "Stack totals should emit one label per decimal-equivalent histogram and regular bar coordinate.");
+        Assert(stacked.ToPng().Length > 64, "Decimal-equivalent mixed stack totals should preserve PNG rendering parity.");
 
         var narrowLayout = ChartHistogramBinLayout.FromWidth(0, 0.00000002, 0.00000001);
         var narrow = Chart.Create()

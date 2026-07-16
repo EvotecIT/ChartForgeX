@@ -117,7 +117,10 @@ internal sealed class ChartRange {
                     barXValues.Add(p.X);
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
-                    if (series.Kind == ChartSeriesKind.Bar) AddStackValue(p.Y >= 0 ? positiveBarStacks : negativeBarStacks, p.X, p.Y);
+                    if (series.Kind == ChartSeriesKind.Bar) {
+                        var stackCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series, p.X);
+                        AddStackValue(p.Y >= 0 ? positiveBarStacks : negativeBarStacks, stackCoordinate, p.Y);
+                    }
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
@@ -204,26 +207,8 @@ internal sealed class ChartRange {
     }
 
     private static void AddStackValue(Dictionary<double, double> stacks, double x, double y) {
-        if (stacks.TryGetValue(x, out var current)) {
-            stacks[x] = current + y;
-            return;
-        }
-
-        var matchingKey = 0.0;
-        var hasMatchingKey = false;
-        foreach (var existing in stacks.Keys) {
-            if (!ChartMath.SameCoordinate(existing, x)) continue;
-            matchingKey = existing;
-            hasMatchingKey = true;
-            break;
-        }
-
-        if (hasMatchingKey) {
-            stacks[matchingKey] += y;
-            return;
-        }
-
-        stacks[x] = y;
+        stacks.TryGetValue(x, out var current);
+        stacks[x] = current + y;
     }
 
     private void Include(ChartAnnotation annotation) {

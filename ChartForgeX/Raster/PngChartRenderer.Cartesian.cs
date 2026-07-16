@@ -546,7 +546,10 @@ public sealed partial class PngChartRenderer {
         var negativeTotals = new Dictionary<double, double>();
         foreach (var series in chart.Series) {
             if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
+            foreach (var point in series.Points) {
+                var coordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series, point.X);
+                AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
+            }
         }
 
         var reservedLabels = new List<ChartLabelBounds>();
