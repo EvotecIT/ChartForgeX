@@ -46,11 +46,6 @@ internal static class ChartHistogramBarSlot {
         return TryFindHistogramBin(chart, series.Points[pointIndex].X, out layout, out binIndex);
     }
 
-    internal static double CanonicalCoordinate(Chart chart, double coordinate) {
-        if (!TryFindHistogramBin(chart, coordinate, out var layout, out var binIndex)) return coordinate;
-        return layout.GetCenter(binIndex);
-    }
-
     private static bool TryFindHistogramBin(Chart chart, double coordinate, out ChartHistogramBinLayout layout, out int binIndex) {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var candidate = chart.Series[seriesIndex].HistogramBinLayout;

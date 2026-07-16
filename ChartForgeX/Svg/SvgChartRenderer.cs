@@ -92,7 +92,8 @@ public sealed partial class SvgChartRenderer {
         var w = o.Size.Width;
         var h = o.Size.Height;
         var plot = PlotArea(chart);
-        var range = ChartRange.FromChart(chart);
+        var barCoordinateMap = ChartBarCoordinateMap.Create(chart);
+        var range = ChartRange.FromChart(chart, barCoordinateMap);
         IReadOnlyList<double> xTicks = Array.Empty<double>();
         IReadOnlyList<double> yTicks = Array.Empty<double>();
         ChartRange? secondaryRange = null;
@@ -357,7 +358,7 @@ public sealed partial class SvgChartRenderer {
         if (IsHorizontalBarChart(chart)) {
             DrawHorizontalBarGrid(sb, chart, plot, xTicks, yTicks, map);
             AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
-            for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, i, plot, range, map, id);
+            for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, map, id);
             AppendSvgEnd(sb, "g");
             if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawHorizontalStackTotals(sb, chart, plot, map);
             DrawLegend(sb, chart, w, h);
@@ -370,8 +371,8 @@ public sealed partial class SvgChartRenderer {
         DrawGrid(sb, chart, plot, xTicks, yTicks, map);
         if (secondaryMap != null && secondaryTicks != null) DrawSecondaryYAxis(sb, chart, plot, secondaryTicks, secondaryMap);
         AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
-        for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, i, plot, range, SeriesMap(chart.Series[i], map, secondaryMap), id);
-        if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(sb, chart, plot, map);
+        for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, SeriesMap(chart.Series[i], map, secondaryMap), id);
+        if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(sb, chart, barCoordinateMap, plot, map);
         AppendSvgEnd(sb, "g");
         DrawAnnotationLines(sb, chart, plot, map);
         DrawLegend(sb, chart, w, h);
@@ -606,10 +607,10 @@ public sealed partial class SvgChartRenderer {
         return $"M {F(left)} {F(cy)} A {F(radius)} {F(radius)} 0 1 1 {F(right)} {F(cy)} A {F(radius)} {F(radius)} 0 1 1 {F(left)} {F(cy)} M {F(innerLeft)} {F(cy)} A {F(innerRadius)} {F(innerRadius)} 0 1 0 {F(innerRight)} {F(cy)} A {F(innerRadius)} {F(innerRadius)} 0 1 0 {F(innerLeft)} {F(cy)} Z";
     }
 
-    private static void DrawSeries(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
+    private static void DrawSeries(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
         var s = chart.Series[index]; var c = Color(chart, index); if (s.Points.Count == 0) return;
         if (s.Kind == ChartSeriesKind.HorizontalBar) { DrawHorizontalBars(sb, chart, index, plot, map, id); return; }
-        if (s.Kind == ChartSeriesKind.Bar) { DrawBars(sb, chart, index, plot, range, map, id); return; }
+        if (s.Kind == ChartSeriesKind.Bar) { DrawBars(sb, chart, barCoordinateMap, index, plot, range, map, id); return; }
         if (s.Kind == ChartSeriesKind.Lollipop) { DrawLollipops(sb, chart, index, plot, map); return; }
         if (s.Kind == ChartSeriesKind.RangeBar) { DrawRangeBars(sb, chart, index, plot, map, id); return; }
         if (s.Kind == ChartSeriesKind.BoxPlot) { DrawBoxPlots(sb, chart, index, plot, map); return; }

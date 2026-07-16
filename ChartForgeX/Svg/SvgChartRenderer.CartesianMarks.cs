@@ -167,14 +167,14 @@ public sealed partial class SvgChartRenderer {
         if (ShouldDrawDataLabels(chart, s)) DrawPointLabels(sb, chart, s, s.Points.Select(p => new ChartPoint(map.X(p.X), map.Y(p.Y))).ToArray(), plot);
     }
 
-    private static void DrawBars(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
+    private static void DrawBars(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
         var s = chart.Series[index];
         var layout = BarLayout(chart, plot, index);
         var zeroY = map.YBaseline();
         var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
-            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, index, p) : 0;
+            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, p) : 0;
             var y = map.Y(baseValue + p.Y);
             var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
             var top = Math.Min(y, baseY);
@@ -319,13 +319,13 @@ public sealed partial class SvgChartRenderer {
         return sum;
     }
 
-    private static void DrawStackTotals(StringBuilder sb, Chart chart, ChartRect plot, ChartMapper map) {
+    private static void DrawStackTotals(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, ChartRect plot, ChartMapper map) {
         var positiveTotals = new Dictionary<double, double>();
         var negativeTotals = new Dictionary<double, double>();
         foreach (var series in chart.Series) {
             if (series.Kind != ChartSeriesKind.Bar) continue;
             foreach (var point in series.Points) {
-                var coordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, point.X);
+                var coordinate = barCoordinateMap.Resolve(point.X);
                 AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
             }
         }

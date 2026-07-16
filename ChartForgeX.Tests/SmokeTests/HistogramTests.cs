@@ -128,6 +128,25 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(equivalentSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Equivalent histogram centers should emit one combined stack-total label.");
         Assert(equivalentLayouts.ToPng().Length > 64, "Equivalent histogram layout aggregation should preserve PNG rendering parity.");
 
+        var chainCenter = 1.5;
+        var chainBits = BitConverter.DoubleToInt64Bits(chainCenter);
+        var chainMiddle = BitConverter.Int64BitsToDouble(chainBits + 3);
+        var chainEnd = BitConverter.Int64BitsToDouble(chainBits + 6);
+        var chainedLayouts = Chart.Create()
+            .WithStackedBars()
+            .WithStackTotals()
+            .AddHistogram("Chain start", new[] { chainCenter }, ChartHistogramBinLayout.FromCount(0, chainCenter * 2, 1))
+            .AddHistogram("Chain middle", new[] { chainMiddle }, ChartHistogramBinLayout.FromCount(0, chainMiddle * 2, 1))
+            .AddHistogram("Chain end", new[] { chainEnd }, ChartHistogramBinLayout.FromCount(0, chainEnd * 2, 1));
+        var chainedSvg = chainedLayouts.ToSvg();
+        var chainedBars = SvgDocument.Parse(chainedSvg).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        Assert(chainedBars[2].GetAttribute("data-cfx-base") == "2", "Transitive coordinate chains should share one stable stacked base.");
+        Assert(ChartRange.FromChart(chainedLayouts).MaxY >= 3, "Transitive coordinate chains should share one range stack key.");
+        Assert(CountOccurrences(chainedSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Transitive coordinate chains should emit one combined stack-total label.");
+        Assert(chainedLayouts.ToPng().Length > 64, "Transitive coordinate chain aggregation should preserve PNG rendering parity.");
+
         var constantLayout = ChartHistogramBinLayout.FromCount(5, 5, 1);
         var constant = Chart.Create()
             .WithSize(640, 360)

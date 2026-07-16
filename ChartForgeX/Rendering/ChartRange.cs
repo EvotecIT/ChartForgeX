@@ -12,7 +12,10 @@ internal sealed class ChartRange {
     public double MinY { get; private set; } = double.PositiveInfinity;
     public double MaxY { get; private set; } = double.NegativeInfinity;
 
-    public static ChartRange FromChart(Chart chart, bool applyOptionBounds = true) {
+    public static ChartRange FromChart(Chart chart, bool applyOptionBounds = true) =>
+        FromChart(chart, ChartBarCoordinateMap.Create(chart), applyOptionBounds);
+
+    internal static ChartRange FromChart(Chart chart, ChartBarCoordinateMap coordinateMap, bool applyOptionBounds = true) {
         var range = new ChartRange();
         var barXValues = new List<double>();
         var bubbleXValues = new List<double>();
@@ -44,7 +47,7 @@ internal sealed class ChartRange {
                 }
                 foreach (var point in series.Points) {
                     range.IncludeY(point.Y);
-                    var stackCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, point.X);
+                    var stackCoordinate = coordinateMap.Resolve(point.X);
                     AddStackValue(point.Y >= 0 ? positiveBarStacks : negativeBarStacks, stackCoordinate, point.Y);
                 }
 
@@ -119,7 +122,7 @@ internal sealed class ChartRange {
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
                     if (series.Kind == ChartSeriesKind.Bar) {
-                        var stackCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, p.X);
+                        var stackCoordinate = coordinateMap.Resolve(p.X);
                         AddStackValue(p.Y >= 0 ? positiveBarStacks : negativeBarStacks, stackCoordinate, p.Y);
                     }
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {
