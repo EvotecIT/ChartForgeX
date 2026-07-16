@@ -18,6 +18,7 @@ internal static class TopologyLayoutNormalizer {
 
     public static void Normalize(TopologyChart chart, TopologyRenderOptions? options = null) {
         options ??= new TopologyRenderOptions();
+        ExpandGroupsForNodes(chart);
         ResolveGroupHeaderOverlaps(chart, options);
         ResolveNodeOverlaps(chart);
         ExpandGroupsForNodes(chart);
@@ -110,11 +111,19 @@ internal static class TopologyLayoutNormalizer {
 
             var requiredRight = nodes.Max(node => node.X + node.Width) + GroupPadding;
             var requiredBottom = nodes.Max(node => node.Y + node.Height) + GroupPadding;
-            var requiredWidth = requiredRight - group.X;
-            var requiredHeight = requiredBottom - group.Y;
-            if (group.Width <= 0) group.Width = Math.Max(MinimumAutoGroupWidth, requiredWidth);
-            if (group.Height <= 0) group.Height = Math.Max(MinimumAutoGroupHeight, requiredHeight);
-            else if (requiredBottom > group.Y + group.Height) group.Height = requiredHeight;
+            if (group.Width <= 0) {
+                var requiredLeft = nodes.Min(node => node.X) - GroupPadding;
+                if (requiredLeft < group.X) group.X = requiredLeft;
+                group.Width = Math.Max(MinimumAutoGroupWidth, requiredRight - group.X);
+            }
+
+            if (group.Height <= 0) {
+                var requiredTop = nodes.Min(node => node.Y) - GroupPadding;
+                if (requiredTop < group.Y) group.Y = requiredTop;
+                group.Height = Math.Max(MinimumAutoGroupHeight, requiredBottom - group.Y);
+            } else if (requiredBottom > group.Y + group.Height) {
+                group.Height = requiredBottom - group.Y;
+            }
         }
     }
 

@@ -315,6 +315,7 @@ internal static partial class SmokeTests {
         ("Topology normalizes overlapping manual content", TopologyNormalizesOverlappingManualContent),
         ("Topology fits manual content into viewport", TopologyFitsManualContentIntoViewport),
         ("Topology fits rendered tile adornments into viewport", TopologyFitsRenderedTileAdornmentsIntoViewport),
+        ("Topology auto-sized groups enclose explicit member bounds", TopologyAutoSizedGroupsEncloseExplicitMemberBounds),
         ("Topology can fit dense content into fixed viewport", TopologyCanFitDenseContentIntoFixedViewport),
         ("Topology reserves group header space", TopologyReservesGroupHeaderSpace),
         ("Topology renders deterministic layouts", TopologyRendersDeterministicLayouts),
