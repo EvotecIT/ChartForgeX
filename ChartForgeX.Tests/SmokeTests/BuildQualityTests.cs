@@ -108,7 +108,7 @@ internal static partial class SmokeTests {
         }
 
         var directoryBuildProps = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Directory.Build.props"));
-        Assert(directoryBuildProps.Contains("<ChartForgeXProductVersion>1.0.0</ChartForgeXProductVersion>", StringComparison.Ordinal), "Directory.Build.props should own the ChartForgeX product version.");
+        Assert(directoryBuildProps.Contains("<ChartForgeXProductVersion>1.0.1</ChartForgeXProductVersion>", StringComparison.Ordinal), "Directory.Build.props should own the ChartForgeX product version.");
         Assert(directoryBuildProps.Contains("<AssemblyVersion>$(ChartForgeXProductVersion).0</AssemblyVersion>", StringComparison.Ordinal), "ChartForgeX assembly identity should be isolated from host build version properties.");
 
         var qualityWorkflow = File.ReadAllText(Path.Combine(FindRepositoryRoot(), ".github", "workflows", "quality.yml"));

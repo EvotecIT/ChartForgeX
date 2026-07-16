@@ -135,6 +135,9 @@ internal static class ChartVisualPrimitives {
     public const double PngRadarPointOutlineRadiusExtra = RadarPointStrokeWidth / 2.0 + 0.05;
     public const double RadarRingOpacity = 0.76;
     public const double RadarSpokeOpacity = 0.72;
+    public const double PolarRingOpacity = 0.72;
+    public const double PolarSpokeOpacity = 0.58;
+    public const double PolarPointRadius = 3.8;
 
     public const double RadialTrackOpacity = 0.44;
     public const double RadialCenterStrokeOpacity = 0.20;

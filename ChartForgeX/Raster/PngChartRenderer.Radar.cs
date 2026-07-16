@@ -18,7 +18,7 @@ public sealed partial class PngChartRenderer {
         var categories = RadarCategories(series);
         if (categories.Count < 3) return;
 
-        var scale = RadarValueScale.Create(chart.Options.YAxis, series.Select(item => item.Series));
+        var scale = RadialValueScale.Create(chart.Options.YAxis, series.Select(item => item.Series), "Radar");
         var tickFontSize = PngTickFontSize(chart);
         var cx = plot.Left + plot.Width / 2;
         var cy = plot.Top + plot.Height / 2 + 6;
@@ -49,7 +49,7 @@ public sealed partial class PngChartRenderer {
         DrawLegend(c, chart);
     }
 
-    private static void DrawRadarGrid(RgbaCanvas c, Chart chart, IReadOnlyList<double> categories, RadarValueScale scale, double cx, double cy, double radius, double tickFontSize) {
+    private static void DrawRadarGrid(RgbaCanvas c, Chart chart, IReadOnlyList<double> categories, RadialValueScale scale, double cx, double cy, double radius, double tickFontSize) {
         foreach (var tick in scale.Ticks) {
             if (tick <= scale.Minimum) continue;
             var ringRadius = radius * scale.Normalize(tick);
@@ -103,7 +103,7 @@ public sealed partial class PngChartRenderer {
         return new List<double>(set);
     }
 
-    private static List<ChartPoint> RadarPoints(ChartSeries series, IReadOnlyList<double> categories, RadarValueScale scale, double cx, double cy, double radius) {
+    private static List<ChartPoint> RadarPoints(ChartSeries series, IReadOnlyList<double> categories, RadialValueScale scale, double cx, double cy, double radius) {
         var points = new List<ChartPoint>(categories.Count);
         for (var i = 0; i < categories.Count; i++) {
             var value = RadarValue(series, categories[i]);

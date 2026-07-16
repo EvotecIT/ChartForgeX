@@ -64,6 +64,8 @@ public sealed partial class SvgChartRenderer {
 
     private static bool IsRadarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Radar);
 
+    private static bool IsPolarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Polar);
+
     private static bool IsPolarAreaChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.PolarArea);
 
     private static bool IsFunnelChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Funnel);

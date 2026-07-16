@@ -89,6 +89,10 @@ public sealed partial class PngChartRenderer {
                 DrawSpecialChart(DrawRadar);
                 return c;
             }
+            if (IsPolarChart(chart)) {
+                DrawSpecialChart(DrawPolar);
+                return c;
+            }
             if (IsPolarAreaChart(chart)) {
                 DrawPlotSurface(c, o, t, plot);
                 DrawPolarArea(c, chart, plot);

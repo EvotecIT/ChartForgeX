@@ -1379,6 +1379,23 @@
       }
     },
     {
+      "name": "incident-direction-polar-dark",
+      "width": 920,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 35,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 962275,
+        "minTransparentPixels": 68125,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "industrial-births-region-map-us-states-light",
       "width": 980,
       "height": 560,

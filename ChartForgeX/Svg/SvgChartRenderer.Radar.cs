@@ -19,7 +19,7 @@ public sealed partial class SvgChartRenderer {
         var categories = RadarCategories(seriesItems.Select(item => item.series));
         if (categories.Length < 3) return;
 
-        var scale = RadarValueScale.Create(chart.Options.YAxis, seriesItems.Select(item => item.series));
+        var scale = RadialValueScale.Create(chart.Options.YAxis, seriesItems.Select(item => item.series), "Radar");
         var t = chart.Options.Theme;
         var cx = plot.Left + plot.Width / 2;
         var cy = plot.Top + plot.Height / 2 + 6;
@@ -48,7 +48,7 @@ public sealed partial class SvgChartRenderer {
         WriteRadarChartEnd(sb);
     }
 
-    private static void DrawRadarGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> categories, RadarValueScale scale, double cx, double cy, double radius) {
+    private static void DrawRadarGrid(StringBuilder sb, Chart chart, ChartRect plot, IReadOnlyList<double> categories, RadialValueScale scale, double cx, double cy, double radius) {
         var t = chart.Options.Theme;
         foreach (var tick in scale.Ticks) {
             if (tick <= scale.Minimum) continue;
@@ -212,7 +212,7 @@ public sealed partial class SvgChartRenderer {
         return categories.ToArray();
     }
 
-    private static List<ChartPoint> RadarPoints(ChartSeries series, IReadOnlyList<double> categories, RadarValueScale scale, double cx, double cy, double radius) {
+    private static List<ChartPoint> RadarPoints(ChartSeries series, IReadOnlyList<double> categories, RadialValueScale scale, double cx, double cy, double radius) {
         var points = new List<ChartPoint>(categories.Count);
         for (var i = 0; i < categories.Count; i++) {
             var value = RadarValue(series, categories[i]);

@@ -200,6 +200,8 @@ var radar = Chart.Create()
 
 SaveChart(radar, "security-posture-radar-dark");
 
+SaveChart(PolarExamples.CreateIncidentDirection(), "incident-direction-polar-dark");
+
 var polarArea = Chart.Create()
     .WithTitle("Control Contribution")
     .WithSubtitle("Polar area segments compare major control contributions")
@@ -423,9 +425,7 @@ var zeroValueDonut = Chart.Create().WithTitle("Zero-Value Donut").WithSubtitle("
 zeroValueDonut.Series[0].WithPointColor(1, ChartColor.FromRgb(15, 118, 110)).WithPointSliceOffset(1, 0.08);
 SaveChart(zeroValueDonut, "zero-value-donut-light");
 
-var zeroValuePolar = Chart.Create().WithTitle("Zero-Value Polar Area").WithSubtitle("Zero segments keep point indexes stable while positive segments remain styled").WithTheme(ChartTheme.ReportLight()).WithSize(820, 460).WithXLabels("No findings", "Reviewed", "Escalated").AddPolarArea("Review mix", Points(0, 82, 18));
-zeroValuePolar.Series[0].WithPointColor(1, ChartColor.FromRgb(15, 118, 110));
-SaveChart(zeroValuePolar, "zero-value-polar-area-light");
+SaveChart(PolarExamples.CreateZeroValueArea(), "zero-value-polar-area-light");
 
 var zeroValueFunnel = Chart.Create().WithTitle("Zero-Value Funnel Stage").WithSubtitle("Zero stages stay visible and later stages avoid fake drop-off from zero").WithTheme(ChartTheme.ReportLight()).WithSize(920, 560).WithXLabels("Opened", "Deferred", "Closed").AddFunnel("Review flow", Points(100, 0, 18));
 zeroValueFunnel.Series[0].WithPointColor(2, ChartColor.FromRgb(124, 58, 237));
