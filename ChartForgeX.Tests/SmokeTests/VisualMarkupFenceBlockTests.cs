@@ -26,5 +26,9 @@ internal static partial class SmokeTests {
             payloadEndLine: 41);
         Assert(invalid.Blocks.Count == 0, "An unversioned direct fence should not become a visual block.");
         Assert(invalid.Diagnostics.Count == 1 && invalid.Diagnostics[0].Line == 40, "The direct host path should return shared line-aware validation diagnostics.");
+
+        var parsedInvalid = new VisualMarkupParser().Parse(invalid);
+        Assert(parsedInvalid.Artifacts.Count == 0, "An invalid host-discovered fence should not produce an artifact.");
+        Assert(parsedInvalid.Diagnostics.Count == 1 && parsedInvalid.Diagnostics[0].Line == 40, "The scan-result parser path should preserve host fence diagnostics.");
     }
 }

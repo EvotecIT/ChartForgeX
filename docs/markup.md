@@ -20,7 +20,7 @@ The generic `ChartForgeX.Markup` package recognizes:
 
 Unsupported or unversioned `chartforgex` family fences produce diagnostics instead of being silently ignored. The parser also accepts custom block parsers through `IVisualMarkupBlockParser`, so optional packages can add real behavior without making the core markup package depend on them.
 
-Standalone tools can call `VisualMarkupParser.Parse(markdown)` and let ChartForgeX scan Markdown itself. Hosts that already parse Markdown, such as OfficeIMO-backed IX pipelines, should project each discovered fence with `VisualMarkupScanner.ParseFenceBlock(...)` and pass the returned typed blocks through `VisualMarkupParser.ParseBlocks(blocks)`. That keeps one Markdown source of truth while preserving ChartForgeX's fence validation, attributes, line-aware diagnostics, artifact conversion, and static rendering.
+Standalone tools can call `VisualMarkupParser.Parse(markdown)` and let ChartForgeX scan Markdown itself. Hosts that already parse Markdown, such as OfficeIMO-backed IX pipelines, should project each discovered fence with `VisualMarkupScanner.ParseFenceBlock(...)` and pass the complete scan result through `VisualMarkupParser.Parse(scan)`. That keeps one Markdown source of truth while preserving ChartForgeX's fence validation, attributes, line-aware diagnostics, artifact conversion, and static rendering. Use `ParseBlocks(blocks)` only when the host already owns and has handled scanner diagnostics.
 
 The host integration shape is:
 
@@ -34,7 +34,7 @@ var fence = VisualMarkupScanner.ParseFenceBlock(
     payloadStartLine: 25,
     payloadEndLine: 27);
 
-var result = new VisualMarkupParser().ParseBlocks(fence.Blocks);
+var result = new VisualMarkupParser().Parse(fence);
 ```
 
 OfficeIMO or another Markdown-native host owns Markdown parsing, fence discovery, and any document-native metadata. ChartForgeX owns visual payload parsing, diagnostics, reusable models, and deterministic static previews.
