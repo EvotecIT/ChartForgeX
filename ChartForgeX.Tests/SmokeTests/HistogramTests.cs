@@ -28,6 +28,10 @@ internal static partial class SmokeTests {
         Assert(layout.Count == 4 && Math.Abs(layout.Width - 3) < 0.000001, "Histogram layouts should preserve the requested bin width.");
         Assert(chart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 2d, 2d, 1d, 2d }), "Histogram values should use the requested width when assigning bins.");
         Assert(chart.Options.XAxisLabels.Select(label => label.Text).SequenceEqual(new[] { "0-3", "3-6", "6-9", "9-10" }), "Histogram labels should retain full-width bins and a final remainder bin.");
+        var decimalLayout = ChartHistogramBinLayout.FromWidth(0, 0.07, 0.005);
+        var remainderLayout = ChartHistogramBinLayout.FromWidth(0, 0.071, 0.005);
+        Assert(decimalLayout.Count == 14, "Histogram layouts should not create a phantom bin when floating-point division is negligibly above an integer.");
+        Assert(remainderLayout.Count == 15, "Histogram layouts should retain a final bin when the range has a real remainder.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(0, 10, 0), "Histogram layouts should reject zero bin widths.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddHistogram("Outside", new[] { 11d }, layout), "Shared histogram layouts should reject values outside their bounds.");
     }

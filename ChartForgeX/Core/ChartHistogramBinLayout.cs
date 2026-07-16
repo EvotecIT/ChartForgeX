@@ -41,7 +41,15 @@ public sealed class ChartHistogramBinLayout {
         if (binWidth <= 0) throw new ArgumentOutOfRangeException(nameof(binWidth), binWidth, "Histogram bin width must be greater than zero.");
         if (minimum == maximum) return new ChartHistogramBinLayout(minimum, maximum, 1, binWidth);
 
-        var count = Math.Max(1, (int)Math.Ceiling((maximum - minimum) / binWidth));
+        var quotient = (maximum - minimum) / binWidth;
+        var nearestInteger = Math.Round(quotient);
+        var tolerance = Math.Max(1d, Math.Abs(quotient)) * 1e-12;
+        if (Math.Abs(quotient - nearestInteger) <= tolerance) quotient = nearestInteger;
+        if (double.IsInfinity(quotient) || quotient > int.MaxValue) {
+            throw new ArgumentOutOfRangeException(nameof(binWidth), binWidth, "Histogram bin width produces too many bins.");
+        }
+
+        var count = Math.Max(1, (int)Math.Ceiling(quotient));
         return new ChartHistogramBinLayout(minimum, maximum, count, binWidth);
     }
 
