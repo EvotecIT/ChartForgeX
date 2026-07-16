@@ -30,5 +30,15 @@ internal static partial class SmokeTests {
         var parsedInvalid = new VisualMarkupParser().Parse(invalid);
         Assert(parsedInvalid.Artifacts.Count == 0, "An invalid host-discovered fence should not produce an artifact.");
         Assert(parsedInvalid.Diagnostics.Count == 1 && parsedInvalid.Diagnostics[0].Line == 40, "The scan-result parser path should preserve host fence diagnostics.");
+
+        var invalidDimensions = VisualMarkupScanner.ParseFenceBlock(
+            "chartforgex topology v1",
+            "group D1 \"Primary\" width:0\nnode dc1 \"DC1\" group:D1",
+            fenceLine: 50,
+            payloadStartLine: 51,
+            payloadEndLine: 52);
+        var parsedDimensions = new VisualMarkupParser().Parse(invalidDimensions);
+        Assert(parsedDimensions.Artifacts.Count == 0, "A topology with invalid dimensions should not escape as an artifact that fails during rendering.");
+        Assert(parsedDimensions.Diagnostics.Any(diagnostic => diagnostic.Line == 51 && diagnostic.Message.Contains("width must be a positive finite number", System.StringComparison.Ordinal)), "Invalid topology dimensions should be rejected with a line-aware parse diagnostic.");
     }
 }

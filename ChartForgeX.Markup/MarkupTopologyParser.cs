@@ -529,7 +529,16 @@ public sealed class MarkupTopologyParser {
     private static string? Optional(Dictionary<string, string> row, string key) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;
     private static string Value(Dictionary<string, string> row, string key, string fallback) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? value : fallback;
     private static string Required(Dictionary<string, string> row, string key) => Optional(row, key) ?? throw new ArgumentException("Missing required '" + key + "' column.");
-    private static double Number(Dictionary<string, string> row, string key, double fallback) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? double.Parse(value, CultureInfo.InvariantCulture) : fallback;
+    private static double Number(Dictionary<string, string> row, string key, double fallback) {
+        var number = row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value)
+            ? double.Parse(value, CultureInfo.InvariantCulture)
+            : fallback;
+        if (number <= 0 || double.IsNaN(number) || double.IsInfinity(number)) {
+            throw new ArgumentException(key + " must be a positive finite number.");
+        }
+
+        return number;
+    }
     private static void Add<TDocument>(MarkupParseResult<TDocument> result, int line, MarkupDiagnosticSeverity severity, string message) where TDocument : class => result.Diagnostics.Add(new MarkupDiagnostic { Line = line, Severity = severity, Message = message });
 
     private static List<string> SplitTableCells(string line) {
