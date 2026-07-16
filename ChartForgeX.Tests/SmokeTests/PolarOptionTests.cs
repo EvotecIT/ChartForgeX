@@ -68,8 +68,23 @@ internal static partial class SmokeTests {
         Assert(formattedSvg.Contains(">a0.0</text>", StringComparison.Ordinal), "Polar angle labels should honor x-axis formatting.");
         Assert(formattedSvg.Contains(">r20</text>", StringComparison.Ordinal), "Polar radius labels should honor y-axis formatting.");
 
+        var centered = PolarSample().WithAxes(false).WithGrid(false).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Center);
+        var centeredSvg = SvgDocument.Parse(centered.ToSvg());
+        var centeredPoint = centeredSvg.Root.FindByTag("circle").First(element => element.GetAttribute("data-cfx-role") == "polar-point");
+        var centeredLabel = centeredSvg.Root.FindByTag("text").First(element => element.GetAttribute("data-cfx-role") == "polar-data-label");
+        Assert(IsClose(PolarCoordinate(centeredPoint, "cx"), PolarCoordinate(centeredLabel, "x")) && IsClose(PolarCoordinate(centeredPoint, "cy"), PolarCoordinate(centeredLabel, "y")), "Center polar labels should stay on their marks.");
+
+        var below = PolarSample().WithAxes(false).WithGrid(false).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Center);
+        below.Series[0].WithDataLabelPlacement(ChartDataLabelPlacement.Below);
+        var belowSvg = SvgDocument.Parse(below.ToSvg());
+        var belowPoint = belowSvg.Root.FindByTag("circle").First(element => element.GetAttribute("data-cfx-role") == "polar-point");
+        var belowLabel = belowSvg.Root.FindByTag("text").First(element => element.GetAttribute("data-cfx-role") == "polar-data-label");
+        Assert(PolarCoordinate(belowLabel, "y") > PolarCoordinate(belowPoint, "cy") + 15, "Series-level polar label placement should override the chart-level placement.");
+        Assert(!centered.ToPng().SequenceEqual(below.ToPng()), "PNG polar labels should honor the same placement override as SVG.");
+
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddPolar("Negative", new[] { new ChartPoint(0, -1) }).ToSvg(), "Polar charts should reject negative radii instead of folding them across the origin.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddPolar("Zero", new[] { new ChartPoint(0, 0) }).ToPng(), "Polar charts should require at least one positive radius.");
+        AssertThrows<InvalidOperationException>(() => Chart.Create().ConfigureYAxis(axis => axis.Minimum = -10).AddPolar("Bad axis", new[] { new ChartPoint(0, 0), new ChartPoint(1, 10) }).ToSvg(), "Polar charts should reject negative radial-axis minima so zero remains at the origin.");
     }
 
     private static Chart PolarSample() => Chart.Create()

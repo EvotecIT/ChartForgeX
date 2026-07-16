@@ -26,7 +26,7 @@ public sealed partial class PngChartRenderer {
                 var raw = item.Series.Points[pointIndex];
                 DrawMarker(canvas, chart, point.X, point.Y, Math.Max(ChartVisualPrimitives.PolarPointRadius, chart.Options.Theme.MarkerRadius), PointColor(chart, item.Series, item.Index, pointIndex));
                 if (!ShouldDrawDataLabels(chart, item.Series)) continue;
-                var labelPoint = PolarDataLabelPoint(geometry, raw, point);
+                var labelPoint = geometry.DataLabelPoint(raw, point, DataLabelPlacement(chart, item.Series));
                 var label = FormatDataLabel(chart, item.Series, pointIndex, raw.Y);
                 var fontSize = PngDataLabelFontSize(chart, item.Series, pointIndex);
                 DrawReadablePngLabel(canvas, plot, labelPoint.X - EstimatePngEmphasizedTextWidth(label, fontSize) / 2.0, labelPoint.Y - fontSize / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, DataLabelStyle(chart, item.Series, pointIndex));
@@ -70,12 +70,6 @@ public sealed partial class PngChartRenderer {
     private static double PngPolarLabelWidth(Chart chart, double angle) {
         var sideRoom = chart.Options.Size.Width * 0.18;
         return Math.Abs(Math.Cos(angle)) < 0.32 ? chart.Options.Size.Width * 0.26 : sideRoom;
-    }
-
-    private static ChartPoint PolarDataLabelPoint(PolarChartGeometry geometry, ChartPoint raw, ChartPoint mapped) {
-        var x = Math.Cos(raw.X);
-        var y = -Math.Sin(raw.X);
-        return raw.Y <= geometry.MinimumRadius ? new ChartPoint(mapped.X, mapped.Y - 16) : new ChartPoint(mapped.X + x * 16, mapped.Y + y * 16);
     }
 
     private static bool IsPolarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Polar);

@@ -47,6 +47,16 @@ series Incidents type bar color #EF4444 values 3 4 2
         Assert(chart.Series[0].Name == "Revenue" && chart.Series[0].Kind == ChartSeriesKind.Line && chart.Series[0].Smooth, "Command-style series should map smooth line aliases.");
         Assert(chart.Series[1].Name == "Incidents" && chart.Series[1].Kind == ChartSeriesKind.Bar, "Command-style series should map per-series chart kinds.");
         Assert(chart.Series[0].Points.Count == 3 && chart.Series[1].Points.Count == 3, "Command-style series should preserve all numeric values.");
+
+        const string polarSource = @"```chartforgex chart v1
+series Wind type polar color #2563EB values 0 12 0.7 18 2.4 10
+```";
+        var polarResult = new MarkupChartParser().Parse(polarSource);
+        Assert(!polarResult.HasErrors, "Polar command series should parse angle/radius pairs: " + Diagnostics(polarResult));
+        var polar = polarResult.Document!.Chart;
+        Assert(polar.Series.Count == 1 && polar.Series[0].Kind == ChartSeriesKind.Polar, "The polar markup type should map to true polar lines, not polar-area segments.");
+        Assert(polar.Series[0].Points.Count == 3 && IsClose(polar.Series[0].Points[1].X, 0.7) && IsClose(polar.Series[0].Points[1].Y, 18), "Polar markup should preserve explicit irregular angles and radii.");
+        Assert(polar.ToSvg().Contains("data-cfx-role=\"polar-line\"", StringComparison.Ordinal) && !polar.ToSvg().Contains("data-cfx-role=\"polar-area-segment\"", StringComparison.Ordinal), "Polar markup should render the shared polar-line geometry.");
     }
 
     private static void MarkupChartParserReportsInvalidSeriesContracts() {
@@ -77,6 +87,12 @@ series Revenue type=ribbon values 1 2
 
         Assert(unknownTypesResult.HasErrors, "Unknown chart and series types should produce parse diagnostics.");
         Assert(Diagnostics(unknownTypesResult).Contains("Unknown chart type", StringComparison.Ordinal), "Unknown chart type diagnostics should be reported during parsing.");
+
+        const string incompletePolar = @"```chartforgex chart v1
+series Wind type polar values 0 12 1.5
+```";
+        var incompletePolarResult = new MarkupChartParser().Parse(incompletePolar);
+        Assert(incompletePolarResult.HasErrors && Diagnostics(incompletePolarResult).Contains("alternate angle and radius", StringComparison.Ordinal), "Polar markup should report incomplete angle/radius pairs as a parser diagnostic.");
 
         const string invalidTickCount = @"```chartforgex chart v1
 labels Jan Feb

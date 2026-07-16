@@ -85,7 +85,13 @@ public sealed partial class MarkupChartParser {
         }
 
         if (state.Values.Count == 0 && state.Series.Count == 0) Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, "Chart markup must declare at least one numeric value or series.");
-        if (!result.HasErrors) result.Document = new MarkupChartDocument { Id = state.Id, Chart = BuildChart(state) };
+        if (!result.HasErrors) {
+            try {
+                result.Document = new MarkupChartDocument { Id = state.Id, Chart = BuildChart(state) };
+            } catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException) {
+                Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, ex.Message);
+            }
+        }
         return result;
     }
 
@@ -116,14 +122,13 @@ public sealed partial class MarkupChartParser {
         if (state.Labels.Count > 0) chart.WithXLabels(state.Labels.ToArray());
 
         if (state.Series.Count == 0) {
-            var points = new ChartPoint[state.Values.Count];
-            for (var i = 0; i < points.Length; i++) points[i] = new ChartPoint(i + 1, state.Values[i]);
+            var points = BuildSeriesPoints(state.Type, state.Values);
             AddSeries(chart, state.SeriesName, state.Type, points, null);
         } else {
             foreach (var series in state.Series) {
-                var points = new ChartPoint[series.Values.Count];
-                for (var i = 0; i < points.Length; i++) points[i] = new ChartPoint(i + 1, series.Values[i]);
-                AddSeries(chart, series.Name, string.IsNullOrWhiteSpace(series.Type) ? state.Type : series.Type, points, series.Color);
+                var type = string.IsNullOrWhiteSpace(series.Type) ? state.Type : series.Type;
+                var points = BuildSeriesPoints(type, series.Values);
+                AddSeries(chart, series.Name, type, points, series.Color);
             }
         }
 
@@ -172,8 +177,10 @@ public sealed partial class MarkupChartParser {
                 chart.AddFunnel(name, points, ParseColor(color));
                 break;
             case "polararea":
-            case "polar":
                 chart.AddPolarArea(name, points);
+                break;
+            case "polar":
+                chart.AddPolar(name, points, ParseColor(color));
                 break;
             case "donut":
                 chart.WithPointLegend().WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).AddDonut(name, points);

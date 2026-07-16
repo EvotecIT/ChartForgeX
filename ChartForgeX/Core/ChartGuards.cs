@@ -69,8 +69,14 @@ internal static class ChartGuards {
             if (categoryCount < 3) throw new InvalidOperationException("Radar charts require at least three categories.");
         }
 
-        if (exclusiveKinds[0] == ChartSeriesKind.Polar && !chart.Series.SelectMany(series => series.Points).Any(point => point.Y > 0)) {
-            throw new InvalidOperationException("Polar charts require at least one positive radius.");
+        if (exclusiveKinds[0] == ChartSeriesKind.Polar) {
+            if (chart.Options.YAxis.Minimum.HasValue && chart.Options.YAxis.Minimum.Value < 0) {
+                throw new InvalidOperationException("Polar charts require a non-negative radial-axis minimum.");
+            }
+
+            if (!chart.Series.SelectMany(series => series.Points).Any(point => point.Y > 0)) {
+                throw new InvalidOperationException("Polar charts require at least one positive radius.");
+            }
         }
 
         ValidateSpecializedShape(chart, exclusiveKinds[0]);

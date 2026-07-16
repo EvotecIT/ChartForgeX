@@ -44,7 +44,7 @@ public sealed partial class SvgChartRenderer {
                     .EndEmptyElement()
                     .Line());
                 if (ShouldDrawDataLabels(chart, item.series)) {
-                    var labelPoint = PolarDataLabelPoint(geometry, raw, point);
+                    var labelPoint = geometry.DataLabelPoint(raw, point, DataLabelPlacement(chart, item.series));
                     DrawDataLabel(sb, chart, FormatDataLabel(chart, item.series, pointIndex, raw.Y), labelPoint.X, labelPoint.Y, plot, "polar-data-label", item.series, pointIndex);
                 }
             }
@@ -135,12 +135,6 @@ public sealed partial class SvgChartRenderer {
     private static double SvgPolarLabelWidth(Chart chart, double angle) {
         var sideRoom = chart.Options.Size.Width * 0.18;
         return Math.Abs(Math.Cos(angle)) < 0.32 ? chart.Options.Size.Width * 0.26 : sideRoom;
-    }
-
-    private static ChartPoint PolarDataLabelPoint(PolarChartGeometry geometry, ChartPoint raw, ChartPoint mapped) {
-        var x = Math.Cos(raw.X);
-        var y = -Math.Sin(raw.X);
-        return raw.Y <= geometry.MinimumRadius ? new ChartPoint(mapped.X, mapped.Y - 16) : new ChartPoint(mapped.X + x * 16, mapped.Y + y * 16);
     }
 
     private static string BuildPolarSummary(Chart chart, ChartSeries series) {

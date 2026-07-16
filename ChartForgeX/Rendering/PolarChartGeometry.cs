@@ -48,6 +48,19 @@ internal sealed class PolarChartGeometry {
         return new ChartPoint(CenterX + Math.Cos(point.X) * radius, CenterY - Math.Sin(point.X) * radius);
     }
 
+    /// <summary>Maps a polar point's requested data-label placement into renderer-neutral coordinates.</summary>
+    public ChartPoint DataLabelPoint(ChartPoint raw, ChartPoint mapped, ChartDataLabelPlacement placement) {
+        if (placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside) return mapped;
+        if (placement == ChartDataLabelPlacement.Left) return new ChartPoint(mapped.X - 20, mapped.Y);
+        if (placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) return new ChartPoint(mapped.X + 20, mapped.Y);
+        if (placement == ChartDataLabelPlacement.Above) return new ChartPoint(mapped.X, mapped.Y - 20);
+        if (placement == ChartDataLabelPlacement.Below) return new ChartPoint(mapped.X, mapped.Y + 20);
+
+        var x = Math.Cos(raw.X);
+        var y = -Math.Sin(raw.X);
+        return raw.Y <= MinimumRadius ? new ChartPoint(mapped.X, mapped.Y - 16) : new ChartPoint(mapped.X + x * 16, mapped.Y + y * 16);
+    }
+
     public ChartPoint OnOuterRing(double angle, double offset = 0) =>
         new(CenterX + Math.Cos(angle) * (Radius + offset), CenterY - Math.Sin(angle) * (Radius + offset));
 
