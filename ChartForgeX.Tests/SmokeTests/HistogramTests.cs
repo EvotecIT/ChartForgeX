@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.Tests;
@@ -67,15 +68,27 @@ internal static partial class SmokeTests {
         Assert(histogramLeft + histogramWidth <= regularLeft + 0.001, "Grouped histogram and regular bars at the same numeric coordinate should receive distinct slots.");
         Assert(grouped.ToPng().Length > 64, "Mixed histogram and regular bars should preserve PNG rendering parity.");
 
+        var decimalLayout = ChartHistogramBinLayout.FromWidth(0.1, 0.3, 0.1);
         var stacked = Chart.Create()
             .WithSize(640, 360)
             .WithStackedBars()
-            .AddHistogram("Observed", new[] { 0.25, 0.75, 1.25, 1.75 }, layout)
-            .AddBar("Target", new[] { new ChartPoint(0.5, 3), new ChartPoint(1.5, 2) });
+            .AddHistogram("Observed", new[] { 0.11, 0.12, 0.25 }, decimalLayout)
+            .AddBar("Target", new[] { new ChartPoint(0.15, 3), new ChartPoint(0.25, 2) });
         var stackedBars = SvgDocument.Parse(stacked.ToSvg()).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(stackedBars[2].GetAttribute("data-cfx-base") == "2", "Stacked regular bars should start at the matching histogram count.");
+        Assert(ChartRange.FromChart(stacked).MaxY >= 5, "Stacked range calculation should include decimal-equivalent histogram and regular bar coordinates together.");
+
+        var narrowLayout = ChartHistogramBinLayout.FromWidth(0, 0.00000002, 0.00000001);
+        var narrow = Chart.Create()
+            .WithStackedBars()
+            .AddHistogram("Narrow bins", new[] { 0.000000001, 0.000000002, 0.000000015 }, narrowLayout)
+            .AddBar("Narrow target", new[] { new ChartPoint(0.000000015, 2) });
+        var narrowBars = SvgDocument.Parse(narrow.ToSvg()).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        Assert(narrowBars[2].GetAttribute("data-cfx-base") == "1", "Stacked bars should not match an earlier adjacent histogram bin merely because the bin width is below one millionth.");
     }
 
     private static void SeriesKindCapabilitiesExposeExclusiveRenderingOwnership() {

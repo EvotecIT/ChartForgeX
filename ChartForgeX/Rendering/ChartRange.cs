@@ -204,9 +204,26 @@ internal sealed class ChartRange {
     }
 
     private static void AddStackValue(Dictionary<double, double> stacks, double x, double y) {
-        double current;
-        stacks.TryGetValue(x, out current);
-        stacks[x] = current + y;
+        if (stacks.TryGetValue(x, out var current)) {
+            stacks[x] = current + y;
+            return;
+        }
+
+        var matchingKey = 0.0;
+        var hasMatchingKey = false;
+        foreach (var existing in stacks.Keys) {
+            if (!ChartMath.SameCoordinate(existing, x)) continue;
+            matchingKey = existing;
+            hasMatchingKey = true;
+            break;
+        }
+
+        if (hasMatchingKey) {
+            stacks[matchingKey] += y;
+            return;
+        }
+
+        stacks[x] = y;
     }
 
     private void Include(ChartAnnotation annotation) {

@@ -49,7 +49,7 @@ internal static class ChartHistogramBarSlot {
             if (candidate == null) continue;
             if (coordinate < candidate.Minimum || coordinate > candidate.Maximum) continue;
             var candidateIndex = candidate.GetIndex(coordinate);
-            if (!SameCoordinate(candidate.GetCenter(candidateIndex), coordinate)) continue;
+            if (!ChartMath.SameCoordinate(candidate.GetCenter(candidateIndex), coordinate)) continue;
             layout = candidate;
             binIndex = candidateIndex;
             return true;
@@ -71,7 +71,7 @@ internal static class ChartHistogramBarSlot {
             }
 
             for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-                if (!SameCoordinate(series.Points[pointIndex].X, center)) continue;
+                if (!ChartMath.SameCoordinate(series.Points[pointIndex].X, center)) continue;
                 result.Add(i);
                 break;
             }
@@ -83,16 +83,6 @@ internal static class ChartHistogramBarSlot {
     private static bool ContainsBin(ChartHistogramBinLayout layout, double lowerBound, double upperBound, double center) {
         if (center < layout.Minimum || center > layout.Maximum) return false;
         var index = layout.GetIndex(center);
-        return SameCoordinate(layout.GetLowerBound(index), lowerBound) && SameCoordinate(layout.GetUpperBound(index), upperBound);
-    }
-
-    private static bool SameCoordinate(double left, double right) {
-        if (left == right) return true;
-        if (double.IsNaN(left) || double.IsNaN(right) || double.IsInfinity(left) || double.IsInfinity(right)) return false;
-        var magnitude = Math.Max(Math.Abs(left), Math.Abs(right));
-        if (magnitude == 0) return false;
-        var bits = BitConverter.DoubleToInt64Bits(magnitude);
-        var next = BitConverter.Int64BitsToDouble(bits + 1);
-        return Math.Abs(left - right) <= (next - magnitude) * 4;
+        return ChartMath.SameCoordinate(layout.GetLowerBound(index), lowerBound) && ChartMath.SameCoordinate(layout.GetUpperBound(index), upperBound);
     }
 }

@@ -174,7 +174,7 @@ public sealed partial class SvgChartRenderer {
         var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
-            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackBaseValue(chart, index, p) : 0;
+            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, index, p) : 0;
             var y = map.Y(baseValue + p.Y);
             var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
             var top = Math.Min(y, baseY);
@@ -301,21 +301,6 @@ public sealed partial class SvgChartRenderer {
         var barWidth = Math.Max(3, (groupWidth - gap * (groupCount - 1)) / groupCount);
         var offset = (groupPosition - (groupCount - 1) / 2.0) * (barWidth + gap);
         return new BarLayoutInfo(barWidth, offset);
-    }
-
-    private static double StackBaseValue(Chart chart, int seriesIndex, ChartPoint point) {
-        var sum = 0.0;
-        for (var i = 0; i < seriesIndex; i++) {
-            var series = chart.Series[i];
-            if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var candidate in series.Points) {
-                if (Math.Abs(candidate.X - point.X) >= 0.000001) continue;
-                if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;
-                break;
-            }
-        }
-
-        return sum;
     }
 
     private static double StackAreaBaseValue(Chart chart, int seriesIndex, ChartPoint point) {
