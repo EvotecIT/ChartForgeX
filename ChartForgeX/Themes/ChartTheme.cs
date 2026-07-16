@@ -184,7 +184,9 @@ public sealed partial class ChartTheme {
     }
 
     /// <summary>
-    /// Gets or sets the marker radius used by SVG line and scatter renderers.
+    /// Gets or sets the marker radius used by SVG and PNG point-capable renderers.
+    /// A value of zero suppresses optional line markers while preserving markers required by
+    /// scatter and specialized chart types.
     /// </summary>
     public double MarkerRadius {
         get => _markerRadius;
@@ -374,7 +376,7 @@ public sealed partial class ChartTheme {
     /// <summary>
     /// Applies the marker radius used by point-capable renderers.
     /// </summary>
-    /// <param name="markerRadius">The marker radius.</param>
+    /// <param name="markerRadius">The non-negative marker radius. Use zero to suppress optional line markers.</param>
     /// <returns>The current theme.</returns>
     public ChartTheme WithMarkerRadius(double markerRadius) {
         MarkerRadius = markerRadius;

@@ -427,6 +427,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawMarker(RgbaCanvas c, Chart chart, double x, double y, double radius, ChartColor color) {
+        if (radius <= 0) return;
         c.DrawCircle(x, y, radius + ChartVisualPrimitives.PngMarkerOutlineRadiusExtra, chart.Options.Theme.CardBackground);
         c.DrawCircle(x, y, radius, color);
     }

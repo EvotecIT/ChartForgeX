@@ -144,6 +144,7 @@ internal static partial class SmokeTests {
         ("Line visual style is reusable and configurable", LineVisualStyleIsReusableAndConfigurable),
         ("Line visual style defaults stay crisp and glow is opt-in", LineVisualStyleDefaultsStayCrispAndGlowIsOptIn),
         ("PNG scatter does not connect points", PngScatterDoesNotConnectPoints),
+        ("Zero marker radius suppresses optional line markers", ZeroMarkerRadiusSuppressesOptionalLineMarkers),
         ("Step line series render as stair steps", StepLineSeriesRenderAsStairSteps),
         ("Step area series render as stair-step areas", StepAreaSeriesRenderAsStairStepAreas),
         ("Data labels render when enabled", DataLabelsRenderWhenEnabled),
