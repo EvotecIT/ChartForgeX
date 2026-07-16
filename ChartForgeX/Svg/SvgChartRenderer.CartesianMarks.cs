@@ -284,7 +284,8 @@ public sealed partial class SvgChartRenderer {
     private static BarLayoutInfo BarLayout(Chart chart, ChartRect plot, int seriesIndex) {
         var barSeries = chart.Series
             .Select((series, index) => new { series, index })
-            .Where(item => item.series.Kind == ChartSeriesKind.Bar && item.series.HistogramBinLayout == null)
+            .Where(item => item.series.Kind == ChartSeriesKind.Bar &&
+                (item.series.HistogramBinLayout == null || item.series.HistogramBinLayout.Minimum == item.series.HistogramBinLayout.Maximum))
             .Select(item => item.index)
             .ToArray();
         var groupCount = chart.Options.BarMode == ChartBarMode.Stacked ? 1 : Math.Max(1, barSeries.Length);

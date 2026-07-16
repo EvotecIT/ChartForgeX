@@ -93,6 +93,39 @@ internal static partial class SmokeTests {
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(narrowBars[2].GetAttribute("data-cfx-base") == "1", "Stacked bars should not match an earlier adjacent histogram bin merely because the bin width is below one millionth.");
+
+        var center = 1.5;
+        var centerBits = BitConverter.DoubleToInt64Bits(center);
+        var leftOfCenter = BitConverter.Int64BitsToDouble(centerBits - 3);
+        var rightOfCenter = BitConverter.Int64BitsToDouble(centerBits + 3);
+        var transitive = Chart.Create()
+            .WithStackedBars()
+            .AddHistogram("Center", new[] { center }, ChartHistogramBinLayout.FromWidth(1, 2, 1))
+            .AddBar("Left", new[] { new ChartPoint(leftOfCenter, 2) })
+            .AddBar("Right", new[] { new ChartPoint(rightOfCenter, 3) });
+        var transitiveBars = SvgDocument.Parse(transitive.ToSvg()).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        Assert(transitiveBars[2].GetAttribute("data-cfx-base") == "3", "Stacked bars canonicalized to one histogram center should include every earlier equivalent coordinate.");
+        Assert(transitive.ToPng().Length > 64, "Canonical mixed histogram stack coordinates should preserve PNG rendering parity.");
+
+        var constantLayout = ChartHistogramBinLayout.FromCount(5, 5, 1);
+        var constant = Chart.Create()
+            .WithSize(640, 360)
+            .AddHistogram("First constant", new[] { 5d, 5d }, constantLayout)
+            .AddHistogram("Second constant", new[] { 5d }, constantLayout)
+            .AddBar("Constant target", new[] { new ChartPoint(5, 3) });
+        var constantBars = SvgDocument.Parse(constant.ToSvg()).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        var firstConstantLeft = double.Parse(constantBars[0].GetAttribute("x")!, CultureInfo.InvariantCulture);
+        var firstConstantWidth = double.Parse(constantBars[0].GetAttribute("width")!, CultureInfo.InvariantCulture);
+        var secondConstantLeft = double.Parse(constantBars[1].GetAttribute("x")!, CultureInfo.InvariantCulture);
+        var secondConstantWidth = double.Parse(constantBars[1].GetAttribute("width")!, CultureInfo.InvariantCulture);
+        var regularConstantLeft = double.Parse(constantBars[2].GetAttribute("x")!, CultureInfo.InvariantCulture);
+        Assert(firstConstantLeft + firstConstantWidth <= secondConstantLeft + 0.001 && secondConstantLeft + secondConstantWidth <= regularConstantLeft + 0.001,
+            "Grouped constant-value histograms and regular bars should receive distinct slots.");
+        Assert(constant.ToPng().Length > 64, "Grouped constant-value histogram slots should preserve PNG rendering parity.");
     }
 
     private static void SeriesKindCapabilitiesExposeExclusiveRenderingOwnership() {

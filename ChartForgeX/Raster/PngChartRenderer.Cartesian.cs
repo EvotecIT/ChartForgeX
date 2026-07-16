@@ -470,7 +470,9 @@ public sealed partial class PngChartRenderer {
     private static BarLayoutInfo BarLayout(Chart chart, ChartRect plot, int seriesIndex) {
         var barSeries = new List<int>();
         for (var i = 0; i < chart.Series.Count; i++) {
-            if (chart.Series[i].Kind == ChartSeriesKind.Bar && chart.Series[i].HistogramBinLayout == null) barSeries.Add(i);
+            var series = chart.Series[i];
+            if (series.Kind == ChartSeriesKind.Bar &&
+                (series.HistogramBinLayout == null || series.HistogramBinLayout.Minimum == series.HistogramBinLayout.Maximum)) barSeries.Add(i);
         }
 
         var groupCount = chart.Options.BarMode == ChartBarMode.Stacked ? 1 : Math.Max(1, barSeries.Count);
