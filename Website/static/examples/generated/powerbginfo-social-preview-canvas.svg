@@ -1,29 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-canvas-2eb65bff" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="cfx-visual-canvas-2eb65bff-title cfx-visual-canvas-2eb65bff-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-canvas-2eb65bff-title">PowerBGInfo social preview</title>
-<desc id="cfx-visual-canvas-2eb65bff-desc">Layered static visual canvas.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-canvas-8b214ac1" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="cfx-visual-canvas-8b214ac1-title cfx-visual-canvas-8b214ac1-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-canvas-8b214ac1-title">PowerBGInfo social preview</title>
+<desc id="cfx-visual-canvas-8b214ac1-desc">Layered static visual canvas.</desc>
 <defs>
-<linearGradient id="cfx-visual-canvas-2eb65bff-background" x1="0" y1="0" x2="0" y2="1">
+<linearGradient id="cfx-visual-canvas-8b214ac1-background" x1="0" y1="0" x2="0" y2="1">
 <stop offset="0%" stop-color="#020713"/>
 <stop offset="100%" stop-color="#071A35"/>
 </linearGradient>
-<linearGradient id="cfx-visual-canvas-2eb65bff-tile-glass" x1="0" y1="0" x2="0" y2="1">
+<linearGradient id="cfx-visual-canvas-8b214ac1-tile-glass" x1="0" y1="0" x2="0" y2="1">
 <stop offset="0%" stop-color="rgba(7,21,44,0.91)"/>
 <stop offset="100%" stop-color="rgba(3,10,23,0.878)"/>
 </linearGradient>
-<linearGradient id="cfx-visual-canvas-2eb65bff-hero-badge" x1="0" y1="0" x2="0" y2="1">
+<linearGradient id="cfx-visual-canvas-8b214ac1-hero-badge" x1="0" y1="0" x2="0" y2="1">
 <stop offset="0%" stop-color="#0B1C3A"/>
 <stop offset="100%" stop-color="#051021"/>
 </linearGradient>
-<filter id="cfx-visual-canvas-2eb65bff-soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+<filter id="cfx-visual-canvas-8b214ac1-soft-glow" x="-30%" y="-30%" width="160%" height="160%">
 <feGaussianBlur stdDeviation="5" result="blur"/>
 <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
 </filter>
-<filter id="cfx-visual-canvas-2eb65bff-raised-depth" x="-18%" y="-18%" width="136%" height="148%">
+<filter id="cfx-visual-canvas-8b214ac1-raised-depth" x="-18%" y="-18%" width="136%" height="148%">
 <feDropShadow dx="0" dy="11" stdDeviation="8" flood-color="#000000" flood-opacity="0.42"/>
 <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#22A7FF" flood-opacity="0.24"/>
 </filter>
 </defs>
-<rect data-cfx-role="visual-canvas-background" width="100%" height="100%" fill="url(#cfx-visual-canvas-2eb65bff-background)"/>
+<rect data-cfx-role="visual-canvas-background" width="100%" height="100%" fill="url(#cfx-visual-canvas-8b214ac1-background)"/>
 <g data-cfx-role="visual-canvas-tech-backdrop">
 <circle cx="0" cy="31.5" r="4.2" fill="rgba(34,167,255,0.141)"/>
 <circle cx="444" cy="84.168" r="1.8" fill="rgba(34,167,255,0.176)"/>
@@ -92,10 +92,9 @@
 <path d="M 96 340.2 C 336 260.2, 576 460.2, 816 330.2" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
 <path d="M 96 368.55 C 336 288.55, 576 488.55, 816 358.55" fill="none" stroke="rgba(34,167,255,0.11)" stroke-width="1.1"/>
 <path data-cfx-role="visual-canvas-horizon" d="M 0 491.4 C 240 453.6, 456 516.6, 660 478.8 C 888 441, 1008 535.5, 1200 459.9 L 1200 630 L 0 630 Z" fill="rgba(6,18,37,0.776)"/>
-<path data-cfx-role="visual-canvas-road-glow" d="M 600 516.6 C 864 541.8, 960 585.9, 1104 630" fill="none" stroke="#22A7FF" stroke-opacity="0.76" stroke-width="5" filter="url(#cfx-visual-canvas-2eb65bff-soft-glow)"/>
 </g>
 <g data-cfx-role="visual-canvas-info-tile">
-<rect x="48.5" y="92.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-2eb65bff-tile-glass)" stroke="rgba(47,128,255,0.722)" stroke-width="1.4"/>
+<rect x="48.5" y="92.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-8b214ac1-tile-glass)" stroke="rgba(47,128,255,0.722)" stroke-width="1.4"/>
 <rect x="50.5" y="94.5" width="295" height="77" rx="12.76" fill="none" stroke="rgba(255,255,255,0.071)"/>
 <rect x="68" y="109" width="48" height="48" rx="12" fill="rgba(47,128,255,0.18)" stroke="none"/>
 <text x="92" y="140.258" text-anchor="middle" fill="#2F80FF" font-family="Segoe UI, Arial, sans-serif" font-size="20.16" font-weight="800">PC</text>
@@ -103,7 +102,7 @@
 <text x="138" y="147.12" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="650">DEV-WKS-01</text>
 </g>
 <g data-cfx-role="visual-canvas-info-tile">
-<rect x="48.5" y="190.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-2eb65bff-tile-glass)" stroke="rgba(47,128,255,0.722)" stroke-width="1.4"/>
+<rect x="48.5" y="190.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-8b214ac1-tile-glass)" stroke="rgba(47,128,255,0.722)" stroke-width="1.4"/>
 <rect x="50.5" y="192.5" width="295" height="77" rx="12.76" fill="none" stroke="rgba(255,255,255,0.071)"/>
 <rect x="68" y="207" width="48" height="48" rx="12" fill="rgba(47,128,255,0.18)" stroke="none"/>
 <text x="92" y="238.258" text-anchor="middle" fill="#2F80FF" font-family="Segoe UI, Arial, sans-serif" font-size="20.16" font-weight="800">IP</text>
@@ -112,7 +111,7 @@
 <text x="138" y="254.52" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="10.4" font-weight="500">192.168.1.42</text>
 </g>
 <g data-cfx-role="visual-canvas-info-tile">
-<rect x="48.5" y="288.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-2eb65bff-tile-glass)" stroke="rgba(47,128,255,0.722)" stroke-width="1.4"/>
+<rect x="48.5" y="288.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-8b214ac1-tile-glass)" stroke="rgba(47,128,255,0.722)" stroke-width="1.4"/>
 <rect x="50.5" y="290.5" width="295" height="77" rx="12.76" fill="none" stroke="rgba(255,255,255,0.071)"/>
 <rect x="68" y="305" width="48" height="48" rx="12" fill="rgba(47,128,255,0.18)" stroke="none"/>
 <text x="92" y="336.258" text-anchor="middle" fill="#2F80FF" font-family="Segoe UI, Arial, sans-serif" font-size="20.16" font-weight="800">OS</text>
@@ -121,7 +120,7 @@
 <text x="138" y="352.52" fill="#A8BAD4" font-family="Segoe UI, Arial, sans-serif" font-size="10.4" font-weight="500">24H2</text>
 </g>
 <g data-cfx-role="visual-canvas-info-tile">
-<rect x="852.5" y="70.5" width="299" height="95" rx="16" fill="url(#cfx-visual-canvas-2eb65bff-tile-glass)" stroke="rgba(96,165,250,0.722)" stroke-width="1.4"/>
+<rect x="852.5" y="70.5" width="299" height="95" rx="16" fill="url(#cfx-visual-canvas-8b214ac1-tile-glass)" stroke="rgba(96,165,250,0.722)" stroke-width="1.4"/>
 <rect x="854.5" y="72.5" width="295" height="91" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
 <rect x="872" y="91" width="54" height="54" rx="13" fill="rgba(96,165,250,0.18)" stroke="none"/>
 <text x="899" y="126.165" text-anchor="middle" fill="#60A5FA" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">CPU</text>
@@ -131,7 +130,7 @@
 <rect x="948" y="150" width="42.32" height="8" rx="4" fill="#60A5FA"/>
 </g>
 <g data-cfx-role="visual-canvas-info-tile">
-<rect x="852.5" y="184.5" width="299" height="95" rx="16" fill="url(#cfx-visual-canvas-2eb65bff-tile-glass)" stroke="rgba(96,165,250,0.722)" stroke-width="1.4"/>
+<rect x="852.5" y="184.5" width="299" height="95" rx="16" fill="url(#cfx-visual-canvas-8b214ac1-tile-glass)" stroke="rgba(96,165,250,0.722)" stroke-width="1.4"/>
 <rect x="854.5" y="186.5" width="295" height="91" rx="14" fill="none" stroke="rgba(255,255,255,0.071)"/>
 <rect x="872" y="205" width="54" height="54" rx="13" fill="rgba(96,165,250,0.18)" stroke="none"/>
 <text x="899" y="240.165" text-anchor="middle" fill="#60A5FA" font-family="Segoe UI, Arial, sans-serif" font-size="22.68" font-weight="800">RAM</text>
@@ -141,7 +140,7 @@
 <rect x="948" y="264" width="75.44" height="8" rx="4" fill="#60A5FA"/>
 </g>
 <g data-cfx-role="visual-canvas-info-tile">
-<rect x="852.5" y="298.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-2eb65bff-tile-glass)" stroke="rgba(96,165,250,0.722)" stroke-width="1.4"/>
+<rect x="852.5" y="298.5" width="299" height="81" rx="14.76" fill="url(#cfx-visual-canvas-8b214ac1-tile-glass)" stroke="rgba(96,165,250,0.722)" stroke-width="1.4"/>
 <rect x="854.5" y="300.5" width="295" height="77" rx="12.76" fill="none" stroke="rgba(255,255,255,0.071)"/>
 <rect x="872" y="315" width="48" height="48" rx="12" fill="rgba(96,165,250,0.18)" stroke="none"/>
 <text x="896" y="346.258" text-anchor="middle" fill="#60A5FA" font-family="Segoe UI, Arial, sans-serif" font-size="20.16" font-weight="800">USR</text>
@@ -149,7 +148,7 @@
 <text x="942" y="353.12" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="650">jdoe</text>
 </g>
 <g data-cfx-role="visual-canvas-hero-badge">
-<rect x="538" y="157" width="124" height="88" rx="17.6" fill="url(#cfx-visual-canvas-2eb65bff-hero-badge)" stroke="#22A7FF" stroke-width="2.4" filter="url(#cfx-visual-canvas-2eb65bff-soft-glow)"/>
+<rect x="538" y="157" width="124" height="88" rx="17.6" fill="url(#cfx-visual-canvas-8b214ac1-hero-badge)" stroke="#22A7FF" stroke-width="2.4" filter="url(#cfx-visual-canvas-8b214ac1-soft-glow)"/>
 <text x="600" y="215.96" text-anchor="middle" fill="#E8F1FF" font-family="Cascadia Mono, Consolas, monospace" font-size="36.96" font-weight="850">&gt;_</text>
 </g>
 <text data-cfx-role="visual-canvas-hero-title" x="600" y="378" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="82" font-weight="850" letter-spacing="0"><tspan fill="#F8FAFC">Power</tspan><tspan fill="#2F80FF">BGInfo</tspan></text>
