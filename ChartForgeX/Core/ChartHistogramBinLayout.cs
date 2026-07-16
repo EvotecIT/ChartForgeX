@@ -15,7 +15,8 @@ public sealed class ChartHistogramBinLayout {
         Maximum = maximum;
         Count = count;
         Width = width;
-        if (width > 0 && TryConvertRoundTripDecimal(minimum, out var decimalMinimum) && TryConvertRoundTripDecimal(width, out var decimalWidth)) {
+        if (width > 0 && TryConvertRoundTripDecimal(minimum, out var decimalMinimum) &&
+            TryConvertRoundTripDecimal(width, out var decimalWidth) && decimalWidth > 0) {
             _decimalMinimum = decimalMinimum;
             _decimalWidth = decimalWidth;
         }
@@ -90,7 +91,8 @@ public sealed class ChartHistogramBinLayout {
 
     private bool TryGetDecimalIndex(double value, out int index) {
         index = 0;
-        if (!_decimalMinimum.HasValue || !_decimalWidth.HasValue || !TryConvertRoundTripDecimal(value, out var decimalValue)) return false;
+        if (!_decimalMinimum.HasValue || !_decimalWidth.HasValue || _decimalWidth.Value <= 0 ||
+            !TryConvertRoundTripDecimal(value, out var decimalValue)) return false;
 
         try {
             var quotient = (decimalValue - _decimalMinimum.Value) / _decimalWidth.Value;

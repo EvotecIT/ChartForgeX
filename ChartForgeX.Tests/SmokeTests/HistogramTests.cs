@@ -49,6 +49,9 @@ internal static partial class SmokeTests {
         var belowHalf = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(0.5) - 1);
         var adjacentBoundaryChart = Chart.Create().AddHistogram("Adjacent boundary values", new[] { belowHalf, 0.5 }, ChartHistogramBinLayout.FromWidth(0, 1, 0.1));
         Assert(adjacentBoundaryChart.Series[0].Points[4].Y == 1 && adjacentBoundaryChart.Series[0].Points[5].Y == 1, "Histogram binning should preserve a representable value immediately below a boundary without moving it into the following bin.");
+        var subDecimalLayout = ChartHistogramBinLayout.FromCount(0, 1e-28, 2);
+        var subDecimalChart = Chart.Create().AddHistogram("Sub-decimal widths", new[] { 2e-29, 7e-29 }, subDecimalLayout);
+        Assert(subDecimalChart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 1d, 1d }), "Histogram widths below decimal precision should fall back to binary bin assignment without division by zero.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(0, 10, 0), "Histogram layouts should reject zero bin widths.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddHistogram("Outside", new[] { 11d }, layout), "Shared histogram layouts should reject values outside their bounds.");
     }
@@ -108,6 +111,22 @@ internal static partial class SmokeTests {
             .ToArray();
         Assert(transitiveBars[2].GetAttribute("data-cfx-base") == "3", "Stacked bars canonicalized to one histogram center should include every earlier equivalent coordinate.");
         Assert(transitive.ToPng().Length > 64, "Canonical mixed histogram stack coordinates should preserve PNG rendering parity.");
+
+        var countLayout = ChartHistogramBinLayout.FromCount(0, 0.3, 3);
+        var widthLayout = ChartHistogramBinLayout.FromWidth(0, 0.3, 0.1);
+        var equivalentLayouts = Chart.Create()
+            .WithStackedBars()
+            .WithStackTotals()
+            .AddHistogram("Count layout", new[] { 0.01 }, countLayout)
+            .AddHistogram("Width layout", new[] { 0.01 }, widthLayout);
+        var equivalentSvg = equivalentLayouts.ToSvg();
+        var equivalentBars = SvgDocument.Parse(equivalentSvg).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        Assert(equivalentBars[3].GetAttribute("data-cfx-base") == "1", "Equivalent independently-created histogram layouts should stack their matching bins.");
+        Assert(ChartRange.FromChart(equivalentLayouts).MaxY >= 2, "Equivalent histogram centers should share one range stack key.");
+        Assert(CountOccurrences(equivalentSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Equivalent histogram centers should emit one combined stack-total label.");
+        Assert(equivalentLayouts.ToPng().Length > 64, "Equivalent histogram layout aggregation should preserve PNG rendering parity.");
 
         var constantLayout = ChartHistogramBinLayout.FromCount(5, 5, 1);
         var constant = Chart.Create()

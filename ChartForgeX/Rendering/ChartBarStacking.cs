@@ -8,8 +8,7 @@ namespace ChartForgeX.Rendering;
 internal static class ChartBarStacking {
     internal static double BaseValue(Chart chart, int seriesIndex, ChartPoint point) {
         var sum = 0.0;
-        var currentSeries = chart.Series[seriesIndex];
-        var coordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, currentSeries, point.X);
+        var coordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, point.X);
         for (var index = 0; index < seriesIndex; index++) {
             var series = chart.Series[index];
             if (series.Kind != ChartSeriesKind.Bar || !TryFindPoint(chart, series, coordinate, out var candidate)) continue;
@@ -21,14 +20,14 @@ internal static class ChartBarStacking {
 
     private static bool TryFindPoint(Chart chart, ChartSeries series, double coordinate, out ChartPoint point) {
         for (var index = 0; index < series.Points.Count; index++) {
-            var candidateCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series, series.Points[index].X);
+            var candidateCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series.Points[index].X);
             if (candidateCoordinate != coordinate) continue;
             point = series.Points[index];
             return true;
         }
 
         for (var index = 0; index < series.Points.Count; index++) {
-            var candidateCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series, series.Points[index].X);
+            var candidateCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series.Points[index].X);
             if (!ChartMath.SameCoordinate(candidateCoordinate, coordinate)) continue;
             point = series.Points[index];
             return true;

@@ -44,7 +44,8 @@ internal sealed class ChartRange {
                 }
                 foreach (var point in series.Points) {
                     range.IncludeY(point.Y);
-                    AddStackValue(point.Y >= 0 ? positiveBarStacks : negativeBarStacks, point.X, point.Y);
+                    var stackCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, point.X);
+                    AddStackValue(point.Y >= 0 ? positiveBarStacks : negativeBarStacks, stackCoordinate, point.Y);
                 }
 
                 if (UsesZeroBaseline(chart.Options.YAxis)) range.IncludeY(0);
@@ -118,7 +119,7 @@ internal sealed class ChartRange {
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
                     if (series.Kind == ChartSeriesKind.Bar) {
-                        var stackCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series, p.X);
+                        var stackCoordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, p.X);
                         AddStackValue(p.Y >= 0 ? positiveBarStacks : negativeBarStacks, stackCoordinate, p.Y);
                     }
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {

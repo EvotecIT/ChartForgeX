@@ -325,7 +325,7 @@ public sealed partial class SvgChartRenderer {
         foreach (var series in chart.Series) {
             if (series.Kind != ChartSeriesKind.Bar) continue;
             foreach (var point in series.Points) {
-                var coordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, series, point.X);
+                var coordinate = ChartHistogramBarSlot.CanonicalCoordinate(chart, point.X);
                 AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
             }
         }
