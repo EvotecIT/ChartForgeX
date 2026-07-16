@@ -1,0 +1,47 @@
+using System;
+using System.Linq;
+using ChartForgeX.Markup;
+using ChartForgeX.VisualArtifacts;
+
+var markdown = @"```chartforgex sequence v1
+id incident-sequence
+title Incident Sequence
+subtitle SequenceArtifact parsed from native v1 markup
+size 960x560
+
+participants:
+| id | label | kind |
+| --- | --- | --- |
+| user | User | actor |
+| api | API | participant |
+| db | Database | database |
+
+messages:
+| from | to | text | style | activate |
+| --- | --- | --- | --- | --- |
+| user | api | Submit request | solid | true |
+| api | db | Store event | dashed | false |
+| db | api | Stored | dashed | false |
+| api | user | Accepted | solid | false |
+
+notes:
+| placement | participant | text | step |
+| --- | --- | --- | --- |
+| rightOf | api | Processing and validation | 1 |
+
+blocks:
+| kind | text | start | end |
+| --- | --- | --- | --- |
+| loop | Retry on transient failure | 0 | 2 |
+```
+";
+
+var result = new VisualMarkupParser().Parse(markdown);
+if (result.HasErrors) {
+    throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+}
+
+var artifact = result.Artifacts.Single();
+artifact.SaveSvg("markup-sequence-incident.svg");
+artifact.SavePng("markup-sequence-incident.png");
+artifact.SaveHtml("markup-sequence-incident.html");

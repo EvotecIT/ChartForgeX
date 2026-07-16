@@ -1,0 +1,2 @@
+global using MarkupDiagnosticSeverity = ChartForgeX.Diagnostics.VisualDiagnosticSeverity;
+global using MermaidDiagnosticSeverity = ChartForgeX.Diagnostics.VisualDiagnosticSeverity;

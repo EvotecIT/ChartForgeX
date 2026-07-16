@@ -315,10 +315,12 @@ var schedule = ScheduleTimelineBlock.Create()
     .AddEvent("Report Review", 16, 17.2, lane: 0, color: ChartColor.FromHex("#5EA2F6"), badge: "Report");
 ```
 
-Next extension points should be driven by real PowerBGInfo, ImagePlayground, email, Word, and wallpaper scenarios:
+Visual blocks are exercised through real host-surface contracts as well as isolated component examples. The generated gallery includes a compact 584-pixel email summary, report strips, and a transparent overlay; those artifacts share the same SVG/PNG numeric baseline as charts, topology, wallpapers, and social previews.
+
+Further extension points should continue to be driven by real PowerBGInfo, ImagePlayground, email, Word, and wallpaper scenarios:
 
 - richer table/list style presets
 - optional small icon symbols for status cells and list markers
 - reusable status palettes
 - compact infographic snippets that reuse shared primitive layout/styling, not arbitrary markup
-- more examples and visual-baseline candidates once layouts stabilize
+- additional host-sized fixtures when a new reusable layout contract lands

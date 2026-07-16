@@ -1,0 +1,1760 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 960 560" role="img" aria-label="2,000 Object Global Estate - overview"><style>.cfx-graph-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  margin: 0;
+  padding: clamp(12px, 2.4vw, 36px);
+  background:
+    radial-gradient(circle at 8% -8%, rgba(37, 99, 235, .13), transparent 34%),
+    radial-gradient(circle at 92% 2%, rgba(14, 165, 233, .09), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  color: #0f172a;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.cfx-graph-shell.cfx-graph-page-dark {
+  background:
+    radial-gradient(circle at 8% -8%, rgba(59, 130, 246, .18), transparent 32%),
+    radial-gradient(circle at 92% 2%, rgba(14, 165, 233, .11), transparent 26%),
+    linear-gradient(180deg, #070b14 0%, #0b1220 100%);
+  color: #f8fafc;
+}
+
+.cfx-graph-shell *,
+.cfx-graph-shell *::before,
+.cfx-graph-shell *::after,
+.cfx-graph-explorer *,
+.cfx-graph-explorer *::before,
+.cfx-graph-explorer *::after {
+  box-sizing: inherit;
+}
+
+.cfx-graph-explorer {
+  --cfx-color-canvas: #f8fafc;
+  --cfx-color-surface: rgba(255, 255, 255, .88);
+  --cfx-color-surface-solid: #ffffff;
+  --cfx-color-surface-raised: #ffffff;
+  --cfx-color-surface-muted: #f1f5f9;
+  --cfx-color-surface-hover: #f8fafc;
+  --cfx-color-paper: #ffffff;
+  --cfx-color-paper-soft: #f8fbff;
+  --cfx-color-text: #0f172a;
+  --cfx-color-text-muted: #5b6b82;
+  --cfx-color-text-subtle: #74849a;
+  --cfx-color-border: #d7e0eb;
+  --cfx-color-border-strong: #b9c6d6;
+  --cfx-color-accent: #2563eb;
+  --cfx-color-accent-strong: #1d4ed8;
+  --cfx-color-accent-soft: #dbeafe;
+  --cfx-color-focus: #1d4ed8;
+  --cfx-color-focus-halo: rgba(96, 165, 250, .42);
+  --cfx-color-selected: #d97706;
+  --cfx-color-success: #15803d;
+  --cfx-color-warning: #b45309;
+  --cfx-color-danger: #dc2626;
+  --cfx-color-edge: #8796aa;
+  --cfx-color-edge-label: #44546a;
+  --cfx-color-graph-text: #334155;
+  --cfx-color-graph-muted: #64748b;
+  --cfx-color-graph-halo: #ffffff;
+  --cfx-color-cluster-fill: rgba(224, 242, 254, .84);
+  --cfx-color-cluster-stroke: #0284c7;
+  --cfx-color-cluster-text: #075985;
+  --cfx-shadow-shell: 0 20px 56px rgba(15, 23, 42, .1);
+  --cfx-shadow-stage: 0 28px 72px rgba(15, 23, 42, .14);
+  --cfx-control-height: 42px;
+  position: relative;
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  color: var(--cfx-color-text);
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.cfx-graph-explorer[data-cfx-graph-theme="dark"],
+.cfx-graph-explorer[data-cfx-graph-theme-active="dark"] {
+  --cfx-color-canvas: #080d18;
+  --cfx-color-surface: rgba(15, 23, 42, .88);
+  --cfx-color-surface-solid: #0f172a;
+  --cfx-color-surface-raised: #172033;
+  --cfx-color-surface-muted: #111b2e;
+  --cfx-color-surface-hover: #1b2940;
+  --cfx-color-paper: #0b1220;
+  --cfx-color-paper-soft: #0d1728;
+  --cfx-color-text: #f8fafc;
+  --cfx-color-text-muted: #bdc9d9;
+  --cfx-color-text-subtle: #91a1b7;
+  --cfx-color-border: #2a3a52;
+  --cfx-color-border-strong: #41546e;
+  --cfx-color-accent: #60a5fa;
+  --cfx-color-accent-strong: #93c5fd;
+  --cfx-color-accent-soft: #172f55;
+  --cfx-color-focus: #93c5fd;
+  --cfx-color-focus-halo: rgba(37, 99, 235, .62);
+  --cfx-color-selected: #fbbf24;
+  --cfx-color-success: #4ade80;
+  --cfx-color-warning: #fbbf24;
+  --cfx-color-danger: #fb7185;
+  --cfx-color-edge: #63738b;
+  --cfx-color-edge-label: #d2dbea;
+  --cfx-color-graph-text: #e5edf8;
+  --cfx-color-graph-muted: #a9b7ca;
+  --cfx-color-graph-halo: #0b1220;
+  --cfx-color-cluster-fill: rgba(7, 89, 133, .42);
+  --cfx-color-cluster-stroke: #38bdf8;
+  --cfx-color-cluster-text: #bae6fd;
+  --cfx-shadow-shell: 0 24px 64px rgba(0, 0, 0, .36);
+  --cfx-shadow-stage: 0 30px 80px rgba(0, 0, 0, .44);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cfx-graph-shell:has(.cfx-graph-explorer[data-cfx-graph-theme="system"]),
+  .cfx-graph-shell:has(.cfx-graph-explorer[data-cfx-graph-theme="dark"]) {
+    background:
+      radial-gradient(circle at 8% -8%, rgba(59, 130, 246, .18), transparent 32%),
+      radial-gradient(circle at 92% 2%, rgba(14, 165, 233, .11), transparent 26%),
+      linear-gradient(180deg, #070b14 0%, #0b1220 100%);
+    color: #f8fafc;
+  }
+
+  .cfx-graph-explorer[data-cfx-graph-theme="system"]:not([data-cfx-graph-theme-active]) {
+    --cfx-color-canvas: #080d18;
+    --cfx-color-surface: rgba(15, 23, 42, .88);
+    --cfx-color-surface-solid: #0f172a;
+    --cfx-color-surface-raised: #172033;
+    --cfx-color-surface-muted: #111b2e;
+    --cfx-color-surface-hover: #1b2940;
+    --cfx-color-paper: #0b1220;
+    --cfx-color-paper-soft: #0d1728;
+    --cfx-color-text: #f8fafc;
+    --cfx-color-text-muted: #bdc9d9;
+    --cfx-color-text-subtle: #91a1b7;
+    --cfx-color-border: #2a3a52;
+    --cfx-color-border-strong: #41546e;
+    --cfx-color-accent: #60a5fa;
+    --cfx-color-accent-strong: #93c5fd;
+    --cfx-color-accent-soft: #172f55;
+    --cfx-color-focus: #93c5fd;
+    --cfx-color-focus-halo: rgba(37, 99, 235, .62);
+    --cfx-color-selected: #fbbf24;
+    --cfx-color-edge: #63738b;
+    --cfx-color-edge-label: #d2dbea;
+    --cfx-color-graph-text: #e5edf8;
+    --cfx-color-graph-muted: #a9b7ca;
+    --cfx-color-graph-halo: #0b1220;
+    --cfx-color-cluster-fill: rgba(7, 89, 133, .42);
+    --cfx-color-cluster-stroke: #38bdf8;
+    --cfx-color-cluster-text: #bae6fd;
+    --cfx-shadow-shell: 0 24px 64px rgba(0, 0, 0, .36);
+    --cfx-shadow-stage: 0 30px 80px rgba(0, 0, 0, .44);
+    color-scheme: dark;
+  }
+}
+
+.cfx-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.cfx-graph-header {
+  display: grid;
+  grid-template-columns: minmax(260px, .72fr) minmax(0, 1.75fr);
+  gap: 15px 22px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 20px;
+  background: var(--cfx-color-surface);
+  box-shadow: var(--cfx-shadow-shell);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.cfx-graph-heading {
+  min-width: 0;
+}
+
+.cfx-graph-eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cfx-color-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.cfx-graph-title {
+  margin: 0;
+  color: var(--cfx-color-text);
+  font-size: clamp(21px, 2.15vw, 29px);
+  font-weight: 780;
+  letter-spacing: -.03em;
+  line-height: 1.12;
+}
+
+.cfx-graph-subtitle {
+  max-width: 62ch;
+  margin: 7px 0 0;
+  color: var(--cfx-color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cfx-graph-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0;
+}
+
+.cfx-graph-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 3px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--cfx-color-surface-raised) 90%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+}
+
+.cfx-graph-toolbar-group--query {
+  flex: 1 1 340px;
+}
+
+.cfx-graph-toolbar-group--appearance {
+  margin-inline-start: auto;
+}
+
+.cfx-graph-search-field {
+  position: relative;
+  display: flex;
+  flex: 1 1 210px;
+  min-width: 176px;
+}
+
+.cfx-graph-search-field > .cfx-graph-icon {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 11px;
+  width: 17px;
+  height: 17px;
+  color: var(--cfx-color-text-subtle);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.cfx-graph-search,
+.cfx-graph-filter,
+.cfx-graph-tool,
+.cfx-graph-physics-grid input,
+.cfx-graph-physics-grid select,
+.cfx-graph-physics-actions button {
+  min-height: var(--cfx-control-height);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--cfx-color-text);
+  font: 650 12px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.cfx-graph-search {
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px 0 34px;
+}
+
+.cfx-graph-filter {
+  max-width: 146px;
+  padding: 0 29px 0 10px;
+  cursor: pointer;
+}
+
+.cfx-graph-filter-field {
+  display: inline-flex;
+}
+
+.cfx-graph-search::placeholder {
+  color: var(--cfx-color-text-subtle);
+  opacity: 1;
+}
+
+.cfx-graph-search-status {
+  align-self: center;
+  max-width: 96px;
+  padding: 0 6px;
+  overflow: hidden;
+  color: var(--cfx-color-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-graph-search-status:empty {
+  display: none;
+}
+
+.cfx-graph-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 40px;
+  padding: 0 11px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.cfx-graph-tool--compact {
+  width: 40px;
+  padding: 0;
+}
+
+.cfx-graph-tool--compact .cfx-graph-tool-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.cfx-graph-icon {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cfx-graph-tool:hover:not(:disabled) {
+  border-color: var(--cfx-color-border);
+  background: var(--cfx-color-surface-hover);
+  color: var(--cfx-color-accent-strong);
+  transform: translateY(-1px);
+}
+
+.cfx-graph-tool:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cfx-graph-tool[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--cfx-color-accent) 58%, var(--cfx-color-border));
+  background: var(--cfx-color-accent-soft);
+  color: var(--cfx-color-accent-strong);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cfx-color-accent) 18%, transparent);
+}
+
+.cfx-graph-tool[aria-pressed="true"]::after {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.cfx-graph-search:hover,
+.cfx-graph-filter:hover {
+  background: var(--cfx-color-surface-hover);
+}
+
+.cfx-graph-search:focus,
+.cfx-graph-filter:focus,
+.cfx-graph-tool:focus-visible,
+.cfx-graph-physics-grid input:focus,
+.cfx-graph-physics-grid select:focus,
+.cfx-graph-physics-actions button:focus-visible,
+.cfx-graph-breadcrumb-link:focus-visible,
+.cfx-graph-node:focus-visible,
+.cfx-graph-cluster:focus-visible,
+.cfx-graph-edge:focus-visible,
+.cfx-graph-canvas:focus-visible,
+.cfx-graph-webgl:focus-visible,
+.cfx-graph-physics-configurator summary:focus-visible {
+  outline: 3px solid var(--cfx-color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--cfx-color-focus-halo);
+}
+
+.cfx-graph-tool:disabled,
+.cfx-graph-physics-grid input:disabled,
+.cfx-graph-physics-grid select:disabled {
+  color: var(--cfx-color-text-subtle);
+  cursor: not-allowed;
+  opacity: .62;
+}
+
+.cfx-graph-breadcrumbs {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cfx-color-border);
+}
+
+.cfx-graph-breadcrumbs .cfx-graph-tool {
+  min-height: 40px;
+  padding-inline: 10px;
+  font-size: 11px;
+}
+
+.cfx-graph-breadcrumb-path {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--cfx-color-text-muted);
+  font-size: 12px;
+  font-weight: 680;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-graph-breadcrumb-link {
+  appearance: none;
+  min-height: 40px;
+  margin: 0;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--cfx-color-accent);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.cfx-graph-breadcrumb-link:hover {
+  background: var(--cfx-color-accent-soft);
+  color: var(--cfx-color-accent-strong);
+}
+
+.cfx-graph-physics-configurator {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  overflow: hidden;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 14px;
+  background: var(--cfx-color-surface-muted);
+  color: var(--cfx-color-text);
+}
+
+.cfx-graph-physics-configurator summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: .01em;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cfx-graph-physics-configurator summary::-webkit-details-marker {
+  display: none;
+}
+
+.cfx-graph-physics-configurator summary::before {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--cfx-color-success);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfx-color-success) 18%, transparent);
+  content: "";
+}
+
+.cfx-graph-physics-configurator summary::after {
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: "";
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform .16s ease;
+}
+
+.cfx-graph-physics-configurator[open] summary {
+  border-bottom: 1px solid var(--cfx-color-border);
+}
+
+.cfx-graph-physics-configurator[open] summary::after {
+  transform: rotate(225deg) translate(-2px, -1px);
+}
+
+.cfx-graph-physics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  gap: 10px;
+  padding: 13px 13px 9px;
+}
+
+.cfx-graph-physics-grid label {
+  display: grid;
+  gap: 5px;
+  color: var(--cfx-color-text-muted);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.cfx-graph-physics-grid input,
+.cfx-graph-physics-grid select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 9px;
+  border-color: var(--cfx-color-border);
+  background: var(--cfx-color-surface-raised);
+  text-transform: none;
+}
+
+.cfx-graph-physics-grid .cfx-graph-physics-check {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+  min-height: 38px;
+  padding: 0 9px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 9px;
+  background: var(--cfx-color-surface-raised);
+  color: var(--cfx-color-text);
+  text-transform: none;
+}
+
+.cfx-graph-physics-check input {
+  width: 17px;
+  min-height: 17px;
+  margin: 0;
+  accent-color: var(--cfx-color-accent);
+}
+
+.cfx-graph-physics-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px 13px;
+}
+
+.cfx-graph-physics-actions button {
+  min-height: 38px;
+  padding: 0 12px;
+  border-color: var(--cfx-color-border);
+  background: var(--cfx-color-surface-raised);
+  cursor: pointer;
+}
+
+.cfx-graph-physics-actions button:first-child {
+  border-color: var(--cfx-color-accent);
+  background: var(--cfx-color-accent);
+  color: #ffffff;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--cfx-color-accent) 26%, transparent);
+}
+
+.cfx-graph-physics-actions output {
+  margin-left: auto;
+  color: var(--cfx-color-text-muted);
+  font-size: 11px;
+  font-weight: 680;
+}
+
+.cfx-graph-stage {
+  position: relative;
+  min-height: clamp(440px, 68vh, 820px);
+  overflow: hidden;
+  aspect-ratio: 12 / 7;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 40%, var(--cfx-color-paper) 0%, var(--cfx-color-paper-soft) 70%, var(--cfx-color-paper) 100%);
+  box-shadow: var(--cfx-shadow-stage), inset 0 1px 0 color-mix(in srgb, var(--cfx-color-surface-raised) 88%, transparent);
+  cursor: default;
+  touch-action: auto;
+}
+
+.cfx-graph-interactive-touch .cfx-graph-stage {
+  cursor: grab;
+  touch-action: none;
+}
+
+.cfx-graph-interactive-touch .cfx-graph-stage:active,
+.cfx-graph-panning .cfx-graph-stage {
+  cursor: grabbing;
+}
+
+.cfx-graph-canvas,
+.cfx-graph-webgl {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  background: var(--cfx-color-paper);
+  cursor: inherit;
+}
+
+.cfx-graph-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 12 / 7;
+}
+
+.cfx-graph-render-canvas .cfx-graph-canvas,
+.cfx-graph-render-webgl .cfx-graph-webgl {
+  display: block;
+}
+
+.cfx-graph-render-canvas .cfx-graph-svg,
+.cfx-graph-render-webgl .cfx-graph-svg {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cfx-graph-render-canvas .cfx-graph-webgl,
+.cfx-graph-render-svg .cfx-graph-canvas,
+.cfx-graph-render-svg .cfx-graph-webgl,
+.cfx-graph-render-webgl .cfx-graph-canvas {
+  display: none;
+}
+
+.cfx-graph-bg {
+  fill: var(--cfx-color-paper);
+}
+
+.cfx-graph-edge {
+  fill: none;
+  stroke: var(--cfx-edge-stroke, var(--cfx-color-edge));
+  stroke-width: var(--cfx-edge-width, 1.4);
+  opacity: .62;
+}
+
+.cfx-graph-edge[data-edge-dashed="true"] {
+  stroke-dasharray: 8 6;
+}
+
+.cfx-graph-svg marker path {
+  fill: var(--cfx-color-edge);
+}
+
+.cfx-graph-edge-label {
+  fill: var(--cfx-edge-label-adaptive, var(--cfx-edge-label-explicit, var(--cfx-color-edge-label)));
+  stroke: var(--cfx-color-graph-halo);
+  stroke-width: 4;
+  font-size: 11px;
+  paint-order: stroke;
+  pointer-events: none;
+  stroke-linejoin: round;
+  text-anchor: middle;
+}
+
+.cfx-graph-node {
+  cursor: grab;
+  transition: opacity .18s ease, filter .18s ease;
+}
+
+.cfx-graph-node[data-node-has-children="true"] {
+  cursor: zoom-in;
+}
+
+.cfx-graph-node:active,
+.cfx-graph-dragging-node .cfx-graph-node.cfx-graph-selected {
+  cursor: grabbing;
+}
+
+.cfx-graph-node:hover {
+  filter: brightness(1.04) drop-shadow(0 7px 9px rgba(15, 23, 42, .18));
+}
+
+.cfx-graph-node circle,
+.cfx-graph-node rect,
+.cfx-graph-node ellipse,
+.cfx-graph-node polygon,
+.cfx-graph-node path {
+  fill: var(--cfx-node-fill, #2563eb);
+  stroke: var(--cfx-node-stroke, #60a5fa);
+  stroke-width: 3;
+}
+
+.cfx-graph-node image {
+  clip-path: circle(50%);
+}
+
+.cfx-graph-node .cfx-graph-node-image-rect {
+  clip-path: none;
+}
+
+.cfx-graph-node text,
+.cfx-graph-node-details text {
+  fill: var(--cfx-node-label-adaptive, var(--cfx-node-label-explicit, var(--cfx-color-graph-text)));
+  stroke: var(--cfx-color-graph-halo);
+  stroke-width: 4;
+  font-size: 12px;
+  paint-order: stroke;
+  stroke-linejoin: round;
+  text-anchor: middle;
+}
+
+.cfx-graph-node-details {
+  transition: opacity .18s ease;
+  pointer-events: none;
+}
+
+.cfx-graph-node .cfx-graph-node-icon {
+  fill: #ffffff;
+  stroke: none;
+  font-weight: 750;
+  paint-order: normal;
+}
+
+.cfx-graph-node .cfx-graph-node-secondary,
+.cfx-graph-node-details .cfx-graph-node-secondary {
+  fill: var(--cfx-color-graph-muted);
+  stroke-width: 3;
+  font-size: 9.5px;
+}
+
+.cfx-graph-node .cfx-graph-node-badge circle,
+.cfx-graph-node-details .cfx-graph-node-badge circle {
+  fill: var(--cfx-color-text);
+  stroke: var(--cfx-color-paper);
+  stroke-width: 2;
+}
+
+.cfx-graph-node .cfx-graph-node-badge text,
+.cfx-graph-node-details .cfx-graph-node-badge text {
+  fill: var(--cfx-color-paper);
+  stroke: none;
+  font-size: 7px;
+  font-weight: 800;
+  paint-order: normal;
+}
+
+.cfx-graph-node .cfx-graph-node-status,
+.cfx-graph-node-details .cfx-graph-node-status {
+  fill: #94a3b8;
+  stroke: var(--cfx-color-paper);
+  stroke-width: 2;
+}
+
+.cfx-graph-node[data-cfx-status="healthy"] .cfx-graph-node-status,
+.cfx-graph-node-details[data-cfx-status="healthy"] .cfx-graph-node-status { fill: #22c55e; }
+.cfx-graph-node[data-cfx-status="warning"] .cfx-graph-node-status,
+.cfx-graph-node-details[data-cfx-status="warning"] .cfx-graph-node-status { fill: #f59e0b; }
+.cfx-graph-node[data-cfx-status="critical"] .cfx-graph-node-status,
+.cfx-graph-node-details[data-cfx-status="critical"] .cfx-graph-node-status { fill: #ef4444; }
+
+.cfx-graph-cluster {
+  cursor: pointer;
+}
+
+.cfx-graph-cluster circle {
+  fill: var(--cfx-color-cluster-fill);
+  stroke: var(--cfx-color-cluster-stroke);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  opacity: .82;
+  filter: drop-shadow(0 9px 14px color-mix(in srgb, var(--cfx-color-cluster-stroke) 18%, transparent));
+}
+
+.cfx-graph-cluster text {
+  fill: var(--cfx-color-cluster-text);
+  stroke: var(--cfx-color-graph-halo);
+  stroke-width: 4;
+  font-size: 12px;
+  font-weight: 760;
+  paint-order: stroke;
+  stroke-linejoin: round;
+  text-anchor: middle;
+}
+
+.cfx-graph-cluster.cfx-graph-cluster-expanded {
+  opacity: .1;
+  pointer-events: none;
+}
+
+.cfx-graph-cluster.cfx-graph-cluster-expanded circle {
+  fill: none;
+  stroke-width: 1.4;
+}
+
+.cfx-graph-cluster.cfx-graph-cluster-expanded text {
+  display: none;
+}
+
+.cfx-graph-node.cfx-graph-selected circle,
+.cfx-graph-node.cfx-graph-selected rect,
+.cfx-graph-node.cfx-graph-selected ellipse,
+.cfx-graph-node.cfx-graph-selected polygon,
+.cfx-graph-node.cfx-graph-selected path {
+  stroke: var(--cfx-color-selected);
+  stroke-width: 5;
+}
+
+.cfx-graph-node:focus-visible circle,
+.cfx-graph-node:focus-visible rect,
+.cfx-graph-node:focus-visible ellipse,
+.cfx-graph-node:focus-visible polygon,
+.cfx-graph-node:focus-visible path,
+.cfx-graph-cluster:focus-visible circle,
+.cfx-graph-edge:focus-visible {
+  stroke: var(--cfx-color-focus);
+  stroke-width: 6;
+}
+
+.cfx-graph-cluster.cfx-graph-selected circle,
+.cfx-graph-edge.cfx-graph-selected {
+  stroke: var(--cfx-color-selected);
+  stroke-width: 4;
+  opacity: .98;
+}
+
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-dim {
+  opacity: .14;
+}
+
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-edge {
+  stroke: #14b8a6;
+  stroke-width: 2.6;
+  opacity: .9;
+}
+
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-related.cfx-graph-edge-label {
+  fill: #0f766e;
+  font-weight: 750;
+}
+
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary circle,
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary rect,
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary ellipse,
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary polygon,
+.cfx-graph-neighborhood-active .cfx-graph-neighborhood-primary path {
+  stroke: #14b8a6;
+  stroke-width: 6;
+}
+
+.cfx-graph-node.cfx-graph-hidden,
+.cfx-graph-edge.cfx-graph-hidden,
+.cfx-graph-edge-label.cfx-graph-hidden,
+.cfx-graph-cluster.cfx-graph-hidden,
+.cfx-graph-node.cfx-graph-cluster-collapsed-member,
+.cfx-graph-edge.cfx-graph-cluster-collapsed-member,
+.cfx-graph-edge-label.cfx-graph-cluster-collapsed-member,
+.cfx-graph-node.cfx-graph-hierarchy-hidden,
+.cfx-graph-edge.cfx-graph-hierarchy-hidden,
+.cfx-graph-edge-label.cfx-graph-hierarchy-hidden,
+.cfx-graph-cluster.cfx-graph-hierarchy-hidden,
+.cfx-graph-node-details.cfx-graph-hidden,
+.cfx-graph-node-details.cfx-graph-cluster-collapsed-member,
+.cfx-graph-node-details.cfx-graph-hierarchy-hidden {
+  display: none;
+}
+
+.cfx-graph-node-details.cfx-graph-neighborhood-dim {
+  opacity: .16;
+}
+
+.cfx-graph-lod-compact .cfx-graph-node:not([data-node-shape="text"]) text,
+.cfx-graph-lod-compact .cfx-graph-node-details text {
+  display: none;
+}
+
+.cfx-graph-lod-compact .cfx-graph-node circle,
+.cfx-graph-lod-compact .cfx-graph-node rect,
+.cfx-graph-lod-compact .cfx-graph-node ellipse,
+.cfx-graph-lod-compact .cfx-graph-node polygon,
+.cfx-graph-lod-compact .cfx-graph-node path {
+  stroke-width: 1.5;
+}
+
+.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label,
+.cfx-graph-semantic-overview .cfx-graph-edge-label,
+.cfx-graph-semantic-overview .cfx-graph-node text,
+.cfx-graph-semantic-overview .cfx-graph-node-details text,
+.cfx-graph-semantic-compact .cfx-graph-node-secondary,
+.cfx-graph-semantic-compact .cfx-graph-node-badge,
+.cfx-graph-semantic-compact .cfx-graph-node-details .cfx-graph-node-secondary,
+.cfx-graph-semantic-compact .cfx-graph-node-details .cfx-graph-node-badge {
+  display: none;
+}
+
+.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-label-selected,
+.cfx-graph-lod-hide-edge-labels .cfx-graph-edge-label.cfx-graph-neighborhood-related,
+.cfx-graph-semantic-overview .cfx-graph-node.cfx-graph-selected .cfx-graph-node-label,
+.cfx-graph-semantic-overview .cfx-graph-node.cfx-graph-neighborhood-primary .cfx-graph-node-label,
+.cfx-graph-semantic-overview .cfx-graph-node-details.cfx-graph-selected .cfx-graph-node-label,
+.cfx-graph-semantic-overview .cfx-graph-node-details.cfx-graph-neighborhood-primary .cfx-graph-node-label,
+.cfx-graph-semantic-detail .cfx-graph-node-secondary,
+.cfx-graph-semantic-detail .cfx-graph-node-badge,
+.cfx-graph-semantic-detail .cfx-graph-node-details .cfx-graph-node-secondary,
+.cfx-graph-semantic-detail .cfx-graph-node-details .cfx-graph-node-badge {
+  display: block;
+}
+
+.cfx-graph-performance-gated .cfx-graph-svg {
+  background: repeating-linear-gradient(-45deg, var(--cfx-color-paper), var(--cfx-color-paper) 12px, var(--cfx-color-paper-soft) 12px, var(--cfx-color-paper-soft) 24px);
+}
+
+.cfx-graph-overview {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  display: none;
+  width: 184px;
+  height: 108px;
+  border: 1px solid var(--cfx-color-border-strong);
+  border-radius: 12px;
+  background: var(--cfx-color-surface);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .2);
+  cursor: crosshair;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.cfx-graph-has-overview .cfx-graph-overview {
+  display: block;
+}
+
+.cfx-graph-tooltip {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  max-width: min(380px, calc(100% - 32px));
+  padding: 11px 14px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 12px;
+  background: var(--cfx-color-surface);
+  color: var(--cfx-color-text);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .19);
+  font-size: 13px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.cfx-graph-tooltip[hidden] {
+  display: none;
+}
+
+@media (max-width: 1120px) {
+  .cfx-graph-header {
+    grid-template-columns: 1fr;
+  }
+
+  .cfx-graph-toolbar {
+    justify-content: flex-start;
+  }
+
+  .cfx-graph-toolbar-group--appearance {
+    margin-inline-start: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .cfx-graph-shell {
+    padding: 8px;
+  }
+
+  .cfx-graph-header {
+    gap: 13px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .cfx-graph-toolbar-group--query {
+    flex-basis: 100%;
+  }
+
+  .cfx-graph-search-field {
+    flex-basis: 180px;
+  }
+
+  .cfx-graph-stage {
+    height: clamp(340px, 52vh, 460px);
+    min-height: 340px;
+    aspect-ratio: auto;
+    border-radius: 16px;
+  }
+
+  .cfx-graph-physics-actions {
+    flex-wrap: wrap;
+  }
+
+  .cfx-graph-physics-actions output {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .cfx-graph-title {
+    font-size: 21px;
+  }
+
+  .cfx-graph-subtitle {
+    font-size: 12px;
+  }
+
+  .cfx-graph-toolbar {
+    gap: 6px;
+  }
+
+  .cfx-graph-toolbar-group {
+    max-width: 100%;
+  }
+
+  .cfx-graph-toolbar-group--query {
+    flex-wrap: wrap;
+  }
+
+  .cfx-graph-search-field {
+    flex-basis: 100%;
+    min-width: 100%;
+  }
+
+  .cfx-graph-filter {
+    width: auto;
+    max-width: 150px;
+    padding-left: 10px;
+    color: var(--cfx-color-text);
+  }
+
+  .cfx-graph-breadcrumbs {
+    overflow-x: auto;
+  }
+
+  .cfx-graph-overview {
+    display: none !important;
+  }
+
+  .cfx-graph-tooltip {
+    left: 12px;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfx-graph-explorer *,
+  .cfx-graph-explorer *::before,
+  .cfx-graph-explorer *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .cfx-graph-tool:hover,
+  .cfx-graph-tool:active {
+    transform: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .cfx-graph-explorer {
+    --cfx-color-border: var(--cfx-color-border-strong);
+  }
+
+  .cfx-graph-tool,
+  .cfx-graph-search,
+  .cfx-graph-filter {
+    border-color: var(--cfx-color-border-strong);
+  }
+
+  .cfx-graph-edge {
+    opacity: .84;
+  }
+}
+
+@media (forced-colors: active) {
+  .cfx-graph-shell,
+  .cfx-graph-shell.cfx-graph-page-dark,
+  .cfx-graph-explorer,
+  .cfx-graph-explorer[data-cfx-graph-theme="dark"],
+  .cfx-graph-explorer[data-cfx-graph-theme-active="dark"] {
+    --cfx-color-canvas: Canvas;
+    --cfx-color-surface: Canvas;
+    --cfx-color-surface-solid: Canvas;
+    --cfx-color-surface-raised: Canvas;
+    --cfx-color-surface-muted: Canvas;
+    --cfx-color-surface-hover: Canvas;
+    --cfx-color-paper: Canvas;
+    --cfx-color-paper-soft: Canvas;
+    --cfx-color-text: CanvasText;
+    --cfx-color-text-muted: CanvasText;
+    --cfx-color-text-subtle: GrayText;
+    --cfx-color-border: CanvasText;
+    --cfx-color-border-strong: CanvasText;
+    --cfx-color-accent: LinkText;
+    --cfx-color-accent-strong: LinkText;
+    --cfx-color-accent-soft: Canvas;
+    --cfx-color-focus: Highlight;
+    --cfx-color-focus-halo: Canvas;
+    --cfx-color-selected: Highlight;
+    --cfx-color-edge: CanvasText;
+    --cfx-color-edge-label: CanvasText;
+    --cfx-color-graph-text: CanvasText;
+    --cfx-color-graph-muted: CanvasText;
+    --cfx-color-graph-halo: Canvas;
+    background: Canvas;
+    box-shadow: none;
+    color: CanvasText;
+    forced-color-adjust: auto;
+  }
+
+  .cfx-graph-tool[aria-pressed="true"],
+  .cfx-graph-tool:hover,
+  .cfx-graph-breadcrumb-link:hover {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .cfx-graph-node.cfx-graph-selected circle,
+  .cfx-graph-node.cfx-graph-selected rect,
+  .cfx-graph-node.cfx-graph-selected ellipse,
+  .cfx-graph-node.cfx-graph-selected polygon,
+  .cfx-graph-node.cfx-graph-selected path,
+  .cfx-graph-edge.cfx-graph-selected,
+  .cfx-graph-cluster.cfx-graph-selected circle {
+    stroke: Highlight;
+  }
+}
+.cfx-graph-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(280px, .82fr) minmax(520px, 1.45fr);
+  gap: 20px 32px;
+  align-items: center;
+  padding: 22px 24px;
+  border: 1px solid color-mix(in srgb, var(--cfx-color-border) 82%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--cfx-color-surface-solid) 94%, transparent);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, .08);
+  -webkit-backdrop-filter: blur(20px) saturate(1.08);
+  backdrop-filter: blur(20px) saturate(1.08);
+}
+
+.cfx-graph-heading {
+  min-width: 0;
+}
+
+.cfx-graph-eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--cfx-color-accent);
+  font-size: 10px;
+  font-weight: 820;
+  letter-spacing: .14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.cfx-graph-title {
+  margin: 0;
+  color: var(--cfx-color-text);
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 790;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+}
+
+.cfx-graph-subtitle {
+  max-width: 58ch;
+  margin: 8px 0 0;
+  color: var(--cfx-color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cfx-graph-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.cfx-graph-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cfx-graph-toolbar-group--query {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) minmax(116px, auto) minmax(108px, auto);
+  gap: 8px;
+  min-width: 0;
+}
+
+.cfx-graph-toolbar-group--appearance {
+  margin: 0;
+}
+
+.cfx-graph-search-field,
+.cfx-graph-filter-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--cfx-color-surface-raised) 90%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .035);
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+
+.cfx-graph-search-field:hover,
+.cfx-graph-filter-field:hover {
+  border-color: var(--cfx-color-border-strong);
+  background: var(--cfx-color-surface-raised);
+}
+
+.cfx-graph-search-field:focus-within,
+.cfx-graph-filter-field:focus-within {
+  border-color: var(--cfx-color-focus);
+  box-shadow: 0 0 0 4px var(--cfx-color-focus-halo);
+}
+
+.cfx-graph-search-field > .cfx-graph-icon {
+  position: absolute;
+  z-index: 1;
+  left: 13px;
+  width: 17px;
+  height: 17px;
+  color: var(--cfx-color-text-subtle);
+  pointer-events: none;
+}
+
+.cfx-graph-search,
+.cfx-graph-filter {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  margin: 0;
+  border: 0;
+  border-radius: 11px;
+  outline: 0;
+  background: transparent;
+  color: var(--cfx-color-text);
+  font: 680 12px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.cfx-graph-search {
+  padding: 0 13px 0 39px;
+}
+
+.cfx-graph-filter {
+  max-width: none;
+  padding: 0 35px 0 13px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.cfx-graph-filter-field > .cfx-graph-icon {
+  position: absolute;
+  right: 12px;
+  width: 15px;
+  height: 15px;
+  color: var(--cfx-color-text-subtle);
+  pointer-events: none;
+}
+
+.cfx-graph-search:hover,
+.cfx-graph-filter:hover,
+.cfx-graph-search:focus,
+.cfx-graph-filter:focus {
+  background: transparent;
+  box-shadow: none;
+}
+
+.cfx-graph-search::placeholder {
+  color: var(--cfx-color-text-subtle);
+  opacity: 1;
+}
+
+.cfx-graph-search-status {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 8px;
+  z-index: 4;
+  max-width: 240px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--cfx-color-surface-solid);
+  color: var(--cfx-color-text-muted);
+  box-shadow: 0 5px 14px rgba(15, 23, 42, .08);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.cfx-graph-search-status:empty {
+  display: none;
+}
+
+.cfx-graph-toolbar-group--appearance .cfx-graph-tool {
+  min-width: 92px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--cfx-color-surface-raised) 90%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .035);
+}
+
+.cfx-graph-command-rail {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 50px;
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 70%, transparent);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--cfx-color-surface-solid) 88%, transparent);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .13);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.cfx-graph-command-rail .cfx-graph-toolbar-group {
+  position: relative;
+  gap: 2px;
+}
+
+.cfx-graph-command-rail .cfx-graph-toolbar-group + .cfx-graph-toolbar-group {
+  margin-left: 4px;
+  padding-left: 7px;
+}
+
+.cfx-graph-command-rail .cfx-graph-toolbar-group + .cfx-graph-toolbar-group::before {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 1px;
+  background: var(--cfx-color-border);
+  content: "";
+}
+
+.cfx-graph-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cfx-color-text-muted);
+  font: 720 12px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .14s ease, background-color .14s ease, border-color .14s ease, box-shadow .14s ease, transform .14s ease;
+}
+
+.cfx-graph-tool--compact {
+  width: 40px;
+  padding: 0;
+}
+
+.cfx-graph-tool--compact .cfx-graph-tool-label,
+.cfx-graph-command-menu > summary .cfx-graph-tool-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.cfx-graph-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cfx-graph-tool:hover:not(:disabled),
+.cfx-graph-command-menu > summary:hover {
+  border-color: color-mix(in srgb, var(--cfx-color-border-strong) 76%, transparent);
+  background: var(--cfx-color-surface-hover);
+  color: var(--cfx-color-text);
+  transform: none;
+}
+
+.cfx-graph-tool[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--cfx-color-accent) 38%, var(--cfx-color-border));
+  background: var(--cfx-color-accent-soft);
+  color: var(--cfx-color-accent-strong);
+  box-shadow: none;
+}
+
+.cfx-graph-command-rail .cfx-graph-tool[aria-pressed="true"]::after {
+  display: none;
+}
+
+.cfx-graph-tool:disabled {
+  color: var(--cfx-color-text-subtle);
+  cursor: not-allowed;
+  opacity: .38;
+}
+
+.cfx-graph-tool:focus-visible,
+.cfx-graph-command-menu > summary:focus-visible,
+.cfx-graph-breadcrumb-link:focus-visible,
+.cfx-graph-node:focus-visible,
+.cfx-graph-cluster:focus-visible,
+.cfx-graph-edge:focus-visible,
+.cfx-graph-canvas:focus-visible,
+.cfx-graph-webgl:focus-visible,
+.cfx-graph-physics-configurator summary:focus-visible {
+  outline: 3px solid var(--cfx-color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--cfx-color-focus-halo);
+}
+
+.cfx-graph-command-rail .cfx-graph-tool[data-cfx-tooltip]::before,
+.cfx-graph-command-menu > summary[data-cfx-tooltip]::before {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  z-index: 20;
+  width: max-content;
+  max-width: 190px;
+  padding: 7px 9px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 8px;
+  background: var(--cfx-color-text);
+  color: var(--cfx-color-paper);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .18);
+  content: attr(data-cfx-tooltip);
+  font-size: 11px;
+  font-weight: 680;
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -3px);
+  transition: opacity .14s ease, transform .14s ease;
+}
+
+.cfx-graph-command-rail .cfx-graph-tool[data-cfx-tooltip]:hover::before,
+.cfx-graph-command-rail .cfx-graph-tool[data-cfx-tooltip]:focus-visible::before,
+.cfx-graph-command-menu > summary[data-cfx-tooltip]:hover::before,
+.cfx-graph-command-menu > summary[data-cfx-tooltip]:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.cfx-graph-command-menu {
+  position: relative;
+}
+
+.cfx-graph-command-menu > summary {
+  list-style: none;
+}
+
+.cfx-graph-command-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cfx-graph-command-menu-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 24;
+  display: grid;
+  gap: 2px;
+  width: 196px;
+  padding: 6px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 13px;
+  background: var(--cfx-color-surface-solid);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, .18);
+}
+
+.cfx-graph-command-menu:not([open]) .cfx-graph-command-menu-panel {
+  display: none;
+}
+
+.cfx-graph-command-menu[open] > summary {
+  border-color: var(--cfx-color-border-strong);
+  background: var(--cfx-color-surface-hover);
+  color: var(--cfx-color-text);
+}
+
+.cfx-graph-command-menu[open] > summary::before {
+  display: none;
+}
+
+.cfx-graph-command-menu-panel .cfx-graph-tool {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 40px;
+}
+
+.cfx-graph-breadcrumbs {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: auto;
+  max-width: calc(100% - 580px);
+  min-height: 50px;
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 70%, transparent);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--cfx-color-surface-solid) 88%, transparent);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .11);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.cfx-graph-breadcrumbs .cfx-graph-tool {
+  min-height: 40px;
+  padding: 0;
+  font-size: 11px;
+}
+
+.cfx-graph-breadcrumb-path {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 8px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cfx-color-surface-muted) 72%, transparent);
+  color: var(--cfx-color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-graph-breadcrumb-link {
+  appearance: none;
+  min-height: 32px;
+  margin: 0;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--cfx-color-text);
+  font: inherit;
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.cfx-graph-breadcrumb-link:hover {
+  background: var(--cfx-color-surface-hover);
+  color: var(--cfx-color-accent-strong);
+}
+
+.cfx-graph-breadcrumb-separator {
+  padding: 0 2px;
+  color: var(--cfx-color-text-subtle);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.cfx-graph-stage {
+  border-radius: 18px;
+  box-shadow: 0 20px 56px rgba(15, 23, 42, .11), inset 0 1px 0 color-mix(in srgb, var(--cfx-color-surface-raised) 86%, transparent);
+}
+
+.cfx-graph-overview {
+  right: 18px;
+  bottom: 18px;
+  width: 168px;
+  height: 98px;
+  border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 72%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cfx-color-paper) 88%, transparent);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .13);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 1120px) {
+  .cfx-graph-header {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .cfx-graph-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .cfx-graph-breadcrumbs {
+    max-width: calc(100% - 510px);
+  }
+}
+
+@media (max-width: 760px) {
+  .cfx-graph-header {
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .cfx-graph-heading {
+    padding-right: 52px;
+  }
+
+  .cfx-graph-toolbar {
+    display: block;
+  }
+
+  .cfx-graph-toolbar-group--query {
+    grid-template-columns: minmax(0, 1fr) minmax(110px, auto) minmax(100px, auto);
+  }
+
+  .cfx-graph-toolbar-group--appearance {
+    position: absolute;
+    top: 17px;
+    right: 17px;
+  }
+
+  .cfx-graph-toolbar-group--appearance .cfx-graph-tool {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+
+  .cfx-graph-toolbar-group--appearance .cfx-graph-tool-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .cfx-graph-command-rail {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    justify-content: flex-start;
+    max-width: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .cfx-graph-command-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cfx-graph-command-rail .cfx-graph-tool[data-cfx-tooltip]::before,
+  .cfx-graph-command-menu > summary[data-cfx-tooltip]::before {
+    top: auto;
+    bottom: calc(100% + 10px);
+  }
+
+  .cfx-graph-command-menu-panel {
+    top: auto;
+    right: 0;
+    bottom: calc(100% + 10px);
+  }
+
+  .cfx-graph-breadcrumbs {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+  }
+
+  .cfx-graph-overview {
+    bottom: 74px;
+  }
+}
+
+@media (max-width: 520px) {
+  .cfx-graph-toolbar-group--query {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cfx-graph-search-field {
+    grid-column: 1 / -1;
+  }
+
+  .cfx-graph-filter-field,
+  .cfx-graph-filter {
+    width: 100%;
+  }
+
+  .cfx-graph-breadcrumb-path {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfx-graph-command-rail .cfx-graph-tool[data-cfx-tooltip]::before,
+  .cfx-graph-command-menu > summary[data-cfx-tooltip]::before {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .cfx-graph-header,
+  .cfx-graph-command-rail,
+  .cfx-graph-breadcrumbs,
+  .cfx-graph-command-menu-panel,
+  .cfx-graph-search-field,
+  .cfx-graph-filter-field {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+}
+</style><g class="cfx-graph-explorer cfx-graph-svg cfx-graph-static-export"><title>2,000 Object Global Estate - overview</title><defs><marker id="graph-2000-estate-stage-1-static-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs><rect class="cfx-graph-bg" width="960" height="560" style="fill:#ffffff"></rect><g data-cfx-role="graph-viewport" transform="translate(-960 -560) scale(3)"><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="estate" data-node-label="Global estate" data-node-kind="estate" data-node-group="estate" data-cfx-status="healthy" data-node-size="20" data-node-fixed="false" data-node-hidden="false" data-node-level="0" data-node-shape="image" data-node-image-url="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2718%27%20fill%3D%27%230f172a%27%2F%3E%3Crect%20x%3D%274%27%20y%3D%274%27%20width%3D%2756%27%20height%3D%2756%27%20rx%3D%2715%27%20fill%3D%27none%27%20stroke%3D%27%2338bdf8%27%20stroke-width%3D%273%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2739%27%20text-anchor%3D%27middle%27%20font-family%3D%27Arial%27%20font-size%3D%2715%27%20font-weight%3D%27700%27%20fill%3D%27white%27%3EGE%3C%2Ftext%3E%3C%2Fsvg%3E" data-node-image-alt="Global estate icon" data-node-icon="GE" data-node-secondary-label="2000 hidden" data-node-badge="+2000" data-node-background-color="#172554" data-node-border-color="#5eead4" data-node-label-color="#0f172a" data-node-label-background-color="#ffffff" data-node-shadow="true" data-cfx-search="stageHiddenDescendants 2000" data-cfx-metadata="{&quot;stageHiddenDescendants&quot;:&quot;2000&quot;}" data-node-x="480" data-node-y="280" transform="translate(480 280)"><circle r="24" style="--cfx-node-fill:#172554;--cfx-node-stroke:#5eead4;filter:drop-shadow(0 5px 10px rgba(15,23,42,.18))"></circle><image href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2718%27%20fill%3D%27%230f172a%27%2F%3E%3Crect%20x%3D%274%27%20y%3D%274%27%20width%3D%2756%27%20height%3D%2756%27%20rx%3D%2715%27%20fill%3D%27none%27%20stroke%3D%27%2338bdf8%27%20stroke-width%3D%273%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2739%27%20text-anchor%3D%27middle%27%20font-family%3D%27Arial%27%20font-size%3D%2715%27%20font-weight%3D%27700%27%20fill%3D%27white%27%3EGE%3C%2Ftext%3E%3C%2Fsvg%3E" aria-label="Global estate icon" x="-20" y="-20" width="40" height="40"></image></g><g class="cfx-graph-node-details-layer" data-cfx-role="graph-node-details-layer" pointer-events="none"><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="estate" data-cfx-status="healthy" transform="translate(480 280)"><rect class="cfx-graph-node-label-bg" x="-49.4" y="27" width="98.8" height="18" rx="5" style="fill:#ffffff;stroke:none;stroke-width:0;pointer-events:none"></rect><text class="cfx-graph-node-label" y="38" style="--cfx-node-label-explicit:#0f172a">Global estate</text><text class="cfx-graph-node-secondary" y="52">2000 hidden</text><g class="cfx-graph-node-badge" transform="translate(16.4 -16.4)"><circle r="8" style="fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2"></circle><text y="3.5" style="fill:var(--cfx-color-paper);stroke:none">+2000</text></g><circle class="cfx-graph-node-status" cx="-16" cy="-16" r="4.5" style="fill:#22c55e;stroke:var(--cfx-color-paper);stroke-width:2"></circle></g></g></g></g></svg>

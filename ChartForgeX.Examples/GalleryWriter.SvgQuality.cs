@@ -6,7 +6,8 @@ using System.Text.RegularExpressions;
 /// </summary>
 public static partial class GalleryWriter {
     private static SvgTextQuality ReadSvgTextQuality(string svg, AssetDimensions dimensions) {
-        if (dimensions.Width <= 0 || dimensions.Height <= 0) return default;
+        var coordinates = ReadSvgCoordinateBounds(svg, dimensions);
+        if (coordinates.Width <= 0 || coordinates.Height <= 0) return default;
 
         var stack = new List<SvgTranslate> { default };
         var clipped = 0;
@@ -60,11 +61,25 @@ public static partial class GalleryWriter {
             var translate = stack[stack.Count - 1];
             x += translate.X;
             y += translate.Y;
-            if (x < 0 || y < 0 || x > dimensions.Width || y > dimensions.Height) clipped++;
-            else if (x <= SvgTextCanvasMargin || y <= SvgTextCanvasMargin || x >= dimensions.Width - SvgTextCanvasMargin || y >= dimensions.Height - SvgTextCanvasMargin) nearEdge++;
+            if (x < coordinates.Left || y < coordinates.Top || x > coordinates.Right || y > coordinates.Bottom) clipped++;
+            else if (x <= coordinates.Left + SvgTextCanvasMargin || y <= coordinates.Top + SvgTextCanvasMargin || x >= coordinates.Right - SvgTextCanvasMargin || y >= coordinates.Bottom - SvgTextCanvasMargin) nearEdge++;
         }
 
         return new SvgTextQuality(double.IsInfinity(minimumFontSize) ? 0 : minimumFontSize, tinyText, strokedNodes, double.IsInfinity(minimumStrokeWidth) ? 0 : minimumStrokeWidth, tinyStroke, markerNodes, double.IsInfinity(minimumMarkerRadius) ? 0 : minimumMarkerRadius, tinyMarker, clipped, nearEdge);
+    }
+
+    private static SvgCoordinateBounds ReadSvgCoordinateBounds(string svg, AssetDimensions fallback) {
+        var root = Regex.Match(svg, "<svg\\b([^>]*)>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        if (root.Success) {
+            var viewBox = ReadSvgRawAttribute(root.Groups[1].Value, "viewBox");
+            var values = Regex.Matches(viewBox, "[-+]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][-+]?\\d+)?")
+                .Cast<Match>()
+                .Select(match => ParseSvgDouble(match.Value))
+                .ToArray();
+            if (values.Length == 4 && values[2] > 0 && values[3] > 0) return new SvgCoordinateBounds(values[0], values[1], values[2], values[3]);
+        }
+
+        return new SvgCoordinateBounds(0, 0, fallback.Width, fallback.Height);
     }
 
     private static SvgTranslate ReadSvgTranslate(string attrs) {
@@ -153,5 +168,26 @@ public static partial class GalleryWriter {
         public double X { get; }
 
         public double Y { get; }
+    }
+
+    private readonly struct SvgCoordinateBounds {
+        public SvgCoordinateBounds(double left, double top, double width, double height) {
+            Left = left;
+            Top = top;
+            Width = width;
+            Height = height;
+        }
+
+        public double Left { get; }
+
+        public double Top { get; }
+
+        public double Width { get; }
+
+        public double Height { get; }
+
+        public double Right => Left + Width;
+
+        public double Bottom => Top + Height;
     }
 }

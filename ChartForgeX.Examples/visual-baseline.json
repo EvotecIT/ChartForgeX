@@ -13,6 +13,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 2042,
         "maxEdgeInkPixels": 0
       }
@@ -29,6 +30,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 796773,
+        "minTransparentPixels": 63227,
         "minDistinctColors": 2008,
         "maxEdgeInkPixels": 0
       }
@@ -45,6 +47,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 408629,
+        "minTransparentPixels": 47371,
         "minDistinctColors": 1631,
         "maxEdgeInkPixels": 0
       }
@@ -61,6 +64,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1224760,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -77,6 +81,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -93,6 +98,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1026955,
+        "minTransparentPixels": 70645,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -109,6 +115,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -125,6 +132,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1172669,
+        "minTransparentPixels": 75331,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -141,6 +149,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1905,
         "maxEdgeInkPixels": 0
       }
@@ -157,6 +166,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962277,
+        "minTransparentPixels": 68123,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -173,6 +183,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 1498,
         "maxEdgeInkPixels": 0
       }
@@ -189,6 +200,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 4810744,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -205,6 +217,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 890835,
+        "minTransparentPixels": 65965,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -221,6 +234,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 919149,
+        "minTransparentPixels": 66451,
         "minDistinctColors": 1129,
         "maxEdgeInkPixels": 0
       }
@@ -237,6 +251,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1427029,
+        "minTransparentPixels": 83371,
         "minDistinctColors": 1727,
         "maxEdgeInkPixels": 0
       }
@@ -253,6 +268,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 4196800,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -269,6 +285,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 730261,
+        "minTransparentPixels": 60139,
         "minDistinctColors": 1542,
         "maxEdgeInkPixels": 0
       }
@@ -285,6 +302,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
+        "minTransparentPixels": 0,
         "minDistinctColors": 714,
         "maxEdgeInkPixels": 0
       }
@@ -301,6 +319,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 557600,
+        "minTransparentPixels": 0,
         "minDistinctColors": 1538,
         "maxEdgeInkPixels": 0
       }
@@ -317,6 +336,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 5706288,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -333,6 +353,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 754400,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -349,6 +370,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 541200,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -365,6 +387,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 234381,
+        "minTransparentPixels": 36019,
         "minDistinctColors": 926,
         "maxEdgeInkPixels": 0
       }
@@ -381,6 +404,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 5038912,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -397,6 +421,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 2607256,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -413,6 +438,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 234381,
+        "minTransparentPixels": 36019,
         "minDistinctColors": 737,
         "maxEdgeInkPixels": 0
       }
@@ -429,6 +455,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 818531,
+        "minTransparentPixels": 64669,
         "minDistinctColors": 1281,
         "maxEdgeInkPixels": 0
       }
@@ -445,6 +472,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 889971,
+        "minTransparentPixels": 66829,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -461,6 +489,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 3792048,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -477,6 +506,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 662400,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -493,6 +523,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 234381,
+        "minTransparentPixels": 36019,
         "minDistinctColors": 801,
         "maxEdgeInkPixels": 0
       }
@@ -509,6 +540,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 590400,
+        "minTransparentPixels": 0,
         "minDistinctColors": 1942,
         "maxEdgeInkPixels": 0
       }
@@ -525,6 +557,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1900800,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -541,6 +574,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 656000,
+        "minTransparentPixels": 0,
         "minDistinctColors": 504,
         "maxEdgeInkPixels": 0
       }
@@ -557,6 +591,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 632035,
+        "minTransparentPixels": 56765,
         "minDistinctColors": 888,
         "maxEdgeInkPixels": 0
       }
@@ -573,6 +608,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
+        "minTransparentPixels": 33979,
         "minDistinctColors": 830,
         "maxEdgeInkPixels": 0
       }
@@ -589,6 +625,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
+        "minTransparentPixels": 33979,
         "minDistinctColors": 617,
         "maxEdgeInkPixels": 0
       }
@@ -605,6 +642,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
+        "minTransparentPixels": 33979,
         "minDistinctColors": 743,
         "maxEdgeInkPixels": 0
       }
@@ -621,6 +659,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 2030704,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -637,6 +676,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 496861,
+        "minTransparentPixels": 53539,
         "minDistinctColors": 855,
         "maxEdgeInkPixels": 0
       }
@@ -653,6 +693,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 218021,
+        "minTransparentPixels": 33979,
         "minDistinctColors": 1231,
         "maxEdgeInkPixels": 0
       }
@@ -669,6 +710,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 3194488,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -685,6 +727,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 846400,
+        "minTransparentPixels": 0,
         "minDistinctColors": 1527,
         "maxEdgeInkPixels": 0
       }
@@ -701,6 +744,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 404800,
+        "minTransparentPixels": 0,
         "minDistinctColors": 1316,
         "maxEdgeInkPixels": 0
       }
@@ -717,6 +761,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 17250,
+        "minTransparentPixels": 302350,
         "minDistinctColors": 882,
         "maxEdgeInkPixels": 0
       }
@@ -733,6 +778,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 3880320,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -749,6 +795,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 274315,
+        "minTransparentPixels": 37685,
         "minDistinctColors": 721,
         "maxEdgeInkPixels": 0
       }
@@ -765,6 +812,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 274315,
+        "minTransparentPixels": 37685,
         "minDistinctColors": 743,
         "maxEdgeInkPixels": 0
       }
@@ -781,6 +829,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 469075,
+        "minTransparentPixels": 49325,
         "minDistinctColors": 1422,
         "maxEdgeInkPixels": 0
       }
@@ -797,6 +846,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1011555,
+        "minTransparentPixels": 74045,
         "minDistinctColors": 1842,
         "maxEdgeInkPixels": 0
       }
@@ -813,6 +863,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1044752,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -829,7 +880,25 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 1858,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dc-connectivity",
+      "width": 1200,
+      "height": 743,
+      "svg": {
+        "minVisualNodes": 63,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 445800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1632,
         "maxEdgeInkPixels": 0
       }
     },
@@ -845,6 +914,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 1520,
         "maxEdgeInkPixels": 0
       }
@@ -861,6 +931,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 760109,
+        "minTransparentPixels": 63091,
         "minDistinctColors": 1338,
         "maxEdgeInkPixels": 0
       }
@@ -877,6 +948,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962269,
+        "minTransparentPixels": 68131,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -893,6 +965,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962275,
+        "minTransparentPixels": 68125,
         "minDistinctColors": 1925,
         "maxEdgeInkPixels": 0
       }
@@ -909,6 +982,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962275,
+        "minTransparentPixels": 68125,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -925,6 +999,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1172669,
+        "minTransparentPixels": 75331,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -941,6 +1016,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1026949,
+        "minTransparentPixels": 70651,
         "minDistinctColors": 1576,
         "maxEdgeInkPixels": 0
       }
@@ -957,6 +1033,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1427035,
+        "minTransparentPixels": 83365,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -973,6 +1050,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962275,
+        "minTransparentPixels": 68125,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -989,6 +1067,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 1764,
         "maxEdgeInkPixels": 0
       }
@@ -1005,6 +1084,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1088,
         "maxEdgeInkPixels": 0
       }
@@ -1021,6 +1101,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1667,
         "maxEdgeInkPixels": 0
       }
@@ -1030,14 +1111,15 @@
       "width": 760,
       "height": 460,
       "svg": {
-        "minVisualNodes": 35,
+        "minVisualNodes": 34,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
-        "minDistinctColors": 1054,
+        "minTransparentPixels": 56011,
+        "minDistinctColors": 1153,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1053,6 +1135,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1213,
         "maxEdgeInkPixels": 0
       }
@@ -1069,6 +1152,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1172669,
+        "minTransparentPixels": 75331,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1085,6 +1169,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962269,
+        "minTransparentPixels": 68131,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1101,6 +1186,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1117,6 +1203,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1133,6 +1220,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1149,6 +1237,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 822288,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1165,6 +1254,24 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 926549,
+        "minTransparentPixels": 67051,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "geographic-topology",
+      "width": 1200,
+      "height": 680,
+      "svg": {
+        "minVisualNodes": 977,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 408000,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1181,7 +1288,8 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 720000,
-        "minDistinctColors": 492,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 417,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1197,7 +1305,8 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 720000,
-        "minDistinctColors": 800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1113,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1206,14 +1315,15 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 145,
+        "minVisualNodes": 146,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 720000,
-        "minDistinctColors": 1221,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1874,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1222,14 +1332,15 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 445,
+        "minVisualNodes": 447,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 720000,
-        "minDistinctColors": 1795,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1238,13 +1349,31 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 3039,
+        "minVisualNodes": 3043,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 720000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "icon-palette",
+      "width": 1600,
+      "height": 776,
+      "svg": {
+        "minVisualNodes": 157,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 620800,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1261,6 +1390,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1026949,
+        "minTransparentPixels": 70651,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1277,6 +1407,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1710,
         "maxEdgeInkPixels": 0
       }
@@ -1293,6 +1424,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1889,
         "maxEdgeInkPixels": 0
       }
@@ -1309,6 +1441,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1786,
         "maxEdgeInkPixels": 0
       }
@@ -1325,6 +1458,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1602,
         "maxEdgeInkPixels": 0
       }
@@ -1341,6 +1475,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1739,
         "maxEdgeInkPixels": 0
       }
@@ -1357,6 +1492,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1425,
         "maxEdgeInkPixels": 0
       }
@@ -1373,6 +1509,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1461,
         "maxEdgeInkPixels": 0
       }
@@ -1389,6 +1526,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1716,
         "maxEdgeInkPixels": 0
       }
@@ -1405,6 +1543,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 3465800,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1421,6 +1560,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1532,
         "maxEdgeInkPixels": 0
       }
@@ -1437,6 +1577,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 223391,
+        "minTransparentPixels": 15809,
         "minDistinctColors": 1485,
         "maxEdgeInkPixels": 0
       }
@@ -1453,6 +1594,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 398720,
+        "minTransparentPixels": 0,
         "minDistinctColors": 1012,
         "maxEdgeInkPixels": 0
       }
@@ -1469,6 +1611,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 268800,
+        "minTransparentPixels": 0,
         "minDistinctColors": 893,
         "maxEdgeInkPixels": 0
       }
@@ -1485,6 +1628,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 26360,
+        "minTransparentPixels": 110439,
         "minDistinctColors": 927,
         "maxEdgeInkPixels": 0
       }
@@ -1501,6 +1645,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 257471,
+        "minTransparentPixels": 16929,
         "minDistinctColors": 1135,
         "maxEdgeInkPixels": 0
       }
@@ -1517,6 +1662,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 394108,
+        "minTransparentPixels": 0,
         "minDistinctColors": 977,
         "maxEdgeInkPixels": 0
       }
@@ -1526,13 +1672,14 @@
       "width": 760,
       "height": 540,
       "svg": {
-        "minVisualNodes": 68,
+        "minVisualNodes": 67,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 760475,
+        "minTransparentPixels": 60325,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1549,6 +1696,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1882,
         "maxEdgeInkPixels": 0
       }
@@ -1565,6 +1713,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1732944,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1581,6 +1730,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 3964064,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1597,6 +1747,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 769616,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1613,6 +1764,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 2183664,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1629,6 +1781,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1882944,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1645,6 +1798,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1775,
         "maxEdgeInkPixels": 0
       }
@@ -1661,6 +1815,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1099,
         "maxEdgeInkPixels": 0
       }
@@ -1677,6 +1832,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 1414,
         "maxEdgeInkPixels": 0
       }
@@ -1693,6 +1849,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 825600,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1709,6 +1866,41 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1512000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "premium-desktop-wallpaper-canvas",
+      "width": 1920,
+      "height": 1080,
+      "svg": {
+        "minVisualNodes": 76,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 4147200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "premium-email-summary-grid",
+      "width": 584,
+      "height": 424,
+      "svg": {
+        "minVisualNodes": 32,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 495232,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1725,6 +1917,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 926555,
+        "minTransparentPixels": 67045,
         "minDistinctColors": 1685,
         "maxEdgeInkPixels": 0
       }
@@ -1741,7 +1934,76 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 974,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "replication-mesh",
+      "width": 1200,
+      "height": 754,
+      "svg": {
+        "minVisualNodes": 82,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 452400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1204,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "replication-mesh-critical-view",
+      "width": 1200,
+      "height": 721,
+      "svg": {
+        "minVisualNodes": 52,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 432600,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1123,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "replication-mesh-dc-view",
+      "width": 1200,
+      "height": 721,
+      "svg": {
+        "minVisualNodes": 70,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 432600,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 783,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "replication-mesh-offenders-view",
+      "width": 1200,
+      "height": 721,
+      "svg": {
+        "minVisualNodes": 82,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 432600,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1196,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1757,6 +2019,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 576240,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1773,6 +2036,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 695869,
+        "minTransparentPixels": 58531,
         "minDistinctColors": 1098,
         "maxEdgeInkPixels": 0
       }
@@ -1789,6 +2053,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 695869,
+        "minTransparentPixels": 58531,
         "minDistinctColors": 1750,
         "maxEdgeInkPixels": 0
       }
@@ -1805,6 +2070,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1026949,
+        "minTransparentPixels": 70651,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1821,6 +2087,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1026949,
+        "minTransparentPixels": 70651,
         "minDistinctColors": 1186,
         "maxEdgeInkPixels": 0
       }
@@ -1837,6 +2104,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 912589,
+        "minTransparentPixels": 67411,
         "minDistinctColors": 1965,
         "maxEdgeInkPixels": 0
       }
@@ -1853,6 +2121,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1026949,
+        "minTransparentPixels": 70651,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1869,6 +2138,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962269,
+        "minTransparentPixels": 68131,
         "minDistinctColors": 1740,
         "maxEdgeInkPixels": 0
       }
@@ -1885,6 +2155,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 1602,
         "maxEdgeInkPixels": 0
       }
@@ -1901,7 +2172,76 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962275,
+        "minTransparentPixels": 68125,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "service-dependency",
+      "width": 1200,
+      "height": 848,
+      "svg": {
+        "minVisualNodes": 73,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 508800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1625,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "service-dependency-api-neighbors-view",
+      "width": 1200,
+      "height": 817,
+      "svg": {
+        "minVisualNodes": 51,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 490200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1323,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "service-dependency-compact-view",
+      "width": 1200,
+      "height": 800,
+      "svg": {
+        "minVisualNodes": 73,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 480000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1617,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "service-dependency-critical-dependencies-view",
+      "width": 1200,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 27,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 384000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 974,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1917,6 +2257,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 952160,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1933,6 +2274,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643189,
+        "minTransparentPixels": 56011,
         "minDistinctColors": 1271,
         "maxEdgeInkPixels": 0
       }
@@ -1949,7 +2291,59 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 643195,
+        "minTransparentPixels": 56005,
         "minDistinctColors": 1527,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "site-topology",
+      "width": 1200,
+      "height": 786,
+      "svg": {
+        "minVisualNodes": 83,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 471600,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1402,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "site-topology-emea-view",
+      "width": 1200,
+      "height": 680,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 408000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 731,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "subnets-site-links",
+      "width": 1200,
+      "height": 805,
+      "svg": {
+        "minVisualNodes": 72,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 483000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1358,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1965,6 +2359,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 797808,
+        "minTransparentPixels": 62192,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1981,6 +2376,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 764488,
+        "minTransparentPixels": 61112,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1997,6 +2393,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1224760,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2013,6 +2410,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 69874,
+        "minTransparentPixels": 506366,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2029,7 +2427,76 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1026955,
+        "minTransparentPixels": 70645,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-ad-sites-hierarchy",
+      "width": 1180,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 95,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 330400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1208,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-dc-connectivity-map",
+      "width": 1180,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 63,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 330400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1272,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-directory-health-replication",
+      "width": 1080,
+      "height": 593,
+      "svg": {
+        "minVisualNodes": 57,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 320220,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1405,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-directory-level-window",
+      "width": 1180,
+      "height": 703,
+      "svg": {
+        "minVisualNodes": 73,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 414770,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1582,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2045,6 +2512,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 478490,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2061,6 +2529,75 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 293020,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-force-busy-relationship-graph",
+      "width": 1500,
+      "height": 920,
+      "svg": {
+        "minVisualNodes": 428,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 690000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-force-relationship-graph",
+      "width": 1280,
+      "height": 760,
+      "svg": {
+        "minVisualNodes": 111,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 486400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-geographic-region-map",
+      "width": 1180,
+      "height": 620,
+      "svg": {
+        "minVisualNodes": 320,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1380909,
+        "minTransparentPixels": 82291,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-geographic-topology-map",
+      "width": 1280,
+      "height": 720,
+      "svg": {
+        "minVisualNodes": 411,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 460800,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2077,6 +2614,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 741600,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2093,6 +2631,7 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 454160,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2109,7 +2648,76 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 218040,
+        "minTransparentPixels": 0,
         "minDistinctColors": 1776,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-nested-user-hierarchy",
+      "width": 1320,
+      "height": 920,
+      "svg": {
+        "minVisualNodes": 316,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 607200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-nested-user-hierarchy-bottom-top",
+      "width": 1320,
+      "height": 920,
+      "svg": {
+        "minVisualNodes": 316,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 607200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-nested-user-hierarchy-left-right",
+      "width": 1540,
+      "height": 760,
+      "svg": {
+        "minVisualNodes": 316,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 585200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-nested-user-hierarchy-right-left",
+      "width": 1540,
+      "height": 760,
+      "svg": {
+        "minVisualNodes": 316,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 585200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2125,6 +2733,75 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 398160,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-relationship-radial-500-ego-graph",
+      "width": 1680,
+      "height": 1060,
+      "svg": {
+        "minVisualNodes": 816,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 890400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-relationship-radial-ego-graph",
+      "width": 1320,
+      "height": 820,
+      "svg": {
+        "minVisualNodes": 38,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 541200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-replication-health-hub",
+      "width": 1240,
+      "height": 761,
+      "svg": {
+        "minVisualNodes": 184,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 471820,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1495,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-replication-mesh-explorer",
+      "width": 1280,
+      "height": 814,
+      "svg": {
+        "minVisualNodes": 147,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 520960,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2141,6 +2818,24 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 520960,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-reusable-regional-topology",
+      "width": 1316,
+      "height": 764,
+      "svg": {
+        "minVisualNodes": 105,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 502712,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2157,6 +2852,109 @@
       "png": {
         "outputScale": 1,
         "minVisiblePixels": 456960,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-service-dependency-map",
+      "width": 1180,
+      "height": 600,
+      "svg": {
+        "minVisualNodes": 48,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 354000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1188,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-site-distribution-map",
+      "width": 1180,
+      "height": 620,
+      "svg": {
+        "minVisualNodes": 333,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1380909,
+        "minTransparentPixels": 82291,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-subnets-site-links-map",
+      "width": 1280,
+      "height": 894,
+      "svg": {
+        "minVisualNodes": 111,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 572160,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-team-hierarchy-builder",
+      "width": 1180,
+      "height": 951,
+      "svg": {
+        "minVisualNodes": 108,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 561090,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 927,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-topology-explorer",
+      "width": 1280,
+      "height": 868,
+      "svg": {
+        "minVisualNodes": 173,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 555520,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-wan-latency-map",
+      "width": 1180,
+      "height": 620,
+      "svg": {
+        "minVisualNodes": 324,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1380909,
+        "minTransparentPixels": 82291,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2173,6 +2971,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 35800,
+        "minTransparentPixels": 28999,
         "minDistinctColors": 587,
         "maxEdgeInkPixels": 0
       }
@@ -2189,6 +2988,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1315320,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2205,6 +3005,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 572191,
+        "minTransparentPixels": 55009,
         "minDistinctColors": 876,
         "maxEdgeInkPixels": 0
       }
@@ -2221,6 +3022,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 1643280,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2237,6 +3039,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 470400,
+        "minTransparentPixels": 0,
         "minDistinctColors": 957,
         "maxEdgeInkPixels": 0
       }
@@ -2253,6 +3056,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 769616,
+        "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2269,6 +3073,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 695869,
+        "minTransparentPixels": 58531,
         "minDistinctColors": 1089,
         "maxEdgeInkPixels": 0
       }
@@ -2285,6 +3090,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 962269,
+        "minTransparentPixels": 68131,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2301,6 +3107,7 @@
       "png": {
         "outputScale": 2,
         "minVisiblePixels": 695869,
+        "minTransparentPixels": 58531,
         "minDistinctColors": 1558,
         "maxEdgeInkPixels": 0
       }

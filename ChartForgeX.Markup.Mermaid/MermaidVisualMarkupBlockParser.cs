@@ -94,7 +94,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         foreach (var diagnostic in mermaidResult.Diagnostics) {
             result.Diagnostics.Add(new MarkupDiagnostic {
                 Line = diagnostic.Span.Line <= 0 ? block.FenceLine : block.StartLine + diagnostic.Span.Line - 1,
-                Severity = diagnostic.Severity == MermaidDiagnosticSeverity.Error ? MarkupDiagnosticSeverity.Error : MarkupDiagnosticSeverity.Warning,
+                Severity = diagnostic.Severity,
                 Message = diagnostic.Message
             });
         }

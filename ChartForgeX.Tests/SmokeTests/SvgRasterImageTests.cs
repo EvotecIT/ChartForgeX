@@ -44,6 +44,36 @@ internal static partial class SmokeTests {
         Assert(PixelAlpha(styled, 100, 20, 20) is >= 62 and <= 66 && IsPixelNear(styled, 100, 80, 20, 0, 0, 255), "Unsupported media blocks should be skipped as a whole without leaking nested contrast rules or hiding following base rules.");
     }
 
+    private static void SvgRasterStrokeJoinsHonorRoundBevelAndMiter() {
+        Assert(TryRenderStrokeJoin("bevel", out var bevel), "SVG rasterization should render bevel stroke joins.");
+        Assert(TryRenderStrokeJoin("round", out var round), "SVG rasterization should render round stroke joins.");
+        Assert(TryRenderStrokeJoin("miter", out var miter), "SVG rasterization should render miter stroke joins.");
+
+        Assert(PixelAlpha(bevel, 100, 50, 13) == 0, "Bevel joins should cut off the outer corner at the two offset endpoints.");
+        Assert(PixelAlpha(round, 100, 50, 13) > 0, "Round joins should cover the curved outer corner beyond a bevel join.");
+        Assert(PixelAlpha(miter, 100, 50, 7) > 0, "Miter joins should extend to the intersection of the outer stroke edges.");
+        Assert(PixelAlpha(round, 100, 50, 7) == 0 && PixelAlpha(bevel, 100, 50, 7) == 0, "Round and bevel joins should not inherit the miter tip.");
+
+        Assert(TryRenderClosedStrokeJoin("bevel", out var closedBevel), "SVG rasterization should render closed bevel stroke joins.");
+        Assert(TryRenderClosedStrokeJoin("miter", out var closedMiter), "SVG rasterization should render closed miter stroke joins.");
+        Assert(PixelAlpha(closedBevel, 100, 24, 24) == 0, "Closed bevel strokes should cut off the wraparound corner.");
+        Assert(PixelAlpha(closedMiter, 100, 24, 24) > 0, "Closed miter strokes should join the duplicated first and last vertex.");
+
+        Assert(TryRenderStrokeJoin("miter", out var limitedMiter, "1"), "SVG rasterization should parse explicit stroke miter limits.");
+        Assert(PixelAlpha(limitedMiter, 100, 50, 7) == 0, "A low SVG miter limit should fall back to a bevel join.");
+    }
+
+    private static bool TryRenderStrokeJoin(string lineJoin, out byte[] pixels, string? miterLimit = null) {
+        var miterLimitAttribute = miterLimit == null ? string.Empty : " stroke-miterlimit='" + miterLimit + "'";
+        var markup = "<path d='M20 80 L50 20 L80 80' fill='none' stroke='#ff0000' stroke-width='16' stroke-linecap='butt' stroke-linejoin='" + lineJoin + "'" + miterLimitAttribute + "/>";
+        return SvgRasterRenderer.TryRenderFragment(markup, "0 0 100 100", "none", 100, 100, out pixels);
+    }
+
+    private static bool TryRenderClosedStrokeJoin(string lineJoin, out byte[] pixels) {
+        var markup = "<path d='M30 30 L70 30 L70 70 L30 70 Z' fill='none' stroke='#ff0000' stroke-width='16' stroke-linecap='butt' stroke-linejoin='" + lineJoin + "'/>";
+        return SvgRasterRenderer.TryRenderFragment(markup, "0 0 100 100", "none", 100, 100, out pixels);
+    }
+
     private static string SvgData(string markup) => "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(markup));
 
     private static byte PixelAlpha(byte[] rgba, int width, int x, int y) => rgba[(y * width + x) * 4 + 3];

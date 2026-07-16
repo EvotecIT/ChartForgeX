@@ -10,7 +10,15 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void PublicApiKeepsOneTypePerReusableConcept() {
         var assembly = typeof(Chart).Assembly;
-        var exportedTypes = assembly.GetExportedTypes();
+        var publicAssemblies = new[] {
+            assembly,
+            typeof(ChartForgeX.Interactivity.ChartInteractionFeatures).Assembly,
+            typeof(ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer).Assembly,
+            typeof(ChartForgeX.Markup.VisualMarkupKind).Assembly,
+            typeof(ChartForgeX.Markup.Mermaid.MermaidVisualMarkupParser).Assembly,
+            typeof(ChartForgeX.Mermaid.MermaidDiagramKind).Assembly
+        };
+        var exportedTypes = publicAssemblies.SelectMany(candidate => candidate.GetExportedTypes()).ToArray();
         var exportedNames = exportedTypes.Select(type => type.FullName ?? type.Name).ToHashSet(StringComparer.Ordinal);
 
         foreach (var required in new[] {
@@ -23,7 +31,9 @@ internal static partial class SmokeTests {
             "ChartForgeX.Typography.FontSpec",
             "ChartForgeX.Typography.TextAlignment",
             "ChartForgeX.Typography.TextStyle",
-            "ChartForgeX.Typography.TextStyleOverride"
+            "ChartForgeX.Typography.TextStyleOverride",
+            "ChartForgeX.Diagnostics.VisualDiagnosticSeverity",
+            "ChartForgeX.VisualArtifacts.SequenceArtifactParticipantKind"
         }) {
             Assert(exportedNames.Contains(required), "The 1.0 public API should expose " + required + ".");
         }
@@ -37,7 +47,10 @@ internal static partial class SmokeTests {
             "ChartForgeX.VisualBlocks.VisualGridPanelFit",
             "ChartForgeX.VisualBlocks.VisualTextAlignment",
             "ChartForgeX.VisualBlocks.WardleyMapFlow",
-            "ChartForgeX.VisualCanvas.VisualCanvasTextAlignment"
+            "ChartForgeX.VisualCanvas.VisualCanvasTextAlignment",
+            "ChartForgeX.Markup.MarkupDiagnosticSeverity",
+            "ChartForgeX.Mermaid.MermaidDiagnosticSeverity",
+            "ChartForgeX.Mermaid.MermaidSequenceParticipantKind"
         }) {
             Assert(!exportedNames.Contains(removed), "Removed pre-1.0 duplicate type should not return: " + removed + ".");
         }
@@ -403,6 +416,24 @@ internal static partial class SmokeTests {
             .Where(file => !assigned.Contains(file))
             .ToArray();
         Assert(missing.Length == 0, "Generated examples should be assigned to named catalog families: " + string.Join(", ", missing));
+    }
+
+    private static void GeneratedWebsiteLinksResolveToSeedAssets() {
+        var generatedPath = Path.Combine(FindRepositoryRoot(), "Website", "static", "examples", "generated");
+        var missing = new List<string>();
+        foreach (var htmlPath in Directory.EnumerateFiles(generatedPath, "*.html")) {
+            var html = File.ReadAllText(htmlPath);
+            foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(html, "(?:href|src)=\"([^\"]+)\"", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) {
+                var value = match.Groups[1].Value;
+                if (value.StartsWith("#", StringComparison.Ordinal) || value.StartsWith("/", StringComparison.Ordinal) || Uri.TryCreate(value, UriKind.Absolute, out _)) continue;
+                var relativePath = value.Split('?', '#')[0].Replace('/', Path.DirectorySeparatorChar);
+                if (string.IsNullOrWhiteSpace(relativePath)) continue;
+                var assetPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(htmlPath) ?? generatedPath, relativePath));
+                if (!File.Exists(assetPath)) missing.Add(Path.GetFileName(htmlPath) + " -> " + value);
+            }
+        }
+
+        Assert(missing.Count == 0, "Checked-in generated website pages should not link missing seed assets: " + string.Join(", ", missing.OrderBy(value => value, StringComparer.Ordinal)));
     }
 
     private static void EuropeRevenueMapRoutesTargetRenderedMarkers() {

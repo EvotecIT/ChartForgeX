@@ -1,0 +1,47 @@
+using System;
+using System.Linq;
+using ChartForgeX.Markup;
+using ChartForgeX.VisualArtifacts;
+
+var markdown = @"```chartforgex flow v1
+id approval-flow
+title Approval Flow
+subtitle FlowArtifact parsed from native v1 markup, statically previewed through topology
+size 1120x620
+layout layered
+direction left-to-right
+
+lanes:
+| id | label | status |
+| --- | --- | --- |
+| author | Author | positive |
+| review | Review | warning |
+| release | Release | neutral |
+
+steps:
+| id | label | kind | lane | status | subtitle | badge |
+| --- | --- | --- | --- | --- | --- | --- |
+| draft | Draft change | start | author | positive | C# or markdown source | 1 |
+| validate | Validate contract | process | review | positive | Parser plus render checks | 2 |
+| approve | Approved? | decision | review | warning | Human gate | ? |
+| publish | Publish package | end | release | positive | Release artifact | 3 |
+
+connectors:
+| from | to | label | kind | status |
+| --- | --- | --- | --- | --- |
+| draft | validate | submit | flow | positive |
+| validate | approve | evidence | dependency | positive |
+| approve | publish | yes | flow | positive |
+| approve | draft | changes | retry | warning |
+```
+";
+
+var result = new VisualMarkupParser().Parse(markdown);
+if (result.HasErrors) {
+    throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+}
+
+var artifact = result.Artifacts.Single();
+artifact.SaveSvg("markup-flow-approval.svg");
+artifact.SavePng("markup-flow-approval.png");
+artifact.SaveHtml("markup-flow-approval.html");

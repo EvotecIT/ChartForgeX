@@ -1,23 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-df2c2ebd" width="820" height="1002" viewBox="0 0 820 1002" role="img" aria-labelledby="cfx-visual-grid-df2c2ebd-title cfx-visual-grid-df2c2ebd-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-df2c2ebd-title">Your Weekly Progress</title>
-<desc id="cfx-visual-grid-df2c2ebd-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-5579444c" width="820" height="1002" viewBox="0 0 820 1002" role="img" aria-labelledby="cfx-visual-grid-5579444c-title cfx-visual-grid-5579444c-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-5579444c-title">Your Weekly Progress</title>
+<desc id="cfx-visual-grid-5579444c-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-df2c2ebd .cfx-guide-stroke,#cfx-visual-grid-df2c2ebd .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-df2c2ebd text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-grid-df2c2ebd-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F8F8FB" stop-opacity="1"/><stop offset="100%" stop-color="#EEEFF3" stop-opacity="1"/></linearGradient>
+<style>#cfx-visual-grid-5579444c .cfx-guide-stroke,#cfx-visual-grid-5579444c .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-5579444c text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-grid-5579444c-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F8F8FB" stop-opacity="1"/><stop offset="100%" stop-color="#EEEFF3" stop-opacity="1"/></linearGradient>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-grid-df2c2ebd-visualGridSurface)"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-grid-5579444c-visualGridSurface)"/>
 <text data-cfx-role="visual-grid-title" x="30" y="51" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="28" font-weight="800">Your Weekly Progress</text>
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-97cf4238" width="760" height="158" viewBox="0 0 760 158" role="img" aria-labelledby="cfx-visual-97cf4238-title cfx-visual-97cf4238-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="30" y="106" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-97cf4238-title">DateStripBlock</title>
-<desc id="cfx-visual-97cf4238-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-98f6acbe" width="760" height="158" viewBox="0 0 760 158" role="img" aria-labelledby="cfx-visual-98f6acbe-title cfx-visual-98f6acbe-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="30" y="106" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-98f6acbe-title">DateStripBlock</title>
+<desc id="cfx-visual-98f6acbe-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-97cf4238 .cfx-guide-stroke,#cfx-visual-97cf4238 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-97cf4238 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-97cf4238-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-97cf4238-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-97cf4238-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-97cf4238-visualCardClip"><rect x="0" y="0" width="760" height="158" rx="28"/></clipPath>
+<style>#cfx-visual-98f6acbe .cfx-guide-stroke,#cfx-visual-98f6acbe .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-98f6acbe text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-98f6acbe-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-98f6acbe-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-98f6acbe-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-98f6acbe-visualCardClip"><rect x="0" y="0" width="760" height="158" rx="28"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="157" rx="27.5" fill="url(#cfx-visual-97cf4238-visualCard)" stroke="#F0F2F6"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="157" rx="27.5" fill="url(#cfx-visual-98f6acbe-visualCard)" stroke="#F0F2F6"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="757" height="155" rx="26.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <g data-cfx-role="date-strip-header">
 <rect data-cfx-role="date-strip-calendar-badge" x="18" y="21" width="22" height="22" rx="6" fill="rgba(37,41,54,0.094)" stroke="rgba(37,41,54,0.333)"/>
@@ -73,17 +73,17 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-951725ef" width="360" height="140" viewBox="0 0 360 140" role="img" aria-labelledby="cfx-visual-951725ef-title cfx-visual-951725ef-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="35" y="284" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-951725ef-title">Litres of water</title>
-<desc id="cfx-visual-951725ef-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-3af27911" width="360" height="140" viewBox="0 0 360 140" role="img" aria-labelledby="cfx-visual-3af27911-title cfx-visual-3af27911-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="35" y="284" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-3af27911-title">Litres of water</title>
+<desc id="cfx-visual-3af27911-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-951725ef .cfx-guide-stroke,#cfx-visual-951725ef .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-951725ef text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-951725ef-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-951725ef-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-951725ef-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-951725ef-visualCardClip"><rect x="0" y="0" width="360" height="140" rx="28"/></clipPath>
+<style>#cfx-visual-3af27911 .cfx-guide-stroke,#cfx-visual-3af27911 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-3af27911 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-3af27911-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-3af27911-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-3af27911-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-3af27911-visualCardClip"><rect x="0" y="0" width="360" height="140" rx="28"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="139" rx="27.5" fill="url(#cfx-visual-951725ef-visualCard)" stroke="#F0F2F6"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="139" rx="27.5" fill="url(#cfx-visual-3af27911-visualCard)" stroke="#F0F2F6"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="357" height="137" rx="26.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="metric-label" x="22" y="36" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="700">Litres of water</text>
 <rect data-cfx-role="metric-value-surface" x="22" y="54" width="316" height="60" rx="20" fill="#FFFFFF" stroke="rgba(228,231,239,0.549)"/>
@@ -93,17 +93,17 @@
 <text data-cfx-role="metric-unit" x="170.824" y="94.472" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="13" font-weight="650">Litres</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-cfed207b" width="360" height="140" viewBox="0 0 360 140" role="img" aria-labelledby="cfx-visual-cfed207b-title cfx-visual-cfed207b-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="425" y="284" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-cfed207b-title">Calories</title>
-<desc id="cfx-visual-cfed207b-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-36f8e216" width="360" height="140" viewBox="0 0 360 140" role="img" aria-labelledby="cfx-visual-36f8e216-title cfx-visual-36f8e216-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="425" y="284" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-36f8e216-title">Calories</title>
+<desc id="cfx-visual-36f8e216-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-cfed207b .cfx-guide-stroke,#cfx-visual-cfed207b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-cfed207b text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-cfed207b-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-cfed207b-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-cfed207b-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-cfed207b-visualCardClip"><rect x="0" y="0" width="360" height="140" rx="28"/></clipPath>
+<style>#cfx-visual-36f8e216 .cfx-guide-stroke,#cfx-visual-36f8e216 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-36f8e216 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-36f8e216-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-36f8e216-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-36f8e216-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-36f8e216-visualCardClip"><rect x="0" y="0" width="360" height="140" rx="28"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="139" rx="27.5" fill="url(#cfx-visual-cfed207b-visualCard)" stroke="#F2E7DA"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="139" rx="27.5" fill="url(#cfx-visual-36f8e216-visualCard)" stroke="#F2E7DA"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="357" height="137" rx="26.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="metric-label" x="22" y="36" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="700">Calories</text>
 <rect data-cfx-role="metric-value-surface" x="22" y="54" width="316" height="60" rx="20" fill="#FFF9F3" stroke="rgba(240,230,218,0.549)"/>
@@ -113,30 +113,30 @@
 <text data-cfx-role="metric-unit" x="187.456" y="94.472" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="13" font-weight="650">Kcal</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-86484117" width="760" height="44" viewBox="0 0 760 44" role="img" aria-labelledby="cfx-visual-86484117-title cfx-visual-86484117-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="30" y="444" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-86484117-title">Today's Goals</title>
-<desc id="cfx-visual-86484117-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-72aaa085" width="760" height="44" viewBox="0 0 760 44" role="img" aria-labelledby="cfx-visual-72aaa085-title cfx-visual-72aaa085-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="30" y="444" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-72aaa085-title">Today's Goals</title>
+<desc id="cfx-visual-72aaa085-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-86484117 .cfx-guide-stroke,#cfx-visual-86484117 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-86484117 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-86484117-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-86484117-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-86484117-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-86484117-visualCardClip"><rect x="0" y="0" width="760" height="44" rx="28"/></clipPath>
+<style>#cfx-visual-72aaa085 .cfx-guide-stroke,#cfx-visual-72aaa085 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-72aaa085 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-72aaa085-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-72aaa085-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-72aaa085-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-72aaa085-visualCardClip"><rect x="0" y="0" width="760" height="44" rx="28"/></clipPath>
 </defs>
 <text data-cfx-role="section-header-title" x="0" y="28" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="24" font-weight="800">Today's Goals</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-bf763213" width="360" height="300" viewBox="0 0 360 300" role="img" aria-labelledby="cfx-visual-bf763213-title cfx-visual-bf763213-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="35" y="508" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-bf763213-title">Running</title>
-<desc id="cfx-visual-bf763213-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-f983351b" width="360" height="300" viewBox="0 0 360 300" role="img" aria-labelledby="cfx-visual-f983351b-title cfx-visual-f983351b-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="35" y="508" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-f983351b-title">Running</title>
+<desc id="cfx-visual-f983351b-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-bf763213 .cfx-guide-stroke,#cfx-visual-bf763213 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-bf763213 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-bf763213-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-bf763213-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FCFF" stop-opacity="1"/><stop offset="100%" stop-color="#F0F3F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-bf763213-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-bf763213-visualCardClip"><rect x="0" y="0" width="360" height="300" rx="28"/></clipPath>
+<style>#cfx-visual-f983351b .cfx-guide-stroke,#cfx-visual-f983351b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-f983351b text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-f983351b-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-f983351b-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FCFF" stop-opacity="1"/><stop offset="100%" stop-color="#F0F3F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-f983351b-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-f983351b-visualCardClip"><rect x="0" y="0" width="360" height="300" rx="28"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="299" rx="27.5" fill="url(#cfx-visual-bf763213-visualCard)" stroke="#E9F3FF"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="299" rx="27.5" fill="url(#cfx-visual-f983351b-visualCard)" stroke="#E9F3FF"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="357" height="297" rx="26.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="metric-label" x="22" y="36" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="700">Running</text>
 <text data-cfx-role="metric-value" x="22" y="104" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="54" font-weight="850">30 mins</text>
@@ -150,17 +150,17 @@
 <text data-cfx-role="metric-caption" x="22" y="278" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="13">7-day trend</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-17186aa4" width="360" height="300" viewBox="0 0 360 300" role="img" aria-labelledby="cfx-visual-17186aa4-title cfx-visual-17186aa4-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="425" y="508" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-17186aa4-title">Cycling</title>
-<desc id="cfx-visual-17186aa4-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-8fc44b6e" width="360" height="300" viewBox="0 0 360 300" role="img" aria-labelledby="cfx-visual-8fc44b6e-title cfx-visual-8fc44b6e-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="425" y="508" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-8fc44b6e-title">Cycling</title>
+<desc id="cfx-visual-8fc44b6e-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-17186aa4 .cfx-guide-stroke,#cfx-visual-17186aa4 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-17186aa4 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-17186aa4-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-17186aa4-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-17186aa4-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-17186aa4-visualCardClip"><rect x="0" y="0" width="360" height="300" rx="28"/></clipPath>
+<style>#cfx-visual-8fc44b6e .cfx-guide-stroke,#cfx-visual-8fc44b6e .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-8fc44b6e text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-8fc44b6e-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-8fc44b6e-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-8fc44b6e-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFAF5" stop-opacity="1"/><stop offset="100%" stop-color="#F7F1EC" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-8fc44b6e-visualCardClip"><rect x="0" y="0" width="360" height="300" rx="28"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="299" rx="27.5" fill="url(#cfx-visual-17186aa4-visualCard)" stroke="#F2E7DA"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="359" height="299" rx="27.5" fill="url(#cfx-visual-8fc44b6e-visualCard)" stroke="#F2E7DA"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="357" height="297" rx="26.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="metric-label" x="22" y="36" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="700">Cycling</text>
 <text data-cfx-role="metric-value" x="22" y="104" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="54" font-weight="850">40 mins</text>
@@ -174,17 +174,17 @@
 <text data-cfx-role="metric-caption" x="22" y="278" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="13">7-day trend</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-d82a23de" width="760" height="144" viewBox="0 0 760 144" role="img" aria-labelledby="cfx-visual-d82a23de-title cfx-visual-d82a23de-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="30" y="828" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-d82a23de-title">Duel with friends</title>
-<desc id="cfx-visual-d82a23de-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-081b5f4f" width="760" height="144" viewBox="0 0 760 144" role="img" aria-labelledby="cfx-visual-081b5f4f-title cfx-visual-081b5f4f-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="30" y="828" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-081b5f4f-title">Duel with friends</title>
+<desc id="cfx-visual-081b5f4f-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-d82a23de .cfx-guide-stroke,#cfx-visual-d82a23de .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-d82a23de text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-d82a23de-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-d82a23de-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-d82a23de-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-d82a23de-visualCardClip"><rect x="0" y="0" width="760" height="144" rx="28"/></clipPath>
+<style>#cfx-visual-081b5f4f .cfx-guide-stroke,#cfx-visual-081b5f4f .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-081b5f4f text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-081b5f4f-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-081b5f4f-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-081b5f4f-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-081b5f4f-visualCardClip"><rect x="0" y="0" width="760" height="144" rx="28"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="143" rx="27.5" fill="url(#cfx-visual-d82a23de-visualCard)" stroke="#F0F2F6"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="143" rx="27.5" fill="url(#cfx-visual-081b5f4f-visualCard)" stroke="#F0F2F6"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="757" height="141" rx="26.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="visual-text" x="18" y="34.5" text-anchor="start" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="22" font-weight="800">Duel with friends</text>
 <g data-cfx-role="entity-strip-block">

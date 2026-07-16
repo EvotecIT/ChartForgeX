@@ -283,7 +283,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("text-anchor", "middle")
             .Attribute("dominant-baseline", "central")
             .Attribute("fill", "#FFFFFF")
-            .Attribute("font-size", 5.8)
+            .Attribute("font-size", DotNodeSymbolFontSize)
             .Attribute("font-weight", "800")
             .Text(TrimTo(symbol, 2)));
     }

@@ -20,6 +20,10 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Run GitHub Actions on private self-hosted runners only.
 - The smoke test runner enforces these project settings so quality does not depend on memory.
 
+## Release Performance Budgets
+
+The release smoke suite measures three synchronous static-rendering workloads after compilation: a 960x540 multi-series chart, a 2x-density 1920x1080 desktop wallpaper, and a dense 128-node/230-edge topology. Each workload must finish within 15 seconds. Managed allocations are capped at 64 MiB for the chart, 384 MiB for the wallpaper, and 256 MiB for the topology. These are regression ceilings rather than benchmark claims; update them only after profiling a deliberate renderer change on the supported CI platforms.
+
 ## Renderer Layout
 
 - Keep each output format in its own folder, for example `Svg`, `Raster`, and `Html`.
@@ -53,6 +57,7 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Use focused option/enumeration files for concepts that are likely to grow.
 - Add XML documentation for public members as they are introduced.
 - Validate public setters and constructors so invalid chart states fail near the caller rather than inside renderers.
+- Audit exported enums across every runtime package; identical member sets require one shared public owner rather than adapter-specific aliases and conversion switches.
 
 ## Growth Rules
 

@@ -1,1 +1,3 @@
 global using ChartForgeX.Primitives;
+global using MermaidDiagnosticSeverity = ChartForgeX.Diagnostics.VisualDiagnosticSeverity;
+global using MermaidSequenceParticipantKind = ChartForgeX.VisualArtifacts.SequenceArtifactParticipantKind;

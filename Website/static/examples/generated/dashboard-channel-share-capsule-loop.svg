@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-9a1bc6dd" width="820" height="340" viewBox="0 0 820 340" role="img" aria-labelledby="cfx-visual-9a1bc6dd-title cfx-visual-9a1bc6dd-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-9a1bc6dd-title">Channel Share</title>
-<desc id="cfx-visual-9a1bc6dd-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-1a5dbc06" width="820" height="340" viewBox="0 0 820 340" role="img" aria-labelledby="cfx-visual-1a5dbc06-title cfx-visual-1a5dbc06-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-1a5dbc06-title">Channel Share</title>
+<desc id="cfx-visual-1a5dbc06-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-9a1bc6dd .cfx-guide-stroke,#cfx-visual-9a1bc6dd .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-9a1bc6dd text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-9a1bc6dd-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-9a1bc6dd-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-9a1bc6dd-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-9a1bc6dd-visualCardClip"><rect x="0" y="0" width="820" height="340" rx="18"/></clipPath>
+<style>#cfx-visual-1a5dbc06 .cfx-guide-stroke,#cfx-visual-1a5dbc06 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-1a5dbc06 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-1a5dbc06-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-1a5dbc06-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-1a5dbc06-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-1a5dbc06-visualCardClip"><rect x="0" y="0" width="820" height="340" rx="18"/></clipPath>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-9a1bc6dd-visualBackground)"/>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="819" height="339" rx="17.5" fill="url(#cfx-visual-9a1bc6dd-visualCard)" stroke="#ECEEF2"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-1a5dbc06-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="819" height="339" rx="17.5" fill="url(#cfx-visual-1a5dbc06-visualCard)" stroke="#ECEEF2"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="817" height="337" rx="16.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <circle data-cfx-role="segmented-metric-menu-dot" cx="776" cy="44" r="2.1" fill="#7A7D86"/>
 <circle data-cfx-role="segmented-metric-menu-dot" cx="783" cy="44" r="2.1" fill="#7A7D86"/>
@@ -17,7 +17,7 @@
 <text data-cfx-role="visual-text" x="22" y="41.5" text-anchor="start" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Channel Share</text>
 <text data-cfx-role="visual-text" x="22" y="66.5" text-anchor="start" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="500">Balanced source mix rendered as a capsule loop.</text>
 <line data-cfx-role="segmented-metric-header-divider" x1="22" y1="93" x2="798" y2="93" stroke="#DCDDE3"/>
-<g data-cfx-role="segmented-metric-capsule-loop" data-cfx-total="100" data-cfx-loop-height="100.36" data-cfx-stroke="34">
+<g data-cfx-role="segmented-metric-capsule-loop" data-cfx-total="100" data-cfx-bottom="318" data-cfx-loop-y="152.792" data-cfx-loop-height="100.36" data-cfx-stroke="34">
 <path data-cfx-role="segmented-metric-capsule-track-shadow" d="M 72.18 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 487.82 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 72.18 169.792" fill="none" stroke="rgba(122,125,134,0.055)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.4)"/>
 <path data-cfx-role="segmented-metric-capsule-track" d="M 72.18 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 487.82 236.152 L 72.18 236.152 A 33.18 33.18 0 0 1 72.18 169.792" fill="none" stroke="rgba(255,255,255,0.667)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
 <path data-cfx-role="segmented-metric-capsule-segment" data-cfx-label="Direct" data-cfx-value="40" data-cfx-share="0.4" data-cfx-start="0" data-cfx-end="0.4" d="M 72.18 169.792 L 487.82 169.792 A 33.18 33.18 0 0 1 490.16 169.875" fill="none" stroke="#36C47D" stroke-width="34" stroke-linecap="butt" stroke-linejoin="round"/>

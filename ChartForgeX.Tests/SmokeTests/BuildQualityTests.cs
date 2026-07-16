@@ -60,10 +60,12 @@ internal static partial class SmokeTests {
         Assert(script.Contains("function New-VisualBaseline", StringComparison.Ordinal), "Build script should keep visual-baseline generation isolated.");
         Assert(script.Contains("function Assert-VisualBaseline", StringComparison.Ordinal), "Build script should keep visual-baseline assertions isolated.");
         Assert(script.Contains("function Assert-TopologyVisualCoverage", StringComparison.Ordinal), "Build script should keep topology visual coverage checks isolated.");
-        Assert(script.Contains("baselineScope 'visual-capability-manifest'", StringComparison.Ordinal), "Build script should document the topology visual baseline scope.");
-        Assert(script.Contains("outside visual-baseline.json", StringComparison.Ordinal), "Build script should require topology visual coverage to explain why it is not in the numeric visual baseline yet.");
-        Assert(script.Contains("baselineCandidates", StringComparison.Ordinal), "Build script should require topology baseline candidates for future promotion.");
-        Assert(script.Contains("$minimumChartPairs = 50", StringComparison.Ordinal), "Build script should enforce the current minimum example chart coverage.");
+        Assert(script.Contains("function Assert-PremiumSurfaceCoverage", StringComparison.Ordinal), "Build script should keep premium host-surface coverage checks isolated.");
+        Assert(script.Contains("shared-visual-baseline-and-capability-manifest", StringComparison.Ordinal), "Build script should document the unified topology visual baseline scope.");
+        Assert(script.Contains("$comparisonNames", StringComparison.Ordinal) && script.Contains("missing from the shared visual comparison and numeric baseline", StringComparison.Ordinal), "Build script should require every topology SVG/PNG pair in the shared numeric visual baseline.");
+        Assert(script.Contains("premium-surface-manifest.json", StringComparison.Ordinal) && script.Contains("desktop-wallpaper", StringComparison.Ordinal) && script.Contains("compact-email", StringComparison.Ordinal), "Build script should gate real wallpaper, email, report, social, and transparent host dimensions.");
+        Assert(script.Contains("$actual.png.transparentPixels", StringComparison.Ordinal), "Build script should fail if a release-gated transparent host surface becomes opaque.");
+        Assert(script.Contains("$minimumChartPairs = 175", StringComparison.Ordinal), "Build script should enforce broad premium visual-pair coverage.");
         Assert(script.Contains("$Comparison.chartPairs -lt $minimumChartPairs", StringComparison.Ordinal), "Build script should fail when generated SVG/PNG comparison coverage drops.");
         Assert(script.Contains("$Comparison.dimensionMatches -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when SVG/PNG dimensions drift apart.");
         Assert(script.Contains("$Comparison.healthySvgs -ne $Comparison.chartPairs", StringComparison.Ordinal), "Build script should fail when SVG health drops.");
@@ -76,6 +78,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("-getProperty:PackageVersion", StringComparison.Ordinal), "Build script should inspect the evaluated package version instead of treating composed MSBuild properties as literal filenames.");
         Assert(script.Contains("ConvertTo-Json -Depth 8", StringComparison.Ordinal), "Build script should write refreshed visual baselines as JSON.");
         Assert(script.Contains("minDistinctColors = [int][Math]::Max", StringComparison.Ordinal), "Build script should keep refreshed PNG color-diversity baselines meaningful.");
+        Assert(script.Contains("minTransparentPixels", StringComparison.Ordinal), "Build script should preserve dependency-free PNG transparency in refreshed visual baselines.");
         Assert(script.Contains("maxClippedTextNodes", StringComparison.Ordinal), "Build script should baseline SVG text-edge quality.");
         Assert(script.Contains("maxEdgeInkPixels", StringComparison.Ordinal), "Build script should baseline PNG edge-pressure quality.");
         Assert(script.Contains("outputScale = [int]$chart.png.scale", StringComparison.Ordinal), "Build script should record high-DPI PNG output scale in the visual baseline.");

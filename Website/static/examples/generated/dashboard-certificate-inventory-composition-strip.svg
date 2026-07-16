@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-d04a3b98" width="820" height="340" viewBox="0 0 820 340" role="img" aria-labelledby="cfx-visual-d04a3b98-title cfx-visual-d04a3b98-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-d04a3b98-title">Certificate Count</title>
-<desc id="cfx-visual-d04a3b98-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-0f471a1f" width="820" height="340" viewBox="0 0 820 340" role="img" aria-labelledby="cfx-visual-0f471a1f-title cfx-visual-0f471a1f-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-0f471a1f-title">Certificate Count</title>
+<desc id="cfx-visual-0f471a1f-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-d04a3b98 .cfx-guide-stroke,#cfx-visual-d04a3b98 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-d04a3b98 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-d04a3b98-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-d04a3b98-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-d04a3b98-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-d04a3b98-visualCardClip"><rect x="0" y="0" width="820" height="340" rx="18"/></clipPath>
+<style>#cfx-visual-0f471a1f .cfx-guide-stroke,#cfx-visual-0f471a1f .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-0f471a1f text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-0f471a1f-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F4F4F5" stop-opacity="1"/><stop offset="100%" stop-color="#EAEAEC" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-0f471a1f-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-0f471a1f-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-0f471a1f-visualCardClip"><rect x="0" y="0" width="820" height="340" rx="18"/></clipPath>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-d04a3b98-visualBackground)"/>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="819" height="339" rx="17.5" fill="url(#cfx-visual-d04a3b98-visualCard)" stroke="#ECEEF2"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-0f471a1f-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="819" height="339" rx="17.5" fill="url(#cfx-visual-0f471a1f-visualCard)" stroke="#ECEEF2"/>
 <rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="817" height="337" rx="16.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
 <text data-cfx-role="visual-title" x="22" y="41.5" fill="#202235" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">Certificate Count</text>
 <text data-cfx-role="visual-subtitle" x="22" y="65.5" fill="#7A7D86" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Inventory split by lifecycle state.</text>

@@ -7,24 +7,8 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("  \"name\": \"ChartForgeX topology visual coverage\",");
         sb.AppendLine("  \"host\": \"HtmlForgeX-ready SVG/HTML/PNG artifacts\",");
         sb.AppendLine("  \"interactiveContract\": \"Inline SVG elements expose ids, CSS classes, hrefs, title tooltips, and data-cfx/data-node/data-edge hooks. Complete topology HTML pages are static by default and opt into cfx-topology-* interaction events when requested.\",");
-        sb.AppendLine("  \"baselinePolicy\": \"Topology, geographic topology, and topology-adjacent map artifacts are release-gated by this manifest, required SVG metadata hooks, SVG/HTML/PNG file generation, and PNG size checks. They intentionally stay outside visual-baseline.json until dense routing and geographic layout polish settle enough for numeric visual baselines.\",");
-        sb.AppendLine("  \"baselineScope\": \"visual-capability-manifest\",");
-        sb.AppendLine("  \"baselineCandidates\": [");
-        sb.AppendLine("    \"visual-topology-explorer\",");
-        sb.AppendLine("    \"visual-entity-relationship-overview\",");
-        sb.AppendLine("    \"visual-identity-mind-map\",");
-        sb.AppendLine("    \"visual-secure-access-arbitrary-icons\",");
-        sb.AppendLine("    \"visual-mini-correlation-map\",");
-        sb.AppendLine("    \"visual-evidence-timeline-relationship\",");
-        sb.AppendLine("    \"visual-replication-mesh-explorer\",");
-        sb.AppendLine("    \"visual-replication-mesh-route-motion\",");
-        sb.AppendLine("    \"visual-subnets-site-links-map\",");
-        sb.AppendLine("    \"visual-nested-user-hierarchy\",");
-        sb.AppendLine("    \"visual-nested-user-hierarchy-bottom-top\",");
-        sb.AppendLine("    \"visual-nested-user-hierarchy-left-right\",");
-        sb.AppendLine("    \"visual-nested-user-hierarchy-right-left\",");
-        sb.AppendLine("    \"visual-geographic-topology-map\"");
-        sb.AppendLine("  ],");
+        sb.AppendLine("  \"baselinePolicy\": \"Every generated topology SVG/PNG pair is release-gated by the shared visual-baseline.json comparison contract. This capability manifest additionally verifies required SVG/HTML/PNG files, stable metadata hooks, and topology-specific behavioral evidence.\",");
+        sb.AppendLine("  \"baselineScope\": \"shared-visual-baseline-and-capability-manifest\",");
         sb.AppendLine("  \"artifacts\": [");
         for (var i = 0; i < artifacts.Count; i++) {
             var artifact = artifacts[i];

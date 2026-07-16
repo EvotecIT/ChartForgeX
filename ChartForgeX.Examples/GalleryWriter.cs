@@ -105,7 +105,6 @@ public static partial class GalleryWriter {
             .Where(file => !IsConflictCopyFile(file))
             .Select(Path.GetFileNameWithoutExtension)
             .Where(name => !string.IsNullOrWhiteSpace(name) && File.Exists(Path.Combine(output, name + ".png")))
-            .Where(name => !IsTopologyCatalogExample(name!))
             .Select(name => name!)
             .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
             .Select(name => ReadComparisonAsset(output, name))
@@ -266,6 +265,7 @@ public static partial class GalleryWriter {
                     scale = pair.PngScale,
                     bytes = pair.PngBytes,
                     visiblePixels = pair.PngHealth.VisiblePixels,
+                    transparentPixels = pair.PngHealth.TransparentPixels,
                     foregroundPixels = pair.PngHealth.ForegroundPixels,
                     contentBounds = new {
                         left = pair.PngHealth.ContentBounds.Left,
@@ -323,6 +323,7 @@ public static partial class GalleryWriter {
                 var maxClippedTextNodes = ReadBaselineInt32(svgBaseline, "maxClippedTextNodes", int.MaxValue);
                 var maxNearEdgeTextNodes = ReadBaselineInt32(svgBaseline, "maxNearEdgeTextNodes", int.MaxValue);
                 var minVisiblePixels = pngBaseline.GetProperty("minVisiblePixels").GetInt64();
+                var minTransparentPixels = ReadBaselineInt64(pngBaseline, "minTransparentPixels", 0);
                 var minDistinctColors = pngBaseline.GetProperty("minDistinctColors").GetInt32();
                 var outputScale = ReadBaselineInt32(pngBaseline, "outputScale", actual.PngScale);
                 var maxEdgeInkPixels = ReadBaselineInt64(pngBaseline, "maxEdgeInkPixels", long.MaxValue);
@@ -335,6 +336,7 @@ public static partial class GalleryWriter {
                     actual.SvgHealth.ClippedTextNodes <= maxClippedTextNodes &&
                     actual.SvgHealth.NearEdgeTextNodes <= maxNearEdgeTextNodes &&
                     actual.PngHealth.VisiblePixels >= minVisiblePixels &&
+                    actual.PngHealth.TransparentPixels >= minTransparentPixels &&
                     actual.PngHealth.DistinctColors >= minDistinctColors &&
                     actual.PngHealth.EdgeInkPixels <= maxEdgeInkPixels) {
                     matches++;
@@ -419,7 +421,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
         var statusText = warnings.Length == 0 ? "Review clean" : string.Join(" / ", warnings);
         var svgInfo = FormatDimensions(svg) + " / " + FormatBytes(pair.SvgBytes) + " / " + pair.SvgHealth.VisualNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visual nodes / " + pair.SvgHealth.PremiumStrokeNodes.ToString(System.Globalization.CultureInfo.InvariantCulture) + " premium strokes / min text " + FormatSvgTextSize(pair.SvgHealth.MinimumTextFontSize) + " / min stroke " + FormatSvgStrokeWidth(pair.SvgHealth.MinimumStrokeWidth) + " / min marker " + FormatSvgMarkerRadius(pair.SvgHealth.MinimumMarkerRadius);
         var scaleLabel = pair.PngScale > 1 ? " @" + pair.PngScale.ToString(System.Globalization.CultureInfo.InvariantCulture) + "x" : string.Empty;
-        var pngInfo = FormatDimensions(png) + scaleLabel + " / " + FormatBytes(pair.PngBytes) + " / " + pair.PngHealth.VisiblePixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visible px / " + pair.PngHealth.ForegroundPixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " foreground px";
+        var pngInfo = FormatDimensions(png) + scaleLabel + " / " + FormatBytes(pair.PngBytes) + " / " + pair.PngHealth.VisiblePixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " visible px / " + pair.PngHealth.TransparentPixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " transparent px / " + pair.PngHealth.ForegroundPixels.ToString(System.Globalization.CultureInfo.InvariantCulture) + " foreground px";
         var largeClass = aspectWidth >= 1200 || aspectHeight >= 900 ? " large" : string.Empty;
         sb.AppendLine("<section id=\"" + EscapeHtml(name) + "\" class=\"" + (pair.HasMatchingDimensions ? "match" : "mismatch") + largeClass + "\">");
         sb.AppendLine("<h2><span>" + EscapeHtml(name) + "</span><span class=\"status " + statusClass + "\">" + statusText + "</span></h2>");
@@ -644,7 +646,8 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var visualBackground = DominantPngVisibleColor(pixelColors, edgeBackground);
             var foreground = CountPngForeground(pixelColors, dimensions, visualBackground, out var contentBounds);
             var edgeInkPixels = IsFullBleedVisualCanvasPng(fileName) ? 0 : CountPngEdgeInk(edgeColors, edgeBackground);
-            return new PngHealth(visiblePixels, foreground, contentBounds, colors.Count, edgeInkPixels, edgeColors.Count);
+            var transparentPixels = (long)dimensions.Width * dimensions.Height - visiblePixels;
+            return new PngHealth(visiblePixels, transparentPixels, foreground, contentBounds, colors.Count, edgeInkPixels, edgeColors.Count);
         } catch (IOException) {
         } catch (UnauthorizedAccessException) {
         } catch (InvalidDataException) {

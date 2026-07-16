@@ -37,7 +37,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: reusable diagnostics and richer text shaping should be added through typed parser/renderer stages rather than ad hoc string handling.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
 - Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
-- Promote topology artifacts into `visual-baseline.json` only after dense routing and geographic layout polish are stable enough for numeric baselines.
+- Keep every generated topology SVG/PNG pair in the shared numeric visual baseline; add dense routing and geographic fixtures to that gate whenever those renderers grow.
 - Keep dashboard shells outside ChartForgeX; host projects such as HtmlForgeX and TestimoX should own sidebars, filters, inspectors, cards, and collected product data.
 
 ## Visual Blocks
@@ -47,7 +47,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Add grouped capsule-bar polish only if repeated dashboard examples need it outside ordinary grouped `Bar` output.
 - Promote shared chips, badges, delta pills, and avatar stacks into reusable primitives only where multiple blocks need the same bounded geometry.
 - Add reusable status palettes and compact infographic snippets that reuse shared primitive layout/styling instead of arbitrary markup.
-- Add more examples and visual-baseline candidates once layouts stabilize.
+- Add examples when they protect a real host scenario, and place every stable SVG/PNG pair in the shared numeric visual baseline.
 
 ## Mermaid
 
@@ -69,7 +69,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 ## Formats
 
 - Keep SVG as the highest-fidelity static output.
-- Keep improving PNG through the dependency-free rasterizer: alpha-correct compositing, downsampling, antialiasing, gradient parity, and text measurement.
+- Keep dependency-free PNG fidelity aligned with SVG through contract fixtures for alpha-correct compositing, downsampling, antialiasing, gradients, and TrueType text measurement.
 - Keep animated raster export format-neutral internally so future chart families and formats can reuse sampled RGBA frames instead of topology-specific code.
 - Evaluate animated WebP only if a dependency-free encoder can share the same frame pipeline and meet the GIF/APNG validation bar.
 - Treat MP4 as a likely adapter concern unless a dependency-free encoder is practical; core ChartForgeX can expose deterministic frames while host packages own platform codecs or external tooling.

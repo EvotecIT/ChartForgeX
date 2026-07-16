@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "surfaces": [
+    {
+      "useCase": "desktop-wallpaper",
+      "name": "premium-desktop-wallpaper-canvas",
+      "width": 1920,
+      "height": 1080,
+      "minimumPngScale": 2,
+      "requiresTransparency": false
+    },
+    {
+      "useCase": "social-preview",
+      "name": "powerbginfo-social-preview-canvas",
+      "width": 1200,
+      "height": 630,
+      "minimumPngScale": 2,
+      "requiresTransparency": false
+    },
+    {
+      "useCase": "compact-email",
+      "name": "premium-email-summary-grid",
+      "width": 584,
+      "height": 424,
+      "minimumPngScale": 2,
+      "requiresTransparency": false
+    },
+    {
+      "useCase": "report-strip",
+      "name": "report-summary-metric-strip",
+      "width": 980,
+      "height": 294,
+      "minimumPngScale": 2,
+      "requiresTransparency": false
+    },
+    {
+      "useCase": "transparent-overlay",
+      "name": "transparent-report-summary-metric-strip",
+      "width": 980,
+      "height": 294,
+      "minimumPngScale": 2,
+      "requiresTransparency": true
+    }
+  ]
+}

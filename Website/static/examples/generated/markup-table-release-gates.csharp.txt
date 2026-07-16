@@ -1,0 +1,37 @@
+using System;
+using System.Linq;
+using ChartForgeX.Markup;
+using ChartForgeX.VisualArtifacts;
+
+var markdown = @"```chartforgex table v1
+id release-gates
+title Release Gates
+subtitle TableArtifact parsed from native v1 markup with typed columns
+capabilities sort filter export
+
+columns:
+| id | label | type | alignment |
+| --- | --- | --- | --- |
+| gate | Gate | text | left |
+| owner | Owner | text | left |
+| status | Status | status | center |
+| evidence | Evidence | text | left |
+
+rows:
+| gate | owner | status | evidence |
+| --- | --- | --- | --- |
+| API grammar | Markup | positive | v1 reference and parser tests |
+| Static output | Core | positive | SVG and PNG parity |
+| Package smoke | Release | warning | Build.ps1 release gate |
+```
+";
+
+var result = new VisualMarkupParser().Parse(markdown);
+if (result.HasErrors) {
+    throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+}
+
+var artifact = result.Artifacts.Single();
+artifact.SaveSvg("markup-table-release-gates.svg");
+artifact.SavePng("markup-table-release-gates.png");
+artifact.SaveHtml("markup-table-release-gates.html");

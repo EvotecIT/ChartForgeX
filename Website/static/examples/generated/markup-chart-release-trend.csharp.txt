@@ -1,0 +1,28 @@
+using System;
+using System.Linq;
+using ChartForgeX.Markup;
+using ChartForgeX.VisualArtifacts;
+
+var markdown = @"```chartforgex chart v1
+id release-trend
+title Release Readiness Trend
+subtitle Multi-series chart parsed from native v1 markup
+type smooth-line
+size 920x520
+labels Intake, Build, Test, Package, Publish
+
+series Ready type smoothline values 34 48 62 74 88 color #2563EB
+series Blocked type smoothline values 18 14 11 7 4 color #DC2626
+annotation hline 80 ""ship gate"" color=#059669
+```
+";
+
+var result = new VisualMarkupParser().Parse(markdown);
+if (result.HasErrors) {
+    throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+}
+
+var artifact = result.Artifacts.Single();
+artifact.SaveSvg("markup-chart-release-trend.svg");
+artifact.SavePng("markup-chart-release-trend.png");
+artifact.SaveHtml("markup-chart-release-trend.html");

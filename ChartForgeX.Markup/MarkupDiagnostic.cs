@@ -13,15 +13,3 @@ public sealed class MarkupDiagnostic {
     /// <summary>Gets or sets the diagnostic message.</summary>
     public string Message { get; set; } = string.Empty;
 }
-
-/// <summary>
-/// Defines markup diagnostic severity.
-/// </summary>
-public enum MarkupDiagnosticSeverity {
-    /// <summary>Informational note.</summary>
-    Information,
-    /// <summary>Warning that does not block rendering.</summary>
-    Warning,
-    /// <summary>Error that blocks rendering.</summary>
-    Error
-}

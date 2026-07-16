@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-eb489956" width="340" height="470" viewBox="0 0 340 470" role="img" aria-labelledby="cfx-visual-eb489956-title cfx-visual-eb489956-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-eb489956-title">ActivityTimelineBlock</title>
-<desc id="cfx-visual-eb489956-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-c7cb56b6" width="340" height="470" viewBox="0 0 340 470" role="img" aria-labelledby="cfx-visual-c7cb56b6-title cfx-visual-c7cb56b6-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-c7cb56b6-title">ActivityTimelineBlock</title>
+<desc id="cfx-visual-c7cb56b6-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-eb489956 .cfx-guide-stroke,#cfx-visual-eb489956 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-eb489956 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-eb489956-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
-<linearGradient id="cfx-visual-eb489956-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-eb489956-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-eb489956-visualCardClip"><rect x="0" y="0" width="340" height="470" rx="18"/></clipPath>
+<style>#cfx-visual-c7cb56b6 .cfx-guide-stroke,#cfx-visual-c7cb56b6 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-c7cb56b6 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-c7cb56b6-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<linearGradient id="cfx-visual-c7cb56b6-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-c7cb56b6-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-c7cb56b6-visualCardClip"><rect x="0" y="0" width="340" height="470" rx="18"/></clipPath>
 </defs>
 <g data-cfx-role="activity-timeline-block" data-cfx-event-surfaces="false">
 <line data-cfx-role="activity-spine" x1="36" y1="24" x2="36" y2="421" stroke="#DCDDE3" stroke-width="2"/>
