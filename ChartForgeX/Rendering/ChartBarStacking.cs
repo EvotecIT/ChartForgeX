@@ -6,21 +6,22 @@ namespace ChartForgeX.Rendering;
 /// Resolves vertical bar stack values with the same coordinate identity used by histogram slots and range calculation.
 /// </summary>
 internal static class ChartBarStacking {
-    internal static double BaseValue(Chart chart, ChartBarCoordinateMap coordinateMap, int seriesIndex, ChartPoint point) {
+    internal static double BaseValue(Chart chart, ChartBarCoordinateMap coordinateMap, int seriesIndex, int pointIndex) {
         var sum = 0.0;
-        var coordinate = coordinateMap.Resolve(point.X);
+        var point = chart.Series[seriesIndex].Points[pointIndex];
+        var coordinate = coordinateMap.Resolve(seriesIndex, pointIndex);
         for (var index = 0; index < seriesIndex; index++) {
             var series = chart.Series[index];
-            if (series.Kind != ChartSeriesKind.Bar || !TryFindPoint(coordinateMap, series, coordinate, out var candidate)) continue;
+            if (series.Kind != ChartSeriesKind.Bar || !TryFindPoint(coordinateMap, index, series, coordinate, out var candidate)) continue;
             if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;
         }
 
         return sum;
     }
 
-    private static bool TryFindPoint(ChartBarCoordinateMap coordinateMap, ChartSeries series, double coordinate, out ChartPoint point) {
+    private static bool TryFindPoint(ChartBarCoordinateMap coordinateMap, int seriesIndex, ChartSeries series, ChartBarCoordinateKey coordinate, out ChartPoint point) {
         for (var index = 0; index < series.Points.Count; index++) {
-            if (coordinateMap.Resolve(series.Points[index].X) != coordinate) continue;
+            if (!coordinateMap.Resolve(seriesIndex, index).Equals(coordinate)) continue;
             point = series.Points[index];
             return true;
         }

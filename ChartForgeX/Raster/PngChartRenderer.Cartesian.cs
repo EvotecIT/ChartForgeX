@@ -66,7 +66,7 @@ public sealed partial class PngChartRenderer {
             var reservedLabels = new List<ChartLabelBounds>();
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
-                var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, p) : 0;
+                var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, pointIndex) : 0;
                 var y = map.Y(baseValue + p.Y);
                 var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
                 var barWidth = layout.BarWidth;
@@ -544,13 +544,15 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawStackTotals(RgbaCanvas c, Chart chart, ChartBarCoordinateMap barCoordinateMap, ChartRect plot, ChartMapper map) {
-        var positiveTotals = new Dictionary<double, double>();
-        var negativeTotals = new Dictionary<double, double>();
-        foreach (var series in chart.Series) {
+        var positiveTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        var negativeTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var point in series.Points) {
-                var coordinate = barCoordinateMap.Resolve(point.X);
-                AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
+            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                var point = series.Points[pointIndex];
+                var coordinate = barCoordinateMap.Resolve(seriesIndex, pointIndex);
+                AddBarStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
             }
         }
 
@@ -586,13 +588,13 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static void DrawStackTotalSet(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, Dictionary<double, double> totals, double offset, List<ChartLabelBounds> reservedLabels) {
+    private static void DrawStackTotalSet(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, Dictionary<ChartBarCoordinateKey, double> totals, double offset, List<ChartLabelBounds> reservedLabels) {
         foreach (var item in totals) {
             if (Math.Abs(item.Value) < 0.000001) continue;
             var label = FormatValue(chart, item.Value);
             var fontSize = chart.Options.Theme.DataLabelFontSize;
             var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-            var x = Clamp(map.X(item.Key) - width / 2.0, plot.Left + 2, plot.Right - width - 2);
+            var x = Clamp(map.X(item.Key.Value) - width / 2.0, plot.Left + 2, plot.Right - width - 2);
             var y = Clamp(map.Y(item.Value) + offset - fontSize / 2.0, plot.Top + 2, plot.Bottom - fontSize - 2);
             if (!ReservePngLabel(label, x, y, chart, plot, fontSize, reservedLabels)) continue;
             DrawReadablePngLabel(c, x, y, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize);
@@ -625,5 +627,10 @@ public sealed partial class PngChartRenderer {
         public double BarHeight { get; }
 
         public double Offset { get; }
+    }
+
+    private static void AddBarStackTotal(Dictionary<ChartBarCoordinateKey, double> totals, ChartBarCoordinateKey coordinate, double value) {
+        totals.TryGetValue(coordinate, out var current);
+        totals[coordinate] = current + value;
     }
 }

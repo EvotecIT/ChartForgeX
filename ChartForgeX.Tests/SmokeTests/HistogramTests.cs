@@ -147,6 +147,24 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(chainedSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Transitive coordinate chains should emit one combined stack-total label.");
         Assert(chainedLayouts.ToPng().Length > 64, "Transitive coordinate chain aggregation should preserve PNG rendering parity.");
 
+        var adjacentMinimum = 1.0;
+        var adjacentMaximum = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(adjacentMinimum) + 8);
+        var adjacentLayout = ChartHistogramBinLayout.FromCount(adjacentMinimum, adjacentMaximum, 2);
+        var adjacentBins = Chart.Create()
+            .WithStackedBars()
+            .WithStackTotals()
+            .AddHistogram("Adjacent first", new[] { adjacentMinimum, adjacentMaximum, adjacentMaximum }, adjacentLayout)
+            .AddHistogram("Adjacent second", new[] { adjacentMinimum, adjacentMinimum, adjacentMinimum, adjacentMaximum, adjacentMaximum, adjacentMaximum, adjacentMaximum }, adjacentLayout);
+        var adjacentSvg = adjacentBins.ToSvg();
+        var adjacentBars = SvgDocument.Parse(adjacentSvg).Root.FindByTag("rect")
+            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+            .ToArray();
+        Assert(adjacentBars[2].GetAttribute("data-cfx-base") == "1", "The first ultra-narrow bin should stack only with its corresponding prior bin.");
+        Assert(adjacentBars[3].GetAttribute("data-cfx-base") == "2", "The second ultra-narrow bin should remain distinct from its adjacent prior bin.");
+        Assert(ChartRange.FromChart(adjacentBins).MaxY >= 6, "Adjacent ultra-narrow bins should preserve their independent range totals.");
+        Assert(CountOccurrences(adjacentSvg, "data-cfx-role=\"stack-total-label\"") == 2, "Adjacent ultra-narrow bins should emit independent stack-total labels.");
+        Assert(adjacentBins.ToPng().Length > 64, "Adjacent ultra-narrow bins should preserve PNG rendering parity.");
+
         var constantLayout = ChartHistogramBinLayout.FromCount(5, 5, 1);
         var constant = Chart.Create()
             .WithSize(640, 360)

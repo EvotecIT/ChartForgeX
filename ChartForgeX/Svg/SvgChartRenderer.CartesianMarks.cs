@@ -174,7 +174,7 @@ public sealed partial class SvgChartRenderer {
         var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
-            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, p) : 0;
+            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, pointIndex) : 0;
             var y = map.Y(baseValue + p.Y);
             var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
             var top = Math.Min(y, baseY);
@@ -320,13 +320,15 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawStackTotals(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, ChartRect plot, ChartMapper map) {
-        var positiveTotals = new Dictionary<double, double>();
-        var negativeTotals = new Dictionary<double, double>();
-        foreach (var series in chart.Series) {
+        var positiveTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        var negativeTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var point in series.Points) {
-                var coordinate = barCoordinateMap.Resolve(point.X);
-                AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
+            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                var point = series.Points[pointIndex];
+                var coordinate = barCoordinateMap.Resolve(seriesIndex, pointIndex);
+                AddBarStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
             }
         }
 
@@ -335,11 +337,11 @@ public sealed partial class SvgChartRenderer {
         DrawStackTotalSet(sb, chart, negativeTotals, plot, map, 14, reservedLabels);
     }
 
-    private static void DrawStackTotalSet(StringBuilder sb, Chart chart, Dictionary<double, double> totals, ChartRect plot, ChartMapper map, double offset, List<ChartLabelBounds> reservedLabels) {
-        foreach (var item in totals.OrderBy(item => item.Key)) {
+    private static void DrawStackTotalSet(StringBuilder sb, Chart chart, Dictionary<ChartBarCoordinateKey, double> totals, ChartRect plot, ChartMapper map, double offset, List<ChartLabelBounds> reservedLabels) {
+        foreach (var item in totals.OrderBy(item => item.Key.Value)) {
             if (Math.Abs(item.Value) < 0.000001) continue;
             var label = FormatValue(chart, item.Value);
-            var x = map.X(item.Key);
+            var x = map.X(item.Key.Value);
             var y = map.Y(item.Value) + offset;
             if (!ReserveSvgLabel(label, x, y, chart, plot, reservedLabels)) continue;
             DrawDataLabel(sb, chart, label, x, y, plot, "stack-total-label");
@@ -350,5 +352,10 @@ public sealed partial class SvgChartRenderer {
         double current;
         totals.TryGetValue(x, out current);
         totals[x] = current + y;
+    }
+
+    private static void AddBarStackTotal(Dictionary<ChartBarCoordinateKey, double> totals, ChartBarCoordinateKey coordinate, double value) {
+        totals.TryGetValue(coordinate, out var current);
+        totals[coordinate] = current + value;
     }
 }
