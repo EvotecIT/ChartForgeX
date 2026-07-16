@@ -13,9 +13,12 @@ internal static class TopologyLayoutNormalizer {
     private const double GroupHeaderBottomGap = 12;
     private const double RowTolerance = 36;
     private const double MinimumNodeWidth = 108;
+    private const double MinimumAutoGroupWidth = 190;
+    private const double MinimumAutoGroupHeight = 170;
 
     public static void Normalize(TopologyChart chart, TopologyRenderOptions? options = null) {
         options ??= new TopologyRenderOptions();
+        ExpandGroupsForNodes(chart);
         ResolveGroupHeaderOverlaps(chart, options);
         ResolveNodeOverlaps(chart);
         ExpandGroupsForNodes(chart);
@@ -94,10 +97,33 @@ internal static class TopologyLayoutNormalizer {
             .GroupBy(group => group.Id, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
 
-        foreach (var nodeSet in chart.Nodes.Where(node => !string.IsNullOrWhiteSpace(node.GroupId)).GroupBy(node => node.GroupId!, StringComparer.Ordinal)) {
-            if (!groups.TryGetValue(nodeSet.Key, out var group)) continue;
-            var requiredBottom = nodeSet.Max(node => node.Y + node.Height) + GroupPadding;
-            if (requiredBottom > group.Y + group.Height) group.Height = requiredBottom - group.Y;
+        var nodesByGroup = chart.Nodes
+            .Where(node => !string.IsNullOrWhiteSpace(node.GroupId))
+            .GroupBy(node => node.GroupId!, StringComparer.Ordinal)
+            .ToDictionary(nodeSet => nodeSet.Key, nodeSet => nodeSet.ToList(), StringComparer.Ordinal);
+
+        foreach (var group in groups.Values) {
+            if (!nodesByGroup.TryGetValue(group.Id, out var nodes) || nodes.Count == 0) {
+                if (group.Width <= 0) group.Width = MinimumAutoGroupWidth;
+                if (group.Height <= 0) group.Height = MinimumAutoGroupHeight;
+                continue;
+            }
+
+            var requiredRight = nodes.Max(node => node.X + node.Width) + GroupPadding;
+            var requiredBottom = nodes.Max(node => node.Y + node.Height) + GroupPadding;
+            if (group.Width <= 0) {
+                var requiredLeft = nodes.Min(node => node.X) - GroupPadding;
+                if (requiredLeft < group.X) group.X = requiredLeft;
+                group.Width = Math.Max(MinimumAutoGroupWidth, requiredRight - group.X);
+            }
+
+            if (group.Height <= 0) {
+                var requiredTop = nodes.Min(node => node.Y) - GroupPadding;
+                if (requiredTop < group.Y) group.Y = requiredTop;
+                group.Height = Math.Max(MinimumAutoGroupHeight, requiredBottom - group.Y);
+            } else if (requiredBottom > group.Y + group.Height) {
+                group.Height = requiredBottom - group.Y;
+            }
         }
     }
 

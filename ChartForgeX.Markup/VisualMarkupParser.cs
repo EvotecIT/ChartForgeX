@@ -40,7 +40,16 @@ public sealed class VisualMarkupParser {
     /// <returns>The visual markup parse result.</returns>
     public VisualMarkupParseResult Parse(string text) {
         if (text == null) throw new ArgumentNullException(nameof(text));
-        var scan = VisualMarkupScanner.Scan(text);
+        return Parse(VisualMarkupScanner.Scan(text));
+    }
+
+    /// <summary>
+    /// Parses a visual scan result into typed visual artifacts while preserving scanner diagnostics.
+    /// </summary>
+    /// <param name="scan">A scan result produced by ChartForgeX or a host-discovered fence projection.</param>
+    /// <returns>The visual markup parse result.</returns>
+    public VisualMarkupParseResult Parse(VisualMarkupScanResult scan) {
+        if (scan == null) throw new ArgumentNullException(nameof(scan));
         var result = new VisualMarkupParseResult();
         foreach (var diagnostic in scan.Diagnostics) result.Diagnostics.Add(diagnostic);
         ParseBlocks(result, scan.Blocks);

@@ -20,6 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Markdown-friendly ChartForgeX markup parser and code emitter for charts and topology diagrams.</Description>
+    <PackageReleaseNotes>Adds direct validation and projection for visual fences discovered by another Markdown parser.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;svg;png;html;topology;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
