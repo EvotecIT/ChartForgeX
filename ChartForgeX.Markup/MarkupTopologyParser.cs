@@ -188,8 +188,8 @@ public sealed class MarkupTopologyParser {
                 Subtitle = Optional(row, "subtitle"),
                 Color = Optional(row, "color"),
                 Icon = Optional(row, "icon"),
-                Width = Number(row, "width", 260),
-                Height = Number(row, "height", 160)
+                Width = NonNegativeNumber(row, "width", 260),
+                Height = NonNegativeNumber(row, "height", 160)
             });
             if (section == "nodes") document.Nodes.Add(new MarkupTopologyNode {
                 Id = Required(row, "id"),
@@ -203,8 +203,8 @@ public sealed class MarkupTopologyParser {
                 Badge = Optional(row, "badge"),
                 Color = Optional(row, "color"),
                 Display = row.TryGetValue("display", out var display) && !string.IsNullOrWhiteSpace(display) ? ParseEnum<TopologyNodeDisplayMode>(display) : null,
-                Width = Number(row, "width", 120),
-                Height = Number(row, "height", 64)
+                Width = PositiveNumber(row, "width", 120),
+                Height = PositiveNumber(row, "height", 64)
             });
             if (section == "edges") AddEdge(document, Value(row, "id", string.Empty), Required(row, "from"), Required(row, "to"), Optional(row, "label"), row);
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is InvalidOperationException) {
@@ -239,8 +239,8 @@ public sealed class MarkupTopologyParser {
             Subtitle = Optional(attributes, "subtitle"),
             Color = Optional(attributes, "color"),
             Icon = Optional(attributes, "icon"),
-            Width = Number(attributes, "width", 260),
-            Height = Number(attributes, "height", 160)
+            Width = NonNegativeNumber(attributes, "width", 260),
+            Height = NonNegativeNumber(attributes, "height", 160)
         });
     }
 
@@ -259,8 +259,8 @@ public sealed class MarkupTopologyParser {
             Badge = Optional(attributes, "badge"),
             Color = Optional(attributes, "color"),
             Display = attributes.TryGetValue("display", out var display) ? ParseEnum<TopologyNodeDisplayMode>(display) : null,
-            Width = Number(attributes, "width", 120),
-            Height = Number(attributes, "height", 64)
+            Width = PositiveNumber(attributes, "width", 120),
+            Height = PositiveNumber(attributes, "height", 64)
         });
     }
 
@@ -529,7 +529,18 @@ public sealed class MarkupTopologyParser {
     private static string? Optional(Dictionary<string, string> row, string key) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;
     private static string Value(Dictionary<string, string> row, string key, string fallback) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? value : fallback;
     private static string Required(Dictionary<string, string> row, string key) => Optional(row, key) ?? throw new ArgumentException("Missing required '" + key + "' column.");
-    private static double Number(Dictionary<string, string> row, string key, double fallback) => row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value) ? double.Parse(value, CultureInfo.InvariantCulture) : fallback;
+    private static double PositiveNumber(Dictionary<string, string> row, string key, double fallback) => Number(row, key, fallback, allowZero: false);
+    private static double NonNegativeNumber(Dictionary<string, string> row, string key, double fallback) => Number(row, key, fallback, allowZero: true);
+    private static double Number(Dictionary<string, string> row, string key, double fallback, bool allowZero) {
+        var number = row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value)
+            ? double.Parse(value, CultureInfo.InvariantCulture)
+            : fallback;
+        if (double.IsNaN(number) || double.IsInfinity(number) || (allowZero ? number < 0 : number <= 0)) {
+            throw new ArgumentException(key + (allowZero ? " must be a non-negative finite number." : " must be a positive finite number."));
+        }
+
+        return number;
+    }
     private static void Add<TDocument>(MarkupParseResult<TDocument> result, int line, MarkupDiagnosticSeverity severity, string message) where TDocument : class => result.Diagnostics.Add(new MarkupDiagnostic { Line = line, Severity = severity, Message = message });
 
     private static List<string> SplitTableCells(string line) {

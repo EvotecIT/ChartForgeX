@@ -36,6 +36,16 @@ public sealed class MermaidVisualMarkupParser {
     }
 
     /// <summary>
+    /// Parses a visual scan result into ChartForgeX visual artifacts, including Mermaid, while preserving scanner diagnostics.
+    /// </summary>
+    /// <param name="scan">A scan result produced by ChartForgeX or a host-discovered fence projection.</param>
+    /// <returns>The visual markup parse result.</returns>
+    public VisualMarkupParseResult Parse(VisualMarkupScanResult scan) {
+        if (scan == null) throw new ArgumentNullException(nameof(scan));
+        return _parser.Parse(scan);
+    }
+
+    /// <summary>
     /// Parses visual blocks that were already discovered by another Markdown parser into ChartForgeX visual artifacts.
     /// </summary>
     /// <param name="blocks">Pre-scanned visual blocks, for example blocks discovered by a host Markdown pipeline.</param>
