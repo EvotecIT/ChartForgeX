@@ -52,6 +52,13 @@ internal static partial class SmokeTests {
         var subDecimalLayout = ChartHistogramBinLayout.FromCount(0, 1e-28, 2);
         var subDecimalChart = Chart.Create().AddHistogram("Sub-decimal widths", new[] { 2e-29, 7e-29 }, subDecimalLayout);
         Assert(subDecimalChart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 1d, 1d }), "Histogram widths below decimal precision should fall back to binary bin assignment without division by zero.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(1e16, 1e16 + 2, 1), "Width-based histogram layouts should reject internal bounds that cannot advance at the requested magnitude.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromCount(1e16, 1e16 + 2, 2), "Count-based histogram layouts should reject internal bounds that cannot advance at the requested magnitude.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(1e16, 1e16 + 12, 1.5), "Width-based histogram layouts should reject collapsed bounds in the middle of a layout.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromCount(1e16, 1e16 + 8, 5), "Count-based histogram layouts should reject collapsed bounds in the middle of a layout.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(1e16, 1e16 + 10, 4.75), "Width-based histogram layouts should reject a final remainder bin whose lower bound rounds to the maximum.");
+        var largeExactLayout = ChartHistogramBinLayout.FromCount(Math.Pow(2, 52), Math.Pow(2, 52) + 2_000_000_000, 1_000_000_000);
+        Assert(largeExactLayout.Count == 1_000_000_000 && largeExactLayout.Width == 2, "Large layouts with clearly separated exact bounds should avoid per-bin validation.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(0, 10, 0), "Histogram layouts should reject zero bin widths.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddHistogram("Outside", new[] { 11d }, layout), "Shared histogram layouts should reject values outside their bounds.");
     }

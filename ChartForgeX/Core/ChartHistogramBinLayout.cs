@@ -7,6 +7,7 @@ namespace ChartForgeX.Core;
 /// Defines one reusable histogram binning scheme so multiple series can share identical bounds.
 /// </summary>
 public sealed class ChartHistogramBinLayout {
+    private const int MaximumBoundaryValidationScanCount = 1_000_000;
     private readonly decimal? _decimalMinimum;
     private readonly decimal? _decimalWidth;
 
@@ -40,7 +41,9 @@ public sealed class ChartHistogramBinLayout {
         if (binCount < 1) throw new ArgumentOutOfRangeException(nameof(binCount), binCount, "Histogram bin count must be at least one.");
         if (minimum == maximum) return new ChartHistogramBinLayout(minimum, maximum, 1, 0);
 
-        return new ChartHistogramBinLayout(minimum, maximum, binCount, (maximum - minimum) / binCount);
+        var width = (maximum - minimum) / binCount;
+        ValidateRepresentableBounds(minimum, maximum, binCount, width, nameof(binCount), binCount);
+        return new ChartHistogramBinLayout(minimum, maximum, binCount, width);
     }
 
     /// <summary>Creates a layout that preserves the requested width and uses a shorter final bin for any remainder.</summary>
@@ -56,6 +59,7 @@ public sealed class ChartHistogramBinLayout {
         }
 
         var count = Math.Max(1, (int)Math.Ceiling(quotient));
+        ValidateRepresentableBounds(minimum, maximum, count, binWidth, nameof(binWidth), binWidth);
         return new ChartHistogramBinLayout(minimum, maximum, count, binWidth);
     }
 
@@ -122,6 +126,47 @@ public sealed class ChartHistogramBinLayout {
         var next = BitConverter.Int64BitsToDouble(bits + 1);
         var tolerance = (next - magnitude) * 4;
         return Math.Abs(value - nearestInteger) <= tolerance ? nearestInteger : value;
+    }
+
+    private static void ValidateRepresentableBounds(double minimum, double maximum, int count, double width, string parameterName, object actualValue) {
+        if (count <= 1) return;
+        var finalLowerBound = minimum + width * (count - 1);
+        if (finalLowerBound >= maximum) {
+            throw new ArgumentOutOfRangeException(parameterName, actualValue,
+                "Histogram bins must have strictly increasing bounds representable by double values for the requested range.");
+        }
+
+        if (HasClearlySeparatedBounds(minimum, maximum, count, width)) return;
+        if (count > MaximumBoundaryValidationScanCount) {
+            throw new ArgumentOutOfRangeException(parameterName, actualValue,
+                "Histogram bin precision requires validating too many internal bounds; use fewer bins or a wider numeric range.");
+        }
+
+        var previous = minimum;
+        for (var index = 1; index < count; index++) {
+            var current = minimum + width * index;
+            if (current <= previous || current >= maximum) {
+                throw new ArgumentOutOfRangeException(parameterName, actualValue,
+                    "Histogram bins must have strictly increasing bounds representable by double values for the requested range.");
+            }
+
+            previous = current;
+        }
+    }
+
+    private static bool HasClearlySeparatedBounds(double minimum, double maximum, int count, double width) {
+        var lastOffset = width * (count - 1);
+        var productUlp = GetUpperUlp(Math.Abs(lastOffset));
+        var boundMagnitude = Math.Max(Math.Abs(minimum), Math.Abs(maximum));
+        var boundUlp = GetUpperUlp(boundMagnitude);
+        var errorBudget = productUlp + boundUlp;
+        return !double.IsInfinity(errorBudget) && width > errorBudget;
+    }
+
+    private static double GetUpperUlp(double magnitude) {
+        var bits = BitConverter.DoubleToInt64Bits(magnitude);
+        var next = BitConverter.Int64BitsToDouble(bits + 1);
+        return next - magnitude;
     }
 
     private void ValidateIndex(int index) {
