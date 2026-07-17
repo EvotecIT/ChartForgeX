@@ -17,7 +17,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageId>ChartForgeX.Markup</PackageId>
-    <Version>$(ChartForgeXProductVersion)</Version>
+    <Version>1.0.2</Version>
     <Authors>Evotec</Authors>
     <Description>Markdown-friendly ChartForgeX markup parser and code emitter for charts and topology diagrams.</Description>
     <PackageReleaseNotes>Adds direct validation and projection for visual fences discovered by another Markdown parser.</PackageReleaseNotes>
