@@ -162,7 +162,8 @@ public sealed partial class PngChartRenderer {
                 DrawSpecialChart(DrawSunburst);
                 return c;
             }
-            var range = ChartRange.FromChart(chart);
+            var barCoordinateMap = ChartBarCoordinateMap.Create(chart);
+            var range = ChartRange.FromChart(chart, barCoordinateMap);
             IReadOnlyList<double> yTicks;
             IReadOnlyList<double> xTicks;
             ChartRange? secondaryRange = null;
@@ -196,7 +197,7 @@ public sealed partial class PngChartRenderer {
             var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, o.XAxis, o.SecondaryYAxis);
             if (IsHorizontalBarChart(chart)) {
                 DrawHorizontalBarGrid(c, chart, plot, map, xTicks, yTicks);
-                for (var i = 0; i < chart.Series.Count; i++) DrawSeries(c, chart, i, plot, map);
+                for (var i = 0; i < chart.Series.Count; i++) DrawSeries(c, chart, barCoordinateMap, i, plot, map);
                 if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawHorizontalStackTotals(c, chart, plot, map);
                 DrawLegend(c, chart);
                 return c;
@@ -236,8 +237,8 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowAxes) {
                 if (secondaryMap != null && secondaryTicks != null) DrawSecondaryYAxis(c, chart, plot, secondaryMap, secondaryTicks);
             }
-            for (var i = 0; i < chart.Series.Count; i++) DrawSeries(c, chart, i, plot, SeriesMap(chart.Series[i], map, secondaryMap));
-            if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(c, chart, plot, map);
+            for (var i = 0; i < chart.Series.Count; i++) DrawSeries(c, chart, barCoordinateMap, i, plot, SeriesMap(chart.Series[i], map, secondaryMap));
+            if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(c, chart, barCoordinateMap, plot, map);
             DrawAnnotationLines(c, chart, plot, map);
             DrawLegend(c, chart);
             return c;

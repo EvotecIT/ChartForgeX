@@ -7,7 +7,7 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
-    private static void DrawSeries(RgbaCanvas c, Chart chart, int index, ChartRect plot, ChartMapper map) {
+    private static void DrawSeries(RgbaCanvas c, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartMapper map) {
         var s = chart.Series[index]; var color = SeriesColor(chart, index);
         if (s.Kind == ChartSeriesKind.HorizontalBar) {
             var layout = HorizontalBarLayout(chart, plot, index);
@@ -66,17 +66,22 @@ public sealed partial class PngChartRenderer {
             var reservedLabels = new List<ChartLabelBounds>();
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
-                var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackBaseValue(chart, index, p) : 0;
+                var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, pointIndex) : 0;
                 var y = map.Y(baseValue + p.Y);
                 var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
-                var barX = map.X(p.X) + layout.Offset - layout.BarWidth / 2;
+                var barWidth = layout.BarWidth;
+                var barX = map.X(p.X) + layout.Offset - barWidth / 2;
+                if (ChartHistogramBarSlot.TryResolve(chart, barCoordinateMap, index, pointIndex, map, out var histogramX, out var histogramWidth)) {
+                    barX = histogramX;
+                    barWidth = histogramWidth;
+                }
                 var barY = Math.Min(y, baseY);
                 var barHeight = Math.Abs(baseY - y);
-                var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
+                var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, barWidth / 2) : Math.Min(7, barWidth / 2);
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                    DrawSegmentedBar(c, chart.Options.BarVisualStyle, barX, barY, layout.BarWidth, barHeight, p.Y, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
+                    DrawSegmentedBar(c, chart.Options.BarVisualStyle, barX, barY, barWidth, barHeight, p.Y, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 } else {
-                    DrawGradientBar(c, barX, barY, layout.BarWidth, barHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
+                    DrawGradientBar(c, barX, barY, barWidth, barHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 }
                 if (ShouldDrawDataLabels(chart, s)) {
                     var label = FormatDataLabel(chart, s, pointIndex, p.Y);
@@ -85,7 +90,7 @@ public sealed partial class PngChartRenderer {
                     var placement = DataLabelPlacement(chart, s);
                     if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                         var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
-                        var labelX = placement == ChartDataLabelPlacement.Right ? barX + layout.BarWidth + 8 : barX - labelWidth - 8;
+                        var labelX = placement == ChartDataLabelPlacement.Right ? barX + barWidth + 8 : barX - labelWidth - 8;
                         var labelY = barY + segmentHeight / 2 - fontSize / 2.0;
                         if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reservedLabels)) continue;
                         DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, DataLabelStyle(chart, s, pointIndex));
@@ -99,7 +104,7 @@ public sealed partial class PngChartRenderer {
                                 : inside
                                     ? barY + segmentHeight / 2 - fontSize / 2.0
                                     : p.Y >= 0 ? barY - 10 - fontSize : barY + segmentHeight + 10 - fontSize;
-                        var labelX = map.X(p.X) + layout.Offset - EstimatePngEmphasizedTextWidth(label, fontSize) / 2.0;
+                        var labelX = barX + barWidth / 2.0 - EstimatePngEmphasizedTextWidth(label, fontSize) / 2.0;
                         if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reservedLabels)) continue;
                         DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, DataLabelStyle(chart, s, pointIndex));
                     }
@@ -242,7 +247,7 @@ public sealed partial class PngChartRenderer {
         if (s.Kind != ChartSeriesKind.Scatter) {
             DrawPremiumPngLinePath(c, linePoints, color, s.StrokeWidth, chart.Options.LineVisualStyle);
         }
-        if (s.Kind == ChartSeriesKind.Scatter || (!chart.Options.IsSparkline && (s.Kind == ChartSeriesKind.Line || s.Kind == ChartSeriesKind.StepLine))) {
+        if (s.Kind == ChartSeriesKind.Scatter || (!chart.Options.IsSparkline && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind))) {
             var markerRadius = s.Kind == ChartSeriesKind.Scatter ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra) : chart.Options.Theme.MarkerRadius;
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
@@ -427,6 +432,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawMarker(RgbaCanvas c, Chart chart, double x, double y, double radius, ChartColor color) {
+        if (radius <= 0) return;
         c.DrawCircle(x, y, radius + ChartVisualPrimitives.PngMarkerOutlineRadiusExtra, chart.Options.Theme.CardBackground);
         c.DrawCircle(x, y, radius, color);
     }
@@ -464,7 +470,9 @@ public sealed partial class PngChartRenderer {
     private static BarLayoutInfo BarLayout(Chart chart, ChartRect plot, int seriesIndex) {
         var barSeries = new List<int>();
         for (var i = 0; i < chart.Series.Count; i++) {
-            if (chart.Series[i].Kind == ChartSeriesKind.Bar) barSeries.Add(i);
+            var series = chart.Series[i];
+            if (series.Kind == ChartSeriesKind.Bar &&
+                (series.HistogramBinLayout == null || series.HistogramBinLayout.Minimum == series.HistogramBinLayout.Maximum)) barSeries.Add(i);
         }
 
         var groupCount = chart.Options.BarMode == ChartBarMode.Stacked ? 1 : Math.Max(1, barSeries.Count);
@@ -505,21 +513,6 @@ public sealed partial class PngChartRenderer {
         return new HorizontalBarLayoutInfo(barHeight, offset);
     }
 
-    private static double StackBaseValue(Chart chart, int seriesIndex, ChartPoint point) {
-        var sum = 0.0;
-        for (var i = 0; i < seriesIndex; i++) {
-            var series = chart.Series[i];
-            if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var candidate in series.Points) {
-                if (Math.Abs(candidate.X - point.X) >= 0.000001) continue;
-                if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;
-                break;
-            }
-        }
-
-        return sum;
-    }
-
     private static double StackHorizontalBaseValue(Chart chart, int seriesIndex, ChartPoint point) {
         var sum = 0.0;
         for (var i = 0; i < seriesIndex; i++) {
@@ -550,12 +543,17 @@ public sealed partial class PngChartRenderer {
         return sum;
     }
 
-    private static void DrawStackTotals(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map) {
-        var positiveTotals = new Dictionary<double, double>();
-        var negativeTotals = new Dictionary<double, double>();
-        foreach (var series in chart.Series) {
+    private static void DrawStackTotals(RgbaCanvas c, Chart chart, ChartBarCoordinateMap barCoordinateMap, ChartRect plot, ChartMapper map) {
+        var positiveTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        var negativeTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
+            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                var point = series.Points[pointIndex];
+                var coordinate = barCoordinateMap.Resolve(seriesIndex, pointIndex);
+                AddBarStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
+            }
         }
 
         var reservedLabels = new List<ChartLabelBounds>();
@@ -590,13 +588,13 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static void DrawStackTotalSet(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, Dictionary<double, double> totals, double offset, List<ChartLabelBounds> reservedLabels) {
+    private static void DrawStackTotalSet(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, Dictionary<ChartBarCoordinateKey, double> totals, double offset, List<ChartLabelBounds> reservedLabels) {
         foreach (var item in totals) {
             if (Math.Abs(item.Value) < 0.000001) continue;
             var label = FormatValue(chart, item.Value);
             var fontSize = chart.Options.Theme.DataLabelFontSize;
             var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-            var x = Clamp(map.X(item.Key) - width / 2.0, plot.Left + 2, plot.Right - width - 2);
+            var x = Clamp(map.X(item.Key.Value) - width / 2.0, plot.Left + 2, plot.Right - width - 2);
             var y = Clamp(map.Y(item.Value) + offset - fontSize / 2.0, plot.Top + 2, plot.Bottom - fontSize - 2);
             if (!ReservePngLabel(label, x, y, chart, plot, fontSize, reservedLabels)) continue;
             DrawReadablePngLabel(c, x, y, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize);
@@ -629,5 +627,10 @@ public sealed partial class PngChartRenderer {
         public double BarHeight { get; }
 
         public double Offset { get; }
+    }
+
+    private static void AddBarStackTotal(Dictionary<ChartBarCoordinateKey, double> totals, ChartBarCoordinateKey coordinate, double value) {
+        totals.TryGetValue(coordinate, out var current);
+        totals[coordinate] = current + value;
     }
 }

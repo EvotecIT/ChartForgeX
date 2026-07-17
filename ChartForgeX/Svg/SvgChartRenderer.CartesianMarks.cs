@@ -167,22 +167,27 @@ public sealed partial class SvgChartRenderer {
         if (ShouldDrawDataLabels(chart, s)) DrawPointLabels(sb, chart, s, s.Points.Select(p => new ChartPoint(map.X(p.X), map.Y(p.Y))).ToArray(), plot);
     }
 
-    private static void DrawBars(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
+    private static void DrawBars(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
         var s = chart.Series[index];
         var layout = BarLayout(chart, plot, index);
         var zeroY = map.YBaseline();
         var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
-            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackBaseValue(chart, index, p) : 0;
+            var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, pointIndex) : 0;
             var y = map.Y(baseValue + p.Y);
             var baseY = chart.Options.BarMode == ChartBarMode.Stacked ? map.YOrBaseline(baseValue) : zeroY;
             var top = Math.Min(y, baseY);
             var height = Math.Abs(baseY - y);
-            var x = map.X(p.X) + layout.Offset - layout.BarWidth / 2;
-            var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, layout.BarWidth / 2) : Math.Min(7, layout.BarWidth / 2);
+            var barWidth = layout.BarWidth;
+            var x = map.X(p.X) + layout.Offset - barWidth / 2;
+            if (ChartHistogramBarSlot.TryResolve(chart, barCoordinateMap, index, pointIndex, map, out var histogramX, out var histogramWidth)) {
+                x = histogramX;
+                barWidth = histogramWidth;
+            }
+            var radius = chart.Options.BarMode == ChartBarMode.Stacked ? Math.Min(3, barWidth / 2) : Math.Min(7, barWidth / 2);
             if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
-                DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, x, top, layout.BarWidth, height);
+                DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, x, top, barWidth, height);
             } else {
                 AppendSvg(sb, writer => writer
                     .StartElement("rect")
@@ -195,21 +200,21 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-color", PointColor(chart, s, index, pointIndex).ToHex())
                     .Attribute("x", x)
                     .Attribute("y", top)
-                    .Attribute("width", layout.BarWidth)
+                    .Attribute("width", barWidth)
                     .Attribute("height", height)
                     .Attribute("rx", radius)
                     .Attribute("fill", BarFill(chart, s, index, pointIndex, id))
                     .Attribute("opacity", ChartVisualPrimitives.BarFillOpacity)
                     .EndEmptyElement()
                     .Line());
-                DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, x, top, layout.BarWidth, height, radius, "bar-pattern");
-                DrawSvgBarHighlight(sb, x, top, layout.BarWidth, height);
+                DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, x, top, barWidth, height, radius, "bar-pattern");
+                DrawSvgBarHighlight(sb, x, top, barWidth, height);
             }
             if (ShouldDrawDataLabels(chart, s)) {
                 var label = FormatDataLabel(chart, s, pointIndex, p.Y);
                 var placement = DataLabelPlacement(chart, s);
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
-                    var labelX = placement == ChartDataLabelPlacement.Right ? x + layout.BarWidth + 8 : x - 8;
+                    var labelX = placement == ChartDataLabelPlacement.Right ? x + barWidth + 8 : x - 8;
                     var anchor = placement == ChartDataLabelPlacement.Right ? "start" : "end";
                     if (!ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels)) continue;
                     DrawHorizontalValueLabel(sb, chart, label, labelX, top + height / 2, anchor, plot, s, pointIndex);
@@ -225,8 +230,8 @@ public sealed partial class SvgChartRenderer {
                         : inside
                             ? top + height / 2
                             : p.Y >= 0 ? top - 10 : top + height + 10;
-                if (!ReserveSvgLabel(label, x + layout.BarWidth / 2, labelY, chart, plot, reservedLabels)) continue;
-                DrawDataLabel(sb, chart, label, x + layout.BarWidth / 2, labelY, plot, series: s, pointIndex: pointIndex);
+                if (!ReserveSvgLabel(label, x + barWidth / 2, labelY, chart, plot, reservedLabels)) continue;
+                DrawDataLabel(sb, chart, label, x + barWidth / 2, labelY, plot, series: s, pointIndex: pointIndex);
             }
         }
     }
@@ -279,7 +284,8 @@ public sealed partial class SvgChartRenderer {
     private static BarLayoutInfo BarLayout(Chart chart, ChartRect plot, int seriesIndex) {
         var barSeries = chart.Series
             .Select((series, index) => new { series, index })
-            .Where(item => item.series.Kind == ChartSeriesKind.Bar)
+            .Where(item => item.series.Kind == ChartSeriesKind.Bar &&
+                (item.series.HistogramBinLayout == null || item.series.HistogramBinLayout.Minimum == item.series.HistogramBinLayout.Maximum))
             .Select(item => item.index)
             .ToArray();
         var groupCount = chart.Options.BarMode == ChartBarMode.Stacked ? 1 : Math.Max(1, barSeries.Length);
@@ -298,21 +304,6 @@ public sealed partial class SvgChartRenderer {
         return new BarLayoutInfo(barWidth, offset);
     }
 
-    private static double StackBaseValue(Chart chart, int seriesIndex, ChartPoint point) {
-        var sum = 0.0;
-        for (var i = 0; i < seriesIndex; i++) {
-            var series = chart.Series[i];
-            if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var candidate in series.Points) {
-                if (Math.Abs(candidate.X - point.X) >= 0.000001) continue;
-                if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;
-                break;
-            }
-        }
-
-        return sum;
-    }
-
     private static double StackAreaBaseValue(Chart chart, int seriesIndex, ChartPoint point) {
         var sum = 0.0;
         for (var i = 0; i < seriesIndex; i++) {
@@ -328,12 +319,17 @@ public sealed partial class SvgChartRenderer {
         return sum;
     }
 
-    private static void DrawStackTotals(StringBuilder sb, Chart chart, ChartRect plot, ChartMapper map) {
-        var positiveTotals = new Dictionary<double, double>();
-        var negativeTotals = new Dictionary<double, double>();
-        foreach (var series in chart.Series) {
+    private static void DrawStackTotals(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, ChartRect plot, ChartMapper map) {
+        var positiveTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        var negativeTotals = new Dictionary<ChartBarCoordinateKey, double>();
+        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.Bar) continue;
-            foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
+            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                var point = series.Points[pointIndex];
+                var coordinate = barCoordinateMap.Resolve(seriesIndex, pointIndex);
+                AddBarStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
+            }
         }
 
         var reservedLabels = new List<ChartLabelBounds>();
@@ -341,11 +337,11 @@ public sealed partial class SvgChartRenderer {
         DrawStackTotalSet(sb, chart, negativeTotals, plot, map, 14, reservedLabels);
     }
 
-    private static void DrawStackTotalSet(StringBuilder sb, Chart chart, Dictionary<double, double> totals, ChartRect plot, ChartMapper map, double offset, List<ChartLabelBounds> reservedLabels) {
-        foreach (var item in totals.OrderBy(item => item.Key)) {
+    private static void DrawStackTotalSet(StringBuilder sb, Chart chart, Dictionary<ChartBarCoordinateKey, double> totals, ChartRect plot, ChartMapper map, double offset, List<ChartLabelBounds> reservedLabels) {
+        foreach (var item in totals.OrderBy(item => item.Key.Value)) {
             if (Math.Abs(item.Value) < 0.000001) continue;
             var label = FormatValue(chart, item.Value);
-            var x = map.X(item.Key);
+            var x = map.X(item.Key.Value);
             var y = map.Y(item.Value) + offset;
             if (!ReserveSvgLabel(label, x, y, chart, plot, reservedLabels)) continue;
             DrawDataLabel(sb, chart, label, x, y, plot, "stack-total-label");
@@ -356,5 +352,10 @@ public sealed partial class SvgChartRenderer {
         double current;
         totals.TryGetValue(x, out current);
         totals[x] = current + y;
+    }
+
+    private static void AddBarStackTotal(Dictionary<ChartBarCoordinateKey, double> totals, ChartBarCoordinateKey coordinate, double value) {
+        totals.TryGetValue(coordinate, out var current);
+        totals[coordinate] = current + value;
     }
 }

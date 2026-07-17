@@ -12,20 +12,24 @@ internal sealed class ChartRange {
     public double MinY { get; private set; } = double.PositiveInfinity;
     public double MaxY { get; private set; } = double.NegativeInfinity;
 
-    public static ChartRange FromChart(Chart chart, bool applyOptionBounds = true) {
+    public static ChartRange FromChart(Chart chart, bool applyOptionBounds = true) =>
+        FromChart(chart, ChartBarCoordinateMap.Create(chart), applyOptionBounds);
+
+    internal static ChartRange FromChart(Chart chart, ChartBarCoordinateMap coordinateMap, bool applyOptionBounds = true) {
         var range = new ChartRange();
         var barXValues = new List<double>();
         var bubbleXValues = new List<double>();
         var horizontalBarYValues = new List<double>();
-        var positiveBarStacks = new Dictionary<double, double>();
-        var negativeBarStacks = new Dictionary<double, double>();
+        var positiveBarStacks = new Dictionary<ChartBarCoordinateKey, double>();
+        var negativeBarStacks = new Dictionary<ChartBarCoordinateKey, double>();
         var positiveHorizontalBarStacks = new Dictionary<double, double>();
         var negativeHorizontalBarStacks = new Dictionary<double, double>();
         var positiveAreaStacks = new Dictionary<double, double>();
         var negativeAreaStacks = new Dictionary<double, double>();
         var hasHorizontalBars = false;
         var usesVerticalBaseline = false;
-        foreach (var series in chart.Series) {
+        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var series = chart.Series[seriesIndex];
             if (ChartSeriesKindTraits.IsExclusive(series.Kind)) continue;
             if (series.YAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
                 IncludeSeriesX(range, series);
@@ -33,6 +37,25 @@ internal sealed class ChartRange {
             }
 
             if (ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) usesVerticalBaseline = true;
+
+            if (series.Kind == ChartSeriesKind.Bar && series.HistogramBinLayout != null) {
+                if (series.HistogramBinLayout.Minimum == series.HistogramBinLayout.Maximum) {
+                    range.IncludeX(series.HistogramBinLayout.Minimum - 0.5);
+                    range.IncludeX(series.HistogramBinLayout.Maximum + 0.5);
+                } else {
+                    range.IncludeX(series.HistogramBinLayout.Minimum);
+                    range.IncludeX(series.HistogramBinLayout.Maximum);
+                }
+                for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                    var point = series.Points[pointIndex];
+                    range.IncludeY(point.Y);
+                    var stackCoordinate = coordinateMap.Resolve(seriesIndex, pointIndex);
+                    AddBarStackValue(point.Y >= 0 ? positiveBarStacks : negativeBarStacks, stackCoordinate, point.Y);
+                }
+
+                if (UsesZeroBaseline(chart.Options.YAxis)) range.IncludeY(0);
+                continue;
+            }
 
             if (series.Kind == ChartSeriesKind.Bubble) {
                 for (var i = 0; i + 1 < series.Points.Count; i += 2) {
@@ -88,7 +111,8 @@ internal sealed class ChartRange {
                 continue;
             }
 
-            foreach (var p in series.Points) {
+            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                var p = series.Points[pointIndex];
                 if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
                     hasHorizontalBars = true;
                     horizontalBarYValues.Add(p.X);
@@ -100,7 +124,10 @@ internal sealed class ChartRange {
                     barXValues.Add(p.X);
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
-                    if (series.Kind == ChartSeriesKind.Bar) AddStackValue(p.Y >= 0 ? positiveBarStacks : negativeBarStacks, p.X, p.Y);
+                    if (series.Kind == ChartSeriesKind.Bar) {
+                        var stackCoordinate = coordinateMap.Resolve(seriesIndex, pointIndex);
+                        AddBarStackValue(p.Y >= 0 ? positiveBarStacks : negativeBarStacks, stackCoordinate, p.Y);
+                    }
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {
                     range.IncludeX(p.X);
                     range.IncludeY(p.Y);
@@ -187,9 +214,13 @@ internal sealed class ChartRange {
     }
 
     private static void AddStackValue(Dictionary<double, double> stacks, double x, double y) {
-        double current;
-        stacks.TryGetValue(x, out current);
+        stacks.TryGetValue(x, out var current);
         stacks[x] = current + y;
+    }
+
+    private static void AddBarStackValue(Dictionary<ChartBarCoordinateKey, double> stacks, ChartBarCoordinateKey coordinate, double value) {
+        stacks.TryGetValue(coordinate, out var current);
+        stacks[coordinate] = current + value;
     }
 
     private void Include(ChartAnnotation annotation) {
@@ -238,6 +269,12 @@ internal sealed class ChartRange {
     }
 
     private static void IncludeSeriesX(ChartRange range, ChartSeries series) {
+        if (series.Kind == ChartSeriesKind.Bar && series.HistogramBinLayout != null) {
+            range.IncludeX(series.HistogramBinLayout.Minimum);
+            range.IncludeX(series.HistogramBinLayout.Maximum);
+            return;
+        }
+
         if (series.Kind == ChartSeriesKind.HorizontalBar) {
             foreach (var point in series.Points) range.IncludeX(point.Y);
             return;

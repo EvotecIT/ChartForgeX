@@ -28,7 +28,7 @@ public sealed partial class SvgChartRenderer {
                 writer.StartElement("g").Attribute("data-cfx-role", "legend-item").Attribute("data-cfx-series", item.SeriesIndex);
                 if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
                 writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).EndStartElement().Line();
-                DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground);
+                DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, chart.Options.Theme.MarkerRadius > 0);
                 var style = chart.Options.LegendStyle;
                 var labelMaxWidth = Math.Max(8, item.Width - 30);
                 var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
@@ -162,10 +162,10 @@ public sealed partial class SvgChartRenderer {
 
     private static bool IsVerticalLegend(ChartLegendPosition position) => IsLeftLegend(position) || IsRightLegend(position);
 
-    private static void DrawLegendSymbol(SvgMarkupWriter writer, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background) {
+    private static void DrawLegendSymbol(SvgMarkupWriter writer, ChartSeriesKind kind, double x, double y, ChartColor color, ChartColor background, bool showOptionalLineMarker) {
         if (IsLineLikeLegend(kind)) {
             WriteLegendLineSymbol(writer, x, y, color);
-            WriteLegendCircleSymbol(writer, x, y, color, background);
+            if (!ChartSeriesKindTraits.UsesOptionalLineMarker(kind) || showOptionalLineMarker) WriteLegendCircleSymbol(writer, x, y, color, background);
         } else if (kind == ChartSeriesKind.Scatter || kind == ChartSeriesKind.Bubble) {
             WriteLegendCircleSymbol(writer, x, y, color, background);
         } else if (kind == ChartSeriesKind.Candlestick || kind == ChartSeriesKind.Ohlc) {

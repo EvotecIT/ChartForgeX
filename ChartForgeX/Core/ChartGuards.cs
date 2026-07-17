@@ -104,6 +104,7 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSeriesShape(ChartSeries series) {
+        if (series.HistogramBinLayout != null) ValidateHistogramSeries(series);
         if (series.Kind == ChartSeriesKind.Bubble) {
             ValidateTupleSeries(series, 2, "Bubble");
             for (var i = 0; i + 1 < series.Points.Count; i += 2) {
@@ -155,6 +156,19 @@ internal static class ChartGuards {
                 RequireSameX(minimum, q3, "Box plot summary points must share the same x value.");
                 RequireSameX(minimum, maximum, "Box plot summary points must share the same x value.");
                 if (minimum.Y > q1.Y || q1.Y > median.Y || median.Y > q3.Y || q3.Y > maximum.Y) throw new InvalidOperationException("Box plot values must be ordered as minimum <= q1 <= median <= q3 <= maximum.");
+            }
+        }
+    }
+
+    private static void ValidateHistogramSeries(ChartSeries series) {
+        var layout = series.HistogramBinLayout!;
+        if (series.Kind != ChartSeriesKind.Bar || series.Points.Count != layout.Count) {
+            throw new InvalidOperationException("Histogram series must retain exactly one bar point per layout bin.");
+        }
+
+        for (var index = 0; index < series.Points.Count; index++) {
+            if (series.Points[index].X != layout.GetCenter(index)) {
+                throw new InvalidOperationException("Histogram series points must retain their layout bin order and center coordinates.");
             }
         }
     }

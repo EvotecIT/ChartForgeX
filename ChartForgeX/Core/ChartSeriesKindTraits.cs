@@ -132,6 +132,12 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.Polar ||
         kind == ChartSeriesKind.TrendLine;
 
+    public static bool UsesOptionalLineMarker(ChartSeriesKind kind) =>
+        kind == ChartSeriesKind.Line ||
+        kind == ChartSeriesKind.StepLine ||
+        kind == ChartSeriesKind.Area ||
+        kind == ChartSeriesKind.StepArea;
+
     public static bool ContainsKind(Chart chart, ChartSeriesKind kind) {
         foreach (var series in chart.Series) {
             if (series != null && series.Kind == kind) return true;

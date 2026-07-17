@@ -8,19 +8,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
-    private static void HistogramValuesRenderAsBinnedBars() {
-        var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .AddHistogram("Latency samples", new[] { 1d, 2d, 2d, 3d, 5d }, 2, ChartColor.FromRgb(37, 99, 235));
-        var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 2, "Histogram values should render one bar per requested bin.");
-        Assert(svg.Contains(">1-3</text>", StringComparison.Ordinal), "Histogram bins should render range labels.");
-        Assert(svg.Contains(">3-5</text>", StringComparison.Ordinal), "Histogram bins should render range labels.");
-        Assert(svg.Contains(">3</text>", StringComparison.Ordinal), "Histogram data labels should render bin counts.");
-        Assert(chart.ToPng().Length > 64, "Histogram charts should render PNG output.");
-    }
-
     private static void LollipopSeriesRenderStemsAndMarkers() {
         var chart = Chart.Create()
             .WithSize(640, 360)

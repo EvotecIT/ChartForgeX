@@ -15,4 +15,15 @@ internal static class ChartMath {
     }
 
     internal static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
+
+    internal static bool SameCoordinate(double left, double right) {
+        if (left == right) return true;
+        if (!IsFinite(left) || !IsFinite(right)) return false;
+        var magnitude = Math.Max(Math.Abs(left), Math.Abs(right));
+        if (magnitude == 0) return false;
+        var bits = BitConverter.DoubleToInt64Bits(magnitude);
+        var next = BitConverter.Int64BitsToDouble(bits + 1);
+        var tolerance = next - magnitude;
+        return IsFinite(tolerance) && Math.Abs(left - right) <= tolerance * 4;
+    }
 }
