@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 
@@ -26,6 +27,8 @@ public static class MermaidFlowchartRendering {
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
+        var inferredLayers = MermaidFlowchartLayering.Infer(document);
+        var fitViewport = options.FitContent && !options.HasExplicitViewportSize;
 
         for (var index = 0; index < document.Subgraphs.Count; index++) {
             var subgraph = document.Subgraphs[index];
@@ -53,13 +56,16 @@ public static class MermaidFlowchartRendering {
                 groupId: node.SubgraphId,
                 href: node.Href,
                 tooltip: node.Tooltip,
-                width: ToNodeWidth(node.Shape),
+                width: ToNodeWidth(node.Shape, label, options.FitContent),
                 height: ToNodeHeight(node.Shape),
                 color: StyleValue(node.Styles, "stroke") ?? StyleValue(node.Styles, "color"),
                 cssClass: "cfx-mermaid-node cfx-mermaid-shape-" + ToShapeToken(node.Shape));
 
             var target = chart.Nodes[chart.Nodes.Count - 1];
+            target.ShowStatusBadge = false;
             target.DisplayMode = ToDisplayMode(node.Shape);
+            target.PreserveDisplayModeSize = target.DisplayMode == TopologyNodeDisplayMode.Pill;
+            target.MaximumLabelCharacters = 28;
             target.BackgroundColor = StyleValue(node.Styles, "fill");
             target.Metadata["mermaid.id"] = node.Id;
             target.Metadata["mermaid.shape"] = node.Shape.ToString();
@@ -67,6 +73,10 @@ public static class MermaidFlowchartRendering {
             target.Metadata["mermaid.source.line"] = node.Span.Line.ToString(CultureInfo.InvariantCulture);
             target.Metadata["mermaid.source.column"] = node.Span.Column.ToString(CultureInfo.InvariantCulture);
             target.Metadata["mermaid.order"] = index.ToString(CultureInfo.InvariantCulture);
+            if (inferredLayers.TryGetValue(node.Id, out var inferredLayer)) {
+                target.Metadata["layer"] = inferredLayer.ToString(CultureInfo.InvariantCulture);
+                target.Metadata["mermaid.layer"] = inferredLayer.ToString(CultureInfo.InvariantCulture);
+            }
             if (node.SubgraphId != null) target.Metadata["mermaid.subgraph"] = node.SubgraphId;
             if (node.Classes.Count > 0) target.Metadata["mermaid.classes"] = string.Join(",", node.Classes);
             WriteStyleMetadata(target.Metadata, node.Styles, "mermaid.style.");
@@ -99,6 +109,8 @@ public static class MermaidFlowchartRendering {
             if (!string.IsNullOrWhiteSpace(edge.Label)) target.Metadata["mermaid.label"] = edge.Label!;
             WriteStyleMetadata(target.Metadata, edge.Styles, "mermaid.style.");
         }
+
+        if (fitViewport) ApplyContentFittedViewport(chart, document.Direction, options);
 
         return chart;
     }
@@ -239,7 +251,14 @@ public static class MermaidFlowchartRendering {
         }
     }
 
-    private static double ToNodeWidth(MermaidFlowchartNodeShape shape) {
+    private static double ToNodeWidth(MermaidFlowchartNodeShape shape, string label, bool fitContent) {
+        var shapeWidth = BaseNodeWidth(shape);
+        if (!fitContent) return shapeWidth;
+        var labelWidth = 70 + Math.Min(28, Math.Max(0, label.Length)) * 7.1;
+        return Clamp(Math.Max(shapeWidth, labelWidth), shapeWidth, 268);
+    }
+
+    private static double BaseNodeWidth(MermaidFlowchartNodeShape shape) {
         switch (shape) {
             case MermaidFlowchartNodeShape.Circle:
             case MermaidFlowchartNodeShape.DoubleCircle:
@@ -251,6 +270,51 @@ public static class MermaidFlowchartRendering {
                 return 132;
         }
     }
+
+    private static void ApplyContentFittedViewport(
+        TopologyChart chart,
+        MermaidFlowchartDirection direction,
+        MermaidFlowchartRenderOptions options) {
+        if (chart.Nodes.Count == 0) return;
+        var padding = options.Padding;
+        var headerHeight = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72;
+        var layers = chart.Nodes
+            .GroupBy(node => node.Metadata.TryGetValue("layer", out var value)
+                && int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var layer)
+                    ? layer
+                    : 0)
+            .OrderBy(group => group.Key)
+            .ToArray();
+        var horizontal = direction is MermaidFlowchartDirection.LeftToRight or MermaidFlowchartDirection.RightToLeft;
+        double requiredWidth;
+        double requiredHeight;
+        if (horizontal) {
+            requiredWidth = padding * 2
+                + layers.Sum(layer => layer.Max(node => node.Width))
+                + Math.Max(0, layers.Length - 1) * 72;
+            requiredHeight = padding * 2 + headerHeight
+                + layers.Max(layer => layer.Sum(node => node.Height) + Math.Max(0, layer.Count() - 1) * 34);
+        } else {
+            requiredWidth = padding * 2
+                + layers.Max(layer => layer.Sum(node => node.Width) + Math.Max(0, layer.Count() - 1) * 34);
+            requiredHeight = padding * 2 + headerHeight
+                + layers.Sum(layer => layer.Max(node => node.Height))
+                + Math.Max(0, layers.Length - 1) * 58;
+        }
+
+        if (chart.Groups.Count > 0) {
+            requiredWidth += horizontal ? chart.Groups.Count * 16 : 48;
+            requiredHeight += horizontal ? 48 : chart.Groups.Count * 16;
+        }
+
+        chart.WithViewport(
+            Clamp(requiredWidth, Math.Min(options.MinimumFittedWidth, options.MaximumFittedWidth), Math.Max(options.MinimumFittedWidth, options.MaximumFittedWidth)),
+            Clamp(requiredHeight, Math.Min(options.MinimumFittedHeight, options.MaximumFittedHeight), Math.Max(options.MinimumFittedHeight, options.MaximumFittedHeight)),
+            padding);
+    }
+
+    private static double Clamp(double value, double minimum, double maximum) =>
+        Math.Max(minimum, Math.Min(maximum, value));
 
     private static double ToNodeHeight(MermaidFlowchartNodeShape shape) {
         switch (shape) {
@@ -286,6 +350,11 @@ public sealed class MermaidFlowchartRenderOptions {
     private double _width = 1200;
     private double _height = 700;
     private double _padding = 32;
+    private double _minimumFittedWidth = 640;
+    private double _minimumFittedHeight = 320;
+    private double _maximumFittedWidth = 2800;
+    private double _maximumFittedHeight = 1800;
+    private bool _hasExplicitViewportSize;
 
     /// <summary>Gets or sets the rendered artifact id.</summary>
     public string? Id { get; set; }
@@ -296,12 +365,19 @@ public sealed class MermaidFlowchartRenderOptions {
     /// <summary>Gets or sets an optional chart subtitle override.</summary>
     public string? Subtitle { get; set; }
 
+    /// <summary>Gets or sets whether the viewport and node widths should fit the parsed graph content.</summary>
+    public bool FitContent { get; set; } = true;
+
+    /// <summary>Gets whether a caller explicitly assigned the viewport width or height.</summary>
+    public bool HasExplicitViewportSize => _hasExplicitViewportSize;
+
     /// <summary>Gets or sets the topology viewport width.</summary>
     public double Width {
         get => _width;
         set {
             if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Mermaid flowchart width must be finite and greater than zero.");
             _width = value;
+            _hasExplicitViewportSize = true;
         }
     }
 
@@ -311,6 +387,7 @@ public sealed class MermaidFlowchartRenderOptions {
         set {
             if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Mermaid flowchart height must be finite and greater than zero.");
             _height = value;
+            _hasExplicitViewportSize = true;
         }
     }
 
@@ -320,6 +397,42 @@ public sealed class MermaidFlowchartRenderOptions {
         set {
             if (double.IsNaN(value) || double.IsInfinity(value) || value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Mermaid flowchart padding must be finite and non-negative.");
             _padding = value;
+        }
+    }
+
+    /// <summary>Gets or sets the minimum width used by content-fitted flowcharts.</summary>
+    public double MinimumFittedWidth {
+        get => _minimumFittedWidth;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Minimum fitted width must be finite and greater than zero.");
+            _minimumFittedWidth = value;
+        }
+    }
+
+    /// <summary>Gets or sets the minimum height used by content-fitted flowcharts.</summary>
+    public double MinimumFittedHeight {
+        get => _minimumFittedHeight;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Minimum fitted height must be finite and greater than zero.");
+            _minimumFittedHeight = value;
+        }
+    }
+
+    /// <summary>Gets or sets the maximum width used by content-fitted flowcharts.</summary>
+    public double MaximumFittedWidth {
+        get => _maximumFittedWidth;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Maximum fitted width must be finite and greater than zero.");
+            _maximumFittedWidth = value;
+        }
+    }
+
+    /// <summary>Gets or sets the maximum height used by content-fitted flowcharts.</summary>
+    public double MaximumFittedHeight {
+        get => _maximumFittedHeight;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Maximum fitted height must be finite and greater than zero.");
+            _maximumFittedHeight = value;
         }
     }
 }

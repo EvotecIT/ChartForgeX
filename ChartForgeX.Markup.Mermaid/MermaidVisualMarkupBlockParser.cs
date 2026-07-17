@@ -383,8 +383,10 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         if (TryGetAttribute(block, "id", out var id) && !string.IsNullOrWhiteSpace(id)) options.Id = id;
         if (TryGetAttribute(block, "title", out var title) && !string.IsNullOrWhiteSpace(title)) options.Title = title;
         if (TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) options.Subtitle = subtitle;
-        if (TryReadDoubleAttribute(block, "width", out var parsedWidth)) options.Width = parsedWidth;
-        if (TryReadDoubleAttribute(block, "height", out var parsedHeight)) options.Height = parsedHeight;
+        var hasExplicitWidth = TryReadDoubleAttribute(block, "width", out var parsedWidth);
+        var hasExplicitHeight = TryReadDoubleAttribute(block, "height", out var parsedHeight);
+        if (hasExplicitWidth) options.Width = parsedWidth;
+        if (hasExplicitHeight) options.Height = parsedHeight;
         if (TryReadDoubleAttribute(block, "padding", out var parsedPadding)) options.Padding = parsedPadding;
         return options;
     }

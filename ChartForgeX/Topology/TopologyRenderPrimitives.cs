@@ -150,6 +150,7 @@ internal static partial class TopologyRenderPrimitives {
     public static string NodeGlyph(TopologyNode node) => string.IsNullOrWhiteSpace(node.Symbol) ? KindGlyph(node.Kind) : TrimTo(node.Symbol!.Trim(), 4);
 
     public static bool ShouldRenderNodeStatusBadge(TopologyNode node, TopologyRenderOptions options) {
+        if (!node.ShowStatusBadge) return false;
         var displayMode = EffectiveNodeDisplayMode(node, options);
         if (displayMode == TopologyNodeDisplayMode.Hidden) return false;
         if (displayMode == TopologyNodeDisplayMode.Dot) return false;
@@ -167,6 +168,9 @@ internal static partial class TopologyRenderPrimitives {
             _ => NodeLabelMaxLength
         };
     }
+
+    public static int NodeTitleMaxLength(TopologyNode node, TopologyNodeDisplayMode displayMode) =>
+        node.MaximumLabelCharacters is > 0 ? node.MaximumLabelCharacters.Value : NodeTitleMaxLength(displayMode);
 
     public static double EstimateTextWidth(string value, double fontSize, bool bold) {
         var weightFactor = bold ? 0.62 : 0.56;

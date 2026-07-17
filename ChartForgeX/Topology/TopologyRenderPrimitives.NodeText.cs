@@ -5,12 +5,13 @@ using System.Text;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
-    public static List<string> NodeTextLines(string value, double maxWidth, double fontSize, bool bold, int maxLines, TopologyRenderOptions options) {
+    public static List<string> NodeTextLines(string value, double maxWidth, double fontSize, bool bold, int maxLines, TopologyRenderOptions options, int maximumCharacters = NodeLabelMaxLength) {
         if (string.IsNullOrWhiteSpace(value)) return new List<string>();
         maxLines = Math.Max(1, maxLines);
         var allowMultiline = options.AllowMultilineNodeLabels;
         var wrap = options.WrapNodeLabels;
-        if (!allowMultiline && !wrap) return new List<string> { TrimToEstimatedWidth(TrimTo(value, NodeLabelMaxLength), maxWidth, fontSize, bold) };
+        maximumCharacters = Math.Max(1, maximumCharacters);
+        if (!allowMultiline && !wrap) return new List<string> { TrimToEstimatedWidth(TrimTo(value, maximumCharacters), maxWidth, fontSize, bold) };
 
         var lines = new List<string>();
         foreach (var explicitLine in SplitExplicitLines(value, allowMultiline)) {
@@ -18,14 +19,14 @@ internal static partial class TopologyRenderPrimitives {
             var trimmed = explicitLine.Trim();
             if (trimmed.Length == 0) continue;
             if (!wrap || EstimateTextWidth(trimmed, fontSize, bold) <= maxWidth) {
-                lines.Add(TrimToEstimatedWidth(TrimTo(trimmed, NodeLabelMaxLength * maxLines), maxWidth, fontSize, bold));
+                lines.Add(TrimToEstimatedWidth(TrimTo(trimmed, maximumCharacters * maxLines), maxWidth, fontSize, bold));
                 continue;
             }
 
             AddWrappedNodeTextLines(lines, trimmed, maxWidth, fontSize, bold, maxLines);
         }
 
-        if (lines.Count == 0) lines.Add(TrimToEstimatedWidth(TrimTo(value.Trim(), NodeLabelMaxLength), maxWidth, fontSize, bold));
+        if (lines.Count == 0) lines.Add(TrimToEstimatedWidth(TrimTo(value.Trim(), maximumCharacters), maxWidth, fontSize, bold));
         if (lines.Count > maxLines) lines.RemoveRange(maxLines, lines.Count - maxLines);
         return lines;
     }

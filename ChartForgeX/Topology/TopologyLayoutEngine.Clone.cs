@@ -74,6 +74,9 @@ internal static partial class TopologyLayoutEngine {
             CssClass = node.CssClass,
             Color = node.Color,
             BackgroundColor = node.BackgroundColor,
+            ShowStatusBadge = node.ShowStatusBadge,
+            PreserveDisplayModeSize = node.PreserveDisplayModeSize,
+            MaximumLabelCharacters = node.MaximumLabelCharacters,
             HasPositionOverride = node.HasPositionOverride
         };
         foreach (var item in node.Metrics) copy.Metrics[item.Key] = item.Value;
