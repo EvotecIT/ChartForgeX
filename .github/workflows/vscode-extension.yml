@@ -32,6 +32,10 @@ on:
         required: false
         type: boolean
         default: false
+      release_tag:
+        description: 'Existing ChartForgeX release tag to repair and attach the VSIX to'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -55,6 +59,27 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
+
+      - name: Validate release source
+        if: ${{ github.event.release.tag_name != '' || inputs.release_tag != '' }}
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^ChartForgeX-v(?:\d{14}|\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$') {
+            throw "ChartForgeX release tag is not valid: $env:RELEASE_TAG"
+          }
+
+          git fetch origin main
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to fetch origin/main for release source validation.'
+          }
+
+          git merge-base --is-ancestor HEAD origin/main
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Release publishing is only allowed from commits contained in origin/main.'
+          }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -78,10 +103,11 @@ jobs:
         shell: pwsh
         env:
           IS_PRE_RELEASE: ${{ (github.event_name == 'release' && github.event.release.prerelease) || (github.event_name == 'workflow_dispatch' && inputs.pre_release) }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
           RELEASE_PUBLISHED_AT: ${{ github.event.release.published_at }}
           SHOULD_PUBLISH: ${{ github.event_name == 'release' || inputs.publish_marketplace }}
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           function Convert-ChartForgeXReleaseToExtensionVersion {
             param(
@@ -141,11 +167,11 @@ jobs:
             $package | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $packagePath -Encoding utf8
 
             if (Test-Path -LiteralPath $lockPath) {
-              $lock = Get-Content -LiteralPath $lockPath -Raw | ConvertFrom-Json
-              $lock.version = $Version
-              $rootPackage = $lock.packages.PSObject.Properties[''].Value
-              if ($null -ne $rootPackage) {
-                $rootPackage.version = $Version
+              $lock = Get-Content -LiteralPath $lockPath -Raw | ConvertFrom-Json -AsHashtable
+              $lock['version'] = $Version
+              $packages = $lock['packages']
+              if ($null -ne $packages -and $packages.ContainsKey('')) {
+                $packages['']['version'] = $Version
               }
               $lock | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $lockPath -Encoding utf8
             }
@@ -168,24 +194,41 @@ jobs:
               return $false
             }
 
-            $listing = $showOutput | ConvertFrom-Json
+            try {
+              $listing = $showOutput | ConvertFrom-Json -ErrorAction Stop
+            } catch {
+              Write-Host "Marketplace listing $ExtensionId did not return JSON. Publishing will create or update it." -ForegroundColor Yellow
+              return $false
+            }
+
+            if ($null -eq $listing -or $null -eq $listing.versions) {
+              Write-Host "Marketplace listing $ExtensionId has no published versions. Publishing will create it." -ForegroundColor Yellow
+              return $false
+            }
+
             return @($listing.versions | Where-Object { $_.version -eq $Version }).Count -gt 0
           }
 
           $shouldPublishMarketplace = $env:SHOULD_PUBLISH -eq 'true'
+          $isPreRelease = $env:IS_PRE_RELEASE -eq 'true'
 
-          if ('${{ github.event_name }}' -eq 'release') {
-            git fetch origin main
-            if ($LASTEXITCODE -ne 0) {
-              throw 'Failed to fetch origin/main for release source validation.'
+          if (-not [string]::IsNullOrWhiteSpace($env:RELEASE_TAG)) {
+            $publishedAt = $env:RELEASE_PUBLISHED_AT
+            if ([string]::IsNullOrWhiteSpace($publishedAt)) {
+              $releaseJson = gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json publishedAt,isPrerelease
+              if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseJson)) {
+                throw "Could not resolve publication time for release $env:RELEASE_TAG."
+              }
+
+              $release = $releaseJson | ConvertFrom-Json -ErrorAction Stop
+              $publishedAt = $release.publishedAt
+              $isPreRelease = [bool] $release.isPrerelease
+              if ([string]::IsNullOrWhiteSpace($publishedAt)) {
+                throw "Release $env:RELEASE_TAG does not have a publication time."
+              }
             }
 
-            git merge-base --is-ancestor HEAD origin/main
-            if ($LASTEXITCODE -ne 0) {
-              throw 'Release publishing is only allowed from commits contained in origin/main.'
-            }
-
-            $targetVersion = Convert-ChartForgeXReleaseToExtensionVersion -TagName $env:RELEASE_TAG -PublishedAt $env:RELEASE_PUBLISHED_AT
+            $targetVersion = Convert-ChartForgeXReleaseToExtensionVersion -TagName $env:RELEASE_TAG -PublishedAt $publishedAt
             $package = Set-ExtensionPackageVersion -Version $targetVersion
             $extensionId = "$($package.publisher).$($package.name)"
             Write-Host "Stamped ChartForgeX Markup extension version $targetVersion from release tag $env:RELEASE_TAG." -ForegroundColor Cyan
@@ -194,6 +237,9 @@ jobs:
               Write-Host "Marketplace version $extensionId@$targetVersion already exists. The VSIX will be packaged and attached to the GitHub Release, but Marketplace publishing will be skipped." -ForegroundColor Yellow
               $shouldPublishMarketplace = $false
             }
+          } else {
+            $currentVersion = (Get-Content -LiteralPath 'ChartForgeX.Markup.VSCode/package.json' -Raw | ConvertFrom-Json).version
+            $null = Set-ExtensionPackageVersion -Version $currentVersion
           }
 
           $params = @{
@@ -201,12 +247,12 @@ jobs:
             SkipNpmCi = $true
           }
 
-          if ($env:IS_PRE_RELEASE -eq 'true') {
+          if ($isPreRelease) {
             $params.PreRelease = $true
           }
 
           if ($shouldPublishMarketplace) {
-            if ('${{ github.event_name }}' -eq 'workflow_dispatch' -and '${{ github.ref_name }}' -ne 'main') {
+            if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and $env:GITHUB_REF_NAME -ne 'main') {
               throw 'Marketplace publishing is only allowed from the main branch.'
             }
 
@@ -223,7 +269,7 @@ jobs:
           if-no-files-found: error
 
   attach-release-asset:
-    if: ${{ github.event_name == 'release' }}
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '') }}
     needs: package
     runs-on: ubuntu-latest
     permissions:
@@ -238,4 +284,5 @@ jobs:
       - name: Attach VSIX to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" release-vsix/*.vsix --repo "${GITHUB_REPOSITORY}" --clobber
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+        run: gh release upload "$RELEASE_TAG" release-vsix/*.vsix --repo "$GITHUB_REPOSITORY" --clobber
