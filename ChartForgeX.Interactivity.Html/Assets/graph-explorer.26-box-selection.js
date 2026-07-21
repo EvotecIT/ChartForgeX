@@ -1,6 +1,6 @@
   const graphSelectionBox = root => root.querySelector('[data-cfx-role="graph-selection-box"]');
   const setGraphBoxSelectionMode = (root, enabled) => {
-    const active = !!enabled && hasFeature(root, 'BoxSelection');
+    const active = !!enabled && hasFeature(root, 'BoxSelection') && hasFeature(root, 'Selection');
     root.dataset.cfxGraphPointerMode = active ? 'box-select' : 'navigate';
     root.classList.toggle('cfx-graph-box-selecting', active);
     items(root, "[data-cfx-graph-action='box-select']").forEach(button => button.setAttribute('aria-pressed', active ? 'true' : 'false'));
@@ -21,6 +21,7 @@
     return null;
   };
   const selectGraphItemsInBox = (root, start, end, additive) => {
+    if (!hasFeature(root, 'Selection')) return [];
     const left = Math.min(start.x, end.x), right = Math.max(start.x, end.x), top = Math.min(start.y, end.y), bottom = Math.max(start.y, end.y);
     const state = root.__cfxGraphState || graphState(root);
     const candidates = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').filter(item => visible(item));

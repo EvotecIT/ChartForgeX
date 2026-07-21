@@ -26,6 +26,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-role=\"graph-selection-box\"", StringComparison.Ordinal) && html.Contains("cfxgraphboxselect", StringComparison.Ordinal), "Graph explorers should expose a cross-renderer box-selection surface and host event.");
         Assert(html.Contains("const requestGraphChange", StringComparison.Ordinal) && html.Contains("cfxgraphbeforechange", StringComparison.Ordinal) && html.Contains("cfxgraphchange", StringComparison.Ordinal), "Graph mutations should pass through a cancelable, validated host contract.");
         Assert(html.Contains("const captureGraphInteractionState", StringComparison.Ordinal) && html.Contains("const applyGraphInteractionState", StringComparison.Ordinal) && html.Contains("localStorage.setItem", StringComparison.Ordinal), "Graph interaction snapshots should support explicit capture, replay, and opt-in local persistence.");
+        Assert(html.Contains("const restoredInteractionState = initializeGraphInteractionState(root);", StringComparison.Ordinal) && html.Contains("if (!restoredInteractionState && hasFeature(root, 'RuntimePhysics')", StringComparison.Ordinal), "A successfully restored interaction state should preserve its saved coordinates instead of immediately restarting initial stabilization.");
         Assert(html.Contains("hidden: attr(node.el, 'data-node-hidden') === 'true'", StringComparison.Ordinal) && html.Contains("hidden: attr(edge, 'data-edge-hidden') === 'true'", StringComparison.Ordinal), "Graph snapshots should persist only intrinsic hidden state, not transient cluster, hierarchy, or filter visibility.");
         Assert(html.Contains("const optionalGraphCoordinate", StringComparison.Ordinal) && html.Contains("x: x ?? Number(root.dataset.cfxGraphLastPointerX", StringComparison.Ordinal), "Blank editor coordinates should use the pointer or scene-center fallback while preserving an explicit zero.");
         Assert(html.Contains("change: (target, patch", StringComparison.Ordinal) && html.Contains("captureState:", StringComparison.Ordinal) && html.Contains("applyState:", StringComparison.Ordinal) && html.Contains("undo: target", StringComparison.Ordinal) && html.Contains("redo: target", StringComparison.Ordinal), "The dependency-free host API should expose safe mutation, state, and history operations.");
@@ -36,6 +37,10 @@ internal static partial class SmokeTests {
         var invalid = SampleGraphScene();
         invalid.Options.Enable(GraphSceneFeatures.Manipulation);
         AssertThrows<InvalidOperationException>(() => invalid.Validate(), "Manipulation should require the atomic incremental-update contract.");
+        var invalidBoxSelection = SampleGraphScene();
+        invalidBoxSelection.Options.Disable(GraphSceneFeatures.Selection);
+        AssertThrows<InvalidOperationException>(() => invalidBoxSelection.Validate(), "Box selection should require the shared selection contract.");
+        Assert(html.Contains("hasFeature(root, 'BoxSelection') && hasFeature(root, 'Selection')", StringComparison.Ordinal) && html.Contains("if (!hasFeature(root, 'Selection')) return []", StringComparison.Ordinal), "Box-selection controls and gestures should remain defensively gated by the selection feature in the browser runtime.");
         AssertThrows<ArgumentOutOfRangeException>(() => scene.Options.Manipulation.MaximumHistoryEntries = 0, "Graph history should reject an empty retention budget.");
     }
 }

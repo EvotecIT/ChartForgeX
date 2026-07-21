@@ -129,6 +129,7 @@ public sealed class GraphScene {
     private void ValidateOptions() {
         if ((Options.Features & ~KnownFeatures) != GraphSceneFeatures.None) throw new InvalidOperationException("Graph scene features contain unsupported flags: " + (Options.Features & ~KnownFeatures));
         if (Options.HasFeature(GraphSceneFeatures.Manipulation) && !Options.HasFeature(GraphSceneFeatures.IncrementalUpdates)) throw new InvalidOperationException("Graph scene manipulation requires incremental updates.");
+        if (Options.HasFeature(GraphSceneFeatures.BoxSelection) && !Options.HasFeature(GraphSceneFeatures.Selection)) throw new InvalidOperationException("Graph scene box selection requires selection.");
         Options.Physics.Validate();
         Options.Interaction.Validate();
         if (Options.LevelOfDetail.ClusterNodeThreshold < 0 || Options.LevelOfDetail.HideEdgeLabelsThreshold < 0 || Options.LevelOfDetail.CompactNodeThreshold < 0 || Options.LevelOfDetail.CanvasPreferredNodeThreshold < 0 || Options.LevelOfDetail.WebGlPreferredNodeThreshold < 0) throw new InvalidOperationException("Graph scene level-of-detail thresholds must not be negative.");

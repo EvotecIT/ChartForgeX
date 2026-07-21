@@ -23,7 +23,7 @@
       const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect;
       root.dataset.cfxGraphLastPointerX = point.x.toFixed(3); root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
       root.dataset.cfxGraphLastPointerHit = node?.id || ''; root.__cfxGraphLastPointerHitTick = Date.now();
-      if (root.dataset.cfxGraphPointerMode === 'box-select' && hasFeature(root, 'BoxSelection')) {
+      if (root.dataset.cfxGraphPointerMode === 'box-select' && hasFeature(root, 'BoxSelection') && hasFeature(root, 'Selection')) {
         const rect = stage.getBoundingClientRect();
         event.preventDefault(); stage.setPointerCapture?.(event.pointerId); root.dataset.cfxGraphLastPointerMode = 'box-select';
         active = { mode: 'box-select', pointerId: event.pointerId, start: point, current: point, additive: event.ctrlKey || event.metaKey || event.shiftKey, screenStart: { x: event.clientX - rect.left, y: event.clientY - rect.top }, moved: false };

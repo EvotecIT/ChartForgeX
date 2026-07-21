@@ -425,7 +425,7 @@ internal static partial class SmokeTests {
             .AddNode("b", "B")
             .AddEdge("a-b", "a", "b")
             .AddCluster("readonly-cluster", "Read only cluster", new[] { "a", "b" }, cluster => cluster.Collapsed = true);
-        readOnlyScene.Options.Disable(GraphSceneFeatures.Selection);
+        readOnlyScene.Options.Disable(GraphSceneFeatures.Selection | GraphSceneFeatures.BoxSelection);
         var readOnlyHtml = readOnlyScene.ToGraphExplorerHtmlFragment();
         Assert(readOnlyHtml.Contains("tabindex=\"-1\" data-cfx-role=\"graph-node\" data-node-id=\"a\"", StringComparison.Ordinal) && readOnlyHtml.Contains("tabindex=\"-1\" data-cfx-role=\"graph-edge\" data-edge-id=\"a-b\"", StringComparison.Ordinal) && readOnlyHtml.Contains("data-cfx-role=\"graph-cluster\" tabindex=\"-1\" aria-hidden=\"false\"", StringComparison.Ordinal), "Graph explorer static markup should not leave inert graph items in the tab order when selection is disabled.");
         Assert(!readOnlyHtml.Contains("data-cfx-graph-action=\"focus\"", StringComparison.Ordinal) && !readOnlyHtml.Contains("data-cfx-graph-action=\"clear-selection\"", StringComparison.Ordinal), "Graph explorer toolbar should hide selection-dependent actions when selection is disabled.");

@@ -300,9 +300,9 @@
       });
     });
     updateSelectionState(root);
-    initializeGraphInteractionState(root);
+    const restoredInteractionState = initializeGraphInteractionState(root);
     bindGraphStatePersistence(root);
-    if (hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization') && attr(root, 'data-cfx-physics-stabilization-enabled') !== 'false') startPhysics(root, { reason: 'initial-stabilization' });
+    if (!restoredInteractionState && hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization') && attr(root, 'data-cfx-physics-stabilization-enabled') !== 'false') startPhysics(root, { reason: 'initial-stabilization' });
     syncPhysicsControls(root);
     syncPhysicsConfigurator(root);
     emit(root, 'cfxgraphready', {
