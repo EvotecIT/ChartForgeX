@@ -275,7 +275,7 @@
       setGraphAttribute(edge, 'data-target-cluster-id', membership.get(attr(edge, 'data-target-node-id')) || null);
     });
   };
-  const applyGraphRuntimePatch = (target, patch) => {
+  const applyGraphRuntimePatch = (target, patch, options) => {
     const root = graphApiRoot(target);
     if (!root) throw new Error('ChartForgeX graph explorer was not found.');
     if (!hasFeature(root, 'IncrementalUpdates')) throw new Error('This graph scene does not enable IncrementalUpdates.');
@@ -307,7 +307,8 @@
     else if (!clustered) { applyFilters(root); applyLayout(root, state); if (patch.fit === true && hasFeature(root, 'Viewport')) fitViewport(root); }
     else if (patch.fit === true && hasFeature(root, 'Viewport')) fitViewport(root);
     syncGraphItemTabStops(root);
-    if (graphChanged && attr(root, 'data-cfx-graph-reheat-patch') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'graph-patch', { rebuild: true, fit: false });
+    if (graphChanged && options?.reheat === false && hasFeature(root, 'RuntimePhysics')) { root.dataset.cfxGraphPhysicsReason = options.reason || 'graph-patch'; pausePhysics(root); }
+    else if (graphChanged && attr(root, 'data-cfx-graph-reheat-patch') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'graph-patch', { rebuild: true, fit: false });
     emit(root, 'cfxgraphpatch', { graphId: attr(root, 'data-cfx-graph-id'), nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length });
     return { nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length };
   };

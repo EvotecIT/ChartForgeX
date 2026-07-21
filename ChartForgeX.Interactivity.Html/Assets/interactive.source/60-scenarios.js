@@ -59,8 +59,11 @@
   };
   const scenarioTargetCandidates = (root, route) => {
     const visualKinds = new Set(['series', 'point', 'annotation', 'region', 'node', 'link', 'legend']);
+    const roleKinds = new Set((route ? route.steps : [])
+      .map((step) => step.targetKind || '')
+      .filter((kind) => kind && kind !== 'element' && !visualKinds.has(kind)));
     const candidates = new Set(Array.from(root.querySelectorAll('.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]'))
-      .filter((node) => visualKinds.has(renderedTargetKind(node))));
+      .filter((node) => visualKinds.has(renderedTargetKind(node)) || roleKinds.has((node.dataset || {}).cfxRole || '')));
     const elementIds = new Set((route ? route.steps : [])
       .filter((step) => (step.targetKind || '') === 'element' && step.targetId)
       .map((step) => step.targetId));

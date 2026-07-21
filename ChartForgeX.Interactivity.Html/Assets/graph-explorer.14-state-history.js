@@ -63,7 +63,7 @@
     if (!root || !snapshot || Number(snapshot.version) !== 1) return false;
     const history = graphHistory(root); history.applying = true;
     try {
-      if (snapshot.document && hasFeature(root, 'IncrementalUpdates')) applyGraphRuntimePatch(root, graphSnapshotPatch(root, snapshot));
+      if (snapshot.document && hasFeature(root, 'IncrementalUpdates')) applyGraphRuntimePatch(root, graphSnapshotPatch(root, snapshot), { reheat: false, reason: 'state-restore' });
       const byId = new Map((root.__cfxGraphState || graphState(root)).nodes.map(node => [node.id, node]));
       (snapshot.positions || []).forEach(position => {
         const node = byId.get(String(position.id));

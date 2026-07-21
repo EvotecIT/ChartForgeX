@@ -60,7 +60,7 @@
     const mode = form.dataset.cfxGraphEditorMode || 'add', existing = mode === 'edit' ? graphSelectedDocumentItem(root) : null;
     const id = graphEditorField(form, 'id').value.trim(), label = graphEditorField(form, 'label').value.trim();
     const x = optionalGraphCoordinate(graphEditorField(form, 'x')), y = optionalGraphCoordinate(graphEditorField(form, 'y'));
-    const node = { ...(existing || {}), id, label, kind: graphEditorField(form, 'kind').value.trim(), x: x ?? Number(root.dataset.cfxGraphLastPointerX || sceneSize(root).centerX), y: y ?? Number(root.dataset.cfxGraphLastPointerY || sceneSize(root).centerY) };
+    const node = { ...(existing || {}), id, label, kind: graphEditorField(form, 'kind').value.trim(), x: x ?? existing?.x ?? Number(root.dataset.cfxGraphLastPointerX || sceneSize(root).centerX), y: y ?? existing?.y ?? Number(root.dataset.cfxGraphLastPointerY || sceneSize(root).centerY) };
     return requestGraphChange(root, { upsertNodes: [node] }, `editor-${mode}-node`, `${mode === 'add' ? 'Add' : 'Edit'} node ${id}`);
   };
   const submitGraphEdge = (root, form) => {
