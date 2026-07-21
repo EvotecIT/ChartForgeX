@@ -53,6 +53,7 @@ internal static partial class TopologyLayoutEngine {
 
     private static void ApplyNodeDisplayMode(TopologyChart chart, TopologyNodeDisplayMode displayMode, bool preserveMindMapSizes) {
         foreach (var node in chart.Nodes) {
+            if (node.PreserveDisplayModeSize) continue;
             switch (node.DisplayMode ?? displayMode) {
                 case TopologyNodeDisplayMode.CompactCard:
                     if (!preserveMindMapSizes) {

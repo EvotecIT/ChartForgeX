@@ -1,7 +1,7 @@
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    private static TopologyChart Clone(TopologyChart chart) {
+    internal static TopologyChart Clone(TopologyChart chart) {
         var copy = new TopologyChart {
             Id = chart.Id,
             Title = chart.Title,
@@ -74,6 +74,9 @@ internal static partial class TopologyLayoutEngine {
             CssClass = node.CssClass,
             Color = node.Color,
             BackgroundColor = node.BackgroundColor,
+            ShowStatusBadge = node.ShowStatusBadge,
+            PreserveDisplayModeSize = node.PreserveDisplayModeSize,
+            MaximumLabelCharacters = node.MaximumLabelCharacters,
             HasPositionOverride = node.HasPositionOverride
         };
         foreach (var item in node.Metrics) copy.Metrics[item.Key] = item.Value;

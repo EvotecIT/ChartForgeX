@@ -3,15 +3,25 @@ using ChartForgeX.Mermaid;
 namespace ChartForgeX.Markup.Mermaid;
 
 public sealed partial class MermaidVisualMarkupBlockParser {
-    private static MermaidFlowchartRenderOptions Clone(MermaidFlowchartRenderOptions options) =>
-        new() {
+    private static MermaidFlowchartRenderOptions Clone(MermaidFlowchartRenderOptions options) {
+        var clone = new MermaidFlowchartRenderOptions {
             Id = options.Id,
             Title = options.Title,
             Subtitle = options.Subtitle,
-            Width = options.Width,
-            Height = options.Height,
-            Padding = options.Padding
+            FitContent = options.FitContent,
+            Padding = options.Padding,
+            MinimumFittedWidth = options.MinimumFittedWidth,
+            MinimumFittedHeight = options.MinimumFittedHeight,
+            MaximumFittedWidth = options.MaximumFittedWidth,
+            MaximumFittedHeight = options.MaximumFittedHeight
         };
+        if (options.HasExplicitViewportSize) {
+            clone.Width = options.Width;
+            clone.Height = options.Height;
+        }
+
+        return clone;
+    }
 
     private static MermaidSequenceRenderOptions Clone(MermaidSequenceRenderOptions options) =>
         new() {

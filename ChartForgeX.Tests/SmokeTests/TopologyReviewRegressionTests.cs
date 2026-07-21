@@ -39,6 +39,47 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng(options).Length > 64, "Stacked icon labels and badges should render as PNG.");
     }
 
+    private static void TopologyWrappedTileLabelsHonorNodeCharacterLimits() {
+        var chart = TopologyChart.Create()
+            .WithId("wrapped-tile-limit")
+            .WithViewport(260, 150, 20)
+            .WithLegend(null)
+            .AddNode("service", "Authentication Relationship Service", 60, 50, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 140, height: 58, symbol: "S");
+        chart.Nodes.Single().MaximumLabelCharacters = 12;
+        var options = new TopologyRenderOptions {
+            IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile,
+            WrapNodeLabels = true,
+            MaxNodeLabelLines = 2
+        };
+
+        var svg = chart.ToSvg(options);
+
+        Assert(svg.Contains(">Authentic...<", StringComparison.Ordinal), "Wrapped tile labels should honor node-specific character limits before line wrapping.");
+        Assert(!svg.Contains("Relationship", StringComparison.Ordinal), "Wrapped tile labels should not bypass node-specific character limits on later lines.");
+        Assert(chart.ToPng(options).Length > 64, "Character-limited wrapped tile labels should preserve PNG parity.");
+    }
+
+    private static void TopologyIconLabelsHonorNodeCharacterLimits() {
+        var chart = TopologyChart.Create()
+            .WithId("icon-label-limit")
+            .WithViewport(180, 120, 16)
+            .WithLegend(null)
+            .AddNode("dc", "NYC-DC1", 56, 36, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 46, height: 42, symbol: "DC");
+        chart.Nodes.Single().MaximumLabelCharacters = 6;
+        var options = new TopologyRenderOptions {
+            IncludeLegend = false,
+            IncludeIconLabels = true,
+            NodeDisplayMode = TopologyNodeDisplayMode.Icon
+        };
+
+        var svg = chart.ToSvg(options);
+
+        Assert(svg.Contains(">NYC...<", StringComparison.Ordinal), "Icon-mode labels should honor node-specific character limits.");
+        Assert(!svg.Contains(">NYC-DC1<", StringComparison.Ordinal), "Icon-mode labels should not bypass node-specific character limits.");
+        Assert(chart.ToPng(options).Length > 64, "Character-limited icon labels should preserve PNG parity.");
+    }
+
     private static void TopologyRoundedRoutesTolerateDuplicateWaypoints() {
         var chart = TopologyChart.Create()
             .WithId("duplicate-waypoint-routes")

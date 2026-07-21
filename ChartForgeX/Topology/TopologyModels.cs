@@ -257,6 +257,7 @@ public sealed class TopologyNode {
     private double? _latitude;
     private double _width = 120;
     private double _height = 64;
+    private int? _maximumLabelCharacters;
 
     /// <summary>Gets or sets the stable node identifier.</summary>
     public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -379,6 +380,21 @@ public sealed class TopologyNode {
 
     /// <summary>Gets or sets an optional node surface fill color. When unset, render options choose the card background.</summary>
     public string? BackgroundColor { get; set; }
+
+    /// <summary>Gets or sets whether renderers may draw a health-status badge for this node.</summary>
+    public bool ShowStatusBadge { get; set; } = true;
+
+    /// <summary>Gets or sets whether display-mode normalization should preserve the caller-provided node width and height.</summary>
+    public bool PreserveDisplayModeSize { get; set; }
+
+    /// <summary>Gets or sets an optional node-specific maximum label length before rendering trims the title.</summary>
+    public int? MaximumLabelCharacters {
+        get => _maximumLabelCharacters;
+        set {
+            if (value is <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Maximum label characters must be greater than zero.");
+            _maximumLabelCharacters = value;
+        }
+    }
 
     /// <summary>Gets node metrics for host adapters.</summary>
     public Dictionary<string, string> Metrics { get; } = new();

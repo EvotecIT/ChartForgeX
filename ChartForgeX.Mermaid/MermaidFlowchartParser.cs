@@ -108,7 +108,7 @@ internal static class MermaidFlowchartParser {
         var bracketEnd = value.LastIndexOf(']');
         if (bracketStart > 0 && bracketEnd > bracketStart) {
             id = value.Substring(0, bracketStart).Trim();
-            title = value.Substring(bracketStart + 1, bracketEnd - bracketStart - 1).Trim();
+            title = Unquote(value.Substring(bracketStart + 1, bracketEnd - bracketStart - 1).Trim());
         } else {
             title = Unquote(value);
             id = Slug(title);
@@ -232,7 +232,7 @@ internal static class MermaidFlowchartParser {
             if (text[index + 1] != ']') continue;
             if (text[index] != '/' && text[index] != '\\') continue;
 
-            label = text.Substring(contentStart, index - contentStart);
+            label = Unquote(text.Substring(contentStart, index - contentStart));
             shape = openingSlash == '/'
                 ? text[index] == '/' ? MermaidFlowchartNodeShape.Parallelogram : MermaidFlowchartNodeShape.Trapezoid
                 : text[index] == '\\' ? MermaidFlowchartNodeShape.ParallelogramAlt : MermaidFlowchartNodeShape.TrapezoidAlt;
@@ -254,7 +254,7 @@ internal static class MermaidFlowchartParser {
             return false;
         }
 
-        label = text.Substring(contentStart, closeIndex - contentStart);
+        label = Unquote(text.Substring(contentStart, closeIndex - contentStart));
         shape = nodeShape;
         position = closeIndex + close.Length;
         return true;
@@ -290,7 +290,7 @@ internal static class MermaidFlowchartParser {
         if (secondPipe < 0) return false;
 
         edgeOperator = before;
-        label = text.Substring(firstPipe + 1, secondPipe - firstPipe - 1).Trim();
+        label = Unquote(text.Substring(firstPipe + 1, secondPipe - firstPipe - 1).Trim());
         position = secondPipe + 1;
         return true;
     }
@@ -310,7 +310,7 @@ internal static class MermaidFlowchartParser {
             if (candidateLabel.Length == 0) continue;
 
             edgeOperator = text.Substring(start, suffixIndex + suffix.Length - start).Trim();
-            label = candidateLabel;
+            label = Unquote(candidateLabel);
             position = suffixIndex + suffix.Length;
             return true;
         }
@@ -476,7 +476,7 @@ internal static class MermaidFlowchartParser {
     }
 
     private static string Unquote(string value) {
-        if (value.Length >= 2 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\''))) return value.Substring(1, value.Length - 2);
+        if (value.Length >= 2 && value[0] == '"' && value[value.Length - 1] == '"') return value.Substring(1, value.Length - 2);
         return value;
     }
 

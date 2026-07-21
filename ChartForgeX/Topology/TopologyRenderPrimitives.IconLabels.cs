@@ -4,7 +4,7 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
     public static string IconLabelText(TopologyNode node) {
-        return TrimToEstimatedWidth(TrimTo(node.Label, NodeTitleMaxLength(TopologyNodeDisplayMode.Icon)), IconLabelMaxWidth(node), 10.5, true);
+        return TrimToEstimatedWidth(TrimTo(node.Label, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Icon)), IconLabelMaxWidth(node), 10.5, true);
     }
 
     public static double IconLabelMaxWidth(TopologyNode node) => Math.Max(node.Width + 46, 72);
