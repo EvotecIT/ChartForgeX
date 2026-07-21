@@ -194,7 +194,18 @@ jobs:
               return $false
             }
 
-            $listing = $showOutput | ConvertFrom-Json
+            try {
+              $listing = $showOutput | ConvertFrom-Json -ErrorAction Stop
+            } catch {
+              Write-Host "Marketplace listing $ExtensionId did not return JSON. Publishing will create or update it." -ForegroundColor Yellow
+              return $false
+            }
+
+            if ($null -eq $listing -or $null -eq $listing.versions) {
+              Write-Host "Marketplace listing $ExtensionId has no published versions. Publishing will create it." -ForegroundColor Yellow
+              return $false
+            }
+
             return @($listing.versions | Where-Object { $_.version -eq $Version }).Count -gt 0
           }
 
