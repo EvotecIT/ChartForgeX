@@ -424,6 +424,7 @@ var html = graph.ToGraphExplorerHtmlPage(options => {
     options.IncludeThemeToggle = true;
     options.PersistThemePreference = true;
     options.IncludePhysicsConfigurator = true; // Optional development-time tuning surface.
+    options.PersistInteractionState = true; // Opt in; uses a scene-scoped localStorage key by default.
 });
 
 var stages = graph.SaveGraphStageImages("report-assets", "estate", options => {
@@ -435,7 +436,9 @@ var stages = graph.SaveGraphStageImages("report-assets", "estate", options => {
 
 The generated explorer uses one responsive control system across SVG, Canvas, and WebGL. Search, filters, and appearance stay in a quiet discovery header; hierarchy and graph actions sit in floating stage controls, with consistent icon geometry, accessible tooltips, and a labeled export-format popover. System, light, and dark themes recolor the complete surface—including labels, edges, minimap, Canvas, and WebGL—not just the page chrome. Model label colors are retained when they remain readable and adapt to the active theme when they do not.
 
-Nodes with children drill directly from the graph. Empty-space double-click, `Escape`, `Backspace`, Left Arrow, or a clickable breadcrumb move back up. Arrow keys move through a single roving graph-item tab stop, so a 2,000-node graph does not add 2,000 stops to the page. Reduced-motion mode removes drag momentum and visible intermediate physics frames; forced colors, increased contrast, live announcements, explicit control names, and strong focus indicators are built in. `PinOnDrop` remains available when manual placement should persist. See [Graph explorer](docs/graph-explorer.md) for themes and accessibility, solver profiles, static stage exports, clustering, hierarchy navigation, the browser API, host events, export behavior, and measured scale fixtures.
+Nodes with children drill directly from the graph. Empty-space double-click, `Escape`, `Backspace`, Left Arrow, or a clickable breadcrumb move back up. Arrow keys move through a single roving graph-item tab stop, so a 2,000-node graph does not add 2,000 stops to the page. Box selection works across SVG, Canvas, and WebGL. Editing stays opt in through `GraphManipulationOptions`; enabled explorers use validated patches, cancelable host callbacks, bounded undo/redo, group dragging, and explicit position export. Reduced-motion mode removes drag momentum and visible intermediate physics frames; forced colors, increased contrast, live announcements, explicit control names, and strong focus indicators are built in. `PinOnDrop` remains available when manual placement should persist. See [Graph explorer](docs/graph-explorer.md) for themes and accessibility, solver profiles, static stage exports, clustering, hierarchy navigation, editing and state persistence, the browser API, host events, export behavior, and measured scale fixtures.
+
+Dense ordered line, area, and scatter data is reduced only when the caller asks for it. `AddDecimatedLine`, `AddDecimatedArea`, and `AddDecimatedScatter` support deterministic LTTB or min/max reduction, while `ChartSeries.SourcePointCount`, `SourcePointIndices`, and `DecimationMode` keep the result honest. SVG roots publish the same provenance, and interactive point identities resolve back to source indices.
 
 ## Chart catalog
 
@@ -443,7 +446,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 
 | Family | APIs |
 | --- | --- |
-| Cartesian lines and areas | `AddLine`, `AddSmoothLine`, `AddStepLine`, `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea`, `AddScatter`, `AddTrendLine`, `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole`, `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand`, `AddSlope` |
+| Cartesian lines and areas | `AddLine`, `AddSmoothLine`, `AddStepLine`, `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea`, `AddScatter`, `AddDecimatedLine`, `AddDecimatedArea`, `AddDecimatedScatter`, `ChartDecimator.Decimate`, `AddTrendLine`, `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole`, `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand`, `AddSlope` |
 | Combo charts | `AddBarLineCombo`, `AddColumnLineCombo`, `AddBarAreaCombo`, `AddColumnAreaCombo`, `AddScatterLineCombo` |
 | Bars and distributions | `AddBar`, `AddHistogram`, `AddLollipop`, `AddBubble`, `AddErrorBar`, `AddCandlestick`, `AddOhlc`, `AddRangeBand`, `AddRangeArea`, `AddDumbbell`, `AddPareto`, `AddRangeBar`, `AddBoxPlot`, `AddHorizontalBar`, `WithStackedHorizontalBars` |
 | Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` |
@@ -587,9 +590,11 @@ Review the generated pages under `ChartForgeX.Examples/bin/Release/net8.0/output
 - `quality-dashboard.html`
 - `svg-png-comparison.html`
 - `domain-security-interactive.html`
+- `dense-signal-decimated-light.html`
 - `executive-interactive-dashboard.html`
 - `identity-risk-graph-explorer.html`
 - `global-estate-premium-topology.html`
+- `vis-network-parity-hierarchy.html` (opt-in editing, history, box selection, and persisted interaction state)
 
 Interactive dashboards synchronize by stable series identity rather than local series order. Use `ChartSeries.WithInteractionKey(...)` when two charts display different labels for the same measure. Scenario controls and ordered step playback remain the reusable opt-in model for routes, transitions, and change-over-time reviews; static SVG and PNG output remain deterministic and script-free.
 

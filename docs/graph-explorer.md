@@ -282,13 +282,31 @@ graph.fit("service-estate");
 const snapshot = graph.get("service-estate");
 ```
 
+`update` is the trusted host-level atomic patch operation. An editable user surface uses the narrower capability-checked operation:
+
+```javascript
+graph.change("service-estate", {
+  upsertNodes: [{ id: "queue", label: "Priority queue", x: 460, y: 190 }]
+}, "inspector", "Rename queue");
+
+const reviewState = graph.captureState("service-estate", "review-bookmark");
+graph.applyState("service-estate", reviewState);
+graph.undo("service-estate");
+graph.redo("service-estate");
+const positions = graph.positions("service-estate");
+```
+
+Enable editing with `UseSuperTopologyDefaults(enableManipulation: true)` or by enabling `Manipulation`, `IncrementalUpdates`, and `History`, then grant only the required `GraphManipulationOptions` capabilities. `change` validates references and permissions before dispatching the cancelable `cfxgraphbeforechange` event. Accepted changes dispatch `cfxgraphchange`; rejected or canceled changes do not enter history. Cluster structure remains a trusted-host `update` concern.
+
+Set `HtmlGraphExplorerOptions.PersistInteractionState = true` to restore positions, viewport, selection, focus, hierarchy, and cluster state from a scene-scoped browser key. Set `InteractionStateStorageKey` when a host needs its own namespace. Persistence is off by default. It never changes the host model or static SVG/PNG output.
+
 The API also exposes `export(target, "svg" | "png" | "json")`. Export remains interceptable through the cancelable `cfxgraphexport` event.
 
 ## Interaction and host events
 
-The explorer includes search, status/kind filters, selection, Ctrl/Meta/Shift multi-selection, keyboard selection, neighborhood focus, live force-aware node dragging, pan, wheel and command-rail zoom, fit, cluster controls, direct hierarchy navigation, semantic zoom, minimap navigation, runtime physics, and labeled SVG/PNG/JSON export choices.
+The explorer includes search, status/kind filters, selection, Ctrl/Meta/Shift multi-selection, cross-renderer box selection, keyboard selection, neighborhood focus, live force-aware node dragging, capability-gated collapsed-group dragging, pan, wheel and command-rail zoom, fit, cluster controls, direct hierarchy navigation, semantic zoom, minimap navigation, runtime physics, and labeled SVG/PNG/JSON export choices. Editing, history, position publishing, and browser persistence remain opt in.
 
-Stable events include `cfxgraphready`, `cfxgraphselect`, `cfxgraphselection`, `cfxgraphfilter`, `cfxgraphfocus`, `cfxgraphnavigate`, `cfxgraphcluster`, `cfxgraphpatch`, `cfxgraphdragstart`, `cfxgraphdrag`, `cfxgraphdragend`, `cfxgraphphysicschange`, `cfxgraphthemechange`, `cfxgraphviewport`, `cfxgraphexport`, `cfxgraphstabilized`, `cfxgraphlod`, and `cfxgraphperformance`.
+Stable events include `cfxgraphready`, `cfxgraphselect`, `cfxgraphselection`, `cfxgraphboxselect`, `cfxgraphfilter`, `cfxgraphfocus`, `cfxgraphnavigate`, `cfxgraphcluster`, `cfxgraphpatch`, `cfxgraphbeforechange`, `cfxgraphchange`, `cfxgraphhistory`, `cfxgraphstate`, `cfxgraphstateapplied`, `cfxgraphpositions`, `cfxgraphdragstart`, `cfxgraphdrag`, `cfxgraphdragend`, `cfxgraphgroupdrag`, `cfxgraphphysicschange`, `cfxgraphthemechange`, `cfxgraphviewport`, `cfxgraphexport`, `cfxgraphstabilized`, `cfxgraphlod`, and `cfxgraphperformance`.
 
 Performance telemetry deliberately separates renderer work from browser cadence. `performance.budgetMisses`, `budgetMissRate`, and `maxRenderMs` measure ChartForgeX render work against the configured frame budget. `cadenceBudgetMisses`, `cadenceBudgetMissRate`, and `maxFrameMs` report delayed animation-frame delivery, which can also include browser scheduling, background throttling, capture tooling, or unrelated page work. Use the first group as the ChartForgeX release gate; use cadence as a diagnostic signal instead of attributing every late browser callback to the renderer.
 
@@ -328,4 +346,4 @@ The 10k browser run also applied a node-and-edge patch, searched the result to o
 - `graph-2000-interactive.html` and `graph-2000-stage-01-overview.*` through `graph-2000-stage-05-full.*` demonstrate one 2,001-object document as a WebGL/Barnes-Hut explorer and five script-free report stages.
 - `identity-risk-graph-explorer.html` demonstrates a product-shaped relationship graph with images, filters, selection, focus, clusters, live ForceAtlas2 dragging, and the opt-in physics configurator.
 - `enterprise-access-graph-benchmark.html` demonstrates accelerated compact-document rendering with 360 nodes and 720 directed edges.
-- `vis-network-parity-hierarchy.html` demonstrates the typed vis-style compatibility surface.
+- `vis-network-parity-hierarchy.html` demonstrates the typed vis-style compatibility surface with opt-in editing, undo/redo, position publishing, box selection, and persisted interaction state.

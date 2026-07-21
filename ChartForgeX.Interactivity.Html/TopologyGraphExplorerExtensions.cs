@@ -220,7 +220,7 @@ public static class TopologyGraphExplorerExtensions {
 
     private static void ApplyManipulationOptions(GraphScene scene, TopologyGraphSceneOptions options) {
         if (!options.EnableManipulation) return;
-        scene.Options.Enable(GraphSceneFeatures.Manipulation);
+        scene.Options.Enable(GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Manipulation);
         scene.Options.Manipulation.EnableEditing();
     }
 

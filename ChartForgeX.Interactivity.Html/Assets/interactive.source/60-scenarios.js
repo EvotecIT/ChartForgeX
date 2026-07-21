@@ -47,6 +47,7 @@
     const data = node.dataset || {};
     const kind = step.targetKind || '';
     const target = step.targetId || '';
+    if (renderedTargetKind(node) === kind && renderedTargetId(node, kind) === target) return true;
     const seriesOrdinalTarget = /^(0|[1-9]\d*)$/.test(target);
     if (kind === 'series' && (seriesOrdinalTarget ? data.cfxSeries === target : seriesKey(node) === target)) return true;
     if (kind === 'point' && data.cfxPoint === target) return true;
@@ -57,14 +58,19 @@
     return false;
   };
   const scenarioTargetCandidates = (root, route) => {
-    const candidates = new Set(root.querySelectorAll('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]'));
+    const visualKinds = new Set(['series', 'point', 'annotation', 'region', 'node', 'link', 'legend']);
+    const roleKinds = new Set((route ? route.steps : [])
+      .map((step) => step.targetKind || '')
+      .filter((kind) => kind && kind !== 'element' && !visualKinds.has(kind)));
+    const candidates = new Set(Array.from(root.querySelectorAll('.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]'))
+      .filter((node) => visualKinds.has(renderedTargetKind(node)) || roleKinds.has((node.dataset || {}).cfxRole || '')));
     const elementIds = new Set((route ? route.steps : [])
       .filter((step) => (step.targetKind || '') === 'element' && step.targetId)
       .map((step) => step.targetId));
     if (elementIds.size) {
       root.querySelectorAll('[id]').forEach((node) => {
         if (!elementIds.has(node.id) || node.closest('defs')) return;
-        if (node.querySelector('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]')) return;
+        if (node.querySelector('.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]')) return;
         candidates.add(node);
       });
     }

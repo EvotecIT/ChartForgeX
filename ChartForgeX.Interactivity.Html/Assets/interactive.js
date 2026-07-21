@@ -8,8 +8,9 @@
     .filter(Boolean);
   const hasFeature = (root, name) => featureTokens(root).some((feature) => feature.toLowerCase() === name.toLowerCase()
     || (featureAliases[feature] || []).some((alias) => alias.toLowerCase() === name.toLowerCase()));
-  const targetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-role="legend-item"]';
-  const lassoSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point]';
+  const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
+  const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
+  const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
   const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
   const seriesLegend = (node) => {
@@ -45,6 +46,51 @@
     const svg = node.closest('svg');
     return svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-key-' + data.cfxSeries) || '' : '';
   };
+  const sourcePointIndex = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
+    const svg = node.closest('svg');
+    const sourceIndices = svg ? svg.getAttribute('data-cfx-series-source-indices-' + data.cfxSeries) : '';
+    if (!sourceIndices) return data.cfxPoint;
+    const index = Number(data.cfxPoint);
+    const mapped = sourceIndices.split(',')[index];
+    return mapped === undefined || mapped === '' ? data.cfxPoint : mapped;
+  };
+  const renderedTargetKind = (node) => {
+    const data = node.dataset || {};
+    const role = data.cfxRole || '';
+    if (data.cfxTargetKind) return data.cfxTargetKind;
+    if (role === 'legend-item') return 'legend';
+    if (role.indexOf('annotation') === 0) return 'annotation';
+    if (data.cfxRegion !== undefined) return 'region';
+    if (data.cfxNode !== undefined) return 'node';
+    if (role.indexOf('link') >= 0 || role.indexOf('connector') >= 0 || role.indexOf('edge') >= 0) return 'link';
+    if (data.cfxPoint !== undefined) return 'point';
+    if (data.cfxSeries !== undefined) return 'series';
+    return 'element';
+  };
+  const renderedTargetId = (node, kind) => {
+    const data = node.dataset || {};
+    if (data.cfxTargetId) return data.cfxTargetId;
+    if (kind === 'series') return seriesKey(node) || data.cfxSeries || '';
+    if (kind === 'point') return `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node) || '0'}`;
+    if (kind === 'region') return data.cfxRegion || data.cfxId || data.cfxLabel || '';
+    if (kind === 'node') return data.cfxNode || data.cfxId || data.cfxLabel || '';
+    if (kind === 'link') return data.cfxId || [data.cfxSource, data.cfxTarget].filter(Boolean).join('->') || data.cfxLabel || '';
+    if (kind === 'legend') return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node)}`;
+    if (kind === 'annotation') return data.cfxId || data.cfxLabel || [data.cfxKind, data.cfxValue].filter(Boolean).join(':');
+    return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
+  };
+  const applyRenderedTargetContract = (root) => {
+    Array.from(root.querySelectorAll(renderedTargetSelector)).filter(isInteractiveTarget).forEach((node) => {
+      if (node.closest('defs')) return;
+      const kind = renderedTargetKind(node);
+      const id = renderedTargetId(node, kind);
+      if (!kind || !id) return;
+      node.setAttribute('data-cfx-target-kind', kind);
+      node.setAttribute('data-cfx-target-id', id);
+    });
+  };
   const text = (node) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
@@ -61,13 +107,17 @@
   };
   const targetIdentity = (node) => {
     const data = node.dataset || {};
+    const targetKind = renderedTargetKind(node);
     return {
+      targetKind,
+      targetId: renderedTargetId(node, targetKind),
       id: data.cfxId || node.id || '',
       role: data.cfxRole || '',
       label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
       point: data.cfxPoint,
+      sourcePoint: sourcePointIndex(node),
       value: data.cfxValue || data.cfxY || data.cfxEnd || '',
       kind: data.cfxKind || ''
     };
@@ -155,7 +205,7 @@
     tip.style.left = x + 'px';
     tip.style.top = y + 'px';
   };
-  const targetKey = (target) => target ? [target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
+  const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
@@ -768,6 +818,7 @@
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
+    if (target.targetKind && target.targetId && renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId) return true;
     if (target.id && (node.id === target.id || data.cfxId === target.id)) return true;
     if (target.seriesKey) {
       if (seriesKey(node) !== target.seriesKey) return false;
@@ -915,6 +966,7 @@
     const data = node.dataset || {};
     const kind = step.targetKind || '';
     const target = step.targetId || '';
+    if (renderedTargetKind(node) === kind && renderedTargetId(node, kind) === target) return true;
     const seriesOrdinalTarget = /^(0|[1-9]\d*)$/.test(target);
     if (kind === 'series' && (seriesOrdinalTarget ? data.cfxSeries === target : seriesKey(node) === target)) return true;
     if (kind === 'point' && data.cfxPoint === target) return true;
@@ -925,14 +977,19 @@
     return false;
   };
   const scenarioTargetCandidates = (root, route) => {
-    const candidates = new Set(root.querySelectorAll('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]'));
+    const visualKinds = new Set(['series', 'point', 'annotation', 'region', 'node', 'link', 'legend']);
+    const roleKinds = new Set((route ? route.steps : [])
+      .map((step) => step.targetKind || '')
+      .filter((kind) => kind && kind !== 'element' && !visualKinds.has(kind)));
+    const candidates = new Set(Array.from(root.querySelectorAll('.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]'))
+      .filter((node) => visualKinds.has(renderedTargetKind(node)) || roleKinds.has((node.dataset || {}).cfxRole || '')));
     const elementIds = new Set((route ? route.steps : [])
       .filter((step) => (step.targetKind || '') === 'element' && step.targetId)
       .map((step) => step.targetId));
     if (elementIds.size) {
       root.querySelectorAll('[id]').forEach((node) => {
         if (!elementIds.has(node.id) || node.closest('defs')) return;
-        if (node.querySelector('.cfx-interactive-region,[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]')) return;
+        if (node.querySelector('.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]')) return;
         candidates.add(node);
       });
     }
@@ -1142,6 +1199,7 @@
     const crosshair = root.querySelector('.cfx-crosshair');
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
+    applyRenderedTargetContract(root);
     applyViewport(root, getState(root));
     renderCompare(root);
     if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());

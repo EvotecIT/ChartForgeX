@@ -155,9 +155,9 @@
       sampleBudgetMs: Number(root.dataset.cfxGraphPerformanceSampleBudgetMs || 0),
       thread: root.dataset.cfxGraphPerformanceThread || '', acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
     },
-    nodes: (root.__cfxGraphState || graphState(root)).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), secondaryLabel: attr(node.el, 'data-node-secondary-label'), badge: attr(node.el, 'data-node-badge'), parentId: attr(node.el, 'data-node-parent'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level')), kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el, 'data-node-image-alt') || attr(node.el.querySelector('image'), 'aria-label'), style: { backgroundColor: attr(node.el, 'data-node-background-color'), borderColor: attr(node.el, 'data-node-border-color'), labelColor: attr(node.el, 'data-node-label-color'), labelBackgroundColor: attr(node.el, 'data-node-label-background-color'), shadow: attr(node.el, 'data-node-shadow') === 'true' }, hidden: node.el.classList.contains('cfx-graph-hidden') || node.el.classList.contains('cfx-graph-cluster-collapsed-member') || node.el.classList.contains('cfx-graph-hierarchy-hidden'), search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
-    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), routePoints: routePoints(attr(edge, 'data-edge-route-points')), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', dashPattern: attr(edge, 'data-edge-dash-pattern'), showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', sourceArrow: attr(edge, 'data-edge-source-arrow') === 'true', targetArrow: attr(edge, 'data-edge-target-arrow') === 'true', physics: attr(edge, 'data-edge-physics') !== 'false', style: { color: attr(edge, 'data-edge-color'), labelColor: attr(edge, 'data-edge-label-color'), width: Number(attr(edge, 'data-edge-width') || 0) }, hidden: edge.classList.contains('cfx-graph-hidden') || edge.classList.contains('cfx-graph-cluster-collapsed-member'), search: attr(edge, 'data-cfx-search'), metadata: metadataDetail(edge) })),
-    clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), parentClusterId: attr(cluster, 'data-cluster-parent'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: cluster.classList.contains('cfx-graph-hidden') || cluster.classList.contains('cfx-graph-hierarchy-hidden'), search: attr(cluster, 'data-cfx-search'), metadata: metadataDetail(cluster) }))
+    nodes: (root.__cfxGraphState || graphState(root)).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), secondaryLabel: attr(node.el, 'data-node-secondary-label'), badge: attr(node.el, 'data-node-badge'), parentId: attr(node.el, 'data-node-parent'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level')), kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el, 'data-node-image-alt') || attr(node.el.querySelector('image'), 'aria-label'), style: { backgroundColor: attr(node.el, 'data-node-background-color'), borderColor: attr(node.el, 'data-node-border-color'), labelColor: attr(node.el, 'data-node-label-color'), labelBackgroundColor: attr(node.el, 'data-node-label-background-color'), shadow: attr(node.el, 'data-node-shadow') === 'true' }, hidden: attr(node.el, 'data-node-hidden') === 'true', search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
+    edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), routePoints: routePoints(attr(edge, 'data-edge-route-points')), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', dashPattern: attr(edge, 'data-edge-dash-pattern'), showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', sourceArrow: attr(edge, 'data-edge-source-arrow') === 'true', targetArrow: attr(edge, 'data-edge-target-arrow') === 'true', physics: attr(edge, 'data-edge-physics') !== 'false', style: { color: attr(edge, 'data-edge-color'), labelColor: attr(edge, 'data-edge-label-color'), width: Number(attr(edge, 'data-edge-width') || 0) }, hidden: attr(edge, 'data-edge-hidden') === 'true', search: attr(edge, 'data-cfx-search'), metadata: metadataDetail(edge) })),
+    clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), parentClusterId: attr(cluster, 'data-cluster-parent'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: false, search: attr(cluster, 'data-cfx-search'), metadata: metadataDetail(cluster) }))
   });
   const bindCommandMenus = (root) => {
     const menus = Array.from(root.querySelectorAll('.cfx-graph-command-menu'));
@@ -243,9 +243,11 @@
     bindWebGlHitTesting(root);
     bindAcceleratedSvgKeyboard(root);
     bindPointerInteractions(root);
+    bindGraphBoxSelection(root);
     bindOverview(root);
     bindHierarchyInteractions(root);
     bindPhysicsConfigurator(root);
+    bindGraphManipulation(root);
     bindCommandMenus(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => bindGraphItemSelection(root, item));
     bindGraphSearch(root);
@@ -258,6 +260,18 @@
         if (action === 'hierarchy-up') navigateHierarchyUp(root);
         if (action === 'focus') toggleNeighborhoodFocus(root);
         if (action === 'clear-selection') clearSelection(root);
+        if (action === 'box-select') setGraphBoxSelectionMode(root, root.dataset.cfxGraphPointerMode !== 'box-select');
+        if (action === 'edit') {
+          const editor = graphEditor(root), open = editor?.hasAttribute('hidden');
+          if (editor) { if (open) editor.removeAttribute('hidden'); else editor.setAttribute('hidden', ''); }
+          button.setAttribute('aria-pressed', open ? 'true' : 'false');
+        }
+        if (action === 'undo') traverseGraphHistory(root, 'undo');
+        if (action === 'redo') traverseGraphHistory(root, 'redo');
+        if (action === 'save-positions') {
+          const state = persistGraphInteractionState(root, 'positions');
+          emit(root, 'cfxgraphpositions', { graphId: attr(root, 'data-cfx-graph-id'), positions: state.positions });
+        }
         if (action === 'fit' && hasFeature(root, 'Viewport')) {
           root.__cfxGraphViewportTouched = false;
           fitViewport(root);
@@ -286,7 +300,9 @@
       });
     });
     updateSelectionState(root);
-    if (hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization') && attr(root, 'data-cfx-physics-stabilization-enabled') !== 'false') startPhysics(root, { reason: 'initial-stabilization' });
+    const restoredInteractionState = initializeGraphInteractionState(root);
+    bindGraphStatePersistence(root);
+    if (!restoredInteractionState && hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization') && attr(root, 'data-cfx-physics-stabilization-enabled') !== 'false') startPhysics(root, { reason: 'initial-stabilization' });
     syncPhysicsControls(root);
     syncPhysicsConfigurator(root);
     emit(root, 'cfxgraphready', {

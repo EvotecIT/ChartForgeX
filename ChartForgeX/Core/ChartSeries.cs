@@ -57,6 +57,18 @@ public sealed class ChartSeries {
     /// </summary>
     public List<ChartPoint> Points { get; } = new();
 
+    /// <summary>Gets the number of source points supplied before explicit decimation.</summary>
+    public int SourcePointCount { get; private set; }
+
+    /// <summary>Gets the explicit decimation algorithm, or null when the series was not created through a decimating API.</summary>
+    public ChartDecimationMode? DecimationMode { get; private set; }
+
+    /// <summary>Gets the source index represented by each retained point after explicit decimation.</summary>
+    public IReadOnlyList<int> SourcePointIndices { get; private set; } = Array.Empty<int>();
+
+    /// <summary>Gets whether this series renders fewer points than its source sequence.</summary>
+    public bool IsDecimated => DecimationMode.HasValue && Points.Count < SourcePointCount;
+
     /// <summary>
     /// Gets or sets the series color. When null, the chart theme palette is used.
     /// </summary>
@@ -511,6 +523,13 @@ public sealed class ChartSeries {
         if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown series kind.");
         Kind = kind;
         Points.AddRange(ChartGuards.Points(points, nameof(points)));
+        SourcePointCount = Points.Count;
+    }
+
+    internal void SetDecimation(ChartDecimationResult result) {
+        SourcePointCount = result.SourcePointCount;
+        DecimationMode = result.Mode;
+        SourcePointIndices = result.SourceIndices;
     }
 
     private void ValidatePointIndex(int pointIndex) {

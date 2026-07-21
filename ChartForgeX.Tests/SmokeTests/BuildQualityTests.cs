@@ -103,7 +103,7 @@ internal static partial class SmokeTests {
             "ChartForgeX.Mermaid",
             "ChartForgeX.Markup.Mermaid"
         }) {
-            Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), "1.0.X", StringComparison.Ordinal), "Build-Project manifest should track package project: " + packageProject + ".");
+            Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), "1.1.X", StringComparison.Ordinal), "Build-Project manifest should track package project: " + packageProject + ".");
             var projectFile = File.ReadAllText(Path.Combine(FindRepositoryRoot(), packageProject, packageProject + ".csproj"));
             Assert(projectFile.Contains("<Version>$(ChartForgeXProductVersion)</Version>", StringComparison.Ordinal), "Package project should consume the shared ChartForgeX product version: " + packageProject + ".");
         }

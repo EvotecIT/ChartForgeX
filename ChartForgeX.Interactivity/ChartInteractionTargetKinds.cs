@@ -13,6 +13,18 @@ public static class ChartInteractionTargetKinds {
     /// <summary>Targets a rendered annotation, mark, or threshold element.</summary>
     public const string Annotation = "annotation";
 
+    /// <summary>Targets a rendered geographic, matrix, or categorical region.</summary>
+    public const string Region = "region";
+
+    /// <summary>Targets a rendered hierarchy, flow, or relationship node.</summary>
+    public const string Node = "node";
+
+    /// <summary>Targets a rendered hierarchy, flow, route, or relationship link.</summary>
+    public const string Link = "link";
+
+    /// <summary>Targets a rendered legend entry.</summary>
+    public const string Legend = "legend";
+
     /// <summary>Targets an element by rendered SVG id or adapter-specific data id.</summary>
     public const string Element = "element";
 

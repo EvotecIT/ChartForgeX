@@ -89,6 +89,12 @@ public sealed partial class SvgChartRenderer {
         for (var index = 0; index < chart.Series.Count; index++) {
             writer.Attribute("data-cfx-series-key-" + index.ToString(CultureInfo.InvariantCulture), SeriesInteractionKey(chart.Series[index]));
             writer.Attribute("data-cfx-series-name-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].Name);
+            writer.Attribute("data-cfx-series-source-points-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].SourcePointCount);
+            writer.Attribute("data-cfx-series-rendered-points-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].Points.Count);
+            if (chart.Series[index].DecimationMode.HasValue) {
+                writer.Attribute("data-cfx-series-decimation-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].DecimationMode!.Value.ToString());
+                writer.Attribute("data-cfx-series-source-indices-" + index.ToString(CultureInfo.InvariantCulture), string.Join(",", chart.Series[index].SourcePointIndices));
+            }
         }
     }
 

@@ -348,6 +348,7 @@
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
+    if (target.targetKind && target.targetId && renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId) return true;
     if (target.id && (node.id === target.id || data.cfxId === target.id)) return true;
     if (target.seriesKey) {
       if (seriesKey(node) !== target.seriesKey) return false;

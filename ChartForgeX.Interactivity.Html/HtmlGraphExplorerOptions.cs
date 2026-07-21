@@ -37,6 +37,9 @@ public sealed class HtmlGraphExplorerOptions {
     /// <summary>Gets or sets whether an expandable development-time physics configurator should be rendered.</summary>
     public bool IncludePhysicsConfigurator { get; set; }
 
+    /// <summary>Gets or sets whether the opt-in graph authoring controls should be rendered when manipulation is enabled.</summary>
+    public bool IncludeManipulationControls { get; set; } = true;
+
     /// <summary>Gets or sets the explorer color theme used when the document first opens.</summary>
     public HtmlGraphExplorerTheme Theme { get; set; } = HtmlGraphExplorerTheme.System;
 
@@ -45,6 +48,12 @@ public sealed class HtmlGraphExplorerOptions {
 
     /// <summary>Gets or sets whether an appearance choice made in the browser should be reused by other graph explorers on the same origin.</summary>
     public bool PersistThemePreference { get; set; } = true;
+
+    /// <summary>Gets or sets whether reusable graph interaction state should be restored from and saved to browser local storage.</summary>
+    public bool PersistInteractionState { get; set; }
+
+    /// <summary>Gets or sets an optional browser storage key used when <see cref="PersistInteractionState"/> is enabled.</summary>
+    public string? InteractionStateStorageKey { get; set; }
 }
 
 /// <summary>

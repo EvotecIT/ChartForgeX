@@ -62,7 +62,8 @@ internal static partial class SmokeTests {
             options.UseSuperTopologyDefaults = false;
             options.EnableManipulation = true;
         });
-        Assert(leanManipulation.Options.HasFeature(GraphSceneFeatures.Manipulation) && leanManipulation.Options.Manipulation.CanAddNodes && leanManipulation.Options.Manipulation.CanEditEdges && leanManipulation.Options.Manipulation.CanPersistPositions, "Topology graph bridge should honor opt-in manipulation even when large-topology defaults are disabled.");
+        leanManipulation.Validate();
+        Assert(leanManipulation.Options.HasFeature(GraphSceneFeatures.IncrementalUpdates) && leanManipulation.Options.HasFeature(GraphSceneFeatures.Manipulation) && leanManipulation.Options.Manipulation.CanAddNodes && leanManipulation.Options.Manipulation.CanEditEdges && leanManipulation.Options.Manipulation.CanPersistPositions, "Topology graph bridge should honor valid opt-in manipulation even when large-topology defaults are disabled.");
 
         var anchored = TopologyChart.Create()
             .WithId("hidden-anchor")

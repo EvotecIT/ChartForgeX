@@ -14,7 +14,7 @@ public static class GraphSceneSuperTopologyExtensions {
         if (options == null) throw new System.ArgumentNullException(nameof(options));
         options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.HierarchyNavigation);
         if (enableManipulation) {
-            options.Enable(GraphSceneFeatures.Manipulation);
+            options.Enable(GraphSceneFeatures.Manipulation | GraphSceneFeatures.History);
             options.Manipulation.EnableEditing();
         }
 

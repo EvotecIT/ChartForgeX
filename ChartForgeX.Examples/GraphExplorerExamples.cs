@@ -14,6 +14,8 @@ internal static class GraphExplorerExamples {
         visParity.ToGraphExplorerHtmlPage(options => {
             options.PageTitle = "Vis-Network Parity Hierarchy";
             options.RenderBackend = HtmlGraphRenderBackend.Svg;
+            options.PersistInteractionState = true;
+            options.InteractionStateStorageKey = "cfx-example:vis-network-parity-hierarchy";
         }).SaveText(Path.Combine(output, "vis-network-parity-hierarchy.html"));
 
         var benchmark = BuildEnterpriseAccessBenchmark();

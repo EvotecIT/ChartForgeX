@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering and image composition for .NET charts, visual blocks, report tables, metric cards, wallpapers, and topology diagrams.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Adds semantic series interaction keys for synchronized generated reports, direct RGBA output for composition-heavy hosts, improved topology label fitting, and SVG/PNG validation.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds explicit LTTB and min/max decimation for dense line, area, and scatter series with source-index provenance preserved through SVG and interactive targets.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>

@@ -36,8 +36,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteHierarchyNavigation(writer, scene);
         writer.Append("<div class=\"cfx-graph-command-rail\" role=\"toolbar\" aria-label=\"Graph commands\">");
         WriteExploreControls(writer, scene, options, clusters);
+        WriteSelectionControls(writer, scene);
         WriteViewportControls(writer, scene, options);
         WritePhysicsControls(writer, scene, options);
+        WriteManipulationControls(writer, scene, options);
         WriteExportControls(writer, scene);
         writer.Append("</div>");
     }
@@ -88,6 +90,25 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteButton(writer, "fit", "Fit", false, true, "Fit graph to view");
         WriteButton(writer, "zoom-in", "Zoom in", false, true);
         WriteButton(writer, "zoom-out", "Zoom out", false, true);
+        EndControlGroup(writer);
+    }
+
+    private static void WriteSelectionControls(StringBuilder writer, GraphScene scene) {
+        if (!scene.Options.HasFeature(GraphSceneFeatures.BoxSelection)) return;
+        BeginControlGroup(writer, "Select", null);
+        WriteButton(writer, "box-select", "Box select", true, true, "Toggle box selection");
+        EndControlGroup(writer);
+    }
+
+    private static void WriteManipulationControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options) {
+        if (!options.IncludeManipulationControls || !scene.Options.HasFeature(GraphSceneFeatures.Manipulation)) return;
+        BeginControlGroup(writer, "Edit", null);
+        WriteButton(writer, "edit", "Edit", true, true, "Open graph editor");
+        if (scene.Options.HasFeature(GraphSceneFeatures.History)) {
+            WriteButton(writer, "undo", "Undo", false, true, "Undo graph change");
+            WriteButton(writer, "redo", "Redo", false, true, "Redo graph change");
+        }
+        if (scene.Options.Manipulation.CanPersistPositions) WriteButton(writer, "save-positions", "Save", false, true, "Publish current node positions");
         EndControlGroup(writer);
     }
 
@@ -176,6 +197,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
             case "clusters": return new[] { "M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z", "M6 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z", "M18 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z", "M12 7v4", "M6 15v-4h12v4" };
             case "focus": return new[] { "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z", "M12 2v3", "M12 19v3", "M2 12h3", "M19 12h3" };
             case "clear-selection": return new[] { "M5 5h6v6H5Z", "M13 13h6v6h-6Z", "M4 20 20 4" };
+            case "box-select": return new[] { "M4 8V4h4", "M16 4h4v4", "M20 16v4h-4", "M8 20H4v-4", "M8 8h8v8H8Z" };
+            case "edit": return new[] { "M4 20h4l11-11-4-4L4 16v4Z", "M13.5 6.5l4 4" };
+            case "undo": return new[] { "M9 7 4 12l5 5", "M5 12h8a6 6 0 0 1 6 6" };
+            case "redo": return new[] { "M15 7l5 5-5 5", "M19 12h-8a6 6 0 0 0-6 6" };
+            case "save-positions": return new[] { "M5 4h12l2 2v14H5Z", "M8 4v6h8V4", "M8 20v-6h8v6" };
             case "fit": return new[] { "M9 4H4v5", "M15 4h5v5", "M20 15v5h-5", "M9 20H4v-5" };
             case "zoom-in": return new[] { "M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z", "M8 12h8", "M12 8v8" };
             case "zoom-out": return new[] { "M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z", "M8 12h8" };
