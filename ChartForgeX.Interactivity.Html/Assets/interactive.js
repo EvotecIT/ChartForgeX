@@ -431,10 +431,15 @@
   const resolveSeriesTarget = (root, target) => {
     if (!target || !target.seriesKey) return null;
     const legends = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
-    const matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
+    let matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
+    if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) return null;
-    const exactLabel = target.point === undefined ? null : matchingSeries.find((item) => (item.dataset || {}).cfxLabel === target.label);
-    const exactPoint = target.point === undefined ? null : matchingSeries.find((item) => (item.dataset || {}).cfxPoint === String(target.point));
+    if (target.point === undefined) {
+      const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
+      return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
+    }
+    const exactLabel = matchingSeries.find((item) => (item.dataset || {}).cfxLabel === target.label);
+    const exactPoint = matchingSeries.find((item) => (item.dataset || {}).cfxPoint === String(target.point));
     return seriesTarget(exactLabel || exactPoint || matchingSeries.find((item) => (item.dataset || {}).cfxPoint === undefined) || matchingSeries[0]);
   };
   const setSeriesMuted = (root, target, muted) => {
