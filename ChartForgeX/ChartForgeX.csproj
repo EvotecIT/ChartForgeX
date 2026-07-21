@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering and image composition for .NET charts, visual blocks, report tables, metric cards, wallpapers, and topology diagrams.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Adds true angle/radius polar line charts with shared SVG/PNG geometry, premium line and marker styling, radial axis formatting, grid and visibility controls, accessibility metadata, validation, and a visual gallery baseline. Builds on the dependency-free 1.0 chart and styling surface, including brand kits, pictorial charts, word cloud galleries, and fail-fast validation.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds semantic series interaction keys for synchronized generated reports, direct RGBA output for composition-heavy hosts, improved topology label fitting, and SVG/PNG validation.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>

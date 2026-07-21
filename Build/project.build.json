@@ -27,7 +27,7 @@
   "StagingPath": "artifacts/ProjectBuild",
   "CleanStaging": true,
   "PlanOutputPath": null,
-  "UpdateVersions": true,
+  "UpdateVersions": false,
   "Build": true,
   "PackStrategy": "MSBuild",
   "PublishNuget": false,

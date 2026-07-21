@@ -20,6 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Native Mermaid compatibility parsing foundations for ChartForgeX visual artifact pipelines.</Description>
+    <PackageReleaseNotes>Improves inferred layered flowcharts, content-fitted tiles, explicit viewport preservation, literal labels, and node-specific label limits.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

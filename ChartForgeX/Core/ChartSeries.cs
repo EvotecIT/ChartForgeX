@@ -12,11 +12,21 @@ public sealed class ChartSeries {
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
+    private string? _interactionKey;
 
     /// <summary>
     /// Gets the display name shown in legends.
     /// </summary>
     public string Name { get; }
+
+    /// <summary>
+    /// Gets or sets the stable semantic key used to synchronize this series across interactive charts.
+    /// When unset, capable adapters use <see cref="Name"/>.
+    /// </summary>
+    public string? InteractionKey {
+        get => _interactionKey;
+        set => _interactionKey = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
+    }
 
     /// <summary>
     /// Gets the series rendering kind.
@@ -319,6 +329,25 @@ public sealed class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries WithLegendEntry(bool visible = true) {
         ShowInLegend = visible;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the stable semantic key used to synchronize this series across interactive charts.
+    /// </summary>
+    /// <param name="key">The semantic key, or null to use the series name.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithInteractionKey(string? key) {
+        InteractionKey = key;
+        return this;
+    }
+
+    /// <summary>
+    /// Uses the series name as the automatic interactive synchronization key.
+    /// </summary>
+    /// <returns>The current series.</returns>
+    public ChartSeries UseAutomaticInteractionKey() {
+        InteractionKey = null;
         return this;
     }
 

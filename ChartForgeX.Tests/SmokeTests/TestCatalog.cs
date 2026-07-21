@@ -58,6 +58,7 @@ internal static partial class SmokeTests {
         ("Rendered markup stays self-contained", RenderedMarkupStaysSelfContained),
         ("PNG renderer emits a valid RGBA PNG", PngIsValid),
         ("Opaque raster exports emit valid flattened images", OpaqueRasterExportsEmitValidFlattenedImages),
+        ("Raw RGBA rendering avoids encoded round trips", RawRgbaRenderingAvoidsEncodedRoundTrips),
         ("Raster formats include common web exports", RasterFormatsIncludeCommonWebExports),
         ("JPEG writer round-trips readable pixels", JpegWriterRoundTripsReadablePixels),
         ("Image composition composes anchored overlays and saves by extension", ImageCompositionComposesAnchoredOverlaysAndSavesByExtension),

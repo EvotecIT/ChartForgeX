@@ -4,6 +4,8 @@
       samples: 0,
       budgetMisses: 0,
       budgetMissRate: 0,
+      cadenceBudgetMisses: 0,
+      cadenceBudgetMissRate: 0,
       physicsSamples: 0,
       physicsBudgetMisses: 0,
       frameSamples: 0,
@@ -25,6 +27,8 @@
     const warmupSample = detail.mode === 'warmup';
     const physicsSample = detail.mode === 'physics';
     const sampleBudgetMs = summary.frameBudget * (frameSample || warmupSample ? 1 : sampleTicks);
+    const cadenceBudgetMs = summary.frameBudget + Math.max(1, summary.frameBudget * .1);
+    const renderMs = frameSample && Number.isFinite(detail.renderMs) ? Math.max(0, detail.renderMs) : 0;
     summary.samples += frameSample ? 1 : 0;
     summary.frameSamples += frameSample ? 1 : 0;
     summary.warmupFrameSamples += warmupSample ? 1 : 0;
@@ -44,8 +48,10 @@
     summary.thread = detail.thread || summary.thread || '';
     summary.acceleration = detail.acceleration || summary.acceleration || '';
     summary.renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
-    summary.budgetMisses += frameSample && sampleMs > sampleBudgetMs ? 1 : 0;
+    summary.budgetMisses += frameSample && renderMs > sampleBudgetMs ? 1 : 0;
     summary.budgetMissRate = summary.frameSamples > 0 ? summary.budgetMisses / summary.frameSamples : 0;
+    summary.cadenceBudgetMisses += frameSample && sampleMs > cadenceBudgetMs ? 1 : 0;
+    summary.cadenceBudgetMissRate = summary.frameSamples > 0 ? summary.cadenceBudgetMisses / summary.frameSamples : 0;
     summary.physicsBudgetMisses += physicsSample && sampleMs > sampleBudgetMs ? 1 : 0;
     root.__cfxGraphPerformanceSummary = summary;
     root.dataset.cfxGraphPerformanceSamples = String(summary.samples);
@@ -66,6 +72,8 @@
     root.dataset.cfxGraphPerformanceSampleBudgetMs = sampleBudgetMs.toFixed(3);
     root.dataset.cfxGraphPerformanceBudgetMisses = String(summary.budgetMisses);
     root.dataset.cfxGraphPerformanceBudgetMissRate = summary.budgetMissRate.toFixed(4);
+    root.dataset.cfxGraphPerformanceCadenceBudgetMisses = String(summary.cadenceBudgetMisses);
+    root.dataset.cfxGraphPerformanceCadenceBudgetMissRate = summary.cadenceBudgetMissRate.toFixed(4);
     root.dataset.cfxGraphPerformanceThread = summary.thread;
     root.dataset.cfxGraphPerformanceAcceleration = summary.acceleration;
     const sustainedOverBudget = summary.budgetMisses >= 2 && summary.budgetMissRate > .2;
@@ -83,14 +91,16 @@
     root.__cfxGraphPerformanceFrameCount = count;
     const interval = Math.max(1, num(root, 'data-cfx-performance-telemetry-interval', 30));
     const budget = num(root, 'data-cfx-performance-frame-budget', 16);
+    const cadenceBudget = budget + Math.max(1, budget * .1);
+    const renderWorkMs = Number.isFinite(renderMs) ? Math.max(0, renderMs) : 0;
     const warmupFrames = Math.max(0, num(root, 'data-cfx-performance-warmup-frames', 4));
     if (count <= warmupFrames) {
-      publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'warmup', renderer: root.dataset.cfxGraphRendererActive, thread, sampleMs: frameMs, sampleTicks: 1, renderMs: Math.max(0, renderMs) });
+      publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'warmup', renderer: root.dataset.cfxGraphRendererActive, thread, sampleMs: frameMs, sampleTicks: 1, renderMs: renderWorkMs });
       return;
     }
     const steadyCount = count - warmupFrames;
-    const publish = steadyCount === 1 || steadyCount % interval === 0 || frameMs > budget;
-    publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'frame', renderer: root.dataset.cfxGraphRendererActive, thread, sampleMs: frameMs, sampleTicks: 1, renderMs: Math.max(0, renderMs), publish });
+    const publish = steadyCount === 1 || steadyCount % interval === 0 || renderWorkMs > budget || frameMs > cadenceBudget;
+    publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'frame', renderer: root.dataset.cfxGraphRendererActive, thread, sampleMs: frameMs, sampleTicks: 1, renderMs: renderWorkMs, publish });
   };
   const performanceGate = (root) => {
     const totalNodeCount = Number(attr(root, 'data-cfx-graph-node-count'));

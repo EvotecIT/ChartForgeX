@@ -32,7 +32,7 @@ public sealed class HtmlInteractiveChartRenderer {
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var writer = HtmlInteractivePage.StartDocument(title);
         writer.StartElement("main").Attribute("class", "cfx-shell").EndStartElement().Line()
-            .RawTrusted(BuildChartSection(chart, options, title)).Line()
+            .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce);
         return writer.Build();
@@ -62,7 +62,7 @@ public sealed class HtmlInteractiveChartRenderer {
             .RawTrusted(InteractiveFragmentStyle)
             .EndElement()
             .Line()
-            .RawTrusted(BuildChartSection(chart, options, title))
+            .RawTrusted(BuildChartSection(chart, options, title, "inline"))
             .Line()
             .StartElement("script")
             .Attribute("nonce", options.ScriptNonce)
@@ -89,7 +89,7 @@ public sealed class HtmlInteractiveChartRenderer {
         var options = new HtmlChartInteractionOptions();
         configure?.Invoke(options);
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
-        return BuildChartSection(chart, options, title);
+        return BuildChartSection(chart, options, title, "host");
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public sealed class HtmlInteractiveChartRenderer {
 
     internal static string InteractiveScript => HtmlInteractiveAssets.Script;
 
-    internal static string BuildChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback) {
+    internal static string BuildChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (options == null) throw new ArgumentNullException(nameof(options));
         var scope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
@@ -122,6 +122,7 @@ public sealed class HtmlInteractiveChartRenderer {
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
+            .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-cfx-chart-id", chartId)
             .Attribute("data-cfx-interaction-features", options.Interaction.Features.ToString())
             .Attribute("data-cfx-interaction-group", options.Interaction.GroupName)

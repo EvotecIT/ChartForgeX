@@ -76,7 +76,7 @@ internal static partial class SmokeTests {
         Assert(customColorsSvg.Contains("#0EA5E9", StringComparison.Ordinal), "Pictorial item colors should override the theme palette.");
         Assert(customColorsSvg.Contains("#EC4899", StringComparison.Ordinal), "Pictorial item colors should apply per row.");
         var pointLegendSvg = customColors.WithPointLegend().ToSvg();
-        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Pictorial point legends should expose item metadata.");
+        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Rating\" data-cfx-series-key=\"Rating\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Pictorial point legends should expose item and semantic series metadata.");
         Assert(pointLegendSvg.Contains("#EC4899", StringComparison.Ordinal), "Pictorial point legends should match item colors.");
         Assert(customColors.ToPng().Length > 64, "Pictorial item colors should render PNG output.");
         var isotype = Chart.Create()

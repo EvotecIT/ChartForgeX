@@ -121,7 +121,8 @@ The GitHub workflow packages the extension on pull requests and pushes that touc
 
 Release publishing follows the OfficeIMO-style flow:
 
-- A release tag named `ChartForgeX-vYYYYMMDDHHMMSS` stamps the extension version as `YYYY.MMDD.HHMMSS`.
+- Normal package release tags such as `ChartForgeX-v1.0.3` stamp the extension version from UTC publication time as three SemVer-safe numeric components: `year.(month*100+day).(hour*10000+minute*100+second)`. For example, 2026-07-21 10:58:09 UTC becomes `2026.721.105809`.
+- Legacy `ChartForgeX-vYYYYMMDDHHMMSS` release tags remain supported and map to the same unpadded numeric components.
 - Release publishing is allowed only from commits contained in `origin/main`.
 - Existing Marketplace versions are skipped, while the VSIX is still attached to the GitHub Release.
 - Pre-release GitHub releases and workflow-dispatch `pre_release` runs package as VS Code pre-release extensions.

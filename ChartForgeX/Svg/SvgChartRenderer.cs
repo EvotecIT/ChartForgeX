@@ -129,22 +129,23 @@ public sealed partial class SvgChartRenderer {
         }
         var accessibility = chart.Accessibility;
         var sb = new StringBuilder();
-        AppendSvgStart(sb, writer => writer
-            .StartElement("svg")
-            .Attribute("xmlns", "http://www.w3.org/2000/svg")
-            .Attribute("width", w)
-            .Attribute("height", h)
-            .Attribute("viewBox", $"0 0 {F(w)} {F(h)}")
-            .Attribute("role", accessibility.IsDecorative ? null : "img")
-            .Attribute("aria-hidden", accessibility.IsDecorative ? "true" : null)
-            .Attribute("aria-labelledby", accessibility.IsDecorative ? null : $"{id}-title {id}-desc")
-            .Attribute("lang", accessibility.Language)
-            .Attribute("preserveAspectRatio", "xMidYMid meet")
-            .Attribute("style", "max-width:100%;height:auto;display:block")
-            .Attribute("shape-rendering", "geometricPrecision")
-            .Attribute("text-rendering", "geometricPrecision")
-            .EndStartElement()
-            .Line());
+        AppendSvgStart(sb, writer => {
+            writer.StartElement("svg")
+                .Attribute("xmlns", "http://www.w3.org/2000/svg")
+                .Attribute("width", w)
+                .Attribute("height", h)
+                .Attribute("viewBox", $"0 0 {F(w)} {F(h)}")
+                .Attribute("role", accessibility.IsDecorative ? null : "img")
+                .Attribute("aria-hidden", accessibility.IsDecorative ? "true" : null)
+                .Attribute("aria-labelledby", accessibility.IsDecorative ? null : $"{id}-title {id}-desc")
+                .Attribute("lang", accessibility.Language)
+                .Attribute("preserveAspectRatio", "xMidYMid meet")
+                .Attribute("style", "max-width:100%;height:auto;display:block")
+                .Attribute("shape-rendering", "geometricPrecision")
+                .Attribute("text-rendering", "geometricPrecision");
+            WriteSeriesInteractionMap(writer, chart);
+            writer.EndStartElement().Line();
+        });
         if (!accessibility.IsDecorative) {
             AppendSvg(sb, writer => writer
                 .StartElement("title")

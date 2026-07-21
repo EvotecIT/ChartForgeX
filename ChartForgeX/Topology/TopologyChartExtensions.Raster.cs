@@ -45,7 +45,7 @@ public static partial class TopologyChartExtensions {
     /// <returns>Encoded raster image bytes.</returns>
     public static byte[] ToRasterImage(this TopologyChart chart, RasterImageFormat format, TopologyRenderOptions? options = null, RasterImageOptions? imageOptions = null) {
         RasterImageEncoder.ThrowIfUnsupported(format);
-        return RasterImageEncoder.Encode(TopologyRasterRenderer.RenderImage(chart, options), format, imageOptions);
+        return RasterImageEncoder.Encode(chart.ToRgbaImage(options), format, imageOptions);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public static partial class TopologyChartExtensions {
     public static void WriteRasterImage(this TopologyChart chart, Stream stream, RasterImageFormat format, TopologyRenderOptions? options = null, RasterImageOptions? imageOptions = null) {
         RasterImageEncoder.ThrowIfNull(stream);
         RasterImageEncoder.ThrowIfUnsupported(format);
-        RasterImageEncoder.WriteTo(stream, TopologyRasterRenderer.RenderImage(chart, options), format, imageOptions);
+        RasterImageEncoder.WriteTo(stream, chart.ToRgbaImage(options), format, imageOptions);
     }
 
     /// <summary>

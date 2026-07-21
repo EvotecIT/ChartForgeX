@@ -21,7 +21,7 @@ public sealed partial class TopologyHtmlRenderer {
     /// <returns>An HTML fragment.</returns>
     public string RenderFragment(TopologyChart chart, TopologyRenderOptions? options = null) {
         EnsureStatic(options);
-        return RenderFragmentCore(chart, options, includeAssets: true);
+        return RenderFragmentCore(chart, options, includeAssets: true, assetSource: "inline");
     }
 
     /// <summary>
@@ -32,14 +32,14 @@ public sealed partial class TopologyHtmlRenderer {
     /// <returns>An HTML fragment that expects the caller to register topology HTML assets.</returns>
     public string RenderFragmentWithoutAssets(TopologyChart chart, TopologyRenderOptions? options = null) {
         EnsureStatic(options);
-        return RenderFragmentCore(chart, options, includeAssets: false);
+        return RenderFragmentCore(chart, options, includeAssets: false, assetSource: "host");
     }
 
-    internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets) {
-        return RenderFragmentCore(chart, options, includeAssets);
+    internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets, string? assetSource = null) {
+        return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"));
     }
 
-    private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets) {
+    private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= new TopologyRenderOptions();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
@@ -76,6 +76,7 @@ public sealed partial class TopologyHtmlRenderer {
 
         writer.StartElement("div")
             .Attribute("class", wrapperClass)
+            .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-chart-id", id)
             .Attribute("data-layout-mode", chart.LayoutMode.ToString())
             .Attribute("data-cfx-interactive", options.EnableHtmlInteractions)
@@ -166,7 +167,7 @@ public sealed partial class TopologyHtmlRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false)).Line();
+            .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false, assetSource: "document")).Line();
         writer.EndElement().Line()
             .EndElement().Line();
         return writer.Build();

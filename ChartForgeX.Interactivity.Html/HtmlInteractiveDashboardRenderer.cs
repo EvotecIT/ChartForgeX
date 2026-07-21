@@ -43,7 +43,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
             .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {
             var childOptions = CreateChildOptions(options, scope, groupName, i);
-            writer.RawTrusted(HtmlInteractiveChartRenderer.BuildChartSection(chartArray[i], childOptions, title)).Line();
+            writer.RawTrusted(HtmlInteractiveChartRenderer.BuildChartSection(chartArray[i], childOptions, title, "document")).Line();
         }
 
         writer.EndElement().Line()

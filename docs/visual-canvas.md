@@ -145,6 +145,8 @@ var brandedCanvas = VisualCanvas.CreateSocialPreview()
 
 For lower-level wallpaper and report generation where the host wants to work directly with RGBA pixels, use `ImageComposition`. It keeps the same anchor and fit model as `VisualCanvas`, but focuses on image-engine operations: load or create a background, alpha-blend overlays, draw rectangle outlines, draw text, place ChartForgeX layers, and save by extension without `System.Drawing`.
 
+Charts, chart grids, visual blocks, visual grids, visual canvases, and topology charts expose `ToRgbaImage(...)`. Use that direct path when the next operation is composition: encoding to PNG and decoding it immediately adds work without changing the pixels. Keep `ToPng()` and the generic raster exporters at file, stream, HTTP, clipboard, and other encoded-image boundaries.
+
 ```csharp
 using ChartForgeX.Composition;
 using ChartForgeX.Core;

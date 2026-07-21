@@ -325,7 +325,7 @@ internal static partial class SmokeTests {
             .AddBar("Severity", Points(8, 32, 84), ChartColor.FromHex("#2563EB"));
         pointLegend.Series[0].WithPointColor(1, "#F97316");
         var pointLegendSvg = pointLegend.ToSvg();
-        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Point legends should expose item-level legend metadata.");
+        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Severity\" data-cfx-series-key=\"Severity\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Point legends should expose item-level and semantic series metadata.");
         Assert(pointLegendSvg.Contains(">High</text>", StringComparison.Ordinal) && pointLegendSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Point legends should use x-axis labels and point colors.");
         Assert(pointLegend.ToPng().Length > 64, "Point legends should render PNG output.");
 

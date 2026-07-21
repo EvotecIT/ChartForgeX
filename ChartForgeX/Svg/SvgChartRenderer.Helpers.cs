@@ -25,7 +25,11 @@ public sealed partial class SvgChartRenderer {
             writer.StartElement("g").Attribute("data-cfx-role", "legend-row").Attribute("transform", "translate(" + F(area.X + xShift) + " " + F(y) + ")").EndStartElement().Line();
             foreach (var item in row.Items) {
                 var series = chart.Series[item.SeriesIndex];
-                writer.StartElement("g").Attribute("data-cfx-role", "legend-item").Attribute("data-cfx-series", item.SeriesIndex);
+                writer.StartElement("g")
+                    .Attribute("data-cfx-role", "legend-item")
+                    .Attribute("data-cfx-series", item.SeriesIndex)
+                    .Attribute("data-cfx-series-name", series.Name)
+                    .Attribute("data-cfx-series-key", SeriesInteractionKey(series));
                 if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
                 writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).EndStartElement().Line();
                 DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, chart.Options.Theme.MarkerRadius > 0);
@@ -34,7 +38,11 @@ public sealed partial class SvgChartRenderer {
                 var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
                 var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
                 if (label.Length > 0) {
-                    writer.StartElement("text").Attribute("data-cfx-role", "legend-label").Attribute("data-cfx-series", item.SeriesIndex);
+                    writer.StartElement("text")
+                        .Attribute("data-cfx-role", "legend-label")
+                        .Attribute("data-cfx-series", item.SeriesIndex)
+                        .Attribute("data-cfx-series-name", series.Name)
+                        .Attribute("data-cfx-series-key", SeriesInteractionKey(series));
                     if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
                     writer.Attribute("x", item.X + 26).Attribute("y", "0").Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", labelFontSize).Attribute("font-weight", StyleWeight(style, "600"));
                     WriteSvgTextStyleAttributes(writer, style);
@@ -73,6 +81,16 @@ public sealed partial class SvgChartRenderer {
         }
 
         return rows;
+    }
+
+    private static string SeriesInteractionKey(ChartSeries series) =>
+        string.IsNullOrWhiteSpace(series.InteractionKey) ? series.Name : series.InteractionKey!;
+
+    private static void WriteSeriesInteractionMap(SvgMarkupWriter writer, Chart chart) {
+        for (var index = 0; index < chart.Series.Count; index++) {
+            writer.Attribute("data-cfx-series-key-" + index.ToString(CultureInfo.InvariantCulture), SeriesInteractionKey(chart.Series[index]));
+            writer.Attribute("data-cfx-series-name-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].Name);
+        }
     }
 
     private static string SvgLegendLabel(Chart chart, int index, double width) =>

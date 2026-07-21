@@ -40,7 +40,7 @@ public static partial class ChartExtensions {
     /// <returns>Encoded raster image bytes.</returns>
     public static byte[] ToRasterImage(this Chart chart, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfUnsupported(format);
-        return RasterImageEncoder.Encode(RasterRenderer.RenderImage(chart), format, options);
+        return RasterImageEncoder.Encode(chart.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public static partial class ChartExtensions {
     public static void WriteRasterImage(this Chart chart, Stream stream, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfNull(stream);
         RasterImageEncoder.ThrowIfUnsupported(format);
-        RasterImageEncoder.WriteTo(stream, RasterRenderer.RenderImage(chart), format, options);
+        RasterImageEncoder.WriteTo(stream, chart.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public static partial class ChartExtensions {
     /// <returns>Encoded raster image bytes.</returns>
     public static byte[] ToRasterImage(this ChartGrid grid, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfUnsupported(format);
-        return RasterImageEncoder.Encode(RasterRenderer.RenderImage(grid), format, options);
+        return RasterImageEncoder.Encode(grid.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -169,7 +169,7 @@ public static partial class ChartExtensions {
     public static void WriteRasterImage(this ChartGrid grid, Stream stream, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfNull(stream);
         RasterImageEncoder.ThrowIfUnsupported(format);
-        RasterImageEncoder.WriteTo(stream, RasterRenderer.RenderImage(grid), format, options);
+        RasterImageEncoder.WriteTo(stream, grid.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -272,7 +272,7 @@ public static partial class ChartExtensions {
     /// <returns>Encoded raster image bytes.</returns>
     public static byte[] ToRasterImage(this IVisualBlock block, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfUnsupported(format);
-        return RasterImageEncoder.Encode(RasterRenderer.RenderImage(block), format, options);
+        return RasterImageEncoder.Encode(block.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -285,7 +285,7 @@ public static partial class ChartExtensions {
     public static void WriteRasterImage(this IVisualBlock block, Stream stream, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfNull(stream);
         RasterImageEncoder.ThrowIfUnsupported(format);
-        RasterImageEncoder.WriteTo(stream, RasterRenderer.RenderImage(block), format, options);
+        RasterImageEncoder.WriteTo(stream, block.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -388,7 +388,7 @@ public static partial class ChartExtensions {
     /// <returns>Encoded raster image bytes.</returns>
     public static byte[] ToRasterImage(this VisualGrid grid, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfUnsupported(format);
-        return RasterImageEncoder.Encode(RasterRenderer.RenderImage(grid), format, options);
+        return RasterImageEncoder.Encode(grid.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -401,7 +401,7 @@ public static partial class ChartExtensions {
     public static void WriteRasterImage(this VisualGrid grid, Stream stream, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfNull(stream);
         RasterImageEncoder.ThrowIfUnsupported(format);
-        RasterImageEncoder.WriteTo(stream, RasterRenderer.RenderImage(grid), format, options);
+        RasterImageEncoder.WriteTo(stream, grid.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -504,7 +504,7 @@ public static partial class ChartExtensions {
     /// <returns>Encoded raster image bytes.</returns>
     public static byte[] ToRasterImage(this VisualCanvas canvas, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfUnsupported(format);
-        return RasterImageEncoder.Encode(new PngVisualCanvasRenderer().RenderImage(canvas), format, options);
+        return RasterImageEncoder.Encode(canvas.ToRgbaImage(), format, options);
     }
 
     /// <summary>
@@ -517,7 +517,7 @@ public static partial class ChartExtensions {
     public static void WriteRasterImage(this VisualCanvas canvas, Stream stream, RasterImageFormat format, RasterImageOptions? options = null) {
         RasterImageEncoder.ThrowIfNull(stream);
         RasterImageEncoder.ThrowIfUnsupported(format);
-        RasterImageEncoder.WriteTo(stream, new PngVisualCanvasRenderer().RenderImage(canvas), format, options);
+        RasterImageEncoder.WriteTo(stream, canvas.ToRgbaImage(), format, options);
     }
 
     /// <summary>

@@ -35,7 +35,7 @@ public sealed class HtmlInteractiveTopologyRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, TopologyHtmlRenderer.BuildPageStyle(options, theme));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false)).Line()
+            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document")).Line()
             .RawTrusted(InteractionScriptTag(options)).Line()
             .EndElement().Line()
             .EndElement().Line();

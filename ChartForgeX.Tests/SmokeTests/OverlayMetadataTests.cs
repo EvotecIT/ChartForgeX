@@ -30,7 +30,7 @@ internal static partial class SmokeTests {
             .AddBar("Logged", Points(12, 18))
             .AddLine("Trend", Points(10, 20))
             .ToSvg();
-        Assert(legend.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-kind=\"Bar\" data-cfx-label=\"Logged\"", System.StringComparison.Ordinal), "Legend items should expose series, kind, and label metadata.");
-        Assert(legend.Contains("data-cfx-role=\"legend-label\" data-cfx-series=\"1\"", System.StringComparison.Ordinal), "Legend labels should expose the associated series index.");
+        Assert(legend.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Logged\" data-cfx-series-key=\"Logged\" data-cfx-kind=\"Bar\" data-cfx-label=\"Logged\"", System.StringComparison.Ordinal), "Legend items should expose series, semantic identity, kind, and label metadata.");
+        Assert(legend.Contains("data-cfx-role=\"legend-label\" data-cfx-series=\"1\" data-cfx-series-name=\"Trend\" data-cfx-series-key=\"Trend\"", System.StringComparison.Ordinal), "Legend labels should expose the associated series index and semantic identity.");
     }
 }

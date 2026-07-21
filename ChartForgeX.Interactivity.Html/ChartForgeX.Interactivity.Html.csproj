@@ -20,6 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
+    <PackageReleaseNotes>Adds semantic cross-chart synchronization, explicit document/inline/host asset ownership, and separate render-work and browser-cadence performance telemetry.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
