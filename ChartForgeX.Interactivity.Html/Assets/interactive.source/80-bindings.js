@@ -4,6 +4,7 @@
     const crosshair = root.querySelector('.cfx-crosshair');
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
+    applyRenderedTargetContract(root);
     applyViewport(root, getState(root));
     renderCompare(root);
     if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());

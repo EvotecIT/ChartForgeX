@@ -6,7 +6,8 @@ namespace ChartForgeX.Interactivity.Html;
 internal static class HtmlGraphExplorerAssets {
     private static readonly string[] StyleResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.css",
-        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.chrome.css"
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.chrome.css",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.editor.css"
     };
     private static readonly string[] ScriptResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js",
@@ -22,6 +23,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.11-state-sync.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.13-hierarchy.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.14-state-history.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.17-physics-profile.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js",
@@ -29,10 +31,12 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.21-physics-runtime.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-quality.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.26-box-selection.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.27-pointer-interactions.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.28-svg-export.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-selection.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js"
     };

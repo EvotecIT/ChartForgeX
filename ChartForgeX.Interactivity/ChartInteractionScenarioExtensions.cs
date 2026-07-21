@@ -164,6 +164,26 @@ public static class ChartInteractionScenarioExtensions {
         return AddStep(scenario, ChartInteractionTargetKinds.Annotation, annotationId, label, description, configure);
     }
 
+    /// <summary>Adds an ordered step that targets a rendered map, matrix, or categorical region.</summary>
+    public static ChartInteractionScenario AddRegionStep(this ChartInteractionScenario scenario, string regionId, string? label = null, string? description = null, Action<ChartInteractionScenarioStep>? configure = null) {
+        return AddStep(scenario, ChartInteractionTargetKinds.Region, regionId, label, description, configure);
+    }
+
+    /// <summary>Adds an ordered step that targets a rendered hierarchy, flow, or relationship node.</summary>
+    public static ChartInteractionScenario AddNodeStep(this ChartInteractionScenario scenario, string nodeId, string? label = null, string? description = null, Action<ChartInteractionScenarioStep>? configure = null) {
+        return AddStep(scenario, ChartInteractionTargetKinds.Node, nodeId, label, description, configure);
+    }
+
+    /// <summary>Adds an ordered step that targets a rendered hierarchy, flow, route, or relationship link.</summary>
+    public static ChartInteractionScenario AddLinkStep(this ChartInteractionScenario scenario, string linkId, string? label = null, string? description = null, Action<ChartInteractionScenarioStep>? configure = null) {
+        return AddStep(scenario, ChartInteractionTargetKinds.Link, linkId, label, description, configure);
+    }
+
+    /// <summary>Adds an ordered step that targets a rendered legend entry.</summary>
+    public static ChartInteractionScenario AddLegendStep(this ChartInteractionScenario scenario, string legendId, string? label = null, string? description = null, Action<ChartInteractionScenarioStep>? configure = null) {
+        return AddStep(scenario, ChartInteractionTargetKinds.Legend, legendId, label, description, configure);
+    }
+
     /// <summary>
     /// Adds an ordered step that targets a rendered element by SVG id or adapter data id.
     /// </summary>

@@ -15,13 +15,6 @@ void SaveChart(Chart chart, string name) {
     chart.SaveHtml(Path.Combine(output, name + ".html"));
     chart.SavePng(Path.Combine(output, name + ".png"));
 }
-void SaveGrid(ChartGrid grid, string name) {
-    grid.WithPngOutputScale(DemoPngOutputScale);
-    grid.SaveSvg(Path.Combine(output, name + ".svg"));
-    grid.SavePng(Path.Combine(output, name + ".png"));
-    grid.SaveHtml(Path.Combine(output, name + ".html"));
-}
-
 var dnssec = Chart.Create()
     .WithTitle("Domain Security Checks")
     .WithSubtitle("Dependency-free SVG, HTML and PNG chart rendering")
@@ -47,6 +40,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
     ExampleInteractiveScenarios.ConfigureDomainSecurity(options.Interaction);
 });
 
+DenseSignalExamples.Write(output, DemoPngOutputScale);
 var bars = Chart.Create()
     .WithTitle("Certificate Transparency Volume")
     .WithSubtitle("Bar-line combo with a secondary y-axis and no JavaScript runtime")
@@ -223,7 +217,7 @@ var controlScorecardGrid = ChartGrid.Create()
     .Add(radar)
     .Add(polarArea);
 
-SaveGrid(controlScorecardGrid, "control-scorecards-grid");
+ExampleArtifactWriter.SaveGrid(controlScorecardGrid, output, "control-scorecards-grid", DemoPngOutputScale);
 
 var sharedCoverageNorth = Chart.Create()
     .WithTitle("Primary Domains")
@@ -254,7 +248,7 @@ var sharedAxisGrid = ChartGrid.Create()
     .Add(sharedCoverageAcquired)
     .WithSharedAxes();
 
-SaveGrid(sharedAxisGrid, "shared-axis-coverage-grid");
+ExampleArtifactWriter.SaveGrid(sharedAxisGrid, output, "shared-axis-coverage-grid", DemoPngOutputScale);
 
 ExpressiveExamples.Write(output, DemoPngOutputScale); WellnessDashboardExamples.Write(output, DemoPngOutputScale); PremiumSurfaceExamples.Write(output, DemoPngOutputScale); DashboardPortfolioExamples.Write(output, DemoPngOutputScale); DashboardPatternExamples.Write(output, DemoPngOutputScale); AxisQualityExamples.Write(output, DemoPngOutputScale);
 

@@ -13,7 +13,7 @@
   };
   const emit = (root, name, detail, options) => root.dispatchEvent(new CustomEvent(name, { bubbles: true, cancelable: !!options?.cancelable, detail }));
   const featureGroups = {
-    Explorer: ['Selection', 'MultiSelection', 'Search', 'Filtering', 'Viewport', 'NeighborhoodFocus', 'Clustering', 'LevelOfDetail']
+    Explorer: ['Selection', 'MultiSelection', 'Search', 'Filtering', 'Viewport', 'NeighborhoodFocus', 'Clustering', 'LevelOfDetail', 'BoxSelection', 'StateSnapshots']
   };
   const features = (root) => {
     const names = new Set();

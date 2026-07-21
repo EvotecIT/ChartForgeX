@@ -115,6 +115,15 @@ public enum GraphSceneFeatures {
     /// <summary>The adapter can navigate explicit parent-child relationships as top-level and drill-down views.</summary>
     HierarchyNavigation = 32768,
 
+    /// <summary>The adapter can select several visible graph items with a rectangular pointer gesture.</summary>
+    BoxSelection = 65536,
+
+    /// <summary>The adapter can capture and restore reusable viewport, selection, cluster, physics, and position state.</summary>
+    StateSnapshots = 131072,
+
+    /// <summary>The adapter can undo and redo validated graph document or position changes.</summary>
+    History = 262144,
+
     /// <summary>Common graph explorer surface for dependency-free visual exploration.</summary>
-    Explorer = Selection | MultiSelection | Search | Filtering | Viewport | NeighborhoodFocus | Clustering | LevelOfDetail
+    Explorer = Selection | MultiSelection | Search | Filtering | Viewport | NeighborhoodFocus | Clustering | LevelOfDetail | BoxSelection | StateSnapshots
 }

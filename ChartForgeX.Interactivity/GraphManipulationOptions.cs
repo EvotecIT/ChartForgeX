@@ -4,6 +4,8 @@ namespace ChartForgeX.Interactivity;
 /// Describes opt-in editing capabilities for graph adapters without making static rendering mutable by default.
 /// </summary>
 public sealed class GraphManipulationOptions {
+    private int _maximumHistoryEntries = 40;
+
     /// <summary>Gets or sets whether users can create nodes in the adapter.</summary>
     public bool CanAddNodes { get; set; }
 
@@ -27,6 +29,18 @@ public sealed class GraphManipulationOptions {
 
     /// <summary>Gets or sets whether adapters can export user-adjusted node positions for host persistence.</summary>
     public bool CanPersistPositions { get; set; }
+
+    /// <summary>Gets or sets whether adapters should ask for confirmation before deleting graph items.</summary>
+    public bool ConfirmDestructiveChanges { get; set; } = true;
+
+    /// <summary>Gets or sets the maximum number of undo snapshots retained by adapters.</summary>
+    public int MaximumHistoryEntries {
+        get => _maximumHistoryEntries;
+        set {
+            if (value < 1 || value > 200) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Graph history must retain between one and two hundred entries.");
+            _maximumHistoryEntries = value;
+        }
+    }
 
     /// <summary>
     /// Enables the common edit surface used by graph explorers that support topology authoring or repair workflows.

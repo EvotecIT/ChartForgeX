@@ -99,6 +99,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-graph-canvas-fallback", options.AllowCanvasFallback ? "true" : "false");
         Attribute(writer, "data-cfx-graph-theme", Theme(options.Theme));
         Attribute(writer, "data-cfx-graph-theme-persist", options.PersistThemePreference ? "true" : "false");
+        Attribute(writer, "data-cfx-graph-state-persist", options.PersistInteractionState ? "true" : "false");
+        Attribute(writer, "data-cfx-graph-state-key", string.IsNullOrWhiteSpace(options.InteractionStateStorageKey) ? "cfx-graph-state:" + scene.Id : options.InteractionStateStorageKey!.Trim());
         Attribute(writer, "data-cfx-graph-features", scene.Options.Features.ToString());
         WritePhysicsAttributes(writer, scene);
         Attribute(writer, "data-cfx-graph-layout", LayoutMode(scene.Options.Layout.Mode));
@@ -115,6 +117,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-graph-cluster-collapse-on-load", scene.Options.Cluster.CollapseOnLoad ? "true" : "false");
         Attribute(writer, "data-cfx-graph-manipulation", scene.Options.HasFeature(GraphSceneFeatures.Manipulation) ? "true" : "false");
         Attribute(writer, "data-cfx-graph-manipulation-capabilities", ManipulationCapabilities(scene.Options.Manipulation));
+        Attribute(writer, "data-cfx-graph-history-limit", scene.Options.Manipulation.MaximumHistoryEntries.ToString(CultureInfo.InvariantCulture));
+        Attribute(writer, "data-cfx-graph-confirm-destructive", scene.Options.Manipulation.ConfirmDestructiveChanges ? "true" : "false");
         Attribute(writer, "data-cfx-graph-accelerated-markup", acceleratedMarkup ? "true" : "false");
         WriteScalabilityAttributes(writer, scene);
         WriteHierarchyAttributes(writer, scene);
@@ -149,13 +153,14 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "id", graphId + "-instructions");
         writer.Append(">Use the graph controls to search, filter, fit, or export. In the graph, use arrow keys to move between items and Enter or Space to select. Drag nodes to rearrange the topology.</p>");
         WriteStageControls(writer, scene, options, clusters);
+        WriteManipulationPanel(writer, scene, options, graphId);
         writer.Append("<canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
         Attribute(writer, "aria-label", scene.Title + ". Interactive graph. Use arrow keys to move between nodes and Enter or Space to select.");
         Attribute(writer, "aria-describedby", graphId + "-instructions");
         writer.Append("></canvas><canvas class=\"cfx-graph-webgl\" data-cfx-role=\"graph-webgl\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
         Attribute(writer, "aria-label", scene.Title + ". Interactive graph. Use arrow keys to move between nodes and Enter or Space to select.");
         Attribute(writer, "aria-describedby", graphId + "-instructions");
-        writer.Append("></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas>");
+        writer.Append("></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas><div class=\"cfx-graph-selection-box\" data-cfx-role=\"graph-selection-box\" hidden></div>");
         writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"");
         writer.Append(focusableGraphItems ? "group" : "img");
         writer.Append("\" aria-hidden=\"false\"");

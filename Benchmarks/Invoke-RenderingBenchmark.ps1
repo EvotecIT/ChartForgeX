@@ -1,12 +1,15 @@
 [CmdletBinding()]
 param(
+    [ValidateSet('Rendering', 'Decimation')]
+    [string] $Suite = 'Rendering',
+
     [ValidateRange(0, 100)]
     [int] $WarmupCount = 1,
 
     [ValidateRange(1, 1000)]
     [int] $IterationCount = 5,
 
-    [string] $OutputRoot = (Join-Path $PSScriptRoot '..\Ignore\Benchmarks\Rendering'),
+    [string] $OutputRoot,
 
     [switch] $Plan,
 
@@ -19,7 +22,10 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $projectPath = Join-Path $repositoryRoot 'ChartForgeX\ChartForgeX.csproj'
 $assemblyPath = Join-Path $repositoryRoot 'ChartForgeX\bin\Release\net8.0\ChartForgeX.dll'
-$specPath = Join-Path $PSScriptRoot 'rendering.benchmark.ps1'
+$specPath = Join-Path $PSScriptRoot (($Suite -eq 'Decimation' ? 'decimation' : 'rendering') + '.benchmark.ps1')
+if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
+    $OutputRoot = Join-Path $PSScriptRoot ('..\Ignore\Benchmarks\' + $Suite)
+}
 
 if (-not $SkipBuild.IsPresent) {
     & dotnet build $projectPath -c Release --nologo

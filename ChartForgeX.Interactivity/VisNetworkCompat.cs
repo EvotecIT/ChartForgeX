@@ -69,7 +69,7 @@ public sealed class VisNetworkGraph {
         scene.Metadata["vis.interaction.navigationButtons"] = Options.Interaction.NavigationButtons ? "true" : "false";
         if (Options.Interaction.Hover) scene.Metadata["vis.interaction.hover"] = "true";
         if (Options.Manipulation.Enabled) {
-            scene.Options.Enable(GraphSceneFeatures.Manipulation);
+            scene.Options.Enable(GraphSceneFeatures.Manipulation | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.History);
             scene.Options.Manipulation.CanAddNodes = Options.Manipulation.AddNode;
             scene.Options.Manipulation.CanEditNodes = Options.Manipulation.EditNode;
             scene.Options.Manipulation.CanDeleteNodes = Options.Manipulation.DeleteNode;

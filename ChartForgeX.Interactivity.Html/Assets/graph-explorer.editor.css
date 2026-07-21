@@ -1,0 +1,190 @@
+.cfx-graph-selection-box {
+  position: absolute;
+  z-index: 14;
+  pointer-events: none;
+  border: 1.5px solid var(--cfx-color-accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cfx-color-accent) 12%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cfx-color-paper) 65%, transparent), 0 8px 24px color-mix(in srgb, var(--cfx-color-accent) 18%, transparent);
+}
+
+.cfx-graph-box-selecting .cfx-graph-stage {
+  cursor: crosshair;
+}
+
+.cfx-graph-editor {
+  position: absolute;
+  z-index: 24;
+  top: 82px;
+  right: 18px;
+  width: min(360px, calc(100% - 36px));
+  max-height: calc(100% - 100px);
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 76%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--cfx-color-paper) 94%, transparent);
+  color: var(--cfx-color-text);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .22), inset 0 1px 0 color-mix(in srgb, white 70%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.cfx-graph-editor[hidden],
+.cfx-graph-editor__form[hidden] {
+  display: none;
+}
+
+.cfx-graph-editor__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cfx-graph-editor__header strong,
+.cfx-graph-editor__header span {
+  display: block;
+}
+
+.cfx-graph-editor__header strong {
+  font-size: 15px;
+  letter-spacing: -.01em;
+}
+
+.cfx-graph-editor__header span {
+  margin-top: 3px;
+  color: var(--cfx-color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.cfx-graph-editor__header button {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 9px;
+  background: var(--cfx-color-surface-raised);
+  color: var(--cfx-color-text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cfx-graph-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.cfx-graph-editor__actions button,
+.cfx-graph-editor__submit {
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 9px;
+  background: var(--cfx-color-surface-raised);
+  color: var(--cfx-color-text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cfx-graph-editor__actions button:hover,
+.cfx-graph-editor__submit:hover {
+  border-color: var(--cfx-color-accent);
+  color: var(--cfx-color-accent-strong);
+}
+
+.cfx-graph-editor__form {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cfx-color-border);
+}
+
+.cfx-graph-editor__form h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.cfx-graph-editor__field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.cfx-graph-editor__field {
+  display: grid;
+  gap: 4px;
+  color: var(--cfx-color-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .025em;
+}
+
+.cfx-graph-editor__field input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 9px;
+  background: var(--cfx-color-surface);
+  color: var(--cfx-color-text);
+  font: inherit;
+}
+
+.cfx-graph-editor__field input:focus,
+.cfx-graph-editor__header button:focus-visible,
+.cfx-graph-editor__actions button:focus-visible,
+.cfx-graph-editor__submit:focus-visible {
+  outline: 2px solid var(--cfx-color-accent);
+  outline-offset: 2px;
+}
+
+.cfx-graph-editor__field input[readonly] {
+  opacity: .68;
+}
+
+.cfx-graph-editor__submit {
+  justify-self: start;
+  border-color: color-mix(in srgb, var(--cfx-color-accent) 72%, var(--cfx-color-border));
+  background: color-mix(in srgb, var(--cfx-color-accent) 13%, var(--cfx-color-surface-raised));
+}
+
+.cfx-graph-editor__status {
+  display: block;
+  min-height: 16px;
+  margin-top: 10px;
+  color: var(--cfx-color-text-muted);
+  font-size: 11px;
+}
+
+.cfx-graph-editor__status[data-cfx-graph-editor-error="true"] {
+  color: #dc2626;
+}
+
+@media (max-width: 760px) {
+  .cfx-graph-editor {
+    top: 76px;
+    right: 12px;
+    width: calc(100% - 24px);
+    max-height: calc(100% - 88px);
+    box-sizing: border-box;
+  }
+}
+
+@media (forced-colors: active) {
+  .cfx-graph-selection-box,
+  .cfx-graph-editor {
+    border: 2px solid Highlight;
+    background: Canvas;
+    box-shadow: none;
+  }
+}

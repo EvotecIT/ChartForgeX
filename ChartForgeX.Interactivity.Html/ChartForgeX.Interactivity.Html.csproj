@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>Adds semantic cross-chart synchronization, explicit document/inline/host asset ownership, and separate render-work and browser-cadence performance telemetry.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds accessible graph editing, undo and redo, persisted interaction state, cross-renderer box selection, position publishing, and normalized rendered-target identities.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
@@ -54,6 +54,7 @@
     <EmbeddedResource Include="Assets\topology-icon-stencil-browser.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.topology-icon-stencil-browser.js" />
     <EmbeddedResource Include="Assets\graph-explorer.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.css" />
     <EmbeddedResource Include="Assets\graph-explorer.chrome.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.chrome.css" />
+    <EmbeddedResource Include="Assets\graph-explorer.editor.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.editor.css" />
     <EmbeddedResource Include="Assets\graph-explorer.00-core.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js" />
     <EmbeddedResource Include="Assets\graph-explorer.01-document.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.01-document.js" />
     <EmbeddedResource Include="Assets\graph-explorer.02-geometry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js" />
@@ -67,6 +68,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.11-state-sync.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.11-state-sync.js" />
     <EmbeddedResource Include="Assets\graph-explorer.12-overview.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js" />
     <EmbeddedResource Include="Assets\graph-explorer.13-hierarchy.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.13-hierarchy.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.14-state-history.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.14-state-history.js" />
     <EmbeddedResource Include="Assets\graph-explorer.15-hit-testing.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js" />
     <EmbeddedResource Include="Assets\graph-explorer.17-physics-profile.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.17-physics-profile.js" />
     <EmbeddedResource Include="Assets\graph-explorer.18-structural-physics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js" />
@@ -74,11 +76,13 @@
     <EmbeddedResource Include="Assets\graph-explorer.20-physics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js" />
     <EmbeddedResource Include="Assets\graph-explorer.21-physics-runtime.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.21-physics-runtime.js" />
     <EmbeddedResource Include="Assets\graph-explorer.25-layout-quality.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-quality.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.26-box-selection.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.26-box-selection.js" />
     <EmbeddedResource Include="Assets\graph-explorer.27-pointer-interactions.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.27-pointer-interactions.js" />
     <EmbeddedResource Include="Assets\graph-explorer.28-svg-export.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.28-svg-export.js" />
     <EmbeddedResource Include="Assets\graph-explorer.29-selection.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-selection.js" />
     <EmbeddedResource Include="Assets\graph-explorer.30-bindings.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js" />
     <EmbeddedResource Include="Assets\graph-explorer.31-physics-configurator.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.32-manipulation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js" />
     <EmbeddedResource Include="Assets\graph-explorer.40-api.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js" />
   </ItemGroup>
 </Project>

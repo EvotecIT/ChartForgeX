@@ -7,7 +7,7 @@ namespace ChartForgeX.Interactivity;
 /// Describes a host-neutral graph exploration scene that adapters can render with SVG, Canvas, WebGL, desktop, or native controls.
 /// </summary>
 public sealed class GraphScene {
-    private const GraphSceneFeatures KnownFeatures = GraphSceneFeatures.Selection | GraphSceneFeatures.MultiSelection | GraphSceneFeatures.Search | GraphSceneFeatures.Filtering | GraphSceneFeatures.Viewport | GraphSceneFeatures.DragNodes | GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.Clustering | GraphSceneFeatures.LevelOfDetail | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Export | GraphSceneFeatures.NeighborhoodFocus | GraphSceneFeatures.PerformanceTelemetry | GraphSceneFeatures.Manipulation | GraphSceneFeatures.HierarchyNavigation;
+    private const GraphSceneFeatures KnownFeatures = GraphSceneFeatures.Selection | GraphSceneFeatures.MultiSelection | GraphSceneFeatures.Search | GraphSceneFeatures.Filtering | GraphSceneFeatures.Viewport | GraphSceneFeatures.DragNodes | GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.Clustering | GraphSceneFeatures.LevelOfDetail | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Export | GraphSceneFeatures.NeighborhoodFocus | GraphSceneFeatures.PerformanceTelemetry | GraphSceneFeatures.Manipulation | GraphSceneFeatures.HierarchyNavigation | GraphSceneFeatures.BoxSelection | GraphSceneFeatures.StateSnapshots | GraphSceneFeatures.History;
 
     private string _id = "graph";
     private string _title = "Graph";
@@ -128,6 +128,7 @@ public sealed class GraphScene {
 
     private void ValidateOptions() {
         if ((Options.Features & ~KnownFeatures) != GraphSceneFeatures.None) throw new InvalidOperationException("Graph scene features contain unsupported flags: " + (Options.Features & ~KnownFeatures));
+        if (Options.HasFeature(GraphSceneFeatures.Manipulation) && !Options.HasFeature(GraphSceneFeatures.IncrementalUpdates)) throw new InvalidOperationException("Graph scene manipulation requires incremental updates.");
         Options.Physics.Validate();
         Options.Interaction.Validate();
         if (Options.LevelOfDetail.ClusterNodeThreshold < 0 || Options.LevelOfDetail.HideEdgeLabelsThreshold < 0 || Options.LevelOfDetail.CompactNodeThreshold < 0 || Options.LevelOfDetail.CanvasPreferredNodeThreshold < 0 || Options.LevelOfDetail.WebGlPreferredNodeThreshold < 0) throw new InvalidOperationException("Graph scene level-of-detail thresholds must not be negative.");

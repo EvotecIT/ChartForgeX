@@ -314,6 +314,12 @@
   const graphExplorerApi = {
     get: target => { const root = graphApiRoot(target); return root ? exportGraphJson(root) : null; },
     update: (target, patch) => applyGraphRuntimePatch(target, patch),
+    change: (target, patch, source, label) => { const root = graphApiRoot(target); return root ? requestGraphChange(root, patch, source || 'api', label || 'Graph change') : false; },
+    captureState: (target, source) => { const root = graphApiRoot(target); return root ? captureGraphInteractionState(root, source || 'api') : null; },
+    applyState: (target, state) => { const root = graphApiRoot(target); return root ? applyGraphInteractionState(root, state, { source: 'api', persist: true }) : false; },
+    undo: target => { const root = graphApiRoot(target); return root ? traverseGraphHistory(root, 'undo') : false; },
+    redo: target => { const root = graphApiRoot(target); return root ? traverseGraphHistory(root, 'redo') : false; },
+    positions: target => { const root = graphApiRoot(target); return root ? captureGraphInteractionState(root, 'positions').positions : []; },
     navigate: (target, rootNodeId, depth) => { const root = graphApiRoot(target); return root ? applyHierarchyView(root, rootNodeId || '', depth) : false; },
     focus: (target, nodeId) => { const root = graphApiRoot(target); if (!root) return false; applyNeighborhoodFocus(root, nodeId); return true; },
     physics: (target, configuration) => { const root = graphApiRoot(target); return root ? applyPhysicsConfiguration(root, configuration) : null; },

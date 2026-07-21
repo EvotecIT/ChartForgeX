@@ -1,7 +1,7 @@
   const bindPointerInteractions = (root) => {
     const stage = root.querySelector('.cfx-graph-stage');
     if (!stage) return;
-    const chromeTarget = (event) => event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs');
+    const chromeTarget = (event) => event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs,.cfx-graph-editor');
     let active = null;
     stage.addEventListener('pointerdown', event => {
       if (event.button !== 0 || chromeTarget(event)) return;
@@ -23,9 +23,20 @@
       const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect;
       root.dataset.cfxGraphLastPointerX = point.x.toFixed(3); root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
       root.dataset.cfxGraphLastPointerHit = node?.id || ''; root.__cfxGraphLastPointerHitTick = Date.now();
-      if (node && hasFeature(root, 'DragNodes')) {
+      if (root.dataset.cfxGraphPointerMode === 'box-select' && hasFeature(root, 'BoxSelection')) {
+        const rect = stage.getBoundingClientRect();
+        event.preventDefault(); stage.setPointerCapture?.(event.pointerId); root.dataset.cfxGraphLastPointerMode = 'box-select';
+        active = { mode: 'box-select', pointerId: event.pointerId, start: point, current: point, additive: event.ctrlKey || event.metaKey || event.shiftKey, screenStart: { x: event.clientX - rect.left, y: event.clientY - rect.top }, moved: false };
+        updateGraphSelectionBox(root, active.screenStart, active.screenStart);
+      } else if (hitItem && attr(hitItem.el || hitItem, 'data-cfx-role') === 'graph-cluster' && attr(hitItem.el || hitItem, 'data-cluster-collapsed') === 'true' && hasFeature(root, 'Manipulation') && graphCapability(root, 'dragGroups')) {
+        const cluster = hitItem.nodeIds ? hitItem : state.clusters.find(item => item.el === (hitItem.el || hitItem));
+        const members = state.nodes.filter(item => cluster && cluster.nodeIds.includes(item.id)).map(item => ({ node: item, x: item.x, y: item.y }));
+        event.preventDefault(); stage.setPointerCapture?.(event.pointerId); root.dataset.cfxGraphLastPointerMode = 'group';
+        active = { mode: 'group', pointerId: event.pointerId, clusterId: cluster.id, startX: point.x, startY: point.y, members, moved: false, snapshot: captureGraphInteractionState(root, 'drag-start') };
+        select(root, cluster.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: false });
+      } else if (node && hasFeature(root, 'DragNodes')) {
         event.preventDefault(); stage.setPointerCapture?.(event.pointerId); root.dataset.cfxGraphLastPointerMode = 'node';
-        active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, lastX: point.x, lastY: point.y, lastAt: performanceClock(), vx: 0, vy: 0, fixed: attr(node.el, 'data-node-fixed'), movingFixed: node.fixed, moved: false };
+        active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, lastX: point.x, lastY: point.y, lastAt: performanceClock(), vx: 0, vy: 0, fixed: attr(node.el, 'data-node-fixed'), movingFixed: node.fixed, moved: false, snapshot: hasFeature(root, 'History') ? captureGraphInteractionState(root, 'drag-start') : null };
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now(); root.__cfxGraphPointerSelectionId = node.id; root.__cfxGraphSuppressClickId = node.id;
       } else if (runtimeOverlay && hitCanSelect && hitItem.el) {
@@ -40,7 +51,16 @@
     stage.addEventListener('pointermove', event => {
       if (!active || active.pointerId !== event.pointerId) return;
       const point = scenePoint(root, event);
-      if (active.mode === 'node') {
+      if (active.mode === 'box-select') {
+        const rect = stage.getBoundingClientRect(); active.current = point; active.moved = active.moved || Math.hypot(point.x - active.start.x, point.y - active.start.y) >= 3;
+        updateGraphSelectionBox(root, active.screenStart, { x: event.clientX - rect.left, y: event.clientY - rect.top });
+      } else if (active.mode === 'group') {
+        const dx = point.x - active.startX, dy = point.y - active.startY; active.moved = active.moved || Math.hypot(dx, dy) >= 3;
+        if (!active.moved) return;
+        active.members.forEach(member => { member.node.x = member.x + dx; member.node.y = member.y + dy; member.node.vx = 0; member.node.vy = 0; });
+        applyLayout(root, root.__cfxGraphState || graphState(root));
+        emit(root, 'cfxgraphgroupdrag', { graphId: attr(root, 'data-cfx-graph-id'), clusterId: active.clusterId, dx, dy, nodeIds: active.members.map(member => member.node.id) });
+      } else if (active.mode === 'node') {
         const state = root.__cfxGraphState || graphState(root), node = state.nodes.find(item => item.id === active.nodeId);
         if (!node) return;
         const dragThreshold = 3;
@@ -64,6 +84,15 @@
     const finish = (event) => {
       if (!active || active.pointerId !== event.pointerId) return;
       stage.releasePointerCapture?.(event.pointerId);
+      if (active.mode === 'box-select') {
+        const box = graphSelectionBox(root); if (box) box.hidden = true;
+        if (active.moved && event.type !== 'pointercancel') selectGraphItemsInBox(root, active.start, active.current, active.additive);
+      }
+      if (active.mode === 'group' && active.moved) {
+        checkpointGraphState(root, `Move cluster ${active.clusterId}`, active.snapshot);
+        persistGraphInteractionState(root, 'group-drag');
+        emit(root, 'cfxgraphchange', { graphId: attr(root, 'data-cfx-graph-id'), source: 'group-drag', label: `Move cluster ${active.clusterId}`, nodeIds: active.members.map(member => member.node.id) });
+      }
       if (active.mode === 'node' && active.moved) {
         root.__cfxGraphSuppressClickId = active.nodeId;
         const node = (root.__cfxGraphState || graphState(root)).nodes.find(item => item.id === active.nodeId);
@@ -75,6 +104,9 @@
           releaseDraggedPhysicsNode(root, node);
           if (!graphPrefersReducedMotion(root) && attr(root, 'data-cfx-graph-reheat-drag') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'drag-end', { fit: false });
           emit(root, 'cfxgraphdragend', { graphId: attr(root, 'data-cfx-graph-id'), nodeId: active.nodeId, fixed: node.fixed, behavior: release ? 'release-and-reheat' : 'pin-on-drop', vx: node.vx, vy: node.vy });
+          checkpointGraphState(root, `Move node ${active.nodeId}`, active.snapshot);
+          persistGraphInteractionState(root, 'node-drag');
+          emit(root, 'cfxgraphchange', { graphId: attr(root, 'data-cfx-graph-id'), source: 'node-drag', label: `Move node ${active.nodeId}`, nodeId: active.nodeId, x: node.x, y: node.y });
         }
       }
       if (active.mode === 'node' && !active.moved) {
