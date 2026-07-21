@@ -12,21 +12,38 @@
   const lassoSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point]';
   const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
-  const seriesLabel = (node) => {
+  const seriesLegend = (node) => {
     const data = node.dataset || {};
-    if (data.cfxSeriesName) return data.cfxSeriesName;
-    if (data.cfxSeries === undefined) return '';
+    if (data.cfxSeries === undefined) return null;
     const root = node.closest('.cfx-interactive-chart');
     if (root) {
       const legendItems = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
       const sameSeries = (item) => (item.dataset || {}).cfxSeries === data.cfxSeries;
-      const legend = data.cfxPoint === undefined
+      return data.cfxPoint === undefined
         ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
         : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
           || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined);
-      if (legend) return (legend.dataset || {}).cfxLabel || legend.getAttribute('aria-label') || legend.textContent || '';
     }
+    return null;
+  };
+  const seriesLabel = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeriesName) return data.cfxSeriesName;
+    const legend = seriesLegend(node);
+    if (legend) return (legend.dataset || {}).cfxSeriesName || (legend.dataset || {}).cfxLabel || legend.getAttribute('aria-label') || legend.textContent || '';
+    const svg = node.closest('svg');
+    const mapped = svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-name-' + data.cfxSeries) : '';
+    if (mapped) return mapped;
+    if (data.cfxSeries === undefined) return '';
     return 'Series ' + data.cfxSeries;
+  };
+  const seriesKey = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeriesKey) return data.cfxSeriesKey;
+    const legend = seriesLegend(node);
+    if (legend) return (legend.dataset || {}).cfxSeriesKey || seriesLabel(legend);
+    const svg = node.closest('svg');
+    return svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-key-' + data.cfxSeries) || '' : '';
   };
   const text = (node) => {
     const data = node.dataset || {};
@@ -49,6 +66,7 @@
       role: data.cfxRole || '',
       label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
       series: data.cfxSeries,
+      seriesKey: seriesKey(node),
       point: data.cfxPoint,
       value: data.cfxValue || data.cfxY || data.cfxEnd || '',
       kind: data.cfxKind || ''

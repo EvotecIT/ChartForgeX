@@ -1,4 +1,5 @@
 artifacts/
+Ignore/
 bin/
 obj/
 node_modules/

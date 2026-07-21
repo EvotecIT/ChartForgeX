@@ -175,7 +175,7 @@ public sealed partial class PngChartRenderer {
 
     private static bool PngIsVerticalLegend(ChartLegendPosition position) => PngIsLeftLegend(position) || PngIsRightLegend(position);
 
-    private static bool CanUsePointLegend(ChartSeries series) => VisualPointCount(series) > 1;
+    private static bool CanUsePointLegend(ChartSeries series) => ChartSeriesKindTraits.SupportsPointLegend(series.Kind) && VisualPointCount(series) > 1;
 
     private static int VisualPointCount(ChartSeries series) {
         var tupleSize = VisualTupleSize(series.Kind);

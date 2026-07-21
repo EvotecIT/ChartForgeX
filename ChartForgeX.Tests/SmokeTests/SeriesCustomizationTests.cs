@@ -325,9 +325,17 @@ internal static partial class SmokeTests {
             .AddBar("Severity", Points(8, 32, 84), ChartColor.FromHex("#2563EB"));
         pointLegend.Series[0].WithPointColor(1, "#F97316");
         var pointLegendSvg = pointLegend.ToSvg();
-        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Point legends should expose item-level legend metadata.");
+        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Severity\" data-cfx-series-key=\"Severity\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Point legends should expose item-level and semantic series metadata.");
         Assert(pointLegendSvg.Contains(">High</text>", StringComparison.Ordinal) && pointLegendSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Point legends should use x-axis labels and point colors.");
         Assert(pointLegend.ToPng().Length > 64, "Point legends should render PNG output.");
+
+        var aggregateLineLegend = Chart.Create()
+            .WithSize(520, 320)
+            .WithPointLegend()
+            .AddLine("Latency", Points(12, 18, 15), ChartColor.FromHex("#2563EB"));
+        var aggregateLineLegendSvg = aggregateLineLegend.ToSvg();
+        Assert(aggregateLineLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Latency\" data-cfx-series-key=\"Latency\"", StringComparison.Ordinal) && !aggregateLineLegendSvg.Contains("data-cfx-series-name=\"Latency\" data-cfx-series-key=\"Latency\" data-cfx-point=", StringComparison.Ordinal), "Aggregate line geometry should fall back to a series legend instead of advertising point-level muting.");
+        Assert(aggregateLineLegend.ToPng().Length > 64, "Aggregate line point-legend fallback should preserve PNG parity.");
 
         chart.Series[0].UseSeriesColor(1);
         Assert(!chart.ToSvg().Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Clearing a point color should restore the series fill.");

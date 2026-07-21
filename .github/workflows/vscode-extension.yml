@@ -79,13 +79,16 @@ jobs:
         env:
           IS_PRE_RELEASE: ${{ (github.event_name == 'release' && github.event.release.prerelease) || (github.event_name == 'workflow_dispatch' && inputs.pre_release) }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_PUBLISHED_AT: ${{ github.event.release.published_at }}
           SHOULD_PUBLISH: ${{ github.event_name == 'release' || inputs.publish_marketplace }}
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
-          function Convert-ChartForgeXReleaseTagToExtensionVersion {
+          function Convert-ChartForgeXReleaseToExtensionVersion {
             param(
               [Parameter(Mandatory)]
-              [string] $TagName
+              [string] $TagName,
+
+              [string] $PublishedAt
             )
 
             if ($TagName -match '^ChartForgeX-v(?<stamp>\d{14})$') {
@@ -96,7 +99,33 @@ jobs:
               return "$year.$monthDay.$time"
             }
 
-            throw "ChartForgeX VS Code Marketplace publishing only accepts normal ChartForgeX release tags named ChartForgeX-vYYYYMMDDHHMMSS. Current tag: $TagName. Example: ChartForgeX-v20260507115122"
+            if ($TagName -match '^ChartForgeX-v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+              if ([string]::IsNullOrWhiteSpace($PublishedAt)) {
+                throw "Release publication time is required to stamp the VS Code extension for $TagName."
+              }
+
+              $published = [DateTimeOffset]::Parse(
+                $PublishedAt,
+                [Globalization.CultureInfo]::InvariantCulture,
+                [Globalization.DateTimeStyles]::AssumeUniversal)
+              $utc = $published.UtcDateTime
+              $monthDay = ($utc.Month * 100) + $utc.Day
+              $time = ($utc.Hour * 10000) + ($utc.Minute * 100) + $utc.Second
+              return "$($utc.Year).$monthDay.$time"
+            }
+
+            throw "ChartForgeX release tags must use package semver (ChartForgeX-v1.0.3) or the legacy timestamp form (ChartForgeX-vYYYYMMDDHHMMSS). Current tag: $TagName"
+          }
+
+          $versionCases = @(
+            @{ PublishedAt = '2026-01-02T03:04:05Z'; Expected = '2026.102.30405' },
+            @{ PublishedAt = '2026-07-21T10:58:09Z'; Expected = '2026.721.105809' }
+          )
+          foreach ($case in $versionCases) {
+            $version = Convert-ChartForgeXReleaseToExtensionVersion -TagName 'ChartForgeX-v1.0.3' -PublishedAt $case.PublishedAt
+            if ($version -ne $case.Expected -or $version -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
+              throw "VS Code extension release version '$version' is not the expected SemVer-safe value '$($case.Expected)'."
+            }
           }
 
           function Set-ExtensionPackageVersion {
@@ -156,7 +185,7 @@ jobs:
               throw 'Release publishing is only allowed from commits contained in origin/main.'
             }
 
-            $targetVersion = Convert-ChartForgeXReleaseTagToExtensionVersion -TagName $env:RELEASE_TAG
+            $targetVersion = Convert-ChartForgeXReleaseToExtensionVersion -TagName $env:RELEASE_TAG -PublishedAt $env:RELEASE_PUBLISHED_AT
             $package = Set-ExtensionPackageVersion -Version $targetVersion
             $extensionId = "$($package.publisher).$($package.name)"
             Write-Host "Stamped ChartForgeX Markup extension version $targetVersion from release tag $env:RELEASE_TAG." -ForegroundColor Cyan

@@ -94,5 +94,5 @@ public sealed partial class SvgChartRenderer {
         return "Slice " + (index + 1).ToString(CultureInfo.InvariantCulture);
     }
 
-    private static bool CanUsePointLegend(ChartSeries series) => VisualPointCount(series) > 1;
+    private static bool CanUsePointLegend(ChartSeries series) => ChartSeriesKindTraits.SupportsPointLegend(series.Kind) && VisualPointCount(series) > 1;
 }

@@ -189,6 +189,7 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
 | Interactive topology HTML | `topology.ToInteractiveHtmlFragment()`, `topology.ToInteractiveHtmlPage()`, or `topology.SaveInteractiveHtml("topology.html")` from `ChartForgeX.Interactivity.Html` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
+| Direct RGBA pixels | `chart.ToRgbaImage()`, `topology.ToRgbaImage(options)`, or the equivalent grid, visual-block, and canvas helpers when a host will compose the result instead of saving it |
 | Layered visual canvas | `VisualCanvas.CreateSocialPreview()`, `VisualCanvas.CreateDesktopWallpaper()`, `canvas.ToSvg()`, `canvas.SavePng("social-preview.png")`, or `canvas.Save("social-preview.jpg", rasterOptions)` for fixed-size wallpaper, social image, report cover, and hero compositions |
 | Reusable image composition | `ImageComposition.FromFile("wallpaper.jpg").DrawImage(...).DrawText(...).StrokeRectangle(...).Save("wallpaper-output.jpg")`, `composition.Write(stream, RasterImageFormat.Png)`, or `ImageComposition.TryFromBytes(...)` for dependency-free background plus overlay generation |
 | Topology animated raster | `topology.ToGif(options)`, `topology.ToApng(options)`, `topology.WriteGif(stream, options)`, `topology.WriteApng(stream, options)`, `topology.SaveGif("route.gif", options)`, or `topology.SaveApng("route.apng", options)` with `TopologyMotionOptions.RoutePulseForScenario(...)` or `.RoutePulseForEdges(...)` |
@@ -589,6 +590,8 @@ Review the generated pages under `ChartForgeX.Examples/bin/Release/net8.0/output
 - `executive-interactive-dashboard.html`
 - `identity-risk-graph-explorer.html`
 - `global-estate-premium-topology.html`
+
+Interactive dashboards synchronize by stable series identity rather than local series order. Use `ChartSeries.WithInteractionKey(...)` when two charts display different labels for the same measure. Scenario controls and ordered step playback remain the reusable opt-in model for routes, transitions, and change-over-time reviews; static SVG and PNG output remain deterministic and script-free.
 
 Only refresh visual baselines after reviewing the generated gallery:
 

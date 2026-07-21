@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 
@@ -79,6 +80,7 @@ internal static partial class SmokeTests {
         });
 
         Assert(html.Contains("<title>Interactive security posture</title>", StringComparison.Ordinal), "Interactive HTML should use the configured page title.");
+        Assert(html.Contains("data-cfx-asset-source=\"document\"", StringComparison.Ordinal), "Interactive pages should declare document-owned assets on their chart section.");
         Assert(html.Contains("data-cfx-chart-id=\"security-posture\"", StringComparison.Ordinal), "Interactive HTML should expose a stable chart ID.");
         Assert(html.Contains("data-cfx-interaction-group=\"dashboard-a\"", StringComparison.Ordinal), "Interactive HTML should expose a synchronized chart group.");
         Assert(html.Contains("data-cfx-interaction-features=\"", StringComparison.Ordinal) && html.Contains("Zoom", StringComparison.Ordinal) && html.Contains("Pan", StringComparison.Ordinal) && html.Contains("Brush", StringComparison.Ordinal) && html.Contains("SynchronizedCharts", StringComparison.Ordinal), "Interactive HTML should describe enabled host-neutral features.");
@@ -97,7 +99,10 @@ internal static partial class SmokeTests {
         Assert(html.Contains("cfx-selected", StringComparison.Ordinal), "Interactive HTML should include selectable-region styling and behavior.");
         Assert(html.Contains("cfx-hovered", StringComparison.Ordinal) && html.Contains("cfx-hover-related", StringComparison.Ordinal), "Interactive HTML should include reusable hover spotlight styling and behavior.");
         Assert(html.Contains("cfx-series-muted", StringComparison.Ordinal), "Interactive HTML should include legend-toggle behavior.");
-        Assert(html.Contains("const setSeriesMuted = (root, series, muted)", StringComparison.Ordinal), "Interactive HTML should target SVG series metadata for legend toggles.");
+        Assert(html.Contains("const setSeriesMuted = (root, target, muted)", StringComparison.Ordinal), "Interactive HTML should target semantic SVG series metadata for legend toggles.");
+        Assert(html.Contains("data-cfx-series-name=\"Passed\"", StringComparison.Ordinal) && html.Contains("data-cfx-series-key=\"Passed\"", StringComparison.Ordinal), "Interactive legends should expose a stable semantic series identity by default.");
+        Assert(html.Contains("const resolveSeriesTarget = (root, target)", StringComparison.Ordinal) && html.Contains("if (!target || !target.seriesKey) return null", StringComparison.Ordinal), "Grouped charts should synchronize legend state only when a semantic series identity resolves in the peer chart.");
+        Assert(html.Contains("target.point === undefined || data.cfxPoint === String(target.point)", StringComparison.Ordinal), "Point legends should mute or isolate one point instead of the complete containing series.");
         Assert(html.Contains("const toggleSeriesFocus = (root, item, emit, sync)", StringComparison.Ordinal) && html.Contains("cfx-series-isolated-out", StringComparison.Ordinal), "Interactive HTML should let users isolate one series from reusable legend metadata.");
         Assert(html.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal) && html.Contains("data-cfx-zoom=\"out\"", StringComparison.Ordinal), "Interactive HTML should include zoom controls when zoom is enabled.");
         Assert(html.Contains("data-cfx-mode-button=\"pan\"", StringComparison.Ordinal), "Interactive HTML should include a pan mode control when pan is enabled.");
@@ -115,12 +120,26 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-scenario-step-control=\"link\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario link controls when deep-link state is enabled.");
         Assert(html.Contains("class=\"cfx-scenario-progress\"", StringComparison.Ordinal) && html.Contains("data-cfx-scenario-progress=\"true\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario step progress chrome.");
         Assert(html.Contains("cfxscenario", StringComparison.Ordinal) && html.Contains("cfxscenariostep", StringComparison.Ordinal) && html.Contains("cfxscenarioplayback", StringComparison.Ordinal) && html.Contains("cfxscenariolink", StringComparison.Ordinal), "Interactive HTML should publish reusable scenario host events.");
-        Assert(html.Contains("scenarioTargetMatches", StringComparison.Ordinal) && html.Contains("kind === 'series' && data.cfxSeries === target", StringComparison.Ordinal), "Interactive HTML should map reusable scenario steps onto adapter-defined chart elements.");
+        Assert(html.Contains("scenarioTargetMatches", StringComparison.Ordinal) && html.Contains("const seriesOrdinalTarget = /^(0|[1-9]\\d*)$/.test(target)", StringComparison.Ordinal) && html.Contains("seriesOrdinalTarget ? data.cfxSeries === target : seriesKey(node) === target", StringComparison.Ordinal), "Interactive HTML should disambiguate local series ordinals from stable semantic series keys.");
         Assert(html.Contains("kind === 'point' && data.cfxPoint === target", StringComparison.Ordinal) && html.Contains("data.cfxSeries + ':' + data.cfxPoint === target", StringComparison.Ordinal), "Interactive HTML should map reusable point steps onto rendered point metadata.");
         Assert(html.Contains("kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0", StringComparison.Ordinal), "Interactive HTML should map reusable annotation steps onto rendered annotation metadata.");
         Assert(html.Contains("[data-cfx-point],[data-cfx-series]", StringComparison.Ordinal), "Interactive HTML should treat generic point and series metadata as interactive targets.");
         Assert(html.Contains("node.closest('[data-cfx-role=\"legend-item\"]')", StringComparison.Ordinal), "Interactive HTML should avoid double-binding legend item descendants as separate selectable series targets.");
         Assert(html.Contains("const targetIdentity = (node)", StringComparison.Ordinal) && html.Contains("applySelectionByTarget(root, detail.target", StringComparison.Ordinal), "Interactive HTML should synchronize selections by stable target metadata before falling back to labels.");
+        Assert(html.Contains("seriesKey: seriesKey(node)", StringComparison.Ordinal) && html.Contains("if (target.seriesKey)", StringComparison.Ordinal), "Grouped selection and hover should require semantic series identity before comparing local series ordinals.");
+        var keyedChart = SampleChart();
+        keyedChart.Series[0].WithInteractionKey("result.passed");
+        AssertThrows<ArgumentException>(() => keyedChart.Series[0].WithInteractionKey("0"), "Digits-only interaction keys should remain reserved for local scenario ordinals.");
+        var keyedHtml = keyedChart.ToInteractiveHtmlFragmentWithoutAssets();
+        Assert(keyedHtml.Contains("data-cfx-series-name=\"Passed\" data-cfx-series-key=\"result.passed\"", StringComparison.Ordinal), "Interactive series should support stable keys that are independent from display names.");
+        keyedChart.WithLegend(false);
+        var legendFreeKeyedHtml = keyedChart.ToInteractiveHtmlFragmentWithoutAssets();
+        Assert(legendFreeKeyedHtml.Contains("data-cfx-series-key-0=\"result.passed\"", StringComparison.Ordinal) && legendFreeKeyedHtml.Contains("data-cfx-series-name-0=\"Passed\"", StringComparison.Ordinal), "Legend-free charts should preserve ordinal-to-semantic series identity on the SVG root.");
+        Assert(html.Contains("svg.getAttribute('data-cfx-series-key-' + data.cfxSeries)", StringComparison.Ordinal) && html.Contains("svg.getAttribute('data-cfx-series-name-' + data.cfxSeries)", StringComparison.Ordinal), "Interactive charts should resolve semantic series identity without requiring a rendered legend.");
+        keyedChart.Series[0].UseAutomaticInteractionKey();
+        Assert(keyedChart.ToSvg().Contains("data-cfx-series-key-0=\"Passed\"", StringComparison.Ordinal), "Interactive series should restore display-name identity when an explicit key is cleared.");
+        var numericNameChart = Chart.Create().WithSize(320, 220).AddLine("0", ChartPoints.FromValues(1, 2));
+        Assert(numericNameChart.ToSvg().Contains("data-cfx-series-key-0=\"series:0\"", StringComparison.Ordinal), "Automatic semantic identity should namespace digits-only display names away from local series ordinals.");
         Assert(html.Contains("'cfxhover'", StringComparison.Ordinal) && html.Contains("'cfxhoverclear'", StringComparison.Ordinal), "Interactive HTML should publish host events for hover and hover clear.");
         Assert(html.Contains("action: 'hover'", StringComparison.Ordinal) && html.Contains("action: 'hover-clear'", StringComparison.Ordinal), "Interactive HTML should synchronize hover spotlight state across grouped charts.");
         Assert(html.Contains("applyHoverByTarget(root, detail.target)", StringComparison.Ordinal), "Interactive HTML should apply synchronized hover state by stable target metadata.");
@@ -165,6 +184,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive HTML should synchronize grouped chart state without external libraries.");
         Assert(html.Contains("action: 'viewport'", StringComparison.Ordinal) && html.Contains("action: 'series'", StringComparison.Ordinal) && html.Contains("action: 'selection'", StringComparison.Ordinal) && html.Contains("action: 'brush'", StringComparison.Ordinal), "Interactive HTML should synchronize viewport, series, selection, and brush changes.");
         Assert(html.Contains("action: 'crosshair'", StringComparison.Ordinal) && html.Contains("action: 'lasso'", StringComparison.Ordinal) && html.Contains("action: 'series-focus'", StringComparison.Ordinal) && html.Contains("action: 'compare'", StringComparison.Ordinal), "Interactive HTML should synchronize crosshair hover, lasso selections, one-series focus, and compare markers across grouped charts.");
+        Assert(html.Contains("if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter", StringComparison.Ordinal) && html.Contains("{ series: localSeries, seriesKey: target.seriesKey, label: target.label }", StringComparison.Ordinal), "Synchronized series toggles and isolation should resolve semantic targets in peers that do not render legends.");
+        Assert(html.Contains("if (target) setSeriesIsolation(root, target, detail.isolated === true)", StringComparison.Ordinal) && !html.Contains("target || detail.isolated !== true", StringComparison.Ordinal), "Unmatched synchronized series focus should not clear an unrelated peer's local isolation state.");
         Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-reset=\"true\">Reset</button>", StringComparison.Ordinal), "Interactive HTML should include a reset control by default.");
         Assert(html.Contains("<svg", StringComparison.Ordinal), "Interactive HTML should embed the static SVG output.");
         Assert(html.Contains("aria-live=\"polite\"", StringComparison.Ordinal), "Interactive tooltips should expose polite assistive announcements.");
@@ -180,6 +201,7 @@ internal static partial class SmokeTests {
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Export);
         });
         Assert(fragment.Contains("data-cfx-interactive-assets=\"true\"", StringComparison.Ordinal), "Interactive fragments should include embeddable CSS assets.");
+        Assert(fragment.Contains("data-cfx-asset-source=\"inline\"", StringComparison.Ordinal), "Self-contained interactive fragments should declare inline assets.");
         Assert(!fragment.Contains("\n:root {", StringComparison.Ordinal) && !fragment.Contains("\nbody {", StringComparison.Ordinal) && !fragment.Contains("\n* {", StringComparison.Ordinal), "Interactive fragments should not inject page-level CSS selectors into host documents.");
         Assert(fragment.Contains(".cfx-interactive-chart, .cfx-interactive-chart * {", StringComparison.Ordinal), "Interactive fragment CSS should scope reset rules to the embedded chart subtree.");
         Assert(fragment.Contains("class=\"cfx-interactive-chart\"", StringComparison.Ordinal), "Interactive fragments should include the reusable interactive chart section.");
@@ -194,6 +216,7 @@ internal static partial class SmokeTests {
         Assert(assetlessFragment.Contains("class=\"cfx-interactive-chart\"", StringComparison.Ordinal), "Asset-light interactive fragments should still include the reusable chart section.");
         Assert(assetlessFragment.Contains("data-cfx-chart-id=\"assetless-security-posture\"", StringComparison.Ordinal), "Asset-light interactive fragments should preserve configured chart ids.");
         Assert(!assetlessFragment.Contains("data-cfx-interactive-assets=\"true\"", StringComparison.Ordinal), "Asset-light interactive fragments should omit inline interactive chart CSS assets.");
+        Assert(assetlessFragment.Contains("data-cfx-asset-source=\"host\"", StringComparison.Ordinal), "Asset-light interactive fragments should declare that the embedding host owns their assets.");
         Assert(!assetlessFragment.Contains("<script>", StringComparison.Ordinal), "Asset-light interactive fragments should omit the inline interactive chart runtime script.");
         Assert(HtmlInteractiveChartRenderer.BuildFragmentStyle().Contains(".cfx-interactive-chart, .cfx-interactive-chart * {", StringComparison.Ordinal), "Host-registered interactive chart CSS should remain scoped to chart fragments.");
         Assert(HtmlInteractiveChartRenderer.BuildInteractionScript().Contains("cfxRuntimeBound", StringComparison.Ordinal), "Host-registered interactive chart runtime should keep duplicate binding guards.");
@@ -279,6 +302,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal), "Interactive dashboards should render a grouped dashboard surface.");
         Assert(html.Contains("--cfx-dashboard-columns:2", StringComparison.Ordinal), "Interactive dashboards should honor configured column counts.");
         Assert(CountOccurrences(html, "class=\"cfx-interactive-chart\"") == 2, "Interactive dashboards should render one interactive chart section per chart.");
+        Assert(CountOccurrences(html, "data-cfx-asset-source=\"document\"") == 2, "Interactive dashboards should declare document-owned assets on every chart section.");
         Assert(html.Contains("data-cfx-chart-id=\"exec-dashboard-1\"", StringComparison.Ordinal) && html.Contains("data-cfx-chart-id=\"exec-dashboard-2\"", StringComparison.Ordinal), "Interactive dashboards should assign deterministic child chart IDs.");
         Assert(CountOccurrences(html, "data-cfx-interaction-group=\"exec-review\"") == 2, "Interactive dashboards should place every child chart in the shared interaction group.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive dashboards should include grouped synchronization runtime.");

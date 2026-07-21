@@ -229,6 +229,7 @@ internal static partial class SmokeTests {
         Assert(viewportHtml.Contains("const topologySvg = () =>", StringComparison.Ordinal) && viewportHtml.Contains("[data-cfx-role=\"topology\"]", StringComparison.Ordinal), "Topology viewport controls should target the real topology SVG instead of toolbar icon SVGs.");
         Assert(viewportHtml.Contains("cfx-topology-set-viewport", StringComparison.Ordinal), "Topology viewport controls should allow hosts to drive viewport state.");
         Assert(viewportHtml.Contains("cfx-topology-reset-viewport", StringComparison.Ordinal), "Topology viewport controls should allow hosts to reset viewport state.");
+        Assert(viewportHtml.Contains("data-cfx-asset-source=\"document\"", StringComparison.Ordinal), "Topology pages should declare document-owned assets on their wrapper.");
         Assert(viewportHtml.Contains("cfx-topology-viewport", StringComparison.Ordinal), "Topology viewport controls should dispatch host-friendly viewport events.");
         Assert(viewportHtml.Contains("addEventListener('wheel'", StringComparison.Ordinal), "Topology viewport controls should support wheel zoom.");
         Assert(viewportHtml.Contains("data-cfx-topology-fit", StringComparison.Ordinal) && viewportHtml.Contains("cfx-topology-fit", StringComparison.Ordinal), "Topology viewport controls should support host-visible fit events.");
@@ -246,6 +247,7 @@ internal static partial class SmokeTests {
 
         var fragmentHtml = CreateSampleTopologyChart().ToInteractiveHtmlFragment(new TopologyRenderOptions { IncludeLegend = false, EnableHtmlViewportControls = true, EnableHtmlExportControls = true });
         Assert(fragmentHtml.Contains("data-cfx-topology-assets=\"true\"", StringComparison.Ordinal), "Interactive topology fragments should include scoped topology CSS assets for embedders.");
+        Assert(fragmentHtml.Contains("data-cfx-asset-source=\"inline\"", StringComparison.Ordinal), "Self-contained topology fragments should declare inline assets.");
         Assert(fragmentHtml.Contains("--cfx-topology-control-bg", StringComparison.Ordinal), "Topology fragment controls should be themeable through CSS variables.");
         Assert(fragmentHtml.Contains("<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"", StringComparison.Ordinal), "Topology fragment controls should render icon-style buttons instead of raw text controls.");
         Assert(fragmentHtml.Contains("cfx-topology-select", StringComparison.Ordinal), "Interactive topology fragments should include the topology runtime script.");
@@ -257,6 +259,7 @@ internal static partial class SmokeTests {
         var assetlessScript = HtmlInteractiveTopologyRenderer.BuildInteractionScript(assetlessOptions);
         Assert(assetlessFragment.Contains("class=\"report-topology-wrapper\"", StringComparison.Ordinal), "Asset-light topology fragments should still render the requested wrapper prefix.");
         Assert(!assetlessFragment.Contains("data-cfx-topology-assets=\"true\"", StringComparison.Ordinal), "Asset-light topology fragments should omit inline topology CSS assets.");
+        Assert(assetlessFragment.Contains("data-cfx-asset-source=\"host\"", StringComparison.Ordinal), "Asset-light topology fragments should declare that the embedding host owns their assets.");
         Assert(!assetlessFragment.Contains("<script>", StringComparison.Ordinal), "Asset-light topology fragments should omit the inline topology runtime script.");
         Assert(assetlessStyle.Contains(".report-topology-wrapper{", StringComparison.Ordinal), "Host-registered topology CSS should honor the requested wrapper prefix.");
         Assert(assetlessStyle.Contains(".report-topology-wrapper[data-cfx-viewport-controls='true']", StringComparison.Ordinal), "Host-registered topology CSS should honor prefixed control selectors.");

@@ -47,6 +47,30 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.HorizontalBar ||
         kind == ChartSeriesKind.Lollipop;
 
+    public static bool SupportsPointLegend(ChartSeriesKind kind) =>
+        kind == ChartSeriesKind.Scatter ||
+        kind == ChartSeriesKind.Bubble ||
+        kind == ChartSeriesKind.ErrorBar ||
+        kind == ChartSeriesKind.Candlestick ||
+        kind == ChartSeriesKind.Bar ||
+        kind == ChartSeriesKind.Lollipop ||
+        kind == ChartSeriesKind.Dumbbell ||
+        kind == ChartSeriesKind.RangeBar ||
+        kind == ChartSeriesKind.BoxPlot ||
+        kind == ChartSeriesKind.HorizontalBar ||
+        kind == ChartSeriesKind.DottedMap ||
+        kind == ChartSeriesKind.RadialBar ||
+        kind == ChartSeriesKind.Waterfall ||
+        kind == ChartSeriesKind.Funnel ||
+        kind == ChartSeriesKind.Pie ||
+        kind == ChartSeriesKind.Donut ||
+        kind == ChartSeriesKind.Treemap ||
+        kind == ChartSeriesKind.Pictorial ||
+        kind == ChartSeriesKind.ProgressBar ||
+        kind == ChartSeriesKind.WordCloud ||
+        kind == ChartSeriesKind.Ohlc ||
+        kind == ChartSeriesKind.PolarArea;
+
     public static bool UsesVerticalBaseline(ChartSeriesKind kind) =>
         kind == ChartSeriesKind.Area ||
         kind == ChartSeriesKind.StepArea ||

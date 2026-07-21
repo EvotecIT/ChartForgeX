@@ -12,11 +12,40 @@ public sealed class ChartSeries {
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
+    private string? _interactionKey;
 
     /// <summary>
     /// Gets the display name shown in legends.
     /// </summary>
     public string Name { get; }
+
+    /// <summary>
+    /// Gets or sets the stable semantic key used to synchronize this series across interactive charts.
+    /// When unset, capable adapters use <see cref="Name"/>. Digits-only values are reserved for local series ordinals.
+    /// </summary>
+    public string? InteractionKey {
+        get => _interactionKey;
+        set {
+            var normalized = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
+            if (normalized != null && IsOrdinalLikeInteractionKey(normalized)) throw new ArgumentException("Interaction keys cannot contain only digits because numeric scenario targets are reserved for local series ordinals.", nameof(value));
+            _interactionKey = normalized;
+        }
+    }
+
+    internal string InteractionIdentityKey {
+        get {
+            var key = string.IsNullOrWhiteSpace(_interactionKey) ? Name : _interactionKey!;
+            return IsOrdinalLikeInteractionKey(key) ? "series:" + key : key;
+        }
+    }
+
+    private static bool IsOrdinalLikeInteractionKey(string value) {
+        if (value.Length == 0) return false;
+        for (var index = 0; index < value.Length; index++) {
+            if (value[index] < '0' || value[index] > '9') return false;
+        }
+        return true;
+    }
 
     /// <summary>
     /// Gets the series rendering kind.
@@ -319,6 +348,25 @@ public sealed class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries WithLegendEntry(bool visible = true) {
         ShowInLegend = visible;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the stable semantic key used to synchronize this series across interactive charts.
+    /// </summary>
+    /// <param name="key">The semantic key, or null to use the series name.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithInteractionKey(string? key) {
+        InteractionKey = key;
+        return this;
+    }
+
+    /// <summary>
+    /// Uses the series name as the automatic interactive synchronization key.
+    /// </summary>
+    /// <returns>The current series.</returns>
+    public ChartSeries UseAutomaticInteractionKey() {
+        InteractionKey = null;
         return this;
     }
 

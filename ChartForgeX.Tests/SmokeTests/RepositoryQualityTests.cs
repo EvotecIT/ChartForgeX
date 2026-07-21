@@ -210,6 +210,9 @@ internal static partial class SmokeTests {
         Assert(workflow.Contains("VSCE_PAT", StringComparison.Ordinal), "VS Code markup workflow should publish with the Marketplace token secret.");
         Assert(workflow.Contains("ChartForgeX.Markup.VSCode/scripts/package-vsix.ps1", StringComparison.Ordinal), "VS Code markup workflow should package through the PowerShell packager.");
         Assert(workflow.Contains("chartforgex-markup-vsix", StringComparison.Ordinal), "VS Code markup workflow should upload a stable VSIX artifact.");
+        Assert(workflow.Contains("return \"$($utc.Year).$monthDay.$time\"", StringComparison.Ordinal), "VS Code release versions should use unpadded numeric SemVer components.");
+        Assert(workflow.Contains("Expected = '2026.102.30405'", StringComparison.Ordinal) && workflow.Contains("Expected = '2026.721.105809'", StringComparison.Ordinal), "VS Code release workflow should self-test single-digit and multi-digit UTC version components.");
+        Assert(workflow.Contains("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$", StringComparison.Ordinal), "VS Code release workflow should reject leading-zero numeric SemVer components.");
 
         var gitignore = File.ReadAllText(Path.Combine(extensionRoot, ".gitignore"));
         foreach (var ignored in new[] { "node_modules/", "out/", "dist/", "tools/" }) {
@@ -237,6 +240,7 @@ internal static partial class SmokeTests {
         Assert(traits.Contains("UsesCartesianXAxis", StringComparison.Ordinal), "Shared-axis compatibility should live in the shared trait table.");
         Assert(traits.Contains("IsMapKind", StringComparison.Ordinal), "Map renderer axis suppression should live in the shared trait table.");
         Assert(traits.Contains("IsLineLikeLegendKind", StringComparison.Ordinal), "Legend symbol classification should live in the shared trait table.");
+        Assert(traits.Contains("SupportsPointLegend", StringComparison.Ordinal), "Point-legend capability should live in the shared trait table.");
 
         var guards = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Core", "ChartGuards.cs"));
         var grid = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Core", "ChartGrid.cs"));
@@ -248,6 +252,9 @@ internal static partial class SmokeTests {
         Assert(grid.Contains("ChartSeriesKindTraits.UsesCartesianXAxis", StringComparison.Ordinal) && grid.Contains("ChartSeriesKindTraits.UsesCartesianYAxis", StringComparison.Ordinal), "Chart grids should use shared cartesian compatibility traits.");
         Assert(range.Contains("ChartSeriesKindTraits.IsExclusive", StringComparison.Ordinal), "Range calculation should skip specialized renderers through the shared trait table.");
         Assert(svgHelpers.Contains("ChartSeriesKindTraits.IsMapKind", StringComparison.Ordinal) && pngRenderer.Contains("ChartSeriesKindTraits.IsMapKind", StringComparison.Ordinal), "SVG and PNG renderers should share map-kind classification.");
+        var svgClassification = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Classification.cs"));
+        var pngLegend = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Legend.cs"));
+        Assert(svgClassification.Contains("ChartSeriesKindTraits.SupportsPointLegend", StringComparison.Ordinal) && pngLegend.Contains("ChartSeriesKindTraits.SupportsPointLegend", StringComparison.Ordinal), "SVG and PNG point legends should share the same point-scoped capability contract.");
     }
 
     private static void LinePolishLayersStaySharedAcrossSvgAndPng() {
@@ -459,7 +466,7 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "SymbolPackageFormat", "snupkg"), "Package symbols should use snupkg format.");
         var releaseNotes = GetXmlValue(libraryProject, "PackageReleaseNotes");
         Assert(ContainsMetadataConcepts(releaseNotes, "SVG", "PNG", "validation"), "Package release notes should summarize renderer coverage and validation work.");
-        Assert(ContainsMetadataConcepts(releaseNotes, "brand kit", "pictorial", "word cloud"), "Package release notes should summarize the current chart and styling surface.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "semantic series", "RGBA", "topology"), "Package release notes should summarize the current reusable rendering and interaction improvements.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "AGENTS.md")), "Repository should include agent guidance.");

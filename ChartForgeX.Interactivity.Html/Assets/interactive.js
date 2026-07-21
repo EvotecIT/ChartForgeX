@@ -12,21 +12,38 @@
   const lassoSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-point]';
   const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
-  const seriesLabel = (node) => {
+  const seriesLegend = (node) => {
     const data = node.dataset || {};
-    if (data.cfxSeriesName) return data.cfxSeriesName;
-    if (data.cfxSeries === undefined) return '';
+    if (data.cfxSeries === undefined) return null;
     const root = node.closest('.cfx-interactive-chart');
     if (root) {
       const legendItems = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
       const sameSeries = (item) => (item.dataset || {}).cfxSeries === data.cfxSeries;
-      const legend = data.cfxPoint === undefined
+      return data.cfxPoint === undefined
         ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
         : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
           || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined);
-      if (legend) return (legend.dataset || {}).cfxLabel || legend.getAttribute('aria-label') || legend.textContent || '';
     }
+    return null;
+  };
+  const seriesLabel = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeriesName) return data.cfxSeriesName;
+    const legend = seriesLegend(node);
+    if (legend) return (legend.dataset || {}).cfxSeriesName || (legend.dataset || {}).cfxLabel || legend.getAttribute('aria-label') || legend.textContent || '';
+    const svg = node.closest('svg');
+    const mapped = svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-name-' + data.cfxSeries) : '';
+    if (mapped) return mapped;
+    if (data.cfxSeries === undefined) return '';
     return 'Series ' + data.cfxSeries;
+  };
+  const seriesKey = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeriesKey) return data.cfxSeriesKey;
+    const legend = seriesLegend(node);
+    if (legend) return (legend.dataset || {}).cfxSeriesKey || seriesLabel(legend);
+    const svg = node.closest('svg');
+    return svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-key-' + data.cfxSeries) || '' : '';
   };
   const text = (node) => {
     const data = node.dataset || {};
@@ -49,6 +66,7 @@
       role: data.cfxRole || '',
       label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
       series: data.cfxSeries,
+      seriesKey: seriesKey(node),
       point: data.cfxPoint,
       value: data.cfxValue || data.cfxY || data.cfxEnd || '',
       kind: data.cfxKind || ''
@@ -400,9 +418,33 @@
     image.onerror = () => URL.revokeObjectURL(sourceUrl);
     image.src = sourceUrl;
   };
-  const setSeriesMuted = (root, series, muted) => {
+  const seriesTarget = (node) => {
+    const data = node.dataset || {};
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node) };
+  };
+  const seriesTargetToken = (target) => target ? [target.series ?? '', target.point ?? ''].join(':') : '';
+  const matchesLocalSeriesTarget = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    return data.cfxSeries === String(target.series) && (target.point === undefined || data.cfxPoint === String(target.point));
+  };
+  const resolveSeriesTarget = (root, target) => {
+    if (!target || !target.seriesKey) return null;
+    const legends = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
+    let matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
+    if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter((item) => seriesKey(item) === target.seriesKey);
+    if (!matchingSeries.length) return null;
+    if (target.point === undefined) {
+      const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
+      return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
+    }
+    const exactLabel = matchingSeries.find((item) => (item.dataset || {}).cfxLabel === target.label);
+    const exactPoint = matchingSeries.find((item) => (item.dataset || {}).cfxPoint === String(target.point));
+    return seriesTarget(exactLabel || exactPoint || matchingSeries.find((item) => (item.dataset || {}).cfxPoint === undefined) || matchingSeries[0]);
+  };
+  const setSeriesMuted = (root, target, muted) => {
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
-      if ((node.dataset ? node.dataset.cfxSeries : undefined) !== series) return;
+      if (!matchesLocalSeriesTarget(node, target)) return;
       const role = node.dataset ? node.dataset.cfxRole || '' : '';
       if (role.indexOf('legend') === 0) {
         node.dataset.cfxMuted = muted ? 'true' : 'false';
@@ -411,11 +453,11 @@
       node.classList.toggle('cfx-series-muted', muted);
     });
   };
-  const setSeriesIsolation = (root, series, isolated) => {
+  const setSeriesIsolation = (root, target, isolated) => {
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       const data = node.dataset || {};
       const role = data.cfxRole || '';
-      const sameSeries = data.cfxSeries === series;
+      const sameSeries = matchesLocalSeriesTarget(node, target);
       if (role.indexOf('legend') === 0) {
         if (isolated && sameSeries) {
           data.cfxIsolated = 'true';
@@ -429,27 +471,27 @@
       node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
       node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries);
     });
-    if (isolated) root.dataset.cfxIsolatedSeries = series;
+    if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {
     if (!hasFeature(root, 'LegendToggles')) return;
-    const series = item.dataset.cfxSeries;
-    if (series === undefined) return;
-    const isolated = root.dataset.cfxIsolatedSeries !== series;
-    setSeriesIsolation(root, series, isolated);
-    emitHostEvent(root, 'cfxseriesfocus', { series, isolated });
-    if (sync !== false) emitSync(root, { action: 'series-focus', series, isolated });
+    const target = seriesTarget(item);
+    if (target.series === undefined) return;
+    const isolated = root.dataset.cfxIsolatedSeries !== seriesTargetToken(target);
+    setSeriesIsolation(root, target, isolated);
+    emitHostEvent(root, 'cfxseriesfocus', { ...target, isolated });
+    if (sync !== false) emitSync(root, { action: 'series-focus', target, isolated });
   };
   const toggleSeries = (root, item) => {
     if (!hasFeature(root, 'LegendToggles')) return;
-    const series = item.dataset.cfxSeries;
-    if (series === undefined) return;
-    if (root.dataset.cfxIsolatedSeries) setSeriesIsolation(root, series, false);
+    const target = seriesTarget(item);
+    if (target.series === undefined) return;
+    if (root.dataset.cfxIsolatedSeries) setSeriesIsolation(root, null, false);
     const muted = item.dataset.cfxMuted !== 'true';
-    setSeriesMuted(root, series, muted);
-    emitHostEvent(root, 'cfxseries', { series, muted });
-    emitSync(root, { action: 'series', series, muted });
+    setSeriesMuted(root, target, muted);
+    emitHostEvent(root, 'cfxseries', { ...target, muted });
+    emitSync(root, { action: 'series', target, muted });
   };
   const toggleSelection = (root, node) => {
     if (!hasFeature(root, 'Selection')) return;
@@ -471,7 +513,8 @@
   const targetRelated = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
-    if (target.series !== undefined && data.cfxSeries === String(target.series)) return true;
+    if (target.seriesKey && seriesKey(node) === target.seriesKey) return true;
+    if (!target.seriesKey && target.series !== undefined && data.cfxSeries === String(target.series)) return true;
     if (target.point !== undefined && data.cfxPoint === String(target.point)) return true;
     if (target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
     return false;
@@ -726,6 +769,11 @@
     if (!target) return false;
     const data = node.dataset || {};
     if (target.id && (node.id === target.id || data.cfxId === target.id)) return true;
+    if (target.seriesKey) {
+      if (seriesKey(node) !== target.seriesKey) return false;
+      if (target.point !== undefined) return data.cfxPoint === String(target.point);
+      return !target.role || data.cfxRole === target.role;
+    }
     if (target.series !== undefined && target.point !== undefined && data.cfxSeries === String(target.series) && data.cfxPoint === String(target.point)) return true;
     if (target.series !== undefined && target.point === undefined && data.cfxSeries === String(target.series) && target.role && data.cfxRole === target.role) return true;
     if (target.role && data.cfxRole === target.role && target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
@@ -804,8 +852,14 @@
     else if (detail.action === 'reveal') revealTargets(root, detail.targets || [], false, false, detail.source || '');
     else if (detail.action === 'reveal-clear') clearReveals(root, detail.source || '');
     else if (detail.action === 'state') applyInteractionState(root, detail.state, false, false);
-    else if (detail.action === 'series' && detail.series !== undefined) setSeriesMuted(root, detail.series, detail.muted === true);
-    else if (detail.action === 'series-focus') setSeriesIsolation(root, detail.series || '', detail.isolated === true);
+    else if (detail.action === 'series') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesMuted(root, target, detail.muted === true);
+    }
+    else if (detail.action === 'series-focus') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesIsolation(root, target, detail.isolated === true);
+    }
     else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
     else if (detail.action === 'scenario-step') {
       if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false);
@@ -861,7 +915,8 @@
     const data = node.dataset || {};
     const kind = step.targetKind || '';
     const target = step.targetId || '';
-    if (kind === 'series' && data.cfxSeries === target) return true;
+    const seriesOrdinalTarget = /^(0|[1-9]\d*)$/.test(target);
+    if (kind === 'series' && (seriesOrdinalTarget ? data.cfxSeries === target : seriesKey(node) === target)) return true;
     if (kind === 'point' && data.cfxPoint === target) return true;
     if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;
     if (kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0 && (data.cfxLabel === target || data.cfxKind === target || data.cfxValue === target || data.cfxId === target || node.id === target)) return true;
@@ -1299,7 +1354,7 @@
       clearSelections(root);
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
-      setSeriesIsolation(root, root.dataset.cfxIsolatedSeries || '', false);
+      setSeriesIsolation(root, null, false);
       clearFocusTrail(root);
       clearReveals(root);
       if (brush) brush.hidden = true;

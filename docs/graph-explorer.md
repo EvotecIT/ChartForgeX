@@ -290,6 +290,10 @@ The explorer includes search, status/kind filters, selection, Ctrl/Meta/Shift mu
 
 Stable events include `cfxgraphready`, `cfxgraphselect`, `cfxgraphselection`, `cfxgraphfilter`, `cfxgraphfocus`, `cfxgraphnavigate`, `cfxgraphcluster`, `cfxgraphpatch`, `cfxgraphdragstart`, `cfxgraphdrag`, `cfxgraphdragend`, `cfxgraphphysicschange`, `cfxgraphthemechange`, `cfxgraphviewport`, `cfxgraphexport`, `cfxgraphstabilized`, `cfxgraphlod`, and `cfxgraphperformance`.
 
+Performance telemetry deliberately separates renderer work from browser cadence. `performance.budgetMisses`, `budgetMissRate`, and `maxRenderMs` measure ChartForgeX render work against the configured frame budget. `cadenceBudgetMisses`, `cadenceBudgetMissRate`, and `maxFrameMs` report delayed animation-frame delivery, which can also include browser scheduling, background throttling, capture tooling, or unrelated page work. Use the first group as the ChartForgeX release gate; use cadence as a diagnostic signal instead of attributing every late browser callback to the renderer.
+
+The same values are available through `ChartForgeXGraph.get(id).performance` and root attributes such as `data-cfx-graph-performance-budget-misses` and `data-cfx-graph-performance-cadence-budget-misses`.
+
 Exactly one rendering surface is exposed to assistive technology. SVG uses a single roving graph-item tab stop; the labeled Canvas or WebGL surface becomes the keyboard target in accelerated modes.
 
 ## Scale review fixtures

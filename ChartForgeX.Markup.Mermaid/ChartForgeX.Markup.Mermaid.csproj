@@ -20,6 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Mermaid fenced-block adapter for ChartForgeX markup visual artifact pipelines.</Description>
+    <PackageReleaseNotes>Preserves explicit Mermaid sizing through visual artifact exports and adopts the ChartForgeX 1.0.3 flowchart rendering improvements.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;mermaid;diagrams;svg;png;html;topology;reports;dashboard;aot;nativeaot;trimming</PackageTags>

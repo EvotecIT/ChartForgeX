@@ -7,7 +7,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
 - Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
-- Add a performance harness only when it becomes part of CI or a documented release review gate.
+- Use the PowerForge rendering benchmark history to establish tighter cross-platform CI thresholds only after enough runner evidence exists to avoid machine-specific gates.
 
 ## Interactivity
 

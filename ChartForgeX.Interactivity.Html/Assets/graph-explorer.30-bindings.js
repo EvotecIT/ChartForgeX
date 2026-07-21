@@ -147,6 +147,7 @@
       warmupFrameSamples: Number(root.dataset.cfxGraphPerformanceWarmupFrameSamples || 0), maxWarmupFrameMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupFrameMs || 0), maxWarmupRenderMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupRenderMs || 0),
       physicsSamples: Number(root.dataset.cfxGraphPerformancePhysicsSamples || 0), physicsBudgetMisses: Number(root.dataset.cfxGraphPerformancePhysicsBudgetMisses || 0),
       budgetMisses: Number(root.dataset.cfxGraphPerformanceBudgetMisses || 0), budgetMissRate: Number(root.dataset.cfxGraphPerformanceBudgetMissRate || 0),
+      cadenceBudgetMisses: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMisses || 0), cadenceBudgetMissRate: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMissRate || 0),
       maxSampleMs: Number(root.dataset.cfxGraphPerformanceMaxSampleMs || 0),
       lastSampleMs: Number(root.dataset.cfxGraphPerformanceLastSampleMs || 0),
       overlapPressureEvents: Number(root.dataset.cfxGraphPerformanceOverlapPressureEvents || 0), communityPackingEvents: Number(root.dataset.cfxGraphPerformanceCommunityPackingEvents || 0),
