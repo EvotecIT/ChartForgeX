@@ -210,13 +210,21 @@ jobs:
           }
 
           $shouldPublishMarketplace = $env:SHOULD_PUBLISH -eq 'true'
+          $isPreRelease = $env:IS_PRE_RELEASE -eq 'true'
 
           if (-not [string]::IsNullOrWhiteSpace($env:RELEASE_TAG)) {
             $publishedAt = $env:RELEASE_PUBLISHED_AT
             if ([string]::IsNullOrWhiteSpace($publishedAt)) {
-              $publishedAt = gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json publishedAt --jq '.publishedAt'
-              if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($publishedAt)) {
+              $releaseJson = gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json publishedAt,isPrerelease
+              if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseJson)) {
                 throw "Could not resolve publication time for release $env:RELEASE_TAG."
+              }
+
+              $release = $releaseJson | ConvertFrom-Json -ErrorAction Stop
+              $publishedAt = $release.publishedAt
+              $isPreRelease = [bool] $release.isPrerelease
+              if ([string]::IsNullOrWhiteSpace($publishedAt)) {
+                throw "Release $env:RELEASE_TAG does not have a publication time."
               }
             }
 
@@ -239,7 +247,7 @@ jobs:
             SkipNpmCi = $true
           }
 
-          if ($env:IS_PRE_RELEASE -eq 'true') {
+          if ($isPreRelease) {
             $params.PreRelease = $true
           }
 
