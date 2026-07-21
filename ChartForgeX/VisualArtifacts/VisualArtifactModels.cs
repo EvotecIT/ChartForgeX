@@ -106,6 +106,12 @@ public sealed class VisualArtifact {
     /// <summary>Gets or sets the artifact's natural size in pixels when known.</summary>
     public VisualArtifactSize? NaturalSize { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether exporters must preserve <see cref="NaturalSize"/>
+    /// when a renderer prepares content on a larger internal canvas.
+    /// </summary>
+    public bool PreserveNaturalSize { get; set; }
+
     /// <summary>Gets artifact metadata for host adapters and exporters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 

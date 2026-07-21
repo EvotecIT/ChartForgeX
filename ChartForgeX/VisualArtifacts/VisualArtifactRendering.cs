@@ -22,7 +22,7 @@ public static class VisualArtifactRendering {
             case Chart chart:
                 return chart.ToSvg();
             case TopologyChart topology:
-                return topology.ToSvg();
+                return TopologyModel(artifact, topology).ToSvg(TopologyOptions(artifact));
             case FlowArtifact flow:
                 return flow.ToSvg();
             case TableArtifact table:
@@ -47,7 +47,7 @@ public static class VisualArtifactRendering {
             case Chart chart:
                 return chart.ToHtmlPage();
             case TopologyChart topology:
-                return topology.ToHtmlPage();
+                return TopologyModel(artifact, topology).ToHtmlPage(TopologyOptions(artifact));
             case FlowArtifact flow:
                 return flow.ToHtmlPage();
             case TableArtifact table:
@@ -72,7 +72,7 @@ public static class VisualArtifactRendering {
             case Chart chart:
                 return chart.ToPng();
             case TopologyChart topology:
-                return topology.ToPng();
+                return TopologyModel(artifact, topology).ToPng(TopologyOptions(artifact));
             case FlowArtifact flow:
                 return flow.ToPng();
             case TableArtifact table:
@@ -110,6 +110,22 @@ public static class VisualArtifactRendering {
     internal static string WrapSvgPage(string title, string svg) {
         var safeTitle = string.IsNullOrWhiteSpace(title) ? "ChartForgeX visual artifact" : title.Trim();
         return "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-artifact{max-width:100%;height:auto}.chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:visible}@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none}}</style></head><body><div class=\"chartforgex-visual-artifact\">" + svg + "</div></body></html>";
+    }
+
+    private static TopologyRenderOptions? TopologyOptions(VisualArtifact artifact) =>
+        artifact.PreserveNaturalSize ? new TopologyRenderOptions { FitContentToViewport = true } : null;
+
+    private static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {
+        if (!artifact.PreserveNaturalSize) return topology;
+        if (!artifact.NaturalSize.HasValue) {
+            throw new InvalidOperationException("Artifact '" + artifact.Id + "' cannot preserve its natural size because no natural size is defined.");
+        }
+
+        var naturalSize = artifact.NaturalSize.Value;
+        if (topology.Viewport.Width == naturalSize.Width && topology.Viewport.Height == naturalSize.Height) return topology;
+        var copy = TopologyLayoutEngine.Clone(topology);
+        copy.WithViewport(naturalSize.Width, naturalSize.Height, topology.Viewport.Padding);
+        return copy;
     }
 
     private static string EscapeHtml(string value) {

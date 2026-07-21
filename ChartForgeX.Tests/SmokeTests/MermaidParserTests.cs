@@ -188,8 +188,11 @@ flowchart LR
         var tileDocument = new MermaidParser().ParseFlowchart("flowchart LR\n  report((Quarterly operations report))").Document
             ?? throw new InvalidOperationException("Tile-label Mermaid flowchart should produce a document.");
         var tileSvg = tileDocument.ToSvg();
+        var tileTopology = tileDocument.ToTopologyChart();
         Assert(tileSvg.Contains("Quarterly operations report", StringComparison.Ordinal),
             "Mermaid tile nodes should apply their node-specific label limit instead of the topology tile default.");
+        Assert(tileTopology.Nodes[0].PreserveDisplayModeSize,
+            "Content-fitted Mermaid tiles should preserve the dimensions used to calculate their fitted viewport.");
 
         var artifact = document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "native-visual" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid flowchart visual artifact should report Mermaid artifact kind.");
@@ -240,6 +243,10 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         var topology = document.ToTopologyChart(options);
         var svg = document.ToSvg(options);
         var png = document.ToPng(options);
+        var artifact = document.ToVisualArtifact(options);
+        var artifactSvg = artifact.ToSvg();
+        var artifactHtml = artifact.ToHtmlPage();
+        var artifactPng = artifact.ToPng();
 
         Assert(topology.Viewport.Width == 640 && topology.Viewport.Height == 360,
             "Explicit Mermaid flowchart viewport dimensions should take precedence over automatic content fitting.");
@@ -250,6 +257,23 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         Assert(png[16] == 0 && png[17] == 0 && png[18] == 2 && png[19] == 128
             && png[20] == 0 && png[21] == 0 && png[22] == 1 && png[23] == 104,
             "Explicit Mermaid PNG dimensions should remain 640x360 when layered content needs scaling.");
+        Assert(artifact.PreserveNaturalSize && artifactSvg.Contains("width=\"640\"", StringComparison.Ordinal) && artifactSvg.Contains("height=\"360\"", StringComparison.Ordinal),
+            "Mermaid artifacts should carry the explicit natural-size export policy into generic SVG rendering.");
+        Assert(artifactHtml.Contains("width=\"640\"", StringComparison.Ordinal) && artifactHtml.Contains("height=\"360\"", StringComparison.Ordinal),
+            "Mermaid artifacts should carry the explicit natural-size export policy into generic HTML rendering.");
+        Assert(artifactPng[16] == 0 && artifactPng[17] == 0 && artifactPng[18] == 2 && artifactPng[19] == 128
+            && artifactPng[20] == 0 && artifactPng[21] == 0 && artifactPng[22] == 1 && artifactPng[23] == 104,
+            "Mermaid artifacts should carry the explicit natural-size export policy into generic PNG rendering.");
+        artifact.NaturalSize = new VisualArtifactSize(480, 270);
+        var resizedArtifactSvg = artifact.ToSvg();
+        Assert(resizedArtifactSvg.Contains("width=\"480\"", StringComparison.Ordinal) && resizedArtifactSvg.Contains("height=\"270\"", StringComparison.Ordinal),
+            "Generic topology artifact rendering should honor the artifact natural size when it differs from the model viewport.");
+        Assert(topology.Viewport.Width == 640 && topology.Viewport.Height == 360,
+            "Generic artifact rendering should preserve the caller's topology model while applying an export-only natural size.");
+        var missingNaturalSize = VisualArtifact.Create("missing-natural-size", VisualArtifactKind.Mermaid, topology);
+        missingNaturalSize.PreserveNaturalSize = true;
+        AssertThrows<InvalidOperationException>(() => missingNaturalSize.ToSvg(),
+            "Generic artifact rendering should reject a preserve-natural-size request when no natural size is defined.");
         Assert(svg.Contains("<svg", StringComparison.Ordinal) && svg.Contains("Render proof", StringComparison.Ordinal), "Mermaid flowchart SVG rendering should emit a topology SVG.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid flowchart PNG rendering should emit a valid PNG.");
     }

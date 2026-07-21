@@ -1,7 +1,7 @@
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    private static TopologyChart Clone(TopologyChart chart) {
+    internal static TopologyChart Clone(TopologyChart chart) {
         var copy = new TopologyChart {
             Id = chart.Id,
             Title = chart.Title,

@@ -64,7 +64,7 @@ public static class MermaidFlowchartRendering {
             var target = chart.Nodes[chart.Nodes.Count - 1];
             target.ShowStatusBadge = false;
             target.DisplayMode = ToDisplayMode(node.Shape);
-            target.PreserveDisplayModeSize = target.DisplayMode == TopologyNodeDisplayMode.Pill;
+            target.PreserveDisplayModeSize = target.DisplayMode is TopologyNodeDisplayMode.Pill or TopologyNodeDisplayMode.Tile;
             target.MaximumLabelCharacters = 28;
             target.BackgroundColor = StyleValue(node.Styles, "fill");
             target.Metadata["mermaid.id"] = node.Id;
@@ -130,6 +130,7 @@ public static class MermaidFlowchartRendering {
         artifact.Title = topology.Title ?? string.Empty;
         artifact.Subtitle = topology.Subtitle ?? string.Empty;
         artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
+        artifact.PreserveNaturalSize = options.HasExplicitViewportSize;
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
