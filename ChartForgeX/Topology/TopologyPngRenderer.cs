@@ -376,7 +376,7 @@ public sealed partial class TopologyPngRenderer {
                 DrawCentered(canvas, CenterX(node), plateY + 3, label, Color(theme.Foreground), 10.5, true);
             } else if (options.IncludeNodeLabels && displayMode != TopologyNodeDisplayMode.Icon) {
                 if (displayMode == TopologyNodeDisplayMode.Tile) {
-                    DrawCenteredLines(canvas, CenterX(node), node.Y + node.Height + 4, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 10.5, true, options.MaxNodeLabelLines, options), Color(theme.Foreground), 10.5, true, 13);
+                    DrawCenteredLines(canvas, CenterX(node), node.Y + node.Height + 4, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 10.5, true, options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, displayMode)), Color(theme.Foreground), 10.5, true, 13);
                     if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) DrawTileSubtitle(canvas, node, theme, accent, options);
                     DrawNodeBadge(canvas, node, theme, accent, displayMode);
                     continue;

@@ -186,7 +186,7 @@ public sealed partial class TopologySvgRenderer {
         }
 
         if (displayMode == TopologyNodeDisplayMode.Tile) {
-            AddNodeTextLines(body, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options), CenterX(node), node.Y + node.Height + 15, theme.Foreground, 11, "700", "middle", 14);
+            AddNodeTextLines(body, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, displayMode)), CenterX(node), node.Y + node.Height + 15, theme.Foreground, 11, "700", "middle", 14);
             if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) body.AddElement(BuildTileSubtitle(node, prefix, theme, color, options));
             return body;
         }

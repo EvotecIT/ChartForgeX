@@ -35,14 +35,15 @@ internal static partial class SmokeTests {
         const string source = @"flowchart LR
   user[User] -->|opens| app(Native app)
   app -- renders --> cfx{ChartForgeX}
-  cfx -.-> report((Report))";
+  cfx -.-> report((Report))
+  era['90s'] -->|'kept'| report";
 
         var result = new MermaidParser().ParseFlowchart(source);
 
         Assert(!result.HasErrors, "Mermaid flowchart parser should parse common nodes, edges, and labels: " + MermaidDiagnostics(result));
         Assert(result.Document != null, "Mermaid flowchart parser should produce a document.");
-        Assert(result.Document!.Nodes.Count == 4, "Mermaid flowchart parser should de-duplicate nodes by id.");
-        Assert(result.Document.Edges.Count == 3, "Mermaid flowchart parser should parse each edge.");
+        Assert(result.Document!.Nodes.Count == 5, "Mermaid flowchart parser should de-duplicate nodes by id.");
+        Assert(result.Document.Edges.Count == 4, "Mermaid flowchart parser should parse each edge.");
         Assert(result.Document.Nodes[0].Shape == MermaidFlowchartNodeShape.Rectangle, "Mermaid flowchart parser should parse rectangle nodes.");
         Assert(result.Document.Nodes[1].Shape == MermaidFlowchartNodeShape.Rounded, "Mermaid flowchart parser should parse rounded nodes.");
         Assert(result.Document.Nodes[2].Shape == MermaidFlowchartNodeShape.Rhombus, "Mermaid flowchart parser should parse rhombus nodes.");
@@ -50,6 +51,8 @@ internal static partial class SmokeTests {
         Assert(result.Document.Edges[0].Label == "opens", "Mermaid flowchart parser should parse pipe edge labels.");
         Assert(result.Document.Edges[1].Label == "renders", "Mermaid flowchart parser should parse inline edge labels.");
         Assert(result.Document.Edges[2].Operator == "-.->", "Mermaid flowchart parser should preserve dotted edge operators.");
+        Assert(result.Document.Nodes[4].Text == "'90s'", "Mermaid flowchart parser should preserve literal apostrophes in bracket labels.");
+        Assert(result.Document.Edges[3].Label == "'kept'", "Mermaid flowchart parser should preserve literal apostrophes in pipe edge labels.");
     }
 
     private static void MermaidParserParsesFlowchartChainedEdgesAndStandaloneNodes() {
@@ -182,6 +185,12 @@ flowchart LR
         Assert(roundedTopology.Nodes[0].Width > 112 && roundedTopology.ToSvg().Contains("Native application service", StringComparison.Ordinal),
             "Rounded Mermaid nodes should preserve fitted width and their complete useful label through final topology rendering.");
 
+        var tileDocument = new MermaidParser().ParseFlowchart("flowchart LR\n  report((Quarterly operations report))").Document
+            ?? throw new InvalidOperationException("Tile-label Mermaid flowchart should produce a document.");
+        var tileSvg = tileDocument.ToSvg();
+        Assert(tileSvg.Contains("Quarterly operations report", StringComparison.Ordinal),
+            "Mermaid tile nodes should apply their node-specific label limit instead of the topology tile default.");
+
         var artifact = document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "native-visual" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid flowchart visual artifact should report Mermaid artifact kind.");
         Assert(artifact.SourceLanguage == VisualArtifactSourceLanguage.Mermaid, "Mermaid flowchart visual artifact should preserve source language.");
@@ -220,9 +229,8 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
     }
 
     private static void MermaidFlowchartRendersStaticSvgAndPng() {
-        const string source = @"flowchart TD
-  a(Native application service) --> b[(Store)]
-  b --> c((Done))";
+        const string source = @"flowchart LR
+  a(Native application service) --> b[(Store)] --> c((Validate)) --> d[Publish] --> e[Done]";
 
         var result = new MermaidParser().ParseFlowchart(source);
         Assert(!result.HasErrors, "Mermaid flowchart parser should parse render source: " + MermaidDiagnostics(result));
@@ -237,6 +245,11 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
             "Explicit Mermaid flowchart viewport dimensions should take precedence over automatic content fitting.");
         Assert(topology.Nodes[0].Width > 112 && svg.Contains("Native application service", StringComparison.Ordinal),
             "Explicit Mermaid viewport dimensions should not disable label-aware node sizing.");
+        Assert(svg.Contains("width=\"640\"", StringComparison.Ordinal) && svg.Contains("height=\"360\"", StringComparison.Ordinal),
+            "Explicit Mermaid SVG dimensions should remain the requested output size when layered content needs scaling.");
+        Assert(png[16] == 0 && png[17] == 0 && png[18] == 2 && png[19] == 128
+            && png[20] == 0 && png[21] == 0 && png[22] == 1 && png[23] == 104,
+            "Explicit Mermaid PNG dimensions should remain 640x360 when layered content needs scaling.");
         Assert(svg.Contains("<svg", StringComparison.Ordinal) && svg.Contains("Render proof", StringComparison.Ordinal), "Mermaid flowchart SVG rendering should emit a topology SVG.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid flowchart PNG rendering should emit a valid PNG.");
     }

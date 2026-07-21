@@ -149,8 +149,10 @@ public static class MermaidFlowchartRendering {
     /// <param name="document">The parsed Mermaid flowchart document.</param>
     /// <param name="options">Optional conversion and rendering defaults.</param>
     /// <returns>SVG markup.</returns>
-    public static string ToSvg(this MermaidFlowchartDocument document, MermaidFlowchartRenderOptions? options = null) =>
-        document.ToTopologyChart(options).ToSvg();
+    public static string ToSvg(this MermaidFlowchartDocument document, MermaidFlowchartRenderOptions? options = null) {
+        options ??= new MermaidFlowchartRenderOptions();
+        return document.ToTopologyChart(options).ToSvg(ToTopologyRenderOptions(options));
+    }
 
     /// <summary>
     /// Renders a Mermaid flowchart document to static PNG through ChartForgeX topology rendering.
@@ -158,8 +160,13 @@ public static class MermaidFlowchartRendering {
     /// <param name="document">The parsed Mermaid flowchart document.</param>
     /// <param name="options">Optional conversion and rendering defaults.</param>
     /// <returns>PNG bytes.</returns>
-    public static byte[] ToPng(this MermaidFlowchartDocument document, MermaidFlowchartRenderOptions? options = null) =>
-        document.ToTopologyChart(options).ToPng();
+    public static byte[] ToPng(this MermaidFlowchartDocument document, MermaidFlowchartRenderOptions? options = null) {
+        options ??= new MermaidFlowchartRenderOptions();
+        return document.ToTopologyChart(options).ToPng(ToTopologyRenderOptions(options));
+    }
+
+    private static TopologyRenderOptions ToTopologyRenderOptions(MermaidFlowchartRenderOptions options) =>
+        new TopologyRenderOptions { FitContentToViewport = options.HasExplicitViewportSize };
 
     private static string ResolveTitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) {
         if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;

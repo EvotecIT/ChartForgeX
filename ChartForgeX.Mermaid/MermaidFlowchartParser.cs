@@ -476,7 +476,7 @@ internal static class MermaidFlowchartParser {
     }
 
     private static string Unquote(string value) {
-        if (value.Length >= 2 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\''))) return value.Substring(1, value.Length - 2);
+        if (value.Length >= 2 && value[0] == '"' && value[value.Length - 1] == '"') return value.Substring(1, value.Length - 2);
         return value;
     }
 
