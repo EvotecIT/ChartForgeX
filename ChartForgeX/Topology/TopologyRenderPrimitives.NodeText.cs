@@ -23,7 +23,7 @@ internal static partial class TopologyRenderPrimitives {
                 continue;
             }
 
-            AddWrappedNodeTextLines(lines, trimmed, maxWidth, fontSize, bold, maxLines);
+            AddWrappedNodeTextLines(lines, trimmed, maxWidth, fontSize, bold, maxLines, maximumCharacters);
         }
 
         if (lines.Count == 0) lines.Add(TrimToEstimatedWidth(TrimTo(value.Trim(), maximumCharacters), maxWidth, fontSize, bold));
@@ -67,7 +67,8 @@ internal static partial class TopologyRenderPrimitives {
         foreach (var line in value.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n')) yield return line;
     }
 
-    private static void AddWrappedNodeTextLines(List<string> lines, string value, double maxWidth, double fontSize, bool bold, int maxLines) {
+    private static void AddWrappedNodeTextLines(List<string> lines, string value, double maxWidth, double fontSize, bool bold, int maxLines, int maximumCharacters) {
+        value = TrimTo(value, maximumCharacters);
         var words = value.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
         var current = new StringBuilder();
         foreach (var word in words) {
