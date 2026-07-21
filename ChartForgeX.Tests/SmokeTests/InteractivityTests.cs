@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 
@@ -119,7 +120,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-scenario-step-control=\"link\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario link controls when deep-link state is enabled.");
         Assert(html.Contains("class=\"cfx-scenario-progress\"", StringComparison.Ordinal) && html.Contains("data-cfx-scenario-progress=\"true\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario step progress chrome.");
         Assert(html.Contains("cfxscenario", StringComparison.Ordinal) && html.Contains("cfxscenariostep", StringComparison.Ordinal) && html.Contains("cfxscenarioplayback", StringComparison.Ordinal) && html.Contains("cfxscenariolink", StringComparison.Ordinal), "Interactive HTML should publish reusable scenario host events.");
-        Assert(html.Contains("scenarioTargetMatches", StringComparison.Ordinal) && html.Contains("kind === 'series' && (data.cfxSeries === target || seriesKey(node) === target)", StringComparison.Ordinal), "Interactive HTML should map reusable scenario steps onto either local series ordinals or stable semantic series keys.");
+        Assert(html.Contains("scenarioTargetMatches", StringComparison.Ordinal) && html.Contains("const seriesOrdinalTarget = /^(0|[1-9]\\d*)$/.test(target)", StringComparison.Ordinal) && html.Contains("seriesOrdinalTarget ? data.cfxSeries === target : seriesKey(node) === target", StringComparison.Ordinal), "Interactive HTML should disambiguate local series ordinals from stable semantic series keys.");
         Assert(html.Contains("kind === 'point' && data.cfxPoint === target", StringComparison.Ordinal) && html.Contains("data.cfxSeries + ':' + data.cfxPoint === target", StringComparison.Ordinal), "Interactive HTML should map reusable point steps onto rendered point metadata.");
         Assert(html.Contains("kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0", StringComparison.Ordinal), "Interactive HTML should map reusable annotation steps onto rendered annotation metadata.");
         Assert(html.Contains("[data-cfx-point],[data-cfx-series]", StringComparison.Ordinal), "Interactive HTML should treat generic point and series metadata as interactive targets.");
@@ -128,6 +129,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("seriesKey: seriesKey(node)", StringComparison.Ordinal) && html.Contains("if (target.seriesKey)", StringComparison.Ordinal), "Grouped selection and hover should require semantic series identity before comparing local series ordinals.");
         var keyedChart = SampleChart();
         keyedChart.Series[0].WithInteractionKey("result.passed");
+        AssertThrows<ArgumentException>(() => keyedChart.Series[0].WithInteractionKey("0"), "Digits-only interaction keys should remain reserved for local scenario ordinals.");
         var keyedHtml = keyedChart.ToInteractiveHtmlFragmentWithoutAssets();
         Assert(keyedHtml.Contains("data-cfx-series-name=\"Passed\" data-cfx-series-key=\"result.passed\"", StringComparison.Ordinal), "Interactive series should support stable keys that are independent from display names.");
         keyedChart.WithLegend(false);
@@ -136,6 +138,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("svg.getAttribute('data-cfx-series-key-' + data.cfxSeries)", StringComparison.Ordinal) && html.Contains("svg.getAttribute('data-cfx-series-name-' + data.cfxSeries)", StringComparison.Ordinal), "Interactive charts should resolve semantic series identity without requiring a rendered legend.");
         keyedChart.Series[0].UseAutomaticInteractionKey();
         Assert(keyedChart.ToSvg().Contains("data-cfx-series-key-0=\"Passed\"", StringComparison.Ordinal), "Interactive series should restore display-name identity when an explicit key is cleared.");
+        var numericNameChart = Chart.Create().WithSize(320, 220).AddLine("0", ChartPoints.FromValues(1, 2));
+        Assert(numericNameChart.ToSvg().Contains("data-cfx-series-key-0=\"series:0\"", StringComparison.Ordinal), "Automatic semantic identity should namespace digits-only display names away from local series ordinals.");
         Assert(html.Contains("'cfxhover'", StringComparison.Ordinal) && html.Contains("'cfxhoverclear'", StringComparison.Ordinal), "Interactive HTML should publish host events for hover and hover clear.");
         Assert(html.Contains("action: 'hover'", StringComparison.Ordinal) && html.Contains("action: 'hover-clear'", StringComparison.Ordinal), "Interactive HTML should synchronize hover spotlight state across grouped charts.");
         Assert(html.Contains("applyHoverByTarget(root, detail.target)", StringComparison.Ordinal), "Interactive HTML should apply synchronized hover state by stable target metadata.");

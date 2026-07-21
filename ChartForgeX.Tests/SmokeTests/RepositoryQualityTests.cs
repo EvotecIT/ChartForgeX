@@ -240,6 +240,7 @@ internal static partial class SmokeTests {
         Assert(traits.Contains("UsesCartesianXAxis", StringComparison.Ordinal), "Shared-axis compatibility should live in the shared trait table.");
         Assert(traits.Contains("IsMapKind", StringComparison.Ordinal), "Map renderer axis suppression should live in the shared trait table.");
         Assert(traits.Contains("IsLineLikeLegendKind", StringComparison.Ordinal), "Legend symbol classification should live in the shared trait table.");
+        Assert(traits.Contains("SupportsPointLegend", StringComparison.Ordinal), "Point-legend capability should live in the shared trait table.");
 
         var guards = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Core", "ChartGuards.cs"));
         var grid = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Core", "ChartGrid.cs"));
@@ -251,6 +252,9 @@ internal static partial class SmokeTests {
         Assert(grid.Contains("ChartSeriesKindTraits.UsesCartesianXAxis", StringComparison.Ordinal) && grid.Contains("ChartSeriesKindTraits.UsesCartesianYAxis", StringComparison.Ordinal), "Chart grids should use shared cartesian compatibility traits.");
         Assert(range.Contains("ChartSeriesKindTraits.IsExclusive", StringComparison.Ordinal), "Range calculation should skip specialized renderers through the shared trait table.");
         Assert(svgHelpers.Contains("ChartSeriesKindTraits.IsMapKind", StringComparison.Ordinal) && pngRenderer.Contains("ChartSeriesKindTraits.IsMapKind", StringComparison.Ordinal), "SVG and PNG renderers should share map-kind classification.");
+        var svgClassification = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Classification.cs"));
+        var pngLegend = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Legend.cs"));
+        Assert(svgClassification.Contains("ChartSeriesKindTraits.SupportsPointLegend", StringComparison.Ordinal) && pngLegend.Contains("ChartSeriesKindTraits.SupportsPointLegend", StringComparison.Ordinal), "SVG and PNG point legends should share the same point-scoped capability contract.");
     }
 
     private static void LinePolishLayersStaySharedAcrossSvgAndPng() {

@@ -83,8 +83,7 @@ public sealed partial class SvgChartRenderer {
         return rows;
     }
 
-    private static string SeriesInteractionKey(ChartSeries series) =>
-        string.IsNullOrWhiteSpace(series.InteractionKey) ? series.Name : series.InteractionKey!;
+    private static string SeriesInteractionKey(ChartSeries series) => series.InteractionIdentityKey;
 
     private static void WriteSeriesInteractionMap(SvgMarkupWriter writer, Chart chart) {
         for (var index = 0; index < chart.Series.Count; index++) {
