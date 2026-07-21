@@ -910,7 +910,7 @@
     const data = node.dataset || {};
     const kind = step.targetKind || '';
     const target = step.targetId || '';
-    if (kind === 'series' && data.cfxSeries === target) return true;
+    if (kind === 'series' && (data.cfxSeries === target || seriesKey(node) === target)) return true;
     if (kind === 'point' && data.cfxPoint === target) return true;
     if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;
     if (kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0 && (data.cfxLabel === target || data.cfxKind === target || data.cfxValue === target || data.cfxId === target || node.id === target)) return true;

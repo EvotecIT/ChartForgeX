@@ -9,13 +9,13 @@ internal static class ExampleInteractiveScenarios {
                 .WithColor("#22C55E")
                 .WithDescription("Focus on successful checks and the weekly control target.")
                 .WithMetadata("view", "operations")
-                .AddSeriesStep("0", "Passed checks", configure: step => step.WithMetadata("signal", "success")))
+                .AddSeriesStep("Passed", "Passed checks", configure: step => step.WithMetadata("signal", "success")))
             .AddScenario("risk-review", "Risk review", scenario => scenario
                 .WithColor("#F97316")
                 .WithDescription("Review warnings and remaining failures before escalation.")
                 .WithMetadata("view", "risk")
-                .AddSeriesStep("1", "Warnings")
-                .AddSeriesStep("2", "Failures"))
+                .AddSeriesStep("Warnings", "Warnings")
+                .AddSeriesStep("Failed", "Failures"))
             .WithActiveScenario("risk-review")
             .WithDeepLinkState();
     }
