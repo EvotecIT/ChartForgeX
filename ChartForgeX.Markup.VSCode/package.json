@@ -292,5 +292,8 @@
     "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.28.1",
     "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "js-yaml": "4.3.0"
   }
 }
