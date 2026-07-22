@@ -56,6 +56,12 @@ body {
   will-change: transform;
 }
 
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
 .cfx-toolbar {
   display: flex;
   flex-wrap: wrap;

@@ -262,6 +262,11 @@ internal static partial class SmokeTests {
         Assert(!noReset.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should hide compare trays when compare markers are disabled.");
         Assert(noReset.Contains("data-cfx-interaction-features=\"Tooltips\"", StringComparison.Ordinal), "Interactive HTML should honor narrowed feature profiles.");
         Assert(noReset.Contains("data-cfx-responsive-layout=\"fit\"", StringComparison.Ordinal), "Interactive HTML should allow hosts to opt back into whole-chart fitting.");
+        var fitRuleStart = noReset.IndexOf(".cfx-interactive-chart[data-cfx-responsive-layout=\"fit\"] .cfx-stage svg {", StringComparison.Ordinal);
+        Assert(fitRuleStart >= 0, "Fit layouts should emit a dedicated responsive SVG rule.");
+        var fitRuleEnd = noReset.IndexOf('}', fitRuleStart);
+        var fitRule = noReset.Substring(fitRuleStart, fitRuleEnd - fitRuleStart);
+        Assert(fitRule.Contains("width: 100%;", StringComparison.Ordinal) && fitRule.Contains("max-width: 100%;", StringComparison.Ordinal) && fitRule.Contains("height: auto;", StringComparison.Ordinal), "Fit layouts should scale the complete chart into a narrow stage instead of clipping it.");
 
         var noPlayback = SampleChart().ToInteractiveHtmlPage(options => {
             options.Interaction
@@ -340,7 +345,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(html, "data-cfx-asset-source=\"document\"") == 2, "Interactive dashboards should declare document-owned assets on every chart section.");
         Assert(html.Contains("data-cfx-chart-id=\"exec-dashboard-1\"", StringComparison.Ordinal) && html.Contains("data-cfx-chart-id=\"exec-dashboard-2\"", StringComparison.Ordinal), "Interactive dashboards should assign deterministic child chart IDs.");
         Assert(CountOccurrences(html, "data-cfx-interaction-group=\"exec-review\"") == 2, "Interactive dashboards should place every child chart in the shared interaction group.");
-        Assert(CountOccurrences(html, "data-cfx-responsive-layout=\"fit\"") == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
+        Assert(CountOccurrences(html, "data-cfx-responsive-layout=\"fit\" style=") == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
         Assert(html.Contains("role=\"group\" aria-label=\"Service availability\"", StringComparison.Ordinal) && html.Contains("role=\"group\" aria-label=\"Response latency\"", StringComparison.Ordinal), "Interactive dashboard chart regions should use each chart title as their accessible name.");
         Assert(!html.Contains("role=\"group\" aria-label=\"Executive interactive dashboard\"", StringComparison.Ordinal), "Interactive dashboard chart regions should not inherit the shared page title when a chart title is available.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive dashboards should include grouped synchronization runtime.");
