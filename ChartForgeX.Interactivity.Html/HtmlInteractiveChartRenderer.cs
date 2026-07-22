@@ -125,7 +125,7 @@ public sealed class HtmlInteractiveChartRenderer {
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
             .Attribute("role", "group")
-            .Attribute("aria-label", titleFallback)
+            .Attribute("aria-label", ChartTitle(chart, titleFallback))
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-cfx-chart-id", chartId)
             .Attribute("data-cfx-interaction-features", options.Interaction.Features.ToString())

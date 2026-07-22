@@ -96,7 +96,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("<title>Interactive security posture</title>", StringComparison.Ordinal), "Interactive HTML should use the configured page title.");
         Assert(html.Contains("data-cfx-asset-source=\"document\"", StringComparison.Ordinal), "Interactive pages should declare document-owned assets on their chart section.");
         Assert(html.Contains("data-cfx-chart-id=\"security-posture\"", StringComparison.Ordinal), "Interactive HTML should expose a stable chart ID.");
-        Assert(html.Contains("role=\"group\" aria-label=\"Interactive security posture\"", StringComparison.Ordinal) && html.Contains("aria-label=\"Chart controls\"", StringComparison.Ordinal), "Interactive HTML should expose named chart and control regions to assistive technology.");
+        Assert(html.Contains("role=\"group\" aria-label=\"A &lt; B &amp; C\"", StringComparison.Ordinal) && html.Contains("aria-label=\"Chart controls\"", StringComparison.Ordinal), "Interactive HTML should expose the chart title and named control region to assistive technology.");
         Assert(html.Contains("data-cfx-responsive-layout=\"readable\"", StringComparison.Ordinal) && html.Contains("--cfx-native-width:640px", StringComparison.Ordinal), "Interactive HTML should preserve readable chart geometry in narrow containers by default.");
         Assert(html.Contains("data-cfx-interaction-group=\"dashboard-a\"", StringComparison.Ordinal), "Interactive HTML should expose a synchronized chart group.");
         Assert(html.Contains("data-cfx-interaction-features=\"", StringComparison.Ordinal) && html.Contains("Zoom", StringComparison.Ordinal) && html.Contains("Pan", StringComparison.Ordinal) && html.Contains("Brush", StringComparison.Ordinal) && html.Contains("SynchronizedCharts", StringComparison.Ordinal), "Interactive HTML should describe enabled host-neutral features.");
@@ -308,7 +308,11 @@ internal static partial class SmokeTests {
     }
 
     private static void InteractiveHtmlDashboardSynchronizesMultipleCharts() {
-        var html = new[] { SampleChart(), SampleChart() }.ToInteractiveHtmlDashboardPage(options => {
+        var charts = new[] {
+            SampleChart().WithTitle("Service availability"),
+            SampleChart().WithTitle("Response latency")
+        };
+        var html = charts.ToInteractiveHtmlDashboardPage(options => {
             options.PageTitle = "Executive interactive dashboard";
             options.IdScope = "exec-dashboard";
             options.Columns = 2;
@@ -337,6 +341,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-chart-id=\"exec-dashboard-1\"", StringComparison.Ordinal) && html.Contains("data-cfx-chart-id=\"exec-dashboard-2\"", StringComparison.Ordinal), "Interactive dashboards should assign deterministic child chart IDs.");
         Assert(CountOccurrences(html, "data-cfx-interaction-group=\"exec-review\"") == 2, "Interactive dashboards should place every child chart in the shared interaction group.");
         Assert(CountOccurrences(html, "data-cfx-responsive-layout=\"fit\"") == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
+        Assert(html.Contains("role=\"group\" aria-label=\"Service availability\"", StringComparison.Ordinal) && html.Contains("role=\"group\" aria-label=\"Response latency\"", StringComparison.Ordinal), "Interactive dashboard chart regions should use each chart title as their accessible name.");
+        Assert(!html.Contains("role=\"group\" aria-label=\"Executive interactive dashboard\"", StringComparison.Ordinal), "Interactive dashboard chart regions should not inherit the shared page title when a chart title is available.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive dashboards should include grouped synchronization runtime.");
         Assert(CountOccurrences(html, "data-cfx-scenario=\"ops-route\"") == 2 && CountOccurrences(html, "data-cfx-active-scenario=\"ops-route\"") == 2, "Interactive dashboards should copy reusable scenarios into each synchronized child chart.");
         Assert(CountOccurrences(html, "data-cfx-deep-link-state=\"true\"") == 2, "Interactive dashboards should preserve reusable scenario deep-link state for each child chart.");
