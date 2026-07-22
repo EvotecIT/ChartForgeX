@@ -24,6 +24,8 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 
 The release smoke suite measures three synchronous static-rendering workloads after compilation: a 960x540 multi-series chart, a 2x-density 1920x1080 desktop wallpaper, and a dense 128-node/230-edge topology. Each workload must finish within 15 seconds. Managed allocations are capped at 64 MiB for the chart, 384 MiB for the wallpaper, and 256 MiB for the topology. These are regression ceilings rather than benchmark claims; update them only after profiling a deliberate renderer change on the supported CI platforms.
 
+Resolution-aware series keep density policy in the core rather than in consuming reports. `ChartResolutionPolicy` resolves a deterministic point budget from the intended render width, records source-index provenance when decimation occurs, and bounds optional marker density independently from path density. SVG and PNG honor the same series marker override, so reducing visual clutter also removes redundant vector and raster work without changing the source data contract.
+
 For repeatable local measurements rather than broad smoke-test ceilings, run `./Benchmarks/Invoke-RenderingBenchmark.ps1`. The PowerForge-owned suite records warmups, iterations, output validation, machine metadata, and the measured assembly hash. Keep browser-library comparisons separate: browser-first libraries include startup, layout, paint, and interaction costs that are not equivalent to deterministic .NET SVG/PNG generation.
 
 ## Renderer Layout

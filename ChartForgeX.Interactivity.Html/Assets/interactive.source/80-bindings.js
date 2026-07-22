@@ -115,6 +115,11 @@
         playScenario(root);
       });
       root.addEventListener('cfx-pause-scenario', () => stopScenarioPlayback(root, 'paused'));
+      const scrubber = root.querySelector('[data-cfx-scenario-scrubber]');
+      if (scrubber) scrubber.addEventListener('input', () => {
+        stopScenarioPlayback(root, 'paused');
+        setScenarioStep(root, Number(scrubber.value) - 1, true, true);
+      });
       const stepsList = root.querySelector('[data-cfx-scenario-panel-steps]');
       if (stepsList) {
         const focusStep = (target) => {
@@ -134,6 +139,9 @@
       const initialScenarioStep = scenarioUrlParam(root, 'scenarioStep');
       setScenario(root, initialScenario, false, false);
       if (hasFeature(root, 'StepPlayback') && initialScenarioStep) setScenarioStep(root, initialScenarioStep, false, false);
+      const initialRoute = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
     }
     if (stage) {
       stage.addEventListener('wheel', (event) => {

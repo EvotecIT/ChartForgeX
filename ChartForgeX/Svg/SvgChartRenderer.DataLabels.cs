@@ -9,7 +9,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawPointLabels(StringBuilder sb, Chart chart, ChartSeries series, IReadOnlyList<ChartPoint> mapped, ChartRect plot) {
-        var offset = chart.Options.Theme.MarkerRadius + 12;
+        var offset = (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) + 12;
         var reserved = new List<ChartLabelBounds>();
         var placement = DataLabelPlacement(chart, series);
         for (var i = 0; i < mapped.Count; i++) {

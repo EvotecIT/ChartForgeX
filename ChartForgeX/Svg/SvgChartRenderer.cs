@@ -642,16 +642,17 @@ public sealed partial class SvgChartRenderer {
                 AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", SeriesSemanticRole(s, "scatter-point")).Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra)).Attribute("fill", markerColor.ToCss()).Attribute("opacity", "0.92").Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
             }
         } else {
+            var markerRadius = s.MarkerRadius ?? chart.Options.Theme.MarkerRadius;
             var line = s.Kind == ChartSeriesKind.StepLine ? BuildStepLinePath(mapped) : BuildLinePath(mapped, s.Smooth);
             if (s.Kind == ChartSeriesKind.StepArea) line = BuildStepLinePath(mapped);
             var lineRole = s.Kind == ChartSeriesKind.StepLine ? "step-line" : s.Kind == ChartSeriesKind.StepArea ? "step-area-line" : s.Kind == ChartSeriesKind.Area ? "area-line" : "line";
             DrawPremiumSvgLinePath(sb, lineRole, index, mapped.Length, line, c, s.StrokeWidth, chart.Options.LineVisualStyle);
-            if (!chart.Options.IsSparkline && chart.Options.Theme.MarkerRadius > 0 && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind)) {
+            if (!chart.Options.IsSparkline && markerRadius > 0 && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind)) {
                 for (var pointIndex = 0; pointIndex < mapped.Length; pointIndex++) {
                     var p = mapped[pointIndex];
                     var raw = s.Points[pointIndex];
                     var markerColor = PointColor(chart, s, index, pointIndex);
-                    AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", "line-marker").Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", chart.Options.Theme.MarkerRadius).Attribute("fill", markerColor.ToCss()).Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
+                    AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", "line-marker").Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", markerRadius).Attribute("fill", markerColor.ToCss()).Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
                 }
             }
         }

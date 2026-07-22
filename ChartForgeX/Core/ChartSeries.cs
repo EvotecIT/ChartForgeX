@@ -13,6 +13,7 @@ public sealed class ChartSeries {
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
     private string? _interactionKey;
+    private double? _markerRadius;
 
     /// <summary>
     /// Gets the display name shown in legends.
@@ -190,6 +191,21 @@ public sealed class ChartSeries {
     }
 
     /// <summary>
+    /// Gets or sets the optional marker-radius override for this series. Null uses the chart theme;
+    /// zero suppresses optional line and area markers without affecting specialized mark types.
+    /// </summary>
+    public double? MarkerRadius {
+        get => _markerRadius;
+        set {
+            if (value.HasValue) {
+                ChartGuards.Finite(value.Value, nameof(value));
+                if (value.Value < 0d) throw new ArgumentOutOfRangeException(nameof(value), value, "Marker radius cannot be negative.");
+            }
+            _markerRadius = value;
+        }
+    }
+
+    /// <summary>
     /// Sets the series color. Pass null to use the chart theme palette.
     /// </summary>
     /// <param name="color">The series color, or null to use the theme palette.</param>
@@ -340,6 +356,18 @@ public sealed class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries WithStrokeWidth(double width) {
         StrokeWidth = width;
+        return this;
+    }
+
+    /// <summary>Overrides the marker radius for this series. Use zero to suppress optional line and area markers.</summary>
+    public ChartSeries WithMarkerRadius(double radius) {
+        MarkerRadius = radius;
+        return this;
+    }
+
+    /// <summary>Clears the series marker override and uses the chart theme marker radius.</summary>
+    public ChartSeries UseThemeMarkerRadius() {
+        MarkerRadius = null;
         return this;
     }
 

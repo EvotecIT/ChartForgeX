@@ -189,6 +189,7 @@ internal static partial class SmokeTests {
         ("Interactivity contracts are host neutral", InteractivityContractsAreHostNeutral),
         ("Dense series decimation stays deterministic and honest", DenseSeriesDecimationStaysDeterministicAndHonest),
         ("Decimated charts preserve source point identities", DecimatedChartsPreserveSourcePointIdentities),
+        ("Adaptive series use reusable resolution policy", AdaptiveSeriesUseReusableResolutionPolicy),
         ("Interactive HTML wraps SVG without external dependencies", InteractiveHtmlWrapsSvgWithoutExternalDependencies),
         ("Interactive HTML escapes host provided attributes", InteractiveHtmlEscapesHostProvidedAttributes),
         ("Interactive HTML dashboard synchronizes multiple charts", InteractiveHtmlDashboardSynchronizesMultipleCharts),

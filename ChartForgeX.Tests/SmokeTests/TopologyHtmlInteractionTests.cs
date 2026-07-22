@@ -10,10 +10,12 @@ internal static partial class SmokeTests {
             .AddScenario("primary", "Primary flow", scenario => scenario
                 .WithColor("#2563EB")
                 .WithDescription("Nominal request path")
+                .WithPlayback(1200, loop: true)
+                .WithSpotlight()
                 .WithMetadata("owner", "routing")
                 .WithMetadata("request.type", "interactive")
                 .AddNodeStep("amer-hub", "Start")
-                .AddEdgeStep("amer-emea", "WAN", configure: step => step.WithMetadata("protocol", "https"))
+                .AddEdgeStep("amer-emea", "WAN", configure: step => step.WithDuration(1600).WithMetadata("protocol", "https"))
                 .AddNodeStep("emea-hub", "Policy"))
             .AddScenario("failover", "Failover flow", scenario => scenario
                 .WithColor("#EF4444")
@@ -51,6 +53,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-scenario-panel-steps=\"true\"", StringComparison.Ordinal), "Scenario panels should expose a step-list target for route detail updates.");
         Assert(html.Contains("data-cfx-scenario-step-controls=\"true\"", StringComparison.Ordinal), "Scenario panels should expose route step playback controls.");
         Assert(html.Contains("data-cfx-scenario-step-control=\"play\"", StringComparison.Ordinal), "Scenario panels should include a play control for route playback.");
+        Assert(html.Contains("data-cfx-scenario-scrubber=\"true\"", StringComparison.Ordinal), "Scenario panels should include an accessible direct-manipulation route scrubber.");
         Assert(!html.Contains("data-cfx-scenario-step-control=\"link\"", StringComparison.Ordinal), "Scenario panels should hide copy-link controls until query-string scenario state is enabled.");
         Assert(html.Contains(">Failover flow</div>", StringComparison.Ordinal), "Scenario panels should server-render the active scenario title before JavaScript updates run.");
         Assert(html.Contains("data-cfx-scenario-step-id=\"emea-hub\"", StringComparison.Ordinal), "Scenario panels should server-render active route steps before JavaScript updates run.");
@@ -59,6 +62,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-scenario-label=\"Primary flow\"", StringComparison.Ordinal), "Scenario picker controls should expose scenario labels for host event payloads.");
         Assert(html.Contains("data-cfx-scenario-description=\"Nominal request path\"", StringComparison.Ordinal), "Scenario picker controls should expose scenario descriptions for host event payloads.");
         Assert(html.Contains("data-cfx-scenario-step-count=\"3\"", StringComparison.Ordinal), "Scenario picker controls should expose scenario step counts for host event payloads.");
+        Assert(html.Contains("data-cfx-scenario-playback-delay=\"1200\"", StringComparison.Ordinal) && html.Contains("data-cfx-scenario-loop=\"true\"", StringComparison.Ordinal) && html.Contains("data-cfx-scenario-focus-mode=\"spotlight\"", StringComparison.Ordinal), "Scenario picker controls should expose reusable route pacing and focus intent.");
         Assert(html.Contains("data-cfx-scenario-steps=\"[{&quot;index&quot;:0,&quot;kind&quot;:&quot;Node&quot;,&quot;id&quot;:&quot;amer-hub&quot;,&quot;label&quot;:&quot;Start&quot;}", StringComparison.Ordinal), "Scenario picker controls should expose ordered step details as escaped JSON.");
         Assert(html.Contains("&quot;metadata&quot;:{&quot;protocol&quot;:&quot;https&quot;}", StringComparison.Ordinal), "Scenario step details should include optional step metadata for host route inspectors.");
         Assert(html.Contains("data-cfx-scenario-metadata=\"{&quot;owner&quot;:&quot;routing&quot;,&quot;request.type&quot;:&quot;interactive&quot;}\"", StringComparison.Ordinal), "Scenario picker controls should expose scenario metadata as escaped JSON.");
@@ -77,7 +81,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("cfx-topology-set-scenario-step", StringComparison.Ordinal), "Scenario step focus should allow hosts to drive the current step.");
         Assert(html.Contains("cfx-topology-scenario-link", StringComparison.Ordinal) && html.Contains("navigator.clipboard.writeText", StringComparison.Ordinal), "Scenario link controls should publish and copy deep links without external dependencies.");
         Assert(html.Contains("stepsList.addEventListener('click'", StringComparison.Ordinal) && html.Contains("stepsList.addEventListener('keydown'", StringComparison.Ordinal), "Scenario panel steps should support direct pointer and keyboard activation.");
-        Assert(html.Contains("window.setInterval", StringComparison.Ordinal), "Scenario panels should support lightweight route playback.");
+        Assert(html.Contains("window.setTimeout(advance, stepDelay(route.steps[current]))", StringComparison.Ordinal) && html.Contains("if (route.loopPlayback) index = 0", StringComparison.Ordinal), "Scenario panels should support paced and optionally looping route playback.");
+        Assert(html.Contains("initialRoute.autoPlay && !initialScenarioStep && !reducedMotion", StringComparison.Ordinal), "Topology route autoplay should stay opt-in and respect reduced-motion preferences.");
         Assert(html.Contains("findScenarioButton(scenarioId)", StringComparison.Ordinal), "Scenario interactions should ignore unknown scenario ids instead of muting the whole chart.");
         Assert(html.Contains("label: route.label", StringComparison.Ordinal), "Scenario events should include host-friendly scenario metadata.");
         Assert(html.Contains("cfx-topology-scenario", StringComparison.Ordinal), "Interactive topology HTML should dispatch host-friendly scenario events.");
@@ -93,7 +98,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("emitSync('scenario-step'", StringComparison.Ordinal) && html.Contains("detail.action === 'scenario-step'", StringComparison.Ordinal), "Topology scenario steps should synchronize across grouped wrappers.");
         Assert(html.Contains("data-scenario-ids=\"primary failover\"", StringComparison.Ordinal) || html.Contains("data-scenario-ids=\"failover primary\"", StringComparison.Ordinal), "Shared topology elements should expose all scenario memberships.");
         Assert(html.Contains("data-scenario-step-indices=\"primary:1,2 failover:0,1\"", StringComparison.Ordinal), "Shared topology elements should expose step order for each scenario membership.");
-        Assert(html.Contains("cfx-topology-html-scenario-muted", StringComparison.Ordinal), "Scenario interactions should dim non-participating elements instead of drawing every path at once.");
+        Assert(html.Contains("route.focusMode === 'spotlight'", StringComparison.Ordinal) && html.Contains("cfx-topology-html-scenario-muted", StringComparison.Ordinal), "Scenario interactions should dim non-participating elements only for explicitly spotlighted routes.");
         Assert(html.Contains("cfx-topology-html-scenario-active", StringComparison.Ordinal), "Scenario interactions should mark participating elements for route emphasis.");
 
         var fallbackHtml = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "missing" });

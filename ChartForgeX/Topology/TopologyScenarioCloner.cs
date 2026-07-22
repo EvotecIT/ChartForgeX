@@ -6,11 +6,15 @@ internal static class TopologyScenarioCloner {
             Id = scenario.Id,
             Label = scenario.Label,
             Description = scenario.Description,
-            Color = scenario.Color
+            Color = scenario.Color,
+            PlaybackDelayMilliseconds = scenario.PlaybackDelayMilliseconds,
+            LoopPlayback = scenario.LoopPlayback,
+            AutoPlay = scenario.AutoPlay,
+            Spotlight = scenario.Spotlight
         };
         foreach (var item in scenario.Metadata) copy.Metadata[item.Key] = item.Value;
         foreach (var step in scenario.Steps) {
-            var stepCopy = new TopologyScenarioStep { Id = step.Id, Kind = step.Kind, Label = step.Label, Description = step.Description };
+            var stepCopy = new TopologyScenarioStep { Id = step.Id, Kind = step.Kind, Label = step.Label, Description = step.Description, DurationMilliseconds = step.DurationMilliseconds };
             foreach (var item in step.Metadata) stepCopy.Metadata[item.Key] = item.Value;
             copy.Steps.Add(stepCopy);
         }

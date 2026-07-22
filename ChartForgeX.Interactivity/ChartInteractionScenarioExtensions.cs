@@ -89,6 +89,23 @@ public static class ChartInteractionScenarioExtensions {
         return scenario;
     }
 
+    /// <summary>Configures scenario timeline playback without enabling automatic playback by default.</summary>
+    public static ChartInteractionScenario WithPlayback(this ChartInteractionScenario scenario, int stepDurationMilliseconds = 900, bool loop = false, bool autoPlay = false) {
+        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
+        scenario.PlaybackDelayMilliseconds = stepDurationMilliseconds;
+        scenario.LoopPlayback = loop;
+        scenario.AutoPlay = autoPlay;
+        return scenario;
+    }
+
+    /// <summary>Controls whether the route highlights targets or spotlights them by dimming other data marks.</summary>
+    public static ChartInteractionScenario WithFocusMode(this ChartInteractionScenario scenario, ChartInteractionScenarioFocusMode focusMode) {
+        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
+        if (!Enum.IsDefined(typeof(ChartInteractionScenarioFocusMode), focusMode)) throw new ArgumentOutOfRangeException(nameof(focusMode));
+        scenario.FocusMode = focusMode;
+        return scenario;
+    }
+
     /// <summary>
     /// Adds host-readable metadata to an interaction scenario.
     /// </summary>
@@ -221,6 +238,13 @@ public static class ChartInteractionScenarioExtensions {
     public static ChartInteractionScenarioStep WithMetadata(this ChartInteractionScenarioStep step, string key, string? value) {
         if (step == null) throw new ArgumentNullException(nameof(step));
         step.Metadata[ChartInteractionText.RequiredText(key, nameof(key), "Interaction scenario step metadata keys")] = value ?? string.Empty;
+        return step;
+    }
+
+    /// <summary>Overrides how long this step remains visible during timeline playback.</summary>
+    public static ChartInteractionScenarioStep WithDuration(this ChartInteractionScenarioStep step, int durationMilliseconds) {
+        if (step == null) throw new ArgumentNullException(nameof(step));
+        step.DurationMilliseconds = durationMilliseconds;
         return step;
     }
 }

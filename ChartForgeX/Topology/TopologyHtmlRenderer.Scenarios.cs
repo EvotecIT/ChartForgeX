@@ -20,6 +20,10 @@ public sealed partial class TopologyHtmlRenderer {
                     .Attribute("data-cfx-scenario-label", scenario.Label)
                     .Attribute("data-cfx-scenario-description", scenario.Description)
                     .Attribute("data-cfx-scenario-step-count", scenario.Steps.Count)
+                    .Attribute("data-cfx-scenario-playback-delay", scenario.PlaybackDelayMilliseconds)
+                    .Attribute("data-cfx-scenario-loop", scenario.LoopPlayback)
+                    .Attribute("data-cfx-scenario-autoplay", scenario.AutoPlay)
+                    .Attribute("data-cfx-scenario-focus-mode", scenario.Spotlight ? "spotlight" : "highlight")
                     .Attribute("data-cfx-scenario-steps", TopologyScenarioJson.Steps(scenario))
                     .Attribute("data-cfx-scenario-metadata", TopologyScenarioJson.Metadata(scenario))
                     .Attribute("title", string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description)
@@ -44,6 +48,10 @@ public sealed partial class TopologyHtmlRenderer {
                 .Attribute("data-cfx-scenario-label", scenario.Label)
                 .Attribute("data-cfx-scenario-description", scenario.Description)
                 .Attribute("data-cfx-scenario-step-count", scenario.Steps.Count)
+                .Attribute("data-cfx-scenario-playback-delay", scenario.PlaybackDelayMilliseconds)
+                .Attribute("data-cfx-scenario-loop", scenario.LoopPlayback)
+                .Attribute("data-cfx-scenario-autoplay", scenario.AutoPlay)
+                .Attribute("data-cfx-scenario-focus-mode", scenario.Spotlight ? "spotlight" : "highlight")
                 .Attribute("data-cfx-scenario-steps", TopologyScenarioJson.Steps(scenario))
                 .Attribute("data-cfx-scenario-metadata", TopologyScenarioJson.Metadata(scenario))
                 .Attribute("title", string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description)
@@ -88,6 +96,17 @@ public sealed partial class TopologyHtmlRenderer {
         WriteScenarioPanelButton(writer, "reset", "Clear step", "Clear");
         if (enableScenarioUrlState) WriteScenarioPanelButton(writer, "link", "Copy route link", "Link");
         writer.EndElement();
+        writer.StartElement("input")
+            .Attribute("class", panelClass + "__scrubber")
+            .Attribute("type", "range")
+            .Attribute("min", "1")
+            .Attribute("max", activeScenario == null ? "1" : Math.Max(1, activeScenario.Steps.Count).ToString(System.Globalization.CultureInfo.InvariantCulture))
+            .Attribute("value", "1")
+            .Attribute("step", "1")
+            .Attribute("data-cfx-scenario-scrubber", "true")
+            .Attribute("aria-label", "Topology route timeline step")
+            .BooleanAttribute("disabled", activeScenario == null || activeScenario.Steps.Count == 0)
+            .EndVoidElement();
         writer.StartElement("ol").Attribute("class", panelClass + "__steps").Attribute("data-cfx-scenario-panel-steps", "true").EndStartElement();
         if (activeScenario != null) {
             for (var index = 0; index < activeScenario.Steps.Count; index++) {
@@ -96,6 +115,7 @@ public sealed partial class TopologyHtmlRenderer {
                     .Attribute("data-cfx-scenario-step-kind", step.Kind.ToString())
                     .Attribute("data-cfx-scenario-step-id", step.Id)
                     .Attribute("data-cfx-scenario-step-index", index + 1)
+                    .Attribute("data-cfx-scenario-step-duration", step.DurationMilliseconds.HasValue ? step.DurationMilliseconds.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : null)
                     .Attribute("role", "button")
                     .Attribute("tabindex", "0")
                     .EndStartElement()

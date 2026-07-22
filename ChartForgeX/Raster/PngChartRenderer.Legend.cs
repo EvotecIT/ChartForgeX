@@ -20,7 +20,8 @@ public sealed partial class PngChartRenderer {
             var x = PngLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
-                DrawLegendSymbol(c, chart.Series[item.SeriesIndex].Kind, itemX, y - 5, item.Color, theme.CardBackground, chart.Options.Theme.MarkerRadius > 0);
+                var series = chart.Series[item.SeriesIndex];
+                DrawLegendSymbol(c, series.Kind, itemX, y - 5, item.Color, theme.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
                 var labelMaxWidth = System.Math.Max(8, item.Width - symbolWidth - 14);
                 var labelFontSize = TextFontSizeForEmphasizedWidth(item.Label, labelMaxWidth, fontSize);
                 var label = TrimReadablePngLabelToWidth(item.Label, labelFontSize, labelMaxWidth);

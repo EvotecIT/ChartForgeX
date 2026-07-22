@@ -33,6 +33,11 @@ internal static class TopologyScenarioJson {
             }
 
             builder.Append(",\"stepCount\":").Append(scenario.Steps.Count.ToString(CultureInfo.InvariantCulture));
+            builder.Append(",\"playbackDelayMilliseconds\":").Append(scenario.PlaybackDelayMilliseconds.ToString(CultureInfo.InvariantCulture));
+            builder.Append(",\"loopPlayback\":").Append(scenario.LoopPlayback ? "true" : "false");
+            builder.Append(",\"autoPlay\":").Append(scenario.AutoPlay ? "true" : "false");
+            builder.Append(",\"focusMode\":");
+            AppendJsonString(builder, scenario.Spotlight ? "spotlight" : "highlight");
             if (scenario.Metadata.Count > 0) builder.Append(",\"metadata\":").Append(Metadata(scenario.Metadata));
             builder.Append(",\"steps\":").Append(Steps(scenario));
             builder.Append('}');
@@ -62,6 +67,8 @@ internal static class TopologyScenarioJson {
                 builder.Append(",\"description\":");
                 AppendJsonString(builder, step.Description!);
             }
+
+            if (step.DurationMilliseconds.HasValue) builder.Append(",\"durationMilliseconds\":").Append(step.DurationMilliseconds.Value.ToString(CultureInfo.InvariantCulture));
 
             if (step.Metadata.Count > 0) builder.Append(",\"metadata\":").Append(Metadata(step.Metadata));
             builder.Append('}');

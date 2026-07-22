@@ -21,7 +21,10 @@ internal sealed class TopologyHighlightState {
 
         _scenario = TopologyScenarioSelection.From(chart, options.ActiveScenarioId);
         HighlightConnectedEdges = options.HighlightConnectedEdges;
-        DimmedOpacity = Math.Max(0.05, Math.Min(1, options.DimmedOpacity));
+        var hasExplicitHighlight = _statuses.Count > 0 || _groupIds.Count > 0 || _nodeIds.Count > 0 || _edgeIds.Count > 0;
+        DimmedOpacity = _scenario != null && !_scenario.Spotlight && !hasExplicitHighlight
+            ? 1d
+            : Math.Max(0.05, Math.Min(1, options.DimmedOpacity));
     }
 
     public bool IsActive => _statuses.Count > 0 || _groupIds.Count > 0 || _nodeIds.Count > 0 || _edgeIds.Count > 0 || _scenario != null;

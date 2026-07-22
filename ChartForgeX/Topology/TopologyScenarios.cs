@@ -9,6 +9,7 @@ namespace ChartForgeX.Topology;
 public sealed class TopologyScenario {
     private string _id = string.Empty;
     private string _label = string.Empty;
+    private int _playbackDelayMilliseconds = 900;
 
     /// <summary>Gets or sets the stable scenario identifier.</summary>
     public string Id { get => _id; set => _id = RequiredToken(value, nameof(value), "Topology scenario ids"); }
@@ -21,6 +22,24 @@ public sealed class TopologyScenario {
 
     /// <summary>Gets or sets an optional scenario accent color.</summary>
     public string? Color { get; set; }
+
+    /// <summary>Gets or sets the default time each route step remains visible during playback.</summary>
+    public int PlaybackDelayMilliseconds {
+        get => _playbackDelayMilliseconds;
+        set {
+            if (value < 200 || value > 60_000) throw new ArgumentOutOfRangeException(nameof(value), "Topology scenario playback delays must be between 200 and 60000 milliseconds.");
+            _playbackDelayMilliseconds = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether playback returns to the first route step after the last.</summary>
+    public bool LoopPlayback { get; set; }
+
+    /// <summary>Gets or sets whether an HTML adapter may start playback automatically when motion is allowed.</summary>
+    public bool AutoPlay { get; set; }
+
+    /// <summary>Gets or sets whether non-route members are dimmed for a focused review.</summary>
+    public bool Spotlight { get; set; }
 
     /// <summary>Gets ordered node and edge references that participate in the scenario.</summary>
     public List<TopologyScenarioStep> Steps { get; } = new();
@@ -52,6 +71,7 @@ public sealed class TopologyScenario {
 public sealed class TopologyScenarioStep {
     private string _id = string.Empty;
     private TopologyScenarioStepKind _kind;
+    private int? _durationMilliseconds;
 
     /// <summary>Gets or sets the referenced node or edge id.</summary>
     public string Id { get => _id; set => _id = RequiredText(value, nameof(value), "Topology scenario step ids"); }
@@ -70,6 +90,15 @@ public sealed class TopologyScenarioStep {
 
     /// <summary>Gets or sets an optional step description.</summary>
     public string? Description { get; set; }
+
+    /// <summary>Gets or sets an optional playback duration that overrides the route default.</summary>
+    public int? DurationMilliseconds {
+        get => _durationMilliseconds;
+        set {
+            if (value.HasValue && (value.Value < 200 || value.Value > 60_000)) throw new ArgumentOutOfRangeException(nameof(value), "Topology scenario step durations must be between 200 and 60000 milliseconds.");
+            _durationMilliseconds = value;
+        }
+    }
 
     /// <summary>Gets arbitrary step metadata for route inspectors and host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();

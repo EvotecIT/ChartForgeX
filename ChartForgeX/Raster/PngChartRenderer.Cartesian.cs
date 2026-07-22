@@ -247,8 +247,9 @@ public sealed partial class PngChartRenderer {
         if (s.Kind != ChartSeriesKind.Scatter) {
             DrawPremiumPngLinePath(c, linePoints, color, s.StrokeWidth, chart.Options.LineVisualStyle);
         }
-        if (s.Kind == ChartSeriesKind.Scatter || (!chart.Options.IsSparkline && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind))) {
-            var markerRadius = s.Kind == ChartSeriesKind.Scatter ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra) : chart.Options.Theme.MarkerRadius;
+        var optionalMarkerRadius = s.MarkerRadius ?? chart.Options.Theme.MarkerRadius;
+        if (s.Kind == ChartSeriesKind.Scatter || (!chart.Options.IsSparkline && optionalMarkerRadius > 0 && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind))) {
+            var markerRadius = s.Kind == ChartSeriesKind.Scatter ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra) : optionalMarkerRadius;
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
                 DrawMarker(c, chart, map.X(p.X), map.Y(p.Y), markerRadius, PointColor(chart, s, index, pointIndex));
