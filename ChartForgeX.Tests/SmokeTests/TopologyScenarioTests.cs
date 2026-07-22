@@ -83,8 +83,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-group-id=\"main\"", StringComparison.Ordinal) && svg.Contains("cfx-topology--highlighted", StringComparison.Ordinal), "Static active scenarios should keep groups that contain route nodes highlighted.");
         Assert(svg.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal) && svg.Contains("cfx-topology--highlighted", StringComparison.Ordinal), "Static active scenarios should highlight route edges.");
         Assert(svg.Contains("data-edge-id=\"b-c\"", StringComparison.Ordinal) && svg.Contains("cfx-topology--dimmed", StringComparison.Ordinal), "Static active scenarios should not highlight unrelated connected edges.");
-        Assert(svg.Contains("data-node-id=\"c\"", StringComparison.Ordinal) && svg.Contains("opacity=\"0.28\"", StringComparison.Ordinal), "Static active scenarios should dim nodes outside the scenario.");
+        Assert(!ExtractElement(svg, "data-node-id=\"c\"").Contains("opacity=\"0.28\"", StringComparison.Ordinal), "Default static scenarios should preserve unrelated context rather than dimming it.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "route" }).Length > 64, "Static active scenario highlighting should render as PNG.");
+
+        chart.Scenarios[0].WithSpotlight();
+        var spotlightSvg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "route" });
+        Assert(ExtractElement(spotlightSvg, "data-node-id=\"c\"").Contains("opacity=\"0.28\"", StringComparison.Ordinal), "Explicit spotlight scenarios should dim nodes outside the route in static output.");
 
         var missing = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "missing" });
         Assert(!missing.Contains("data-cfx-active-scenario=\"missing\"", StringComparison.Ordinal), "Unknown active scenario ids should not be emitted as resolved static scenario state.");
@@ -254,11 +258,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyScenarioModelsRejectInvalidInputs() {
         var scenario = new TopologyScenario { Id = "scenario", Label = "Scenario" }
+            .WithPlayback(1200, loop: true)
+            .WithSpotlight()
             .WithMetadata("owner", "network")
             .WithMetadata("empty", null);
         Assert(scenario.Metadata["owner"] == "network" && scenario.Metadata["empty"] == string.Empty, "Topology scenario metadata helpers should keep host metadata reusable and null-safe.");
-        scenario.AddEdgeStep("edge", "Route", configure: step => step.WithMetadata("protocol", "https").WithMetadata("empty", null));
+        scenario.AddEdgeStep("edge", "Route", configure: step => step.WithDuration(1800).WithMetadata("protocol", "https").WithMetadata("empty", null));
         Assert(scenario.Steps[0].Metadata["protocol"] == "https" && scenario.Steps[0].Metadata["empty"] == string.Empty, "Topology scenario step metadata helpers should keep route-step metadata reusable and null-safe.");
+        Assert(scenario.PlaybackDelayMilliseconds == 1200 && scenario.LoopPlayback && scenario.Spotlight && scenario.Steps[0].DurationMilliseconds == 1800, "Topology scenarios should own the same paced timeline and explicit focus intent as chart scenarios.");
 
         var options = new TopologyRenderOptions()
             .WithHtmlScenarioControls(false)
@@ -271,6 +278,17 @@ internal static partial class SmokeTests {
         Assert(options.EnableHtmlScenarioUrlState, "Topology render options should expose a fluent scenario URL-state toggle.");
         Assert(options.WithoutActiveScenario().ActiveScenarioId == null, "Topology render options should expose a fluent active scenario clear helper.");
 
+        var contextualChart = TopologyChart.Create()
+            .AddNode("a", "A", 0, 0)
+            .AddNode("b", "B", 100, 0)
+            .AddEdge("a-b", "a", "b")
+            .AddScenario("context", "Context", route => route.AddEdgeStep("a-b"));
+        var contextualHighlight = TopologyHighlightState.From(contextualChart, new TopologyRenderOptions { ActiveScenarioId = "context", DimmedOpacity = 0.2 });
+        Assert(contextualHighlight.DimmedOpacity == 1d, "Default topology scenarios should highlight the route without fading the surrounding context in static output.");
+        contextualChart.Scenarios[0].WithSpotlight();
+        var spotlightHighlight = TopologyHighlightState.From(contextualChart, new TopologyRenderOptions { ActiveScenarioId = "context", DimmedOpacity = 0.2 });
+        Assert(Math.Abs(spotlightHighlight.DimmedOpacity - 0.2) < 0.0001, "Explicit topology spotlight scenarios should retain focused static dimming.");
+
         AssertThrows<ArgumentException>(() => new TopologyScenario { Id = " " }, "Topology scenario models should reject empty ids close to the caller.");
         AssertThrows<ArgumentException>(() => new TopologyScenario { Id = "bad id" }, "Topology scenario models should reject ids that cannot be used as stable HTML tokens.");
         AssertThrows<ArgumentException>(() => new TopologyScenario { Label = " " }, "Topology scenario models should reject empty labels close to the caller.");
@@ -282,6 +300,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.AddNodeStep(" "), "Topology scenario steps should reject empty ids close to the caller.");
         AssertThrows<ArgumentException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.WithMetadata(" ", "value"), "Topology scenario metadata helpers should reject empty keys close to the caller.");
         AssertThrows<ArgumentException>(() => new TopologyScenarioStep { Id = "node", Kind = TopologyScenarioStepKind.Node }.WithMetadata(" ", "value"), "Topology scenario step metadata helpers should reject empty keys close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.WithPlayback(100), "Topology scenario timelines should reject unreadable playback delays.");
         AssertThrows<ArgumentException>(() => new TopologyRenderOptions().WithActiveScenario("bad id"), "Topology active scenario helpers should reject ids that cannot be used as stable HTML tokens.");
         AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForScenario("bad id"), "Topology motion scenario helpers should reject ids that cannot be used as stable HTML tokens.");
         AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForEdges(), "Topology motion explicit edge helpers should require at least one edge id.");

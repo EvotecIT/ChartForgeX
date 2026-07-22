@@ -88,7 +88,7 @@
       const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
       if (scenario.playback === 'playing' && route && route.steps.length) {
         const current = Number(root.dataset.cfxActiveScenarioStep || '-1');
-        const next = Number.isFinite(current) && current + 1 < route.steps.length ? current + 1 : 0;
+        const next = Number.isFinite(current) ? current + 1 : 0;
         startScenarioPlayback(root, route, next, false, false);
       } else if (scenario.playback) {
         setScenarioPlaybackState(root, scenario.playback, route, false);

@@ -56,12 +56,22 @@ body {
   will-change: transform;
 }
 
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
 .cfx-toolbar {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
   margin: 0 0 10px;
+  padding: 6px;
+  border: 1px solid rgba(51, 65, 85, .72);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, .58);
 }
 
 .cfx-scenarios {
@@ -221,6 +231,19 @@ body {
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.cfx-scenario-scrubber {
+  width: 100%;
+  min-height: 24px;
+  margin: 0;
+  accent-color: var(--cfx-scenario-color, #38bdf8);
+  cursor: pointer;
+}
+
+.cfx-scenario-scrubber:disabled {
+  cursor: default;
+  opacity: .45;
 }
 
 .cfx-tooltip {
@@ -536,7 +559,8 @@ body {
 }
 
 .cfx-interactive-chart .cfx-scenario-muted {
-  opacity: .24 !important;
+  opacity: .46 !important;
+  filter: saturate(.72);
 }
 
 .cfx-interactive-chart .cfx-scenario-active {
@@ -550,7 +574,8 @@ body {
 }
 
 .cfx-interactive-chart .cfx-scenario-step-muted {
-  opacity: .38 !important;
+  opacity: .56 !important;
+  filter: saturate(.8);
 }
 
 @media (max-width: 900px) {
@@ -560,5 +585,57 @@ body {
 
   .cfx-dashboard {
     grid-template-columns: 1fr !important;
+  }
+
+  .cfx-stage {
+    padding: 8px;
+  }
+
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-gutter: stable;
+    touch-action: auto;
+  }
+
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="pan"] .cfx-stage,
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="brush"] .cfx-stage {
+    touch-action: none;
+  }
+
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage svg {
+    width: 100%;
+    min-width: min(var(--cfx-native-width, 640px), 38rem);
+    max-width: none;
+  }
+
+  .cfx-toolbar,
+  .cfx-scenario-panel__controls {
+    justify-content: stretch;
+  }
+
+  .cfx-toolbar .cfx-tool,
+  .cfx-scenario-panel__controls .cfx-tool {
+    flex: 1 1 auto;
+    min-height: 36px;
+  }
+
+  .cfx-scenario-panel__steps {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .cfx-scenario-panel__steps li {
+    min-height: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfx-stage svg,
+  .cfx-scenario-progress__bar,
+  .cfx-interactive-chart [data-cfx-label],
+  .cfx-interactive-chart [data-cfx-point],
+  .cfx-interactive-chart [data-cfx-series] {
+    transition: none !important;
   }
 }

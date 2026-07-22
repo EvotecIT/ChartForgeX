@@ -17,6 +17,7 @@ public sealed class HtmlChartInteractionOptions {
     public HtmlChartInteractionOptions() {
         Interaction = ChartInteractionOptions.ReportReview();
         IncludeResetButton = true;
+        ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
     }
 
     /// <summary>
@@ -53,10 +54,21 @@ public sealed class HtmlChartInteractionOptions {
     /// </summary>
     public bool IncludeResetButton { get; set; }
 
+    /// <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
+    public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
+
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;
         var trimmed = value.Trim();
         if (trimmed.Length == 0) throw new ArgumentException("HTML interaction option values must not be empty.", parameterName);
         return trimmed;
     }
+}
+
+/// <summary>Controls how a fixed-design SVG behaves inside a responsive HTML container.</summary>
+public enum HtmlChartResponsiveLayout {
+    /// <summary>Always scales the full chart to the available width.</summary>
+    Fit,
+    /// <summary>Preserves a readable minimum chart width inside a contained horizontal viewport on narrow screens.</summary>
+    Readable
 }

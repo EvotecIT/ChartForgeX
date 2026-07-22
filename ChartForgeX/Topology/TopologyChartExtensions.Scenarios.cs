@@ -46,6 +46,22 @@ public static partial class TopologyChartExtensions {
         return scenario;
     }
 
+    /// <summary>Configures route timeline playback without enabling automatic playback by default.</summary>
+    public static TopologyScenario WithPlayback(this TopologyScenario scenario, int stepDurationMilliseconds = 900, bool loop = false, bool autoPlay = false) {
+        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
+        scenario.PlaybackDelayMilliseconds = stepDurationMilliseconds;
+        scenario.LoopPlayback = loop;
+        scenario.AutoPlay = autoPlay;
+        return scenario;
+    }
+
+    /// <summary>Controls whether the route spotlights members by dimming surrounding topology.</summary>
+    public static TopologyScenario WithSpotlight(this TopologyScenario scenario, bool enabled = true) {
+        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
+        scenario.Spotlight = enabled;
+        return scenario;
+    }
+
     /// <summary>
     /// Adds host-readable metadata to a topology scenario.
     /// </summary>
@@ -69,6 +85,13 @@ public static partial class TopologyChartExtensions {
     public static TopologyScenarioStep WithMetadata(this TopologyScenarioStep step, string key, string? value) {
         if (step == null) throw new ArgumentNullException(nameof(step));
         step.Metadata[RequiredText(key, nameof(key), "Topology scenario step metadata keys")] = value ?? string.Empty;
+        return step;
+    }
+
+    /// <summary>Overrides how long this route step remains visible during timeline playback.</summary>
+    public static TopologyScenarioStep WithDuration(this TopologyScenarioStep step, int durationMilliseconds) {
+        if (step == null) throw new ArgumentNullException(nameof(step));
+        step.DurationMilliseconds = durationMilliseconds;
         return step;
     }
 

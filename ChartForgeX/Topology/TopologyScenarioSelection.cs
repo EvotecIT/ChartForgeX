@@ -5,11 +5,14 @@ using System.Linq;
 namespace ChartForgeX.Topology;
 
 internal sealed class TopologyScenarioSelection {
-    private TopologyScenarioSelection(string id) {
+    private TopologyScenarioSelection(string id, bool spotlight) {
         Id = id;
+        Spotlight = spotlight;
     }
 
     public string Id { get; }
+
+    public bool Spotlight { get; }
 
     public HashSet<string> GroupIds { get; } = new(StringComparer.Ordinal);
 
@@ -20,7 +23,7 @@ internal sealed class TopologyScenarioSelection {
     public static TopologyScenarioSelection? From(TopologyChart chart, string? scenarioId) {
         var scenario = ResolveScenario(chart, scenarioId);
         if (scenario == null) return null;
-        var selection = new TopologyScenarioSelection(scenario.Id);
+        var selection = new TopologyScenarioSelection(scenario.Id, scenario.Spotlight);
         var edgesById = chart.Edges
             .Where(edge => !string.IsNullOrWhiteSpace(edge.Id))
             .GroupBy(edge => edge.Id, StringComparer.Ordinal)

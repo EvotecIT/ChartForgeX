@@ -53,4 +53,40 @@ internal static partial class SmokeTests {
         Assert(html.Contains("const sourcePointIndex = (node)", StringComparison.Ordinal), "Interactive HTML should resolve retained points back to source identities.");
         Assert(html.Contains("sourcePoint: sourcePointIndex(node)", StringComparison.Ordinal), "Interactive events should report the original point identity alongside the rendered ordinal.");
     }
+
+    private static void AdaptiveSeriesUseReusableResolutionPolicy() {
+        var defaultPolicy = ChartResolutionPolicy.Trend();
+        Assert(defaultPolicy.ResolvePointBudget(0) == 64, "Adaptive trend rendering should retain a useful minimum point budget.");
+        Assert(defaultPolicy.ResolvePointBudget(240) == 480, "Adaptive trend rendering should resolve two points per horizontal pixel by default.");
+        Assert(defaultPolicy.ResolvePointBudget(int.MaxValue) == int.MaxValue, "Adaptive trend rendering should saturate safely at the configured maximum.");
+
+        var points = Enumerable.Range(0, 10_000)
+            .Select(index => new ChartPoint(index, index == 5_000 ? 1_000 : Math.Sin(index / 20d)))
+            .ToArray();
+        var chart = Chart.Create().AddAdaptiveLine("Signal", points, 320);
+        var series = chart.Series[0];
+        Assert(series.IsDecimated && series.SourcePointCount == points.Length && series.Points.Count <= 640, "Adaptive series should decimate dense sources against the reusable width-aware budget.");
+        Assert(series.SourcePointIndices.Contains(5_000), "Adaptive trend rendering should preserve material spikes through its default LTTB policy.");
+        Assert(series.MarkerRadius == 0d, "Adaptive trend rendering should suppress optional markers when retained point density would obscure the line.");
+        var svg = chart.ToSvg();
+        Assert(!svg.Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "Dense adaptive trends should avoid thousands of visible SVG marker nodes.");
+        Assert(!svg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Static adaptive SVG should stay lean by omitting interaction-only point targets.");
+        var interactiveHtml = chart.ToInteractiveHtmlFragment();
+        Assert(interactiveHtml.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal) && interactiveHtml.Contains("class=\"cfx-point-interaction-target\"", StringComparison.Ordinal), "Interactive adaptive trends should retain invisible point targets for tooltips, scenarios, and keyboard interaction.");
+        var sparklineSvg = Chart.Create().WithSparkline().AddAdaptiveLine("Signal", points, 320).ToSvg();
+        Assert(!sparklineSvg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Static adaptive sparklines should omit interaction-only point targets.");
+        var sparklineHtml = Chart.Create().WithSparkline().AddAdaptiveLine("Signal", points, 320).ToInteractiveHtmlFragment();
+        Assert(sparklineHtml.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Interactive adaptive sparklines should preserve invisible point targets even though sparkline chrome and visible markers stay suppressed.");
+
+        var compact = Chart.Create().AddAdaptiveArea("Compact", points.Take(32), 320);
+        Assert(!compact.Series[0].IsDecimated && compact.Series[0].Points.Count == 32, "Adaptive series should preserve sources already inside the resolved budget.");
+        Assert(!compact.Series[0].MarkerRadius.HasValue, "Short adaptive series should retain the chart theme marker treatment.");
+
+        var bounded = ChartResolutionPolicy.Trend();
+        bounded.MaximumPointCount = 128;
+        Assert(bounded.ResolvePointBudget(4_000) == 128, "Adaptive resolution policy should honor an explicit maximum.");
+        AssertThrows<ArgumentOutOfRangeException>(() => bounded.PointsPerPixel = 0, "Adaptive resolution policy should reject non-positive density.");
+        AssertThrows<ArgumentOutOfRangeException>(() => bounded.MaximumMarkerCount = -1, "Adaptive resolution policy should reject negative marker thresholds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => bounded.ResolvePointBudget(-1), "Adaptive resolution policy should reject negative viewport widths.");
+    }
 }

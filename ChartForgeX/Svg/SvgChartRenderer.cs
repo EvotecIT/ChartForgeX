@@ -79,14 +79,18 @@ public sealed partial class SvgChartRenderer {
     /// <param name="chart">The chart to render.</param>
     /// <param name="idScope">A caller-provided scope used to keep SVG element IDs unique when embedding multiple SVGs in one document.</param>
     /// <returns>SVG markup.</returns>
-    public string Render(Chart chart, string idScope) {
+    public string Render(Chart chart, string idScope) => Render(chart, idScope, includeInteractionTargets: false);
+
+    internal string RenderForInteraction(Chart chart, string idScope) => Render(chart, idScope, includeInteractionTargets: true);
+
+    private string Render(Chart chart, string idScope, bool includeInteractionTargets) {
         ChartGuards.RenderCompatibility(chart);
         var provisionalId = BuildProvisionalId(chart, idScope);
-        var svg = RenderCore(chart, provisionalId);
+        var svg = RenderCore(chart, provisionalId, includeInteractionTargets);
         return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx", idScope, string.Empty);
     }
 
-    private string RenderCore(Chart chart, string id) {
+    private string RenderCore(Chart chart, string id, bool includeInteractionTargets) {
         var o = chart.Options;
         var t = o.Theme;
         var w = o.Size.Width;
@@ -359,7 +363,7 @@ public sealed partial class SvgChartRenderer {
         if (IsHorizontalBarChart(chart)) {
             DrawHorizontalBarGrid(sb, chart, plot, xTicks, yTicks, map);
             AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
-            for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, map, id);
+            for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, map, id, includeInteractionTargets);
             AppendSvgEnd(sb, "g");
             if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawHorizontalStackTotals(sb, chart, plot, map);
             DrawLegend(sb, chart, w, h);
@@ -372,7 +376,7 @@ public sealed partial class SvgChartRenderer {
         DrawGrid(sb, chart, plot, xTicks, yTicks, map);
         if (secondaryMap != null && secondaryTicks != null) DrawSecondaryYAxis(sb, chart, plot, secondaryTicks, secondaryMap);
         AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
-        for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, SeriesMap(chart.Series[i], map, secondaryMap), id);
+        for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, SeriesMap(chart.Series[i], map, secondaryMap), id, includeInteractionTargets);
         if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(sb, chart, barCoordinateMap, plot, map);
         AppendSvgEnd(sb, "g");
         DrawAnnotationLines(sb, chart, plot, map);
@@ -608,7 +612,7 @@ public sealed partial class SvgChartRenderer {
         return $"M {F(left)} {F(cy)} A {F(radius)} {F(radius)} 0 1 1 {F(right)} {F(cy)} A {F(radius)} {F(radius)} 0 1 1 {F(left)} {F(cy)} M {F(innerLeft)} {F(cy)} A {F(innerRadius)} {F(innerRadius)} 0 1 0 {F(innerRight)} {F(cy)} A {F(innerRadius)} {F(innerRadius)} 0 1 0 {F(innerLeft)} {F(cy)} Z";
     }
 
-    private static void DrawSeries(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id) {
+    private static void DrawSeries(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id, bool includeInteractionTargets) {
         var s = chart.Series[index]; var c = Color(chart, index); if (s.Points.Count == 0) return;
         if (s.Kind == ChartSeriesKind.HorizontalBar) { DrawHorizontalBars(sb, chart, index, plot, map, id); return; }
         if (s.Kind == ChartSeriesKind.Bar) { DrawBars(sb, chart, barCoordinateMap, index, plot, range, map, id); return; }
@@ -642,18 +646,12 @@ public sealed partial class SvgChartRenderer {
                 AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", SeriesSemanticRole(s, "scatter-point")).Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra)).Attribute("fill", markerColor.ToCss()).Attribute("opacity", "0.92").Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
             }
         } else {
+            var markerRadius = s.MarkerRadius ?? chart.Options.Theme.MarkerRadius;
             var line = s.Kind == ChartSeriesKind.StepLine ? BuildStepLinePath(mapped) : BuildLinePath(mapped, s.Smooth);
             if (s.Kind == ChartSeriesKind.StepArea) line = BuildStepLinePath(mapped);
             var lineRole = s.Kind == ChartSeriesKind.StepLine ? "step-line" : s.Kind == ChartSeriesKind.StepArea ? "step-area-line" : s.Kind == ChartSeriesKind.Area ? "area-line" : "line";
             DrawPremiumSvgLinePath(sb, lineRole, index, mapped.Length, line, c, s.StrokeWidth, chart.Options.LineVisualStyle);
-            if (!chart.Options.IsSparkline && chart.Options.Theme.MarkerRadius > 0 && ChartSeriesKindTraits.UsesOptionalLineMarker(s.Kind)) {
-                for (var pointIndex = 0; pointIndex < mapped.Length; pointIndex++) {
-                    var p = mapped[pointIndex];
-                    var raw = s.Points[pointIndex];
-                    var markerColor = PointColor(chart, s, index, pointIndex);
-                    AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", "line-marker").Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", chart.Options.Theme.MarkerRadius).Attribute("fill", markerColor.ToCss()).Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
-                }
-            }
+            DrawOptionalLineMarkers(sb, chart, s, index, mapped, markerRadius, includeInteractionTargets);
         }
         if (ShouldDrawDataLabels(chart, s)) DrawPointLabels(sb, chart, s, mapped, plot);
     }

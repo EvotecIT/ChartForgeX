@@ -75,7 +75,7 @@
 .cfx-topology-wrapper .cfx-topology-html-hovered{filter:drop-shadow(0 8px 16px rgba(15,23,42,.16))}
 .cfx-topology-wrapper .cfx-topology-html-hover-muted{opacity:.42}
 .cfx-topology-wrapper .cfx-topology-html-hover-related{opacity:1}
-.cfx-topology-wrapper .cfx-topology-html-scenario-muted{opacity:.18}
+.cfx-topology-wrapper .cfx-topology-html-scenario-muted{opacity:.46;filter:saturate(.72)}
 .cfx-topology-wrapper .cfx-topology-html-scenario-active{opacity:1;filter:drop-shadow(0 10px 18px rgba(37,99,235,.18))}
 .cfx-topology-wrapper .cfx-topology-html-scenario-active .cfx-topology__edge{stroke:var(--cfx-topology-active-scenario-color,#2563eb)!important;stroke-width:5!important}
 .cfx-topology-wrapper .cfx-topology-html-scenario-active .cfx-topology__node-card{stroke:var(--cfx-topology-active-scenario-color,#2563eb)!important;stroke-width:2.4!important}
@@ -83,7 +83,7 @@
 .cfx-topology-wrapper .cfx-topology-html-scenario-preview{opacity:1;filter:drop-shadow(0 8px 14px rgba(15,23,42,.16))}
 .cfx-topology-wrapper .cfx-topology-html-scenario-preview .cfx-topology__edge{stroke:var(--cfx-topology-preview-scenario-color,#2563eb)!important;stroke-width:4!important}
 .cfx-topology-wrapper .cfx-topology-html-scenario-preview .cfx-topology__node-card{stroke:var(--cfx-topology-preview-scenario-color,#2563eb)!important;stroke-width:2!important}
-.cfx-topology-wrapper .cfx-topology-html-scenario-step-muted{opacity:.38}
+.cfx-topology-wrapper .cfx-topology-html-scenario-step-muted{opacity:.56;filter:saturate(.8)}
 .cfx-topology-wrapper .cfx-topology-html-scenario-step-active{opacity:1;filter:drop-shadow(0 10px 18px rgba(15,23,42,.2))}
 .cfx-topology-wrapper .cfx-topology-html-scenario-step-active .cfx-topology__edge{stroke-width:6!important}
 .cfx-topology-wrapper .cfx-topology-html-scenario-step-active .cfx-topology__node-card{stroke-width:3!important}
@@ -96,3 +96,5 @@
 .cfx-topology-wrapper[data-cfx-force-moving-edges='true'] .cfx-topology-html-force-moving .cfx-topology__edge,.cfx-topology-wrapper[data-cfx-force-moving-edges='true'] .cfx-topology-html-force-moving .cfx-topology__edge--premium-layer{opacity:.08!important}
 .cfx-topology-wrapper[data-cfx-force-moving-edges='true'] [data-cfx-role='topology-edge-label']{display:none!important}
 @media (max-width:720px){.cfx-topology-force-controls__row{grid-template-columns:1fr}.cfx-topology-force-controls{padding:9px}.cfx-topology-selection-panel{top:auto;left:12px;max-height:42%;width:auto}}
+.cfx-topology-scenario-panel__scrubber{width:100%;min-height:24px;margin:0;accent-color:var(--cfx-topology-scenario-color,#2563eb);cursor:pointer}.cfx-topology-scenario-panel__scrubber:disabled{cursor:default;opacity:.45}
+@media (prefers-reduced-motion:reduce){.cfx-topology-wrapper svg,.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge']{transition:none!important}}

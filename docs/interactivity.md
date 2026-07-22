@@ -32,6 +32,24 @@ Scenario routes use the same identity contract. `AddSeriesStep(...)` accepts a s
 
 Assetless fragments declare `data-cfx-asset-source="host"` on their root. Self-contained fragments use `inline`, while complete pages use `document`. Hosts such as HtmlForgeX can register CSS and JavaScript once and consume the fragment directly without parsing or rewriting ChartForgeX markup.
 
+## Scenario Timelines
+
+Scenarios are ordered, host-neutral timelines rather than browser-only tours. Configure pacing and visual intent on the scenario model; adapters consume the same contract:
+
+```csharp
+interaction.AddScenario("recovery", "Recovery route", scenario => scenario
+    .WithDescription("Inspect pressure, then confirm the recovered signal.")
+    .WithPlayback(stepDurationMilliseconds: 1100, loop: false, autoPlay: false)
+    .WithFocusMode(ChartInteractionScenarioFocusMode.Highlight)
+    .AddSeriesStep("incident-pressure", "Inspect pressure",
+        configure: step => step.WithDuration(1600))
+    .AddSeriesStep("probe-success", "Confirm recovery"));
+```
+
+`Highlight` is the default: it emphasizes route members while preserving titles, axes, and surrounding data context. Use `Spotlight` only when dimming non-route data is intentional. Playback and autoplay are opt in, autoplay is suppressed when the browser requests reduced motion, and the HTML adapter exposes previous/next controls plus an accessible range scrubber for direct step selection. Individual step durations override the scenario default; both accept 200-60000 milliseconds.
+
+The HTML adapter uses `HtmlChartResponsiveLayout.Readable` by default. On narrow screens it keeps the fixed-design SVG legible inside a contained horizontal viewport instead of shrinking labels into a thumbnail. Set `ResponsiveLayout = HtmlChartResponsiveLayout.Fit` when seeing the entire chart at once is more important than minimum label size.
+
 ## Scenario Events
 
 Scenario controls dispatch browser events from the chart root:
@@ -44,7 +62,7 @@ Scenario controls dispatch browser events from the chart root:
 - `cfxstate`: an opt-in interaction snapshot was captured. Detail includes `source` and `snapshot`.
 - `cfxstateapplied`: an opt-in interaction snapshot was replayed. Detail includes `snapshot`.
 
-`cfxscenarioplayback.detail.state` is one of `idle`, `playing`, `paused`, or `finished`. The chart root also exposes the current state through `data-cfx-scenario-playback`, current step progress through `data-cfx-scenario-progress`, and playback cadence through `data-cfx-scenario-playback-delay`.
+`cfxscenarioplayback.detail.state` is one of `idle`, `playing`, `paused`, or `finished`. The chart root also exposes the current state through `data-cfx-scenario-playback`, current step progress through `data-cfx-scenario-progress`, and the effective current-step cadence through the event's `delay` value.
 
 ## Host Commands
 

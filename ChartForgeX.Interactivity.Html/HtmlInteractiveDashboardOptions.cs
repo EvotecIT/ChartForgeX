@@ -18,6 +18,7 @@ public sealed class HtmlInteractiveDashboardOptions {
     public HtmlInteractiveDashboardOptions() {
         Interaction = ChartInteractionOptions.ReportReview();
         IncludeResetButton = true;
+        ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
     }
 
     /// <summary>
@@ -64,6 +65,9 @@ public sealed class HtmlInteractiveDashboardOptions {
     /// Gets or sets whether each chart includes a reset button for selections and legend toggles.
     /// </summary>
     public bool IncludeResetButton { get; set; }
+
+    /// <summary>Gets or sets how every dashboard chart protects readability in narrow containers.</summary>
+    public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;

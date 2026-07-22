@@ -40,7 +40,11 @@
       description: button.dataset.cfxScenarioDescription || '',
       color: button.dataset.cfxScenarioColor || '',
       steps: readJson(button.dataset.cfxScenarioSteps || '[]', []),
-      metadata: readJson(button.dataset.cfxScenarioMetadata || '{}', {})
+      metadata: readJson(button.dataset.cfxScenarioMetadata || '{}', {}),
+      playbackDelayMilliseconds: Number(button.dataset.cfxScenarioPlaybackDelay || '900'),
+      loopPlayback: button.dataset.cfxScenarioLoop === 'true',
+      autoPlay: button.dataset.cfxScenarioAutoplay === 'true',
+      focusMode: button.dataset.cfxScenarioFocusMode || 'highlight'
     };
   };
   const scenarioTargetMatches = (node, step) => {
@@ -114,6 +118,7 @@
         item.setAttribute('data-cfx-scenario-step-index', String(index + 1));
         item.setAttribute('data-cfx-scenario-target-kind', step.targetKind || '');
         item.setAttribute('data-cfx-scenario-target-id', step.targetId || '');
+        if (step.durationMilliseconds) item.setAttribute('data-cfx-scenario-step-duration', String(step.durationMilliseconds));
         item.setAttribute('role', 'button');
         item.setAttribute('tabindex', '0');
         item.textContent = step.label || step.targetId || '';
@@ -137,6 +142,13 @@
       const textNode = progress.querySelector('[data-cfx-scenario-progress-text]');
       if (textNode) textNode.textContent = label;
     }
+    const scrubber = root.querySelector('[data-cfx-scenario-scrubber]');
+    if (scrubber) {
+      scrubber.disabled = !count;
+      scrubber.max = String(Math.max(1, count));
+      scrubber.value = String(Math.max(1, current));
+      scrubber.setAttribute('aria-valuetext', label);
+    }
     if (count) root.dataset.cfxScenarioProgress = current + '/' + count;
     else root.removeAttribute('data-cfx-scenario-progress');
     return { current, count, percent, label };
@@ -157,7 +169,7 @@
     root.querySelectorAll('.cfx-scenario-active').forEach((node) => {
       const active = targets.has(node);
       node.classList.toggle('cfx-scenario-step-active', active);
-      node.classList.toggle('cfx-scenario-step-muted', !active);
+      node.classList.toggle('cfx-scenario-step-muted', !active && route.focusMode === 'spotlight');
     });
     root.querySelectorAll('[data-cfx-scenario-step-index]').forEach((node) => {
       node.getAttribute('data-cfx-scenario-step-index') === String(index + 1) ? node.setAttribute('aria-current', 'step') : node.removeAttribute('aria-current');
@@ -198,7 +210,7 @@
     scenarioTargetCandidates(root, route).forEach((node) => {
       const active = targets.has(node);
       node.classList.toggle('cfx-scenario-active', active);
-      node.classList.toggle('cfx-scenario-muted', !active);
+      node.classList.toggle('cfx-scenario-muted', !active && route.focusMode === 'spotlight');
     });
     renderScenarioPanel(root, route);
     updateScenarioProgress(root, route, null);
@@ -212,8 +224,9 @@
     const current = Number(root.dataset.cfxActiveScenarioStep || (delta > 0 ? '-1' : route.steps.length));
     setScenarioStep(root, current + delta, true, true);
   };
-  const scenarioPlaybackDelay = (root) => {
-    const delay = Number(root.dataset.cfxScenarioPlaybackDelay || '900');
+  const scenarioPlaybackDelay = (root, route, stepIndex) => {
+    const step = route && route.steps && Number.isFinite(Number(stepIndex)) ? route.steps[Number(stepIndex)] : null;
+    const delay = Number((step && step.durationMilliseconds) || (route && route.playbackDelayMilliseconds) || root.dataset.cfxScenarioPlaybackDelay || '900');
     return Number.isFinite(delay) && delay >= 200 ? delay : 900;
   };
   const setScenarioPlaybackState = (root, state, route, emit) => {
@@ -231,12 +244,12 @@
         scenarioId: route ? route.id : (root.dataset.cfxActiveScenario || ''),
         stepIndex: root.dataset.cfxActiveScenarioStep || '',
         progress: root.dataset.cfxScenarioProgress || '',
-        delay: scenarioPlaybackDelay(root)
+        delay: scenarioPlaybackDelay(root, route, root.dataset.cfxActiveScenarioStep)
       });
     }
   };
   const stopScenarioPlayback = (root, state, emit) => {
-    if (root._cfxScenarioPlayback) window.clearInterval(root._cfxScenarioPlayback);
+    if (root._cfxScenarioPlayback) window.clearTimeout(root._cfxScenarioPlayback);
     root._cfxScenarioPlayback = null;
     setScenarioPlaybackState(root, state || 'idle', scenarioRoute(root, root.dataset.cfxActiveScenario || ''), emit);
   };
@@ -255,15 +268,22 @@
     if (!route || !route.steps.length) return;
     setScenarioPlaybackState(root, 'playing', route, emit);
     let index = Number(stepIndex);
-    if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
-    root._cfxScenarioPlayback = window.setInterval(() => {
+    if (!Number.isFinite(index) || index < 0) index = 0;
+    if (index >= route.steps.length && route.loopPlayback) index = 0;
+    const advance = () => {
       if (index >= route.steps.length) {
-        stopScenarioPlayback(root, 'finished', emit);
-        return;
+        if (route.loopPlayback) index = 0;
+        else {
+          stopScenarioPlayback(root, 'finished', emit);
+          return;
+        }
       }
-      setScenarioStep(root, index++, true, true);
-    }, scenarioPlaybackDelay(root));
-    if (advanceNow !== false) setScenarioStep(root, index++, true, true);
+      const current = index++;
+      setScenarioStep(root, current, true, true);
+      root._cfxScenarioPlayback = window.setTimeout(advance, scenarioPlaybackDelay(root, route, current));
+    };
+    if (advanceNow !== false) advance();
+    else root._cfxScenarioPlayback = window.setTimeout(advance, scenarioPlaybackDelay(root, route, Number(root.dataset.cfxActiveScenarioStep || '0')));
   };
   const copyScenarioLink = (root) => {
     syncScenarioUrl(root, root.dataset.cfxActiveScenario || '', root.dataset.cfxActiveScenarioStep || '');

@@ -198,6 +198,8 @@
     const stageRect = stage.getBoundingClientRect();
     const shown = [];
     const seen = new Set();
+    const placed = [];
+    const overlaps = (candidate) => placed.some((item) => candidate.left < item.right + 6 && candidate.right + 6 > item.left && candidate.top < item.bottom + 6 && candidate.bottom + 6 > item.top);
     layer.replaceChildren();
     layer.hidden = false;
     (nodes || []).forEach((node) => {
@@ -220,8 +222,22 @@
       const halfWidth = label.offsetWidth / 2;
       const maxX = Math.max(8 + halfWidth, stageRect.width - halfWidth - 8);
       const maxY = Math.max(0, stageRect.height - label.offsetHeight - 8);
-      label.style.left = clamp(rect.left + rect.width / 2 - stageRect.left, 8 + halfWidth, maxX) + 'px';
-      label.style.top = clamp(rect.top - stageRect.top - label.offsetHeight - 8, 8, maxY) + 'px';
+      const centerX = clamp(rect.left + rect.width / 2 - stageRect.left, 8 + halfWidth, maxX);
+      const preferredTop = clamp(rect.top - stageRect.top - label.offsetHeight - 8, 8, maxY);
+      const belowTop = clamp(rect.bottom - stageRect.top + 8, 8, maxY);
+      const candidates = [preferredTop, belowTop];
+      for (let offset = 1; offset <= 6; offset++) {
+        candidates.push(clamp(preferredTop - offset * (label.offsetHeight + 6), 8, maxY));
+        candidates.push(clamp(belowTop + offset * (label.offsetHeight + 6), 8, maxY));
+      }
+      let top = candidates.find((candidateTop) => !overlaps({ left: centerX - halfWidth, right: centerX + halfWidth, top: candidateTop, bottom: candidateTop + label.offsetHeight }));
+      if (top === undefined) {
+        label.remove();
+        return;
+      }
+      label.style.left = centerX + 'px';
+      label.style.top = top + 'px';
+      placed.push({ left: centerX - halfWidth, right: centerX + halfWidth, top, bottom: top + label.offsetHeight });
       shown.push(target);
     });
     if (!shown.length) {

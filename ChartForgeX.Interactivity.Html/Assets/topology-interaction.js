@@ -102,6 +102,10 @@
         description: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-description') : scenarioSummary.description || '',
         color: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-color') : scenarioSummary.color || '',
         stepCount: scenarioButton ? Number(attr(scenarioButton, 'data-cfx-scenario-step-count') || '0') : Number(scenarioSummary.stepCount || steps.length || 0),
+        playbackDelayMilliseconds: scenarioButton ? Number(attr(scenarioButton, 'data-cfx-scenario-playback-delay') || '900') : Number(scenarioSummary.playbackDelayMilliseconds || 900),
+        loopPlayback: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-loop') === 'true' : scenarioSummary.loopPlayback === true,
+        autoPlay: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-autoplay') === 'true' : scenarioSummary.autoPlay === true,
+        focusMode: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-focus-mode') || 'highlight' : scenarioSummary.focusMode || 'highlight',
         metadata,
         steps,
         nodeIds,
@@ -109,17 +113,19 @@
         groupIds
       };
     };
-    const renderScenarioPanel = route => {
+    const renderScenarioPanel = (route, enableStepNavigation = true) => {
       if (!scenarioPanel) return;
       const title = scenarioPanel.querySelector('[data-cfx-scenario-panel-title]');
       const meta = scenarioPanel.querySelector('[data-cfx-scenario-panel-meta]');
       const stepsList = scenarioPanel.querySelector('[data-cfx-scenario-panel-steps]');
+      const scrubber = scenarioPanel.querySelector('[data-cfx-scenario-scrubber]');
       if (!route) {
         scenarioPanel.removeAttribute('data-cfx-panel-active-scenario');
         scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
         if (title) title.textContent = 'All';
         if (meta) meta.textContent = 'All topology routes visible';
         if (stepsList) stepsList.replaceChildren();
+        if (scrubber) { scrubber.disabled = true; scrubber.max = '1'; scrubber.value = '1'; }
         return;
       }
 
@@ -139,12 +145,15 @@
           item.setAttribute('data-cfx-scenario-step-kind', step.kind || '');
           item.setAttribute('data-cfx-scenario-step-id', step.id || '');
           item.setAttribute('data-cfx-scenario-step-index', String((Number(step.index) || 0) + 1));
-          item.setAttribute('role', 'button');
-          item.setAttribute('tabindex', '0');
+          if (enableStepNavigation) {
+            item.setAttribute('role', 'button');
+            item.setAttribute('tabindex', '0');
+          }
           item.textContent = step.label || step.id || '';
           stepsList.appendChild(item);
         });
       }
+      if (scrubber) { scrubber.disabled = !enableStepNavigation || !route.steps.length; scrubber.max = String(Math.max(1, route.steps.length)); scrubber.value = '1'; }
     };
     const clearScenarioPreview = () => {
       wrapper.style.removeProperty('--cfx-topology-preview-scenario-color');
@@ -196,10 +205,12 @@
       wrapper.removeAttribute('data-cfx-active-scenario-step');
       wrapper.querySelectorAll('.cfx-topology-html-scenario-step-active,.cfx-topology-html-scenario-step-muted').forEach(item => item.classList.remove('cfx-topology-html-scenario-step-active', 'cfx-topology-html-scenario-step-muted'));
       if (scenarioPanel) scenarioPanel.querySelectorAll('[data-cfx-scenario-step-id]').forEach(item => item.removeAttribute('aria-current'));
+      const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
+      if (scrubber) scrubber.value = '1';
       updateScenarioStepControls(false);
     };
     const stopScenarioPlayback = () => {
-      if (scenarioPlayback) window.clearInterval(scenarioPlayback);
+      if (scenarioPlayback) window.clearTimeout(scenarioPlayback);
       scenarioPlayback = null;
       updateScenarioStepControls(false);
     };
@@ -213,12 +224,14 @@
         const routeMember = item.classList.contains('cfx-topology-html-scenario-active');
         const current = routeMember && scenarioStepIndices(item, route.scenarioId).includes(String(index));
         item.classList.toggle('cfx-topology-html-scenario-step-active', current);
-        item.classList.toggle('cfx-topology-html-scenario-step-muted', routeMember && !current);
+        item.classList.toggle('cfx-topology-html-scenario-step-muted', routeMember && !current && route.focusMode === 'spotlight');
       });
       if (scenarioPanel) scenarioPanel.querySelectorAll('[data-cfx-scenario-step-id]').forEach(item => {
         if (attr(item, 'data-cfx-scenario-step-index') === String(index + 1)) item.setAttribute('aria-current', 'step');
         else item.removeAttribute('aria-current');
       });
+      const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
+      if (scrubber) scrubber.value = String(index + 1);
       if (!keepPlaying) stopScenarioPlayback();
       if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-step', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId: route.scenarioId, index, step: route.steps[index] } }));
       syncScenarioUrl(route.scenarioId, index);
@@ -240,14 +253,20 @@
       updateScenarioStepControls(true);
       let index = Number(wrapper.getAttribute('data-cfx-active-scenario-step') || '-1') + 1;
       if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
-      scenarioPlayback = window.setInterval(() => {
+      const stepDelay = step => {
+        const delay = Number((step && step.durationMilliseconds) || route.playbackDelayMilliseconds || 900);
+        return Number.isFinite(delay) && delay >= 200 ? delay : 900;
+      };
+      const advance = () => {
         if (index >= route.steps.length) {
-          stopScenarioPlayback();
-          return;
+          if (route.loopPlayback) index = 0;
+          else { stopScenarioPlayback(); return; }
         }
-        setScenarioStep(index++, true);
-      }, 900);
-      setScenarioStep(index++, true);
+        const current = index++;
+        setScenarioStep(current, true);
+        scenarioPlayback = window.setTimeout(advance, stepDelay(route.steps[current]));
+      };
+      advance();
     };
     const copyScenarioLink = () => { syncScenarioUrl(attr(wrapper, 'data-cfx-active-scenario') || attr(wrapper, 'data-cfx-active-scenarios'), wrapper.getAttribute('data-cfx-active-scenario-step') || ''); const url = window.location.href; if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {}); wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-link', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), url } })); };
     const emitFullscreenState = () => wrapper.dispatchEvent(new CustomEvent('cfx-topology-fullscreen', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), fullscreen: document.fullscreenElement === wrapper } }));
@@ -457,31 +476,31 @@
       wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
         const active = edgeIds.has(attr(edge, 'data-edge-id'));
         edge.classList.toggle('cfx-topology-html-scenario-active', active);
-        edge.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        edge.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
         if (active && routes.length === 1) edge.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(edge, routes[0].scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
         const active = nodeIds.has(attr(node, 'data-node-id'));
         node.classList.toggle('cfx-topology-html-scenario-active', active);
-        node.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        node.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
         if (active && routes.length === 1) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, routes[0].scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
         const active = edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
-        label.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        label.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node-status"]').forEach(status => {
         const active = nodeIds.has(attr(status, 'data-node-id'));
         status.classList.toggle('cfx-topology-html-scenario-active', active);
-        status.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        status.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
         const active = groupIds.has(attr(group, 'data-group-id'));
         group.classList.toggle('cfx-topology-html-scenario-active', active);
-        group.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        group.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
       });
-      renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} });
+      renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} }, routes.length === 1);
       updateScenarioStepControls(false);
       syncScenarioUrl(routes.map(route => route.scenarioId).join(','), '');
       if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-filter', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioIds: routes.map(route => route.scenarioId), routes: routes.map(route => ({ scenarioId: route.scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount })), nodeIds: Array.from(nodeIds), edgeIds: Array.from(edgeIds), groupIds: Array.from(groupIds) } }));
@@ -512,29 +531,29 @@
       wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
         const active = route.edgeIds.has(attr(edge, 'data-edge-id'));
         edge.classList.toggle('cfx-topology-html-scenario-active', active);
-        edge.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        edge.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
         if (active) edge.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(edge, scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
         const active = route.nodeIds.has(attr(node, 'data-node-id'));
         node.classList.toggle('cfx-topology-html-scenario-active', active);
-        node.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        node.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
         if (active) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
         const active = route.edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
-        label.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        label.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node-status"]').forEach(status => {
         const active = route.nodeIds.has(attr(status, 'data-node-id'));
         status.classList.toggle('cfx-topology-html-scenario-active', active);
-        status.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        status.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
         const active = route.groupIds.has(attr(group, 'data-group-id'));
         group.classList.toggle('cfx-topology-html-scenario-active', active);
-        group.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        group.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
       });
       renderScenarioPanel(route);
       clearScenarioStep();
@@ -1363,6 +1382,8 @@
           else if (action === 'link') copyScenarioLink();
         });
       });
+      const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
+      if (scrubber) scrubber.addEventListener('input', () => { stopScenarioPlayback(); setScenarioStep(Number(scrubber.value) - 1, false); });
       const stepsList = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-panel-steps]') : null;
       if (stepsList) {
         const focusStep = target => { const item = target instanceof Element ? target.closest('[data-cfx-scenario-step-index]') : null; if (item && stepsList.contains(item)) setScenarioStep(Number(attr(item, 'data-cfx-scenario-step-index')) - 1, false); };
@@ -1374,6 +1395,9 @@
       if (scenarioControlMode === 'checkboxes') setScenarioFilters(initialScenario ? scenarioIdTokens(initialScenario) : Array.from(wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]:checked')).map(item => attr(item, 'data-cfx-topology-scenario-toggle')), false, false);
       else setScenario(initialScenario, false, false);
       if (initialScenarioStep && (scenarioControlMode !== 'checkboxes' || attr(wrapper, 'data-cfx-active-scenario'))) setScenarioStep(initialScenarioStep, false, false, false);
+      const initialRoute = scenarioRoute(attr(wrapper, 'data-cfx-active-scenario'));
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) playScenario();
     }
     wrapper.addEventListener('click', event => {
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;

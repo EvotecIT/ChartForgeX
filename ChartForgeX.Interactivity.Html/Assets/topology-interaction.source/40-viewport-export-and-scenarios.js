@@ -199,31 +199,31 @@
       wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
         const active = edgeIds.has(attr(edge, 'data-edge-id'));
         edge.classList.toggle('cfx-topology-html-scenario-active', active);
-        edge.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        edge.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
         if (active && routes.length === 1) edge.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(edge, routes[0].scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
         const active = nodeIds.has(attr(node, 'data-node-id'));
         node.classList.toggle('cfx-topology-html-scenario-active', active);
-        node.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        node.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
         if (active && routes.length === 1) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, routes[0].scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
         const active = edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
-        label.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        label.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node-status"]').forEach(status => {
         const active = nodeIds.has(attr(status, 'data-node-id'));
         status.classList.toggle('cfx-topology-html-scenario-active', active);
-        status.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        status.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
         const active = groupIds.has(attr(group, 'data-group-id'));
         group.classList.toggle('cfx-topology-html-scenario-active', active);
-        group.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        group.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
       });
-      renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} });
+      renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} }, routes.length === 1);
       updateScenarioStepControls(false);
       syncScenarioUrl(routes.map(route => route.scenarioId).join(','), '');
       if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-filter', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioIds: routes.map(route => route.scenarioId), routes: routes.map(route => ({ scenarioId: route.scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount })), nodeIds: Array.from(nodeIds), edgeIds: Array.from(edgeIds), groupIds: Array.from(groupIds) } }));
@@ -254,29 +254,29 @@
       wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
         const active = route.edgeIds.has(attr(edge, 'data-edge-id'));
         edge.classList.toggle('cfx-topology-html-scenario-active', active);
-        edge.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        edge.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
         if (active) edge.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(edge, scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
         const active = route.nodeIds.has(attr(node, 'data-node-id'));
         node.classList.toggle('cfx-topology-html-scenario-active', active);
-        node.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        node.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
         if (active) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, scenarioId).join(' '));
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
         const active = route.edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
-        label.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        label.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node-status"]').forEach(status => {
         const active = route.nodeIds.has(attr(status, 'data-node-id'));
         status.classList.toggle('cfx-topology-html-scenario-active', active);
-        status.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        status.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
         const active = route.groupIds.has(attr(group, 'data-group-id'));
         group.classList.toggle('cfx-topology-html-scenario-active', active);
-        group.classList.toggle('cfx-topology-html-scenario-muted', !active);
+        group.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
       });
       renderScenarioPanel(route);
       clearScenarioStep();

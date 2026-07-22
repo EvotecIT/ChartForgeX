@@ -32,6 +32,7 @@ internal static class ChartVisualPrimitives {
     public const double SegmentedCapHighlightMinOffset = 0.9;
     public const double SegmentedCapHighlightStrokeRatio = 0.24;
     public const double MarkerStrokeWidth = 2;
+    public const double HiddenMarkerInteractionRadius = 6;
     public const double PngMarkerOutlineRadiusExtra = MarkerStrokeWidth / 2.0 + 0.05;
     public const double ScatterMarkerRadiusExtra = 0.75;
     public const double ScatterMarkerMinRadius = 3;

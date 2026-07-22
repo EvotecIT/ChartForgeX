@@ -17,6 +17,8 @@ public sealed partial class SvgChartRenderer {
                 Add(ref hash, series.Name);
                 Add(ref hash, series.Kind.ToString());
                 Add(ref hash, series.ShowInLegend.ToString(CultureInfo.InvariantCulture));
+                Add(ref hash, series.MarkerRadius?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty);
+                Add(ref hash, series.PreserveInteractionTargetsWhenMarkersHidden ? "1" : "0");
                 Add(ref hash, series.SemanticRole ?? string.Empty);
                 Add(ref hash, series.FillPattern.ToString());
                 Add(ref hash, series.Color?.ToRgba().ToString("x8", CultureInfo.InvariantCulture) ?? string.Empty);

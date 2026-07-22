@@ -32,7 +32,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-series-key", SeriesInteractionKey(series));
                 if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
                 writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).EndStartElement().Line();
-                DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, chart.Options.Theme.MarkerRadius > 0);
+                DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
                 var style = chart.Options.LegendStyle;
                 var labelMaxWidth = Math.Max(8, item.Width - 30);
                 var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));

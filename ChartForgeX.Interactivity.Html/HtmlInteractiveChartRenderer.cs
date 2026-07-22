@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
+using ChartForgeX.Svg;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -119,9 +120,12 @@ public sealed class HtmlInteractiveChartRenderer {
         var scope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
         var chartId = options.Interaction.ChartId ?? scope;
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
+        if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
+            .Attribute("role", "group")
+            .Attribute("aria-label", ChartTitle(chart, titleFallback))
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-cfx-chart-id", chartId)
             .Attribute("data-cfx-interaction-features", options.Interaction.Features.ToString())
@@ -131,8 +135,10 @@ public sealed class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-deep-link-state", scenarioControls && options.Interaction.EnableDeepLinkState)
             .Attribute("data-cfx-scenario-playback", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "idle" : null)
             .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
+            .Attribute("data-cfx-responsive-layout", options.ResponsiveLayout.ToString().ToLowerInvariant())
+            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px")
             .EndStartElement().Line()
-            .StartElement("div").Attribute("class", "cfx-toolbar").EndStartElement()
+            .StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
             .RawTrusted(BuildToolbar(options))
             .EndElement().Line();
         if (scenarioControls) {
@@ -141,7 +147,7 @@ public sealed class HtmlInteractiveChartRenderer {
         }
 
         writer.StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
-            .RawTrusted(chart.ToSvg(scope)).Line()
+            .RawTrusted(new SvgChartRenderer().RenderForInteraction(chart, scope)).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-crosshair").BooleanAttribute("hidden").EndStartElement().Line()
             .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--x").EndStartElement().EndElement()
@@ -187,11 +193,11 @@ public sealed class HtmlInteractiveChartRenderer {
     private static string BuildScenarioControls(HtmlChartInteractionOptions options) {
         var writer = new HtmlMarkupWriter();
         writer.StartElement("div").Attribute("class", "cfx-scenarios").Attribute("aria-label", "Chart scenarios").EndStartElement();
-        AppendScenarioButton(writer, string.Empty, "All", "Show all scenarios", string.IsNullOrWhiteSpace(options.Interaction.ActiveScenarioId), null, null, null, null);
+        AppendScenarioButton(writer, string.Empty, "All", "Show all scenarios", string.IsNullOrWhiteSpace(options.Interaction.ActiveScenarioId), null, null, null, null, null);
         foreach (var scenario in options.Interaction.Scenarios) {
             var active = string.Equals(options.Interaction.ActiveScenarioId, scenario.Id, StringComparison.Ordinal);
             var title = string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description!;
-            AppendScenarioButton(writer, scenario.Id, scenario.Label, title, active, scenario.Color, scenario.Description, ScenarioStepsJson(scenario), ScenarioMetadataJson(scenario.Metadata));
+            AppendScenarioButton(writer, scenario.Id, scenario.Label, title, active, scenario.Color, scenario.Description, ScenarioStepsJson(scenario), ScenarioMetadataJson(scenario.Metadata), scenario);
         }
 
         writer.EndElement().Line();
@@ -233,6 +239,17 @@ public sealed class HtmlInteractiveChartRenderer {
                 .StartElement("span").Attribute("class", "cfx-scenario-progress__bar").Attribute("data-cfx-scenario-progress-bar", "true").EndStartElement().EndElement()
                 .StartElement("span").Attribute("class", "cfx-scenario-progress__text").Attribute("data-cfx-scenario-progress-text", "true").EndStartElement().Text("Step 0 / " + (scenario == null ? "0" : scenario.Steps.Count.ToString(CultureInfo.InvariantCulture))).EndElement()
                 .EndElement().Line();
+            writer.StartElement("input")
+                .Attribute("class", "cfx-scenario-scrubber")
+                .Attribute("type", "range")
+                .Attribute("min", "1")
+                .Attribute("max", scenario == null ? "1" : Math.Max(1, scenario.Steps.Count).ToString(CultureInfo.InvariantCulture))
+                .Attribute("value", "1")
+                .Attribute("step", "1")
+                .Attribute("data-cfx-scenario-scrubber", "true")
+                .Attribute("aria-label", "Scenario timeline step")
+                .BooleanAttribute("disabled", scenario == null || scenario.Steps.Count == 0)
+                .EndVoidElement().Line();
         }
 
         writer.StartElement("ol").Attribute("class", "cfx-scenario-panel__steps").Attribute("data-cfx-scenario-panel-steps", "true").EndStartElement();
@@ -245,7 +262,7 @@ public sealed class HtmlInteractiveChartRenderer {
         return writer.Build();
     }
 
-    private static void AppendScenarioButton(HtmlMarkupWriter writer, string id, string label, string title, bool active, string? color, string? description, string? stepsJson, string? metadataJson) {
+    private static void AppendScenarioButton(HtmlMarkupWriter writer, string id, string label, string title, bool active, string? color, string? description, string? stepsJson, string? metadataJson, ChartInteractionScenario? scenario) {
         writer.StartElement("button")
             .Attribute("class", "cfx-scenario")
             .Attribute("type", "button")
@@ -255,6 +272,10 @@ public sealed class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-description", description)
             .Attribute("data-cfx-scenario-steps", stepsJson)
             .Attribute("data-cfx-scenario-metadata", metadataJson)
+            .Attribute("data-cfx-scenario-playback-delay", scenario == null ? null : scenario.PlaybackDelayMilliseconds.ToString(CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-scenario-loop", scenario?.LoopPlayback)
+            .Attribute("data-cfx-scenario-autoplay", scenario?.AutoPlay)
+            .Attribute("data-cfx-scenario-focus-mode", scenario?.FocusMode.ToString().ToLowerInvariant())
             .Attribute("aria-pressed", active)
             .Attribute("title", title)
             .Attribute("style", string.IsNullOrWhiteSpace(color) ? null : "--cfx-scenario-color:" + color!.Trim())
@@ -268,6 +289,7 @@ public sealed class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-step-index", index + 1)
             .Attribute("data-cfx-scenario-target-kind", step.TargetKind)
             .Attribute("data-cfx-scenario-target-id", step.TargetId)
+            .Attribute("data-cfx-scenario-step-duration", step.DurationMilliseconds.HasValue ? step.DurationMilliseconds.Value.ToString(CultureInfo.InvariantCulture) : null)
             .Attribute("role", "button")
             .Attribute("tabindex", "0")
             .EndStartElement()
@@ -299,7 +321,8 @@ public sealed class HtmlInteractiveChartRenderer {
                 "\",\"targetId\":\"" + JsonEscape(step.TargetId) +
                 "\",\"label\":\"" + JsonEscape(step.Label) +
                 "\",\"description\":\"" + JsonEscape(step.Description) +
-                "\",\"metadata\":" + ScenarioMetadataJson(step.Metadata) + "}");
+                "\",\"durationMilliseconds\":" + (step.DurationMilliseconds.HasValue ? step.DurationMilliseconds.Value.ToString(CultureInfo.InvariantCulture) : "null") +
+                ",\"metadata\":" + ScenarioMetadataJson(step.Metadata) + "}");
         }
 
         return "[" + string.Join(",", items.ToArray()) + "]";
