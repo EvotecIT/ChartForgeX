@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
+using ChartForgeX.Svg;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -146,7 +147,7 @@ public sealed class HtmlInteractiveChartRenderer {
         }
 
         writer.StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
-            .RawTrusted(chart.ToSvg(scope)).Line()
+            .RawTrusted(new SvgChartRenderer().RenderForInteraction(chart, scope)).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-crosshair").BooleanAttribute("hidden").EndStartElement().Line()
             .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--x").EndStartElement().EndElement()
