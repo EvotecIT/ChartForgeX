@@ -113,7 +113,7 @@
         groupIds
       };
     };
-    const renderScenarioPanel = route => {
+    const renderScenarioPanel = (route, enableStepNavigation = true) => {
       if (!scenarioPanel) return;
       const title = scenarioPanel.querySelector('[data-cfx-scenario-panel-title]');
       const meta = scenarioPanel.querySelector('[data-cfx-scenario-panel-meta]');
@@ -145,13 +145,15 @@
           item.setAttribute('data-cfx-scenario-step-kind', step.kind || '');
           item.setAttribute('data-cfx-scenario-step-id', step.id || '');
           item.setAttribute('data-cfx-scenario-step-index', String((Number(step.index) || 0) + 1));
-          item.setAttribute('role', 'button');
-          item.setAttribute('tabindex', '0');
+          if (enableStepNavigation) {
+            item.setAttribute('role', 'button');
+            item.setAttribute('tabindex', '0');
+          }
           item.textContent = step.label || step.id || '';
           stepsList.appendChild(item);
         });
       }
-      if (scrubber) { scrubber.disabled = !route.steps.length; scrubber.max = String(Math.max(1, route.steps.length)); scrubber.value = '1'; }
+      if (scrubber) { scrubber.disabled = !enableStepNavigation || !route.steps.length; scrubber.max = String(Math.max(1, route.steps.length)); scrubber.value = '1'; }
     };
     const clearScenarioPreview = () => {
       wrapper.style.removeProperty('--cfx-topology-preview-scenario-color');
@@ -498,7 +500,7 @@
         group.classList.toggle('cfx-topology-html-scenario-active', active);
         group.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
       });
-      renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} });
+      renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} }, routes.length === 1);
       updateScenarioStepControls(false);
       syncScenarioUrl(routes.map(route => route.scenarioId).join(','), '');
       if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-filter', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioIds: routes.map(route => route.scenarioId), routes: routes.map(route => ({ scenarioId: route.scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount })), nodeIds: Array.from(nodeIds), edgeIds: Array.from(edgeIds), groupIds: Array.from(groupIds) } }));

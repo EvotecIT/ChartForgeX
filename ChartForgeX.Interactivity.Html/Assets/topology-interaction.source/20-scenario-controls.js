@@ -39,7 +39,7 @@
         groupIds
       };
     };
-    const renderScenarioPanel = route => {
+    const renderScenarioPanel = (route, enableStepNavigation = true) => {
       if (!scenarioPanel) return;
       const title = scenarioPanel.querySelector('[data-cfx-scenario-panel-title]');
       const meta = scenarioPanel.querySelector('[data-cfx-scenario-panel-meta]');
@@ -71,13 +71,15 @@
           item.setAttribute('data-cfx-scenario-step-kind', step.kind || '');
           item.setAttribute('data-cfx-scenario-step-id', step.id || '');
           item.setAttribute('data-cfx-scenario-step-index', String((Number(step.index) || 0) + 1));
-          item.setAttribute('role', 'button');
-          item.setAttribute('tabindex', '0');
+          if (enableStepNavigation) {
+            item.setAttribute('role', 'button');
+            item.setAttribute('tabindex', '0');
+          }
           item.textContent = step.label || step.id || '';
           stepsList.appendChild(item);
         });
       }
-      if (scrubber) { scrubber.disabled = !route.steps.length; scrubber.max = String(Math.max(1, route.steps.length)); scrubber.value = '1'; }
+      if (scrubber) { scrubber.disabled = !enableStepNavigation || !route.steps.length; scrubber.max = String(Math.max(1, route.steps.length)); scrubber.value = '1'; }
     };
     const clearScenarioPreview = () => {
       wrapper.style.removeProperty('--cfx-topology-preview-scenario-color');

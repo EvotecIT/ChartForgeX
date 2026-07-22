@@ -56,7 +56,8 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var chartId = scope + "-" + (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         var childOptions = new HtmlChartInteractionOptions {
             IdScope = chartId,
-            IncludeResetButton = options.IncludeResetButton
+            IncludeResetButton = options.IncludeResetButton,
+            ResponsiveLayout = options.ResponsiveLayout
         };
         childOptions.Interaction.ChartId = chartId;
         childOptions.Interaction.GroupName = groupName;
@@ -72,7 +73,11 @@ public sealed class HtmlInteractiveDashboardRenderer {
             Id = scenario.Id,
             Label = scenario.Label,
             Description = scenario.Description,
-            Color = scenario.Color
+            Color = scenario.Color,
+            PlaybackDelayMilliseconds = scenario.PlaybackDelayMilliseconds,
+            LoopPlayback = scenario.LoopPlayback,
+            AutoPlay = scenario.AutoPlay,
+            FocusMode = scenario.FocusMode
         };
         foreach (var item in scenario.Metadata) clone.Metadata[item.Key] = item.Value;
         foreach (var step in scenario.Steps) {
@@ -80,7 +85,8 @@ public sealed class HtmlInteractiveDashboardRenderer {
                 TargetKind = step.TargetKind,
                 TargetId = step.TargetId,
                 Label = step.Label,
-                Description = step.Description
+                Description = step.Description,
+                DurationMilliseconds = step.DurationMilliseconds
             };
             foreach (var item in step.Metadata) stepClone.Metadata[item.Key] = item.Value;
             clone.Steps.Add(stepClone);

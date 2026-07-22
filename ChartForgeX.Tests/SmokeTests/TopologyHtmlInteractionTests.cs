@@ -130,6 +130,7 @@ internal static partial class SmokeTests {
         Assert(checkboxHtml.Contains("data-cfx-topology-fullscreen=\"true\"", StringComparison.Ordinal), "Fullscreen controls should render a host-visible control.");
         Assert(checkboxHtml.Contains("data-cfx-controls-placement=\"left-rail\"", StringComparison.Ordinal), "Topology controls should support dashboard rail placement.");
         Assert(checkboxHtml.Contains("const setScenarioFilters = (scenarioIds, emit = true, sync = true) =>", StringComparison.Ordinal), "Checkbox scenario mode should support enabling multiple route filters.");
+        Assert(checkboxHtml.Contains("const renderScenarioPanel = (route, enableStepNavigation = true) =>", StringComparison.Ordinal) && checkboxHtml.Contains("scrubber.disabled = !enableStepNavigation || !route.steps.length", StringComparison.Ordinal), "Combined route filters should expose descriptive steps without presenting an inoperative timeline scrubber.");
         Assert(checkboxHtml.Contains("cfx-topology-scenario-filter", StringComparison.Ordinal), "Checkbox scenario mode should dispatch host-friendly route-filter events.");
         Assert(checkboxHtml.Contains("cfx-topology-set-scenario-filters", StringComparison.Ordinal), "Checkbox scenario mode should allow hosts to drive route filters.");
         Assert(checkboxHtml.Contains("input.checked = attr(input, 'data-cfx-topology-scenario-toggle') === scenarioId", StringComparison.Ordinal), "Singular scenario updates should keep checkbox route controls visually synchronized.");

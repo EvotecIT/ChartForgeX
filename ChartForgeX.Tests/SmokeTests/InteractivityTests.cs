@@ -313,13 +313,16 @@ internal static partial class SmokeTests {
             options.IdScope = "exec-dashboard";
             options.Columns = 2;
             options.ScriptNonce = "nonce-dashboard";
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.GroupName = "exec-review";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
             options.Interaction
                 .AddScenario("ops-route", "Ops route", scenario => scenario
                     .WithColor("#2563EB")
                     .WithDescription("Operations review path")
-                    .AddSeriesStep("0", "Passed")
+                    .WithPlayback(1200, loop: true, autoPlay: true)
+                    .WithFocusMode(ChartInteractionScenarioFocusMode.Spotlight)
+                    .AddSeriesStep("0", "Passed", configure: step => step.WithDuration(1600))
                     .AddSeriesStep("1", "Failed"))
                 .WithActiveScenario("ops-route")
                 .WithDeepLinkState();
@@ -333,9 +336,12 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(html, "data-cfx-asset-source=\"document\"") == 2, "Interactive dashboards should declare document-owned assets on every chart section.");
         Assert(html.Contains("data-cfx-chart-id=\"exec-dashboard-1\"", StringComparison.Ordinal) && html.Contains("data-cfx-chart-id=\"exec-dashboard-2\"", StringComparison.Ordinal), "Interactive dashboards should assign deterministic child chart IDs.");
         Assert(CountOccurrences(html, "data-cfx-interaction-group=\"exec-review\"") == 2, "Interactive dashboards should place every child chart in the shared interaction group.");
+        Assert(CountOccurrences(html, "data-cfx-responsive-layout=\"fit\"") == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive dashboards should include grouped synchronization runtime.");
         Assert(CountOccurrences(html, "data-cfx-scenario=\"ops-route\"") == 2 && CountOccurrences(html, "data-cfx-active-scenario=\"ops-route\"") == 2, "Interactive dashboards should copy reusable scenarios into each synchronized child chart.");
         Assert(CountOccurrences(html, "data-cfx-deep-link-state=\"true\"") == 2, "Interactive dashboards should preserve reusable scenario deep-link state for each child chart.");
+        Assert(CountOccurrences(html, "data-cfx-scenario-playback-delay=\"1200\"") == 2 && CountOccurrences(html, "data-cfx-scenario-loop=\"true\"") == 2 && CountOccurrences(html, "data-cfx-scenario-autoplay=\"true\"") == 2 && CountOccurrences(html, "data-cfx-scenario-focus-mode=\"spotlight\"") == 2, "Interactive dashboards should preserve scenario playback and focus settings in every child chart.");
+        Assert(CountOccurrences(html, "&quot;durationMilliseconds&quot;:1600") == 2, "Interactive dashboards should preserve per-step playback durations in every child chart.");
         Assert(html.Contains("setScenario(root, detail.scenarioId || '', false, false)", StringComparison.Ordinal) && html.Contains("if (sync !== false) emitSync(root, { action: 'scenario', scenarioId: route.id })", StringComparison.Ordinal), "Interactive scenario synchronization should not rebroadcast peer-applied scenario state.");
         Assert(html.Contains("if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false)", StringComparison.Ordinal), "Interactive scenario step synchronization should apply the declared scenario before focusing the synced step.");
         Assert(html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal) && html.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal), "Interactive dashboards should include enabled per-chart export controls.");
