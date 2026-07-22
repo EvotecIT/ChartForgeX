@@ -8,7 +8,8 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawOptionalLineMarkers(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, IReadOnlyList<ChartPoint> mapped, double markerRadius) {
-        if (chart.Options.IsSparkline || !ChartSeriesKindTraits.UsesOptionalLineMarker(series.Kind)) return;
+        if (!ChartSeriesKindTraits.UsesOptionalLineMarker(series.Kind)) return;
+        if (chart.Options.IsSparkline && !series.PreserveInteractionTargetsWhenMarkersHidden) return;
         if (markerRadius <= 0 && !series.PreserveInteractionTargetsWhenMarkersHidden) return;
 
         for (var pointIndex = 0; pointIndex < mapped.Count; pointIndex++) {

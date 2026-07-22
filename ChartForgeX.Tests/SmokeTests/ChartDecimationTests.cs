@@ -71,6 +71,8 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(!svg.Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "Dense adaptive trends should avoid thousands of visible SVG marker nodes.");
         Assert(svg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal) && svg.Contains("class=\"cfx-point-interaction-target\"", StringComparison.Ordinal), "Dense adaptive trends should retain invisible point targets for tooltips, scenarios, and keyboard interaction.");
+        var sparklineSvg = Chart.Create().WithSparkline().AddAdaptiveLine("Signal", points, 320).ToSvg();
+        Assert(sparklineSvg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Dense adaptive sparklines should preserve invisible point targets even though sparkline chrome and visible markers stay suppressed.");
 
         var compact = Chart.Create().AddAdaptiveArea("Compact", points.Take(32), 320);
         Assert(!compact.Series[0].IsDecimated && compact.Series[0].Points.Count == 32, "Adaptive series should preserve sources already inside the resolved budget.");
