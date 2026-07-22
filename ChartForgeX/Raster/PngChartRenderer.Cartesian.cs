@@ -256,6 +256,10 @@ public sealed partial class PngChartRenderer {
             }
         }
         if (ShouldDrawDataLabels(chart, s)) {
+            var labelMarkerRadius = s.Kind == ChartSeriesKind.Scatter
+                ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra)
+                : optionalMarkerRadius;
+            var labelOffset = labelMarkerRadius + 12;
             var reserved = new List<ChartLabelBounds>();
             var placement = DataLabelPlacement(chart, s);
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
@@ -269,12 +273,12 @@ public sealed partial class PngChartRenderer {
 
                 var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
                 var labelX = placement == ChartDataLabelPlacement.Right
-                    ? map.X(p.X) + 8
+                    ? map.X(p.X) + labelOffset
                     : placement == ChartDataLabelPlacement.Left
-                        ? map.X(p.X) - labelWidth - 8
+                        ? map.X(p.X) - labelWidth - labelOffset
                         : map.X(p.X) - labelWidth / 2.0;
-                var aboveY = map.Y(p.Y) - fontSize - 4;
-                var belowY = map.Y(p.Y) + 8;
+                var aboveY = map.Y(p.Y) - fontSize - labelOffset;
+                var belowY = map.Y(p.Y) + labelOffset;
                 var labelY = placement == ChartDataLabelPlacement.Below
                     ? belowY
                     : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside

@@ -68,7 +68,9 @@ internal static partial class SmokeTests {
         Assert(series.IsDecimated && series.SourcePointCount == points.Length && series.Points.Count <= 640, "Adaptive series should decimate dense sources against the reusable width-aware budget.");
         Assert(series.SourcePointIndices.Contains(5_000), "Adaptive trend rendering should preserve material spikes through its default LTTB policy.");
         Assert(series.MarkerRadius == 0d, "Adaptive trend rendering should suppress optional markers when retained point density would obscure the line.");
-        Assert(!chart.ToSvg().Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "Dense adaptive trends should avoid thousands of redundant SVG marker nodes.");
+        var svg = chart.ToSvg();
+        Assert(!svg.Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "Dense adaptive trends should avoid thousands of visible SVG marker nodes.");
+        Assert(svg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal) && svg.Contains("class=\"cfx-point-interaction-target\"", StringComparison.Ordinal), "Dense adaptive trends should retain invisible point targets for tooltips, scenarios, and keyboard interaction.");
 
         var compact = Chart.Create().AddAdaptiveArea("Compact", points.Take(32), 320);
         Assert(!compact.Series[0].IsDecimated && compact.Series[0].Points.Count == 32, "Adaptive series should preserve sources already inside the resolved budget.");

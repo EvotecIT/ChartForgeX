@@ -10,6 +10,7 @@ public sealed class ChartInteractionScenario {
     private string _id = string.Empty;
     private string _label = string.Empty;
     private int _playbackDelayMilliseconds = 900;
+    private ChartInteractionScenarioFocusMode _focusMode = ChartInteractionScenarioFocusMode.Highlight;
 
     /// <summary>Gets or sets the stable scenario identifier.</summary>
     public string Id { get => _id; set => _id = ChartInteractionText.RequiredToken(value, nameof(value), "Interaction scenario ids"); }
@@ -39,7 +40,13 @@ public sealed class ChartInteractionScenario {
     public bool AutoPlay { get; set; }
 
     /// <summary>Gets or sets how strongly non-target context is visually de-emphasized.</summary>
-    public ChartInteractionScenarioFocusMode FocusMode { get; set; } = ChartInteractionScenarioFocusMode.Highlight;
+    public ChartInteractionScenarioFocusMode FocusMode {
+        get => _focusMode;
+        set {
+            if (!Enum.IsDefined(typeof(ChartInteractionScenarioFocusMode), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown scenario focus mode.");
+            _focusMode = value;
+        }
+    }
 
     /// <summary>Gets ordered target references that participate in the scenario.</summary>
     public List<ChartInteractionScenarioStep> Steps { get; } = new();

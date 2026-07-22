@@ -268,7 +268,8 @@
     if (!route || !route.steps.length) return;
     setScenarioPlaybackState(root, 'playing', route, emit);
     let index = Number(stepIndex);
-    if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
+    if (!Number.isFinite(index) || index < 0) index = 0;
+    if (index >= route.steps.length && route.loopPlayback) index = 0;
     const advance = () => {
       if (index >= route.steps.length) {
         if (route.loopPlayback) index = 0;

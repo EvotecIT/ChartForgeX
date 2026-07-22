@@ -52,6 +52,7 @@ public sealed partial class Chart {
         else Add(name, kind, source, color);
         if (kind != ChartSeriesKind.Scatter && Series[Series.Count - 1].Points.Count > effectivePolicy.MaximumMarkerCount) {
             Series[Series.Count - 1].WithMarkerRadius(0d);
+            Series[Series.Count - 1].PreserveHiddenMarkerInteractionTargets();
         }
         return this;
     }

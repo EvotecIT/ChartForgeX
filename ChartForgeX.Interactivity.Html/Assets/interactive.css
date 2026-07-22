@@ -589,6 +589,12 @@ body {
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scrollbar-gutter: stable;
+    touch-action: auto;
+  }
+
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="pan"] .cfx-stage,
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="brush"] .cfx-stage {
+    touch-action: none;
   }
 
   .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage svg {

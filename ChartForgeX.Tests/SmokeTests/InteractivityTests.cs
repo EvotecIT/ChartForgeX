@@ -68,6 +68,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.AddSeriesStep(" "), "Reusable scenario target ids should reject empty values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.WithPlayback(100), "Reusable scenario timelines should reject unreadable playback delays.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.WithFocusMode((ChartInteractionScenarioFocusMode)99), "Reusable scenario timelines should reject unknown focus modes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route", FocusMode = (ChartInteractionScenarioFocusMode)99 }, "Direct scenario focus-mode assignment should reject unknown values.");
     }
 
     private static void InteractiveHtmlWrapsSvgWithoutExternalDependencies() {
@@ -181,6 +182,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("StateBookmarks", StringComparison.Ordinal) && html.Contains("const captureInteractionState = (root, source)", StringComparison.Ordinal) && html.Contains("'cfxstate'", StringComparison.Ordinal), "Interactive HTML should expose opt-in reusable state bookmark snapshots.");
         Assert(html.Contains("root.addEventListener('cfx-capture-state'", StringComparison.Ordinal) && html.Contains("root.addEventListener('cfx-apply-state'", StringComparison.Ordinal) && html.Contains("action: 'state'", StringComparison.Ordinal), "Interactive HTML should accept generic host-driven state capture and replay commands.");
         Assert(html.Contains("startScenarioPlayback(root, route, next, false, false)", StringComparison.Ordinal), "Interactive state bookmarks should restore captured playing scenario playback without advancing the current step immediately.");
+        Assert(html.Contains("const next = Number.isFinite(current) ? current + 1 : 0", StringComparison.Ordinal) && html.Contains("if (index >= route.steps.length && route.loopPlayback) index = 0", StringComparison.Ordinal), "Finite state-bookmark playback restored during the final step should finish instead of restarting from step zero.");
         Assert(html.Contains("class=\"cfx-reveal-layer\"", StringComparison.Ordinal) && html.Contains("data-cfx-reveal-layer=\"true\"", StringComparison.Ordinal), "Interactive HTML should include an opt-in reveal label layer.");
         Assert(html.Contains("const revealNodes = (root, nodes, emit, sync, source)", StringComparison.Ordinal) && html.Contains("'cfxreveal'", StringComparison.Ordinal) && html.Contains("action: 'reveal'", StringComparison.Ordinal), "Interactive reveal labels should use reusable target metadata and synchronize across grouped charts.");
         Assert(html.Contains("revealNodes(root, Array.from(targets), emit, sync, 'scenario-step')", StringComparison.Ordinal), "Interactive scenario playback should reveal route labels through the same opt-in reveal contract.");

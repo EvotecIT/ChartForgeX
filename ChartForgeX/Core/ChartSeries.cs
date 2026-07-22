@@ -15,6 +15,8 @@ public sealed class ChartSeries {
     private string? _interactionKey;
     private double? _markerRadius;
 
+    internal bool PreserveInteractionTargetsWhenMarkersHidden { get; private set; }
+
     /// <summary>
     /// Gets the display name shown in legends.
     /// </summary>
@@ -369,6 +371,10 @@ public sealed class ChartSeries {
     public ChartSeries UseThemeMarkerRadius() {
         MarkerRadius = null;
         return this;
+    }
+
+    internal void PreserveHiddenMarkerInteractionTargets() {
+        PreserveInteractionTargetsWhenMarkersHidden = true;
     }
 
     /// <summary>
