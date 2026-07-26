@@ -1024,6 +1024,14 @@
     });
     return matches;
   };
+  const scenarioRevealTargets = (route, stepIndex, targets) => {
+    const step = route && route.steps ? route.steps[Number(stepIndex)] : null;
+    // A series step already highlights its complete visual family. Revealing every
+    // matching mark adds duplicate badges that obscure the chart instead of
+    // clarifying the route; precise point/annotation steps still reveal labels.
+    if (step && (step.targetKind || '') === 'series') return [];
+    return Array.from(targets);
+  };
   const renderScenarioPanel = (root, route) => {
     const panel = root.querySelector('[data-cfx-scenario-panel]');
     if (!panel) return;
@@ -1116,7 +1124,7 @@
       if (emit !== false) emitHostEvent(root, 'cfxtrail', { target: trail[0], trail, count: trail.length, source: 'scenario-step' });
       if (sync !== false) emitSync(root, { action: 'trail', target: trail[0], trail, count: trail.length, source: 'scenario-step' });
     }
-    revealNodes(root, Array.from(targets), emit, sync, 'scenario-step');
+    revealNodes(root, scenarioRevealTargets(route, index, targets), emit, sync, 'scenario-step');
     syncScenarioUrl(root, route.id, index);
     if (emit !== false) emitHostEvent(root, 'cfxscenariostep', { scenarioId: route.id, index, step: route.steps[index], progress });
     if (sync !== false) emitSync(root, { action: 'scenario-step', scenarioId: route.id, index, progress });
