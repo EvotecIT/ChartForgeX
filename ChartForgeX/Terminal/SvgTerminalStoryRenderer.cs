@@ -42,7 +42,7 @@ public sealed class SvgTerminalStoryRenderer {
             .Attribute("data-cfx-motion-duration", layout.DurationSeconds.ToString("0.###", CultureInfo.InvariantCulture))
             .EndStartElement().Line()
             .StartElement("title").Attribute("id", id + "-title").Text(story.Title).EndElement().Line()
-            .StartElement("desc").Attribute("id", id + "-desc").Text("Animated terminal presentation. Motion is decorative and all content is visible when reduced motion is requested or when printed.").EndElement().Line()
+            .StartElement("desc").Attribute("id", id + "-desc").Text(AccessibleDescription(layout)).EndElement().Line()
             .StartElement("defs").EndStartElement().Line()
             .StartElement("filter").Attribute("id", id + "-shadow").Attribute("x", "-15%").Attribute("y", "-15%").Attribute("width", "130%").Attribute("height", "140%").EndStartElement()
             .StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 12).Attribute("stdDeviation", 18).Attribute("flood-color", "#000").Attribute("flood-opacity", 0.28).EndEmptyElement()
@@ -104,7 +104,7 @@ public sealed class SvgTerminalStoryRenderer {
 
         writer.EndElement().Line();
         if (!isFinalPrompt) return;
-        var cursorX = layout.ContentX + line.Text.Length * story.FontSize * 0.61 + 2;
+        var cursorX = layout.ContentX + StringInfo.ParseCombiningCharacters(line.Text).Length * story.FontSize * 0.61 + 2;
         writer.StartElement("rect")
             .Attribute("data-cfx-role", "terminal-cursor")
             .Attribute("class", "cfx-terminal-cursor")
@@ -122,14 +122,23 @@ public sealed class SvgTerminalStoryRenderer {
         var css = new StringBuilder();
         css.Append("@keyframes ").Append(id).Append("-motion-appear{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}");
         css.Append("@keyframes ").Append(id).Append("-motion-type{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}");
-        css.Append("@keyframes ").Append(id).Append("-motion-cursor{0%,46%{opacity:1}47%,100%{opacity:0}}");
-        css.Append("#").Append(id).Append(" .cfx-terminal-line{opacity:0}");
+        css.Append("@keyframes ").Append(id).Append("-motion-cursor{0%{opacity:0}.01%,46%{opacity:1}47%,100%{opacity:0}}");
         css.Append("#").Append(id).Append(" .cfx-terminal-appear{animation:").Append(id).Append("-motion-appear var(--cfx-duration) ease-out var(--cfx-start) both}");
-        css.Append("#").Append(id).Append(" .cfx-terminal-type{opacity:1;clip-path:inset(0 100% 0 0);animation:").Append(id).Append("-motion-type var(--cfx-duration) steps(24,end) var(--cfx-start) both}");
-        css.Append("#").Append(id).Append(" .cfx-terminal-cursor{opacity:0;animation:").Append(id).Append("-motion-cursor 1s steps(1,end) var(--cfx-start) infinite}");
+        css.Append("#").Append(id).Append(" .cfx-terminal-type{animation:").Append(id).Append("-motion-type var(--cfx-duration) steps(24,end) var(--cfx-start) both}");
+        css.Append("#").Append(id).Append(" .cfx-terminal-cursor{animation:").Append(id).Append("-motion-cursor 1s steps(1,end) var(--cfx-start) infinite both}");
         css.Append("@media (prefers-reduced-motion:reduce){#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
         css.Append("@media print{#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
         return css.ToString();
+    }
+
+    private static string AccessibleDescription(TerminalStoryLayout layout) {
+        var description = new StringBuilder("Terminal transcript:");
+        foreach (var line in layout.Lines) {
+            description.Append('\n').Append(line.Text.TrimEnd());
+        }
+
+        description.Append("\nMotion is decorative; the complete transcript remains available when animation is unsupported, reduced, or printed.");
+        return description.ToString();
     }
 
     private static string HeaderPath(int width, double headerHeight) {

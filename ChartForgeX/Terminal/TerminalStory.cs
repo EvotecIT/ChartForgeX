@@ -144,9 +144,10 @@ public sealed class TerminalStory {
     /// <summary>Sets the prompt dialect and optional custom prompt.</summary>
     public TerminalStory WithDialect(TerminalDialect dialect, string? customPrompt = null) {
         ValidateEnum(dialect, nameof(dialect));
+        var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
+        if (dialect == TerminalDialect.Custom && normalizedPrompt.Length == 0) throw new ArgumentException("Custom terminal dialects require a prompt.", nameof(customPrompt));
         Dialect = dialect;
-        CustomPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
-        if (dialect == TerminalDialect.Custom && CustomPrompt.Length == 0) throw new ArgumentException("Custom terminal dialects require a prompt.", nameof(customPrompt));
+        CustomPrompt = normalizedPrompt;
         return this;
     }
 
@@ -242,7 +243,7 @@ public sealed class TerminalStory {
         if (double.IsNaN(fraction) || double.IsInfinity(fraction) || fraction < 0 || fraction > 1) throw new ArgumentOutOfRangeException(nameof(fraction));
         if (width < 8 || width > 60) throw new ArgumentOutOfRangeException(nameof(width));
         var filled = (int)Math.Round(width * fraction);
-        var bar = new string('█', filled) + new string('░', width - filled);
+        var bar = new string('#', filled) + new string('-', width - filled);
         return Output("[" + bar + "] " + (fraction * 100).ToString("0", CultureInfo.InvariantCulture) + "%  " + OneLine(label, nameof(label), false), TerminalTextTone.Success);
     }
 
@@ -262,6 +263,7 @@ public sealed class TerminalStory {
         if (_steps.Count == 0) throw new InvalidOperationException("Terminal stories require at least one command, output line, table, or pause.");
         if (_steps.Count > 120) throw new InvalidOperationException("Terminal stories support at most 120 steps.");
         if (string.IsNullOrWhiteSpace(Theme.FontFamily)) throw new InvalidOperationException("Terminal themes require a font family.");
+        if (Dialect == TerminalDialect.Custom && CustomPrompt.Length == 0) throw new InvalidOperationException("Custom terminal dialects require a prompt.");
     }
 
     private TerminalStory Add(TerminalStoryStep step) {

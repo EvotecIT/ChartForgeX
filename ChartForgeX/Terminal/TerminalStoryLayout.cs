@@ -76,9 +76,14 @@ internal sealed class TerminalStoryLayout {
             clock += 0.08;
         }
 
-        if (clock > 60) throw new InvalidOperationException("Terminal story animation must complete within 60 seconds.");
+        var completion = clock;
+        foreach (var line in lines) {
+            completion = Math.Max(completion, line.StartSeconds + line.DurationSeconds);
+        }
+
+        if (completion > 60) throw new InvalidOperationException("Terminal story animation must complete within 60 seconds.");
         var height = (int)Math.Ceiling(HeaderHeight + VerticalPadding * 2 + lines.Count * story.LineHeight);
-        return new TerminalStoryLayout(story.Width, Math.Max(180, height), clock, lines);
+        return new TerminalStoryLayout(story.Width, Math.Max(180, height), completion, lines);
     }
 
     private static IEnumerable<string> SplitLines(string value) {

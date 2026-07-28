@@ -1923,6 +1923,23 @@
       }
     },
     {
+      "name": "powershell-console-story",
+      "width": 886,
+      "height": 376,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 666272,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 978,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "premium-desktop-wallpaper-canvas",
       "width": 1920,
       "height": 1080,

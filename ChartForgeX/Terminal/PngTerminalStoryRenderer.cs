@@ -15,6 +15,8 @@ public sealed class PngTerminalStoryRenderer {
         var theme = story.Theme;
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), story.PngOutputScale);
         canvas.Clear(theme.PageBackground);
+        canvas.FillRoundedRect(12, 18, layout.Width - 24, layout.Height - 24, 16, ChartColor.Black.WithOpacity(0.18));
+        canvas.FillRoundedRect(10, 14, layout.Width - 20, layout.Height - 20, 15, ChartColor.Black.WithOpacity(0.12));
         canvas.FillRoundedRect(8, 8, layout.Width - 16, layout.Height - 16, 14, theme.Background);
         canvas.StrokeRoundedRect(8, 8, layout.Width - 16, layout.Height - 16, 14, theme.Border, 1.2);
         canvas.FillRoundedRect(8, 8, layout.Width - 16, layout.HeaderHeightValue, 14, theme.HeaderBackground);
