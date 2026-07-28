@@ -20,13 +20,13 @@
     <PackageId>ChartForgeX</PackageId>
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
-    <Description>Dependency-free SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering and image composition for .NET charts, animated visual stories, visual blocks, report tables, metric cards, wallpapers, and topology diagrams.</Description>
+    <Description>Dependency-free SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering and image composition for .NET charts, animated terminal presentations, visual stories, visual blocks, report tables, metric cards, wallpapers, and topology diagrams.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Adds generic script-free visual motion timelines for SVG and HTML grids, with stable named targets, deterministic PNG fallback, and reduced-motion and print-safe completed states.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds generic script-free terminal presentations and visual motion timelines for SVG and HTML, with PowerShell and other prompt dialects, structured transcripts, stable named targets, deterministic PNG fallback, and reduced-motion and print-safe completed states.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>
-    <PackageTags>charts;visualization;visual-blocks;visual-story;animation;motion;tables;lists;metric-cards;topology;diagrams;svg;html;png;jpeg;jpg;bmp;ppm;tiff;raster;image-composition;wallpaper;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
+    <PackageTags>charts;visualization;terminal;console;transcript;visual-blocks;visual-story;animation;motion;tables;lists;metric-cards;topology;diagrams;svg;html;png;jpeg;jpg;bmp;ppm;tiff;raster;image-composition;wallpaper;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

@@ -317,6 +317,33 @@ var snapshot = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 });
 ```
 
+Build an authentic console presentation from structured commands, output, tables, and pauses:
+
+```csharp
+using ChartForgeX.Terminal;
+
+var portfolio = TerminalTable.Create()
+    .WithColumns("PROJECT", "STACK", "STATUS")
+    .AddRow("ChartForgeX", ".NET", "ready")
+    .AddRow("ImagePlayground", "PowerShell", "ready");
+
+var console = TerminalStory.Create()
+    .WithTitle(@"pwsh - C:\OpenSource")
+    .WithDialect(TerminalDialect.PowerShell)
+    .WithWorkingDirectory(@"C:\OpenSource")
+    .Command("Get-ActivePortfolio | Format-Table")
+    .Table(portfolio)
+    .Blank()
+    .Command(@".\Invoke-ReleaseValidation.ps1")
+    .Output("PASS  755 tests", TerminalTextTone.Success);
+
+console.SaveSvg("console-demo.svg");
+console.SaveHtml("console-demo.html");
+console.SavePng("console-demo.png");
+```
+
+The renderer models a presentation, not a shell. PowerShell, Bash, command prompt, Python, C#, and custom dialects control prompt styling while the caller owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; PNG, print, and reduced-motion rendering show the completed transcript.
+
 Turn a grid into a script-free visual story by assigning stable target IDs and a reusable motion timeline:
 
 ```csharp

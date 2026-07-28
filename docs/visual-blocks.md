@@ -103,6 +103,32 @@ var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 });
 ```
 
+## Terminal Presentations
+
+`TerminalStory` creates a deterministic console presentation from structured commands and output. It does not execute commands. That separation makes the same renderer suitable for authored product demos, documentation, release evidence, and transcripts captured by a caller-controlled script:
+
+```csharp
+using ChartForgeX.Terminal;
+
+var results = TerminalTable.Create()
+    .WithColumns("CHECK", "STATUS")
+    .AddRow("Restore", "PASS")
+    .AddRow("Tests", "PASS");
+
+var console = TerminalStory.Create()
+    .WithTitle(@"pwsh - C:\OpenSource")
+    .WithDialect(TerminalDialect.PowerShell)
+    .WithWorkingDirectory(@"C:\OpenSource")
+    .Command(@".\Invoke-Validation.ps1")
+    .Output("Running release validation...", TerminalTextTone.Muted)
+    .Table(results)
+    .Output("Ready", TerminalTextTone.Success);
+
+console.SaveSvg("validation.svg");
+```
+
+Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. SVG and HTML animate without JavaScript. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
+
 ## Script-Free Visual Stories
 
 `VisualMotionTimeline` turns any `VisualGrid` into a deterministic visual story without JavaScript. Assign stable target IDs when adding panels, then sequence restrained entrances or emphasis cues:
