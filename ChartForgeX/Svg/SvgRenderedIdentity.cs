@@ -38,12 +38,19 @@ internal static class SvgRenderedIdentity {
     private static bool IsGeneratedIdReference(string svg, int index, int idLength) {
         if (HasPrefix(svg, index, "id=\"") || HasPrefix(svg, index, "url(#") || HasPrefix(svg, index, "href=\"#")) return true;
         if (HasPrefix(svg, index, "#") && index + idLength < svg.Length && svg[index + idLength] == ' ') return true;
+        if (IsMotionKeyframeReference(svg, index, idLength)) return true;
 
         var attributeStart = svg.LastIndexOf("aria-", index, StringComparison.Ordinal);
         if (attributeStart < 0) return false;
         var valueStart = svg.IndexOf("=\"", attributeStart, StringComparison.Ordinal);
         var valueEnd = valueStart < 0 ? -1 : svg.IndexOf('"', valueStart + 2);
         return valueStart >= 0 && valueStart < index && valueEnd > index;
+    }
+
+    private static bool IsMotionKeyframeReference(string svg, int index, int idLength) {
+        var suffixStart = index + idLength;
+        if (suffixStart >= svg.Length || string.CompareOrdinal(svg, suffixStart, "-motion-", 0, 8) != 0) return false;
+        return HasPrefix(svg, index, "@keyframes ") || HasPrefix(svg, index, "animation:");
     }
 
     private static bool HasPrefix(string value, int index, string prefix) {

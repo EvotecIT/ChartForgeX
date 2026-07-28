@@ -234,6 +234,7 @@ internal static partial class SmokeTests {
         ("Packet layout block rejects oversized total bits", PacketLayoutBlockRejectsOversizedTotalBits),
         ("Visual grid composes charts and visual blocks", VisualGridComposesChartsAndVisualBlocks),
         ("Visual motion timelines render accessible script-free stories", VisualMotionTimelineRendersAccessibleScriptFreeStories),
+        ("Visual motion keyframes use final content identity", VisualMotionKeyframesUseFinalContentIdentity),
         ("Visual motion timelines reject ambiguous targets", VisualMotionTimelineRejectsAmbiguousTargets),
         ("Table artifacts declare native host capabilities", TableArtifactDeclaresNativeHostCapabilities),
         ("Table artifacts render static previews through visual blocks", TableArtifactRendersStaticPreviewThroughVisualBlocks),

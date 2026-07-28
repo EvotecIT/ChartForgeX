@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ChartForgeX.Motion;
+using ChartForgeX.Svg;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualBlocks;
 
@@ -30,10 +31,11 @@ internal static partial class SmokeTests {
             .Add("activity-accent", accent, columnSpan: 2);
 
         var svg = grid.ToSvg("motion-story");
+        var svgId = SvgDocument.Parse(svg).Root.GetAttribute("id")!;
         Assert(svg.Contains("data-cfx-motion=\"timeline\"", StringComparison.Ordinal), "Animated visual grids should declare motion metadata.");
         Assert(svg.Contains("data-cfx-motion-duration=\"2.2\"", StringComparison.Ordinal), "Animated visual grids should expose deterministic total duration metadata.");
         Assert(svg.Contains("data-cfx-motion-target=\"title\"", StringComparison.Ordinal) && svg.Contains("data-cfx-motion-target=\"metric\"", StringComparison.Ordinal), "Visual motion should target built-in headings and stable panel ids.");
-        Assert(svg.Contains("@keyframes cfx-visual-grid-seed-", StringComparison.Ordinal) && svg.Contains("-motion-0", StringComparison.Ordinal), "Visual motion should scope keyframes to the rendered SVG identity.");
+        Assert(svg.Contains("@keyframes " + svgId + "-motion-0", StringComparison.Ordinal) && svg.Contains("animation:" + svgId + "-motion-0 ", StringComparison.Ordinal), "Visual motion should scope keyframe definitions and references to the final rendered SVG identity.");
         Assert(svg.Contains("@media (prefers-reduced-motion:reduce)", StringComparison.Ordinal) && svg.Contains("@media print", StringComparison.Ordinal), "Visual motion should expose completed-state reduced-motion and print fallbacks.");
         Assert(svg.Contains("Motion is decorative and has a static reduced-motion fallback.", StringComparison.Ordinal), "Animated visual grids should describe the accessibility fallback.");
         Assert(!svg.Contains("<script", StringComparison.OrdinalIgnoreCase), "Visual motion should remain script-free.");
@@ -52,6 +54,28 @@ internal static partial class SmokeTests {
             .Add(activity)
             .Add(accent, columnSpan: 2);
         Assert(grid.ToPng().SequenceEqual(staticGrid.ToPng()), "Raster output should render the completed visual state without motion artifacts.");
+    }
+
+    private static void VisualMotionKeyframesUseFinalContentIdentity() {
+        var metric = MetricCard.Create().WithMetric("Maintained packages", 24);
+        var fadeGrid = VisualGrid.Create()
+            .WithTitle("Engineering signal")
+            .WithMotion(VisualMotionTimeline.Create().Fade("metric"))
+            .Add("metric", metric);
+        var riseGrid = VisualGrid.Create()
+            .WithTitle("Engineering signal")
+            .WithMotion(VisualMotionTimeline.Create().Rise("metric"))
+            .Add("metric", metric);
+
+        var fadeSvg = fadeGrid.ToSvg();
+        var riseSvg = riseGrid.ToSvg();
+        var fadeId = SvgDocument.Parse(fadeSvg).Root.GetAttribute("id")!;
+        var riseId = SvgDocument.Parse(riseSvg).Root.GetAttribute("id")!;
+
+        Assert(!string.Equals(fadeId, riseId, StringComparison.Ordinal), "Different motion content should produce different final SVG identities.");
+        Assert(fadeSvg.Contains("@keyframes " + fadeId + "-motion-0", StringComparison.Ordinal) && fadeSvg.Contains("animation:" + fadeId + "-motion-0 ", StringComparison.Ordinal), "The first inline SVG should bind its keyframe definition and reference to its final identity.");
+        Assert(riseSvg.Contains("@keyframes " + riseId + "-motion-0", StringComparison.Ordinal) && riseSvg.Contains("animation:" + riseId + "-motion-0 ", StringComparison.Ordinal), "The second inline SVG should bind its keyframe definition and reference to its final identity.");
+        Assert(!fadeSvg.Contains("@keyframes cfx-visual-grid-seed-", StringComparison.Ordinal) && !riseSvg.Contains("@keyframes cfx-visual-grid-seed-", StringComparison.Ordinal), "Rendered SVGs should not retain provisional keyframe names that can collide in a shared document.");
     }
 
     private static void VisualMotionTimelineRejectsAmbiguousTargets() {
