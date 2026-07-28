@@ -103,6 +103,36 @@ var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 });
 ```
 
+## Script-Free Visual Stories
+
+`VisualMotionTimeline` turns any `VisualGrid` into a deterministic visual story without JavaScript. Assign stable target IDs when adding panels, then sequence restrained entrances or emphasis cues:
+
+```csharp
+using ChartForgeX.Motion;
+
+var motion = VisualMotionTimeline.Create()
+    .Reveal("title", durationSeconds: 0.65)
+    .Fade("subtitle", delaySeconds: 0.12, durationSeconds: 0.5)
+    .Cascade(new[] { "projects", "users", "releases" }, initialDelaySeconds: 0.28)
+    .Rise("portfolio", delaySeconds: 0.72);
+
+var story = VisualGrid.Create()
+    .WithTitle("Engineering Portfolio")
+    .WithSubtitle("A reusable story for profiles, releases, reports, or dashboards")
+    .WithColumns(3)
+    .Add("projects", projectsCard)
+    .Add("users", usersCard)
+    .Add("releases", releasesCard)
+    .Add("portfolio", portfolioTable, columnSpan: 3)
+    .WithMotion(motion);
+
+story.SaveSvg("portfolio.svg");
+story.SaveHtml("portfolio.html");
+story.SavePng("portfolio.png");
+```
+
+Motion applies to SVG and complete HTML-page output. PNG always renders the exact completed state. The generated CSS also exposes that completed state for `prefers-reduced-motion` and print, so motion stays decorative rather than becoming a content dependency.
+
 `WithAction(...)` is still static-renderer friendly. SVG/HTML outputs render safe relative, `http(s)`, and `mailto` action URLs when one is supplied; PNG keeps the same visual affordance without embedding a link.
 
 The mini bar and mini sparkline geometry is shared by the SVG and PNG visual-block renderers, so improvements to compact line/bar polish can be applied once instead of redoing each output format separately.

@@ -1,6 +1,6 @@
 # ChartForgeX - Dependency-Free Chart Rendering for .NET
 
-ChartForgeX renders polished charts, visual blocks, topology diagrams, and static report visuals from .NET without adding runtime chart dependencies to generated output.
+ChartForgeX renders polished charts, animated visual stories, visual blocks, topology diagrams, and static report visuals from .NET without adding runtime chart dependencies to generated output.
 
 ## NuGet Package
 
@@ -316,6 +316,32 @@ var snapshot = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
     MetricCard.Create().WithMetric("Memory Used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
 });
 ```
+
+Turn a grid into a script-free visual story by assigning stable target IDs and a reusable motion timeline:
+
+```csharp
+using ChartForgeX.Motion;
+
+var motion = VisualMotionTimeline.Create()
+    .Reveal("title", durationSeconds: 0.65)
+    .Cascade(new[] { "projects", "users", "releases" }, initialDelaySeconds: 0.25)
+    .Rise("portfolio", delaySeconds: 0.7);
+
+var story = VisualGrid.Create()
+    .WithTitle("Engineering Portfolio")
+    .WithColumns(3)
+    .Add("projects", projectsCard)
+    .Add("users", usersCard)
+    .Add("releases", releasesCard)
+    .Add("portfolio", portfolioTable, columnSpan: 3)
+    .WithMotion(motion);
+
+story.SaveSvg("portfolio.svg");
+story.SaveHtml("portfolio.html");
+story.SavePng("portfolio.png");
+```
+
+SVG and complete HTML pages animate without JavaScript. PNG, print, and reduced-motion rendering use the same completed state, so every fact remains available without motion.
 
 Segmented dashboard visuals use one generic block instead of domain-specific card classes. The same `SegmentedMetricBlock` can render progress rows, performance rows with exact values, balanced capsule loops, funnel columns, composition strips, or distribution rows; item colors fall back to the active theme palette unless a color or semantic status is supplied.
 

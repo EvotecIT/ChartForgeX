@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
+using ChartForgeX.Motion;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
@@ -598,6 +599,7 @@ public sealed class VisualGrid {
     private VisualPanelFit _panelFit = VisualPanelFit.Contain;
     private bool _adaptiveRowHeights;
     private bool _frameVisible;
+    private VisualMotionTimeline? _motion;
 
     /// <summary>Gets or sets the grid title.</summary>
     public string Title { get => _title; set => _title = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -643,6 +645,9 @@ public sealed class VisualGrid {
 
     /// <summary>Gets or sets the optional grid theme.</summary>
     public ChartTheme? Theme { get; set; }
+
+    /// <summary>Gets or sets the optional script-free motion timeline used by SVG and HTML output.</summary>
+    public VisualMotionTimeline? Motion { get => _motion; set => _motion = value; }
 
     /// <summary>Gets grid items.</summary>
     public IReadOnlyList<VisualGridItem> Items => _items;
@@ -704,10 +709,20 @@ public sealed class VisualGrid {
     /// <summary>Sets whether the grid renders a subtle outer frame.</summary>
     public VisualGrid WithFrame(bool visible = true) { FrameVisible = visible; return this; }
 
+    /// <summary>Sets the optional script-free motion timeline used by SVG and HTML output.</summary>
+    public VisualGrid WithMotion(VisualMotionTimeline motion) { Motion = motion ?? throw new ArgumentNullException(nameof(motion)); return this; }
+
     /// <summary>Adds a chart panel.</summary>
     public VisualGrid Add(Chart chart, int columnSpan = 1, int rowSpan = 1) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         _items.Add(VisualGridItem.FromChart(chart, columnSpan, rowSpan));
+        return this;
+    }
+
+    /// <summary>Adds a chart panel with a stable motion target id.</summary>
+    public VisualGrid Add(string targetId, Chart chart, int columnSpan = 1, int rowSpan = 1) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        AddItem(VisualGridItem.FromChart(targetId, chart, columnSpan, rowSpan));
         return this;
     }
 
@@ -717,38 +732,27 @@ public sealed class VisualGrid {
         _items.Add(VisualGridItem.FromBlock(block, columnSpan, rowSpan));
         return this;
     }
-}
 
-/// <summary>
-/// Describes one visual grid panel.
-/// </summary>
-public sealed class VisualGridItem {
-    private VisualGridItem(Chart? chart, IVisualBlock? block, int columnSpan, int rowSpan) {
-        if (columnSpan <= 0) throw new ArgumentOutOfRangeException(nameof(columnSpan), columnSpan, "Column span must be positive.");
-        if (rowSpan <= 0) throw new ArgumentOutOfRangeException(nameof(rowSpan), rowSpan, "Row span must be positive.");
-        Chart = chart;
-        Block = block;
-        ColumnSpan = columnSpan;
-        RowSpan = rowSpan;
+    /// <summary>Adds a visual block panel with a stable motion target id.</summary>
+    public VisualGrid Add(string targetId, IVisualBlock block, int columnSpan = 1, int rowSpan = 1) {
+        if (block == null) throw new ArgumentNullException(nameof(block));
+        AddItem(VisualGridItem.FromBlock(targetId, block, columnSpan, rowSpan));
+        return this;
     }
 
-    /// <summary>Gets the chart when this item hosts a chart.</summary>
-    public Chart? Chart { get; }
+    private void AddItem(VisualGridItem item) {
+        if (string.Equals(item.MotionTargetId, VisualGridMotion.TitleTarget, StringComparison.Ordinal) ||
+            string.Equals(item.MotionTargetId, VisualGridMotion.SubtitleTarget, StringComparison.Ordinal)) {
+            throw new ArgumentException("Visual grid panel target ids cannot use the reserved title or subtitle targets.", nameof(item));
+        }
+        foreach (var existing in _items) {
+            if (string.Equals(existing.MotionTargetId, item.MotionTargetId, StringComparison.Ordinal)) {
+                throw new ArgumentException("Visual grid motion target ids must be unique.", nameof(item));
+            }
+        }
 
-    /// <summary>Gets the visual block when this item hosts a block.</summary>
-    public IVisualBlock? Block { get; }
-
-    /// <summary>Gets the column span.</summary>
-    public int ColumnSpan { get; }
-
-    /// <summary>Gets the row span.</summary>
-    public int RowSpan { get; }
-
-    /// <summary>Creates a chart grid item.</summary>
-    public static VisualGridItem FromChart(Chart chart, int columnSpan = 1, int rowSpan = 1) => new(chart ?? throw new ArgumentNullException(nameof(chart)), null, columnSpan, rowSpan);
-
-    /// <summary>Creates a visual block grid item.</summary>
-    public static VisualGridItem FromBlock(IVisualBlock block, int columnSpan = 1, int rowSpan = 1) => new(null, block ?? throw new ArgumentNullException(nameof(block)), columnSpan, rowSpan);
+        _items.Add(item);
+    }
 }
 
 internal static class VisualBlockGuards {

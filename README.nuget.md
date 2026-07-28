@@ -1,8 +1,8 @@
 # ChartForgeX - Dependency-Free Chart Rendering for .NET
 
-ChartForgeX renders polished charts, visual blocks, topology diagrams, and static report visuals from .NET without adding runtime chart dependencies to generated output.
+ChartForgeX renders polished charts, animated visual stories, visual blocks, topology diagrams, and static report visuals from .NET without adding runtime chart dependencies to generated output.
 
-The core package renders SVG, script-free static HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF. Optional browser behavior lives in adapter packages, so generated reports can stay static while dashboard hosts can opt into tooltips, selection, zoom, pan, synchronized charts, and export controls.
+The core package renders SVG, script-free HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF. `VisualMotionTimeline` can sequence named `VisualGrid` targets for script-free SVG and HTML stories; PNG, print, and reduced-motion output keep the exact completed state. Optional browser behavior lives in adapter packages, so generated reports can stay static while dashboard hosts can opt into tooltips, selection, zoom, pan, synchronized charts, and export controls.
 
 ## Install
 

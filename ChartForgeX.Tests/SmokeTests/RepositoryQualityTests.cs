@@ -465,8 +465,8 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "IncludeSymbols", "true"), "Package should include symbol package generation.");
         Assert(HasXmlProperty(libraryProject, "SymbolPackageFormat", "snupkg"), "Package symbols should use snupkg format.");
         var releaseNotes = GetXmlValue(libraryProject, "PackageReleaseNotes");
-        Assert(ContainsMetadataConcepts(releaseNotes, "LTTB", "min/max", "source-index"), "Package release notes should summarize the current explicit decimation and provenance contract.");
-        Assert(ContainsMetadataConcepts(releaseNotes, "line", "area", "scatter"), "Package release notes should name the dense-series families covered by the current release.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "motion", "named targets", "script-free"), "Package release notes should summarize the current visual-motion contract.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "PNG", "reduced-motion", "print"), "Package release notes should name the completed-state fallbacks covered by the current release.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "AGENTS.md")), "Repository should include agent guidance.");
