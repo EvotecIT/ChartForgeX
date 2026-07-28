@@ -21,6 +21,7 @@ public sealed class HtmlTerminalStoryRenderer {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var title = WebUtility.HtmlEncode(story.Title);
         var background = story.Theme.PageBackground.ToCss();
-        return "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + title + "</title><style>html,body{margin:0;min-height:100%;background:" + background + "}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.chartforgex-terminal-story{width:min(100%," + story.Width + "px)}.chartforgex-terminal-story svg{display:block;width:100%;height:auto}@media print{body{padding:0;background:transparent}.chartforgex-terminal-story{width:100%}}</style></head><body>" + RenderFragment(story, "html-page") + "</body></html>";
+        var surface = story.Theme.Background.ToCss();
+        return "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + title + "</title><style>html,body{margin:0;min-height:100%;background:linear-gradient(180deg," + background + " 0%," + surface + " 140%)}html{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;overflow:visible}.chartforgex-terminal-story{width:min(100%," + story.Width + "px)}.chartforgex-terminal-story svg{display:block;width:100%;height:auto}@media print{body{padding:0;background:transparent}.chartforgex-terminal-story{width:100%}}</style></head><body>" + RenderFragment(story, "html-page") + "</body></html>";
     }
 }
