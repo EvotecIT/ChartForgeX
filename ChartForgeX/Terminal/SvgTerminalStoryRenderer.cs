@@ -57,6 +57,7 @@ public sealed class SvgTerminalStoryRenderer {
         WriteTrafficLight(writer, 29, 29, "#FF5F57");
         WriteTrafficLight(writer, 49, 29, "#FEBC2E");
         WriteTrafficLight(writer, 69, 29, "#28C840");
+        var visibleTitle = TerminalStoryLayout.FitTitle(story.Title, layout.Width);
         writer.StartElement("text")
             .Attribute("x", layout.Width / 2.0)
             .Attribute("y", 33)
@@ -65,7 +66,7 @@ public sealed class SvgTerminalStoryRenderer {
             .Attribute("font-size", 12)
             .Attribute("font-weight", 600)
             .Attribute("text-anchor", "middle")
-            .Text(story.Title)
+            .Text(visibleTitle)
             .EndElement().Line();
 
         for (var index = 0; index < layout.Lines.Count; index++) {

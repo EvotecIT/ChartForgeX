@@ -35,13 +35,19 @@ internal sealed class TerminalStoryLayout {
             switch (step.Kind) {
                 case TerminalStoryStepKind.Command:
                     var prompt = story.Prompt();
-                    var commandText = Fit(prompt + step.Text, maxCharacters);
-                    var promptLength = Math.Min(prompt.Length, commandText.Length);
+                    var commandText = prompt + step.Text;
                     var typingDuration = step.DurationSeconds > 0
                         ? step.DurationSeconds
                         : Math.Max(0.35, Math.Min(4.5, step.Text.Length / story.CharactersPerSecond));
-                    lines.Add(new TerminalRenderedLine(commandText, TerminalTextTone.Default, true, promptLength, clock, typingDuration));
-                    clock += typingDuration + story.LineDelaySeconds;
+                    var commandElements = Math.Max(1, TextElementCount(commandText));
+                    var remainingPromptLength = prompt.Length;
+                    foreach (var wrappedCommandLine in Wrap(commandText, maxCharacters)) {
+                        var promptLength = Math.Min(remainingPromptLength, wrappedCommandLine.Length);
+                        var lineDuration = typingDuration * TextElementCount(wrappedCommandLine) / commandElements;
+                        lines.Add(new TerminalRenderedLine(wrappedCommandLine, TerminalTextTone.Default, true, promptLength, clock, lineDuration));
+                        remainingPromptLength -= promptLength;
+                        clock += lineDuration + story.LineDelaySeconds;
+                    }
                     break;
                 case TerminalStoryStepKind.Output:
                     foreach (var outputLine in SplitLines(step.Text)) {
@@ -71,8 +77,9 @@ internal sealed class TerminalStoryLayout {
         }
 
         if (story.ShowFinalPrompt) {
-            var prompt = Fit(story.Prompt(), maxCharacters);
-            lines.Add(new TerminalRenderedLine(prompt, TerminalTextTone.Default, true, prompt.Length, clock + 0.08, 0));
+            foreach (var promptLine in Wrap(story.Prompt(), maxCharacters)) {
+                lines.Add(new TerminalRenderedLine(promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0));
+            }
             clock += 0.08;
         }
 
@@ -94,8 +101,8 @@ internal sealed class TerminalStoryLayout {
         table.Validate();
         var widths = new int[table.Columns.Count];
         for (var column = 0; column < widths.Length; column++) {
-            widths[column] = table.Columns[column].Length;
-            foreach (var row in table.Rows) widths[column] = Math.Max(widths[column], row[column].Length);
+            widths[column] = TextElementCount(table.Columns[column]);
+            foreach (var row in table.Rows) widths[column] = Math.Max(widths[column], TextElementCount(row[column]));
         }
 
         var separator = maxCharacters >= widths.Length + (widths.Length - 1) * 3 ? " | " : "|";
@@ -123,10 +130,21 @@ internal sealed class TerminalStoryLayout {
         var cells = new string[values.Count];
         for (var index = 0; index < values.Count; index++) {
             var value = Fit(values[index], widths[index]);
-            cells[index] = alignments[index] == TerminalColumnAlignment.Right ? value.PadLeft(widths[index]) : value.PadRight(widths[index]);
+            var padding = new string(' ', Math.Max(0, widths[index] - TextElementCount(value)));
+            cells[index] = alignments[index] == TerminalColumnAlignment.Right ? padding + value : value + padding;
         }
 
         return string.Join(separator, cells);
+    }
+
+    internal static string FitTitle(string value, int width) {
+        var available = Math.Max(12, width - 180);
+        var maximum = Math.Max(1, available / 12);
+        return Fit(value, maximum);
+    }
+
+    internal static int TextElementCount(string value) {
+        return StringInfo.ParseCombiningCharacters(value).Length;
     }
 
     private static string Fit(string value, int maximum) {

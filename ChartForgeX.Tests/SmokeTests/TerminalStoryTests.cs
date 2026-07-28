@@ -60,6 +60,23 @@ internal static partial class SmokeTests {
         Assert(string.Concat(TerminalStoryLayout.Build(unicodeStory).Lines.Select(line => line.Text)) == unicodeTranscript, "Transcript wrapping should preserve supplementary Unicode characters at line boundaries.");
         SvgDocument.Parse(unicodeStory.ToSvg());
 
+        var longCommand = "Invoke-LongRunningAudit -" + new string('x', 96);
+        var longCommandLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Command(longCommand));
+        Assert(longCommandLayout.Lines.Count > 1 &&
+               string.Concat(longCommandLayout.Lines.Select(line => line.Text)) == @"PS C:\> " + longCommand &&
+               longCommandLayout.Lines.All(line => !line.Text.Contains("…", StringComparison.Ordinal)),
+            "Long terminal commands should wrap without losing transcript content.");
+
+        var longTitle = "PowerShell terminal title that is deliberately much wider than the minimum terminal chrome";
+        var longTitleStory = TerminalStory.Create().WithWidth(480).WithTitle(longTitle).Output("ready");
+        var fittedTitle = TerminalStoryLayout.FitTitle(longTitle, 480);
+        var longTitleSvg = longTitleStory.ToSvg();
+        Assert(fittedTitle.EndsWith("…", StringComparison.Ordinal) &&
+               longTitleSvg.Contains(">" + fittedTitle + "</text>", StringComparison.Ordinal) &&
+               longTitleSvg.Contains(">" + longTitle + "</title>", StringComparison.Ordinal),
+            "Visible terminal titles should fit the chrome while retaining the full accessible title.");
+        Assert(longTitleStory.ToPng().Length > 8, "PNG terminal titles should use the same fitted display text.");
+
         var timedLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithTiming(0, 42, 0).WithFinalPrompt(false).Output("ready"));
         Assert(Math.Abs(timedLayout.DurationSeconds - 0.22) < 0.001, "Terminal duration metadata should include the final output reveal.");
 
@@ -74,6 +91,20 @@ internal static partial class SmokeTests {
             .AddRow("abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij");
         var narrowLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Table(narrowTable));
         Assert(narrowLayout.Lines.All(line => line.Text.Length <= 28), "Tables should compact separators and columns enough to remain inside the narrowest supported terminal at maximum font size.");
+
+        var unicodeTable = TerminalTable.Create()
+            .WithColumns("N", "V")
+            .AddRow("é", "one")
+            .AddRow("e\u0301", "two");
+        var unicodeTableRows = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Table(unicodeTable)).Lines.Skip(2).ToArray();
+        var firstSeparator = unicodeTableRows[0].Text.IndexOf('|');
+        var secondSeparator = unicodeTableRows[1].Text.IndexOf('|');
+        Assert(TerminalStoryLayout.TextElementCount(unicodeTableRows[0].Text.Substring(0, firstSeparator)) ==
+               TerminalStoryLayout.TextElementCount(unicodeTableRows[1].Text.Substring(0, secondSeparator)),
+            "Table columns should align equivalent precomposed and combining-character cells by rendered text elements.");
+
+        var controlStrings = "before\u001BPgraphics payload\u001B\\middle\u001B_status payload\u009Cafter";
+        Assert(TerminalTextSanitizer.Transcript(controlStrings) == "beforemiddleafter", "Captured transcripts should consume complete ST-terminated ANSI control strings.");
 
         var invariantTable = TerminalTable.Create().WithColumns("Value").AddRow(1234.5m);
         Assert(invariantTable.Rows[0][0] == "1234.5", "Object-valued table cells should use invariant formatting.");

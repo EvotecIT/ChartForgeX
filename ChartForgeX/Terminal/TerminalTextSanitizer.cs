@@ -71,6 +71,17 @@ internal static class TerminalTextSanitizer {
             while (index < value.Length) {
                 if (value[index] == Bell) return index + 1;
                 if (value[index] == Escape && index + 1 < value.Length && value[index + 1] == '\\') return index + 2;
+                if (value[index] == '\u009C') return index + 1;
+                index++;
+            }
+            return index;
+        }
+
+        if (value[index] == 'P' || value[index] == 'X' || value[index] == '^' || value[index] == '_') {
+            index++;
+            while (index < value.Length) {
+                if (value[index] == Escape && index + 1 < value.Length && value[index + 1] == '\\') return index + 2;
+                if (value[index] == '\u009C') return index + 1;
                 index++;
             }
             return index;

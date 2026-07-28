@@ -25,8 +25,9 @@ public sealed class PngTerminalStoryRenderer {
         canvas.DrawCircle(29, 29, 5.5, ChartColor.FromHex("#FF5F57"));
         canvas.DrawCircle(49, 29, 5.5, ChartColor.FromHex("#FEBC2E"));
         canvas.DrawCircle(69, 29, 5.5, ChartColor.FromHex("#28C840"));
-        var titleWidth = canvas.MeasureTextWidth(story.Title, 12);
-        canvas.DrawText((layout.Width - titleWidth) / 2, 19, story.Title, theme.Muted, 12);
+        var visibleTitle = TerminalStoryLayout.FitTitle(story.Title, layout.Width);
+        var titleWidth = canvas.MeasureTextWidth(visibleTitle, 12);
+        canvas.DrawText((layout.Width - titleWidth) / 2, 19, visibleTitle, theme.Muted, 12);
 
         for (var index = 0; index < layout.Lines.Count; index++) {
             var line = layout.Lines[index];
