@@ -22,6 +22,10 @@ public sealed class SvgVisualGridRenderer {
     public string Render(VisualGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-visual-grid", idScope, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
+        if (grid.Motion == null) {
+            var staticSvg = RenderCore(grid, provisionalId, provisionalId);
+            return SvgRenderedIdentity.Bind(staticSvg, provisionalId, "cfx-visual-grid", idScope);
+        }
         var provisionalSvg = RenderCore(grid, provisionalId, provisionalId);
         var finalId = SvgRenderedIdentity.CreateFinalId(provisionalSvg, "cfx-visual-grid", idScope);
         var svg = RenderCore(grid, provisionalId, finalId);

@@ -165,6 +165,30 @@ internal static partial class SmokeTests {
         Assert(fallbackHeavyLayout.Lines.Count == 61 &&
                new PngTerminalStoryRenderer().Render(fallbackHeavyStory, null).Length > 8,
             "Fontless scalar preservation should not inflate valid logical stories beyond the expanded-line limit.");
+        var flagLine = string.Concat(Enumerable.Repeat("🇵🇱", 14));
+        var flagStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithFinalPrompt(false)
+            .Output(string.Join("\n", Enumerable.Repeat(flagLine, 61)));
+        var fontlessFlagLayout = TerminalStoryLayout.Build(flagStory, value => TerminalPngTextPreserver.Preserve(value, null));
+        Assert(TerminalStoryLayout.TextElementCount("🇵🇱") == 1 &&
+               TerminalStoryLayout.TextElementCount("👩‍💻") == 1 &&
+               fontlessFlagLayout.Lines.Count == 61 &&
+               new PngTerminalStoryRenderer().Render(flagStory, null).Length > 8,
+            "Terminal grapheme segmentation should keep flag and ZWJ emoji stable across target frameworks and font fallback.");
+        var decomposedLine = string.Concat(Enumerable.Repeat("e\u0301", 28));
+        var decomposedStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithFinalPrompt(false)
+            .Output(string.Join("\n", Enumerable.Repeat(decomposedLine, 61)));
+        var fontlessDecomposedLayout = TerminalStoryLayout.Build(decomposedStory, value => TerminalPngTextPreserver.Preserve(value, null));
+        Assert(TerminalStoryLayout.DisplayWidth(TerminalPngTextPreserver.Preserve("\u0301", null)) == 0 &&
+               TerminalStoryLayout.DisplayWidth(TerminalPngTextPreserver.Preserve("e\u0301", null)) == 1 &&
+               fontlessDecomposedLayout.Lines.Count == 61 &&
+               new PngTerminalStoryRenderer().Render(decomposedStory, null).Length > 8,
+            "Preserved combining marks should retain their original zero-column contribution inside a grapheme.");
 
         var widePromptStory = TerminalStory.Create()
             .WithDialect(TerminalDialect.Custom, "界 ")

@@ -59,7 +59,9 @@ internal static class TerminalPngTextPreserver {
         Visit(value, (text, preserved) => {
             if (preserved) {
                 var width = TerminalTextWidth.Measure(text) * fontSize * ColumnWidthFactor;
-                canvas.DrawTextFitted(cursor, y, CompactLabel(text), color, fontSize, width);
+                if (width > 0) {
+                    canvas.DrawTextFitted(cursor, y, CompactLabel(text), color, fontSize, width);
+                }
                 cursor += width;
             } else {
                 canvas.DrawText(cursor, y, text, color, fontSize);
