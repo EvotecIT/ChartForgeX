@@ -189,6 +189,33 @@ internal static partial class SmokeTests {
                fontlessDecomposedLayout.Lines.Count == 61 &&
                new PngTerminalStoryRenderer().Render(decomposedStory, null).Length > 8,
             "Preserved combining marks should retain their original zero-column contribution inside a grapheme.");
+        Assert(TerminalStoryLayout.DisplayWidth("©️") == 2 &&
+               TerminalStoryLayout.DisplayWidth("❤️") == 2 &&
+               TerminalStoryLayout.DisplayWidth("1️⃣") == 2,
+            "Emoji-presentation and keycap clusters should reserve two display columns.");
+        var emojiPresentationLine = string.Concat(Enumerable.Repeat("©️", 14));
+        var emojiPresentationStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithFinalPrompt(false)
+            .Output(string.Join("\n", Enumerable.Repeat(emojiPresentationLine, 61)));
+        Assert(TerminalStoryLayout.Build(emojiPresentationStory, value => TerminalPngTextPreserver.Preserve(value, null)).Lines.Count == 61 &&
+               new PngTerminalStoryRenderer().Render(emojiPresentationStory, null).Length > 8,
+            "Fontless emoji-presentation clusters should retain their two-column layout identity.");
+        var sentinelLiteral = "\uE000[U+1F600]\uE001";
+        var repeatedSentinelLiteral = string.Concat(Enumerable.Repeat(sentinelLiteral, 3));
+        var sentinelStory = TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Output(repeatedSentinelLiteral);
+        var sentinelLayout = TerminalStoryLayout.Build(sentinelStory);
+        Assert(TerminalStoryLayout.DisplayWidth(sentinelLiteral) == TerminalStoryLayout.TextElementCount(sentinelLiteral) &&
+               sentinelLayout.Lines.Count == 2 &&
+               string.Concat(sentinelLayout.Lines.Select(line => line.Text)) == repeatedSentinelLiteral &&
+               new PngTerminalStoryRenderer().Render(sentinelStory, null).Length > 8 &&
+               TerminalTextSanitizer.Transcript(TerminalPngTextPreserver.EscapeStart + "[U+1F600]" + TerminalPngTextPreserver.EscapeEnd) == "[U+1F600]",
+            "Caller text shaped like an internal scalar token should remain literal and renderer-independent.");
+
+        var asciiTiming = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Command(new string('x', 20))).DurationSeconds;
+        var emojiTiming = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Command(string.Concat(Enumerable.Repeat("😀", 20)))).DurationSeconds;
+        Assert(Math.Abs(asciiTiming - emojiTiming) < 0.001, "Automatic command timing should count user-visible text elements instead of UTF-16 code units.");
 
         var widePromptStory = TerminalStory.Create()
             .WithDialect(TerminalDialect.Custom, "界 ")

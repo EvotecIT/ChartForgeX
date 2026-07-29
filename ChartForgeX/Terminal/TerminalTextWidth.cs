@@ -125,19 +125,31 @@ internal static class TerminalTextWidth {
         }
     }
 
+    internal static IEnumerable<string> Elements(string value) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        for (var index = 0; index < value.Length;) {
+            yield return NextElement(value, ref index);
+        }
+    }
+
     private static int ElementWidth(string element) {
         var width = 0;
+        var emojiPresentation = false;
         for (var index = 0; index < element.Length;) {
             var codePoint = ReadScalar(element, ref index);
-            var category = UnicodeCategoryFor(codePoint);
-            if (IsExtend(codePoint, category) || codePoint == 0x200D) {
+            if (codePoint == 0xFE0F || codePoint == 0x20E3) {
+                emojiPresentation = true;
+            }
+            if (IsZeroWidthScalar(codePoint)) {
                 continue;
             }
 
             width = Math.Max(width, IsWide(codePoint) ? 2 : 1);
         }
 
-        return width;
+        return emojiPresentation ? Math.Max(2, width) : width;
     }
 
     private static string NextElement(string value, ref int index) {
@@ -266,6 +278,10 @@ internal static class TerminalTextWidth {
                codePoint >= 0xE0100 && codePoint <= 0xE01EF ||
                codePoint >= 0xE0020 && codePoint <= 0xE007F ||
                codePoint >= 0x1F3FB && codePoint <= 0x1F3FF;
+    }
+
+    internal static bool IsZeroWidthScalar(int codePoint) {
+        return codePoint == 0x200D || IsExtend(codePoint, UnicodeCategoryFor(codePoint));
     }
 
     private static bool IsRegionalIndicator(int codePoint) {

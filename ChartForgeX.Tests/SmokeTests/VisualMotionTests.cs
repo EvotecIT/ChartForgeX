@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Motion;
 using ChartForgeX.Svg;
@@ -99,6 +100,15 @@ internal static partial class SmokeTests {
             .Add("title", MetricCard.Create().WithMetric("Reserved", 1)), "Visual grid panel targets should not alias the built-in title target.");
         AssertThrows<ArgumentException>(() => VisualMotionTimeline.Create().Fade("bad target"), "Visual motion target ids should be safe stable tokens.");
         AssertThrows<ArgumentException>(() => VisualMotionTimeline.Create().Fade("same").Rise("same"), "A timeline should reject competing effects for the same target.");
+        var rejectedCascade = VisualMotionTimeline.Create().Fade("existing");
+        AssertThrows<ArgumentException>(() => rejectedCascade.Cascade(new[] { "valid", "bad target" }), "A cascade should validate every prospective cue before mutating the timeline.");
+        Assert(rejectedCascade.Cues.Count == 1 && rejectedCascade.Cues[0].TargetId == "existing", "A rejected cascade should leave the timeline unchanged.");
+        var capacityCascade = VisualMotionTimeline.Create();
+        for (var index = 0; index < 63; index++) {
+            capacityCascade.Fade("target-" + index.ToString(CultureInfo.InvariantCulture));
+        }
+        AssertThrows<InvalidOperationException>(() => capacityCascade.Cascade(new[] { "target-63", "target-64" }), "A cascade should validate its complete capacity before mutating the timeline.");
+        Assert(capacityCascade.Cues.Count == 63, "A capacity-rejected cascade should leave the timeline unchanged.");
         var first = new VisualMotionCue("first", VisualMotionEffect.Fade);
         var second = new VisualMotionCue("second", VisualMotionEffect.Rise);
         var retargeted = VisualMotionTimeline.Create().Add(first).Add(second);

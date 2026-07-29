@@ -180,11 +180,24 @@ public sealed class VisualMotionTimeline {
         if (targetIds == null) throw new ArgumentNullException(nameof(targetIds));
         var delay = VisualMotionGuards.NonNegativeFinite(initialDelaySeconds, nameof(initialDelaySeconds));
         var interval = VisualMotionGuards.NonNegativeFinite(intervalSeconds, nameof(intervalSeconds));
+        var prepared = new List<VisualMotionCue>();
+        var targets = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var existing in _cues) {
+            targets.Add(existing.TargetId);
+        }
         foreach (var targetId in targetIds) {
-            Add(targetId, effect, delay, durationSeconds);
+            var cue = new VisualMotionCue(targetId, effect).WithTiming(delay, durationSeconds);
+            if (!targets.Add(cue.TargetId)) {
+                throw new ArgumentException("A visual motion timeline can target each id only once.", nameof(targetIds));
+            }
+            prepared.Add(cue);
             delay += interval;
         }
+        if (_cues.Count + prepared.Count > 64) {
+            throw new InvalidOperationException("Visual motion timelines support at most 64 cues.");
+        }
 
+        _cues.AddRange(prepared);
         return this;
     }
 

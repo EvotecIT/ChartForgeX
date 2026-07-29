@@ -40,7 +40,10 @@ internal static class TerminalTextSanitizer {
                 continue;
             }
 
-            if (character == '\r' || character == '\n' || character >= ' ' && character <= '\uD7FF' && (character < '\u007F' || character > '\u009F') || character >= '\uE000' && character <= '\uFFFD') {
+            if (character == '\r' || character == '\n' ||
+                character >= ' ' && character <= '\uD7FF' && (character < '\u007F' || character > '\u009F') ||
+                character >= '\uE000' && character < '\uFDD0' ||
+                character > '\uFDEF' && character <= '\uFFFD') {
                 output.Append(character);
                 index++;
                 continue;

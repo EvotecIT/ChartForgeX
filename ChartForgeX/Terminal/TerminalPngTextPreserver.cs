@@ -7,8 +7,8 @@ namespace ChartForgeX.Terminal;
 
 internal static class TerminalPngTextPreserver {
     private const double ColumnWidthFactor = 0.61;
-    internal const char EscapeStart = '\uE000';
-    internal const char EscapeEnd = '\uE001';
+    internal const char EscapeStart = '\uFDD0';
+    internal const char EscapeEnd = '\uFDD1';
 
     public static string Preserve(string value, TrueTypeFont? font) {
         if (value == null) {
@@ -19,7 +19,7 @@ internal static class TerminalPngTextPreserver {
         for (var index = 0; index < value.Length;) {
             var scalarStart = index;
             var codePoint = ReadCodePoint(value, ref index);
-            if (CanRender(codePoint, font)) {
+            if (codePoint != EscapeStart && codePoint != EscapeEnd && CanRender(codePoint, font)) {
                 continue;
             }
 
@@ -44,11 +44,11 @@ internal static class TerminalPngTextPreserver {
         if (value == null) throw new ArgumentNullException(nameof(value));
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var width = 0.0;
-        Visit(
-            value,
-            (text, preserved) => width += preserved
-                ? TerminalTextWidth.Measure(text) * fontSize * ColumnWidthFactor
-                : canvas.MeasureTextWidth(text, fontSize));
+        foreach (var element in TerminalTextWidth.Elements(value)) {
+            width += ContainsPreservedScalar(element)
+                ? TerminalTextWidth.Measure(element) * fontSize * ColumnWidthFactor
+                : canvas.MeasureTextWidth(element, fontSize);
+        }
         return width;
     }
 
@@ -56,18 +56,20 @@ internal static class TerminalPngTextPreserver {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (value == null) throw new ArgumentNullException(nameof(value));
         var cursor = x;
-        Visit(value, (text, preserved) => {
-            if (preserved) {
-                var width = TerminalTextWidth.Measure(text) * fontSize * ColumnWidthFactor;
-                if (width > 0) {
-                    canvas.DrawTextFitted(cursor, y, CompactLabel(text), color, fontSize, width);
-                }
-                cursor += width;
-            } else {
-                canvas.DrawText(cursor, y, text, color, fontSize);
-                cursor += canvas.MeasureTextWidth(text, fontSize);
+        foreach (var element in TerminalTextWidth.Elements(value)) {
+            if (!ContainsPreservedScalar(element)) {
+                canvas.DrawText(cursor, y, element, color, fontSize);
+                cursor += canvas.MeasureTextWidth(element, fontSize);
+                continue;
             }
-        });
+
+            var width = TerminalTextWidth.Measure(element) * fontSize * ColumnWidthFactor;
+            var label = ClusterFallbackLabel(element);
+            if (width > 0 && label.Length > 0) {
+                canvas.DrawTextFitted(cursor, y, label, color, fontSize, width);
+            }
+            cursor += width;
+        }
     }
 
     private static bool CanRender(int codePoint, TrueTypeFont? font) {
@@ -77,31 +79,39 @@ internal static class TerminalPngTextPreserver {
         return codePoint <= char.MaxValue && TinyFont.Supports((char)codePoint);
     }
 
-    private static void Visit(string value, Action<string, bool> visitor) {
-        var textStart = 0;
+    private static bool ContainsPreservedScalar(string value) {
         for (var index = 0; index < value.Length;) {
-            if (!TerminalTextWidth.TryPreservedScalar(value, index, out var length, out _)) {
-                index++;
+            if (TerminalTextWidth.TryPreservedScalar(value, index, out _, out _)) {
+                return true;
+            }
+            index++;
+        }
+        return false;
+    }
+
+    private static string ClusterFallbackLabel(string value) {
+        var plain = new StringBuilder(value.Length);
+        var labels = new StringBuilder();
+        for (var index = 0; index < value.Length;) {
+            if (!TerminalTextWidth.TryPreservedScalar(value, index, out var length, out var codePoint)) {
+                var scalarStart = index;
+                ReadCodePoint(value, ref index);
+                plain.Append(value, scalarStart, index - scalarStart);
                 continue;
             }
 
-            if (index > textStart) {
-                visitor(value.Substring(textStart, index - textStart), false);
+            if (!TerminalTextWidth.IsZeroWidthScalar(codePoint)) {
+                if (labels.Length > 0) {
+                    labels.Append(' ');
+                }
+                labels.Append(CompactLabel(codePoint));
             }
-            visitor(value.Substring(index, length), true);
             index += length;
-            textStart = index;
         }
-
-        if (textStart < value.Length) {
-            visitor(value.Substring(textStart), false);
-        }
+        return labels.Length > 0 ? labels.ToString() : plain.ToString();
     }
 
-    private static string CompactLabel(string preservedScalar) {
-        if (!TerminalTextWidth.TryPreservedScalar(preservedScalar, 0, out _, out var codePoint)) {
-            return preservedScalar;
-        }
+    private static string CompactLabel(int codePoint) {
         return "U+" + codePoint.ToString("X", CultureInfo.InvariantCulture);
     }
 

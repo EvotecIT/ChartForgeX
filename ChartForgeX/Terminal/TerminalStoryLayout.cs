@@ -44,7 +44,7 @@ internal sealed class TerminalStoryLayout {
                     var commandText = prompt + transform(step.Text);
                     var typingDuration = step.DurationSeconds > 0
                         ? step.DurationSeconds
-                        : Math.Max(0.35, Math.Min(4.5, step.Text.Length / story.CharactersPerSecond));
+                        : Math.Max(0.35, Math.Min(4.5, TextElementCount(step.Text) / story.CharactersPerSecond));
                     var commandElements = Math.Max(1, TextElementCount(commandText));
                     var remainingPromptLength = prompt.Length;
                     foreach (var wrappedCommandLine in Wrap(commandText, maxColumns)) {
