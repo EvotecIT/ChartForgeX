@@ -69,10 +69,18 @@ internal static partial class SmokeTests {
 
         var fadeSvg = fadeGrid.ToSvg();
         var riseSvg = riseGrid.ToSvg();
-        var fadeId = SvgDocument.Parse(fadeSvg).Root.GetAttribute("id")!;
-        var riseId = SvgDocument.Parse(riseSvg).Root.GetAttribute("id")!;
+        var fadeDocument = SvgDocument.Parse(fadeSvg);
+        var riseDocument = SvgDocument.Parse(riseSvg);
+        var fadeId = fadeDocument.Root.GetAttribute("id")!;
+        var riseId = riseDocument.Root.GetAttribute("id")!;
+        var fadeChildId = fadeDocument.Root.FindByTag("svg").Single(element => element.GetAttribute("data-cfx-role") == "visual-grid-panel").GetAttribute("id")!;
+        var riseChildId = riseDocument.Root.FindByTag("svg").Single(element => element.GetAttribute("data-cfx-role") == "visual-grid-panel").GetAttribute("id")!;
 
         Assert(!string.Equals(fadeId, riseId, StringComparison.Ordinal), "Different motion content should produce different final SVG identities.");
+        Assert(!string.Equals(fadeChildId, riseChildId, StringComparison.Ordinal) &&
+               !fadeSvg.Contains(riseChildId, StringComparison.Ordinal) &&
+               !riseSvg.Contains(fadeChildId, StringComparison.Ordinal),
+            "Child SVG identities should be scoped from the final motion-specific parent identity.");
         Assert(fadeSvg.Contains("@keyframes " + fadeId + "-motion-0", StringComparison.Ordinal) && fadeSvg.Contains("animation:" + fadeId + "-motion-0 ", StringComparison.Ordinal), "The first inline SVG should bind its keyframe definition and reference to its final identity.");
         Assert(riseSvg.Contains("@keyframes " + riseId + "-motion-0", StringComparison.Ordinal) && riseSvg.Contains("animation:" + riseId + "-motion-0 ", StringComparison.Ordinal), "The second inline SVG should bind its keyframe definition and reference to its final identity.");
         Assert(!fadeSvg.Contains("@keyframes cfx-visual-grid-seed-", StringComparison.Ordinal) && !riseSvg.Contains("@keyframes cfx-visual-grid-seed-", StringComparison.Ordinal), "Rendered SVGs should not retain provisional keyframe names that can collide in a shared document.");

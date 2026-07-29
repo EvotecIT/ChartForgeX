@@ -10,7 +10,7 @@ internal static class TinyFont {
             return true;
         }
         return c switch {
-            ' ' or '-' or '.' or ':' or '%' or '/' or ',' or '+' or '(' or ')' or '?' or '_' or '\'' or '!' or '[' or ']' => true,
+            ' ' or '-' or '.' or ':' or '%' or '/' or ',' or '+' or '(' or ')' or '?' or '_' or '\'' or '!' or '[' or ']' or '…' => true,
             _ => false
         };
     }
@@ -44,6 +44,7 @@ internal static class TinyFont {
         '/' => new byte[]{1,2,2,4,8,8,16}, ',' => new byte[]{0,0,0,0,12,4,8}, '+' => new byte[]{0,4,4,31,4,4,0}, '(' => new byte[]{2,4,8,8,8,4,2}, ')' => new byte[]{8,4,2,2,2,4,8},
         '[' => new byte[]{14,8,8,8,8,8,14}, ']' => new byte[]{14,2,2,2,2,2,14},
         '?' => new byte[]{14,17,1,2,4,0,4}, '_' => new byte[]{0,0,0,0,0,0,31}, '\'' => new byte[]{4,4,8,0,0,0,0}, '!' => new byte[]{4,4,4,4,4,0,4},
+        '…' => new byte[]{0,0,0,0,0,21,0},
         _ => new byte[]{14,17,1,2,4,0,4}
     };
 }

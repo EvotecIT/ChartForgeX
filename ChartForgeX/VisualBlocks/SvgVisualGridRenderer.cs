@@ -22,11 +22,13 @@ public sealed class SvgVisualGridRenderer {
     public string Render(VisualGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-visual-grid", idScope, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
-        var svg = RenderCore(grid, provisionalId);
-        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-visual-grid", idScope);
+        var provisionalSvg = RenderCore(grid, provisionalId, provisionalId);
+        var finalId = SvgRenderedIdentity.CreateFinalId(provisionalSvg, "cfx-visual-grid", idScope);
+        var svg = RenderCore(grid, provisionalId, finalId);
+        return SvgRenderedIdentity.RebindGeneratedId(svg, provisionalId, finalId);
     }
 
-    private string RenderCore(VisualGrid grid, string id) {
+    private string RenderCore(VisualGrid grid, string id, string childScopeRoot) {
         VisualGridMotion.Validate(grid);
         var layout = VisualGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
@@ -103,7 +105,7 @@ public sealed class SvgVisualGridRenderer {
 
         for (var i = 0; i < layout.Cells.Count; i++) {
             var cell = layout.Cells[i];
-            var childScope = id + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
+            var childScope = childScopeRoot + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
             var childSvg = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, childScope) : RenderChildBlock(cell.Item.Block!, childScope);
             writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualPanelFit.Stretch, cell.Item.MotionTargetId)).Line();
         }

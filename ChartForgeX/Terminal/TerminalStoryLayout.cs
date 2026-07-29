@@ -173,10 +173,6 @@ internal sealed class TerminalStoryLayout {
         return Fit(value, maximum);
     }
 
-    internal static string FitTitle(string value, int width, Func<string, double> measure) {
-        return TerminalTextWidth.Fit(value, Math.Max(12, width - 180), measure);
-    }
-
     internal static int TextElementCount(string value) {
         return TerminalTextWidth.ElementCount(value);
     }

@@ -13,12 +13,16 @@ internal static class SvgRenderedIdentity {
     }
 
     public static string Bind(string svg, string provisionalId, string finalPrefix, string idScope, string separator = "-") {
-        var canonicalSvg = svg.Replace("\r\n", "\n");
-        var finalId = finalPrefix + separator + StableHash(idScope ?? string.Empty, canonicalSvg);
+        var finalId = CreateFinalId(svg, finalPrefix, idScope, separator);
         return RebindGeneratedId(svg, provisionalId, finalId);
     }
 
-    private static string RebindGeneratedId(string svg, string oldId, string newId) {
+    public static string CreateFinalId(string svg, string finalPrefix, string idScope, string separator = "-") {
+        var canonicalSvg = svg.Replace("\r\n", "\n");
+        return finalPrefix + separator + StableHash(idScope ?? string.Empty, canonicalSvg);
+    }
+
+    public static string RebindGeneratedId(string svg, string oldId, string newId) {
         var match = svg.IndexOf(oldId, StringComparison.Ordinal);
         if (match < 0) return svg;
 

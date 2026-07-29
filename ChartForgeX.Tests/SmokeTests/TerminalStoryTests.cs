@@ -122,6 +122,11 @@ internal static partial class SmokeTests {
                losslessTableLayout.TranscriptLines.Any(line => line.Contains(completeCell, StringComparison.Ordinal)) &&
                losslessTableStory.ToSvg().Contains(completeCell, StringComparison.Ordinal),
             "Compacted visual tables should retain complete cell values in the accessible transcript.");
+        var fontlessTableLayout = TerminalStoryLayout.Build(losslessTableStory, value => TerminalPngTextPreserver.Preserve(value, null));
+        Assert(fontlessTableLayout.Lines.Any(line => line.Text.Contains("…", StringComparison.Ordinal)) &&
+               TerminalPngTextPreserver.Preserve("…", null) == "…" &&
+               new PngTerminalStoryRenderer().Render(losslessTableStory, null).Length > 8,
+            "Fontless terminal tables should preserve generated ellipses instead of rendering fallback question marks.");
 
         var controlStrings = "before\u001BPgraphics payload\u001B\\middle\u001B_status payload\u009Cafter";
         Assert(TerminalTextSanitizer.Transcript(controlStrings) == "beforemiddleafter", "Captured transcripts should consume complete ST-terminated ANSI control strings.");
