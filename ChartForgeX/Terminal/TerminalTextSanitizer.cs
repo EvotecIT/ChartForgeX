@@ -29,6 +29,11 @@ internal static class TerminalTextSanitizer {
                 continue;
             }
 
+            if (character >= '\u0080' && character <= '\u009F') {
+                index = SkipC1Sequence(value, index);
+                continue;
+            }
+
             if (character == '\t') {
                 output.Append(tabReplacement);
                 index++;
@@ -67,26 +72,52 @@ internal static class TerminalTextSanitizer {
         }
 
         if (value[index] == ']') {
-            index++;
-            while (index < value.Length) {
-                if (value[index] == Bell) return index + 1;
-                if (value[index] == Escape && index + 1 < value.Length && value[index + 1] == '\\') return index + 2;
-                if (value[index] == '\u009C') return index + 1;
-                index++;
-            }
-            return index;
+            return SkipControlString(value, index + 1, allowBell: true);
         }
 
         if (value[index] == 'P' || value[index] == 'X' || value[index] == '^' || value[index] == '_') {
-            index++;
-            while (index < value.Length) {
-                if (value[index] == Escape && index + 1 < value.Length && value[index + 1] == '\\') return index + 2;
-                if (value[index] == '\u009C') return index + 1;
-                index++;
-            }
-            return index;
+            return SkipControlString(value, index + 1, allowBell: false);
         }
 
         return Math.Min(value.Length, index + 1);
+    }
+
+    private static int SkipC1Sequence(string value, int controlIndex) {
+        switch (value[controlIndex]) {
+            case '\u009B':
+                var index = controlIndex + 1;
+                while (index < value.Length) {
+                    var character = value[index++];
+                    if (character >= '\u0040' && character <= '\u007E') {
+                        break;
+                    }
+                }
+                return index;
+            case '\u009D':
+                return SkipControlString(value, controlIndex + 1, allowBell: true);
+            case '\u0090':
+            case '\u0098':
+            case '\u009E':
+            case '\u009F':
+                return SkipControlString(value, controlIndex + 1, allowBell: false);
+            default:
+                return controlIndex + 1;
+        }
+    }
+
+    private static int SkipControlString(string value, int index, bool allowBell) {
+        while (index < value.Length) {
+            if (allowBell && value[index] == Bell) {
+                return index + 1;
+            }
+            if (value[index] == Escape && index + 1 < value.Length && value[index + 1] == '\\') {
+                return index + 2;
+            }
+            if (value[index] == '\u009C') {
+                return index + 1;
+            }
+            index++;
+        }
+        return index;
     }
 }

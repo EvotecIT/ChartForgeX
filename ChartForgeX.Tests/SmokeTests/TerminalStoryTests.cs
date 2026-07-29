@@ -60,6 +60,13 @@ internal static partial class SmokeTests {
         Assert(string.Concat(TerminalStoryLayout.Build(unicodeStory).Lines.Select(line => line.Text)) == unicodeTranscript, "Transcript wrapping should preserve supplementary Unicode characters at line boundaries.");
         SvgDocument.Parse(unicodeStory.ToSvg());
 
+        var wideTranscript = new string('界', 28) + "😀";
+        var wideLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Output(wideTranscript));
+        Assert(wideLayout.Lines.Count == 3 &&
+               string.Concat(wideLayout.Lines.Select(line => line.Text)) == wideTranscript &&
+               wideLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= 28),
+            "Full-width and emoji transcript content should wrap by rendered display columns without clipping or data loss.");
+
         var longCommand = "Invoke-LongRunningAudit -" + new string('x', 96);
         var longCommandLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Command(longCommand));
         Assert(longCommandLayout.Lines.Count > 1 &&
@@ -99,12 +106,34 @@ internal static partial class SmokeTests {
         var unicodeTableRows = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Table(unicodeTable)).Lines.Skip(2).ToArray();
         var firstSeparator = unicodeTableRows[0].Text.IndexOf('|');
         var secondSeparator = unicodeTableRows[1].Text.IndexOf('|');
-        Assert(TerminalStoryLayout.TextElementCount(unicodeTableRows[0].Text.Substring(0, firstSeparator)) ==
-               TerminalStoryLayout.TextElementCount(unicodeTableRows[1].Text.Substring(0, secondSeparator)),
+        Assert(TerminalStoryLayout.DisplayWidth(unicodeTableRows[0].Text.Substring(0, firstSeparator)) ==
+               TerminalStoryLayout.DisplayWidth(unicodeTableRows[1].Text.Substring(0, secondSeparator)),
             "Table columns should align equivalent precomposed and combining-character cells by rendered text elements.");
 
         var controlStrings = "before\u001BPgraphics payload\u001B\\middle\u001B_status payload\u009Cafter";
         Assert(TerminalTextSanitizer.Transcript(controlStrings) == "beforemiddleafter", "Captured transcripts should consume complete ST-terminated ANSI control strings.");
+        var c1Controls = "before\u009B31mred\u009B0m\u009Dtitle\u009Cmiddle\u0090graphics\u009Cafter";
+        Assert(TerminalTextSanitizer.Transcript(c1Controls) == "beforeredmiddleafter", "Captured transcripts should consume complete eight-bit C1 ANSI sequences.");
+
+        var fontlessText = TerminalPngTextPreserver.Preserve("demo » 😀", null);
+        Assert(fontlessText == "demo [U+00BB] [U+1F600]", "Fontless PNG text should retain unsupported Unicode as explicit scalar escapes.");
+        var fontlessStory = TerminalStory.Create()
+            .WithTitle("pwsh 😀")
+            .WithDialect(TerminalDialect.Custom, "demo » ")
+            .WithFinalPrompt(false)
+            .Command("ship 😀")
+            .Output("ready » 😀");
+        var fontlessLayout = TerminalStoryLayout.Build(fontlessStory, value => TerminalPngTextPreserver.Preserve(value, null));
+        Assert(fontlessLayout.Lines.Count(line => line.Text.Contains("[U+00BB]", StringComparison.Ordinal)) == 2 &&
+               fontlessLayout.Lines.Count(line => line.Text.Contains("[U+1F600]", StringComparison.Ordinal)) == 2 &&
+               fontlessLayout.Lines.All(line => line.Text.Count(character => character == '[') == line.Text.Count(character => character == ']')),
+            "Fontless terminal layout should preserve unsupported prompt, command, and output scalars instead of replacing them with question marks.");
+        Assert(new PngTerminalStoryRenderer().Render(fontlessStory, null).Length > 8, "Fontless terminal PNG output should render the preserved scalar escapes.");
+
+        var oversizedCapture = string.Join("\n", Enumerable.Repeat("captured", 121));
+        AssertThrows<InvalidOperationException>(
+            () => TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Output(oversizedCapture)),
+            "Terminal layout should reject the 121st expanded line while materializing captured output.");
 
         var invariantTable = TerminalTable.Create().WithColumns("Value").AddRow(1234.5m);
         Assert(invariantTable.Rows[0][0] == "1234.5", "Object-valued table cells should use invariant formatting.");

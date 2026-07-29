@@ -11,9 +11,17 @@ public sealed class PngTerminalStoryRenderer {
     /// <summary>Renders a terminal story to PNG bytes.</summary>
     public byte[] Render(TerminalStory story) {
         if (story == null) throw new ArgumentNullException(nameof(story));
-        var layout = TerminalStoryLayout.Build(story);
         var theme = story.Theme;
-        var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), story.PngOutputScale);
+        var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
+        return Render(story, outlineFont);
+    }
+
+    internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        var theme = story.Theme;
+        string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
+        var layout = TerminalStoryLayout.Build(story, PreserveText);
+        var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, outlineFont, story.PngOutputScale, useDefaultOutlineFont: false);
         canvas.Clear(theme.PageBackground);
         canvas.FillRoundedRect(12, 18, layout.Width - 24, layout.Height - 24, 16, ChartColor.Black.WithOpacity(0.18));
         canvas.FillRoundedRect(10, 14, layout.Width - 20, layout.Height - 20, 15, ChartColor.Black.WithOpacity(0.12));
@@ -25,7 +33,7 @@ public sealed class PngTerminalStoryRenderer {
         canvas.DrawCircle(29, 29, 5.5, ChartColor.FromHex("#FF5F57"));
         canvas.DrawCircle(49, 29, 5.5, ChartColor.FromHex("#FEBC2E"));
         canvas.DrawCircle(69, 29, 5.5, ChartColor.FromHex("#28C840"));
-        var visibleTitle = TerminalStoryLayout.FitTitle(story.Title, layout.Width);
+        var visibleTitle = TerminalStoryLayout.FitTitle(PreserveText(story.Title), layout.Width, text => canvas.MeasureTextWidth(text, 12));
         var titleWidth = canvas.MeasureTextWidth(visibleTitle, 12);
         canvas.DrawText((layout.Width - titleWidth) / 2, 19, visibleTitle, theme.Muted, 12);
 

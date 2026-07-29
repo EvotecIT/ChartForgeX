@@ -5,6 +5,16 @@ internal static class TinyFont {
     public const int Height = 7;
     public const int Advance = 6;
 
+    public static bool Supports(char c) {
+        if (c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z') {
+            return true;
+        }
+        return c switch {
+            ' ' or '-' or '.' or ':' or '%' or '/' or ',' or '+' or '(' or ')' or '?' or '_' or '\'' or '!' or '[' or ']' => true,
+            _ => false
+        };
+    }
+
     public static int AdvanceFor(char c) => c switch {
         ' ' => 4,
         '.' or ',' or ':' or '\'' => 3,
@@ -32,6 +42,7 @@ internal static class TinyFont {
         'y' => new byte[]{0,0,17,17,17,15,1}, 'z' => new byte[]{0,0,31,2,4,8,31},
         '-' => new byte[]{0,0,0,31,0,0,0}, '.' => new byte[]{0,0,0,0,0,12,12}, ':' => new byte[]{0,12,12,0,12,12,0}, '%' => new byte[]{24,25,2,4,8,19,3}, ' ' => new byte[]{0,0,0,0,0,0,0},
         '/' => new byte[]{1,2,2,4,8,8,16}, ',' => new byte[]{0,0,0,0,12,4,8}, '+' => new byte[]{0,4,4,31,4,4,0}, '(' => new byte[]{2,4,8,8,8,4,2}, ')' => new byte[]{8,4,2,2,2,4,8},
+        '[' => new byte[]{14,8,8,8,8,8,14}, ']' => new byte[]{14,2,2,2,2,2,14},
         '?' => new byte[]{14,17,1,2,4,0,4}, '_' => new byte[]{0,0,0,0,0,0,31}, '\'' => new byte[]{4,4,8,0,0,0,0}, '!' => new byte[]{4,4,4,4,4,0,4},
         _ => new byte[]{14,17,1,2,4,0,4}
     };
