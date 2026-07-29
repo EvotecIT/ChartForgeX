@@ -126,8 +126,8 @@ internal static class TerminalTextWidth {
     }
 
     private static int ElementWidth(string element) {
-        if (TryPreservedScalar(element, 0, out var escapeLength) && escapeLength == element.Length) {
-            return escapeLength;
+        if (TryPreservedScalar(element, 0, out var escapeLength, out var preservedCodePoint) && escapeLength == element.Length) {
+            return IsWide(preservedCodePoint) ? 2 : 1;
         }
 
         var width = 0;
@@ -150,7 +150,7 @@ internal static class TerminalTextWidth {
     }
 
     private static string NextElement(string value, ref int index) {
-        if (TryPreservedScalar(value, index, out var escapeLength)) {
+        if (TryPreservedScalar(value, index, out var escapeLength, out _)) {
             var preserved = value.Substring(index, escapeLength);
             index += escapeLength;
             return preserved;
@@ -161,24 +161,36 @@ internal static class TerminalTextWidth {
         return element;
     }
 
-    private static bool TryPreservedScalar(string value, int index, out int length) {
+    internal static bool TryPreservedScalar(string value, int index, out int length, out int codePoint) {
         length = 0;
-        if (index + 8 > value.Length || value[index] != '[' || value[index + 1] != 'U' || value[index + 2] != '+') {
+        codePoint = 0;
+        if (index + 10 > value.Length ||
+            value[index] != TerminalPngTextPreserver.EscapeStart ||
+            value[index + 1] != '[' ||
+            value[index + 2] != 'U' ||
+            value[index + 3] != '+') {
             return false;
         }
 
         var digits = 0;
-        for (var cursor = index + 3; cursor < value.Length; cursor++) {
+        var scalar = 0;
+        for (var cursor = index + 4; cursor < value.Length; cursor++) {
             if (value[cursor] == ']') {
-                if (digits < 4) {
+                if (cursor + 1 >= value.Length ||
+                    value[cursor + 1] != TerminalPngTextPreserver.EscapeEnd ||
+                    digits < 4 ||
+                    scalar > 0x10FFFF ||
+                    scalar >= 0xD800 && scalar <= 0xDFFF) {
                     return false;
                 }
-                length = cursor - index + 1;
+                length = cursor - index + 2;
+                codePoint = scalar;
                 return true;
             }
             if (digits >= 6 || !IsUpperHex(value[cursor])) {
                 return false;
             }
+            scalar = scalar * 16 + HexValue(value[cursor]);
             digits++;
         }
         return false;
@@ -186,6 +198,10 @@ internal static class TerminalTextWidth {
 
     private static bool IsUpperHex(char value) {
         return value >= '0' && value <= '9' || value >= 'A' && value <= 'F';
+    }
+
+    private static int HexValue(char value) {
+        return value <= '9' ? value - '0' : value - 'A' + 10;
     }
 
     private static UnicodeCategory UnicodeCategoryFor(int codePoint) {

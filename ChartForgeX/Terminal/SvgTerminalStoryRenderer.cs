@@ -105,7 +105,7 @@ public sealed class SvgTerminalStoryRenderer {
 
         writer.EndElement().Line();
         if (!isFinalPrompt) return;
-        var cursorX = layout.ContentX + StringInfo.ParseCombiningCharacters(line.Text).Length * story.FontSize * 0.61 + 2;
+        var cursorX = layout.ContentX + TerminalStoryLayout.DisplayWidth(line.Text) * story.FontSize * 0.61 + 2;
         writer.StartElement("rect")
             .Attribute("data-cfx-role", "terminal-cursor")
             .Attribute("class", "cfx-terminal-cursor")
@@ -134,8 +134,8 @@ public sealed class SvgTerminalStoryRenderer {
 
     private static string AccessibleDescription(TerminalStoryLayout layout) {
         var description = new StringBuilder("Terminal transcript:");
-        foreach (var line in layout.Lines) {
-            description.Append('\n').Append(line.Text.TrimEnd());
+        foreach (var line in layout.TranscriptLines) {
+            description.Append('\n').Append(line.TrimEnd());
         }
 
         description.Append("\nMotion is decorative; the complete transcript remains available when animation is unsupported, reduced, or printed.");

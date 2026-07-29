@@ -16,12 +16,14 @@ internal sealed class TerminalStoryLayout {
     public double HeaderHeightValue => HeaderHeight;
     public double DurationSeconds { get; }
     public IReadOnlyList<TerminalRenderedLine> Lines { get; }
+    public IReadOnlyList<string> TranscriptLines { get; }
 
-    private TerminalStoryLayout(int width, int height, double durationSeconds, IReadOnlyList<TerminalRenderedLine> lines) {
+    private TerminalStoryLayout(int width, int height, double durationSeconds, IReadOnlyList<TerminalRenderedLine> lines, IReadOnlyList<string> transcriptLines) {
         Width = width;
         Height = height;
         DurationSeconds = durationSeconds;
         Lines = lines;
+        TranscriptLines = transcriptLines;
     }
 
     public static TerminalStoryLayout Build(TerminalStory story) => Build(story, null);
@@ -32,10 +34,12 @@ internal sealed class TerminalStoryLayout {
         var transform = transformText ?? Identity;
         var maxColumns = Math.Max(24, (int)Math.Floor((story.Width - HorizontalPadding * 2) / (story.FontSize * 0.61)));
         var lines = new List<TerminalRenderedLine>();
+        var transcriptLines = new List<string>();
         var clock = story.InitialDelaySeconds;
         foreach (var step in story.Steps) {
             switch (step.Kind) {
                 case TerminalStoryStepKind.Command:
+                    transcriptLines.Add(story.Prompt() + step.Text);
                     var prompt = transform(story.Prompt());
                     var commandText = prompt + transform(step.Text);
                     var typingDuration = step.DurationSeconds > 0
@@ -53,6 +57,7 @@ internal sealed class TerminalStoryLayout {
                     break;
                 case TerminalStoryStepKind.Output:
                     foreach (var outputLine in SplitLines(step.Text)) {
+                        transcriptLines.Add(outputLine);
                         foreach (var wrappedLine in Wrap(transform(outputLine), maxColumns)) {
                             AddLine(lines, new TerminalRenderedLine(wrappedLine, step.Tone, false, 0, clock, 0.22));
                             clock += story.LineDelaySeconds;
@@ -60,12 +65,14 @@ internal sealed class TerminalStoryLayout {
                     }
                     break;
                 case TerminalStoryStepKind.Blank:
+                    transcriptLines.Add(string.Empty);
                     AddLine(lines, new TerminalRenderedLine(string.Empty, TerminalTextTone.Default, false, 0, clock, 0));
                     break;
                 case TerminalStoryStepKind.Pause:
                     clock += step.DurationSeconds;
                     break;
                 case TerminalStoryStepKind.Table:
+                    AddTableTranscript(transcriptLines, step.Table!);
                     foreach (var tableLine in FormatTable(step.Table!, maxColumns, transform)) {
                         AddLine(lines, new TerminalRenderedLine(tableLine.Text, tableLine.Tone, false, 0, clock, 0.22));
                         clock += story.LineDelaySeconds;
@@ -77,6 +84,7 @@ internal sealed class TerminalStoryLayout {
         }
 
         if (story.ShowFinalPrompt) {
+            transcriptLines.Add(story.Prompt());
             foreach (var promptLine in Wrap(transform(story.Prompt()), maxColumns)) {
                 AddLine(lines, new TerminalRenderedLine(promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0));
             }
@@ -90,7 +98,7 @@ internal sealed class TerminalStoryLayout {
 
         if (completion > 60) throw new InvalidOperationException("Terminal story animation must complete within 60 seconds.");
         var height = (int)Math.Ceiling(HeaderHeight + VerticalPadding * 2 + lines.Count * story.LineHeight);
-        return new TerminalStoryLayout(story.Width, Math.Max(180, height), completion, lines);
+        return new TerminalStoryLayout(story.Width, Math.Max(180, height), completion, lines, transcriptLines);
     }
 
     private static IEnumerable<string> SplitLines(string value) {
@@ -139,6 +147,13 @@ internal sealed class TerminalStoryLayout {
         };
         foreach (var row in rows) output.Add(new TableRenderedLine(RenderRow(row, widths, table.Alignments, separator), TerminalTextTone.Default));
         return output;
+    }
+
+    private static void AddTableTranscript(ICollection<string> transcriptLines, TerminalTable table) {
+        transcriptLines.Add(string.Join(" | ", table.Columns));
+        foreach (var row in table.Rows) {
+            transcriptLines.Add(string.Join(" | ", row));
+        }
     }
 
     private static string RenderRow(IReadOnlyList<string> values, IReadOnlyList<int> widths, IReadOnlyList<TerminalColumnAlignment> alignments, string separator) {

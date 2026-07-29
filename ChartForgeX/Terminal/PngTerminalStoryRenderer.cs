@@ -33,9 +33,9 @@ public sealed class PngTerminalStoryRenderer {
         canvas.DrawCircle(29, 29, 5.5, ChartColor.FromHex("#FF5F57"));
         canvas.DrawCircle(49, 29, 5.5, ChartColor.FromHex("#FEBC2E"));
         canvas.DrawCircle(69, 29, 5.5, ChartColor.FromHex("#28C840"));
-        var visibleTitle = TerminalStoryLayout.FitTitle(PreserveText(story.Title), layout.Width, text => canvas.MeasureTextWidth(text, 12));
-        var titleWidth = canvas.MeasureTextWidth(visibleTitle, 12);
-        canvas.DrawText((layout.Width - titleWidth) / 2, 19, visibleTitle, theme.Muted, 12);
+        var visibleTitle = TerminalStoryLayout.FitTitle(PreserveText(story.Title), layout.Width, text => TerminalPngTextPreserver.Measure(text, canvas, 12));
+        var titleWidth = TerminalPngTextPreserver.Measure(visibleTitle, canvas, 12);
+        TerminalPngTextPreserver.Draw(canvas, (layout.Width - titleWidth) / 2, 19, visibleTitle, theme.Muted, 12);
 
         for (var index = 0; index < layout.Lines.Count; index++) {
             var line = layout.Lines[index];
@@ -43,14 +43,14 @@ public sealed class PngTerminalStoryRenderer {
             if (line.IsCommand) {
                 var prompt = line.Text.Substring(0, line.PromptLength);
                 var command = line.Text.Substring(line.PromptLength);
-                canvas.DrawText(layout.ContentX, y, prompt, theme.Accent, story.FontSize);
-                canvas.DrawText(layout.ContentX + canvas.MeasureTextWidth(prompt, story.FontSize), y, command, theme.Text, story.FontSize);
+                TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, prompt, theme.Accent, story.FontSize);
+                TerminalPngTextPreserver.Draw(canvas, layout.ContentX + TerminalPngTextPreserver.Measure(prompt, canvas, story.FontSize), y, command, theme.Text, story.FontSize);
             } else {
-                canvas.DrawText(layout.ContentX, y, line.Text, ToneColor(theme, line.Tone), story.FontSize);
+                TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, line.Text, ToneColor(theme, line.Tone), story.FontSize);
             }
 
             if (story.ShowFinalPrompt && index == layout.Lines.Count - 1) {
-                var cursorX = layout.ContentX + canvas.MeasureTextWidth(line.Text, story.FontSize) + 2;
+                var cursorX = layout.ContentX + TerminalPngTextPreserver.Measure(line.Text, canvas, story.FontSize) + 2;
                 canvas.FillRoundedRect(cursorX, y + 2, Math.Max(7, story.FontSize * 0.55), story.FontSize + 2, 1, theme.Cursor);
             }
         }

@@ -79,7 +79,13 @@ internal static class TerminalTextSanitizer {
             return SkipControlString(value, index + 1, allowBell: false);
         }
 
-        return Math.Min(value.Length, index + 1);
+        while (index < value.Length && value[index] >= '\u0020' && value[index] <= '\u002F') {
+            index++;
+        }
+        if (index < value.Length && value[index] >= '\u0030' && value[index] <= '\u007E') {
+            index++;
+        }
+        return index;
     }
 
     private static int SkipC1Sequence(string value, int controlIndex) {

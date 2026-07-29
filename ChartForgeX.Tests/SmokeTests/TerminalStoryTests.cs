@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Svg;
 using ChartForgeX.Terminal;
@@ -110,13 +111,30 @@ internal static partial class SmokeTests {
                TerminalStoryLayout.DisplayWidth(unicodeTableRows[1].Text.Substring(0, secondSeparator)),
             "Table columns should align equivalent precomposed and combining-character cells by rendered text elements.");
 
+        var completeCell = "complete-table-value-" + new string('z', 72);
+        var losslessTableStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithFinalPrompt(false)
+            .Table(TerminalTable.Create().WithColumns("Name", "Value").AddRow("row", completeCell));
+        var losslessTableLayout = TerminalStoryLayout.Build(losslessTableStory);
+        Assert(losslessTableLayout.Lines.Any(line => line.Text.Contains("…", StringComparison.Ordinal)) &&
+               losslessTableLayout.TranscriptLines.Any(line => line.Contains(completeCell, StringComparison.Ordinal)) &&
+               losslessTableStory.ToSvg().Contains(completeCell, StringComparison.Ordinal),
+            "Compacted visual tables should retain complete cell values in the accessible transcript.");
+
         var controlStrings = "before\u001BPgraphics payload\u001B\\middle\u001B_status payload\u009Cafter";
         Assert(TerminalTextSanitizer.Transcript(controlStrings) == "beforemiddleafter", "Captured transcripts should consume complete ST-terminated ANSI control strings.");
         var c1Controls = "before\u009B31mred\u009B0m\u009Dtitle\u009Cmiddle\u0090graphics\u009Cafter";
         Assert(TerminalTextSanitizer.Transcript(c1Controls) == "beforeredmiddleafter", "Captured transcripts should consume complete eight-bit C1 ANSI sequences.");
+        var intermediateEscapes = "before\u001B(Bmiddle\u001B#8after";
+        Assert(TerminalTextSanitizer.Transcript(intermediateEscapes) == "beforemiddleafter", "Captured transcripts should consume complete ESC sequences with intermediate bytes.");
 
         var fontlessText = TerminalPngTextPreserver.Preserve("demo » 😀", null);
-        Assert(fontlessText == "demo [U+00BB] [U+1F600]", "Fontless PNG text should retain unsupported Unicode as explicit scalar escapes.");
+        Assert(fontlessText.Contains("[U+00BB]", StringComparison.Ordinal) &&
+               fontlessText.Contains("[U+1F600]", StringComparison.Ordinal) &&
+               !fontlessText.Contains("?", StringComparison.Ordinal),
+            "Fontless PNG text should retain unsupported Unicode as explicit scalar escapes.");
         var fontlessStory = TerminalStory.Create()
             .WithTitle("pwsh 😀")
             .WithDialect(TerminalDialect.Custom, "demo » ")
@@ -126,9 +144,31 @@ internal static partial class SmokeTests {
         var fontlessLayout = TerminalStoryLayout.Build(fontlessStory, value => TerminalPngTextPreserver.Preserve(value, null));
         Assert(fontlessLayout.Lines.Count(line => line.Text.Contains("[U+00BB]", StringComparison.Ordinal)) == 2 &&
                fontlessLayout.Lines.Count(line => line.Text.Contains("[U+1F600]", StringComparison.Ordinal)) == 2 &&
+               TerminalStoryLayout.DisplayWidth(TerminalPngTextPreserver.Preserve("»", null)) == TerminalStoryLayout.DisplayWidth("»") &&
+               TerminalStoryLayout.DisplayWidth(TerminalPngTextPreserver.Preserve("😀", null)) == TerminalStoryLayout.DisplayWidth("😀") &&
+               TerminalStoryLayout.DisplayWidth("[U+1F600]") == 9 &&
                fontlessLayout.Lines.All(line => line.Text.Count(character => character == '[') == line.Text.Count(character => character == ']')),
             "Fontless terminal layout should preserve unsupported prompt, command, and output scalars instead of replacing them with question marks.");
         Assert(new PngTerminalStoryRenderer().Render(fontlessStory, null).Length > 8, "Fontless terminal PNG output should render the preserved scalar escapes.");
+
+        var fallbackHeavyStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithFinalPrompt(false)
+            .Output(string.Join("\n", Enumerable.Repeat("😀😀😀😀", 61)));
+        var fallbackHeavyLayout = TerminalStoryLayout.Build(fallbackHeavyStory, value => TerminalPngTextPreserver.Preserve(value, null));
+        Assert(fallbackHeavyLayout.Lines.Count == 61 &&
+               new PngTerminalStoryRenderer().Render(fallbackHeavyStory, null).Length > 8,
+            "Fontless scalar preservation should not inflate valid logical stories beyond the expanded-line limit.");
+
+        var widePromptStory = TerminalStory.Create()
+            .WithDialect(TerminalDialect.Custom, "界 ")
+            .Output("ready");
+        var widePromptSvg = SvgDocument.Parse(widePromptStory.ToSvg());
+        var widePromptCursor = widePromptSvg.Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "terminal-cursor");
+        var cursorX = double.Parse(widePromptCursor.GetAttribute("x")!, CultureInfo.InvariantCulture);
+        var expectedCursorX = 28 + TerminalStoryLayout.DisplayWidth("界 ") * widePromptStory.FontSize * 0.61 + 2;
+        Assert(Math.Abs(cursorX - expectedCursorX) < 0.001, "SVG terminal cursors should follow display columns for full-width prompts.");
 
         var oversizedCapture = string.Join("\n", Enumerable.Repeat("captured", 121));
         AssertThrows<InvalidOperationException>(
