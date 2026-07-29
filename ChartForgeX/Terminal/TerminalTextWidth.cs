@@ -166,6 +166,7 @@ internal static class TerminalTextWidth {
         }
 
         var previous = first;
+        var hasExtendedPictographic = IsExtendedPictographic(first);
         while (PeekScalar(value, index, out next, out nextLength)) {
             var category = UnicodeCategoryFor(next);
             if (IsExtend(next, category) || IsHangulContinuation(previous, next)) {
@@ -177,12 +178,16 @@ internal static class TerminalTextWidth {
                 break;
             }
 
-            index += nextLength;
-            if (!PeekScalar(value, index, out next, out nextLength)) {
+            var joinerLength = nextLength;
+            if (!PeekScalar(value, index + joinerLength, out next, out nextLength) ||
+                !hasExtendedPictographic ||
+                !IsExtendedPictographic(next)) {
                 break;
             }
+            index += joinerLength;
             index += nextLength;
             previous = next;
+            hasExtendedPictographic = true;
         }
 
         return value.Substring(start, index - start);
@@ -286,6 +291,45 @@ internal static class TerminalTextWidth {
 
     private static bool IsRegionalIndicator(int codePoint) {
         return codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF;
+    }
+
+    private static bool IsExtendedPictographic(int codePoint) {
+        if (codePoint >= 0x1F000 && codePoint <= 0x1FAFF) {
+            return true;
+        }
+        return codePoint == 0x00A9 ||
+               codePoint == 0x00AE ||
+               codePoint == 0x203C ||
+               codePoint == 0x2049 ||
+               codePoint == 0x2122 ||
+               codePoint == 0x2139 ||
+               codePoint >= 0x2194 && codePoint <= 0x2199 ||
+               codePoint == 0x21A9 ||
+               codePoint == 0x21AA ||
+               codePoint == 0x231A ||
+               codePoint == 0x231B ||
+               codePoint == 0x2328 ||
+               codePoint == 0x23CF ||
+               codePoint >= 0x23E9 && codePoint <= 0x23F3 ||
+               codePoint >= 0x23F8 && codePoint <= 0x23FA ||
+               codePoint == 0x24C2 ||
+               codePoint == 0x25AA ||
+               codePoint == 0x25AB ||
+               codePoint == 0x25B6 ||
+               codePoint == 0x25C0 ||
+               codePoint >= 0x25FB && codePoint <= 0x25FE ||
+               codePoint >= 0x2600 && codePoint <= 0x27BF ||
+               codePoint == 0x2934 ||
+               codePoint == 0x2935 ||
+               codePoint >= 0x2B05 && codePoint <= 0x2B07 ||
+               codePoint == 0x2B1B ||
+               codePoint == 0x2B1C ||
+               codePoint == 0x2B50 ||
+               codePoint == 0x2B55 ||
+               codePoint == 0x3030 ||
+               codePoint == 0x303D ||
+               codePoint == 0x3297 ||
+               codePoint == 0x3299;
     }
 
     private static bool IsHangulContinuation(int previous, int next) {

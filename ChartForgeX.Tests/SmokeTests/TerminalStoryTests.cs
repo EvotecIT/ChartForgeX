@@ -174,9 +174,17 @@ internal static partial class SmokeTests {
         var fontlessFlagLayout = TerminalStoryLayout.Build(flagStory, value => TerminalPngTextPreserver.Preserve(value, null));
         Assert(TerminalStoryLayout.TextElementCount("🇵🇱") == 1 &&
                TerminalStoryLayout.TextElementCount("👩‍💻") == 1 &&
+               TerminalStoryLayout.TextElementCount("A\u200DB") == 3 &&
+               TerminalStoryLayout.DisplayWidth("A\u200DB") == 2 &&
                fontlessFlagLayout.Lines.Count == 61 &&
                new PngTerminalStoryRenderer().Render(flagStory, null).Length > 8,
-            "Terminal grapheme segmentation should keep flag and ZWJ emoji stable across target frameworks and font fallback.");
+            "Terminal grapheme segmentation should keep flag and emoji ZWJ sequences stable without collapsing ordinary joined glyphs.");
+        var mixedFallbackCluster = "©\u200D" + TerminalPngTextPreserver.EscapeStart + "[U+1F600]" + TerminalPngTextPreserver.EscapeEnd;
+        var mixedFallbackLabel = TerminalPngTextPreserver.ClusterFallbackLabel(mixedFallbackCluster);
+        Assert(TerminalStoryLayout.TextElementCount(mixedFallbackCluster) == 1 &&
+               mixedFallbackLabel.Contains("U+A9", StringComparison.Ordinal) &&
+               mixedFallbackLabel.Contains("U+1F600", StringComparison.Ordinal),
+            "Mixed fallback clusters should retain supported and unsupported visible scalars in their fitted label.");
         var decomposedLine = string.Concat(Enumerable.Repeat("e\u0301", 28));
         var decomposedStory = TerminalStory.Create()
             .WithWidth(480)

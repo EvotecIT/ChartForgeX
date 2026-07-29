@@ -109,6 +109,13 @@ internal static partial class SmokeTests {
         }
         AssertThrows<InvalidOperationException>(() => capacityCascade.Cascade(new[] { "target-63", "target-64" }), "A cascade should validate its complete capacity before mutating the timeline.");
         Assert(capacityCascade.Cues.Count == 63, "A capacity-rejected cascade should leave the timeline unchanged.");
+        var enumeratedTargets = 0;
+        var oversizedCascade = Enumerable.Range(0, int.MaxValue).Select(index => {
+            enumeratedTargets++;
+            return "overflow-" + index.ToString(CultureInfo.InvariantCulture);
+        });
+        AssertThrows<InvalidOperationException>(() => capacityCascade.Cascade(oversizedCascade), "A cascade should stop enumerating as soon as its capacity is exceeded.");
+        Assert(enumeratedTargets == 2 && capacityCascade.Cues.Count == 63, "An oversized cascade should enumerate only through the first over-capacity cue and leave the timeline unchanged.");
         var first = new VisualMotionCue("first", VisualMotionEffect.Fade);
         var second = new VisualMotionCue("second", VisualMotionEffect.Rise);
         var retargeted = VisualMotionTimeline.Create().Add(first).Add(second);

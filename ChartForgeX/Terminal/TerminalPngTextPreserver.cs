@@ -89,26 +89,35 @@ internal static class TerminalPngTextPreserver {
         return false;
     }
 
-    private static string ClusterFallbackLabel(string value) {
+    internal static string ClusterFallbackLabel(string value) {
         var plain = new StringBuilder(value.Length);
         var labels = new StringBuilder();
+        var hasVisibleFallback = false;
         for (var index = 0; index < value.Length;) {
             if (!TerminalTextWidth.TryPreservedScalar(value, index, out var length, out var codePoint)) {
                 var scalarStart = index;
-                ReadCodePoint(value, ref index);
+                codePoint = ReadCodePoint(value, ref index);
                 plain.Append(value, scalarStart, index - scalarStart);
+                if (!TerminalTextWidth.IsZeroWidthScalar(codePoint)) {
+                    AppendLabel(labels, codePoint);
+                }
                 continue;
             }
 
             if (!TerminalTextWidth.IsZeroWidthScalar(codePoint)) {
-                if (labels.Length > 0) {
-                    labels.Append(' ');
-                }
-                labels.Append(CompactLabel(codePoint));
+                AppendLabel(labels, codePoint);
+                hasVisibleFallback = true;
             }
             index += length;
         }
-        return labels.Length > 0 ? labels.ToString() : plain.ToString();
+        return hasVisibleFallback ? labels.ToString() : plain.ToString();
+    }
+
+    private static void AppendLabel(StringBuilder labels, int codePoint) {
+        if (labels.Length > 0) {
+            labels.Append(' ');
+        }
+        labels.Append(CompactLabel(codePoint));
     }
 
     private static string CompactLabel(int codePoint) {
