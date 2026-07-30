@@ -31,7 +31,7 @@ internal static partial class SmokeTests {
         var html = story.ToHtmlPage();
         var png = story.ToPng();
         var options = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(2)
+            .WithFramesPerSecond(4)
             .WithEndHold(0)
             .WithLoop(false)
             .WithMaximumFrames(4);
@@ -69,14 +69,14 @@ internal static partial class SmokeTests {
             "Visual stories should export animated PNG.");
 
         var longTransition = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(2)
+            .WithFramesPerSecond(4)
             .WithTransition(1)
             .WithEndHold(0)
             .WithLoop(false)
             .WithMaximumFrames(4);
         var firstAnimatedFrame = GifReader.Decode(story.ToGif(longTransition));
         var noTransition = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(2)
+            .WithFramesPerSecond(4)
             .WithTransition(0)
             .WithEndHold(0)
             .WithLoop(false)
@@ -101,6 +101,11 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => source.AddSpan(1, 1, StorySyntaxKind.Variable), "Syntax spans should not split surrogate pairs.");
         source.AddSpan(3, 5, StorySyntaxKind.Variable);
         AssertThrows<ArgumentException>(() => source.AddSpan(2, 2, StorySyntaxKind.Keyword), "Syntax spans should be ordered and non-overlapping.");
+
+        var whitespaceSource = StorySourceText.Create("  indented source  ", "text");
+        var whitespaceSurface = new VisualStorySourceSurface(whitespaceSource);
+        Assert(string.Equals(whitespaceSurface.AccessibleText, whitespaceSource.Text, StringComparison.Ordinal),
+            "Captionless source accessibility text should preserve leading and trailing whitespace.");
 
         var normalizedIdentifiers = VisualStory.Create("Normalized identifiers").WithSize(480, 320);
         normalizedIdentifiers.Scene("result", "Completed")
@@ -155,18 +160,40 @@ internal static partial class SmokeTests {
                lightHtml.Contains("width:min(480px,100%)", StringComparison.Ordinal),
             "Complete visual-story pages should honor light themes and the configured story width.");
 
-        var retainedScenes = VisualStory.Create("Retained-scene memory").WithSize(3000, 1000);
+        var retainedScenes = VisualStory.Create("Retained-scene memory").WithSize(1500, 1000);
         for (var index = 0; index < 24; index++) {
             retainedScenes.Scene("scene-" + index, "Scene " + index, 0.25)
                 .Panel("result", new VisualStoryTextSurface("ready"));
         }
         retainedScenes.Outcome("ready", "Ready", "result");
         var constrainedAnimation = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(2)
+            .WithFramesPerSecond(4)
             .WithEndHold(0)
-            .WithMaximumFrames(16);
+            .WithMaximumFrames(30);
         AssertThrows<InvalidOperationException>(
             () => retainedScenes.ToGif(constrainedAnimation),
             "Animated visual-story memory limits should include cached scene images.");
+
+        var skippedScene = VisualStory.Create("Every scene sampled").WithSize(480, 320);
+        for (var index = 0; index < 3; index++) {
+            skippedScene.Scene("scene-" + index, "Scene " + index, 0.25)
+                .Panel("result", new VisualStoryTextSurface("state " + index));
+        }
+        skippedScene.Outcome("ready", "Ready", "result");
+        AssertThrows<InvalidOperationException>(
+            () => skippedScene.ToGif(VisualStoryAnimationOptions.Create().WithFramesPerSecond(2)),
+            "Raster visual stories should reject a frame interval that can skip valid scenes.");
+
+        var denseText = new string('x', 8192);
+        var denseSource = StorySourceText.Create(denseText, "text");
+        for (var index = 0; index < 4096; index++) {
+            denseSource.AddSpan(index * 2, 1, index % 2 == 0 ? StorySyntaxKind.Keyword : StorySyntaxKind.Variable);
+        }
+        var denseStory = VisualStory.Create("Dense syntax").WithSize(480, 320);
+        denseStory.Scene("result", "Completed")
+            .Panel("result", new VisualStorySourceSurface(denseSource));
+        denseStory.Outcome("ready", "Ready", "result");
+        Assert(denseStory.ToPng().Length > 8,
+            "Source rendering should remain bounded for the maximum supported syntax-span count.");
     }
 }

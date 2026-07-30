@@ -24,8 +24,10 @@ public sealed class PngVisualStoryRenderer {
         var theme = story.Theme;
         var canvas = ImageComposition.Create(story.Width, story.Height, theme.Background);
         DrawBackdrop(canvas, story);
-        canvas.DrawText(VisualStoryLayout.OuterPadding, 22, story.Width * 0.58, story.Title, 24, theme.Text, emphasized: true);
-        canvas.DrawText(VisualStoryLayout.OuterPadding, 56, story.Width * 0.58, scene.Title, 15, theme.Muted);
+        var outcomeOrigin = story.Width * 0.58;
+        var headerTextWidth = Math.Max(1, outcomeOrigin - VisualStoryLayout.OuterPadding - 12);
+        DrawHeaderText(canvas, story, story.Title, VisualStoryLayout.OuterPadding, 22, headerTextWidth, 24, theme.Text, emphasized: true);
+        DrawHeaderText(canvas, story, scene.Title, VisualStoryLayout.OuterPadding, 56, headerTextWidth, 15, theme.Muted, emphasized: false);
         DrawOutcomeBadges(canvas, story, scene, sceneIndex == story.Scenes.Count - 1);
 
         var bounds = VisualStoryLayout.Panels(story, scene);
@@ -33,6 +35,26 @@ public sealed class PngVisualStoryRenderer {
             DrawPanel(canvas, story, scene.Panels[index], bounds[index]);
         }
         return canvas.ToImage();
+    }
+
+    private static void DrawHeaderText(
+        ImageComposition canvas,
+        VisualStory story,
+        string text,
+        double x,
+        double y,
+        double width,
+        double fontSize,
+        ChartColor color,
+        bool emphasized) {
+        var style = TextStyle.Create(fontSize, color);
+        style.Font = FontSpec.FromFamily(story.Theme.FontFamily);
+        style.Font.Weight = emphasized ? 700 : 400;
+        var fitted = TerminalTextWidth.Fit(
+            text,
+            width,
+            value => TextLayoutEngine.Measure(value, style).Width);
+        canvas.DrawText(x, y, width, fitted, style, TextWrapMode.NoWrap, 1, TextTrimming.None);
     }
 
     private static void DrawBackdrop(ImageComposition canvas, VisualStory story) {
@@ -112,6 +134,8 @@ public sealed class PngVisualStoryRenderer {
 
     private static void DrawSource(ImageComposition canvas, VisualStory story, VisualStorySourceSurface surface, VisualStoryBounds bounds) {
         var lines = SourceLines(surface.Source.Text);
+        var spans = surface.Source.Spans;
+        var spanIndex = 0;
         var lineCount = Math.Max(1, lines.Count);
         var fontSize = Math.Max(10, Math.Min(18, (bounds.Height - 8) / (lineCount * 1.45)));
         var lineHeight = fontSize * 1.45;
@@ -119,16 +143,26 @@ public sealed class PngVisualStoryRenderer {
         foreach (var line in lines) {
             if (y + lineHeight > bounds.Y + bounds.Height + 0.1) break;
             var x = bounds.X;
-            var segmentStart = line.Start;
-            var segmentKind = line.Length == 0 ? StorySyntaxKind.Plain : surface.Source.KindAt(line.Start);
-            for (var offset = 0; offset <= line.Length; offset++) {
-                var absolute = line.Start + offset;
-                var kind = offset == line.Length ? (StorySyntaxKind)(-1) : surface.Source.KindAt(absolute);
-                if (kind == segmentKind) continue;
-                var value = surface.Source.Text.Substring(segmentStart, absolute - segmentStart);
+            var cursor = line.Start;
+            var lineEnd = line.Start + line.Length;
+            while (spanIndex < spans.Count && spans[spanIndex].End <= cursor) spanIndex++;
+            while (cursor < lineEnd && x < bounds.X + bounds.Width) {
+                while (spanIndex < spans.Count && spans[spanIndex].End <= cursor) spanIndex++;
+                var segmentEnd = lineEnd;
+                var segmentKind = StorySyntaxKind.Plain;
+                if (spanIndex < spans.Count) {
+                    var span = spans[spanIndex];
+                    if (span.Start > cursor) {
+                        segmentEnd = Math.Min(lineEnd, span.Start);
+                    } else if (span.End > cursor) {
+                        segmentEnd = Math.Min(lineEnd, span.End);
+                        segmentKind = span.Kind;
+                    }
+                }
+                if (segmentEnd <= cursor) break;
+                var value = surface.Source.Text.Substring(cursor, segmentEnd - cursor);
                 x += DrawSourceSegment(canvas, story, value, segmentKind, x, y, bounds, fontSize);
-                segmentStart = absolute;
-                segmentKind = kind;
+                cursor = segmentEnd;
             }
             y += lineHeight;
         }

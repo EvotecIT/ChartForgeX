@@ -14,6 +14,16 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         story.Validate();
         var animation = options ?? VisualStoryAnimationOptions.Create();
         var delay = Math.Max(1, (int)Math.Ceiling(100d / animation.FramesPerSecond));
+        var frameIntervalSeconds = delay / 100d;
+        for (var index = 0; index < story.Scenes.Count; index++) {
+            if (story.Scenes[index].DurationSeconds + 0.0000001 < frameIntervalSeconds) {
+                throw new InvalidOperationException(
+                    "Animated visual story frame interval " + frameIntervalSeconds +
+                    "s cannot sample scene '" + story.Scenes[index].Id + "' with duration " +
+                    story.Scenes[index].DurationSeconds +
+                    "s. Increase the frame rate so every scene is represented.");
+            }
+        }
         var totalSeconds = story.DurationSeconds + animation.EndHoldSeconds;
         var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delay) + 1);
         if (frameCount > animation.MaximumFrames) {

@@ -18,9 +18,11 @@ public enum VisualStorySurfaceKind {
 
 /// <summary>Base class for resolved visual-story surfaces.</summary>
 public abstract class VisualStorySurface {
-    private protected VisualStorySurface(VisualStorySurfaceKind kind, string accessibleText) {
+    private protected VisualStorySurface(VisualStorySurfaceKind kind, string accessibleText, bool preserveAccessibleWhitespace = false) {
         Kind = kind;
-        AccessibleText = RequireText(accessibleText, nameof(accessibleText));
+        AccessibleText = preserveAccessibleWhitespace
+            ? RequireContent(accessibleText, nameof(accessibleText))
+            : RequireText(accessibleText, nameof(accessibleText));
     }
 
     /// <summary>Gets the surface kind.</summary>
@@ -33,13 +35,18 @@ public abstract class VisualStorySurface {
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("A non-empty value is required.", name);
         return value.Trim();
     }
+
+    internal static string RequireContent(string value, string name) {
+        if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("A non-empty value is required.", name);
+        return value;
+    }
 }
 
 /// <summary>Displays exact source text with optional renderer-neutral syntax spans.</summary>
 public sealed class VisualStorySourceSurface : VisualStorySurface {
     /// <summary>Initializes a source surface.</summary>
     public VisualStorySourceSurface(StorySourceText source, string? caption = null)
-        : base(VisualStorySurfaceKind.Source, AccessibleSourceText(source, caption)) {
+        : base(VisualStorySurfaceKind.Source, AccessibleSourceText(source, caption), preserveAccessibleWhitespace: true) {
         Source = source ?? throw new ArgumentNullException(nameof(source));
     }
 
