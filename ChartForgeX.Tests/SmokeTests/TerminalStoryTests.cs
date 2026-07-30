@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ChartForgeX.Raster;
 using ChartForgeX.Svg;
 using ChartForgeX.Terminal;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
 
@@ -374,6 +376,21 @@ internal static partial class SmokeTests {
                proportionalPromptCursor.GetAttribute("x") == null,
             "SVG terminal cursors should use browser text flow without coupling deterministic layout to an installed font.");
 
+        var proportionalTableStory = TerminalStory.Create()
+            .WithTheme(proportionalPromptTheme)
+            .WithFinalPrompt(false)
+            .Table(TerminalTable.Create().WithColumns("Glyph", "Value").AddRow("WW", 1).AddRow("ii", 2));
+        var proportionalTableLayout = TerminalStoryLayout.Build(proportionalTableStory);
+        var proportionalTableSvg = SvgDocument.Parse(proportionalTableStory.ToSvg());
+        var tableText = proportionalTableSvg.Root.FindByTag("text")
+            .Where(element => element.GetAttribute("data-cfx-role") == "terminal-output")
+            .ToArray();
+        Assert(proportionalTableLayout.Lines.All(line => line.IsTable) &&
+               tableText.Length == proportionalTableLayout.Lines.Count &&
+               tableText.All(element => element.GetAttribute("font-family") == ChartFontStacks.Mono) &&
+               proportionalTableStory.ToPng().Length > 8,
+            "Terminal tables should use stable monospace geometry even when surrounding terminal text uses a proportional font.");
+
         var oversizedCapture = string.Join("\n", Enumerable.Repeat("captured", 121));
         AssertThrows<InvalidOperationException>(
             () => TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Output(oversizedCapture)),
@@ -421,8 +438,23 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TerminalStory.Create().Command("one\u2029two"), "Commands should reject Unicode paragraph separators.");
         AssertThrows<ArgumentException>(() => TerminalTable.Create().WithColumns("One", "Two").AddRow("one"), "Terminal table rows should match their column count.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Progress("bad", 1.1), "Terminal progress values should stay within the unit interval.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Transcript(Array.Empty<string>(), (TerminalTextTone)99), "Empty transcripts should still validate their semantic tone.");
+        var throwingTranscriptStory = TerminalStory.Create().Output("existing");
+        AssertThrows<InvalidOperationException>(() => throwingTranscriptStory.Transcript(ThrowingTranscript()), "Transcript enumeration failures should reject the complete batch.");
+        Assert(throwingTranscriptStory.Steps.Count == 1 && throwingTranscriptStory.Steps[0].Text == "existing", "A failed transcript enumeration should leave the story unchanged.");
+        var capacityTranscriptStory = TerminalStory.Create();
+        for (var index = 0; index < 119; index++) {
+            capacityTranscriptStory.Output("line");
+        }
+        AssertThrows<InvalidOperationException>(() => capacityTranscriptStory.Transcript(new[] { "line 120", "line 121" }), "Transcript batches should validate their complete step capacity before mutating the story.");
+        Assert(capacityTranscriptStory.Steps.Count == 119, "A capacity-rejected transcript batch should leave the story unchanged.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithTiming(0, 1, 0), "Typing speed should remain within usable presentation bounds.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithFramesPerSecond(31), "Animated terminal frame rates should remain bounded.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithOutputScale(5), "Animated terminal output scale should remain bounded.");
+    }
+
+    private static IEnumerable<string> ThrowingTranscript() {
+        yield return "prospective";
+        throw new InvalidOperationException("Synthetic transcript enumeration failure.");
     }
 }

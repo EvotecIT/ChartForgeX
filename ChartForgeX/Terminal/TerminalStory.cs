@@ -218,7 +218,20 @@ public sealed class TerminalStory {
     /// <summary>Adds captured transcript lines.</summary>
     public TerminalStory Transcript(IEnumerable<string> lines, TerminalTextTone tone = TerminalTextTone.Default) {
         if (lines == null) throw new ArgumentNullException(nameof(lines));
-        foreach (var line in lines) Output(line ?? string.Empty, tone);
+        ValidateEnum(tone, nameof(tone));
+        var prepared = new List<TerminalStoryStep>();
+        foreach (var line in lines) {
+            if (_steps.Count + prepared.Count >= 120) {
+                throw new InvalidOperationException("Terminal stories support at most 120 steps.");
+            }
+            prepared.Add(new TerminalStoryStep(
+                TerminalStoryStepKind.Output,
+                TerminalTextSanitizer.Transcript(line ?? string.Empty),
+                tone,
+                0,
+                null));
+        }
+        _steps.AddRange(prepared);
         return this;
     }
 

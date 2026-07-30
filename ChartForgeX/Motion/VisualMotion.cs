@@ -180,8 +180,10 @@ public sealed class VisualMotionTimeline {
     /// <summary>Adds evenly staggered cues for a sequence of named targets.</summary>
     public VisualMotionTimeline Cascade(IEnumerable<string> targetIds, VisualMotionEffect effect = VisualMotionEffect.Rise, double initialDelaySeconds = 0, double intervalSeconds = 0.12, double durationSeconds = 0.7) {
         if (targetIds == null) throw new ArgumentNullException(nameof(targetIds));
+        VisualMotionGuards.EnumDefined(effect, nameof(effect));
         var delay = VisualMotionGuards.NonNegativeFinite(initialDelaySeconds, nameof(initialDelaySeconds));
         var interval = VisualMotionGuards.NonNegativeFinite(intervalSeconds, nameof(intervalSeconds));
+        VisualMotionGuards.PositiveFinite(durationSeconds, nameof(durationSeconds));
         var prepared = new List<VisualMotionCue>();
         var targets = new HashSet<string>(StringComparer.Ordinal);
         foreach (var existing in _cues) {

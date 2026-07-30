@@ -36,9 +36,14 @@ internal sealed class TerminalStoryLayout {
         Build(story, transformText, null);
 
     internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText, TrueTypeFont? outlineFont) {
+        return Build(story, transformText, outlineFont, transformText);
+    }
+
+    internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText, TrueTypeFont? outlineFont, Func<string, string>? transformTableText) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         story.Validate();
         var transform = transformText ?? Identity;
+        var tableTransform = transformTableText ?? transform;
         var columnWidth = MeasureColumnWidth(story, outlineFont);
         var maxColumns = Math.Max(1, (int)Math.Floor((story.Width - HorizontalPadding * 2) / columnWidth));
         var lines = new List<TerminalRenderedLine>();
@@ -81,8 +86,8 @@ internal sealed class TerminalStoryLayout {
                     break;
                 case TerminalStoryStepKind.Table:
                     AddTableTranscript(transcriptLines, step.Table!);
-                    foreach (var tableLine in FormatTable(step.Table!, maxColumns, transform)) {
-                        AddLine(lines, new TerminalRenderedLine(tableLine.Text, tableLine.Tone, false, 0, clock, 0.22));
+                    foreach (var tableLine in FormatTable(step.Table!, maxColumns, tableTransform)) {
+                        AddLine(lines, new TerminalRenderedLine(tableLine.Text, tableLine.Tone, false, 0, clock, 0.22, true));
                         clock += story.LineDelaySeconds;
                     }
                     break;
@@ -228,13 +233,15 @@ internal sealed class TerminalRenderedLine {
     public int PromptLength { get; }
     public double StartSeconds { get; }
     public double DurationSeconds { get; }
+    public bool IsTable { get; }
 
-    public TerminalRenderedLine(string text, TerminalTextTone tone, bool isCommand, int promptLength, double startSeconds, double durationSeconds) {
+    public TerminalRenderedLine(string text, TerminalTextTone tone, bool isCommand, int promptLength, double startSeconds, double durationSeconds, bool isTable = false) {
         Text = text;
         Tone = tone;
         IsCommand = isCommand;
         PromptLength = promptLength;
         StartSeconds = startSeconds;
         DurationSeconds = durationSeconds;
+        IsTable = isTable;
     }
 }

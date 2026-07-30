@@ -100,6 +100,12 @@ internal static partial class SmokeTests {
             .Add("title", MetricCard.Create().WithMetric("Reserved", 1)), "Visual grid panel targets should not alias the built-in title target.");
         AssertThrows<ArgumentException>(() => VisualMotionTimeline.Create().Fade("bad target"), "Visual motion target ids should be safe stable tokens.");
         AssertThrows<ArgumentException>(() => VisualMotionTimeline.Create().Fade("same").Rise("same"), "A timeline should reject competing effects for the same target.");
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => VisualMotionTimeline.Create().Cascade(Array.Empty<string>(), (VisualMotionEffect)99),
+            "Empty cascades should still validate their requested effect.");
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => VisualMotionTimeline.Create().Cascade(Array.Empty<string>(), durationSeconds: 0),
+            "Empty cascades should still validate their requested duration.");
         var rejectedCascade = VisualMotionTimeline.Create().Fade("existing");
         AssertThrows<ArgumentException>(() => rejectedCascade.Cascade(new[] { "valid", "bad target" }), "A cascade should validate every prospective cue before mutating the timeline.");
         Assert(rejectedCascade.Cues.Count == 1 && rejectedCascade.Cues[0].TargetId == "existing", "A rejected cascade should leave the timeline unchanged.");

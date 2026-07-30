@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Terminal;
 
@@ -14,18 +15,32 @@ public sealed class PngTerminalStoryRenderer {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var theme = story.Theme;
         var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
-        return Render(story, outlineFont);
+        var tableFont = ResolveTableFont(theme, outlineFont);
+        return Render(story, outlineFont, tableFont);
     }
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
         if (story == null) throw new ArgumentNullException(nameof(story));
+        var tableFont = ResolveTableFont(story.Theme, outlineFont);
+        return Render(story, outlineFont, tableFont);
+    }
+
+    private static byte[] Render(TerminalStory story, TrueTypeFont? outlineFont, TrueTypeFont? tableFont) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
         string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
-        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont);
-        var image = RenderImage(story, layout, outlineFont, story.PngOutputScale, null);
+        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
+        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
+        var image = RenderImage(story, layout, outlineFont, tableFont, story.PngOutputScale, null);
         return PngWriter.WriteRgba(image.Width, image.Height, image.Pixels);
     }
 
     internal RgbaImage RenderImage(TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, int outputScale, double? elapsedSeconds) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        var tableFont = ResolveTableFont(story.Theme, outlineFont);
+        return RenderImage(story, layout, outlineFont, tableFont, outputScale, elapsedSeconds);
+    }
+
+    internal static RgbaImage RenderImage(TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, TrueTypeFont? tableFont, int outputScale, double? elapsedSeconds) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (layout == null) throw new ArgumentNullException(nameof(layout));
         var theme = story.Theme;
@@ -59,7 +74,7 @@ public sealed class PngTerminalStoryRenderer {
                 TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, theme.Accent, story.FontSize);
                 TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, theme.Text, story.FontSize);
             } else {
-                TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(theme, line.Tone), state.Opacity), story.FontSize);
+                TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(theme, line.Tone), state.Opacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
             }
 
             if (story.ShowFinalPrompt && index == layout.Lines.Count - 1 && CursorVisible(layout, line, elapsedSeconds)) {
@@ -72,6 +87,12 @@ public sealed class PngTerminalStoryRenderer {
         }
 
         return canvas.ToImage();
+    }
+
+    internal static TrueTypeFont? ResolveTableFont(TerminalTheme theme, TrueTypeFont? outlineFont) {
+        if (theme == null) throw new ArgumentNullException(nameof(theme));
+        if (outlineFont == null || TrueTypeFont.IsMonospaceFamily(theme.FontFamily)) return outlineFont;
+        return TrueTypeFont.TryLoadForFamily(ChartFontStacks.Mono, out _);
     }
 
     private static VisibleLineState VisibleState(TerminalRenderedLine line, double? elapsedSeconds) {

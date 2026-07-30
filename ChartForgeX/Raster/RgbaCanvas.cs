@@ -295,6 +295,12 @@ internal sealed partial class RgbaCanvas {
         return MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
     }
 
+    internal static double MeasureTextWidthWithFont(string text, double fontSize, TrueTypeFont? font) {
+        return font != null
+            ? font.Measure(text, Math.Max(1, fontSize))
+            : MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
+    }
+
     public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont) + EmphasisOffset(fontSize);
 
     internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);

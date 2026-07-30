@@ -12,8 +12,10 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
         var animation = options ?? TerminalStoryAnimationOptions.Create();
         var theme = story.Theme;
         var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
+        var tableFont = PngTerminalStoryRenderer.ResolveTableFont(theme, outlineFont);
         string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
-        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont);
+        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
+        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
         var delayCentiseconds = QuantizedDelayCentiseconds(animation.FramesPerSecond);
         var totalSeconds = layout.DurationSeconds + animation.EndHoldSeconds;
         var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delayCentiseconds) + 1);
@@ -31,11 +33,10 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
                 " bytes of sampled frames. Lower the output scale, frame rate, story size, or duration.");
         }
 
-        var renderer = new PngTerminalStoryRenderer();
         var images = new List<RgbaImage>(frameCount);
         for (var index = 0; index < frameCount; index++) {
             var elapsed = index * delayCentiseconds / 100d;
-            images.Add(renderer.RenderImage(story, layout, outlineFont, animation.OutputScale, elapsed));
+            images.Add(PngTerminalStoryRenderer.RenderImage(story, layout, outlineFont, tableFont, animation.OutputScale, elapsed));
         }
 
         var frames = AnimatedRasterFrames.Create(images, delayCentiseconds, animation.Loop, format.GetDisplayName());

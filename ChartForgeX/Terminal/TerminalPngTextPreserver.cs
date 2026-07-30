@@ -45,53 +45,68 @@ internal static class TerminalPngTextPreserver {
     }
 
     public static double Measure(string value, RgbaCanvas canvas, double fontSize) {
-        return MeasureCore(value, canvas, fontSize);
+        return MeasureCore(value, canvas, fontSize, null);
     }
 
     public static double MeasureEmphasized(string value, RgbaCanvas canvas, double fontSize) {
-        var width = MeasureCore(value, canvas, fontSize);
+        var width = MeasureCore(value, canvas, fontSize, null);
         if (value.Length == 0) return width;
         var emphasisOffset = canvas.MeasureTextEmphasizedWidth("M", fontSize) - canvas.MeasureTextWidth("M", fontSize);
         return width + Math.Max(0, emphasisOffset);
     }
 
-    private static double MeasureCore(string value, RgbaCanvas canvas, double fontSize) {
+    private static double MeasureCore(string value, RgbaCanvas canvas, double fontSize, TrueTypeFont? font) {
         if (value == null) throw new ArgumentNullException(nameof(value));
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var width = 0.0;
         foreach (var element in TerminalTextWidth.Elements(value)) {
             width += ContainsPreservedScalar(element)
                 ? TerminalTextWidth.Measure(element) * fontSize * ColumnWidthFactor
-                : canvas.MeasureTextWidth(element, fontSize);
+                : font == null ? canvas.MeasureTextWidth(element, fontSize) : RgbaCanvas.MeasureTextWidth(element, fontSize, font);
         }
         return width;
     }
 
     public static void Draw(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize) {
-        Draw(canvas, x, y, value, color, fontSize, false);
+        Draw(canvas, x, y, value, color, fontSize, false, null, true);
+    }
+
+    public static void Draw(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize, TrueTypeFont? font) {
+        Draw(canvas, x, y, value, color, fontSize, false, font, false);
     }
 
     public static void DrawEmphasized(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize) {
-        Draw(canvas, x, y, value, color, fontSize, true);
+        Draw(canvas, x, y, value, color, fontSize, true, null, true);
     }
 
-    private static void Draw(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize, bool emphasized) {
+    private static void Draw(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize, bool emphasized, TrueTypeFont? font, bool useCanvasFont) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (value == null) throw new ArgumentNullException(nameof(value));
         var cursor = x;
         foreach (var element in TerminalTextWidth.Elements(value)) {
             if (!ContainsPreservedScalar(element)) {
-                if (emphasized) canvas.DrawTextEmphasized(cursor, y, element, color, fontSize);
-                else canvas.DrawText(cursor, y, element, color, fontSize);
-                cursor += canvas.MeasureTextWidth(element, fontSize);
+                if (useCanvasFont) {
+                    if (emphasized) canvas.DrawTextEmphasized(cursor, y, element, color, fontSize);
+                    else canvas.DrawText(cursor, y, element, color, fontSize);
+                    cursor += canvas.MeasureTextWidth(element, fontSize);
+                } else {
+                    if (emphasized) canvas.DrawTextEmphasized(cursor, y, element, color, fontSize, font);
+                    else canvas.DrawText(cursor, y, element, color, fontSize, font);
+                    cursor += RgbaCanvas.MeasureTextWidthWithFont(element, fontSize, font);
+                }
                 continue;
             }
 
             var width = TerminalTextWidth.Measure(element) * fontSize * ColumnWidthFactor;
             var label = ClusterFallbackLabel(element);
             if (width > 0 && label.Length > 0) {
-                if (emphasized) canvas.DrawTextFittedEmphasized(cursor, y, label, color, fontSize, width);
-                else canvas.DrawTextFitted(cursor, y, label, color, fontSize, width);
+                if (useCanvasFont) {
+                    if (emphasized) canvas.DrawTextFittedEmphasized(cursor, y, label, color, fontSize, width);
+                    else canvas.DrawTextFitted(cursor, y, label, color, fontSize, width);
+                } else {
+                    if (emphasized) canvas.DrawTextFittedEmphasized(cursor, y, label, color, fontSize, width, font);
+                    else canvas.DrawTextFitted(cursor, y, label, color, fontSize, width, font);
+                }
             }
             cursor += width;
         }
