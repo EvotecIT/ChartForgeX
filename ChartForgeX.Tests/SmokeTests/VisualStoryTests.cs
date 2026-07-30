@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 
 namespace ChartForgeX.Tests;
@@ -44,8 +46,10 @@ internal static partial class SmokeTests {
                svg.Contains("data-cfx-scene=\"result\"", StringComparison.Ordinal) &&
                svg.Contains("@media (prefers-reduced-motion:reduce)", StringComparison.Ordinal) &&
                svg.Contains("cfx-story-scene-last", StringComparison.Ordinal) &&
-               svg.Contains("50%{opacity:1}51.2%{opacity:0}", StringComparison.Ordinal) &&
+               svg.Contains("-motion-scene-0", StringComparison.Ordinal) &&
+               svg.Contains("0%{opacity:1}50%{opacity:1}51.2%{opacity:0}", StringComparison.Ordinal) &&
                svg.Contains("50%{opacity:0}51.2%{opacity:1}", StringComparison.Ordinal) &&
+               !svg.Contains("cfx-story-seed-", StringComparison.Ordinal) &&
                svg.Contains("data-cfx-role=\"story-vector-media\"", StringComparison.Ordinal) &&
                svg.Contains("data:image/svg+xml;base64,", StringComparison.Ordinal) &&
                !svg.Contains("<script", StringComparison.OrdinalIgnoreCase),
@@ -59,6 +63,23 @@ internal static partial class SmokeTests {
             "Visual stories should export animated GIF.");
         Assert(apng.Length > 128 && apng[0] == 137 && apng[1] == 80 && apng[2] == 78 && apng[3] == 71,
             "Visual stories should export animated PNG.");
+
+        var longTransition = VisualStoryAnimationOptions.Create()
+            .WithFramesPerSecond(2)
+            .WithTransition(1)
+            .WithEndHold(0)
+            .WithLoop(false)
+            .WithMaximumFrames(4);
+        var firstAnimatedFrame = GifReader.Decode(story.ToGif(longTransition));
+        var noTransition = VisualStoryAnimationOptions.Create()
+            .WithFramesPerSecond(2)
+            .WithTransition(0)
+            .WithEndHold(0)
+            .WithLoop(false)
+            .WithMaximumFrames(4);
+        var expectedFirstFrame = GifReader.Decode(story.ToGif(noTransition));
+        Assert(firstAnimatedFrame.Pixels.SequenceEqual(expectedFirstFrame.Pixels),
+            "A transition longer than its scene should still begin with the complete current scene.");
     }
 
     private static void VisualStoriesRejectUnrevealedOutcomesAndInvalidSyntaxSpans() {
@@ -86,5 +107,34 @@ internal static partial class SmokeTests {
         var unicodePng = unicodeStory.ToPng();
         Assert(unicodePng.Length > 8 && unicodePng[0] == 137,
             "Source clipping should preserve complete Unicode text elements.");
+
+        var crowded = VisualStory.Create("Crowded stack").WithSize(480, 320);
+        var crowdedScene = crowded.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Stacked);
+        for (var index = 0; index < 4; index++) {
+            crowdedScene.Panel(
+                "panel-" + index,
+                new VisualStoryTextSurface("value"),
+                "Panel " + index);
+        }
+        crowded.Outcome("visible", "A result is visible", "panel-3");
+        AssertThrows<InvalidOperationException>(
+            () => crowded.ToPng(),
+            "Stories should reject stacked layouts that cannot provide a positive panel content area.");
+
+        var lightStory = VisualStory.Create("Light documentation")
+            .WithSize(480, 320)
+            .WithTheme(VisualStoryTheme.Light());
+        lightStory.Scene("result", "Completed", 0.25)
+            .Panel("result", new VisualStoryTextSurface("ready", emphasized: true));
+        lightStory.Outcome("ready", "The result is visible", "result");
+        var lightHtml = lightStory.ToHtmlPage();
+        Assert(lightHtml.Contains("color-scheme:light", StringComparison.Ordinal) &&
+               lightHtml.Contains("background:#E9EEF5", StringComparison.Ordinal) &&
+               lightHtml.Contains("linear-gradient(180deg", StringComparison.Ordinal) &&
+               lightHtml.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal) &&
+               lightHtml.Contains("overflow:visible", StringComparison.Ordinal) &&
+               lightHtml.Contains("@media print", StringComparison.Ordinal) &&
+               lightHtml.Contains("width:min(480px,100%)", StringComparison.Ordinal),
+            "Complete visual-story pages should honor light themes and the configured story width.");
     }
 }

@@ -50,8 +50,9 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var current = scenes[sceneIndex];
         RgbaImage logical;
         var remaining = sceneStart + story.Scenes[sceneIndex].DurationSeconds - elapsed;
-        if (sceneIndex + 1 < scenes.Count && options.TransitionSeconds > 0 && remaining < options.TransitionSeconds) {
-            var progress = Math.Max(0, Math.Min(1, 1 - remaining / options.TransitionSeconds));
+        var transitionSeconds = Math.Min(options.TransitionSeconds, story.Scenes[sceneIndex].DurationSeconds);
+        if (sceneIndex + 1 < scenes.Count && transitionSeconds > 0 && remaining < transitionSeconds) {
+            var progress = Math.Max(0, Math.Min(1, 1 - remaining / transitionSeconds));
             var blend = ImageComposition.Create(story.Width, story.Height, story.Theme.Background);
             blend.DrawImage(current, 0, 0, story.Width, story.Height, VisualCanvasImageFit.Stretch);
             blend.DrawImage(scenes[sceneIndex + 1], 0, 0, story.Width, story.Height, VisualCanvasImageFit.Stretch, progress);

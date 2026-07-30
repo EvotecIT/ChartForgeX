@@ -180,7 +180,13 @@ public sealed class VisualStory {
         if (_scenes.Count == 0) throw new InvalidOperationException("Visual stories require at least one scene.");
         if (_outcomes.Count == 0) throw new InvalidOperationException("Visual stories must declare at least one completed outcome.");
         if (string.IsNullOrWhiteSpace(Theme.FontFamily) || string.IsNullOrWhiteSpace(Theme.MonospaceFontFamily)) throw new InvalidOperationException("Visual-story themes require font families.");
-        foreach (var scene in _scenes) scene.Validate();
+        foreach (var scene in _scenes) {
+            scene.Validate();
+            var bounds = VisualStoryLayout.Panels(this, scene);
+            for (var index = 0; index < scene.Panels.Count; index++) {
+                VisualStoryLayout.PanelContent(scene.Panels[index], bounds[index]);
+            }
+        }
         var completed = _scenes[_scenes.Count - 1];
         foreach (var outcome in _outcomes) {
             if (!completed.Panels.Any(panel => string.Equals(panel.Id, outcome.PanelId, StringComparison.Ordinal))) {

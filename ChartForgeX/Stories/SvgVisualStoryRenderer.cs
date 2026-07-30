@@ -78,19 +78,14 @@ public sealed class SvgVisualStoryRenderer {
         for (var index = 0; index < scene.Panels.Count; index++) {
             var panel = scene.Panels[index];
             if (!(panel.Surface is VisualStoryMediaSurface media) || media.Svg.Length == 0) continue;
-            var panelBounds = bounds[index];
-            var contentY = panelBounds.Y + VisualStoryLayout.PanelPadding;
-            if (panel.Title.Length > 0) contentY += VisualStoryLayout.PanelTitleHeight;
-            var x = panelBounds.X + VisualStoryLayout.PanelPadding;
-            var width = panelBounds.Width - VisualStoryLayout.PanelPadding * 2;
-            var height = panelBounds.Y + panelBounds.Height - VisualStoryLayout.PanelPadding - contentY;
+            var content = VisualStoryLayout.PanelContent(panel, bounds[index]);
             writer.StartElement("image")
                 .Attribute("data-cfx-role", "story-vector-media")
                 .Attribute("data-cfx-panel", panel.Id)
-                .Attribute("x", x.ToString("0.###", CultureInfo.InvariantCulture))
-                .Attribute("y", contentY.ToString("0.###", CultureInfo.InvariantCulture))
-                .Attribute("width", width.ToString("0.###", CultureInfo.InvariantCulture))
-                .Attribute("height", height.ToString("0.###", CultureInfo.InvariantCulture))
+                .Attribute("x", content.X.ToString("0.###", CultureInfo.InvariantCulture))
+                .Attribute("y", content.Y.ToString("0.###", CultureInfo.InvariantCulture))
+                .Attribute("width", content.Width.ToString("0.###", CultureInfo.InvariantCulture))
+                .Attribute("height", content.Height.ToString("0.###", CultureInfo.InvariantCulture))
                 .Attribute("preserveAspectRatio", "xMidYMid meet")
                 .Attribute(
                     "href",
@@ -113,11 +108,15 @@ public sealed class SvgVisualStoryRenderer {
                 elapsed += scene.DurationSeconds;
                 var end = elapsed / total * 100;
                 var fadePercent = Math.Min(1.2, (end - start) * 0.12);
-                var name = id + "-scene-" + index.ToString(CultureInfo.InvariantCulture);
-                css.Append("@keyframes ").Append(name).Append('{')
-                    .Append("0%,").Append(Percent(start)).Append("{opacity:0}")
-                    .Append(Percent(Math.Min(end, start + fadePercent))).Append("{opacity:1}")
-                    .Append(Percent(end)).Append("{opacity:1}");
+                var name = id + "-motion-scene-" + index.ToString(CultureInfo.InvariantCulture);
+                css.Append("@keyframes ").Append(name).Append('{');
+                if (index == 0) {
+                    css.Append("0%{opacity:1}");
+                } else {
+                    css.Append("0%,").Append(Percent(start)).Append("{opacity:0}")
+                        .Append(Percent(Math.Min(end, start + fadePercent))).Append("{opacity:1}");
+                }
+                css.Append(Percent(end)).Append("{opacity:1}");
                 if (index != story.Scenes.Count - 1) {
                     css.Append(Percent(Math.Min(100, end + fadePercent))).Append("{opacity:0}");
                 }

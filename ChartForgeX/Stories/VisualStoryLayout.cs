@@ -52,4 +52,20 @@ internal static class VisualStoryLayout {
         }
         return output;
     }
+
+    public static VisualStoryBounds PanelContent(VisualStoryPanel panel, VisualStoryBounds bounds) {
+        var contentY = bounds.Y + PanelPadding;
+        if (panel.Title.Length > 0) contentY += PanelTitleHeight;
+        var content = new VisualStoryBounds(
+            bounds.X + PanelPadding,
+            contentY,
+            bounds.Width - PanelPadding * 2,
+            bounds.Y + bounds.Height - PanelPadding - contentY);
+        if (content.Width <= 0 || content.Height <= 0) {
+            throw new InvalidOperationException(
+                "Visual-story panel '" + panel.Id +
+                "' has no drawable content area. Increase the story size, reduce the panel count, or use a different scene layout.");
+        }
+        return content;
+    }
 }

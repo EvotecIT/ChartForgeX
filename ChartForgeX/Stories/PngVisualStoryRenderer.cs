@@ -73,13 +73,8 @@ public sealed class PngVisualStoryRenderer {
         var contentY = bounds.Y + VisualStoryLayout.PanelPadding;
         if (panel.Title.Length > 0) {
             canvas.DrawText(bounds.X + VisualStoryLayout.PanelPadding, contentY, bounds.Width - VisualStoryLayout.PanelPadding * 2, panel.Title, 13, theme.Muted, emphasized: true);
-            contentY += VisualStoryLayout.PanelTitleHeight;
         }
-        var content = new VisualStoryBounds(
-            bounds.X + VisualStoryLayout.PanelPadding,
-            contentY,
-            bounds.Width - VisualStoryLayout.PanelPadding * 2,
-            bounds.Y + bounds.Height - VisualStoryLayout.PanelPadding - contentY);
+        var content = VisualStoryLayout.PanelContent(panel, bounds);
         DrawSurface(canvas, story, panel.Surface, content);
     }
 
