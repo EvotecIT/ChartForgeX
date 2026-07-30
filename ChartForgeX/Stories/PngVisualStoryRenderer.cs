@@ -32,7 +32,7 @@ public sealed class PngVisualStoryRenderer {
 
         var bounds = VisualStoryLayout.Panels(story, scene);
         for (var index = 0; index < scene.Panels.Count; index++) {
-            DrawPanel(canvas, story, scene.Panels[index], bounds[index]);
+            DrawPanel(canvas, story, scene.Panels[index], bounds[index], outputScale);
         }
         return canvas.ToImage();
     }
@@ -87,7 +87,7 @@ public sealed class PngVisualStoryRenderer {
         canvas.DrawText(x, 28, width, label, style, TextWrapMode.NoWrap, 1, TextTrimming.None);
     }
 
-    private static void DrawPanel(ImageComposition canvas, VisualStory story, VisualStoryPanel panel, VisualStoryBounds bounds) {
+    private static void DrawPanel(ImageComposition canvas, VisualStory story, VisualStoryPanel panel, VisualStoryBounds bounds, int outputScale) {
         var theme = story.Theme;
         canvas.FillRoundedRectangle(bounds.X + 4, bounds.Y + 8, bounds.Width, bounds.Height, 18, ChartColor.Black.WithOpacity(0.18));
         canvas.FillRoundedRectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height, 18, theme.Panel);
@@ -106,16 +106,16 @@ public sealed class PngVisualStoryRenderer {
                 emphasized: true);
         }
         var content = VisualStoryLayout.PanelContent(panel, bounds);
-        DrawSurface(canvas, story, panel.Surface, content);
+        DrawSurface(canvas, story, panel.Surface, content, outputScale);
     }
 
-    private static void DrawSurface(ImageComposition canvas, VisualStory story, VisualStorySurface surface, VisualStoryBounds bounds) {
+    private static void DrawSurface(ImageComposition canvas, VisualStory story, VisualStorySurface surface, VisualStoryBounds bounds, int outputScale) {
         switch (surface.Kind) {
             case VisualStorySurfaceKind.Source:
                 DrawSource(canvas, story, (VisualStorySourceSurface)surface, bounds);
                 break;
             case VisualStorySurfaceKind.Terminal:
-                DrawTerminal(canvas, (VisualStoryTerminalSurface)surface, bounds);
+                DrawTerminal(canvas, (VisualStoryTerminalSurface)surface, bounds, outputScale);
                 break;
             case VisualStorySurfaceKind.Media:
                 canvas.DrawImage(((VisualStoryMediaSurface)surface).Raster, bounds.X, bounds.Y, bounds.Width, bounds.Height, VisualCanvasImageFit.Contain);
@@ -128,8 +128,9 @@ public sealed class PngVisualStoryRenderer {
         }
     }
 
-    private static void DrawTerminal(ImageComposition canvas, VisualStoryTerminalSurface surface, VisualStoryBounds bounds) {
-        var png = new Terminal.PngTerminalStoryRenderer().Render(surface.Terminal);
+    private static void DrawTerminal(ImageComposition canvas, VisualStoryTerminalSurface surface, VisualStoryBounds bounds, int outputScale) {
+        var terminalScale = Math.Max(outputScale, surface.Terminal.PngOutputScale);
+        var png = new Terminal.PngTerminalStoryRenderer().Render(surface.Terminal, terminalScale);
         canvas.DrawImageBytes(png, bounds.X, bounds.Y, bounds.Width, bounds.Height, VisualCanvasImageFit.Contain);
     }
 

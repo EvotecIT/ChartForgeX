@@ -13,24 +13,30 @@ public sealed class PngTerminalStoryRenderer {
     /// <summary>Renders a terminal story to PNG bytes.</summary>
     public byte[] Render(TerminalStory story) {
         if (story == null) throw new ArgumentNullException(nameof(story));
+        return Render(story, story.PngOutputScale);
+    }
+
+    internal byte[] Render(TerminalStory story, int outputScale) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
         var theme = story.Theme;
         var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
         var tableFont = ResolveTableFont(theme, outlineFont);
-        return Render(story, outlineFont, tableFont);
+        return Render(story, outlineFont, tableFont, outputScale);
     }
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var tableFont = ResolveTableFont(story.Theme, outlineFont);
-        return Render(story, outlineFont, tableFont);
+        return Render(story, outlineFont, tableFont, story.PngOutputScale);
     }
 
-    private static byte[] Render(TerminalStory story, TrueTypeFont? outlineFont, TrueTypeFont? tableFont) {
+    private static byte[] Render(TerminalStory story, TrueTypeFont? outlineFont, TrueTypeFont? tableFont, int outputScale) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
         string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
         var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
-        var image = RenderImage(story, layout, outlineFont, tableFont, story.PngOutputScale, null);
+        var image = RenderImage(story, layout, outlineFont, tableFont, outputScale, null);
         return PngWriter.WriteRgba(image.Width, image.Height, image.Pixels);
     }
 

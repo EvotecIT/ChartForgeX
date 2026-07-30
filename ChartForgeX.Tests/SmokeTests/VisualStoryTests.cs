@@ -4,6 +4,7 @@ using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
+using ChartForgeX.Terminal;
 
 namespace ChartForgeX.Tests;
 
@@ -189,6 +190,21 @@ internal static partial class SmokeTests {
             () => skippedScene.ToGif(VisualStoryAnimationOptions.Create().WithFramesPerSecond(2)),
             "Raster visual stories should reject a frame interval that can skip valid scenes.");
 
+        var nearlyHiddenScene = VisualStory.Create("Every scene visible").WithSize(480, 320);
+        nearlyHiddenScene.Scene("first", "First", 0.251)
+            .Panel("result", new VisualStoryTextSurface("first"));
+        nearlyHiddenScene.Scene("middle", "Middle", 0.25)
+            .Panel("result", new VisualStoryTextSurface("middle"));
+        nearlyHiddenScene.Scene("last", "Last", 0.25)
+            .Panel("result", new VisualStoryTextSurface("last"));
+        nearlyHiddenScene.Outcome("ready", "Ready", "result");
+        AssertThrows<InvalidOperationException>(
+            () => nearlyHiddenScene.ToGif(
+                VisualStoryAnimationOptions.Create()
+                    .WithFramesPerSecond(2)
+                    .WithEndHold(0)),
+            "Raster visual stories should reject scenes sampled only at effectively invisible transition opacity.");
+
         var endpointScenes = VisualStory.Create("Endpoint scenes").WithSize(480, 320);
         endpointScenes.Scene("first", "First", 0.25)
             .Panel("first-result", new VisualStoryTextSurface("first"));
@@ -312,5 +328,40 @@ internal static partial class SmokeTests {
             "Animated visual-story output scale should multiply the rendered frame dimensions.");
         Assert(!highDensity.Pixels.SequenceEqual(stretched.Pixels),
             "Animated visual-story output scale should render at the requested density instead of stretching one-times frames.");
+
+        var terminal = TerminalStory.Create()
+            .WithWidth(480)
+            .WithPngOutputScale(1)
+            .WithTiming(0, 200, 0)
+            .WithFinalPrompt(false)
+            .Command("Get-Process | Sort-Object CPU", 0.05)
+            .Output("ready", TerminalTextTone.Success);
+        var terminalRenderer = new PngTerminalStoryRenderer();
+        var terminalNormal = PngReader.Decode(terminalRenderer.Render(terminal, 1));
+        var terminalHighDensity = PngReader.Decode(terminalRenderer.Render(terminal, 4));
+        var stretchedTerminal = ImageComposition.Create(
+                terminalHighDensity.Width,
+                terminalHighDensity.Height,
+                ChartColor.Transparent)
+            .DrawImage(
+                terminalNormal,
+                0,
+                0,
+                terminalHighDensity.Width,
+                terminalHighDensity.Height,
+                VisualCanvasImageFit.Stretch)
+            .ToImage();
+        Assert(!terminalHighDensity.Pixels.SequenceEqual(stretchedTerminal.Pixels),
+            "Terminal panels should support native story output density instead of stretched terminal text.");
+
+        var terminalStory = VisualStory.Create("Terminal density")
+            .WithSize(480, 320);
+        terminalStory.Scene("result", "Completed", 0.25)
+            .Panel("terminal", new VisualStoryTerminalSurface(terminal, "A completed terminal command"));
+        terminalStory.Outcome("visible", "The terminal is visible", "terminal");
+        var terminalStoryFrame = GifReader.Decode(terminalStory.ToGif(highDensityOptions.WithOutputScale(4)));
+        Assert(terminalStoryFrame.Width == terminalStory.Width * 4 &&
+               terminalStoryFrame.Height == terminalStory.Height * 4,
+            "Animated visual stories should propagate their requested density through terminal panels.");
     }
 }
