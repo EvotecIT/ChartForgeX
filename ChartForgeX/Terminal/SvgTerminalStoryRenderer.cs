@@ -81,10 +81,10 @@ public sealed class SvgTerminalStoryRenderer {
 
     private static void WriteLine(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout, string id, TerminalRenderedLine line, int index, double y) {
         var isFinalPrompt = story.ShowFinalPrompt && index == layout.Lines.Count - 1;
-        var cssClass = line.IsCommand && !isFinalPrompt ? "cfx-terminal-line cfx-terminal-type" : "cfx-terminal-line cfx-terminal-appear";
+        var isTypedCommand = line.IsCommand && !isFinalPrompt;
+        var cssClass = isTypedCommand ? "cfx-terminal-line cfx-terminal-type" : "cfx-terminal-line cfx-terminal-appear";
         var style = "--cfx-start:" + line.StartSeconds.ToString("0.###", CultureInfo.InvariantCulture) +
-                    "s;--cfx-duration:" + Math.Max(0.01, line.DurationSeconds).ToString("0.###", CultureInfo.InvariantCulture) +
-                    "s;--cfx-steps:" + Math.Max(1, TerminalStoryLayout.TextElementCount(line.Text)).ToString(CultureInfo.InvariantCulture);
+                    "s;--cfx-duration:" + Math.Max(0.01, line.DurationSeconds).ToString("0.###", CultureInfo.InvariantCulture) + "s";
         writer.StartElement("text")
             .Attribute("data-cfx-role", line.IsCommand ? "terminal-command" : "terminal-output")
             .Attribute("class", cssClass)
@@ -96,7 +96,9 @@ public sealed class SvgTerminalStoryRenderer {
             .Attribute("style", style)
             .Attribute("xml:space", "preserve")
             .EndStartElement();
-        if (line.IsCommand) {
+        if (isTypedCommand) {
+            WriteTypedCommand(writer, story, line);
+        } else if (line.IsCommand) {
             var prompt = line.Text.Substring(0, line.PromptLength);
             var command = line.Text.Substring(line.PromptLength);
             writer.StartElement("tspan").Attribute("fill", story.Theme.Accent.ToCss()).Attribute("font-weight", "650").Text(prompt).EndElement();
@@ -121,16 +123,37 @@ public sealed class SvgTerminalStoryRenderer {
             .EndEmptyElement().Line();
     }
 
+    private static void WriteTypedCommand(SvgMarkupWriter writer, TerminalStory story, TerminalRenderedLine line) {
+        var elementCount = Math.Max(1, TerminalStoryLayout.TextElementCount(line.Text));
+        var elementIndex = 0;
+        var characterOffset = 0;
+        foreach (var element in TerminalTextWidth.Elements(line.Text)) {
+            var isPrompt = characterOffset < line.PromptLength;
+            var revealSeconds = line.StartSeconds + line.DurationSeconds * (elementIndex + 1) / elementCount;
+            writer.StartElement("tspan")
+                .Attribute("class", "cfx-terminal-glyph")
+                .Attribute("fill", isPrompt ? story.Theme.Accent.ToCss() : story.Theme.Text.ToCss());
+            if (isPrompt) {
+                writer.Attribute("font-weight", "650");
+            }
+            writer.Attribute("style", "--cfx-glyph-start:" + revealSeconds.ToString("0.######", CultureInfo.InvariantCulture) + "s")
+                .Text(element)
+                .EndElement();
+            characterOffset += element.Length;
+            elementIndex++;
+        }
+    }
+
     private static string BuildCss(string id) {
         var css = new StringBuilder();
         css.Append("@keyframes ").Append(id).Append("-motion-appear{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}");
-        css.Append("@keyframes ").Append(id).Append("-motion-type{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}");
+        css.Append("@keyframes ").Append(id).Append("-motion-glyph{0%{opacity:0}100%{opacity:1}}");
         css.Append("@keyframes ").Append(id).Append("-motion-cursor{0%{opacity:0}.01%,46%{opacity:1}47%,100%{opacity:0}}");
         css.Append("#").Append(id).Append(" .cfx-terminal-appear{animation:").Append(id).Append("-motion-appear var(--cfx-duration) ease-out var(--cfx-start) both}");
-        css.Append("#").Append(id).Append(" .cfx-terminal-type{animation:").Append(id).Append("-motion-type var(--cfx-duration) steps(var(--cfx-steps),end) var(--cfx-start) both}");
+        css.Append("#").Append(id).Append(" .cfx-terminal-glyph{animation:").Append(id).Append("-motion-glyph 0s linear var(--cfx-glyph-start) both}");
         css.Append("#").Append(id).Append(" .cfx-terminal-cursor{animation:").Append(id).Append("-motion-cursor 1s steps(1,end) var(--cfx-start) infinite both}");
-        css.Append("@media (prefers-reduced-motion:reduce){#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
-        css.Append("@media print{#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
+        css.Append("@media (prefers-reduced-motion:reduce){#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-glyph,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
+        css.Append("@media print{#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-glyph,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
         return css.ToString();
     }
 

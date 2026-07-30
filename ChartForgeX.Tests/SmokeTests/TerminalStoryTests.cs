@@ -31,12 +31,15 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"terminal-command\"", StringComparison.Ordinal) && svg.Contains("PS C:\\OpenSource&gt; ", StringComparison.Ordinal), "PowerShell terminal stories should render authentic prompts and typed commands.");
         Assert(svg.Contains("OfficeIMO", StringComparison.Ordinal) && svg.Contains("0 critical findings", StringComparison.Ordinal), "Terminal stories should retain formatted table and semantic output content.");
         Assert(svg.Contains("Terminal transcript:", StringComparison.Ordinal) && svg.Contains("Get-EvotecPortfolio -Active", StringComparison.Ordinal), "Accessible terminal descriptions should expose the completed transcript.");
-        Assert(svg.Contains("@keyframes " + id + "-motion-type", StringComparison.Ordinal) && svg.Contains("animation:" + id + "-motion-type ", StringComparison.Ordinal), "Terminal typing keyframes should use the final rendered identity.");
-        var firstCommandElements = TerminalStoryLayout.TextElementCount(TerminalStoryLayout.Build(story).Lines.First(line => line.IsCommand).Text);
-        Assert(svg.Contains("--cfx-steps:" + firstCommandElements.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) &&
-               svg.Contains("steps(var(--cfx-steps),end)", StringComparison.Ordinal) &&
+        Assert(svg.Contains("@keyframes " + id + "-motion-glyph", StringComparison.Ordinal) && svg.Contains("animation:" + id + "-motion-glyph ", StringComparison.Ordinal), "Terminal typing keyframes should use the final rendered identity.");
+        var renderedLayout = TerminalStoryLayout.Build(story);
+        var typedElements = renderedLayout.Lines
+            .Where((line, index) => line.IsCommand && (!story.ShowFinalPrompt || index < renderedLayout.Lines.Count - 1))
+            .Sum(line => TerminalStoryLayout.TextElementCount(line.Text));
+        Assert(CountOccurrences(svg, "class=\"cfx-terminal-glyph\"") == typedElements &&
+               svg.Contains("--cfx-glyph-start:", StringComparison.Ordinal) &&
                !svg.Contains("steps(24,end)", StringComparison.Ordinal),
-            "SVG terminal typing should step through the actual grapheme count used by animated raster output.");
+            "SVG terminal typing should reveal complete graphemes at the same boundaries used by animated raster output.");
         Assert(!svg.Contains(".cfx-terminal-line{opacity:0}", StringComparison.Ordinal) &&
                !svg.Contains(".cfx-terminal-type{opacity:1;clip-path:", StringComparison.Ordinal) &&
                !svg.Contains(".cfx-terminal-cursor{opacity:0", StringComparison.Ordinal),
@@ -99,6 +102,17 @@ internal static partial class SmokeTests {
                string.Concat(wideLayout.Lines.Select(line => line.Text)) == wideTranscript &&
                wideLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= 28),
             "Full-width and emoji transcript content should wrap by rendered display columns without clipping or data loss.");
+
+        var mixedWidthStory = TerminalStory.Create()
+            .WithDialect(TerminalDialect.Custom, "> ")
+            .WithFinalPrompt(false)
+            .Command("A界", 3);
+        var mixedWidthSvg = mixedWidthStory.ToSvg();
+        Assert(mixedWidthSvg.Contains("class=\"cfx-terminal-glyph\" fill=\"#E6EDF7\" style=\"--cfx-glyph-start:", StringComparison.Ordinal) &&
+               mixedWidthSvg.Contains(">A</tspan>", StringComparison.Ordinal) &&
+               mixedWidthSvg.Contains(">界</tspan>", StringComparison.Ordinal) &&
+               !mixedWidthSvg.Contains("clip-path:inset", StringComparison.Ordinal),
+            "Mixed-width SVG commands should reveal each complete grapheme instead of clipping through wide glyphs.");
 
         var longCommand = "Invoke-LongRunningAudit -" + new string('x', 96);
         var longCommandLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Command(longCommand));
@@ -166,6 +180,8 @@ internal static partial class SmokeTests {
         Assert(TerminalTextSanitizer.Transcript(c1Controls) == "beforeredmiddleafter", "Captured transcripts should consume complete eight-bit C1 ANSI sequences.");
         var intermediateEscapes = "before\u001B(Bmiddle\u001B#8after";
         Assert(TerminalTextSanitizer.Transcript(intermediateEscapes) == "beforemiddleafter", "Captured transcripts should consume complete ESC sequences with intermediate bytes.");
+        Assert(TerminalTextSanitizer.Transcript("one\u2028two\u2029three") == "one\ntwo\nthree",
+            "Captured transcripts should normalize Unicode line and paragraph separators to layout line breaks.");
 
         var fontlessText = TerminalPngTextPreserver.Preserve("demo » 😀", null);
         Assert(fontlessText.Contains("[U+00BB]", StringComparison.Ordinal) &&
@@ -291,7 +307,7 @@ internal static partial class SmokeTests {
         var secondId = SvgDocument.Parse(secondSvg).Root.GetAttribute("id")!;
 
         Assert(!string.Equals(firstId, secondId, StringComparison.Ordinal), "Different terminal transcripts should produce different SVG identities.");
-        Assert(firstSvg.Contains("@keyframes " + firstId + "-motion-type", StringComparison.Ordinal) && secondSvg.Contains("@keyframes " + secondId + "-motion-type", StringComparison.Ordinal), "Each transcript should bind keyframes to its final identity.");
+        Assert(firstSvg.Contains("@keyframes " + firstId + "-motion-glyph", StringComparison.Ordinal) && secondSvg.Contains("@keyframes " + secondId + "-motion-glyph", StringComparison.Ordinal), "Each transcript should bind keyframes to its final identity.");
         Assert(!firstSvg.Contains("cfx-terminal-seed-", StringComparison.Ordinal) && !secondSvg.Contains("cfx-terminal-seed-", StringComparison.Ordinal), "Terminal SVG output should not retain provisional identities.");
     }
 
@@ -316,6 +332,8 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => TerminalStory.Create().ToSvg(), "Empty terminal stories should be rejected.");
         AssertThrows<ArgumentException>(() => TerminalStory.Create().WithDialect(TerminalDialect.Custom), "Custom dialects should require an explicit prompt.");
         AssertThrows<ArgumentException>(() => TerminalStory.Create().Command("one\ntwo"), "Commands should stay single-line typed events.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().WithTitle("one\u2028two"), "Titles should reject Unicode line separators.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().Command("one\u2029two"), "Commands should reject Unicode paragraph separators.");
         AssertThrows<ArgumentException>(() => TerminalTable.Create().WithColumns("One", "Two").AddRow("one"), "Terminal table rows should match their column count.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Progress("bad", 1.1), "Terminal progress values should stay within the unit interval.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithTiming(0, 1, 0), "Typing speed should remain within usable presentation bounds.");

@@ -103,8 +103,10 @@ public sealed class VisualMotionCue {
 
     /// <summary>Sets the cue timing.</summary>
     public VisualMotionCue WithTiming(double delaySeconds, double durationSeconds) {
-        DelaySeconds = delaySeconds;
-        DurationSeconds = durationSeconds;
+        var validatedDelay = VisualMotionGuards.NonNegativeFinite(delaySeconds, nameof(delaySeconds));
+        var validatedDuration = VisualMotionGuards.PositiveFinite(durationSeconds, nameof(durationSeconds));
+        _delaySeconds = validatedDelay;
+        _durationSeconds = validatedDuration;
         return this;
     }
 

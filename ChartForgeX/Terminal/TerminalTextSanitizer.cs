@@ -40,6 +40,12 @@ internal static class TerminalTextSanitizer {
                 continue;
             }
 
+            if (character == '\u2028' || character == '\u2029') {
+                output.Append('\n');
+                index++;
+                continue;
+            }
+
             if (character == '\r' || character == '\n' ||
                 character >= ' ' && character <= '\uD7FF' && (character < '\u007F' || character > '\u009F') ||
                 character >= '\uE000' && character < '\uFDD0' ||
