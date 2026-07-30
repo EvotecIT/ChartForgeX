@@ -107,20 +107,20 @@ public sealed class SvgTerminalStoryRenderer {
             writer.Text(line.Text);
         }
 
+        if (isFinalPrompt) {
+            writer.StartElement("tspan")
+                .Attribute("data-cfx-role", "terminal-cursor")
+                .Attribute("class", "cfx-terminal-cursor")
+                .Attribute("dx", 2)
+                .Attribute("fill", story.Theme.Cursor.ToCss())
+                .Attribute("font-family", "monospace")
+                .Attribute("font-weight", 400)
+                .Attribute("style", "--cfx-start:" + line.StartSeconds.ToString("0.###", CultureInfo.InvariantCulture) + "s")
+                .Text("▌")
+                .EndElement();
+        }
+
         writer.EndElement().Line();
-        if (!isFinalPrompt) return;
-        var cursorX = layout.ContentX + TerminalStoryLayout.DisplayWidth(line.Text) * story.FontSize * 0.61 + 2;
-        writer.StartElement("rect")
-            .Attribute("data-cfx-role", "terminal-cursor")
-            .Attribute("class", "cfx-terminal-cursor")
-            .Attribute("x", cursorX)
-            .Attribute("y", y - story.FontSize + 2)
-            .Attribute("width", Math.Max(7, story.FontSize * 0.55))
-            .Attribute("height", story.FontSize + 2)
-            .Attribute("rx", 1)
-            .Attribute("fill", story.Theme.Cursor.ToCss())
-            .Attribute("style", "--cfx-start:" + line.StartSeconds.ToString("0.###", CultureInfo.InvariantCulture) + "s")
-            .EndEmptyElement().Line();
     }
 
     private static void WriteTypedCommand(SvgMarkupWriter writer, TerminalStory story, TerminalRenderedLine line) {

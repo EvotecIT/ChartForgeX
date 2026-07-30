@@ -127,16 +127,18 @@ internal static partial class SmokeTests {
         var proportionalTheme = TerminalTheme.WindowsTerminal();
         proportionalTheme.FontFamily = "Arial, sans-serif";
         var proportionalText = new string('W', 20);
+        var proportionalStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithTheme(proportionalTheme)
+            .WithFinalPrompt(false)
+            .Output(proportionalText);
         var proportionalLayout = TerminalStoryLayout.Build(
-            TerminalStory.Create()
-                .WithWidth(480)
-                .WithTypography(24, 30)
-                .WithTheme(proportionalTheme)
-                .WithFinalPrompt(false)
-                .Output(proportionalText));
-        Assert(proportionalLayout.Lines.Count > 1 &&
+            proportionalStory);
+        Assert(Math.Abs(proportionalLayout.ColumnWidth - proportionalStory.FontSize) < 0.001 &&
+               proportionalLayout.Lines.Count > 1 &&
                string.Concat(proportionalLayout.Lines.Select(line => line.Text)) == proportionalText,
-            "Terminal layout should reserve measured glyph width for proportional font families instead of clipping wide text.");
+            "SVG terminal layout should use a deterministic conservative width for proportional fonts instead of host font discovery.");
 
         var mixedWidthStory = TerminalStory.Create()
             .WithDialect(TerminalDialect.Custom, "> ")
@@ -341,10 +343,24 @@ internal static partial class SmokeTests {
             .WithDialect(TerminalDialect.Custom, "界 ")
             .Output("ready");
         var widePromptSvg = SvgDocument.Parse(widePromptStory.ToSvg());
-        var widePromptCursor = widePromptSvg.Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "terminal-cursor");
-        var cursorX = double.Parse(widePromptCursor.GetAttribute("x")!, CultureInfo.InvariantCulture);
-        var expectedCursorX = 28 + TerminalStoryLayout.DisplayWidth("界 ") * widePromptStory.FontSize * 0.61 + 2;
-        Assert(Math.Abs(cursorX - expectedCursorX) < 0.001, "SVG terminal cursors should follow display columns for full-width prompts.");
+        var widePromptCursor = widePromptSvg.Root.FindByTag("tspan").First(element => element.GetAttribute("data-cfx-role") == "terminal-cursor");
+        Assert(widePromptCursor.GetAttribute("dx") == "2" &&
+               widePromptCursor.GetAttribute("x") == null,
+            "SVG terminal cursors should flow directly after full-width prompts instead of using a fixed coordinate.");
+
+        var proportionalPromptTheme = TerminalTheme.WindowsTerminal();
+        proportionalPromptTheme.FontFamily = "Arial, sans-serif";
+        var proportionalPromptStory = TerminalStory.Create()
+            .WithDialect(TerminalDialect.Custom, "WWWW ")
+            .WithTheme(proportionalPromptTheme)
+            .Output("ready");
+        var proportionalPromptLayout = TerminalStoryLayout.Build(proportionalPromptStory);
+        var proportionalPromptSvg = SvgDocument.Parse(proportionalPromptStory.ToSvg());
+        var proportionalPromptCursor = proportionalPromptSvg.Root.FindByTag("tspan").First(element => element.GetAttribute("data-cfx-role") == "terminal-cursor");
+        Assert(Math.Abs(proportionalPromptLayout.ColumnWidth - proportionalPromptStory.FontSize) < 0.001 &&
+               proportionalPromptCursor.GetAttribute("dx") == "2" &&
+               proportionalPromptCursor.GetAttribute("x") == null,
+            "SVG terminal cursors should use browser text flow without coupling deterministic layout to an installed font.");
 
         var oversizedCapture = string.Join("\n", Enumerable.Repeat("captured", 121));
         AssertThrows<InvalidOperationException>(

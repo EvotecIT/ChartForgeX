@@ -15,29 +15,32 @@ internal sealed class TerminalStoryLayout {
     public double ContentX => HorizontalPadding;
     public double ContentTop => HeaderHeight + VerticalPadding;
     public double HeaderHeightValue => HeaderHeight;
+    public double ColumnWidth { get; }
     public double DurationSeconds { get; }
     public IReadOnlyList<TerminalRenderedLine> Lines { get; }
     public IReadOnlyList<string> TranscriptLines { get; }
 
-    private TerminalStoryLayout(int width, int height, double durationSeconds, IReadOnlyList<TerminalRenderedLine> lines, IReadOnlyList<string> transcriptLines) {
+    private TerminalStoryLayout(int width, int height, double columnWidth, double durationSeconds, IReadOnlyList<TerminalRenderedLine> lines, IReadOnlyList<string> transcriptLines) {
         Width = width;
         Height = height;
+        ColumnWidth = columnWidth;
         DurationSeconds = durationSeconds;
         Lines = lines;
         TranscriptLines = transcriptLines;
     }
 
     public static TerminalStoryLayout Build(TerminalStory story) =>
-        Build(story, null, ResolveFont(story));
+        Build(story, null, null);
 
     internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText) =>
-        Build(story, transformText, ResolveFont(story));
+        Build(story, transformText, null);
 
     internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText, TrueTypeFont? outlineFont) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         story.Validate();
         var transform = transformText ?? Identity;
-        var maxColumns = Math.Max(1, (int)Math.Floor((story.Width - HorizontalPadding * 2) / ColumnWidth(story, outlineFont)));
+        var columnWidth = MeasureColumnWidth(story, outlineFont);
+        var maxColumns = Math.Max(1, (int)Math.Floor((story.Width - HorizontalPadding * 2) / columnWidth));
         var lines = new List<TerminalRenderedLine>();
         var transcriptLines = new List<string>();
         var clock = story.InitialDelaySeconds;
@@ -103,7 +106,7 @@ internal sealed class TerminalStoryLayout {
 
         if (completion > 60) throw new InvalidOperationException("Terminal story animation must complete within 60 seconds.");
         var height = (int)Math.Ceiling(HeaderHeight + VerticalPadding * 2 + lines.Count * story.LineHeight);
-        return new TerminalStoryLayout(story.Width, Math.Max(180, height), completion, lines, transcriptLines);
+        return new TerminalStoryLayout(story.Width, Math.Max(180, height), columnWidth, completion, lines, transcriptLines);
     }
 
     private static IEnumerable<string> SplitLines(string value) {
@@ -197,12 +200,7 @@ internal sealed class TerminalStoryLayout {
 
     private static string Identity(string value) => value;
 
-    private static TrueTypeFont? ResolveFont(TerminalStory story) {
-        if (story == null) throw new ArgumentNullException(nameof(story));
-        return TrueTypeFont.TryLoadForFamily(story.Theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
-    }
-
-    private static double ColumnWidth(TerminalStory story, TrueTypeFont? outlineFont) {
+    private static double MeasureColumnWidth(TerminalStory story, TrueTypeFont? outlineFont) {
         var factor = TrueTypeFont.IsMonospaceFamily(story.Theme.FontFamily) ? 0.61 : 1.0;
         if (outlineFont != null) {
             factor = Math.Max(factor, outlineFont.Measure("W", 1));
