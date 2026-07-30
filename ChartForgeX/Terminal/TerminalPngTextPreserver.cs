@@ -27,6 +27,7 @@ internal static class TerminalPngTextPreserver {
                 }
                 var codePoint = ReadCodePoint(element, ref index);
                 if (!requiresShaping &&
+                    !TerminalTextWidth.IsZeroWidthScalar(codePoint) &&
                     codePoint != EscapeStart &&
                     codePoint != EscapeEnd &&
                     CanRender(codePoint, font)) {

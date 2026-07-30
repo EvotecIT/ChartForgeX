@@ -286,7 +286,24 @@ internal static class TerminalTextWidth {
     }
 
     internal static bool IsZeroWidthScalar(int codePoint) {
-        return codePoint == 0x200D || IsExtend(codePoint, UnicodeCategoryFor(codePoint));
+        return codePoint == 0x200D ||
+               IsExtend(codePoint, UnicodeCategoryFor(codePoint)) ||
+               IsDefaultIgnorableFormatScalar(codePoint);
+    }
+
+    private static bool IsDefaultIgnorableFormatScalar(int codePoint) {
+        return codePoint == 0x00AD ||
+               codePoint == 0x061C ||
+               codePoint == 0x180E ||
+               codePoint >= 0x200B && codePoint <= 0x200F ||
+               codePoint >= 0x202A && codePoint <= 0x202E ||
+               codePoint >= 0x2060 && codePoint <= 0x2064 ||
+               codePoint >= 0x2066 && codePoint <= 0x206F ||
+               codePoint == 0xFEFF ||
+               codePoint >= 0x1BCA0 && codePoint <= 0x1BCA3 ||
+               codePoint >= 0x1D173 && codePoint <= 0x1D17A ||
+               codePoint == 0xE0001 ||
+               codePoint >= 0xE0020 && codePoint <= 0xE007F;
     }
 
     private static bool IsRegionalIndicator(int codePoint) {

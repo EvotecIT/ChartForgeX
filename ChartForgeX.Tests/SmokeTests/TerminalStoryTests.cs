@@ -252,6 +252,19 @@ internal static partial class SmokeTests {
                fontlessDecomposedLayout.Lines.Count == 61 &&
                new PngTerminalStoryRenderer().Render(decomposedStory, null).Length > 8,
             "Preserved combining marks should retain their original zero-column contribution inside a grapheme.");
+        var formatControls = "\u00AD\u061C\u180E\u200C\u200E\u200F\u202A\u202E\u2060\u2066\u2069\uFEFF" +
+                             char.ConvertFromUtf32(0x1BCA0) +
+                             char.ConvertFromUtf32(0x1D173) +
+                             char.ConvertFromUtf32(0xE0001);
+        var preservedFormatControls = TerminalPngTextPreserver.Preserve(formatControls, null);
+        var outlinePreservedFormatControls = TerminalPngTextPreserver.Preserve(formatControls, TrueTypeFont.TryLoadDefault());
+        Assert(TerminalStoryLayout.DisplayWidth(formatControls) == 0 &&
+               TerminalStoryLayout.DisplayWidth(preservedFormatControls) == 0 &&
+               TerminalStoryLayout.DisplayWidth(outlinePreservedFormatControls) == 0 &&
+               TerminalPngTextPreserver.ClusterFallbackLabel(preservedFormatControls).Length == 0 &&
+               TerminalPngTextPreserver.ClusterFallbackLabel(outlinePreservedFormatControls).Length == 0 &&
+               TerminalStoryLayout.DisplayWidth("\u0600") == 1,
+            "Default-ignorable format controls should consume no columns or raster fallback labels without hiding visible prepended marks.");
         Assert(TerminalStoryLayout.DisplayWidth("©️") == 2 &&
                TerminalStoryLayout.DisplayWidth("❤️") == 2 &&
                TerminalStoryLayout.DisplayWidth("1️⃣") == 2,
