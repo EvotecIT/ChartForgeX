@@ -55,8 +55,14 @@ public sealed class VisualStorySourceSurface : VisualStorySurface {
 
     private static string AccessibleSourceText(StorySourceText source, string? caption) {
         if (source == null) throw new ArgumentNullException(nameof(source));
-        if (caption == null) return source.Text;
-        return RequireText(caption, nameof(caption)) + Environment.NewLine + source.Text;
+        var accessibleHeading = caption == null ? string.Empty : RequireText(caption, nameof(caption));
+        if (source.Language.Length > 0) {
+            if (accessibleHeading.Length > 0) accessibleHeading += Environment.NewLine;
+            accessibleHeading += "Language: " + source.Language;
+        }
+        return accessibleHeading.Length == 0
+            ? source.Text
+            : accessibleHeading + Environment.NewLine + source.Text;
     }
 }
 

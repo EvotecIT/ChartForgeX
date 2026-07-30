@@ -104,8 +104,11 @@ internal static partial class SmokeTests {
 
         var whitespaceSource = StorySourceText.Create("  indented source  ", "text");
         var whitespaceSurface = new VisualStorySourceSurface(whitespaceSource);
-        Assert(string.Equals(whitespaceSurface.AccessibleText, whitespaceSource.Text, StringComparison.Ordinal),
-            "Captionless source accessibility text should preserve leading and trailing whitespace.");
+        Assert(string.Equals(
+                whitespaceSurface.AccessibleText,
+                "Language: text" + Environment.NewLine + whitespaceSource.Text,
+                StringComparison.Ordinal),
+            "Captionless source accessibility text should declare its language and preserve exact source whitespace.");
 
         var normalizedIdentifiers = VisualStory.Create("Normalized identifiers").WithSize(480, 320);
         normalizedIdentifiers.Scene("result", "Completed")
@@ -183,6 +186,43 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => skippedScene.ToGif(VisualStoryAnimationOptions.Create().WithFramesPerSecond(2)),
             "Raster visual stories should reject a frame interval that can skip valid scenes.");
+
+        var endpointScenes = VisualStory.Create("Endpoint scenes").WithSize(480, 320);
+        endpointScenes.Scene("first", "First", 0.25)
+            .Panel("first-result", new VisualStoryTextSurface("first"));
+        endpointScenes.Scene("last", "Last", 0.25)
+            .Panel("last-result", new VisualStoryTextSurface("last"));
+        endpointScenes.Outcome("ready", "Ready", "last-result");
+        var endpointGif = endpointScenes.ToGif(
+            VisualStoryAnimationOptions.Create()
+                .WithFramesPerSecond(2)
+                .WithEndHold(0)
+                .WithMaximumFrames(2));
+        Assert(endpointGif.Length > 8,
+            "Raster visual stories should allow short first and last scenes sampled at timeline endpoints.");
+
+        var singleShortScene = VisualStory.Create("One short scene").WithSize(480, 320);
+        singleShortScene.Scene("only", "Only", 0.25)
+            .Panel("result", new VisualStoryTextSurface("ready"));
+        singleShortScene.Outcome("ready", "Ready", "result");
+        Assert(singleShortScene.ToGif(
+                VisualStoryAnimationOptions.Create()
+                    .WithFramesPerSecond(2)
+                    .WithEndHold(0)
+                    .WithMaximumFrames(2)).Length > 8,
+            "A single short scene should be sampled at both timeline endpoints.");
+
+        var embeddedCharacters = 0L;
+        AssertThrows<InvalidOperationException>(
+            () => {
+                for (var index = 0; index < 24; index++) {
+                    embeddedCharacters = SvgVisualStoryRenderer.ReserveEmbeddedMedia(
+                        embeddedCharacters,
+                        3L * 1024 * 1024,
+                        "scene-" + index);
+                }
+            },
+            "Self-contained SVG stories should bound aggregate embedded media across the maximum scene count.");
 
         var denseText = new string('x', 8192);
         var denseSource = StorySourceText.Create(denseText, "text");

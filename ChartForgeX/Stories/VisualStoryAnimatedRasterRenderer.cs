@@ -14,21 +14,12 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         story.Validate();
         var animation = options ?? VisualStoryAnimationOptions.Create();
         var delay = Math.Max(1, (int)Math.Ceiling(100d / animation.FramesPerSecond));
-        var frameIntervalSeconds = delay / 100d;
-        for (var index = 0; index < story.Scenes.Count; index++) {
-            if (story.Scenes[index].DurationSeconds + 0.0000001 < frameIntervalSeconds) {
-                throw new InvalidOperationException(
-                    "Animated visual story frame interval " + frameIntervalSeconds +
-                    "s cannot sample scene '" + story.Scenes[index].Id + "' with duration " +
-                    story.Scenes[index].DurationSeconds +
-                    "s. Increase the frame rate so every scene is represented.");
-            }
-        }
         var totalSeconds = story.DurationSeconds + animation.EndHoldSeconds;
         var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delay) + 1);
         if (frameCount > animation.MaximumFrames) {
             throw new InvalidOperationException("Animated visual story requires " + frameCount + " frames. Lower the frame rate or duration, or increase the frame budget.");
         }
+        EnsureEverySceneIsSampled(story, frameCount, delay);
         var outputWidth = checked((long)story.Width * animation.OutputScale);
         var outputHeight = checked((long)story.Height * animation.OutputScale);
         var retainedFrames = checked(outputWidth * outputHeight * 4 * frameCount);
@@ -49,16 +40,7 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
     }
 
     private static RgbaImage RenderFrame(VisualStory story, IReadOnlyList<RgbaImage> scenes, double elapsed, VisualStoryAnimationOptions options) {
-        var sceneIndex = story.Scenes.Count - 1;
-        var sceneStart = 0d;
-        for (var index = 0; index < story.Scenes.Count; index++) {
-            var sceneEnd = sceneStart + story.Scenes[index].DurationSeconds;
-            if (elapsed < sceneEnd || index == story.Scenes.Count - 1) {
-                sceneIndex = index;
-                break;
-            }
-            sceneStart = sceneEnd;
-        }
+        var sceneIndex = FindScene(story, elapsed, out var sceneStart);
         var current = scenes[sceneIndex];
         RgbaImage logical;
         var remaining = sceneStart + story.Scenes[sceneIndex].DurationSeconds - elapsed;
@@ -76,5 +58,29 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var scaled = ImageComposition.Create(story.Width * options.OutputScale, story.Height * options.OutputScale, ChartColor.Transparent);
         scaled.DrawImage(logical, 0, 0, story.Width * options.OutputScale, story.Height * options.OutputScale, VisualCanvasImageFit.Stretch);
         return scaled.ToImage();
+    }
+
+    private static void EnsureEverySceneIsSampled(VisualStory story, int frameCount, int delay) {
+        var sampled = new bool[story.Scenes.Count];
+        for (var index = 0; index < frameCount; index++) {
+            var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
+            sampled[FindScene(story, elapsed, out _)] = true;
+        }
+        for (var index = 0; index < sampled.Length; index++) {
+            if (sampled[index]) continue;
+            throw new InvalidOperationException(
+                "Animated visual story frame timing cannot sample scene '" + story.Scenes[index].Id +
+                "'. Increase the frame rate so every scene is represented.");
+        }
+    }
+
+    private static int FindScene(VisualStory story, double elapsed, out double sceneStart) {
+        sceneStart = 0d;
+        for (var index = 0; index < story.Scenes.Count; index++) {
+            var sceneEnd = sceneStart + story.Scenes[index].DurationSeconds;
+            if (elapsed < sceneEnd || index == story.Scenes.Count - 1) return index;
+            sceneStart = sceneEnd;
+        }
+        return story.Scenes.Count - 1;
     }
 }

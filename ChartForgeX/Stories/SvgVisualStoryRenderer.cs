@@ -8,6 +8,8 @@ namespace ChartForgeX.Stories;
 
 /// <summary>Renders a resolved visual story as a self-contained, script-free animated SVG.</summary>
 public sealed class SvgVisualStoryRenderer {
+    private const long MaximumEmbeddedMediaCharacters = 64L * 1024 * 1024;
+
     /// <summary>Renders a visual story to SVG markup.</summary>
     public string Render(VisualStory story) => Render(story, string.Empty);
 
@@ -50,8 +52,13 @@ public sealed class SvgVisualStoryRenderer {
             .StartElement("style").EndStartElement().Raw(BuildCss(story, id)).EndElement()
             .EndElement().Line();
 
+        var embeddedMediaCharacters = 0L;
         for (var index = 0; index < story.Scenes.Count; index++) {
             var png = PngWriter.WriteRgba(PngVisualStoryRenderer.RenderScene(story, index));
+            embeddedMediaCharacters = ReserveEmbeddedMedia(
+                embeddedMediaCharacters,
+                png.LongLength,
+                story.Scenes[index].Id);
             writer.StartElement("g")
                 .Attribute("data-cfx-role", "story-scene")
                 .Attribute("data-cfx-scene", story.Scenes[index].Id)
@@ -63,7 +70,7 @@ public sealed class SvgVisualStoryRenderer {
                 .Attribute("preserveAspectRatio", "xMidYMid meet")
                 .Attribute("href", "data:image/png;base64," + Convert.ToBase64String(png))
                 .EndEmptyElement();
-            WriteVectorMediaOverlays(writer, story, story.Scenes[index]);
+            WriteVectorMediaOverlays(writer, story, story.Scenes[index], ref embeddedMediaCharacters);
             writer.EndElement().Line();
         }
         writer.EndElement().Line();
@@ -73,12 +80,19 @@ public sealed class SvgVisualStoryRenderer {
     private static void WriteVectorMediaOverlays(
         SvgMarkupWriter writer,
         VisualStory story,
-        VisualStoryScene scene) {
+        VisualStoryScene scene,
+        ref long embeddedMediaCharacters) {
         var bounds = VisualStoryLayout.Panels(story, scene);
         for (var index = 0; index < scene.Panels.Count; index++) {
             var panel = scene.Panels[index];
             if (!(panel.Surface is VisualStoryMediaSurface media) || media.Svg.Length == 0) continue;
             var content = VisualStoryLayout.PanelContent(panel, bounds[index]);
+            var vectorByteCount = Encoding.UTF8.GetByteCount(media.Svg);
+            embeddedMediaCharacters = ReserveEmbeddedMedia(
+                embeddedMediaCharacters,
+                vectorByteCount,
+                scene.Id);
+            var vectorBytes = Encoding.UTF8.GetBytes(media.Svg);
             writer.StartElement("image")
                 .Attribute("data-cfx-role", "story-vector-media")
                 .Attribute("data-cfx-panel", panel.Id)
@@ -90,9 +104,23 @@ public sealed class SvgVisualStoryRenderer {
                 .Attribute(
                     "href",
                     "data:image/svg+xml;base64," +
-                    Convert.ToBase64String(Encoding.UTF8.GetBytes(media.Svg)))
+                    Convert.ToBase64String(vectorBytes))
                 .EndEmptyElement();
         }
+    }
+
+    internal static long ReserveEmbeddedMedia(long currentCharacters, long byteCount, string sceneId) {
+        if (currentCharacters < 0) throw new ArgumentOutOfRangeException(nameof(currentCharacters));
+        if (byteCount < 0) throw new ArgumentOutOfRangeException(nameof(byteCount));
+        var encodedCharacters = checked(((byteCount + 2) / 3) * 4);
+        var total = checked(currentCharacters + encodedCharacters);
+        if (total > MaximumEmbeddedMediaCharacters) {
+            throw new InvalidOperationException(
+                "Visual-story SVG embedded media exceeds the " + MaximumEmbeddedMediaCharacters +
+                "-character safety limit while rendering scene '" + sceneId +
+                "'. Lower the size, scene count, or embedded media complexity.");
+        }
+        return total;
     }
 
     private static string BuildCss(VisualStory story, string id) {
