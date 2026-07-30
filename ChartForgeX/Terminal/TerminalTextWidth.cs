@@ -167,11 +167,31 @@ internal static class TerminalTextWidth {
 
         var previous = first;
         var hasExtendedPictographic = IsExtendedPictographic(first);
+        var hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(first);
+        var hasIndicLinker = false;
         while (PeekScalar(value, index, out next, out nextLength)) {
             var category = UnicodeCategoryFor(next);
-            if (IsExtend(next, category) || IsHangulContinuation(previous, next)) {
+            var isIndicExtend = hasIndicConjunct && TerminalIndicConjunctBreak.IsExtend(next);
+            var isIndicLinker = hasIndicConjunct && TerminalIndicConjunctBreak.IsLinker(next);
+            if (IsExtend(next, category) || IsHangulContinuation(previous, next) || isIndicExtend) {
+                index += nextLength;
+                if (hasIndicConjunct) {
+                    if (isIndicLinker) {
+                        hasIndicLinker = true;
+                    } else if (!isIndicExtend) {
+                        hasIndicConjunct = false;
+                        hasIndicLinker = false;
+                    }
+                }
+                previous = next;
+                continue;
+            }
+            if (hasIndicConjunct &&
+                hasIndicLinker &&
+                TerminalIndicConjunctBreak.IsConsonant(next)) {
                 index += nextLength;
                 previous = next;
+                hasIndicLinker = false;
                 continue;
             }
             if (next != 0x200D) {

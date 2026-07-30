@@ -264,6 +264,18 @@ internal static partial class SmokeTests {
                fontlessFlagLayout.Lines.Count == 61 &&
                new PngTerminalStoryRenderer().Render(flagStory, null).Length > 8,
             "Terminal grapheme segmentation should keep flag and emoji ZWJ sequences stable without collapsing ordinary joined glyphs.");
+        var devanagariConjunct = "\u0915\u094D\u0937";
+        var devanagariZwjConjunct = "\u0915\u094D\u200D\u0937";
+        var bengaliConjunct = "\u0995\u09CD\u09B7";
+        var preservedDevanagariConjunct = TerminalPngTextPreserver.Preserve(devanagariConjunct, null);
+        Assert(TerminalStoryLayout.TextElementCount(devanagariConjunct) == 1 &&
+               TerminalStoryLayout.TextElementCount(devanagariZwjConjunct) == 1 &&
+               TerminalStoryLayout.TextElementCount(bengaliConjunct) == 1 &&
+               TerminalStoryLayout.TextElementCount(preservedDevanagariConjunct) == 1 &&
+               TerminalStoryLayout.DisplayWidth(devanagariConjunct) == 1 &&
+               TerminalStoryLayout.DisplayWidth(preservedDevanagariConjunct) == 1 &&
+               TerminalStoryLayout.TextElementCount("\u0915\u094D\u093E\u0937") == 2,
+            "Indic conjunct segmentation should apply GB9c without extending the no-break rule through unrelated spacing marks.");
         var mixedFallbackCluster = "©\u200D" + TerminalPngTextPreserver.EscapeStart + "[U+1F600]" + TerminalPngTextPreserver.EscapeEnd;
         var mixedFallbackLabel = TerminalPngTextPreserver.ClusterFallbackLabel(mixedFallbackCluster);
         Assert(TerminalStoryLayout.TextElementCount(mixedFallbackCluster) == 1 &&
