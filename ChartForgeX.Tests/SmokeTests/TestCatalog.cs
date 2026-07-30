@@ -240,6 +240,8 @@ internal static partial class SmokeTests {
         ("Terminal story content owns motion identity", TerminalStoryContentOwnsMotionIdentity),
         ("Terminal dialects produce expected prompts", TerminalDialectsProduceExpectedPrompts),
         ("Terminal stories reject unsafe or ambiguous contracts", TerminalStoriesRejectUnsafeOrAmbiguousContracts),
+        ("Visual stories reveal declared outcomes across portable formats", VisualStoriesRevealDeclaredOutcomesAcrossPortableFormats),
+        ("Visual stories reject unrevealed outcomes and invalid syntax spans", VisualStoriesRejectUnrevealedOutcomesAndInvalidSyntaxSpans),
         ("Table artifacts declare native host capabilities", TableArtifactDeclaresNativeHostCapabilities),
         ("Table artifacts render static previews through visual blocks", TableArtifactRendersStaticPreviewThroughVisualBlocks),
         ("Table artifacts reject invalid contract shapes", TableArtifactRejectsInvalidContractShapes),

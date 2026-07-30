@@ -43,6 +43,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
 DenseSignalExamples.Write(output, DemoPngOutputScale);
 AnimatedVisualStoryExamples.Write(output, DemoPngOutputScale);
 TerminalStoryExamples.Write(output, DemoPngOutputScale);
+VisualStoryExamples.Write(output);
 var bars = Chart.Create()
     .WithTitle("Certificate Transparency Volume")
     .WithSubtitle("Bar-line combo with a secondary y-axis and no JavaScript runtime")

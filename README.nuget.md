@@ -2,7 +2,7 @@
 
 ChartForgeX renders polished charts, animated visual stories, visual blocks, topology diagrams, and static report visuals from .NET without adding runtime chart dependencies to generated output.
 
-The core package renders SVG, script-free HTML, PNG, GIF, APNG, JPEG, BMP, PPM, and TIFF. `TerminalStory` creates PowerShell, Bash, command prompt, Python, C#, or custom console presentations from structured commands and output, including native GIF and APNG export from the same typing-and-output timeline. `VisualMotionTimeline` can sequence named `VisualGrid` targets for broader visual stories. PNG, print, and reduced-motion output keep the exact completed state. Optional browser behavior lives in adapter packages, so generated reports can stay static while dashboard hosts can opt into tooltips, selection, zoom, pan, synchronized charts, and export controls.
+The core package renders SVG, script-free HTML, PNG, GIF, APNG, JPEG, BMP, PPM, and TIFF. `TerminalStory` creates PowerShell, Bash, command prompt, Python, C#, or custom console presentations from structured commands and output. `VisualStory` generalizes that model to source, terminal, text, image, SVG, and result panels, with declared outcomes that must remain visible in the completed scene. The core consumes resolved artifacts and renderer-neutral syntax spans; it never executes showcased code or depends on a language parser. PNG, print, and reduced-motion output keep the exact completed state. Optional browser behavior lives in adapter packages, so generated reports can stay static while dashboard hosts can opt into tooltips, selection, zoom, pan, synchronized charts, and export controls.
 
 ## Install
 
@@ -96,6 +96,7 @@ record Sample(double Index, double Value);
 | --- | --- |
 | SVG markup | `chart.ToSvg()` or `chart.SaveSvg("chart.svg")` |
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
+| Source-to-result story | `story.ToSvg()`, `story.ToPng()`, `story.ToGif()`, `story.ToApng()`, or `story.ToTranscript()` |
 | Interactive topology HTML | `topology.ToInteractiveHtmlFragment()`, `topology.ToInteractiveHtmlPage()`, or `topology.SaveInteractiveHtml("topology.html")` from `ChartForgeX.Interactivity.Html` |
 | Interactive relationship graph | `graph.ToGraphExplorerHtmlFragment()`, `graph.ToGraphExplorerHtmlPage()`, premium system/light/dark themes, accessible keyboard navigation, SVG/Canvas/WebGL backends, worker physics, direct hierarchy navigation, static stage images, and `GraphScenePatch` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |

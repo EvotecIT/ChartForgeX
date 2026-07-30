@@ -1,0 +1,55 @@
+using System;
+using System.Collections.Generic;
+
+namespace ChartForgeX.Stories;
+
+internal readonly struct VisualStoryBounds {
+    public VisualStoryBounds(double x, double y, double width, double height) {
+        X = x;
+        Y = y;
+        Width = width;
+        Height = height;
+    }
+
+    public double X { get; }
+    public double Y { get; }
+    public double Width { get; }
+    public double Height { get; }
+}
+
+internal static class VisualStoryLayout {
+    internal const double OuterPadding = 34;
+    internal const double HeaderHeight = 84;
+    internal const double PanelGap = 20;
+    internal const double PanelPadding = 20;
+    internal const double PanelTitleHeight = 30;
+
+    public static IReadOnlyList<VisualStoryBounds> Panels(VisualStory story, VisualStoryScene scene) {
+        var available = new VisualStoryBounds(
+            OuterPadding,
+            HeaderHeight + 18,
+            story.Width - OuterPadding * 2,
+            story.Height - HeaderHeight - OuterPadding - 18);
+        var output = new List<VisualStoryBounds>(scene.Panels.Count);
+        if (scene.Layout == VisualStorySceneLayout.Focus) {
+            output.Add(available);
+            return output;
+        }
+
+        var weights = 0d;
+        foreach (var panel in scene.Panels) weights += panel.Weight;
+        var horizontal = scene.Layout == VisualStorySceneLayout.Split;
+        var totalLength = (horizontal ? available.Width : available.Height) - PanelGap * (scene.Panels.Count - 1);
+        var cursor = horizontal ? available.X : available.Y;
+        for (var index = 0; index < scene.Panels.Count; index++) {
+            var length = index == scene.Panels.Count - 1
+                ? (horizontal ? available.X + available.Width : available.Y + available.Height) - cursor
+                : totalLength * scene.Panels[index].Weight / weights;
+            output.Add(horizontal
+                ? new VisualStoryBounds(cursor, available.Y, length, available.Height)
+                : new VisualStoryBounds(available.X, cursor, available.Width, length));
+            cursor += length + PanelGap;
+        }
+        return output;
+    }
+}

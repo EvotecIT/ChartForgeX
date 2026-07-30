@@ -346,6 +346,29 @@ console.SaveApng("console-demo.apng");
 
 The renderer models a presentation, not a shell. PowerShell, Bash, command prompt, Python, C#, and custom dialects control prompt styling while the caller owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
 
+### Generic visual stories
+
+`VisualStory` presents resolved source, terminal, text, image, or SVG surfaces as a sequence of scenes. It is deliberately not tied to charts: API request/response demos, image before/after walkthroughs, deployment evidence, tutorials, and product tours use the same contract. Every story declares one or more outcomes, and rendering fails unless the completed scene still contains each outcome panel. A demo that promises a chart therefore has to show the chart, not merely print a filename.
+
+```csharp
+var story = VisualStory.Create("A chart in five lines")
+    .WithDescription("Source and the real rendered result.")
+    .WithSize(1100, 620);
+
+story.Scene("write", "Write the code")
+    .Panel("source", new VisualStorySourceSurface(source));
+story.Scene("result", "See the chart", 1.5, VisualStorySceneLayout.Split)
+    .Panel("source", new VisualStorySourceSurface(source))
+    .Panel("chart", new VisualStoryMediaSurface(chartPng, "Weekly builds chart"));
+story.Outcome("chart-visible", "The weekly builds chart is visible.", "chart");
+
+story.SaveSvg("chart-story.svg");
+story.SavePng("chart-story.png");
+story.SaveGif("chart-story.gif");
+```
+
+ChartForgeX never executes the displayed source and has no parser dependencies. Optional hosts tokenize source through `IStorySourceTokenizer` and map parser-specific tokens to exact renderer-neutral `StorySourceSpan` ranges. Plain source remains valid when no adapter is supplied. This keeps the core dependency-free and lets PowerShell, Tree-sitter, Roslyn, or another host own the dependency appropriate to its environment.
+
 Turn a grid into a script-free visual story by assigning stable target IDs and a reusable motion timeline:
 
 ```csharp

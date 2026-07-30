@@ -132,6 +132,12 @@ Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom 
 
 Use `TerminalStoryAnimationOptions` when a host needs a different frame rate, single-play output, a longer completed-state hold, a denser raster, or a different frame budget. The default 10 FPS, one-times-density GIF is intentionally suitable for Discord-style sharing without turning the export into a browser recording.
 
+## Generic source-to-result stories
+
+Use `VisualStory` when the presentation contains more than a terminal transcript. Each scene contains named source, terminal, media, or text panels, while each declared outcome points at the panel that proves the promised result. The last scene must contain every outcome panel. This makes “code creates a chart,” “request returns this response,” and “filter produces this image” enforceable story contracts instead of captions that can drift from the rendered demo.
+
+The core accepts exact `StorySourceText` plus optional renderer-neutral syntax spans. It does not execute source or depend on PowerShell, Roslyn, Tree-sitter, or regex coloring. Hosts can implement `IStorySourceTokenizer`; production tooling can execute an explicitly trusted producer before it hands ChartForgeX the resolved artifacts.
+
 ## Script-Free Visual Stories
 
 `VisualMotionTimeline` turns any `VisualGrid` into a deterministic visual story without JavaScript. Assign stable target IDs when adding panels, then sequence restrained entrances or emphasis cues:
