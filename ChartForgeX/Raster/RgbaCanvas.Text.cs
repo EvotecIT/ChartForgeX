@@ -24,17 +24,29 @@ internal sealed partial class RgbaCanvas {
     }
 
     internal void DrawTextFitted(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth) {
+        DrawTextFitted(x, y, text, color, fontSize, maximumWidth, false);
+    }
+
+    internal void DrawTextFittedEmphasized(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth) {
+        DrawTextFitted(x, y, text, color, fontSize, maximumWidth, true);
+    }
+
+    private void DrawTextFitted(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth, bool emphasized) {
         if (string.IsNullOrEmpty(text) || color.A == 0 || maximumWidth <= 0) return;
-        var naturalWidth = MeasureTextWidth(text, fontSize);
+        var naturalWidth = emphasized
+            ? MeasureTextEmphasizedWidth(text, fontSize)
+            : MeasureTextWidth(text, fontSize);
         if (naturalWidth <= maximumWidth) {
-            DrawText(x, y, text, color, fontSize);
+            if (emphasized) DrawTextEmphasized(x, y, text, color, fontSize);
+            else DrawText(x, y, text, color, fontSize);
             return;
         }
 
         var naturalHeight = Math.Max(1, (int)Math.Ceiling(MeasureTextHeight(fontSize)));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
         var buffer = new RgbaCanvas(bufferWidth, naturalHeight, _supersamplingScale, _outlineFont, 1, useDefaultOutlineFont: false);
-        buffer.DrawText(0, 0, text, color, fontSize);
+        if (emphasized) buffer.DrawTextEmphasized(0, 0, text, color, fontSize);
+        else buffer.DrawText(0, 0, text, color, fontSize);
         var pixels = buffer.ToOutputPixels();
         DrawImageScaled(
             (int)Math.Round(x),

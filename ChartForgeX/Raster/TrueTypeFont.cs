@@ -208,7 +208,7 @@ internal sealed partial class TrueTypeFont {
     private bool HasGlyphs(string value) {
         for (var index = 0; index < value.Length;) {
             var codePoint = ReadCodePoint(value, ref index);
-            if (!IsWhiteSpace(codePoint) && MapGlyph(codePoint) == 0) {
+            if (MapGlyph(codePoint) == 0) {
                 return false;
             }
         }
@@ -217,7 +217,7 @@ internal sealed partial class TrueTypeFont {
     }
 
     internal bool HasGlyph(int codePoint) {
-        return IsWhiteSpace(codePoint) || MapGlyph(codePoint) != 0;
+        return MapGlyph(codePoint) != 0;
     }
 
     private bool MatchesName(string? faceName) {
@@ -349,10 +349,6 @@ internal sealed partial class TrueTypeFont {
             return first;
         }
         return char.ConvertToUtf32(first, value[index++]);
-    }
-
-    private static bool IsWhiteSpace(int codePoint) {
-        return codePoint <= char.MaxValue && char.IsWhiteSpace((char)codePoint);
     }
 
     private int AdvanceWidth(ushort glyph) {

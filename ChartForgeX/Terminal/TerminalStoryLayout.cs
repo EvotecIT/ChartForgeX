@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ChartForgeX.Raster;
 
 namespace ChartForgeX.Terminal;
 
@@ -26,13 +27,17 @@ internal sealed class TerminalStoryLayout {
         TranscriptLines = transcriptLines;
     }
 
-    public static TerminalStoryLayout Build(TerminalStory story) => Build(story, null);
+    public static TerminalStoryLayout Build(TerminalStory story) =>
+        Build(story, null, ResolveFont(story));
 
-    internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText) {
+    internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText) =>
+        Build(story, transformText, ResolveFont(story));
+
+    internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText, TrueTypeFont? outlineFont) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         story.Validate();
         var transform = transformText ?? Identity;
-        var maxColumns = Math.Max(24, (int)Math.Floor((story.Width - HorizontalPadding * 2) / (story.FontSize * 0.61)));
+        var maxColumns = Math.Max(1, (int)Math.Floor((story.Width - HorizontalPadding * 2) / ColumnWidth(story, outlineFont)));
         var lines = new List<TerminalRenderedLine>();
         var transcriptLines = new List<string>();
         var clock = story.InitialDelaySeconds;
@@ -191,6 +196,21 @@ internal sealed class TerminalStoryLayout {
     }
 
     private static string Identity(string value) => value;
+
+    private static TrueTypeFont? ResolveFont(TerminalStory story) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        return TrueTypeFont.TryLoadForFamily(story.Theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
+    }
+
+    private static double ColumnWidth(TerminalStory story, TrueTypeFont? outlineFont) {
+        var factor = TrueTypeFont.IsMonospaceFamily(story.Theme.FontFamily) ? 0.61 : 1.0;
+        if (outlineFont != null) {
+            factor = Math.Max(factor, outlineFont.Measure("W", 1));
+            factor = Math.Max(factor, outlineFont.Measure("M", 1));
+            factor = Math.Max(factor, outlineFont.Measure("@", 1));
+        }
+        return story.FontSize * factor;
+    }
 
     private readonly struct TableRenderedLine {
         public readonly string Text;

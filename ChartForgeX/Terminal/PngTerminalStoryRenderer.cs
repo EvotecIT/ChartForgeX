@@ -20,7 +20,7 @@ public sealed class PngTerminalStoryRenderer {
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
-        var layout = TerminalStoryLayout.Build(story, PreserveText);
+        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont);
         var image = RenderImage(story, layout, outlineFont, story.PngOutputScale, null);
         return PngWriter.WriteRgba(image.Width, image.Height, image.Pixels);
     }
@@ -55,14 +55,18 @@ public sealed class PngTerminalStoryRenderer {
                 var promptLength = Math.Min(line.PromptLength, visibleText.Length);
                 var prompt = visibleText.Substring(0, promptLength);
                 var command = visibleText.Substring(promptLength);
-                TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, prompt, theme.Accent, story.FontSize);
-                TerminalPngTextPreserver.Draw(canvas, layout.ContentX + TerminalPngTextPreserver.Measure(prompt, canvas, story.FontSize), y, command, theme.Text, story.FontSize);
+                var promptWidth = TerminalPngTextPreserver.MeasureEmphasized(prompt, canvas, story.FontSize);
+                TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, theme.Accent, story.FontSize);
+                TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, theme.Text, story.FontSize);
             } else {
                 TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(theme, line.Tone), state.Opacity), story.FontSize);
             }
 
             if (story.ShowFinalPrompt && index == layout.Lines.Count - 1 && CursorVisible(layout, line, elapsedSeconds)) {
-                var cursorX = layout.ContentX + TerminalPngTextPreserver.Measure(visibleText, canvas, story.FontSize) + 2;
+                var visibleWidth = line.IsCommand
+                    ? TerminalPngTextPreserver.MeasureEmphasized(visibleText, canvas, story.FontSize)
+                    : TerminalPngTextPreserver.Measure(visibleText, canvas, story.FontSize);
+                var cursorX = layout.ContentX + visibleWidth + 2;
                 canvas.FillRoundedRect(cursorX, y + 2, Math.Max(7, story.FontSize * 0.55), story.FontSize + 2, 1, theme.Cursor);
             }
         }
@@ -91,8 +95,8 @@ public sealed class PngTerminalStoryRenderer {
         return string.Concat(elements.Take(count));
     }
 
-    private static bool CursorVisible(TerminalStoryLayout layout, TerminalRenderedLine line, double? elapsedSeconds) {
-        if (!elapsedSeconds.HasValue || elapsedSeconds.Value >= layout.DurationSeconds) return true;
+    internal static bool CursorVisible(TerminalStoryLayout layout, TerminalRenderedLine line, double? elapsedSeconds) {
+        if (!elapsedSeconds.HasValue) return true;
         if (elapsedSeconds.Value < line.StartSeconds) return false;
         return (elapsedSeconds.Value - line.StartSeconds) % 1 < 0.47;
     }

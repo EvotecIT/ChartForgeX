@@ -81,6 +81,27 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => animatedStory.ToGif(TerminalStoryAnimationOptions.Create().WithFramesPerSecond(30).WithMaximumFrames(2)),
             "Animated terminal export should enforce its explicit frame budget.");
+        Assert(TerminalStoryAnimatedRasterRenderer.QuantizedDelayCentiseconds(30) == 4 &&
+               TerminalStoryAnimatedRasterRenderer.QuantizedDelayCentiseconds(26) == 4 &&
+               100d / TerminalStoryAnimatedRasterRenderer.QuantizedDelayCentiseconds(30) <= 30,
+            "Animated raster timing should never quantize above the requested frame rate.");
+
+        var cursorLayout = TerminalStoryLayout.Build(
+            TerminalStory.Create().WithTiming(0, 200, 0).Output("ready"));
+        var cursorLine = cursorLayout.Lines[cursorLayout.Lines.Count - 1];
+        Assert(PngTerminalStoryRenderer.CursorVisible(cursorLayout, cursorLine, cursorLine.StartSeconds + 2) &&
+               !PngTerminalStoryRenderer.CursorVisible(cursorLayout, cursorLine, cursorLine.StartSeconds + 2.5),
+            "Animated raster cursors should keep blinking throughout the configured end hold.");
+
+        var regularPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
+        var emphasizedPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
+        var promptColor = TerminalTheme.WindowsTerminal().Accent;
+        TerminalPngTextPreserver.Draw(regularPromptCanvas, 0, 0, "PS> ", promptColor, 18);
+        TerminalPngTextPreserver.DrawEmphasized(emphasizedPromptCanvas, 0, 0, "PS> ", promptColor, 18);
+        Assert(TerminalPngTextPreserver.MeasureEmphasized("PS> ", emphasizedPromptCanvas, 18) >
+               TerminalPngTextPreserver.Measure("PS> ", regularPromptCanvas, 18) &&
+               !emphasizedPromptCanvas.ToOutputPixels().SequenceEqual(regularPromptCanvas.ToOutputPixels()),
+            "Raster prompts should preserve the same visual emphasis as SVG prompts.");
 
         var captured = "prefix " + new string('x', 120) + " suffix";
         var transcriptStory = TerminalStory.Create()
@@ -102,6 +123,20 @@ internal static partial class SmokeTests {
                string.Concat(wideLayout.Lines.Select(line => line.Text)) == wideTranscript &&
                wideLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= 28),
             "Full-width and emoji transcript content should wrap by rendered display columns without clipping or data loss.");
+
+        var proportionalTheme = TerminalTheme.WindowsTerminal();
+        proportionalTheme.FontFamily = "Arial, sans-serif";
+        var proportionalText = new string('W', 20);
+        var proportionalLayout = TerminalStoryLayout.Build(
+            TerminalStory.Create()
+                .WithWidth(480)
+                .WithTypography(24, 30)
+                .WithTheme(proportionalTheme)
+                .WithFinalPrompt(false)
+                .Output(proportionalText));
+        Assert(proportionalLayout.Lines.Count > 1 &&
+               string.Concat(proportionalLayout.Lines.Select(line => line.Text)) == proportionalText,
+            "Terminal layout should reserve measured glyph width for proportional font families instead of clipping wide text.");
 
         var mixedWidthStory = TerminalStory.Create()
             .WithDialect(TerminalDialect.Custom, "> ")
@@ -234,6 +269,8 @@ internal static partial class SmokeTests {
                mixedFallbackLabel.Contains("U+1F600", StringComparison.Ordinal),
             "Mixed fallback clusters should retain supported and unsupported visible scalars in their fitted label.");
         var outlineFont = TrueTypeFont.TryLoadDefault();
+        Assert(outlineFont == null || !outlineFont.HasGlyph('\t'),
+            "Outline-font capability checks should not report unmapped whitespace as a drawable glyph.");
         var shapedFallback = TerminalPngTextPreserver.Preserve("e\u0301", outlineFont);
         Assert(TerminalStoryLayout.TextElementCount(shapedFallback) == 1 &&
                shapedFallback.Contains(TerminalPngTextPreserver.EscapeStart) &&
@@ -265,6 +302,13 @@ internal static partial class SmokeTests {
                TerminalPngTextPreserver.ClusterFallbackLabel(outlinePreservedFormatControls).Length == 0 &&
                TerminalStoryLayout.DisplayWidth("\u0600") == 1,
             "Default-ignorable format controls should consume no columns or raster fallback labels without hiding visible prepended marks.");
+        var oversizedFallback = string.Concat(Enumerable.Repeat(
+            TerminalPngTextPreserver.EscapeStart + "[U+1F600]" + TerminalPngTextPreserver.EscapeEnd,
+            64));
+        var boundedFallbackLabel = TerminalPngTextPreserver.ClusterFallbackLabel(oversizedFallback);
+        Assert(CountOccurrences(boundedFallbackLabel, "U+") == 4 &&
+               boundedFallbackLabel.EndsWith(" …", StringComparison.Ordinal),
+            "Raster fallback labels should bound their representation before allocating a fitted text buffer.");
         Assert(TerminalStoryLayout.DisplayWidth("©️") == 2 &&
                TerminalStoryLayout.DisplayWidth("❤️") == 2 &&
                TerminalStoryLayout.DisplayWidth("1️⃣") == 2,

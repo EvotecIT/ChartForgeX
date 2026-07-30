@@ -7,6 +7,7 @@ namespace ChartForgeX.Terminal;
 
 internal static class TerminalPngTextPreserver {
     private const double ColumnWidthFactor = 0.61;
+    private const int MaximumFallbackLabels = 4;
     internal const char EscapeStart = '\uFDD0';
     internal const char EscapeEnd = '\uFDD1';
 
@@ -44,6 +45,17 @@ internal static class TerminalPngTextPreserver {
     }
 
     public static double Measure(string value, RgbaCanvas canvas, double fontSize) {
+        return MeasureCore(value, canvas, fontSize);
+    }
+
+    public static double MeasureEmphasized(string value, RgbaCanvas canvas, double fontSize) {
+        var width = MeasureCore(value, canvas, fontSize);
+        if (value.Length == 0) return width;
+        var emphasisOffset = canvas.MeasureTextEmphasizedWidth("M", fontSize) - canvas.MeasureTextWidth("M", fontSize);
+        return width + Math.Max(0, emphasisOffset);
+    }
+
+    private static double MeasureCore(string value, RgbaCanvas canvas, double fontSize) {
         if (value == null) throw new ArgumentNullException(nameof(value));
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var width = 0.0;
@@ -56,12 +68,21 @@ internal static class TerminalPngTextPreserver {
     }
 
     public static void Draw(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize) {
+        Draw(canvas, x, y, value, color, fontSize, false);
+    }
+
+    public static void DrawEmphasized(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize) {
+        Draw(canvas, x, y, value, color, fontSize, true);
+    }
+
+    private static void Draw(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize, bool emphasized) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (value == null) throw new ArgumentNullException(nameof(value));
         var cursor = x;
         foreach (var element in TerminalTextWidth.Elements(value)) {
             if (!ContainsPreservedScalar(element)) {
-                canvas.DrawText(cursor, y, element, color, fontSize);
+                if (emphasized) canvas.DrawTextEmphasized(cursor, y, element, color, fontSize);
+                else canvas.DrawText(cursor, y, element, color, fontSize);
                 cursor += canvas.MeasureTextWidth(element, fontSize);
                 continue;
             }
@@ -69,7 +90,8 @@ internal static class TerminalPngTextPreserver {
             var width = TerminalTextWidth.Measure(element) * fontSize * ColumnWidthFactor;
             var label = ClusterFallbackLabel(element);
             if (width > 0 && label.Length > 0) {
-                canvas.DrawTextFitted(cursor, y, label, color, fontSize, width);
+                if (emphasized) canvas.DrawTextFittedEmphasized(cursor, y, label, color, fontSize, width);
+                else canvas.DrawTextFitted(cursor, y, label, color, fontSize, width);
             }
             cursor += width;
         }
@@ -120,31 +142,39 @@ internal static class TerminalPngTextPreserver {
         var plain = new StringBuilder(value.Length);
         var labels = new StringBuilder();
         var hasVisibleFallback = false;
+        var labelCount = 0;
+        var truncated = false;
         for (var index = 0; index < value.Length;) {
             if (!TerminalTextWidth.TryPreservedScalar(value, index, out var length, out var codePoint)) {
                 var scalarStart = index;
                 codePoint = ReadCodePoint(value, ref index);
                 plain.Append(value, scalarStart, index - scalarStart);
                 if (!TerminalTextWidth.IsZeroWidthScalar(codePoint)) {
-                    AppendLabel(labels, codePoint);
+                    AppendLabel(labels, codePoint, ref labelCount, ref truncated);
                 }
                 continue;
             }
 
             if (!TerminalTextWidth.IsZeroWidthScalar(codePoint)) {
-                AppendLabel(labels, codePoint);
+                AppendLabel(labels, codePoint, ref labelCount, ref truncated);
                 hasVisibleFallback = true;
             }
             index += length;
         }
+        if (truncated) labels.Append(" …");
         return hasVisibleFallback ? labels.ToString() : plain.ToString();
     }
 
-    private static void AppendLabel(StringBuilder labels, int codePoint) {
+    private static void AppendLabel(StringBuilder labels, int codePoint, ref int labelCount, ref bool truncated) {
+        if (labelCount >= MaximumFallbackLabels) {
+            truncated = true;
+            return;
+        }
         if (labels.Length > 0) {
             labels.Append(' ');
         }
         labels.Append(CompactLabel(codePoint));
+        labelCount++;
     }
 
     private static string CompactLabel(int codePoint) {
