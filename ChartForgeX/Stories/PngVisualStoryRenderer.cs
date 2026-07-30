@@ -17,7 +17,11 @@ public sealed class PngVisualStoryRenderer {
         return PngWriter.WriteRgba(RenderScene(story, story.Scenes.Count - 1));
     }
 
-    internal static RgbaImage RenderScene(VisualStory story, int sceneIndex, int outputScale = 1) {
+    internal static RgbaImage RenderScene(
+        VisualStory story,
+        int sceneIndex,
+        int outputScale = 1,
+        bool omitVectorMedia = false) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (sceneIndex < 0 || sceneIndex >= story.Scenes.Count) throw new ArgumentOutOfRangeException(nameof(sceneIndex));
         var scene = story.Scenes[sceneIndex];
@@ -32,7 +36,7 @@ public sealed class PngVisualStoryRenderer {
 
         var bounds = VisualStoryLayout.Panels(story, scene);
         for (var index = 0; index < scene.Panels.Count; index++) {
-            DrawPanel(canvas, story, scene.Panels[index], bounds[index], outputScale);
+            DrawPanel(canvas, story, scene.Panels[index], bounds[index], outputScale, omitVectorMedia);
         }
         return canvas.ToImage();
     }
@@ -87,7 +91,13 @@ public sealed class PngVisualStoryRenderer {
         canvas.DrawText(x, 28, width, label, style, TextWrapMode.NoWrap, 1, TextTrimming.None);
     }
 
-    private static void DrawPanel(ImageComposition canvas, VisualStory story, VisualStoryPanel panel, VisualStoryBounds bounds, int outputScale) {
+    private static void DrawPanel(
+        ImageComposition canvas,
+        VisualStory story,
+        VisualStoryPanel panel,
+        VisualStoryBounds bounds,
+        int outputScale,
+        bool omitVectorMedia) {
         var theme = story.Theme;
         canvas.FillRoundedRectangle(bounds.X + 4, bounds.Y + 8, bounds.Width, bounds.Height, 18, ChartColor.Black.WithOpacity(0.18));
         canvas.FillRoundedRectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height, 18, theme.Panel);
@@ -106,6 +116,11 @@ public sealed class PngVisualStoryRenderer {
                 emphasized: true);
         }
         var content = VisualStoryLayout.PanelContent(panel, bounds);
+        if (omitVectorMedia &&
+            panel.Surface is VisualStoryMediaSurface vectorMedia &&
+            vectorMedia.Svg.Length > 0) {
+            return;
+        }
         DrawSurface(canvas, story, panel.Surface, content, outputScale);
     }
 

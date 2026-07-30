@@ -69,13 +69,23 @@ public sealed class VisualStorySourceSurface : VisualStorySurface {
 /// <summary>Displays a deterministic terminal story without executing its commands.</summary>
 public sealed class VisualStoryTerminalSurface : VisualStorySurface {
     /// <summary>Initializes a terminal surface.</summary>
-    public VisualStoryTerminalSurface(TerminalStory terminal, string accessibleText)
-        : base(VisualStorySurfaceKind.Terminal, accessibleText) {
+    public VisualStoryTerminalSurface(TerminalStory terminal, string? accessibleText = null)
+        : base(
+            VisualStorySurfaceKind.Terminal,
+            AccessibleTerminalText(terminal, accessibleText),
+            preserveAccessibleWhitespace: true) {
         Terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
     }
 
     /// <summary>Gets the resolved terminal presentation.</summary>
     public TerminalStory Terminal { get; }
+
+    private static string AccessibleTerminalText(TerminalStory terminal, string? heading) {
+        if (terminal == null) throw new ArgumentNullException(nameof(terminal));
+        var transcript = string.Join(Environment.NewLine, TerminalStoryLayout.Build(terminal).TranscriptLines);
+        if (string.IsNullOrWhiteSpace(heading)) return transcript;
+        return RequireText(heading!, nameof(heading)) + Environment.NewLine + transcript;
+    }
 }
 
 /// <summary>Displays a resolved raster artifact with an optional vector representation.</summary>

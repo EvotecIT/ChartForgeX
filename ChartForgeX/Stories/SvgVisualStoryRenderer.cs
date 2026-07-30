@@ -54,7 +54,10 @@ public sealed class SvgVisualStoryRenderer {
 
         var embeddedMediaCharacters = 0L;
         for (var index = 0; index < story.Scenes.Count; index++) {
-            var png = PngWriter.WriteRgba(PngVisualStoryRenderer.RenderScene(story, index));
+            var png = PngWriter.WriteRgba(PngVisualStoryRenderer.RenderScene(
+                story,
+                index,
+                omitVectorMedia: true));
             embeddedMediaCharacters = ReserveEmbeddedMedia(
                 embeddedMediaCharacters,
                 png.LongLength,
@@ -144,9 +147,12 @@ public sealed class SvgVisualStoryRenderer {
                     css.Append("0%,").Append(Percent(start)).Append("{opacity:0}")
                         .Append(Percent(Math.Min(end, start + fadePercent))).Append("{opacity:1}");
                 }
-                css.Append(Percent(end)).Append("{opacity:1}");
+                css.Append(Percent(end)).Append("{opacity:1");
                 if (index != story.Scenes.Count - 1) {
-                    css.Append(Percent(Math.Min(100, end + fadePercent))).Append("{opacity:0}");
+                    css.Append(";animation-timing-function:steps(1,end)}")
+                        .Append(Percent(Math.Min(100, end + fadePercent))).Append("{opacity:0}");
+                } else {
+                    css.Append('}');
                 }
                 css
                     .Append("100%{opacity:").Append(index == story.Scenes.Count - 1 ? '1' : '0').Append("}}");

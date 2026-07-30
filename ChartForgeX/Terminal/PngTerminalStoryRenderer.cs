@@ -41,7 +41,11 @@ public sealed class PngTerminalStoryRenderer {
         string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
         var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
         var fittedScale = Math.Min(targetWidth / layout.Width, targetHeight / layout.Height);
-        var renderScale = Math.Max(1, Math.Min(4, (int)Math.Ceiling(outputScale * fittedScale)));
+        var requiredScale = Math.Ceiling(outputScale * fittedScale);
+        if (requiredScale > int.MaxValue) {
+            throw new InvalidOperationException("The fitted terminal render scale exceeds the supported raster range.");
+        }
+        var renderScale = Math.Max(1, (int)requiredScale);
         return RenderImage(story, layout, outlineFont, tableFont, renderScale, null);
     }
 

@@ -167,6 +167,18 @@ internal sealed class SvgMarkupWriter {
     private static void AppendEscapedText(StringBuilder builder, string value, bool escapeQuotes) {
         for (var i = 0; i < value.Length; i++) {
             var ch = value[i];
+            if (char.IsHighSurrogate(ch)) {
+                if (i + 1 < value.Length && char.IsLowSurrogate(value[i + 1])) {
+                    builder.Append(ch).Append(value[++i]);
+                } else {
+                    builder.Append('\uFFFD');
+                }
+                continue;
+            }
+            if (char.IsLowSurrogate(ch) || !IsXmlCharacter(ch)) {
+                builder.Append('\uFFFD');
+                continue;
+            }
             switch (ch) {
                 case '&':
                     builder.Append("&amp;");
@@ -186,6 +198,13 @@ internal sealed class SvgMarkupWriter {
             }
         }
     }
+
+    private static bool IsXmlCharacter(char ch) =>
+        ch == '\t' ||
+        ch == '\n' ||
+        ch == '\r' ||
+        ch >= ' ' && ch <= '\uD7FF' ||
+        ch >= '\uE000' && ch <= '\uFFFD';
 
     private void EnsurePendingStartTag() {
         if (_pendingElement == null) {

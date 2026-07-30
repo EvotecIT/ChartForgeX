@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Xml.Linq;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -24,9 +25,9 @@ internal static partial class SmokeTests {
             .Panel(
                 "vector",
                 new VisualStoryMediaSurface(
-                    new ChartForgeX.Raster.RgbaImage(1, 1, new byte[] { 34, 197, 94, 255 }),
+                    new ChartForgeX.Raster.RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }),
                     "Resolved vector preview",
-                    "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1\" height=\"1\" fill=\"#22c55e\"/></svg>"));
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><rect width=\"1\" height=\"1\" fill=\"none\"/></svg>"));
         story.Outcome("visible-result", "The result is visible", "result");
 
         var transcript = story.ToTranscript();
@@ -54,13 +55,32 @@ internal static partial class SmokeTests {
                svg.Contains("-motion-scene-0", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-0{opacity:0;animation:", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-1{opacity:1;animation:", StringComparison.Ordinal) &&
-               svg.Contains("0%{opacity:1}50%{opacity:1}51.2%{opacity:0}", StringComparison.Ordinal) &&
+               svg.Contains("0%{opacity:1}50%{opacity:1;animation-timing-function:steps(1,end)}51.2%{opacity:0}", StringComparison.Ordinal) &&
                svg.Contains("50%{opacity:0}51.2%{opacity:1}", StringComparison.Ordinal) &&
                !svg.Contains("cfx-story-seed-", StringComparison.Ordinal) &&
                svg.Contains("data-cfx-role=\"story-vector-media\"", StringComparison.Ordinal) &&
                svg.Contains("data:image/svg+xml;base64,", StringComparison.Ordinal) &&
                !svg.Contains("<script", StringComparison.OrdinalIgnoreCase),
             "Visual-story SVG should be self-contained, script-free, animated, and completed under reduced motion.");
+        var embeddedPngStart = svg.IndexOf("data:image/png;base64,", StringComparison.Ordinal);
+        Assert(embeddedPngStart >= 0, "Visual-story SVG should contain a raster scene base.");
+        embeddedPngStart += "data:image/png;base64,".Length;
+        var embeddedPngEnd = svg.IndexOf('"', embeddedPngStart);
+        var embeddedScene = PngReader.Decode(Convert.FromBase64String(svg.Substring(
+            embeddedPngStart,
+            embeddedPngEnd - embeddedPngStart)));
+        Assert(CountNearColorInRect(
+                embeddedScene.Pixels,
+                embeddedScene.Width,
+                0,
+                0,
+                embeddedScene.Width,
+                embeddedScene.Height,
+                255,
+                0,
+                0,
+                0) == 0,
+            "SVG vector media should replace its raster representation instead of being layered over it.");
         Assert(html.Contains("<!doctype html>", StringComparison.OrdinalIgnoreCase) &&
                html.Contains("chartforgex-visual-story", StringComparison.Ordinal),
             "Visual stories should render complete responsive HTML pages.");
@@ -112,6 +132,25 @@ internal static partial class SmokeTests {
                 "Language: text" + Environment.NewLine + whitespaceSource.Text,
                 StringComparison.Ordinal),
             "Captionless source accessibility text should declare its language and preserve exact source whitespace.");
+
+        var accessibleTerminal = TerminalStory.Create()
+            .WithFinalPrompt(false)
+            .Command("Get-Widget")
+            .Output("Widget is ready");
+        var terminalSurface = new VisualStoryTerminalSurface(accessibleTerminal, "Console output");
+        Assert(terminalSurface.AccessibleText.Contains("Console output", StringComparison.Ordinal) &&
+               terminalSurface.AccessibleText.Contains(accessibleTerminal.Prompt() + "Get-Widget", StringComparison.Ordinal) &&
+               terminalSurface.AccessibleText.Contains("Widget is ready", StringComparison.Ordinal),
+            "Terminal accessibility text should combine its optional heading with the deterministic command and output transcript.");
+
+        var invalidXmlStory = VisualStory.Create("XML-safe transcript").WithSize(480, 320);
+        invalidXmlStory.Scene("result", "Completed")
+            .Panel("result", new VisualStorySourceSurface(StorySourceText.Create("before\u000Cafter", "text")));
+        invalidXmlStory.Outcome("safe", "The source remains available", "result");
+        var invalidXmlSvg = invalidXmlStory.ToSvg();
+        XDocument.Parse(invalidXmlSvg);
+        Assert(invalidXmlSvg.Contains("before\uFFFDafter", StringComparison.Ordinal),
+            "SVG text should replace XML-invalid controls while retaining the surrounding accessible transcript.");
 
         var normalizedIdentifiers = VisualStory.Create("Normalized identifiers").WithSize(480, 320);
         normalizedIdentifiers.Scene("result", "Completed")
@@ -397,6 +436,10 @@ internal static partial class SmokeTests {
                 .WithMaximumFrames(2));
         Assert(fittedTerminalGif.Length > 8,
             "Nested terminal canvases should render only at the density needed by their fitted story panel.");
+
+        var enlargedTerminal = terminalRenderer.RenderFitted(terminal, 700, 300, 4);
+        Assert(enlargedTerminal.Width > terminal.Width * 4,
+            "Enlarged terminal panels should render at their fitted destination density instead of stretching a four-times source.");
 
         var outgoing = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
         var incoming = new RgbaImage(1, 1, new byte[] { 0, 0, 0, 0 });
