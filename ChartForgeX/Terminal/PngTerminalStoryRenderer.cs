@@ -111,7 +111,7 @@ public sealed class PngTerminalStoryRenderer {
 
     private static string VisibleCommand(TerminalRenderedLine line, double progress) {
         if (progress >= 1) return line.Text;
-        var elements = TerminalTextWidth.Elements(line.Text).ToArray();
+        var elements = TerminalTextWidth.VisibleElements(line.Text).ToArray();
         var count = Math.Max(0, Math.Min(elements.Length, (int)Math.Floor(elements.Length * progress)));
         return string.Concat(elements.Take(count));
     }

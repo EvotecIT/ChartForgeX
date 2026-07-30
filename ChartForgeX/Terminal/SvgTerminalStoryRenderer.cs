@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using ChartForgeX.Svg;
 using ChartForgeX.Themes;
@@ -125,24 +126,30 @@ public sealed class SvgTerminalStoryRenderer {
     }
 
     private static void WriteTypedCommand(SvgMarkupWriter writer, TerminalStory story, TerminalRenderedLine line) {
-        var elementCount = Math.Max(1, TerminalStoryLayout.TextElementCount(line.Text));
+        var promptLength = Math.Min(line.PromptLength, line.Text.Length);
+        var promptElements = TerminalTextWidth.VisibleElements(line.Text.Substring(0, promptLength)).ToArray();
+        var commandElements = TerminalTextWidth.VisibleElements(line.Text.Substring(promptLength)).ToArray();
+        var elementCount = Math.Max(1, promptElements.Length + commandElements.Length);
         var elementIndex = 0;
-        var characterOffset = 0;
-        foreach (var element in TerminalTextWidth.Elements(line.Text)) {
-            var isPrompt = characterOffset < line.PromptLength;
-            var revealSeconds = line.StartSeconds + line.DurationSeconds * (elementIndex + 1) / elementCount;
-            writer.StartElement("tspan")
-                .Attribute("class", "cfx-terminal-glyph")
-                .Attribute("fill", isPrompt ? story.Theme.Accent.ToCss() : story.Theme.Text.ToCss());
-            if (isPrompt) {
-                writer.Attribute("font-weight", "650");
-            }
-            writer.Attribute("style", "--cfx-glyph-start:" + revealSeconds.ToString("0.######", CultureInfo.InvariantCulture) + "s")
-                .Text(element)
-                .EndElement();
-            characterOffset += element.Length;
-            elementIndex++;
+        foreach (var element in promptElements) {
+            WriteTypedElement(writer, story, line, element, true, elementIndex++, elementCount);
         }
+        foreach (var element in commandElements) {
+            WriteTypedElement(writer, story, line, element, false, elementIndex++, elementCount);
+        }
+    }
+
+    private static void WriteTypedElement(SvgMarkupWriter writer, TerminalStory story, TerminalRenderedLine line, string element, bool isPrompt, int elementIndex, int elementCount) {
+        var revealSeconds = line.StartSeconds + line.DurationSeconds * (elementIndex + 1) / elementCount;
+        writer.StartElement("tspan")
+            .Attribute("class", "cfx-terminal-glyph")
+            .Attribute("fill", isPrompt ? story.Theme.Accent.ToCss() : story.Theme.Text.ToCss());
+        if (isPrompt) {
+            writer.Attribute("font-weight", "650");
+        }
+        writer.Attribute("style", "--cfx-glyph-start:" + revealSeconds.ToString("0.######", CultureInfo.InvariantCulture) + "s")
+            .Text(element)
+            .EndElement();
     }
 
     private static string BuildCss(string id) {

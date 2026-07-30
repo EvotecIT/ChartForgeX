@@ -57,12 +57,12 @@ internal sealed class TerminalStoryLayout {
                     var commandText = prompt + transform(step.Text);
                     var typingDuration = step.DurationSeconds > 0
                         ? step.DurationSeconds
-                        : Math.Max(0.35, Math.Min(4.5, TextElementCount(step.Text) / story.CharactersPerSecond));
-                    var commandElements = Math.Max(1, TextElementCount(commandText));
+                        : Math.Max(0.35, Math.Min(4.5, VisibleTextElementCount(step.Text) / story.CharactersPerSecond));
+                    var commandElements = Math.Max(1, VisibleTextElementCount(commandText));
                     var remainingPromptLength = prompt.Length;
                     foreach (var wrappedCommandLine in Wrap(commandText, maxColumns)) {
                         var promptLength = Math.Min(remainingPromptLength, wrappedCommandLine.Length);
-                        var lineDuration = typingDuration * TextElementCount(wrappedCommandLine) / commandElements;
+                        var lineDuration = typingDuration * VisibleTextElementCount(wrappedCommandLine) / commandElements;
                         AddLine(lines, new TerminalRenderedLine(wrappedCommandLine, TerminalTextTone.Default, true, promptLength, clock, lineDuration));
                         remainingPromptLength -= promptLength;
                         clock += lineDuration + story.LineDelaySeconds;
@@ -188,6 +188,10 @@ internal sealed class TerminalStoryLayout {
 
     internal static int TextElementCount(string value) {
         return TerminalTextWidth.ElementCount(value);
+    }
+
+    internal static int VisibleTextElementCount(string value) {
+        return TerminalTextWidth.VisibleElementCount(value);
     }
 
     internal static int DisplayWidth(string value) {

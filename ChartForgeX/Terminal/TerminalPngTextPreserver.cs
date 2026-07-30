@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using ChartForgeX.Raster;
@@ -18,7 +19,7 @@ internal static class TerminalPngTextPreserver {
         var output = new StringBuilder(value.Length + 16);
         var changed = false;
         foreach (var element in TerminalTextWidth.Elements(value)) {
-            var requiresShaping = RequiresShaping(element);
+            var requiresShaping = RequiresShaping(element) || ContainsContextualShapingScalar(element);
             for (var index = 0; index < element.Length;) {
                 var scalarStart = index;
                 if (TerminalTextWidth.TryPreservedScalar(element, index, out var preservedLength, out _)) {
@@ -59,10 +60,10 @@ internal static class TerminalPngTextPreserver {
         if (value == null) throw new ArgumentNullException(nameof(value));
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var width = 0.0;
-        foreach (var element in TerminalTextWidth.Elements(value)) {
-            width += ContainsPreservedScalar(element)
-                ? TerminalTextWidth.Measure(element) * fontSize * ColumnWidthFactor
-                : font == null ? canvas.MeasureTextWidth(element, fontSize) : RgbaCanvas.MeasureTextWidth(element, fontSize, font);
+        foreach (var unit in RasterUnits(value)) {
+            width += ContainsPreservedScalar(unit)
+                ? TerminalTextWidth.Measure(unit) * fontSize * ColumnWidthFactor
+                : font == null ? canvas.MeasureTextWidth(unit, fontSize) : RgbaCanvas.MeasureTextWidth(unit, fontSize, font);
         }
         return width;
     }
@@ -83,22 +84,24 @@ internal static class TerminalPngTextPreserver {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (value == null) throw new ArgumentNullException(nameof(value));
         var cursor = x;
-        foreach (var element in TerminalTextWidth.Elements(value)) {
-            if (!ContainsPreservedScalar(element)) {
+        foreach (var unit in RasterUnits(value)) {
+            if (!ContainsPreservedScalar(unit)) {
                 if (useCanvasFont) {
-                    if (emphasized) canvas.DrawTextEmphasized(cursor, y, element, color, fontSize);
-                    else canvas.DrawText(cursor, y, element, color, fontSize);
-                    cursor += canvas.MeasureTextWidth(element, fontSize);
+                    if (emphasized) canvas.DrawTextEmphasized(cursor, y, unit, color, fontSize);
+                    else canvas.DrawText(cursor, y, unit, color, fontSize);
+                    cursor += canvas.MeasureTextWidth(unit, fontSize);
                 } else {
-                    if (emphasized) canvas.DrawTextEmphasized(cursor, y, element, color, fontSize, font);
-                    else canvas.DrawText(cursor, y, element, color, fontSize, font);
-                    cursor += RgbaCanvas.MeasureTextWidthWithFont(element, fontSize, font);
+                    if (emphasized) canvas.DrawTextEmphasized(cursor, y, unit, color, fontSize, font);
+                    else canvas.DrawText(cursor, y, unit, color, fontSize, font);
+                    cursor += RgbaCanvas.MeasureTextWidthWithFont(unit, fontSize, font);
                 }
                 continue;
             }
 
-            var width = TerminalTextWidth.Measure(element) * fontSize * ColumnWidthFactor;
-            var label = ClusterFallbackLabel(element);
+            var width = TerminalTextWidth.Measure(unit) * fontSize * ColumnWidthFactor;
+            var label = IsContextualFallbackUnit(unit)
+                ? ContextualFallbackLabel(unit)
+                : ClusterFallbackLabel(unit);
             if (width > 0 && label.Length > 0) {
                 if (useCanvasFont) {
                     if (emphasized) canvas.DrawTextFittedEmphasized(cursor, y, label, color, fontSize, width);
@@ -109,6 +112,28 @@ internal static class TerminalPngTextPreserver {
                 }
             }
             cursor += width;
+        }
+    }
+
+    internal static IEnumerable<string> RasterUnits(string value) {
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        var elements = new List<string>(TerminalTextWidth.Elements(value));
+        for (var index = 0; index < elements.Count;) {
+            if (!IsContextualFallbackElement(elements[index]) &&
+                !(TerminalStoryLayout.DisplayWidth(elements[index]) == 0 &&
+                  index + 1 < elements.Count &&
+                  IsContextualFallbackElement(elements[index + 1]))) {
+                yield return elements[index++];
+                continue;
+            }
+
+            var run = new StringBuilder();
+            while (index < elements.Count &&
+                   (IsContextualFallbackElement(elements[index]) ||
+                    TerminalStoryLayout.DisplayWidth(elements[index]) == 0)) {
+                run.Append(elements[index++]);
+            }
+            yield return run.ToString();
         }
     }
 
@@ -133,6 +158,58 @@ internal static class TerminalPngTextPreserver {
             }
         }
         return false;
+    }
+
+    private static bool ContainsContextualShapingScalar(string value) {
+        for (var index = 0; index < value.Length;) {
+            int codePoint;
+            if (TerminalTextWidth.TryPreservedScalar(value, index, out var preservedLength, out codePoint)) {
+                index += preservedLength;
+            } else {
+                codePoint = ReadCodePoint(value, ref index);
+            }
+            if (TerminalJoiningType.RequiresContextualShaping(codePoint)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool IsContextualFallbackElement(string value) {
+        return ContainsPreservedScalar(value) && ContainsContextualShapingScalar(value);
+    }
+
+    private static bool IsContextualFallbackUnit(string value) {
+        foreach (var element in TerminalTextWidth.Elements(value)) {
+            if (IsContextualFallbackElement(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static string ContextualFallbackLabel(string value) {
+        var firstVisible = -1;
+        var visibleCount = 0;
+        for (var index = 0; index < value.Length;) {
+            int codePoint;
+            if (TerminalTextWidth.TryPreservedScalar(value, index, out var preservedLength, out codePoint)) {
+                index += preservedLength;
+            } else {
+                codePoint = ReadCodePoint(value, ref index);
+            }
+            if (TerminalTextWidth.IsZeroWidthScalar(codePoint)) {
+                continue;
+            }
+            if (firstVisible < 0) {
+                firstVisible = codePoint;
+            }
+            visibleCount++;
+        }
+        if (firstVisible < 0) {
+            return string.Empty;
+        }
+        return CompactLabel(firstVisible) + (visibleCount > 1 ? "…" : string.Empty);
     }
 
     private static void AppendPreservedScalar(StringBuilder output, int codePoint) {

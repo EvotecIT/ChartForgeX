@@ -29,6 +29,19 @@ internal static class TerminalTextWidth {
         return count;
     }
 
+    public static int VisibleElementCount(string value) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        var count = 0;
+        for (var index = 0; index < value.Length;) {
+            if (ElementWidth(NextElement(value, ref index)) > 0) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public static string Fit(string value, int maximum) {
         if (value == null) {
             throw new ArgumentNullException(nameof(value));
@@ -131,6 +144,41 @@ internal static class TerminalTextWidth {
         }
         for (var index = 0; index < value.Length;) {
             yield return NextElement(value, ref index);
+        }
+    }
+
+    internal static IEnumerable<string> VisibleElements(string value) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        var units = new List<string>();
+        var pending = new StringBuilder();
+        foreach (var element in Elements(value)) {
+            if (ElementWidth(element) == 0) {
+                pending.Append(element);
+                continue;
+            }
+
+            if (pending.Length == 0) {
+                units.Add(element);
+                continue;
+            }
+
+            pending.Append(element);
+            units.Add(pending.ToString());
+            pending.Clear();
+        }
+
+        if (pending.Length > 0) {
+            if (units.Count == 0) {
+                units.Add(pending.ToString());
+            } else {
+                units[units.Count - 1] += pending.ToString();
+            }
+        }
+
+        foreach (var unit in units) {
+            yield return unit;
         }
     }
 

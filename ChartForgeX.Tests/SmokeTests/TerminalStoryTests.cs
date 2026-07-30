@@ -37,7 +37,7 @@ internal static partial class SmokeTests {
         var renderedLayout = TerminalStoryLayout.Build(story);
         var typedElements = renderedLayout.Lines
             .Where((line, index) => line.IsCommand && (!story.ShowFinalPrompt || index < renderedLayout.Lines.Count - 1))
-            .Sum(line => TerminalStoryLayout.TextElementCount(line.Text));
+            .Sum(line => TerminalStoryLayout.VisibleTextElementCount(line.Text));
         Assert(CountOccurrences(svg, "class=\"cfx-terminal-glyph\"") == typedElements &&
                svg.Contains("--cfx-glyph-start:", StringComparison.Ordinal) &&
                !svg.Contains("steps(24,end)", StringComparison.Ordinal),
@@ -293,6 +293,12 @@ internal static partial class SmokeTests {
                TerminalStoryLayout.DisplayWidth(shapedFallback) == 1 &&
                TerminalPngTextPreserver.Preserve(shapedFallback, outlineFont) == shapedFallback,
             "PNG terminal text should fit shaping-dependent graphemes as one fallback unit even when the outline font maps every scalar.");
+        var arabicWord = "\u0633\u0644\u0627\u0645";
+        var preservedArabicWord = TerminalPngTextPreserver.Preserve(arabicWord, outlineFont);
+        Assert(preservedArabicWord.Contains(TerminalPngTextPreserver.EscapeStart) &&
+               TerminalPngTextPreserver.RasterUnits(preservedArabicWord).Count() == 1 &&
+               TerminalStoryLayout.DisplayWidth(preservedArabicWord) == TerminalStoryLayout.DisplayWidth(arabicWord),
+            "PNG terminal text should fit contextual shaping runs as one fallback unit instead of drawing disconnected nominal glyphs.");
         var decomposedLine = string.Concat(Enumerable.Repeat("e\u0301", 28));
         var decomposedStory = TerminalStory.Create()
             .WithWidth(480)
@@ -352,6 +358,13 @@ internal static partial class SmokeTests {
         var asciiTiming = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Command(new string('x', 20))).DurationSeconds;
         var emojiTiming = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Command(string.Concat(Enumerable.Repeat("😀", 20)))).DurationSeconds;
         Assert(Math.Abs(asciiTiming - emojiTiming) < 0.001, "Automatic command timing should count user-visible text elements instead of UTF-16 code units.");
+        var visibleCommandTiming = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Command("x")).DurationSeconds;
+        var controlPaddedCommand = new string('\u200E', 64) + "x" + new string('\u2066', 64);
+        var controlPaddedTiming = TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Command(controlPaddedCommand)).DurationSeconds;
+        Assert(Math.Abs(visibleCommandTiming - controlPaddedTiming) < 0.001 &&
+               TerminalTextWidth.VisibleElements(controlPaddedCommand).Count() == 1 &&
+               string.Concat(TerminalTextWidth.VisibleElements(controlPaddedCommand)) == controlPaddedCommand,
+            "Automatic typing time and reveal units should ignore retained zero-width controls without dropping them.");
 
         var widePromptStory = TerminalStory.Create()
             .WithDialect(TerminalDialect.Custom, "界 ")
