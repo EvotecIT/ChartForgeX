@@ -23,14 +23,16 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var outputWidth = checked((long)story.Width * animation.OutputScale);
         var outputHeight = checked((long)story.Height * animation.OutputScale);
         var retainedFrames = checked(outputWidth * outputHeight * 4 * frameCount);
-        var retainedScenes = checked((long)story.Width * story.Height * 4 * story.Scenes.Count);
+        var retainedScenes = checked(outputWidth * outputHeight * 4 * story.Scenes.Count);
         var retained = checked(retainedFrames + retainedScenes);
         if (retained > MaximumRetainedFrameBytes) {
             throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames and cached scenes. Lower the size, scale, frame rate, duration, or scene count.");
         }
 
         var scenes = new List<RgbaImage>(story.Scenes.Count);
-        for (var index = 0; index < story.Scenes.Count; index++) scenes.Add(PngVisualStoryRenderer.RenderScene(story, index));
+        for (var index = 0; index < story.Scenes.Count; index++) {
+            scenes.Add(PngVisualStoryRenderer.RenderScene(story, index, animation.OutputScale));
+        }
         var frames = new List<RgbaImage>(frameCount);
         for (var index = 0; index < frameCount; index++) {
             var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
@@ -42,22 +44,16 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
     private static RgbaImage RenderFrame(VisualStory story, IReadOnlyList<RgbaImage> scenes, double elapsed, VisualStoryAnimationOptions options) {
         var sceneIndex = FindScene(story, elapsed, out var sceneStart);
         var current = scenes[sceneIndex];
-        RgbaImage logical;
         var remaining = sceneStart + story.Scenes[sceneIndex].DurationSeconds - elapsed;
         var transitionSeconds = Math.Min(options.TransitionSeconds, story.Scenes[sceneIndex].DurationSeconds);
         if (sceneIndex + 1 < scenes.Count && transitionSeconds > 0 && remaining < transitionSeconds) {
             var progress = Math.Max(0, Math.Min(1, 1 - remaining / transitionSeconds));
-            var blend = ImageComposition.Create(story.Width, story.Height, story.Theme.Background);
+            var blend = ImageComposition.CreateScaled(story.Width, story.Height, story.Theme.Background, options.OutputScale);
             blend.DrawImage(current, 0, 0, story.Width, story.Height, VisualCanvasImageFit.Stretch);
             blend.DrawImage(scenes[sceneIndex + 1], 0, 0, story.Width, story.Height, VisualCanvasImageFit.Stretch, progress);
-            logical = blend.ToImage();
-        } else {
-            logical = current;
+            return blend.ToImage();
         }
-        if (options.OutputScale == 1) return logical;
-        var scaled = ImageComposition.Create(story.Width * options.OutputScale, story.Height * options.OutputScale, ChartColor.Transparent);
-        scaled.DrawImage(logical, 0, 0, story.Width * options.OutputScale, story.Height * options.OutputScale, VisualCanvasImageFit.Stretch);
-        return scaled.ToImage();
+        return current;
     }
 
     private static void EnsureEverySceneIsSampled(VisualStory story, int frameCount, int delay) {

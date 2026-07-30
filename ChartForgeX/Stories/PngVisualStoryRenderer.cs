@@ -17,12 +17,12 @@ public sealed class PngVisualStoryRenderer {
         return PngWriter.WriteRgba(RenderScene(story, story.Scenes.Count - 1));
     }
 
-    internal static RgbaImage RenderScene(VisualStory story, int sceneIndex) {
+    internal static RgbaImage RenderScene(VisualStory story, int sceneIndex, int outputScale = 1) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (sceneIndex < 0 || sceneIndex >= story.Scenes.Count) throw new ArgumentOutOfRangeException(nameof(sceneIndex));
         var scene = story.Scenes[sceneIndex];
         var theme = story.Theme;
-        var canvas = ImageComposition.Create(story.Width, story.Height, theme.Background);
+        var canvas = ImageComposition.CreateScaled(story.Width, story.Height, theme.Background, outputScale);
         DrawBackdrop(canvas, story);
         var outcomeOrigin = story.Width * 0.58;
         var headerTextWidth = Math.Max(1, outcomeOrigin - VisualStoryLayout.OuterPadding - 12);
@@ -94,7 +94,16 @@ public sealed class PngVisualStoryRenderer {
         canvas.StrokeRoundedRectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height, 18, theme.Border, 1);
         var contentY = bounds.Y + VisualStoryLayout.PanelPadding;
         if (panel.Title.Length > 0) {
-            canvas.DrawText(bounds.X + VisualStoryLayout.PanelPadding, contentY, bounds.Width - VisualStoryLayout.PanelPadding * 2, panel.Title, 13, theme.Muted, emphasized: true);
+            DrawHeaderText(
+                canvas,
+                story,
+                panel.Title,
+                bounds.X + VisualStoryLayout.PanelPadding,
+                contentY,
+                bounds.Width - VisualStoryLayout.PanelPadding * 2,
+                13,
+                theme.Muted,
+                emphasized: true);
         }
         var content = VisualStoryLayout.PanelContent(panel, bounds);
         DrawSurface(canvas, story, panel.Surface, content);
@@ -125,11 +134,19 @@ public sealed class PngVisualStoryRenderer {
     }
 
     private static void DrawText(ImageComposition canvas, VisualStory story, VisualStoryTextSurface surface, VisualStoryBounds bounds) {
+        var textY = bounds.Y + Math.Max(0, bounds.Height * 0.12);
+        var availableHeight = Math.Max(1, bounds.Y + bounds.Height - textY);
         var style = TextStyle.Create(surface.Emphasized ? 30 : 22, surface.Emphasized ? story.Theme.Text : story.Theme.Muted);
         style.Font = FontSpec.FromFamily(story.Theme.FontFamily);
         style.Font.Weight = surface.Emphasized ? 700 : 400;
         style.LineHeight = 1.35;
-        canvas.DrawText(bounds.X, bounds.Y + Math.Max(0, bounds.Height * 0.12), bounds.Width, surface.Text, style, TextWrapMode.Word, maximumLines: 8);
+        var lineHeight = TextLayoutEngine.Measure("Ag", style).LineHeight;
+        if (lineHeight > availableHeight) {
+            style.FontSize = Math.Max(1, style.FontSize * availableHeight / lineHeight);
+            lineHeight = TextLayoutEngine.Measure("Ag", style).LineHeight;
+        }
+        var maximumLines = Math.Min(8, Math.Max(1, (int)Math.Floor(availableHeight / lineHeight)));
+        canvas.DrawText(bounds.X, textY, bounds.Width, surface.Text, style, TextWrapMode.Word, maximumLines);
     }
 
     private static void DrawSource(ImageComposition canvas, VisualStory story, VisualStorySourceSurface surface, VisualStoryBounds bounds) {

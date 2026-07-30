@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using ChartForgeX.Composition;
+using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 
@@ -235,5 +237,80 @@ internal static partial class SmokeTests {
         denseStory.Outcome("ready", "Ready", "result");
         Assert(denseStory.ToPng().Length > 8,
             "Source rendering should remain bounded for the maximum supported syntax-span count.");
+    }
+
+    private static void VisualStoryRasterLayoutStaysBoundedAtEveryDensity() {
+        var theme = VisualStoryTheme.PremiumDark();
+        theme.Muted = ChartColor.FromRgb(255, 0, 128);
+        var split = VisualStory.Create("Bounded panel titles")
+            .WithSize(480, 320)
+            .WithTheme(theme);
+        var splitScene = split.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Split);
+        splitScene.Panel("left", new VisualStoryTextSurface("left"), new string('W', 80));
+        splitScene.Panel("right", new VisualStoryTextSurface("right"), "Right panel");
+        split.Outcome("visible", "Right panel is visible", "right");
+        var splitPixels = ReadPngRgba(split.ToPng(), out var splitWidth, out _);
+        var splitBounds = VisualStoryLayout.Panels(split, splitScene);
+        var titleGapX = (int)Math.Ceiling(splitBounds[0].X + splitBounds[0].Width);
+        var titleGapWidth = Math.Max(1, (int)Math.Floor(splitBounds[1].X) - titleGapX);
+        var titleGapInk = CountNearColorInRect(
+            splitPixels,
+            splitWidth,
+            titleGapX,
+            (int)(splitBounds[0].Y + VisualStoryLayout.PanelPadding),
+            titleGapWidth,
+            22,
+            255,
+            0,
+            128,
+            16);
+        Assert(titleGapInk == 0, "Raster visual-story panel titles should not bleed into the adjacent panel gap.");
+
+        var stacked = VisualStory.Create("Bounded wrapped text")
+            .WithSize(480, 320)
+            .WithTheme(theme);
+        var stackedScene = stacked.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Stacked);
+        stackedScene.Panel("first", new VisualStoryTextSurface(string.Join(" ", Enumerable.Repeat("overflow", 80))));
+        stackedScene.Panel("second", new VisualStoryTextSurface("ready"));
+        stacked.Outcome("visible", "Ready is visible", "second");
+        var stackedPixels = ReadPngRgba(stacked.ToPng(), out var stackedWidth, out _);
+        var stackedBounds = VisualStoryLayout.Panels(stacked, stackedScene);
+        var textGapY = (int)Math.Ceiling(stackedBounds[0].Y + stackedBounds[0].Height);
+        var textGapHeight = Math.Max(1, (int)Math.Floor(stackedBounds[1].Y) - textGapY);
+        var textGapInk = CountNearColorInRect(
+            stackedPixels,
+            stackedWidth,
+            (int)(stackedBounds[0].X + VisualStoryLayout.PanelPadding),
+            textGapY,
+            (int)(stackedBounds[0].Width - VisualStoryLayout.PanelPadding * 2),
+            textGapHeight,
+            255,
+            0,
+            128,
+            16);
+        Assert(textGapInk == 0, "Wrapped raster story text should remain inside the available panel height.");
+
+        var normalOptions = VisualStoryAnimationOptions.Create()
+            .WithFramesPerSecond(4)
+            .WithTransition(0)
+            .WithEndHold(0)
+            .WithLoop(false)
+            .WithMaximumFrames(2);
+        var highDensityOptions = VisualStoryAnimationOptions.Create()
+            .WithFramesPerSecond(4)
+            .WithTransition(0)
+            .WithEndHold(0)
+            .WithLoop(false)
+            .WithOutputScale(2)
+            .WithMaximumFrames(2);
+        var normal = GifReader.Decode(split.ToGif(normalOptions));
+        var highDensity = GifReader.Decode(split.ToGif(highDensityOptions));
+        var stretched = ImageComposition.Create(highDensity.Width, highDensity.Height, ChartColor.Transparent)
+            .DrawImage(normal, 0, 0, highDensity.Width, highDensity.Height, VisualCanvasImageFit.Stretch)
+            .ToImage();
+        Assert(highDensity.Width == normal.Width * 2 && highDensity.Height == normal.Height * 2,
+            "Animated visual-story output scale should multiply the rendered frame dimensions.");
+        Assert(!highDensity.Pixels.SequenceEqual(stretched.Pixels),
+            "Animated visual-story output scale should render at the requested density instead of stretching one-times frames.");
     }
 }
