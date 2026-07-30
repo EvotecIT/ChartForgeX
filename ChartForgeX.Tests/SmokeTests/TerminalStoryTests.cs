@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Raster;
 using ChartForgeX.Svg;
 using ChartForgeX.Terminal;
 
@@ -46,6 +47,32 @@ internal static partial class SmokeTests {
 
         var png = story.ToPng();
         Assert(png.Length > 8 && png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71, "Terminal PNG output should render the completed terminal state.");
+
+        var animatedStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithPngOutputScale(1)
+            .WithTiming(0, 200, 0)
+            .WithFinalPrompt(false)
+            .Command("dotnet run", 0.05)
+            .Output("Chart saved", TerminalTextTone.Success);
+        var animationOptions = TerminalStoryAnimationOptions.Create()
+            .WithFramesPerSecond(4)
+            .WithEndHold(0.1)
+            .WithLoop(false);
+        var gif = animatedStory.ToGif(animationOptions);
+        var apng = animatedStory.ToApng(animationOptions);
+        Assert(gif.Length > 800 && gif[0] == (byte)'G' && gif[1] == (byte)'I' && gif[2] == (byte)'F' &&
+               ReadImageDescriptors(gif).Length >= 2 &&
+               !System.Text.Encoding.ASCII.GetString(gif).Contains("NETSCAPE2.0", StringComparison.Ordinal),
+            "Terminal GIF output should preserve multiple timeline frames and non-looping options.");
+        Assert(!GifReader.Decode(gif).Pixels.SequenceEqual(PngReader.Decode(animatedStory.ToPng()).Pixels),
+            "Terminal GIF output should begin before the completed transcript instead of repeating a static final frame.");
+        Assert(apng.Length > 128 && apng[0] == 137 && apng[1] == 80 && apng[2] == 78 && apng[3] == 71 &&
+               ReadApngFrameControls(apng).Length >= 2,
+            "Terminal APNG output should preserve multiple full-color timeline frames.");
+        AssertThrows<InvalidOperationException>(
+            () => animatedStory.ToGif(TerminalStoryAnimationOptions.Create().WithFramesPerSecond(30).WithMaximumFrames(2)),
+            "Animated terminal export should enforce its explicit frame budget.");
 
         var captured = "prefix " + new string('x', 120) + " suffix";
         var transcriptStory = TerminalStory.Create()
@@ -280,5 +307,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TerminalTable.Create().WithColumns("One", "Two").AddRow("one"), "Terminal table rows should match their column count.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Progress("bad", 1.1), "Terminal progress values should stay within the unit interval.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithTiming(0, 1, 0), "Typing speed should remain within usable presentation bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithFramesPerSecond(31), "Animated terminal frame rates should remain bounded.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithOutputScale(5), "Animated terminal output scale should remain bounded.");
     }
 }

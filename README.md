@@ -340,9 +340,11 @@ var console = TerminalStory.Create()
 console.SaveSvg("console-demo.svg");
 console.SaveHtml("console-demo.html");
 console.SavePng("console-demo.png");
+console.SaveGif("console-demo.gif");
+console.SaveApng("console-demo.apng");
 ```
 
-The renderer models a presentation, not a shell. PowerShell, Bash, command prompt, Python, C#, and custom dialects control prompt styling while the caller owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; PNG, print, and reduced-motion rendering show the completed transcript.
+The renderer models a presentation, not a shell. PowerShell, Bash, command prompt, Python, C#, and custom dialects control prompt styling while the caller owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
 
 Turn a grid into a script-free visual story by assigning stable target IDs and a reusable motion timeline:
 

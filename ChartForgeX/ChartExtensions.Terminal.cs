@@ -24,6 +24,14 @@ public static partial class ChartExtensions {
     /// <summary>Renders the completed state of a terminal story to PNG bytes.</summary>
     public static byte[] ToPng(this TerminalStory story) => new PngTerminalStoryRenderer().Render(story);
 
+    /// <summary>Renders a terminal story as an animated GIF.</summary>
+    public static byte[] ToGif(this TerminalStory story, TerminalStoryAnimationOptions? options = null) =>
+        new TerminalStoryAnimatedRasterRenderer().Render(story, options, Raster.AnimatedRasterFormat.Gif);
+
+    /// <summary>Renders a terminal story as an animated PNG.</summary>
+    public static byte[] ToApng(this TerminalStory story, TerminalStoryAnimationOptions? options = null) =>
+        new TerminalStoryAnimatedRasterRenderer().Render(story, options, Raster.AnimatedRasterFormat.Apng);
+
     /// <summary>Saves a terminal story as SVG.</summary>
     public static void SaveSvg(this TerminalStory story, string path) {
         if (path == null) throw new ArgumentNullException(nameof(path));
@@ -40,5 +48,17 @@ public static partial class ChartExtensions {
     public static void SavePng(this TerminalStory story, string path) {
         if (path == null) throw new ArgumentNullException(nameof(path));
         File.WriteAllBytes(path, story.ToPng());
+    }
+
+    /// <summary>Saves a terminal story as an animated GIF.</summary>
+    public static void SaveGif(this TerminalStory story, string path, TerminalStoryAnimationOptions? options = null) {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+        File.WriteAllBytes(path, story.ToGif(options));
+    }
+
+    /// <summary>Saves a terminal story as an animated PNG.</summary>
+    public static void SaveApng(this TerminalStory story, string path, TerminalStoryAnimationOptions? options = null) {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+        File.WriteAllBytes(path, story.ToApng(options));
     }
 }

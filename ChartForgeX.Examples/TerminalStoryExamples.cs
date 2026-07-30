@@ -28,5 +28,23 @@ internal static class TerminalStoryExamples {
         story.SaveSvg(Path.Combine(output, "powershell-console-story.svg"));
         story.SaveHtml(Path.Combine(output, "powershell-console-story.html"));
         story.SavePng(Path.Combine(output, "powershell-console-story.png"));
+
+        var fiveLineDemo = TerminalStory.Create()
+            .WithTitle("dotnet run - ChartForgeX")
+            .WithDialect(TerminalDialect.CSharp)
+            .WithWorkingDirectory(@"C:\Charts")
+            .WithTheme(TerminalTheme.WindowsTerminal())
+            .WithWidth(1000)
+            .Command("using ChartForgeX; using ChartForgeX.Core; using System.Linq;", 0.65)
+            .Command("var chart = Chart.Create().WithTitle(\"Weekly builds\");", 0.65)
+            .Command("chart.WithXLabels(\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\");", 0.65)
+            .Command("chart.AddLine(\"Builds\", new[] { 12d, 18d, 15d, 24d, 31d }.Select((y, x) => new ChartPoint(x + 1, y)));", 1.1)
+            .Command("chart.SavePng(\"weekly-builds.png\");", 0.65)
+            .Output("Saved weekly-builds.png (1000 x 560)", TerminalTextTone.Success);
+        var animation = TerminalStoryAnimationOptions.Create()
+            .WithFramesPerSecond(10)
+            .WithEndHold(1.4);
+        fiveLineDemo.SaveGif(Path.Combine(output, "chart-in-five-lines-console-story.gif"), animation);
+        fiveLineDemo.SaveApng(Path.Combine(output, "chart-in-five-lines-console-story.apng"), animation);
     }
 }

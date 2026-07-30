@@ -125,9 +125,12 @@ var console = TerminalStory.Create()
     .Output("Ready", TerminalTextTone.Success);
 
 console.SaveSvg("validation.svg");
+console.SaveGif("validation.gif");
 ```
 
-Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. SVG and HTML animate without JavaScript. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
+Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. SVG and HTML animate without JavaScript. GIF and APNG reuse the exact terminal timeline for portable chat, issue, and documentation embeds. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
+
+Use `TerminalStoryAnimationOptions` when a host needs a different frame rate, single-play output, a longer completed-state hold, a denser raster, or a different frame budget. The default 10 FPS, one-times-density GIF is intentionally suitable for Discord-style sharing without turning the export into a browser recording.
 
 ## Script-Free Visual Stories
 
