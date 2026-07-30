@@ -32,6 +32,11 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("OfficeIMO", StringComparison.Ordinal) && svg.Contains("0 critical findings", StringComparison.Ordinal), "Terminal stories should retain formatted table and semantic output content.");
         Assert(svg.Contains("Terminal transcript:", StringComparison.Ordinal) && svg.Contains("Get-EvotecPortfolio -Active", StringComparison.Ordinal), "Accessible terminal descriptions should expose the completed transcript.");
         Assert(svg.Contains("@keyframes " + id + "-motion-type", StringComparison.Ordinal) && svg.Contains("animation:" + id + "-motion-type ", StringComparison.Ordinal), "Terminal typing keyframes should use the final rendered identity.");
+        var firstCommandElements = TerminalStoryLayout.TextElementCount(TerminalStoryLayout.Build(story).Lines.First(line => line.IsCommand).Text);
+        Assert(svg.Contains("--cfx-steps:" + firstCommandElements.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) &&
+               svg.Contains("steps(var(--cfx-steps),end)", StringComparison.Ordinal) &&
+               !svg.Contains("steps(24,end)", StringComparison.Ordinal),
+            "SVG terminal typing should step through the actual grapheme count used by animated raster output.");
         Assert(!svg.Contains(".cfx-terminal-line{opacity:0}", StringComparison.Ordinal) &&
                !svg.Contains(".cfx-terminal-type{opacity:1;clip-path:", StringComparison.Ordinal) &&
                !svg.Contains(".cfx-terminal-cursor{opacity:0", StringComparison.Ordinal),
@@ -212,6 +217,13 @@ internal static partial class SmokeTests {
                mixedFallbackLabel.Contains("U+A9", StringComparison.Ordinal) &&
                mixedFallbackLabel.Contains("U+1F600", StringComparison.Ordinal),
             "Mixed fallback clusters should retain supported and unsupported visible scalars in their fitted label.");
+        var outlineFont = TrueTypeFont.TryLoadDefault();
+        var shapedFallback = TerminalPngTextPreserver.Preserve("e\u0301", outlineFont);
+        Assert(TerminalStoryLayout.TextElementCount(shapedFallback) == 1 &&
+               shapedFallback.Contains(TerminalPngTextPreserver.EscapeStart) &&
+               TerminalStoryLayout.DisplayWidth(shapedFallback) == 1 &&
+               TerminalPngTextPreserver.Preserve(shapedFallback, outlineFont) == shapedFallback,
+            "PNG terminal text should fit shaping-dependent graphemes as one fallback unit even when the outline font maps every scalar.");
         var decomposedLine = string.Concat(Enumerable.Repeat("e\u0301", 28));
         var decomposedStory = TerminalStory.Create()
             .WithWidth(480)

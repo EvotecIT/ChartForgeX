@@ -14,30 +14,32 @@ internal static class TerminalPngTextPreserver {
         if (value == null) {
             throw new ArgumentNullException(nameof(value));
         }
-        StringBuilder? output = null;
-        var copiedUntil = 0;
-        for (var index = 0; index < value.Length;) {
-            var scalarStart = index;
-            var codePoint = ReadCodePoint(value, ref index);
-            if (codePoint != EscapeStart && codePoint != EscapeEnd && CanRender(codePoint, font)) {
-                continue;
+        var output = new StringBuilder(value.Length + 16);
+        var changed = false;
+        foreach (var element in TerminalTextWidth.Elements(value)) {
+            var requiresShaping = RequiresShaping(element);
+            for (var index = 0; index < element.Length;) {
+                var scalarStart = index;
+                if (TerminalTextWidth.TryPreservedScalar(element, index, out var preservedLength, out _)) {
+                    output.Append(element, index, preservedLength);
+                    index += preservedLength;
+                    continue;
+                }
+                var codePoint = ReadCodePoint(element, ref index);
+                if (!requiresShaping &&
+                    codePoint != EscapeStart &&
+                    codePoint != EscapeEnd &&
+                    CanRender(codePoint, font)) {
+                    output.Append(element, scalarStart, index - scalarStart);
+                    continue;
+                }
+
+                AppendPreservedScalar(output, codePoint);
+                changed = true;
             }
-
-            output ??= new StringBuilder(value.Length + 16);
-            output.Append(value, copiedUntil, scalarStart - copiedUntil);
-            output.Append(EscapeStart);
-            output.Append("[U+");
-            output.Append(codePoint.ToString(codePoint <= ushort.MaxValue ? "X4" : "X", CultureInfo.InvariantCulture));
-            output.Append(']');
-            output.Append(EscapeEnd);
-            copiedUntil = index;
         }
 
-        if (output == null) {
-            return value;
-        }
-        output.Append(value, copiedUntil, value.Length - copiedUntil);
-        return output.ToString();
+        return changed ? output.ToString() : value;
     }
 
     public static double Measure(string value, RgbaCanvas canvas, double fontSize) {
@@ -77,6 +79,30 @@ internal static class TerminalPngTextPreserver {
             return font.HasGlyph(codePoint);
         }
         return codePoint <= char.MaxValue && TinyFont.Supports((char)codePoint);
+    }
+
+    private static bool RequiresShaping(string element) {
+        var scalarCount = 0;
+        for (var index = 0; index < element.Length;) {
+            if (TerminalTextWidth.TryPreservedScalar(element, index, out var preservedLength, out _)) {
+                index += preservedLength;
+            } else {
+                ReadCodePoint(element, ref index);
+            }
+            scalarCount++;
+            if (scalarCount > 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void AppendPreservedScalar(StringBuilder output, int codePoint) {
+        output.Append(EscapeStart);
+        output.Append("[U+");
+        output.Append(codePoint.ToString(codePoint <= ushort.MaxValue ? "X4" : "X", CultureInfo.InvariantCulture));
+        output.Append(']');
+        output.Append(EscapeEnd);
     }
 
     private static bool ContainsPreservedScalar(string value) {
