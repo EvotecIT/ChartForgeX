@@ -39,12 +39,18 @@ public abstract class VisualStorySurface {
 public sealed class VisualStorySourceSurface : VisualStorySurface {
     /// <summary>Initializes a source surface.</summary>
     public VisualStorySourceSurface(StorySourceText source, string? caption = null)
-        : base(VisualStorySurfaceKind.Source, caption ?? (source == null ? string.Empty : source.Text)) {
+        : base(VisualStorySurfaceKind.Source, AccessibleSourceText(source, caption)) {
         Source = source ?? throw new ArgumentNullException(nameof(source));
     }
 
     /// <summary>Gets the exact source and semantic syntax spans.</summary>
     public StorySourceText Source { get; }
+
+    private static string AccessibleSourceText(StorySourceText source, string? caption) {
+        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (caption == null) return source.Text;
+        return RequireText(caption, nameof(caption)) + Environment.NewLine + source.Text;
+    }
 }
 
 /// <summary>Displays a deterministic terminal story without executing its commands.</summary>

@@ -21,9 +21,11 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         }
         var outputWidth = checked((long)story.Width * animation.OutputScale);
         var outputHeight = checked((long)story.Height * animation.OutputScale);
-        var retained = checked(outputWidth * outputHeight * 4 * frameCount);
+        var retainedFrames = checked(outputWidth * outputHeight * 4 * frameCount);
+        var retainedScenes = checked((long)story.Width * story.Height * 4 * story.Scenes.Count);
+        var retained = checked(retainedFrames + retainedScenes);
         if (retained > MaximumRetainedFrameBytes) {
-            throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames. Lower the size, scale, frame rate, or duration.");
+            throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames and cached scenes. Lower the size, scale, frame rate, duration, or scene count.");
         }
 
         var scenes = new List<RgbaImage>(story.Scenes.Count);

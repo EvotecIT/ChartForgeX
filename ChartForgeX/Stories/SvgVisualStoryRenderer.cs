@@ -123,7 +123,7 @@ public sealed class SvgVisualStoryRenderer {
                 css
                     .Append("100%{opacity:").Append(index == story.Scenes.Count - 1 ? '1' : '0').Append("}}");
                 css.Append('#').Append(id).Append(" .cfx-story-scene-").Append(index)
-                    .Append("{opacity:0;animation:").Append(name).Append(' ')
+                    .Append("{opacity:").Append(index == story.Scenes.Count - 1 ? '1' : '0').Append(";animation:").Append(name).Append(' ')
                     .Append(total.ToString("0.###", CultureInfo.InvariantCulture)).Append("s linear infinite both}");
             }
         }

@@ -39,14 +39,18 @@ internal static partial class SmokeTests {
         var apng = story.ToApng(options);
 
         Assert(transcript.Contains("Outcomes:", StringComparison.Ordinal) &&
-               transcript.Contains("The result is visible", StringComparison.Ordinal),
-            "Visual-story transcripts should preserve promised outcomes.");
+               transcript.Contains("The result is visible", StringComparison.Ordinal) &&
+               transcript.Contains("PowerShell source", StringComparison.Ordinal) &&
+               transcript.Contains("Write-Output \"ready\"", StringComparison.Ordinal),
+            "Visual-story transcripts should preserve promised outcomes, source captions, and source text.");
         Assert(svg.Contains("data-cfx-story=\"visual\"", StringComparison.Ordinal) &&
                svg.Contains("data-cfx-scene=\"source\"", StringComparison.Ordinal) &&
                svg.Contains("data-cfx-scene=\"result\"", StringComparison.Ordinal) &&
                svg.Contains("@media (prefers-reduced-motion:reduce)", StringComparison.Ordinal) &&
                svg.Contains("cfx-story-scene-last", StringComparison.Ordinal) &&
                svg.Contains("-motion-scene-0", StringComparison.Ordinal) &&
+               svg.Contains(".cfx-story-scene-0{opacity:0;animation:", StringComparison.Ordinal) &&
+               svg.Contains(".cfx-story-scene-1{opacity:1;animation:", StringComparison.Ordinal) &&
                svg.Contains("0%{opacity:1}50%{opacity:1}51.2%{opacity:0}", StringComparison.Ordinal) &&
                svg.Contains("50%{opacity:0}51.2%{opacity:1}", StringComparison.Ordinal) &&
                !svg.Contains("cfx-story-seed-", StringComparison.Ordinal) &&
@@ -98,6 +102,20 @@ internal static partial class SmokeTests {
         source.AddSpan(3, 5, StorySyntaxKind.Variable);
         AssertThrows<ArgumentException>(() => source.AddSpan(2, 2, StorySyntaxKind.Keyword), "Syntax spans should be ordered and non-overlapping.");
 
+        var normalizedIdentifiers = VisualStory.Create("Normalized identifiers").WithSize(480, 320);
+        normalizedIdentifiers.Scene("result", "Completed")
+            .Panel("output", new VisualStoryTextSurface("ready"));
+        AssertThrows<ArgumentException>(
+            () => normalizedIdentifiers.Scene(" result ", "Duplicate"),
+            "Whitespace-equivalent scene identifiers should be rejected.");
+        AssertThrows<ArgumentException>(
+            () => normalizedIdentifiers.Scenes[0].Panel(" output ", new VisualStoryTextSurface("duplicate")),
+            "Whitespace-equivalent panel identifiers should be rejected.");
+        normalizedIdentifiers.Outcome("ready", "Ready", "output");
+        AssertThrows<ArgumentException>(
+            () => normalizedIdentifiers.Outcome(" ready ", "Duplicate", "output"),
+            "Whitespace-equivalent outcome identifiers should be rejected.");
+
         var unicodeStory = VisualStory.Create("Unicode clipping").WithSize(480, 320);
         unicodeStory.Scene("result", "Completed")
             .Panel("result", new VisualStorySourceSurface(
@@ -136,5 +154,19 @@ internal static partial class SmokeTests {
                lightHtml.Contains("@media print", StringComparison.Ordinal) &&
                lightHtml.Contains("width:min(480px,100%)", StringComparison.Ordinal),
             "Complete visual-story pages should honor light themes and the configured story width.");
+
+        var retainedScenes = VisualStory.Create("Retained-scene memory").WithSize(3000, 1000);
+        for (var index = 0; index < 24; index++) {
+            retainedScenes.Scene("scene-" + index, "Scene " + index, 0.25)
+                .Panel("result", new VisualStoryTextSurface("ready"));
+        }
+        retainedScenes.Outcome("ready", "Ready", "result");
+        var constrainedAnimation = VisualStoryAnimationOptions.Create()
+            .WithFramesPerSecond(2)
+            .WithEndHold(0)
+            .WithMaximumFrames(16);
+        AssertThrows<InvalidOperationException>(
+            () => retainedScenes.ToGif(constrainedAnimation),
+            "Animated visual-story memory limits should include cached scene images.");
     }
 }

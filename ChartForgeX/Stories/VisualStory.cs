@@ -68,8 +68,9 @@ public sealed class VisualStoryScene {
     /// <summary>Adds a resolved panel.</summary>
     public VisualStoryScene Panel(string id, VisualStorySurface surface, string? title = null, double weight = 1) {
         if (_panels.Count >= 4) throw new InvalidOperationException("Visual-story scenes support at most four panels.");
-        if (_panels.Any(panel => string.Equals(panel.Id, id, StringComparison.Ordinal))) throw new ArgumentException("Panel identifiers must be unique within a scene.", nameof(id));
-        _panels.Add(new VisualStoryPanel(id, title ?? string.Empty, surface, weight));
+        var normalizedId = VisualStorySurface.RequireText(id, nameof(id));
+        if (_panels.Any(panel => string.Equals(panel.Id, normalizedId, StringComparison.Ordinal))) throw new ArgumentException("Panel identifiers must be unique within a scene.", nameof(id));
+        _panels.Add(new VisualStoryPanel(normalizedId, title ?? string.Empty, surface, weight));
         return this;
     }
 
@@ -160,8 +161,9 @@ public sealed class VisualStory {
     /// <summary>Adds a scene and returns it for panel configuration.</summary>
     public VisualStoryScene Scene(string id, string title, double durationSeconds = 2.5, VisualStorySceneLayout layout = VisualStorySceneLayout.Focus) {
         if (_scenes.Count >= 24) throw new InvalidOperationException("Visual stories support at most 24 scenes.");
-        if (_scenes.Any(scene => string.Equals(scene.Id, id, StringComparison.Ordinal))) throw new ArgumentException("Scene identifiers must be unique.", nameof(id));
-        var scene = new VisualStoryScene(id, title, durationSeconds, layout);
+        var normalizedId = VisualStorySurface.RequireText(id, nameof(id));
+        if (_scenes.Any(scene => string.Equals(scene.Id, normalizedId, StringComparison.Ordinal))) throw new ArgumentException("Scene identifiers must be unique.", nameof(id));
+        var scene = new VisualStoryScene(normalizedId, title, durationSeconds, layout);
         _scenes.Add(scene);
         return scene;
     }
@@ -169,8 +171,9 @@ public sealed class VisualStory {
     /// <summary>Declares an outcome that must be visible in the completed scene.</summary>
     public VisualStory Outcome(string id, string label, string completedPanelId) {
         if (_outcomes.Count >= 12) throw new InvalidOperationException("Visual stories support at most 12 declared outcomes.");
-        if (_outcomes.Any(outcome => string.Equals(outcome.Id, id, StringComparison.Ordinal))) throw new ArgumentException("Outcome identifiers must be unique.", nameof(id));
-        _outcomes.Add(new VisualStoryOutcome(id, label, completedPanelId));
+        var normalizedId = VisualStorySurface.RequireText(id, nameof(id));
+        if (_outcomes.Any(outcome => string.Equals(outcome.Id, normalizedId, StringComparison.Ordinal))) throw new ArgumentException("Outcome identifiers must be unique.", nameof(id));
+        _outcomes.Add(new VisualStoryOutcome(normalizedId, label, completedPanelId));
         return this;
     }
 
