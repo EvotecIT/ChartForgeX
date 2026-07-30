@@ -25,6 +25,26 @@ public sealed class PngTerminalStoryRenderer {
         return Render(story, outlineFont, tableFont, outputScale);
     }
 
+    internal RgbaImage RenderFitted(
+        TerminalStory story,
+        double targetWidth,
+        double targetHeight,
+        int outputScale) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        if (targetWidth <= 0) throw new ArgumentOutOfRangeException(nameof(targetWidth));
+        if (targetHeight <= 0) throw new ArgumentOutOfRangeException(nameof(targetHeight));
+        if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
+        var theme = story.Theme;
+        var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
+        var tableFont = ResolveTableFont(theme, outlineFont);
+        string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
+        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
+        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
+        var fittedScale = Math.Min(targetWidth / layout.Width, targetHeight / layout.Height);
+        var renderScale = Math.Max(1, Math.Min(4, (int)Math.Ceiling(outputScale * fittedScale)));
+        return RenderImage(story, layout, outlineFont, tableFont, renderScale, null);
+    }
+
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var tableFont = ResolveTableFont(story.Theme, outlineFont);

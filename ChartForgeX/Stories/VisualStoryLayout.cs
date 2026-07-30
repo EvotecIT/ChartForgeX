@@ -66,6 +66,11 @@ internal static class VisualStoryLayout {
                 "Visual-story panel '" + panel.Id +
                 "' has no drawable content area. Increase the story size, reduce the panel count, or use a different scene layout.");
         }
+        if (panel.Surface.Kind == VisualStorySurfaceKind.Source && content.Height < 18.5) {
+            throw new InvalidOperationException(
+                "Visual-story source panel '" + panel.Id +
+                "' is too short to render a source line. Increase the story size, reduce the panel count, or use a different scene layout.");
+        }
         return content;
     }
 }

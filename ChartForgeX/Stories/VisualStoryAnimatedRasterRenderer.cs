@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ChartForgeX.Composition;
 using ChartForgeX.Raster;
-using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Stories;
 
@@ -48,12 +46,28 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var transitionSeconds = Math.Min(options.TransitionSeconds, story.Scenes[sceneIndex].DurationSeconds);
         if (sceneIndex + 1 < scenes.Count && transitionSeconds > 0 && remaining < transitionSeconds) {
             var progress = Math.Max(0, Math.Min(1, 1 - remaining / transitionSeconds));
-            var blend = ImageComposition.CreateScaled(story.Width, story.Height, story.Theme.Background, options.OutputScale);
-            blend.DrawImage(current, 0, 0, story.Width, story.Height, VisualCanvasImageFit.Stretch);
-            blend.DrawImage(scenes[sceneIndex + 1], 0, 0, story.Width, story.Height, VisualCanvasImageFit.Stretch, progress);
-            return blend.ToImage();
+            return CrossFade(
+                current,
+                scenes[sceneIndex + 1],
+                progress);
         }
         return current;
+    }
+
+    internal static RgbaImage CrossFade(
+        RgbaImage current,
+        RgbaImage next,
+        double progress) {
+        if (current.Width != next.Width || current.Height != next.Height) {
+            throw new ArgumentException("Cross-faded story scenes must have matching dimensions.", nameof(next));
+        }
+        var pixels = new byte[current.Pixels.Length];
+        for (var index = 0; index < pixels.Length; index++) {
+            pixels[index] = (byte)Math.Round(
+                current.Pixels[index] * (1 - progress) +
+                next.Pixels[index] * progress);
+        }
+        return new RgbaImage(current.Width, current.Height, pixels);
     }
 
     private static void EnsureEverySceneIsVisible(VisualStory story, int frameCount, int delay, double transitionSeconds) {

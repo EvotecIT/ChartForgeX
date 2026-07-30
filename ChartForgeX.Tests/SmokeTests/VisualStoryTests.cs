@@ -150,6 +150,19 @@ internal static partial class SmokeTests {
             () => crowded.ToPng(),
             "Stories should reject stacked layouts that cannot provide a positive panel content area.");
 
+        var sourceTooShort = VisualStory.Create("Crowded source stack").WithSize(480, 480);
+        var sourceScene = sourceTooShort.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Stacked);
+        for (var index = 0; index < 4; index++) {
+            sourceScene.Panel(
+                "source-" + index,
+                new VisualStorySourceSurface(StorySourceText.Create("Write-Output ready", "powershell")),
+                "Source " + index);
+        }
+        sourceTooShort.Outcome("visible", "Source is visible", "source-3");
+        AssertThrows<InvalidOperationException>(
+            () => sourceTooShort.ToPng(),
+            "Stories should reject positive source-panel content areas that are too short to render one source line.");
+
         var lightStory = VisualStory.Create("Light documentation")
             .WithSize(480, 320)
             .WithTheme(VisualStoryTheme.Light());
@@ -363,5 +376,43 @@ internal static partial class SmokeTests {
         Assert(terminalStoryFrame.Width == terminalStory.Width * 4 &&
                terminalStoryFrame.Height == terminalStory.Height * 4,
             "Animated visual stories should propagate their requested density through terminal panels.");
+
+        var longTerminal = TerminalStory.Create()
+            .WithWidth(960)
+            .WithPngOutputScale(4)
+            .WithTiming(0, 200, 0)
+            .WithFinalPrompt(false)
+            .Output(string.Join(Environment.NewLine, Enumerable.Repeat("completed line", 105)));
+        var fittedTerminalStory = VisualStory.Create("Fitted terminal density")
+            .WithSize(480, 320);
+        fittedTerminalStory.Scene("result", "Completed", 0.25)
+            .Panel("terminal", new VisualStoryTerminalSurface(longTerminal, "A long completed transcript"));
+        fittedTerminalStory.Outcome("visible", "The terminal is visible", "terminal");
+        var fittedTerminalGif = fittedTerminalStory.ToGif(
+            VisualStoryAnimationOptions.Create()
+                .WithFramesPerSecond(4)
+                .WithTransition(0)
+                .WithEndHold(0)
+                .WithOutputScale(4)
+                .WithMaximumFrames(2));
+        Assert(fittedTerminalGif.Length > 8,
+            "Nested terminal canvases should render only at the density needed by their fitted story panel.");
+
+        var outgoing = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
+        var incoming = new RgbaImage(1, 1, new byte[] { 0, 0, 0, 0 });
+        var transparentFade = VisualStoryAnimatedRasterRenderer.CrossFade(
+            outgoing,
+            incoming,
+            0.5);
+        Assert(transparentFade.Pixels[3] >= 126 && transparentFade.Pixels[3] <= 129,
+            "Raster story cross-fades should reduce outgoing alpha when the incoming scene is transparent.");
+        var opaqueFade = VisualStoryAnimatedRasterRenderer.CrossFade(
+            outgoing,
+            new RgbaImage(1, 1, new byte[] { 0, 0, 255, 255 }),
+            0.5);
+        Assert(opaqueFade.Pixels[3] == 255 &&
+               opaqueFade.Pixels[0] >= 126 && opaqueFade.Pixels[0] <= 129 &&
+               opaqueFade.Pixels[2] >= 126 && opaqueFade.Pixels[2] <= 129,
+            "Raster story cross-fades should linearly interpolate opaque scene colors without reducing opacity.");
     }
 }

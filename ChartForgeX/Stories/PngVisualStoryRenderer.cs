@@ -129,9 +129,12 @@ public sealed class PngVisualStoryRenderer {
     }
 
     private static void DrawTerminal(ImageComposition canvas, VisualStoryTerminalSurface surface, VisualStoryBounds bounds, int outputScale) {
-        var terminalScale = Math.Max(outputScale, surface.Terminal.PngOutputScale);
-        var png = new Terminal.PngTerminalStoryRenderer().Render(surface.Terminal, terminalScale);
-        canvas.DrawImageBytes(png, bounds.X, bounds.Y, bounds.Width, bounds.Height, VisualCanvasImageFit.Contain);
+        var terminal = new Terminal.PngTerminalStoryRenderer().RenderFitted(
+            surface.Terminal,
+            bounds.Width,
+            bounds.Height,
+            outputScale);
+        canvas.DrawImage(terminal, bounds.X, bounds.Y, bounds.Width, bounds.Height, VisualCanvasImageFit.Contain);
     }
 
     private static void DrawText(ImageComposition canvas, VisualStory story, VisualStoryTextSurface surface, VisualStoryBounds bounds) {
