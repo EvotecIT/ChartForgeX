@@ -55,8 +55,9 @@ internal static partial class SmokeTests {
                svg.Contains("-motion-scene-0", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-0{opacity:0;animation:", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-1{opacity:1;animation:", StringComparison.Ordinal) &&
-               svg.Contains("0%{opacity:1}2%{opacity:1;animation-timing-function:steps(1,end)}50%{opacity:0}100%{opacity:0}", StringComparison.Ordinal) &&
+               svg.Contains("0%{opacity:1}2%{opacity:1}50%{opacity:0}100%{opacity:0}", StringComparison.Ordinal) &&
                svg.Contains("0%{opacity:0}2%{opacity:0}50%{opacity:1}100%{opacity:1}", StringComparison.Ordinal) &&
+               !svg.Contains("animation-timing-function:steps(1,end)", StringComparison.Ordinal) &&
                !svg.Contains("cfx-story-seed-", StringComparison.Ordinal) &&
                svg.Contains("data-cfx-role=\"story-vector-media\"", StringComparison.Ordinal) &&
                svg.Contains("data:image/svg+xml;base64,", StringComparison.Ordinal) &&
@@ -204,6 +205,12 @@ internal static partial class SmokeTests {
                 "Remote vector",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"https://example.invalid/image.png\"/></svg>"),
             "Vector media should reject external resource references so story output stays deterministic and self-contained.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Remote presentation resource",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect filter=\"url(https://example.invalid/filter.svg#f)\"/></svg>"),
+            "Vector media should reject external functional IRIs in SVG presentation attributes.");
         var animatedDataImage = ApngWriter.WriteRgba(
             new[] {
                 new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }),
@@ -237,9 +244,10 @@ internal static partial class SmokeTests {
         var staticStyledVector = new VisualStoryMediaSurface(
             new RgbaImage(1, 1, new byte[4]),
             "Static styled vector",
-            "<svg xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"g\"><stop offset=\"0\"/></linearGradient></defs><style>.shape{fill:url(#g)}</style><rect class=\"shape\"/></svg>");
-        Assert(staticStyledVector.Svg.Contains("fill:url(#g)", StringComparison.Ordinal),
-            "Vector media should retain static CSS and local fragment resources exactly.");
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"g\"><stop offset=\"0\"/></linearGradient></defs><style>.shape{fill:url(#g)}</style><rect class=\"shape\" stroke=\"url(#g)\"/></svg>");
+        Assert(staticStyledVector.Svg.Contains("fill:url(#g)", StringComparison.Ordinal) &&
+               staticStyledVector.Svg.Contains("stroke=\"url(#g)\"", StringComparison.Ordinal),
+            "Vector media should retain static CSS and local presentation fragment resources exactly.");
 
         var tabColumn = 0;
         Assert(PngVisualStoryRenderer.ExpandSourceTabs("\tvalue\t", ref tabColumn) == "    value   " &&
@@ -335,7 +343,7 @@ internal static partial class SmokeTests {
             () => retainedScenes.ToGif(constrainedAnimation),
             "Animated visual-story memory limits should include cached scene images.");
 
-        var encoderBuffers = VisualStory.Create("Encoder memory").WithSize(2100, 1200);
+        var encoderBuffers = VisualStory.Create("Encoder memory").WithSize(3840, 2160);
         encoderBuffers.Scene("first", "First", 2.8)
             .Panel("result", new VisualStoryTextSurface("first"));
         encoderBuffers.Scene("second", "Second", 2.8)
@@ -347,7 +355,31 @@ internal static partial class SmokeTests {
                     .WithFramesPerSecond(4)
                     .WithEndHold(0)
                     .WithMaximumFrames(30)),
-            "Animated visual-story memory limits should include one streamed APNG delta buffer before frames are allocated.");
+            "Animated visual-story memory limits should include concurrent streamed APNG working buffers before scenes are allocated.");
+        var oneFrameApngBudget = AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+            480,
+            320,
+            1,
+            AnimatedRasterFormat.Apng);
+        var fourFrameApngBudget = AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+            480,
+            320,
+            4,
+            AnimatedRasterFormat.Apng);
+        Assert(fourFrameApngBudget > oneFrameApngBudget,
+            "APNG memory estimates should include the accumulated encoded stream and final output materialization.");
+
+        var sharedTranscriptSource = new VisualStorySourceSurface(
+            StorySourceText.Create(new string('x', 1024 * 1024), "text"));
+        var oversizedTranscript = VisualStory.Create("Bounded transcript").WithSize(480, 320);
+        for (var index = 0; index < 24; index++) {
+            oversizedTranscript.Scene("scene-" + index, "Scene " + index, 0.25)
+                .Panel("source", sharedTranscriptSource);
+        }
+        oversizedTranscript.Outcome("source", "Source remains available", "source");
+        AssertThrows<InvalidOperationException>(
+            () => oversizedTranscript.ToTranscript(),
+            "Visual-story transcripts should reject aggregate accessible content before allocating the output builder.");
 
         var skippedScene = VisualStory.Create("Every scene sampled").WithSize(480, 320);
         for (var index = 0; index < 3; index++) {
@@ -484,6 +516,33 @@ internal static partial class SmokeTests {
             32);
         Assert(truncationBounds.Right >= truncatedBounds.X + truncatedBounds.Width - 28,
             "Vertically truncated source panels should draw a visible ellipsis on the final rendered line.");
+
+        var horizontalTheme = VisualStoryTheme.PremiumDark();
+        horizontalTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);
+        horizontalTheme.Syntax.Keyword = ChartColor.FromRgb(0, 255, 0);
+        horizontalTheme.Syntax.Type = ChartColor.FromRgb(0, 128, 255);
+        var horizontalSource = StorySourceText.Create(new string('W', 37) + "tail", "text")
+            .AddSpan(0, 37, StorySyntaxKind.Keyword)
+            .AddSpan(37, 4, StorySyntaxKind.Type);
+        var horizontalStory = VisualStory.Create("Run-boundary truncation")
+            .WithSize(480, 320)
+            .WithTheme(horizontalTheme);
+        horizontalStory.Scene("result", "Completed")
+            .Panel("result", new VisualStorySourceSurface(horizontalSource));
+        horizontalStory.Outcome("ready", "Ready", "result");
+        var horizontalPixels = ReadPngRgba(horizontalStory.ToPng(), out var horizontalWidth, out _);
+        var horizontalBounds = VisualStoryLayout.PanelContent(
+            horizontalStory.Scenes[0].Panels[0],
+            VisualStoryLayout.Panels(horizontalStory, horizontalStory.Scenes[0])[0]);
+        var horizontalMarker = FindNearColorBounds(
+            horizontalPixels,
+            horizontalWidth,
+            255,
+            0,
+            128,
+            32);
+        Assert(horizontalMarker.Right >= horizontalBounds.X + horizontalBounds.Width - 20,
+            "Horizontally truncated syntax runs should reserve a visible line-level ellipsis.");
     }
 
     private static void VisualStoryRasterLayoutStaysBoundedAtEveryDensity() {

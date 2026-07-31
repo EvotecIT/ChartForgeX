@@ -24,15 +24,43 @@ internal static class ApngWriter {
     public static void WriteRgba(Stream stream, AnimatedRasterFrames animation) {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (animation == null) throw new ArgumentNullException(nameof(animation));
+        WriteRgba(
+            stream,
+            animation.Width,
+            animation.Height,
+            animation.Frames.Count,
+            animation.DelayCentiseconds,
+            animation.Loop,
+            index => animation.Frames[index]);
+    }
+
+    /// <summary>Writes a known APNG frame count while obtaining each frame only when it is encoded.</summary>
+    internal static void WriteRgba(
+        Stream stream,
+        int width,
+        int height,
+        int frameCount,
+        int delayCentiseconds,
+        bool loop,
+        Func<int, RgbaImage> renderFrame) {
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
+        if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
+        if (frameCount <= 0) throw new ArgumentOutOfRangeException(nameof(frameCount));
+        if (renderFrame == null) throw new ArgumentNullException(nameof(renderFrame));
+        var delay = Math.Max(1, Math.Min(65535, delayCentiseconds));
         stream.Write(Signature, 0, Signature.Length);
-        WriteIhdr(stream, animation.Width, animation.Height);
-        WriteActl(stream, animation.Frames.Count, animation.Loop ? 0 : 1);
+        WriteIhdr(stream, width, height);
+        WriteActl(stream, frameCount, loop ? 0 : 1);
         var sequence = 0u;
         RgbaImage? previous = null;
-        for (var i = 0; i < animation.Frames.Count; i++) {
-            var current = animation.Frames[i];
+        for (var i = 0; i < frameCount; i++) {
+            var current = renderFrame(i);
+            if (current.Width != width || current.Height != height) {
+                throw new InvalidOperationException("Animated PNG frame renderers must return the configured dimensions.");
+            }
             var frame = RgbaFrameOptimizer.BuildFrame(current, previous);
-            WriteFctl(stream, sequence++, frame.Width, frame.Height, frame.Left, frame.Top, animation.DelayCentiseconds, 100);
+            WriteFctl(stream, sequence++, frame.Width, frame.Height, frame.Left, frame.Top, delay, 100);
             var compressed = ZlibDeflate(RawFrame(frame));
             if (i == 0) WriteChunk(stream, "IDAT", compressed);
             else WriteFdat(stream, sequence++, compressed);

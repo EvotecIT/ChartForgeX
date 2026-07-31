@@ -24,17 +24,43 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
         }
         var outputWidth = checked((long)layout.Width * animation.OutputScale);
         var outputHeight = checked((long)layout.Height * animation.OutputScale);
-        var retainedFrameBytes = checked(
-            outputWidth * outputHeight * 4 * frameCount +
-            AnimatedRasterMemoryBudget.EncoderRetainedBytes(
-                outputWidth,
-                outputHeight,
-                frameCount,
-                format));
+        var frameBytes = checked(outputWidth * outputHeight * 4);
+        var retainedFrameBytes = format == AnimatedRasterFormat.Apng
+            ? checked(
+                frameBytes * 2 +
+                AnimatedRasterMemoryBudget.ApngWorkingBytes(outputWidth, outputHeight))
+            : checked(
+                frameBytes * frameCount +
+                AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+                    outputWidth,
+                    outputHeight,
+                    frameCount,
+                    format));
         if (retainedFrameBytes > AnimatedRasterMemoryBudget.MaximumRetainedBytes) {
             throw new InvalidOperationException(
                 "Animated terminal story would retain " + retainedFrameBytes +
                 " bytes of sampled frames and encoder buffers. Lower the output scale, frame rate, story size, or duration.");
+        }
+        if (format == AnimatedRasterFormat.Apng) {
+            var maximumEncodedBytes = AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retainedFrameBytes);
+            if (maximumEncodedBytes <= 0) {
+                throw new InvalidOperationException(
+                    "Animated terminal story has no remaining bounded memory for encoded PNG output. Lower the output scale or story size.");
+            }
+            return AnimatedRasterEncoder.EncodeStreamedApng(
+                checked((int)outputWidth),
+                checked((int)outputHeight),
+                frameCount,
+                delayCentiseconds,
+                animation.Loop,
+                maximumEncodedBytes,
+                index => PngTerminalStoryRenderer.RenderImage(
+                    story,
+                    layout,
+                    outlineFont,
+                    tableFont,
+                    animation.OutputScale,
+                    index * delayCentiseconds / 100d));
         }
 
         var images = new List<RgbaImage>(frameCount);

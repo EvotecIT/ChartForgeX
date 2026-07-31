@@ -207,9 +207,26 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 IsUnsafeResourceReference(reader.Value)) {
                 throw new ArgumentException("The vector representation must not contain executable or external resource references.", "svg");
             }
+            if (IsPresentationIriAttribute(reader.LocalName) &&
+                ContainsUnsafeCssReference(reader.Value)) {
+                throw new ArgumentException("The vector representation must not contain external presentation resources.", "svg");
+            }
         }
         reader.MoveToElement();
     }
+
+    private static bool IsPresentationIriAttribute(string localName) =>
+        string.Equals(localName, "filter", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "fill", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "stroke", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "mask", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "clip-path", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "marker", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "marker-start", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "marker-mid", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "marker-end", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "cursor", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "color-profile", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsActiveSvgElement(string localName) =>
         string.Equals(localName, "script", StringComparison.OrdinalIgnoreCase) ||

@@ -56,4 +56,25 @@ internal static class AnimatedRasterEncoder {
                 throw new ArgumentOutOfRangeException(nameof(format), format, "Unsupported animated raster format.");
         }
     }
+
+    /// <summary>Renders and encodes APNG frames one at a time into a bounded output buffer.</summary>
+    internal static byte[] EncodeStreamedApng(
+        int width,
+        int height,
+        int frameCount,
+        int delayCentiseconds,
+        bool loop,
+        long maximumEncodedBytes,
+        Func<int, RgbaImage> renderFrame) {
+        using var stream = new BoundedChunkStream(maximumEncodedBytes);
+        ApngWriter.WriteRgba(
+            stream,
+            width,
+            height,
+            frameCount,
+            delayCentiseconds,
+            loop,
+            renderFrame);
+        return stream.ToArray();
+    }
 }

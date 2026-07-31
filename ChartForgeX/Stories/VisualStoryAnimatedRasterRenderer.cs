@@ -18,21 +18,47 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         EnsureEverySceneIsVisible(story, frameCount, delay, animation.TransitionSeconds);
         var outputWidth = checked((long)story.Width * animation.OutputScale);
         var outputHeight = checked((long)story.Height * animation.OutputScale);
-        var retainedFrames = checked(outputWidth * outputHeight * 4 * frameCount);
-        var retainedScenes = checked(outputWidth * outputHeight * 4 * story.Scenes.Count);
-        var retainedEncoderFrames = AnimatedRasterMemoryBudget.EncoderRetainedBytes(
-            outputWidth,
-            outputHeight,
-            frameCount,
-            format);
-        var retained = checked(retainedFrames + retainedScenes + retainedEncoderFrames);
+        var frameBytes = checked(outputWidth * outputHeight * 4);
+        var retainedScenes = checked(frameBytes * story.Scenes.Count);
+        var retained = format == AnimatedRasterFormat.Apng
+            ? checked(
+                retainedScenes +
+                frameBytes * 2 +
+                AnimatedRasterMemoryBudget.ApngWorkingBytes(outputWidth, outputHeight))
+            : checked(
+                frameBytes * frameCount +
+                retainedScenes +
+                AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+                    outputWidth,
+                    outputHeight,
+                    frameCount,
+                    format));
         if (retained > AnimatedRasterMemoryBudget.MaximumRetainedBytes) {
             throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames, cached scenes, and encoder buffers. Lower the size, scale, frame rate, duration, or scene count.");
+        }
+        var maximumEncodedBytes = format == AnimatedRasterFormat.Apng
+            ? AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retained)
+            : 0;
+        if (format == AnimatedRasterFormat.Apng && maximumEncodedBytes <= 0) {
+            throw new InvalidOperationException("Animated visual story has no remaining bounded memory for encoded PNG output. Lower the size, scale, or scene count.");
         }
 
         var scenes = new List<RgbaImage>(story.Scenes.Count);
         for (var index = 0; index < story.Scenes.Count; index++) {
             scenes.Add(PngVisualStoryRenderer.RenderScene(story, index, animation.OutputScale));
+        }
+        if (format == AnimatedRasterFormat.Apng) {
+            return AnimatedRasterEncoder.EncodeStreamedApng(
+                checked((int)outputWidth),
+                checked((int)outputHeight),
+                frameCount,
+                delay,
+                animation.Loop,
+                maximumEncodedBytes,
+                index => {
+                    var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
+                    return RenderFrame(story, scenes, elapsed, animation);
+                });
         }
         var frames = new List<RgbaImage>(frameCount);
         for (var index = 0; index < frameCount; index++) {

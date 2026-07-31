@@ -153,7 +153,7 @@ public sealed class SvgVisualStoryRenderer {
                     AppendOpacity(css, timing.Start / total * 100, 1);
                 }
                 if (index != story.Scenes.Count - 1) {
-                    AppendSteppedOpacity(css, timing.TransitionStart / total * 100, 1);
+                    AppendOpacity(css, timing.TransitionStart / total * 100, 1);
                     AppendOpacity(css, timing.End / total * 100, 0);
                 }
                 AppendOpacity(css, 100, index == story.Scenes.Count - 1 ? 1 : 0);
@@ -175,12 +175,6 @@ public sealed class SvgVisualStoryRenderer {
             .Append("{opacity:")
             .Append(opacity)
             .Append('}');
-
-    private static void AppendSteppedOpacity(StringBuilder css, double percent, int opacity) =>
-        css.Append(Percent(Math.Max(0, Math.Min(100, percent))))
-            .Append("{opacity:")
-            .Append(opacity)
-            .Append(";animation-timing-function:steps(1,end)}");
 
     private static string Percent(double value) => value.ToString("0.#########", CultureInfo.InvariantCulture) + "%";
 }

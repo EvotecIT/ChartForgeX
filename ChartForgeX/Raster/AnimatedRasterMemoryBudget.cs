@@ -18,9 +18,44 @@ internal static class AnimatedRasterMemoryBudget {
             case AnimatedRasterFormat.Gif:
                 return checked(pixelCount * frameCount);
             case AnimatedRasterFormat.Apng:
-                return checked(pixelCount * 4);
+                return checked(
+                    ApngWorkingBytes(width, height) +
+                    ApngEncodedUpperBound(width, height, frameCount) * 3);
             default:
                 throw new ArgumentOutOfRangeException(nameof(format), format, "Unsupported animated raster format.");
         }
     }
+
+    /// <summary>Estimates concurrent APNG frame, filter, compression, and chunk buffers excluding encoded output.</summary>
+    internal static long ApngWorkingBytes(long width, long height) {
+        var pixelBytes = checked(width * height * 4);
+        var rawFrameBytes = checked(pixelBytes + height);
+        var compressedFrameBytes = DeflateBound(rawFrameBytes);
+        return checked(
+            pixelBytes +
+            rawFrameBytes +
+            compressedFrameBytes * 3 +
+            1024L * 1024);
+    }
+
+    /// <summary>Calculates the encoded-output ceiling when chunks and the exact returned array coexist.</summary>
+    internal static long MaximumStreamedApngBytes(long retainedWithoutOutput) {
+        var available = checked(MaximumRetainedBytes - retainedWithoutOutput - BoundedChunkStream.ChunkSize);
+        if (available <= 0) return 0;
+        return Math.Min(int.MaxValue, available / 2);
+    }
+
+    private static long ApngEncodedUpperBound(long width, long height, int frameCount) {
+        var rawFrameBytes = checked(width * height * 4 + height);
+        var compressedFrameBytes = DeflateBound(rawFrameBytes);
+        return checked(61 + frameCount * checked(54 + compressedFrameBytes));
+    }
+
+    private static long DeflateBound(long sourceBytes) =>
+        checked(
+            sourceBytes +
+            (sourceBytes >> 12) +
+            (sourceBytes >> 14) +
+            (sourceBytes >> 25) +
+            64);
 }
