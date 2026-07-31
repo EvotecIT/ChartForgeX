@@ -186,12 +186,11 @@ public sealed class PngVisualStoryRenderer {
             var measuredColumn = 0;
             var expandedLine = ExpandSourceTabs(lineText, ref measuredColumn);
             var measurementStyle = SourceStyle(story, StorySyntaxKind.Plain, fontSize);
-            const string truncationMarker = "...";
             var horizontallyTruncated =
                 TextLayoutEngine.Measure(expandedLine, measurementStyle).Width > bounds.Width;
             var truncated = verticallyTruncated || horizontallyTruncated;
             var truncationReserve = truncated
-                ? Math.Min(bounds.Width, TextLayoutEngine.Measure(truncationMarker, measurementStyle).Width)
+                ? Math.Min(bounds.Width, SourceTruncationMarkerWidth(fontSize))
                 : 0;
             var lineBounds = new VisualStoryBounds(
                 bounds.X,
@@ -232,18 +231,40 @@ public sealed class PngVisualStoryRenderer {
                 cursor = segmentEnd;
             }
             if (truncated) {
-                DrawSourceSegment(
+                DrawSourceTruncationMarker(
                     canvas,
                     story,
-                    truncationMarker,
-                    StorySyntaxKind.Plain,
                     bounds.X + bounds.Width - truncationReserve,
                     y,
-                    bounds,
-                    fontSize,
-                    appendEllipsis: false);
+                    fontSize);
             }
             y += lineHeight;
+        }
+    }
+
+    private static double SourceTruncationMarkerWidth(double fontSize) {
+        var dotSize = Math.Max(2, fontSize * 0.18);
+        var gap = Math.Max(1, dotSize * 0.6);
+        return dotSize * 3 + gap * 2;
+    }
+
+    private static void DrawSourceTruncationMarker(
+        ImageComposition canvas,
+        VisualStory story,
+        double x,
+        double y,
+        double fontSize) {
+        var dotSize = Math.Max(2, fontSize * 0.18);
+        var gap = Math.Max(1, dotSize * 0.6);
+        var dotY = y + Math.Max(0, fontSize * 0.76);
+        for (var index = 0; index < 3; index++) {
+            canvas.FillRoundedRectangle(
+                x + index * (dotSize + gap),
+                dotY,
+                dotSize,
+                dotSize,
+                dotSize / 2,
+                story.Theme.Syntax.Plain);
         }
     }
 
