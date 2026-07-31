@@ -11,7 +11,7 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var animation = options ?? VisualStoryAnimationOptions.Create();
         var delay = Math.Max(1, (int)Math.Ceiling(100d / animation.FramesPerSecond));
         var totalSeconds = story.DurationSeconds + animation.EndHoldSeconds;
-        var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delay) + 1);
+        var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delay));
         if (frameCount > animation.MaximumFrames) {
             throw new InvalidOperationException("Animated visual story requires " + frameCount + " frames. Lower the frame rate or duration, or increase the frame budget.");
         }
@@ -59,13 +59,13 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
                 animation.Loop,
                 maximumEncodedBytes,
                 index => {
-                    var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
+                    var elapsed = SampleElapsed(story, index, frameCount, delay);
                     return RenderFrame(story, scenes, elapsed, animation);
                 });
         }
         var frames = new List<RgbaImage>(frameCount);
         for (var index = 0; index < frameCount; index++) {
-            var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
+            var elapsed = SampleElapsed(story, index, frameCount, delay);
             frames.Add(RenderFrame(story, scenes, elapsed, animation));
         }
         var retainedFrames = AnimatedRasterFrames.Create(
@@ -119,11 +119,16 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         return new RgbaImage(current.Width, current.Height, pixels);
     }
 
+    private static double SampleElapsed(VisualStory story, int index, int frameCount, int delay) {
+        if (index == frameCount - 1) return story.DurationSeconds;
+        return Math.Min(story.DurationSeconds, index * delay / 100d);
+    }
+
     private static void EnsureEverySceneIsVisible(VisualStory story, int frameCount, int delay, double transitionSeconds) {
         const double minimumVisibleOpacity = 0.5;
         var visibleOpacity = new double[story.Scenes.Count];
         for (var index = 0; index < frameCount; index++) {
-            var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
+            var elapsed = SampleElapsed(story, index, frameCount, delay);
             var sceneIndex = VisualStoryTimeline.FindScene(story, elapsed, out var timing);
             var remaining = timing.End - elapsed;
             var transition = Math.Min(transitionSeconds, story.Scenes[sceneIndex].DurationSeconds);

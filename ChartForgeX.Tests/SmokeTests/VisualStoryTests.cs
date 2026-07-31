@@ -96,6 +96,8 @@ internal static partial class SmokeTests {
             "Visual stories should export animated GIF.");
         Assert(apng.Length > 128 && apng[0] == 137 && apng[1] == 80 && apng[2] == 78 && apng[3] == 71,
             "Visual stories should export animated PNG.");
+        Assert(ReadImageDescriptors(gif).Length == 2 && ReadApngFrameControls(apng).Length == 2,
+            "Animated story frame quantization should retain the completed endpoint without adding a full extra frame interval.");
 
         var longTransition = VisualStoryAnimationOptions.Create()
             .WithFramesPerSecond(4)
@@ -192,6 +194,12 @@ internal static partial class SmokeTests {
                 "Animated vector",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\"><animate attributeName=\"opacity\" values=\"0;1\"/></svg>"),
             "Vector media should reject SMIL animation that cannot follow the parent story timeline.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Stylesheet instruction",
+                "<?xml-stylesheet href=\"data:text/css,rect%7Bfill:red%7D\"?><svg xmlns=\"http://www.w3.org/2000/svg\"><rect/></svg>"),
+            "Vector media should reject processing instructions that could load active styling before the SVG root.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),

@@ -170,14 +170,26 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
             };
             using var text = new StringReader(svg);
             using var reader = XmlReader.Create(text, settings);
-            reader.MoveToContent();
-            if (!string.Equals(reader.LocalName, "svg", StringComparison.Ordinal) ||
+            var foundRoot = false;
+            while (reader.Read()) {
+                if (reader.NodeType == XmlNodeType.ProcessingInstruction) {
+                    throw new ArgumentException("The vector representation must not contain processing instructions.", nameof(svg));
+                }
+                if (reader.NodeType != XmlNodeType.Element) continue;
+                foundRoot = true;
+                break;
+            }
+            if (!foundRoot ||
+                !string.Equals(reader.LocalName, "svg", StringComparison.Ordinal) ||
                 !string.Equals(reader.NamespaceURI, SvgNamespace, StringComparison.Ordinal)) {
                 throw new ArgumentException("The vector representation must be a valid SVG document.", nameof(svg));
             }
             var insideStyle = false;
             ValidateSvgNode(reader);
             while (reader.Read()) {
+                if (reader.NodeType == XmlNodeType.ProcessingInstruction) {
+                    throw new ArgumentException("The vector representation must not contain processing instructions.", nameof(svg));
+                }
                 ValidateSvgNode(reader);
                 if (reader.NodeType == XmlNodeType.Element &&
                     string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
