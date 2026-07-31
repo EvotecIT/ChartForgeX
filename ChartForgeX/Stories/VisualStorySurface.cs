@@ -38,6 +38,20 @@ public abstract class VisualStorySurface {
         return value.Trim();
     }
 
+    internal static string RequireSingleLineText(string value, string name) {
+        var normalized = RequireText(value, name);
+        if (normalized.IndexOfAny(new[] { '\r', '\n' }) >= 0) {
+            throw new ArgumentException("A single-line value is required.", name);
+        }
+        return normalized;
+    }
+
+    internal static string OptionalSingleLineText(string value, string name) {
+        if (value == null) throw new ArgumentNullException(name);
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        return RequireSingleLineText(value, name);
+    }
+
     internal static string RequireContent(string value, string name) {
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("A non-empty value is required.", name);
         return value;
@@ -46,18 +60,28 @@ public abstract class VisualStorySurface {
 
 /// <summary>Displays exact source text with optional renderer-neutral syntax spans.</summary>
 public sealed class VisualStorySourceSurface : VisualStorySurface {
+    private readonly string _caption;
+
     /// <summary>Initializes a source surface.</summary>
     public VisualStorySourceSurface(StorySourceText source, string? caption = null)
         : base(VisualStorySurfaceKind.Source, AccessibleSourceText(source, caption), preserveAccessibleWhitespace: true) {
         Source = source ?? throw new ArgumentNullException(nameof(source));
+        _caption = string.IsNullOrWhiteSpace(caption)
+            ? string.Empty
+            : RequireText(caption!, nameof(caption));
     }
 
     /// <summary>Gets the exact source and semantic syntax spans.</summary>
     public StorySourceText Source { get; }
 
+    /// <summary>Gets accessibility text derived from the current source metadata.</summary>
+    public override string AccessibleText => AccessibleSourceText(Source, _caption);
+
     private static string AccessibleSourceText(StorySourceText source, string? caption) {
         if (source == null) throw new ArgumentNullException(nameof(source));
-        var accessibleHeading = caption == null ? string.Empty : RequireText(caption, nameof(caption));
+        var accessibleHeading = string.IsNullOrWhiteSpace(caption)
+            ? string.Empty
+            : RequireText(caption!, nameof(caption));
         if (source.Language.Length > 0) {
             if (accessibleHeading.Length > 0) accessibleHeading += Environment.NewLine;
             accessibleHeading += "Language: " + source.Language;

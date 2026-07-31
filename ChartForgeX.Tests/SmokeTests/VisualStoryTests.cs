@@ -132,6 +132,24 @@ internal static partial class SmokeTests {
                 "Language: text" + Environment.NewLine + whitespaceSource.Text,
                 StringComparison.Ordinal),
             "Captionless source accessibility text should declare its language and preserve exact source whitespace.");
+        whitespaceSource.WithLanguage("powershell");
+        Assert(whitespaceSurface.AccessibleText.StartsWith("Language: powershell" + Environment.NewLine, StringComparison.Ordinal),
+            "Source accessibility text should reflect language metadata mutations visible in the retained source presentation.");
+
+        AssertThrows<ArgumentException>(
+            () => VisualStory.Create("First line\nSecond line"),
+            "Story titles should reject line breaks because renderers present them as one-line headings.");
+        var headingStory = VisualStory.Create("Single-line headings").WithSize(480, 320);
+        AssertThrows<ArgumentException>(
+            () => headingStory.Scene("invalid", "First line\nSecond line"),
+            "Scene titles should reject line breaks because renderers present them as one-line headings.");
+        var headingScene = headingStory.Scene("valid", "Completed");
+        AssertThrows<ArgumentException>(
+            () => headingScene.Panel("invalid", new VisualStoryTextSurface("content"), "First line\nSecond line"),
+            "Panel titles should reject line breaks because renderers present them as one-line headings.");
+        AssertThrows<ArgumentException>(
+            () => headingStory.Outcome("invalid", "First line\nSecond line", "valid"),
+            "Outcome labels should reject line breaks because renderers present them as one-line badges.");
 
         var accessibleTerminal = TerminalStory.Create()
             .WithFinalPrompt(false)
@@ -321,6 +339,15 @@ internal static partial class SmokeTests {
         Assert(denseStory.ToPng().Length > 8,
             "Source rendering should remain bounded for the maximum supported syntax-span count.");
 
+        var narrowSource = VisualStory.Create("Narrow source").WithSize(480, 320);
+        var narrowScene = narrowSource.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
+        narrowScene.Panel("source", new VisualStorySourceSurface(StorySourceText.Create("x", "text")), weight: 0.12);
+        narrowScene.Panel("result", new VisualStoryTextSurface("ready"), weight: 1);
+        narrowSource.Outcome("ready", "Ready", "result");
+        AssertThrows<InvalidOperationException>(
+            () => narrowSource.ToPng(),
+            "Source panels should reject positive but too-narrow content areas that cannot draw a source line.");
+
         var truncatedTheme = VisualStoryTheme.PremiumDark();
         truncatedTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);
         var truncatedStory = VisualStory.Create("Visible truncation")
@@ -489,6 +516,10 @@ internal static partial class SmokeTests {
             0.5);
         Assert(transparentFade.Pixels[3] >= 126 && transparentFade.Pixels[3] <= 129,
             "Raster story cross-fades should reduce outgoing alpha when the incoming scene is transparent.");
+        Assert(transparentFade.Pixels[0] >= 254 &&
+               transparentFade.Pixels[1] == 0 &&
+               transparentFade.Pixels[2] == 0,
+            "Raster story cross-fades should interpolate transparent colors in premultiplied-alpha space without dark fringes.");
         var opaqueFade = VisualStoryAnimatedRasterRenderer.CrossFade(
             outgoing,
             new RgbaImage(1, 1, new byte[] { 0, 0, 255, 255 }),
