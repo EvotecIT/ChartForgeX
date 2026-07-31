@@ -31,12 +31,15 @@ internal static class RgbaFrameOptimizer {
         var optimized = new List<RgbaFrameRect>(frames.Count);
         RgbaImage? previous = null;
         for (var i = 0; i < frames.Count; i++) {
-            optimized.Add(i == 0 || previous == null ? FullFrame(frames[i]) : DeltaFrame(frames[i], previous.Value));
+            optimized.Add(BuildFrame(frames[i], previous));
             previous = frames[i];
         }
 
         return optimized;
     }
+
+    internal static RgbaFrameRect BuildFrame(RgbaImage current, RgbaImage? previous) =>
+        previous == null ? FullFrame(current) : DeltaFrame(current, previous.Value);
 
     private static RgbaFrameRect FullFrame(RgbaImage frame) =>
         new(0, 0, frame.Width, frame.Height, frame.Pixels);

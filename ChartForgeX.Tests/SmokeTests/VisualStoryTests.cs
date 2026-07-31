@@ -55,8 +55,8 @@ internal static partial class SmokeTests {
                svg.Contains("-motion-scene-0", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-0{opacity:0;animation:", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-1{opacity:1;animation:", StringComparison.Ordinal) &&
-               svg.Contains("0%{opacity:1}50%{opacity:1;animation-timing-function:steps(1,end)}51.2%{opacity:0}", StringComparison.Ordinal) &&
-               svg.Contains("50%{opacity:0}51.2%{opacity:1}", StringComparison.Ordinal) &&
+               svg.Contains("0%{opacity:1}2%{opacity:1;animation-timing-function:steps(1,end)}50%{opacity:0}100%{opacity:0}", StringComparison.Ordinal) &&
+               svg.Contains("0%{opacity:0}2%{opacity:0}50%{opacity:1}100%{opacity:1}", StringComparison.Ordinal) &&
                !svg.Contains("cfx-story-seed-", StringComparison.Ordinal) &&
                svg.Contains("data-cfx-role=\"story-vector-media\"", StringComparison.Ordinal) &&
                svg.Contains("data:image/svg+xml;base64,", StringComparison.Ordinal) &&
@@ -124,6 +124,16 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => source.AddSpan(1, 1, StorySyntaxKind.Variable), "Syntax spans should not split surrogate pairs.");
         source.AddSpan(3, 5, StorySyntaxKind.Variable);
         AssertThrows<ArgumentException>(() => source.AddSpan(2, 2, StorySyntaxKind.Keyword), "Syntax spans should be ordered and non-overlapping.");
+        var combiningSource = StorySourceText.Create("e\u0301 value");
+        AssertThrows<ArgumentException>(
+            () => combiningSource.AddSpan(0, 1, StorySyntaxKind.Keyword),
+            "Syntax spans should not split a base character from its combining marks.");
+        combiningSource.AddSpan(0, 2, StorySyntaxKind.Keyword);
+        var joinedEmojiSource = StorySourceText.Create("👩‍💻 value");
+        AssertThrows<ArgumentException>(
+            () => joinedEmojiSource.AddSpan(0, 2, StorySyntaxKind.Type),
+            "Syntax spans should not split emoji ZWJ sequences.");
+        joinedEmojiSource.AddSpan(0, 5, StorySyntaxKind.Type);
 
         var whitespaceSource = StorySourceText.Create("  indented source  ", "text");
         var whitespaceSurface = new VisualStorySourceSurface(whitespaceSource);
@@ -170,6 +180,36 @@ internal static partial class SmokeTests {
                 "Invalid vector",
                 "<not-svg/>"),
             "Vector media should reject malformed or non-SVG replacements before suppressing the raster fallback.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Animated vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><animate attributeName=\"opacity\" values=\"0;1\"/></svg>"),
+            "Vector media should reject SMIL animation that cannot follow the parent story timeline.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Styled vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@keyframes pulse{to{opacity:0}}</style><rect/></svg>"),
+            "Vector media should reject CSS animation that cannot follow reduced-motion and print rules.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Scripted vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\"><rect/></svg>"),
+            "Vector media should reject event handlers before embedding SVG content.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Remote vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"https://example.invalid/image.png\"/></svg>"),
+            "Vector media should reject external resource references so story output stays deterministic and self-contained.");
+        var staticStyledVector = new VisualStoryMediaSurface(
+            new RgbaImage(1, 1, new byte[4]),
+            "Static styled vector",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"g\"><stop offset=\"0\"/></linearGradient></defs><style>.shape{fill:url(#g)}</style><rect class=\"shape\"/></svg>");
+        Assert(staticStyledVector.Svg.Contains("fill:url(#g)", StringComparison.Ordinal),
+            "Vector media should retain static CSS and local fragment resources exactly.");
 
         var tabColumn = 0;
         Assert(PngVisualStoryRenderer.ExpandSourceTabs("\tvalue\t", ref tabColumn) == "    value   " &&
@@ -265,6 +305,20 @@ internal static partial class SmokeTests {
             () => retainedScenes.ToGif(constrainedAnimation),
             "Animated visual-story memory limits should include cached scene images.");
 
+        var encoderBuffers = VisualStory.Create("Encoder memory").WithSize(2100, 1200);
+        encoderBuffers.Scene("first", "First", 2.8)
+            .Panel("result", new VisualStoryTextSurface("first"));
+        encoderBuffers.Scene("second", "Second", 2.8)
+            .Panel("result", new VisualStoryTextSurface("second"));
+        encoderBuffers.Outcome("ready", "Ready", "result");
+        AssertThrows<InvalidOperationException>(
+            () => encoderBuffers.ToApng(
+                VisualStoryAnimationOptions.Create()
+                    .WithFramesPerSecond(4)
+                    .WithEndHold(0)
+                    .WithMaximumFrames(30)),
+            "Animated visual-story memory limits should include one streamed APNG delta buffer before frames are allocated.");
+
         var skippedScene = VisualStory.Create("Every scene sampled").WithSize(480, 320);
         for (var index = 0; index < 3; index++) {
             skippedScene.Scene("scene-" + index, "Scene " + index, 0.25)
@@ -347,6 +401,15 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => narrowSource.ToPng(),
             "Source panels should reject positive but too-narrow content areas that cannot draw a source line.");
+
+        var narrowText = VisualStory.Create("Narrow text").WithSize(480, 320);
+        var narrowTextScene = narrowText.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
+        narrowTextScene.Panel("text", new VisualStoryTextSurface("W", emphasized: true), weight: 0.2);
+        narrowTextScene.Panel("result", new VisualStoryTextSurface("ready"), weight: 1);
+        narrowText.Outcome("ready", "Ready", "result");
+        AssertThrows<InvalidOperationException>(
+            () => narrowText.ToPng(),
+            "Text panels should reject positive but too-narrow content areas that cannot contain a rendered glyph.");
 
         var truncatedTheme = VisualStoryTheme.PremiumDark();
         truncatedTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);

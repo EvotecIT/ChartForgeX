@@ -5,8 +5,6 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Terminal;
 
 internal sealed class TerminalStoryAnimatedRasterRenderer {
-    private const long MaximumRetainedFrameBytes = 256L * 1024 * 1024;
-
     public byte[] Render(TerminalStory story, TerminalStoryAnimationOptions? options, AnimatedRasterFormat format) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var animation = options ?? TerminalStoryAnimationOptions.Create();
@@ -26,11 +24,17 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
         }
         var outputWidth = checked((long)layout.Width * animation.OutputScale);
         var outputHeight = checked((long)layout.Height * animation.OutputScale);
-        var retainedFrameBytes = checked(outputWidth * outputHeight * 4 * frameCount);
-        if (retainedFrameBytes > MaximumRetainedFrameBytes) {
+        var retainedFrameBytes = checked(
+            outputWidth * outputHeight * 4 * frameCount +
+            AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+                outputWidth,
+                outputHeight,
+                frameCount,
+                format));
+        if (retainedFrameBytes > AnimatedRasterMemoryBudget.MaximumRetainedBytes) {
             throw new InvalidOperationException(
                 "Animated terminal story would retain " + retainedFrameBytes +
-                " bytes of sampled frames. Lower the output scale, frame rate, story size, or duration.");
+                " bytes of sampled frames and encoder buffers. Lower the output scale, frame rate, story size, or duration.");
         }
 
         var images = new List<RgbaImage>(frameCount);

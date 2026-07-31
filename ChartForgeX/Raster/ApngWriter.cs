@@ -27,14 +27,16 @@ internal static class ApngWriter {
         stream.Write(Signature, 0, Signature.Length);
         WriteIhdr(stream, animation.Width, animation.Height);
         WriteActl(stream, animation.Frames.Count, animation.Loop ? 0 : 1);
-        var optimizedFrames = RgbaFrameOptimizer.BuildFrames(animation.Frames);
         var sequence = 0u;
-        for (var i = 0; i < optimizedFrames.Count; i++) {
-            var frame = optimizedFrames[i];
+        RgbaImage? previous = null;
+        for (var i = 0; i < animation.Frames.Count; i++) {
+            var current = animation.Frames[i];
+            var frame = RgbaFrameOptimizer.BuildFrame(current, previous);
             WriteFctl(stream, sequence++, frame.Width, frame.Height, frame.Left, frame.Top, animation.DelayCentiseconds, 100);
             var compressed = ZlibDeflate(RawFrame(frame));
             if (i == 0) WriteChunk(stream, "IDAT", compressed);
             else WriteFdat(stream, sequence++, compressed);
+            previous = current;
         }
 
         WriteChunk(stream, "IEND", Array.Empty<byte>());

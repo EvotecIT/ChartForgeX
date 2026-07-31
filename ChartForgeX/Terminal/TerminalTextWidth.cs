@@ -147,6 +147,28 @@ internal static class TerminalTextWidth {
         }
     }
 
+    internal static bool IsElementBoundary(string value, int offset) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (offset < 0 || offset > value.Length) {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
+        if (offset == 0 || offset == value.Length) {
+            return true;
+        }
+        for (var index = 0; index < value.Length;) {
+            NextElement(value, ref index);
+            if (index == offset) {
+                return true;
+            }
+            if (index > offset) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     internal static IEnumerable<string> VisibleElements(string value) {
         if (value == null) {
             throw new ArgumentNullException(nameof(value));

@@ -5,8 +5,6 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Stories;
 
 internal sealed class VisualStoryAnimatedRasterRenderer {
-    private const long MaximumRetainedFrameBytes = 256L * 1024 * 1024;
-
     public byte[] Render(VisualStory story, VisualStoryAnimationOptions? options, AnimatedRasterFormat format) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         story.Validate();
@@ -22,9 +20,14 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var outputHeight = checked((long)story.Height * animation.OutputScale);
         var retainedFrames = checked(outputWidth * outputHeight * 4 * frameCount);
         var retainedScenes = checked(outputWidth * outputHeight * 4 * story.Scenes.Count);
-        var retained = checked(retainedFrames + retainedScenes);
-        if (retained > MaximumRetainedFrameBytes) {
-            throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames and cached scenes. Lower the size, scale, frame rate, duration, or scene count.");
+        var retainedEncoderFrames = AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+            outputWidth,
+            outputHeight,
+            frameCount,
+            format);
+        var retained = checked(retainedFrames + retainedScenes + retainedEncoderFrames);
+        if (retained > AnimatedRasterMemoryBudget.MaximumRetainedBytes) {
+            throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames, cached scenes, and encoder buffers. Lower the size, scale, frame rate, duration, or scene count.");
         }
 
         var scenes = new List<RgbaImage>(story.Scenes.Count);
@@ -40,9 +43,9 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
     }
 
     private static RgbaImage RenderFrame(VisualStory story, IReadOnlyList<RgbaImage> scenes, double elapsed, VisualStoryAnimationOptions options) {
-        var sceneIndex = FindScene(story, elapsed, out var sceneStart);
+        var sceneIndex = VisualStoryTimeline.FindScene(story, elapsed, out var timing);
         var current = scenes[sceneIndex];
-        var remaining = sceneStart + story.Scenes[sceneIndex].DurationSeconds - elapsed;
+        var remaining = timing.End - elapsed;
         var transitionSeconds = Math.Min(options.TransitionSeconds, story.Scenes[sceneIndex].DurationSeconds);
         if (sceneIndex + 1 < scenes.Count && transitionSeconds > 0 && remaining < transitionSeconds) {
             var progress = Math.Max(0, Math.Min(1, 1 - remaining / transitionSeconds));
@@ -87,8 +90,8 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var visibleOpacity = new double[story.Scenes.Count];
         for (var index = 0; index < frameCount; index++) {
             var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
-            var sceneIndex = FindScene(story, elapsed, out var sceneStart);
-            var remaining = sceneStart + story.Scenes[sceneIndex].DurationSeconds - elapsed;
+            var sceneIndex = VisualStoryTimeline.FindScene(story, elapsed, out var timing);
+            var remaining = timing.End - elapsed;
             var transition = Math.Min(transitionSeconds, story.Scenes[sceneIndex].DurationSeconds);
             if (sceneIndex + 1 < story.Scenes.Count && transition > 0 && remaining < transition) {
                 var progress = Math.Max(0, Math.Min(1, 1 - remaining / transition));
@@ -106,13 +109,4 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         }
     }
 
-    private static int FindScene(VisualStory story, double elapsed, out double sceneStart) {
-        sceneStart = 0d;
-        for (var index = 0; index < story.Scenes.Count; index++) {
-            var sceneEnd = sceneStart + story.Scenes[index].DurationSeconds;
-            if (elapsed < sceneEnd || index == story.Scenes.Count - 1) return index;
-            sceneStart = sceneEnd;
-        }
-        return story.Scenes.Count - 1;
-    }
 }

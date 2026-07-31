@@ -162,12 +162,102 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 !string.Equals(reader.NamespaceURI, SvgNamespace, StringComparison.Ordinal)) {
                 throw new ArgumentException("The vector representation must be a valid SVG document.", nameof(svg));
             }
+            var insideStyle = false;
+            ValidateSvgNode(reader);
             while (reader.Read()) {
+                ValidateSvgNode(reader);
+                if (reader.NodeType == XmlNodeType.Element &&
+                    string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
+                    insideStyle = !reader.IsEmptyElement;
+                } else if (insideStyle &&
+                           (reader.NodeType == XmlNodeType.Text ||
+                            reader.NodeType == XmlNodeType.CDATA) &&
+                           ContainsActiveCss(reader.Value)) {
+                    throw new ArgumentException("The vector representation must not contain active or external CSS.", nameof(svg));
+                } else if (reader.NodeType == XmlNodeType.EndElement &&
+                           string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
+                    insideStyle = false;
+                }
             }
             return svg!;
         } catch (XmlException ex) {
             throw new ArgumentException("The vector representation must be a valid SVG document.", nameof(svg), ex);
         }
+    }
+
+    private static void ValidateSvgNode(XmlReader reader) {
+        if (reader.NodeType != XmlNodeType.Element) return;
+        if (!string.Equals(reader.NamespaceURI, SvgNamespace, StringComparison.Ordinal)) {
+            throw new ArgumentException("The vector representation must contain SVG elements only.", "svg");
+        }
+        if (IsActiveSvgElement(reader.LocalName)) {
+            throw new ArgumentException("The vector representation must be static and cannot contain scripts, animation, or foreign content.", "svg");
+        }
+        if (!reader.HasAttributes) return;
+        while (reader.MoveToNextAttribute()) {
+            if (reader.LocalName.StartsWith("on", StringComparison.OrdinalIgnoreCase)) {
+                throw new ArgumentException("The vector representation must not contain event-handler attributes.", "svg");
+            }
+            if (string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase) &&
+                ContainsActiveCss(reader.Value)) {
+                throw new ArgumentException("The vector representation must not contain CSS animation or transitions.", "svg");
+            }
+            if ((string.Equals(reader.LocalName, "href", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(reader.LocalName, "src", StringComparison.OrdinalIgnoreCase)) &&
+                IsUnsafeResourceReference(reader.Value)) {
+                throw new ArgumentException("The vector representation must not contain executable or external resource references.", "svg");
+            }
+        }
+        reader.MoveToElement();
+    }
+
+    private static bool IsActiveSvgElement(string localName) =>
+        string.Equals(localName, "script", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "animate", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "animateMotion", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "animateTransform", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "set", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "discard", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "foreignObject", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ContainsActiveCss(string value) =>
+        value.IndexOf("animation", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        value.IndexOf("transition", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        value.IndexOf("@keyframes", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        value.IndexOf("@import", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        value.IndexOf("behavior", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        ContainsUnsafeCssReference(value);
+
+    private static bool ContainsUnsafeCssReference(string value) {
+        var cursor = 0;
+        while (cursor < value.Length) {
+            var start = value.IndexOf("url(", cursor, StringComparison.OrdinalIgnoreCase);
+            if (start < 0) return false;
+            var contentStart = start + 4;
+            var end = value.IndexOf(')', contentStart);
+            if (end < 0) return true;
+            var target = value.Substring(contentStart, end - contentStart)
+                .Trim()
+                .Trim('\'', '"');
+            if (!target.StartsWith("#", StringComparison.Ordinal)) return true;
+            cursor = end + 1;
+        }
+        return false;
+    }
+
+    private static bool IsUnsafeResourceReference(string value) {
+        var reference = value.Trim();
+        if (reference.Length == 0 || reference[0] == '#') {
+            return false;
+        }
+        if (reference.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) {
+            return !reference.StartsWith("data:image/png", StringComparison.OrdinalIgnoreCase) &&
+                   !reference.StartsWith("data:image/jpeg", StringComparison.OrdinalIgnoreCase) &&
+                   !reference.StartsWith("data:image/gif", StringComparison.OrdinalIgnoreCase) &&
+                   !reference.StartsWith("data:image/webp", StringComparison.OrdinalIgnoreCase) &&
+                   !reference.StartsWith("data:image/bmp", StringComparison.OrdinalIgnoreCase);
+        }
+        return true;
     }
 }
 

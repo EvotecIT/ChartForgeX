@@ -24,6 +24,7 @@ internal static class VisualStoryLayout {
     internal const double PanelPadding = 20;
     internal const double PanelTitleHeight = 30;
     internal const double MinimumSourceContentLength = 18.5;
+    internal const double MinimumTextContentLength = 32;
 
     public static IReadOnlyList<VisualStoryBounds> Panels(VisualStory story, VisualStoryScene scene) {
         var available = new VisualStoryBounds(
@@ -72,6 +73,12 @@ internal static class VisualStoryLayout {
             throw new InvalidOperationException(
                 "Visual-story source panel '" + panel.Id +
                 "' is too small to render a source line. Increase the story size, reduce the panel count, rebalance panel weights, or use a different scene layout.");
+        }
+        if (panel.Surface.Kind == VisualStorySurfaceKind.Text &&
+            (content.Width < MinimumTextContentLength || content.Height < MinimumTextContentLength)) {
+            throw new InvalidOperationException(
+                "Visual-story text panel '" + panel.Id +
+                "' is too small to render text without crossing its bounds. Increase the story size, reduce the panel count, rebalance panel weights, or use a different scene layout.");
         }
         return content;
     }

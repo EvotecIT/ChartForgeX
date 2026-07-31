@@ -4,6 +4,8 @@ namespace ChartForgeX.Stories;
 
 /// <summary>Configures animated raster export for a generic visual story.</summary>
 public sealed class VisualStoryAnimationOptions {
+    internal const double DefaultTransitionSeconds = 0.24;
+
     /// <summary>Gets the requested frame rate.</summary>
     public int FramesPerSecond { get; private set; } = 6;
 
@@ -20,7 +22,7 @@ public sealed class VisualStoryAnimationOptions {
     public int MaximumFrames { get; private set; } = 240;
 
     /// <summary>Gets the cross-fade duration between scenes.</summary>
-    public double TransitionSeconds { get; private set; } = 0.24;
+    public double TransitionSeconds { get; private set; } = DefaultTransitionSeconds;
 
     /// <summary>Creates options with documentation and Discord-friendly defaults.</summary>
     public static VisualStoryAnimationOptions Create() => new();

@@ -131,31 +131,33 @@ public sealed class SvgVisualStoryRenderer {
         if (story.Scenes.Count == 1) {
             css.Append('#').Append(id).Append(" .cfx-story-scene{opacity:1}");
         } else {
-            var elapsed = 0d;
             var total = story.DurationSeconds;
             for (var index = 0; index < story.Scenes.Count; index++) {
-                var scene = story.Scenes[index];
-                var start = elapsed / total * 100;
-                elapsed += scene.DurationSeconds;
-                var end = elapsed / total * 100;
-                var fadePercent = Math.Min(1.2, (end - start) * 0.12);
+                var timing = VisualStoryTimeline.Timing(
+                    story,
+                    index,
+                    VisualStoryAnimationOptions.DefaultTransitionSeconds);
+                var incomingTransitionStart = index == 0
+                    ? 0
+                    : VisualStoryTimeline.Timing(
+                        story,
+                        index - 1,
+                        VisualStoryAnimationOptions.DefaultTransitionSeconds).TransitionStart;
                 var name = id + "-motion-scene-" + index.ToString(CultureInfo.InvariantCulture);
                 css.Append("@keyframes ").Append(name).Append('{');
                 if (index == 0) {
                     css.Append("0%{opacity:1}");
                 } else {
-                    css.Append("0%,").Append(Percent(start)).Append("{opacity:0}")
-                        .Append(Percent(Math.Min(end, start + fadePercent))).Append("{opacity:1}");
+                    css.Append("0%{opacity:0}");
+                    AppendOpacity(css, incomingTransitionStart / total * 100, 0);
+                    AppendOpacity(css, timing.Start / total * 100, 1);
                 }
-                css.Append(Percent(end)).Append("{opacity:1");
                 if (index != story.Scenes.Count - 1) {
-                    css.Append(";animation-timing-function:steps(1,end)}")
-                        .Append(Percent(Math.Min(100, end + fadePercent))).Append("{opacity:0}");
-                } else {
-                    css.Append('}');
+                    AppendSteppedOpacity(css, timing.TransitionStart / total * 100, 1);
+                    AppendOpacity(css, timing.End / total * 100, 0);
                 }
-                css
-                    .Append("100%{opacity:").Append(index == story.Scenes.Count - 1 ? '1' : '0').Append("}}");
+                AppendOpacity(css, 100, index == story.Scenes.Count - 1 ? 1 : 0);
+                css.Append('}');
                 css.Append('#').Append(id).Append(" .cfx-story-scene-").Append(index)
                     .Append("{opacity:").Append(index == story.Scenes.Count - 1 ? '1' : '0').Append(";animation:").Append(name).Append(' ')
                     .Append(total.ToString("0.###", CultureInfo.InvariantCulture)).Append("s linear infinite both}");
@@ -168,5 +170,17 @@ public sealed class SvgVisualStoryRenderer {
         return css.ToString();
     }
 
-    private static string Percent(double value) => value.ToString("0.###", CultureInfo.InvariantCulture) + "%";
+    private static void AppendOpacity(StringBuilder css, double percent, int opacity) =>
+        css.Append(Percent(Math.Max(0, Math.Min(100, percent))))
+            .Append("{opacity:")
+            .Append(opacity)
+            .Append('}');
+
+    private static void AppendSteppedOpacity(StringBuilder css, double percent, int opacity) =>
+        css.Append(Percent(Math.Max(0, Math.Min(100, percent))))
+            .Append("{opacity:")
+            .Append(opacity)
+            .Append(";animation-timing-function:steps(1,end)}");
+
+    private static string Percent(double value) => value.ToString("0.#########", CultureInfo.InvariantCulture) + "%";
 }

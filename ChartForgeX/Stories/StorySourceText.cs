@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Terminal;
 
 namespace ChartForgeX.Stories;
 
@@ -113,8 +114,9 @@ public sealed class StorySourceText {
         if (_spans.Count > 0 && span.Start < _spans[_spans.Count - 1].End) {
             throw new ArgumentException("Syntax spans must be ordered and cannot overlap.", nameof(span));
         }
-        if (!IsScalarBoundary(Text, span.Start) || !IsScalarBoundary(Text, span.End)) {
-            throw new ArgumentException("Syntax spans cannot split a UTF-16 surrogate pair.", nameof(span));
+        if (!TerminalTextWidth.IsElementBoundary(Text, span.Start) ||
+            !TerminalTextWidth.IsElementBoundary(Text, span.End)) {
+            throw new ArgumentException("Syntax spans cannot split a Unicode text element.", nameof(span));
         }
         if (_spans.Count >= 4096) throw new InvalidOperationException("Source text supports at most 4096 syntax spans.");
         _spans.Add(span);
@@ -134,13 +136,11 @@ public sealed class StorySourceText {
         var previousEnd = 0;
         foreach (var span in _spans) {
             if (span.Start < previousEnd || span.End > Text.Length) throw new InvalidOperationException("Source syntax spans must be ordered, non-overlapping, and in range.");
-            if (!IsScalarBoundary(Text, span.Start) || !IsScalarBoundary(Text, span.End)) throw new InvalidOperationException("Source syntax spans cannot split UTF-16 surrogate pairs.");
+            if (!TerminalTextWidth.IsElementBoundary(Text, span.Start) ||
+                !TerminalTextWidth.IsElementBoundary(Text, span.End)) {
+                throw new InvalidOperationException("Source syntax spans cannot split Unicode text elements.");
+            }
             previousEnd = span.End;
         }
-    }
-
-    private static bool IsScalarBoundary(string value, int offset) {
-        if (offset <= 0 || offset >= value.Length) return true;
-        return !(char.IsHighSurrogate(value[offset - 1]) && char.IsLowSurrogate(value[offset]));
     }
 }
