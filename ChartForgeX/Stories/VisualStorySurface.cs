@@ -220,6 +220,10 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         }
         if (!reader.HasAttributes) return;
         while (reader.MoveToNextAttribute()) {
+            if (string.Equals(reader.LocalName, "base", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(reader.NamespaceURI, "http://www.w3.org/XML/1998/namespace", StringComparison.Ordinal)) {
+                throw new ArgumentException("The vector representation must not change the base URI.", "svg");
+            }
             if (reader.LocalName.StartsWith("on", StringComparison.OrdinalIgnoreCase)) {
                 throw new ArgumentException("The vector representation must not contain event-handler attributes.", "svg");
             }

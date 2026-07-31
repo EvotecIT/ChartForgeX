@@ -232,6 +232,12 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
+                "External base vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" xml:base=\"https://example.invalid/media.svg\"><use href=\"#shape\"/></svg>"),
+            "Vector media should reject xml:base attributes that can turn fragment references into external resources.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
                 "Remote presentation resource",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect filter=\"url(https://example.invalid/filter.svg#f)\"/></svg>"),
             "Vector media should reject external functional IRIs in SVG presentation attributes.");
