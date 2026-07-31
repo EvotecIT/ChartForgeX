@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Xml;
 using ChartForgeX.Raster;
 using ChartForgeX.Terminal;
@@ -137,7 +138,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
     /// <summary>Initializes an RGBA artifact.</summary>
     public VisualStoryMediaSurface(RgbaImage raster, string accessibleText, string? svg = null)
         : base(VisualStorySurfaceKind.Media, accessibleText) {
-        Raster = raster;
+        Raster = RequireRaster(raster);
         Svg = RequireSvg(svg);
     }
 
@@ -146,6 +147,18 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
 
     /// <summary>Gets an optional resolved SVG representation used by SVG output.</summary>
     public string Svg { get; }
+
+    private static RgbaImage RequireRaster(RgbaImage raster) {
+        if (raster.Width <= 0 ||
+            raster.Height <= 0 ||
+            raster.Pixels == null ||
+            raster.Pixels.LongLength < checked((long)raster.Width * raster.Height * 4)) {
+            throw new ArgumentException(
+                "The raster representation must contain valid RGBA dimensions and pixels.",
+                nameof(raster));
+        }
+        return raster;
+    }
 
     private static string RequireSvg(string? svg) {
         if (string.IsNullOrWhiteSpace(svg)) return string.Empty;
@@ -237,15 +250,20 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         string.Equals(localName, "discard", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(localName, "foreignObject", StringComparison.OrdinalIgnoreCase);
 
-    private static bool ContainsActiveCss(string value) =>
-        value.IndexOf("animation", StringComparison.OrdinalIgnoreCase) >= 0 ||
-        value.IndexOf("transition", StringComparison.OrdinalIgnoreCase) >= 0 ||
-        value.IndexOf("@keyframes", StringComparison.OrdinalIgnoreCase) >= 0 ||
-        value.IndexOf("@import", StringComparison.OrdinalIgnoreCase) >= 0 ||
-        value.IndexOf("behavior", StringComparison.OrdinalIgnoreCase) >= 0 ||
-        ContainsUnsafeCssReference(value);
+    private static bool ContainsActiveCss(string value) {
+        var normalized = DecodeCssEscapes(value);
+        return normalized.IndexOf("animation", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               normalized.IndexOf("transition", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               normalized.IndexOf("@keyframes", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               normalized.IndexOf("@import", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               normalized.IndexOf("behavior", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               ContainsUnsafeCssReferenceCore(normalized);
+    }
 
-    private static bool ContainsUnsafeCssReference(string value) {
+    private static bool ContainsUnsafeCssReference(string value) =>
+        ContainsUnsafeCssReferenceCore(DecodeCssEscapes(value));
+
+    private static bool ContainsUnsafeCssReferenceCore(string value) {
         var cursor = 0;
         while (cursor < value.Length) {
             var start = value.IndexOf("url(", cursor, StringComparison.OrdinalIgnoreCase);
@@ -260,6 +278,58 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
             cursor = end + 1;
         }
         return false;
+    }
+
+    private static string DecodeCssEscapes(string value) {
+        if (value.IndexOf('\\') < 0) return value;
+        var output = new StringBuilder(value.Length);
+        for (var index = 0; index < value.Length; index++) {
+            var current = value[index];
+            if (current != '\\' || index + 1 >= value.Length) {
+                output.Append(current);
+                continue;
+            }
+
+            var next = value[index + 1];
+            if (next == '\r' || next == '\n' || next == '\f') {
+                index++;
+                if (next == '\r' && index + 1 < value.Length && value[index + 1] == '\n') index++;
+                continue;
+            }
+
+            var scalar = 0;
+            var digits = 0;
+            while (index + 1 < value.Length && digits < 6) {
+                var hex = HexValue(value[index + 1]);
+                if (hex < 0) break;
+                scalar = checked(scalar * 16 + hex);
+                index++;
+                digits++;
+            }
+            if (digits == 0) {
+                output.Append(next);
+                index++;
+                continue;
+            }
+            if (index + 1 < value.Length && char.IsWhiteSpace(value[index + 1])) {
+                index++;
+                if (value[index] == '\r' && index + 1 < value.Length && value[index + 1] == '\n') index++;
+            }
+            output.Append(
+                scalar == 0 ||
+                scalar > 0x10FFFF ||
+                scalar >= 0xD800 && scalar <= 0xDFFF
+                    ? "\uFFFD"
+                    : char.ConvertFromUtf32(scalar));
+        }
+        return output.ToString();
+    }
+
+    private static int HexValue(char value) {
+        if (value >= '0' && value <= '9') return value - '0';
+        if (value >= 'a' && value <= 'f') return value - 'a' + 10;
+        if (value >= 'A' && value <= 'F') return value - 'A' + 10;
+        return -1;
     }
 
     private static bool IsUnsafeResourceReference(string value) {

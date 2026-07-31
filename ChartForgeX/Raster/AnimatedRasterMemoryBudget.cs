@@ -16,7 +16,10 @@ internal static class AnimatedRasterMemoryBudget {
         var pixelCount = checked(width * height);
         switch (format) {
             case AnimatedRasterFormat.Gif:
-                return checked(pixelCount * frameCount);
+                return checked(
+                    pixelCount * frameCount +
+                    GifCompressedFrameUpperBound(pixelCount) * 2 +
+                    1024L * 1024);
             case AnimatedRasterFormat.Apng:
                 return checked(
                     ApngWorkingBytes(width, height) +
@@ -40,6 +43,15 @@ internal static class AnimatedRasterMemoryBudget {
 
     /// <summary>Calculates the encoded-output ceiling when chunks and the exact returned array coexist.</summary>
     internal static long MaximumStreamedApngBytes(long retainedWithoutOutput) {
+        return MaximumStreamedEncodedBytes(retainedWithoutOutput);
+    }
+
+    /// <summary>Calculates the bounded GIF output ceiling when chunks and the returned array coexist.</summary>
+    internal static long MaximumStreamedGifBytes(long retainedWithoutOutput) {
+        return MaximumStreamedEncodedBytes(retainedWithoutOutput);
+    }
+
+    private static long MaximumStreamedEncodedBytes(long retainedWithoutOutput) {
         var available = checked(MaximumRetainedBytes - retainedWithoutOutput - BoundedChunkStream.ChunkSize);
         if (available <= 0) return 0;
         return Math.Min(int.MaxValue, available / 2);
@@ -50,6 +62,9 @@ internal static class AnimatedRasterMemoryBudget {
         var compressedFrameBytes = DeflateBound(rawFrameBytes);
         return checked(61 + frameCount * checked(54 + compressedFrameBytes));
     }
+
+    private static long GifCompressedFrameUpperBound(long pixelCount) =>
+        checked((checked((pixelCount * 2 + 1) * 9) + 7) / 8);
 
     private static long DeflateBound(long sourceBytes) =>
         checked(

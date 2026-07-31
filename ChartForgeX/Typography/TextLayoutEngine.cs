@@ -33,17 +33,25 @@ public static class TextLayoutEngine {
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;
         foreach (var paragraph in SplitParagraphs(text)) {
-            var paragraphLines = WrapParagraph(paragraph, maximumWidth, style, font, wrapMode);
+            var remainingLines = maximumLines.HasValue
+                ? Math.Max(0, maximumLines.Value - resolved.Count)
+                : (int?)null;
+            var paragraphLines = WrapParagraph(
+                paragraph,
+                maximumWidth,
+                style,
+                font,
+                wrapMode,
+                remainingLines,
+                out var paragraphTrimmed);
             for (var i = 0; i < paragraphLines.Count; i++) {
-                if (maximumLines.HasValue && resolved.Count >= maximumLines.Value) {
-                    trimmed = true;
-                    break;
-                }
-
                 resolved.Add(paragraphLines[i]);
             }
 
-            if (trimmed) break;
+            if (paragraphTrimmed) {
+                trimmed = true;
+                break;
+            }
         }
 
         if (resolved.Count == 0) resolved.Add(new TextLayoutLine(string.Empty, 0));
@@ -66,16 +74,41 @@ public static class TextLayoutEngine {
 
     internal static double ResolveLineHeight(TextStyle style, TrueTypeFont? font) => Math.Max(1, RgbaCanvas.MeasureTextHeight(style.FontSize, font) * style.LineHeight);
 
-    private static List<TextLayoutLine> WrapParagraph(string paragraph, double maximumWidth, TextStyle style, TrueTypeFont? font, TextWrapMode wrapMode) {
+    private static List<TextLayoutLine> WrapParagraph(
+        string paragraph,
+        double maximumWidth,
+        TextStyle style,
+        TrueTypeFont? font,
+        TextWrapMode wrapMode,
+        int? maximumLines,
+        out bool trimmed) {
+        trimmed = false;
+        if (maximumLines == 0) {
+            trimmed = true;
+            return new List<TextLayoutLine>();
+        }
         if (paragraph.Length == 0) return new List<TextLayoutLine> { new(string.Empty, 0) };
         if (wrapMode == TextWrapMode.NoWrap) return new List<TextLayoutLine> { new(paragraph, MeasureWidth(paragraph, style, font)) };
-        if (wrapMode == TextWrapMode.Character) return WrapCharacters(paragraph, maximumWidth, style, font);
+        if (wrapMode == TextWrapMode.Character) {
+            return WrapCharacters(
+                paragraph,
+                maximumWidth,
+                style,
+                font,
+                maximumLines,
+                out trimmed);
+        }
 
         var output = new List<TextLayoutLine>();
-        var words = paragraph.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
         var current = string.Empty;
-        for (var i = 0; i < words.Length; i++) {
-            var candidate = current.Length == 0 ? words[i] : current + " " + words[i];
+        var cursor = 0;
+        while (cursor < paragraph.Length) {
+            while (cursor < paragraph.Length && (paragraph[cursor] == ' ' || paragraph[cursor] == '\t')) cursor++;
+            if (cursor >= paragraph.Length) break;
+            var wordStart = cursor;
+            while (cursor < paragraph.Length && paragraph[cursor] != ' ' && paragraph[cursor] != '\t') cursor++;
+            var word = paragraph.Substring(wordStart, cursor - wordStart);
+            var candidate = current.Length == 0 ? word : current + " " + word;
             var candidateWidth = MeasureWidth(candidate, style, font);
             if (candidateWidth <= maximumWidth) {
                 current = candidate;
@@ -85,25 +118,56 @@ public static class TextLayoutEngine {
             if (current.Length > 0) {
                 output.Add(new TextLayoutLine(current, MeasureWidth(current, style, font)));
                 current = string.Empty;
+                if (maximumLines.HasValue && output.Count >= maximumLines.Value) {
+                    trimmed = true;
+                    break;
+                }
             }
 
-            var wordWidth = MeasureWidth(words[i], style, font);
-            if (wordWidth <= maximumWidth) current = words[i];
+            var wordWidth = MeasureWidth(word, style, font);
+            if (wordWidth <= maximumWidth) current = word;
             else {
-                var pieces = WrapCharacters(words[i], maximumWidth, style, font);
+                var availableLines = maximumLines.HasValue
+                    ? Math.Max(0, maximumLines.Value - output.Count)
+                    : (int?)null;
+                var pieces = WrapCharacters(
+                    word,
+                    maximumWidth,
+                    style,
+                    font,
+                    availableLines,
+                    out var wordTrimmed);
+                if (wordTrimmed) {
+                    output.AddRange(pieces);
+                    trimmed = true;
+                    break;
+                }
                 for (var piece = 0; piece + 1 < pieces.Count; piece++) output.Add(pieces[piece]);
                 current = pieces[pieces.Count - 1].Text;
             }
         }
 
-        if (current.Length > 0) output.Add(new TextLayoutLine(current, MeasureWidth(current, style, font)));
+        if (!trimmed && current.Length > 0) {
+            if (maximumLines.HasValue && output.Count >= maximumLines.Value) {
+                trimmed = true;
+            } else {
+                output.Add(new TextLayoutLine(current, MeasureWidth(current, style, font)));
+            }
+        }
         return output;
     }
 
-    private static List<TextLayoutLine> WrapCharacters(string text, double maximumWidth, TextStyle style, TrueTypeFont? font) {
+    private static List<TextLayoutLine> WrapCharacters(
+        string text,
+        double maximumWidth,
+        TextStyle style,
+        TrueTypeFont? font,
+        int? maximumLines,
+        out bool trimmed) {
         var output = new List<TextLayoutLine>();
         var start = 0;
         while (start < text.Length) {
+            if (maximumLines.HasValue && output.Count >= maximumLines.Value) break;
             var length = 1;
             var bestLength = 1;
             while (start + length <= text.Length) {
@@ -118,6 +182,7 @@ public static class TextLayoutEngine {
             start += bestLength;
         }
 
+        trimmed = start < text.Length;
         return output;
     }
 

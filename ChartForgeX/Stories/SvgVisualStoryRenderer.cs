@@ -41,10 +41,13 @@ public sealed class SvgVisualStoryRenderer {
             .Attribute("role", "img")
             .Attribute("aria-labelledby", id + "-title " + id + "-desc")
             .Attribute("preserveAspectRatio", "xMidYMid meet")
-            .Attribute("style", "max-width:100%;height:auto;display:block")
+            .Attribute("style", "max-width:100%;height:auto;display:block;isolation:isolate")
             .Attribute("data-cfx-story", "visual")
             .Attribute("data-cfx-motion", "scene-story")
-            .Attribute("data-cfx-motion-duration", story.DurationSeconds.ToString("0.###", CultureInfo.InvariantCulture))
+            .Attribute(
+                "data-cfx-motion-duration",
+                (story.DurationSeconds + VisualStoryAnimationOptions.DefaultEndHoldSeconds)
+                    .ToString("0.###", CultureInfo.InvariantCulture))
             .EndStartElement().Line()
             .StartElement("title").Attribute("id", id + "-title").Text(story.Title).EndElement().Line()
             .StartElement("desc").Attribute("id", id + "-desc").Text(transcript).EndElement().Line()
@@ -128,10 +131,11 @@ public sealed class SvgVisualStoryRenderer {
 
     private static string BuildCss(VisualStory story, string id) {
         var css = new StringBuilder();
+        css.Append('#').Append(id).Append(" .cfx-story-scene{mix-blend-mode:plus-lighter}");
         if (story.Scenes.Count == 1) {
             css.Append('#').Append(id).Append(" .cfx-story-scene{opacity:1}");
         } else {
-            var total = story.DurationSeconds;
+            var total = story.DurationSeconds + VisualStoryAnimationOptions.DefaultEndHoldSeconds;
             for (var index = 0; index < story.Scenes.Count; index++) {
                 var timing = VisualStoryTimeline.Timing(
                     story,

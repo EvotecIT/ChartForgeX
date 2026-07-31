@@ -38,9 +38,12 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         }
         var maximumEncodedBytes = format == AnimatedRasterFormat.Apng
             ? AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retained)
-            : 0;
-        if (format == AnimatedRasterFormat.Apng && maximumEncodedBytes <= 0) {
-            throw new InvalidOperationException("Animated visual story has no remaining bounded memory for encoded PNG output. Lower the size, scale, or scene count.");
+            : AnimatedRasterMemoryBudget.MaximumStreamedGifBytes(retained);
+        if (maximumEncodedBytes <= 0) {
+            throw new InvalidOperationException(
+                "Animated visual story has no remaining bounded memory for encoded " +
+                format.GetDisplayName() +
+                " output. Lower the size, scale, or scene count.");
         }
 
         var scenes = new List<RgbaImage>(story.Scenes.Count);
@@ -65,7 +68,12 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
             var elapsed = Math.Min(story.DurationSeconds, index * delay / 100d);
             frames.Add(RenderFrame(story, scenes, elapsed, animation));
         }
-        return AnimatedRasterEncoder.Encode(format, AnimatedRasterFrames.Create(frames, delay, animation.Loop, format.GetDisplayName()));
+        var retainedFrames = AnimatedRasterFrames.Create(
+            frames,
+            delay,
+            animation.Loop,
+            format.GetDisplayName());
+        return AnimatedRasterEncoder.EncodeBoundedGif(retainedFrames, maximumEncodedBytes);
     }
 
     private static RgbaImage RenderFrame(VisualStory story, IReadOnlyList<RgbaImage> scenes, double elapsed, VisualStoryAnimationOptions options) {

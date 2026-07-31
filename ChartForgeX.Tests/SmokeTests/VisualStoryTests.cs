@@ -55,8 +55,13 @@ internal static partial class SmokeTests {
                svg.Contains("-motion-scene-0", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-0{opacity:0;animation:", StringComparison.Ordinal) &&
                svg.Contains(".cfx-story-scene-1{opacity:1;animation:", StringComparison.Ordinal) &&
-               svg.Contains("0%{opacity:1}2%{opacity:1}50%{opacity:0}100%{opacity:0}", StringComparison.Ordinal) &&
-               svg.Contains("0%{opacity:0}2%{opacity:0}50%{opacity:1}100%{opacity:1}", StringComparison.Ordinal) &&
+               svg.Contains("0%{opacity:1}0.5%{opacity:1}12.5%{opacity:0}100%{opacity:0}", StringComparison.Ordinal) &&
+               svg.Contains("0%{opacity:0}0.5%{opacity:0}12.5%{opacity:1}100%{opacity:1}", StringComparison.Ordinal) &&
+               svg.Contains("animation:", StringComparison.Ordinal) &&
+               svg.Contains(" 2s linear infinite both", StringComparison.Ordinal) &&
+               svg.Contains("mix-blend-mode:plus-lighter", StringComparison.Ordinal) &&
+               svg.Contains("isolation:isolate", StringComparison.Ordinal) &&
+               svg.Contains("data-cfx-motion-duration=\"2\"", StringComparison.Ordinal) &&
                !svg.Contains("animation-timing-function:steps(1,end)", StringComparison.Ordinal) &&
                !svg.Contains("cfx-story-seed-", StringComparison.Ordinal) &&
                svg.Contains("data-cfx-role=\"story-vector-media\"", StringComparison.Ordinal) &&
@@ -193,6 +198,17 @@ internal static partial class SmokeTests {
                 "Styled vector",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@keyframes pulse{to{opacity:0}}</style><rect/></svg>"),
             "Vector media should reject CSS animation that cannot follow reduced-motion and print rules.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Escaped external stylesheet",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@\\69 mport \"https://example.invalid/a.css\";</style><rect/></svg>"),
+            "Vector media should decode CSS escapes before screening active or external styles.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                default(RgbaImage),
+                "Missing raster"),
+            "Media surfaces should reject default RGBA values before rendering.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
@@ -368,6 +384,33 @@ internal static partial class SmokeTests {
             AnimatedRasterFormat.Apng);
         Assert(fourFrameApngBudget > oneFrameApngBudget,
             "APNG memory estimates should include the accumulated encoded stream and final output materialization.");
+        var oneFrameGifBudget = AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+            480,
+            320,
+            1,
+            AnimatedRasterFormat.Gif);
+        var fourFrameGifBudget = AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+            480,
+            320,
+            4,
+            AnimatedRasterFormat.Gif);
+        Assert(fourFrameGifBudget == oneFrameGifBudget + 480L * 320 * 3,
+            "GIF memory estimates should include retained indexed frames and bounded per-frame compression buffers.");
+        Assert(
+            AnimatedRasterMemoryBudget.MaximumStreamedGifBytes(fourFrameGifBudget) <
+            AnimatedRasterMemoryBudget.MaximumStreamedGifBytes(oneFrameGifBudget),
+            "GIF output bounds should reserve space for both encoded chunks and the returned array.");
+        var tinyGifFrames = AnimatedRasterFrames.Create(
+            new[] {
+                new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }),
+                new RgbaImage(1, 1, new byte[] { 0, 0, 255, 255 })
+            },
+            10,
+            true,
+            "GIF");
+        AssertThrows<InvalidOperationException>(
+            () => AnimatedRasterEncoder.EncodeBoundedGif(tinyGifFrames, 10),
+            "GIF encoding should enforce its retained-memory output ceiling while writing.");
 
         var sharedTranscriptSource = new VisualStorySourceSurface(
             StorySourceText.Create(new string('x', 1024 * 1024), "text"));
@@ -491,6 +534,23 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => narrowTerminal.ToPng(),
             "Terminal panels should reject positive but unreadably narrow content areas.");
+
+        var narrowMedia = VisualStory.Create("Narrow media").WithSize(480, 320);
+        var narrowMediaScene = narrowMedia.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
+        narrowMediaScene.Panel(
+            "text",
+            new VisualStoryTextSurface("ready"),
+            weight: 10);
+        narrowMediaScene.Panel(
+            "result",
+            new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[] { 64, 128, 255, 255 }),
+                "Generated chart"),
+            weight: 1.2);
+        narrowMedia.Outcome("chart", "The generated chart is visible", "result");
+        AssertThrows<InvalidOperationException>(
+            () => narrowMedia.ToPng(),
+            "Outcome media panels should reject positive but unrecognizably narrow content areas.");
 
         var truncatedTheme = VisualStoryTheme.PremiumDark();
         truncatedTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);

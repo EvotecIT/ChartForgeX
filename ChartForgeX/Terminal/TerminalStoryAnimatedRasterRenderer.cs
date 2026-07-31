@@ -41,12 +41,16 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
                 "Animated terminal story would retain " + retainedFrameBytes +
                 " bytes of sampled frames and encoder buffers. Lower the output scale, frame rate, story size, or duration.");
         }
+        var maximumEncodedBytes = format == AnimatedRasterFormat.Apng
+            ? AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retainedFrameBytes)
+            : AnimatedRasterMemoryBudget.MaximumStreamedGifBytes(retainedFrameBytes);
+        if (maximumEncodedBytes <= 0) {
+            throw new InvalidOperationException(
+                "Animated terminal story has no remaining bounded memory for encoded " +
+                format.GetDisplayName() +
+                " output. Lower the output scale or story size.");
+        }
         if (format == AnimatedRasterFormat.Apng) {
-            var maximumEncodedBytes = AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retainedFrameBytes);
-            if (maximumEncodedBytes <= 0) {
-                throw new InvalidOperationException(
-                    "Animated terminal story has no remaining bounded memory for encoded PNG output. Lower the output scale or story size.");
-            }
             return AnimatedRasterEncoder.EncodeStreamedApng(
                 checked((int)outputWidth),
                 checked((int)outputHeight),
@@ -70,7 +74,7 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
         }
 
         var frames = AnimatedRasterFrames.Create(images, delayCentiseconds, animation.Loop, format.GetDisplayName());
-        return AnimatedRasterEncoder.Encode(format, frames);
+        return AnimatedRasterEncoder.EncodeBoundedGif(frames, maximumEncodedBytes);
     }
 
     internal static int QuantizedDelayCentiseconds(int framesPerSecond) =>

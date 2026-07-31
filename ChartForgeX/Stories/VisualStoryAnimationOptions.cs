@@ -5,6 +5,7 @@ namespace ChartForgeX.Stories;
 /// <summary>Configures animated raster export for a generic visual story.</summary>
 public sealed class VisualStoryAnimationOptions {
     internal const double DefaultTransitionSeconds = 0.24;
+    internal const double DefaultEndHoldSeconds = 1.5;
 
     /// <summary>Gets the requested frame rate.</summary>
     public int FramesPerSecond { get; private set; } = 6;
@@ -13,7 +14,7 @@ public sealed class VisualStoryAnimationOptions {
     public bool Loop { get; private set; } = true;
 
     /// <summary>Gets the completed-state hold time.</summary>
-    public double EndHoldSeconds { get; private set; } = 1.5;
+    public double EndHoldSeconds { get; private set; } = DefaultEndHoldSeconds;
 
     /// <summary>Gets the raster output density multiplier.</summary>
     public int OutputScale { get; private set; } = 1;
