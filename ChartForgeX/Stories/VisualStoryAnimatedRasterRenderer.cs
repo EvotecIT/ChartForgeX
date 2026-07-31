@@ -9,9 +9,16 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         if (story == null) throw new ArgumentNullException(nameof(story));
         story.Validate();
         var animation = options ?? VisualStoryAnimationOptions.Create();
-        var delay = Math.Max(1, (int)Math.Ceiling(100d / animation.FramesPerSecond));
         var totalSeconds = story.DurationSeconds + animation.EndHoldSeconds;
-        var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delay));
+        var totalCentiseconds = Math.Max(
+            2,
+            (int)Math.Round(totalSeconds * 100, MidpointRounding.AwayFromZero));
+        var delay = Math.Max(1, (int)Math.Ceiling(100d / animation.FramesPerSecond));
+        var frameCount = Math.Max(2, (int)Math.Ceiling((double)totalCentiseconds / delay));
+        if (checked((frameCount - 1) * delay) >= totalCentiseconds) {
+            delay = Math.Max(1, (totalCentiseconds - 1) / (frameCount - 1));
+        }
+        var finalDelay = totalCentiseconds - checked((frameCount - 1) * delay);
         if (frameCount > animation.MaximumFrames) {
             throw new InvalidOperationException("Animated visual story requires " + frameCount + " frames. Lower the frame rate or duration, or increase the frame budget.");
         }
@@ -56,6 +63,7 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
                 checked((int)outputHeight),
                 frameCount,
                 delay,
+                finalDelay,
                 animation.Loop,
                 maximumEncodedBytes,
                 index => {
@@ -71,6 +79,7 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var retainedFrames = AnimatedRasterFrames.Create(
             frames,
             delay,
+            finalDelay,
             animation.Loop,
             format.GetDisplayName());
         return AnimatedRasterEncoder.EncodeBoundedGif(retainedFrames, maximumEncodedBytes);

@@ -214,6 +214,12 @@ internal static partial class SmokeTests {
             "Vector media should decode CSS escapes before screening active or external styles.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Split external stylesheet",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@im<![CDATA[port \"https://example.invalid/a.css\";]]></style><rect/></svg>"),
+            "Vector media should screen the complete style element even when XML splits CSS across text and CDATA nodes.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
                 default(RgbaImage),
                 "Missing raster"),
             "Media surfaces should reject default RGBA values before rendering.");
@@ -785,5 +791,7 @@ internal static partial class SmokeTests {
                opaqueFade.Pixels[0] >= 126 && opaqueFade.Pixels[0] <= 129 &&
                opaqueFade.Pixels[2] >= 126 && opaqueFade.Pixels[2] <= 129,
             "Raster story cross-fades should linearly interpolate opaque scene colors without reducing opacity.");
+
+        AssertExactAnimatedRasterDuration();
     }
 }

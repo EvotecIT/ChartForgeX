@@ -63,6 +63,7 @@ internal static class AnimatedRasterEncoder {
         int height,
         int frameCount,
         int delayCentiseconds,
+        int finalDelayCentiseconds,
         bool loop,
         long maximumEncodedBytes,
         Func<int, RgbaImage> renderFrame) {
@@ -73,6 +74,7 @@ internal static class AnimatedRasterEncoder {
             height,
             frameCount,
             delayCentiseconds,
+            finalDelayCentiseconds,
             loop,
             renderFrame);
         return stream.ToArray();

@@ -56,6 +56,7 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
                 checked((int)outputHeight),
                 frameCount,
                 delayCentiseconds,
+                delayCentiseconds,
                 animation.Loop,
                 maximumEncodedBytes,
                 index => PngTerminalStoryRenderer.RenderImage(

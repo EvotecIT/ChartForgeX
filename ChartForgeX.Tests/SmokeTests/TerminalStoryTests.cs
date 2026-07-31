@@ -322,7 +322,9 @@ internal static partial class SmokeTests {
                TerminalStoryLayout.DisplayWidth(outlinePreservedFormatControls) == 0 &&
                TerminalPngTextPreserver.ClusterFallbackLabel(preservedFormatControls).Length == 0 &&
                TerminalPngTextPreserver.ClusterFallbackLabel(outlinePreservedFormatControls).Length == 0 &&
-               TerminalStoryLayout.DisplayWidth("\u0600") == 1,
+               TerminalStoryLayout.DisplayWidth("\u0600") == 1 &&
+               TerminalStoryLayout.TextElementCount("\u0600\u0627") == 1 &&
+               TerminalStoryLayout.DisplayWidth("\u0600\u0627") == 1,
             "Default-ignorable format controls should consume no columns or raster fallback labels without hiding visible prepended marks.");
         var oversizedFallback = string.Concat(Enumerable.Repeat(
             TerminalPngTextPreserver.EscapeStart + "[U+1F600]" + TerminalPngTextPreserver.EscapeEnd,

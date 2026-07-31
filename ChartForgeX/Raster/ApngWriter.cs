@@ -30,6 +30,7 @@ internal static class ApngWriter {
             animation.Height,
             animation.Frames.Count,
             animation.DelayCentiseconds,
+            animation.FinalDelayCentiseconds,
             animation.Loop,
             index => animation.Frames[index]);
     }
@@ -41,6 +42,7 @@ internal static class ApngWriter {
         int height,
         int frameCount,
         int delayCentiseconds,
+        int finalDelayCentiseconds,
         bool loop,
         Func<int, RgbaImage> renderFrame) {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
@@ -49,6 +51,7 @@ internal static class ApngWriter {
         if (frameCount <= 0) throw new ArgumentOutOfRangeException(nameof(frameCount));
         if (renderFrame == null) throw new ArgumentNullException(nameof(renderFrame));
         var delay = Math.Max(1, Math.Min(65535, delayCentiseconds));
+        var finalDelay = Math.Max(1, Math.Min(65535, finalDelayCentiseconds));
         stream.Write(Signature, 0, Signature.Length);
         WriteIhdr(stream, width, height);
         WriteActl(stream, frameCount, loop ? 0 : 1);
@@ -60,7 +63,15 @@ internal static class ApngWriter {
                 throw new InvalidOperationException("Animated PNG frame renderers must return the configured dimensions.");
             }
             var frame = RgbaFrameOptimizer.BuildFrame(current, previous);
-            WriteFctl(stream, sequence++, frame.Width, frame.Height, frame.Left, frame.Top, delay, 100);
+            WriteFctl(
+                stream,
+                sequence++,
+                frame.Width,
+                frame.Height,
+                frame.Left,
+                frame.Top,
+                i == frameCount - 1 ? finalDelay : delay,
+                100);
             var compressed = ZlibDeflate(RawFrame(frame));
             if (i == 0) WriteChunk(stream, "IDAT", compressed);
             else WriteFdat(stream, sequence++, compressed);

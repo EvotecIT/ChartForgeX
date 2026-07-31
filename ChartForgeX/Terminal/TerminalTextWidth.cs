@@ -236,6 +236,7 @@ internal static class TerminalTextWidth {
         }
 
         var previous = first;
+        var previousIsPrepend = IsPrepend(first);
         var hasExtendedPictographic = IsExtendedPictographic(first);
         var hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(first);
         var hasIndicLinker = false;
@@ -243,7 +244,10 @@ internal static class TerminalTextWidth {
             var category = UnicodeCategoryFor(next);
             var isIndicExtend = hasIndicConjunct && TerminalIndicConjunctBreak.IsExtend(next);
             var isIndicLinker = hasIndicConjunct && TerminalIndicConjunctBreak.IsLinker(next);
-            if (IsExtend(next, category) || IsHangulContinuation(previous, next) || isIndicExtend) {
+            if (previousIsPrepend && !IsGraphemeControl(next) ||
+                IsExtend(next, category) ||
+                IsHangulContinuation(previous, next) ||
+                isIndicExtend) {
                 index += nextLength;
                 if (hasIndicConjunct) {
                     if (isIndicLinker) {
@@ -254,6 +258,7 @@ internal static class TerminalTextWidth {
                     }
                 }
                 previous = next;
+                previousIsPrepend = IsPrepend(next);
                 continue;
             }
             if (hasIndicConjunct &&
@@ -261,6 +266,7 @@ internal static class TerminalTextWidth {
                 TerminalIndicConjunctBreak.IsConsonant(next)) {
                 index += nextLength;
                 previous = next;
+                previousIsPrepend = IsPrepend(next);
                 hasIndicLinker = false;
                 continue;
             }
@@ -277,6 +283,7 @@ internal static class TerminalTextWidth {
             index += joinerLength;
             index += nextLength;
             previous = next;
+            previousIsPrepend = IsPrepend(next);
             hasExtendedPictographic = true;
         }
 
@@ -398,6 +405,46 @@ internal static class TerminalTextWidth {
 
     private static bool IsRegionalIndicator(int codePoint) {
         return codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF;
+    }
+
+    private static bool IsPrepend(int codePoint) {
+        return codePoint >= 0x0600 && codePoint <= 0x0605 ||
+               codePoint == 0x06DD ||
+               codePoint == 0x070F ||
+               codePoint >= 0x0890 && codePoint <= 0x0891 ||
+               codePoint == 0x08E2 ||
+               codePoint == 0x0D4E ||
+               codePoint == 0x110BD ||
+               codePoint == 0x110CD ||
+               codePoint >= 0x111C2 && codePoint <= 0x111C3 ||
+               codePoint == 0x113D1 ||
+               codePoint == 0x1193F ||
+               codePoint == 0x11941 ||
+               codePoint >= 0x11A84 && codePoint <= 0x11A89 ||
+               codePoint == 0x11D46 ||
+               codePoint == 0x11F02;
+    }
+
+    private static bool IsGraphemeControl(int codePoint) {
+        return codePoint <= 0x0009 ||
+               codePoint >= 0x000B && codePoint <= 0x000C ||
+               codePoint >= 0x000E && codePoint <= 0x001F ||
+               codePoint >= 0x007F && codePoint <= 0x009F ||
+               codePoint == 0x00AD ||
+               codePoint == 0x061C ||
+               codePoint == 0x180E ||
+               codePoint == 0x200B ||
+               codePoint >= 0x200E && codePoint <= 0x200F ||
+               codePoint >= 0x2028 && codePoint <= 0x202E ||
+               codePoint >= 0x2060 && codePoint <= 0x206F ||
+               codePoint == 0xFEFF ||
+               codePoint >= 0xFFF0 && codePoint <= 0xFFFB ||
+               codePoint >= 0x13430 && codePoint <= 0x1343F ||
+               codePoint >= 0x1BCA0 && codePoint <= 0x1BCA3 ||
+               codePoint >= 0x1D173 && codePoint <= 0x1D17A ||
+               codePoint >= 0xE0000 && codePoint <= 0xE001F ||
+               codePoint >= 0xE0080 && codePoint <= 0xE00FF ||
+               codePoint >= 0xE01F0 && codePoint <= 0xE0FFF;
     }
 
     private static bool IsExtendedPictographic(int codePoint) {

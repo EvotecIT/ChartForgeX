@@ -184,7 +184,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 !string.Equals(reader.NamespaceURI, SvgNamespace, StringComparison.Ordinal)) {
                 throw new ArgumentException("The vector representation must be a valid SVG document.", nameof(svg));
             }
-            var insideStyle = false;
+            StringBuilder? styleText = null;
             ValidateSvgNode(reader);
             while (reader.Read()) {
                 if (reader.NodeType == XmlNodeType.ProcessingInstruction) {
@@ -193,15 +193,18 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 ValidateSvgNode(reader);
                 if (reader.NodeType == XmlNodeType.Element &&
                     string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
-                    insideStyle = !reader.IsEmptyElement;
-                } else if (insideStyle &&
+                    styleText = reader.IsEmptyElement ? null : new StringBuilder();
+                } else if (styleText != null &&
                            (reader.NodeType == XmlNodeType.Text ||
-                            reader.NodeType == XmlNodeType.CDATA) &&
-                           ContainsActiveCss(reader.Value)) {
-                    throw new ArgumentException("The vector representation must not contain active or external CSS.", nameof(svg));
-                } else if (reader.NodeType == XmlNodeType.EndElement &&
+                            reader.NodeType == XmlNodeType.CDATA)) {
+                    styleText.Append(reader.Value);
+                } else if (styleText != null &&
+                           reader.NodeType == XmlNodeType.EndElement &&
                            string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
-                    insideStyle = false;
+                    if (ContainsActiveCss(styleText.ToString())) {
+                        throw new ArgumentException("The vector representation must not contain active or external CSS.", nameof(svg));
+                    }
+                    styleText = null;
                 }
             }
             return svg!;
