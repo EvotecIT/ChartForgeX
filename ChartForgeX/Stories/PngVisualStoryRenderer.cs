@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -176,13 +177,23 @@ public sealed class PngVisualStoryRenderer {
         var fontSize = Math.Max(10, Math.Min(18, (bounds.Height - 8) / (lineCount * 1.45)));
         var lineHeight = fontSize * 1.45;
         var y = bounds.Y + 4;
-        foreach (var line in lines) {
-            if (y + lineHeight > bounds.Y + bounds.Height + 0.1) break;
+        var maximumLines = Math.Max(1, (int)Math.Floor((bounds.Height - 4 + 0.1) / lineHeight));
+        var visibleLines = Math.Min(lines.Count, maximumLines);
+        for (var lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
+            var line = lines[lineIndex];
+            var verticallyTruncated = lineIndex == visibleLines - 1 && visibleLines < lines.Count;
+            var truncationReserve = verticallyTruncated ? Math.Min(bounds.Width, fontSize * 2.25) : 0;
+            var lineBounds = new VisualStoryBounds(
+                bounds.X,
+                bounds.Y,
+                Math.Max(1, bounds.Width - truncationReserve),
+                bounds.Height);
             var x = bounds.X;
             var cursor = line.Start;
             var lineEnd = line.Start + line.Length;
+            var visualColumn = 0;
             while (spanIndex < spans.Count && spans[spanIndex].End <= cursor) spanIndex++;
-            while (cursor < lineEnd && x < bounds.X + bounds.Width) {
+            while (cursor < lineEnd && x < lineBounds.X + lineBounds.Width) {
                 while (spanIndex < spans.Count && spans[spanIndex].End <= cursor) spanIndex++;
                 var segmentEnd = lineEnd;
                 var segmentKind = StorySyntaxKind.Plain;
@@ -197,11 +208,53 @@ public sealed class PngVisualStoryRenderer {
                 }
                 if (segmentEnd <= cursor) break;
                 var value = surface.Source.Text.Substring(cursor, segmentEnd - cursor);
-                x += DrawSourceSegment(canvas, story, value, segmentKind, x, y, bounds, fontSize);
+                value = ExpandSourceTabs(value, ref visualColumn);
+                x += DrawSourceSegment(canvas, story, value, segmentKind, x, y, lineBounds, fontSize);
                 cursor = segmentEnd;
+            }
+            if (verticallyTruncated) {
+                DrawSourceSegment(
+                    canvas,
+                    story,
+                    "...",
+                    StorySyntaxKind.Plain,
+                    bounds.X + bounds.Width - truncationReserve,
+                    y,
+                    bounds,
+                    fontSize);
             }
             y += lineHeight;
         }
+    }
+
+    internal static string ExpandSourceTabs(string value, ref int visualColumn) {
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        if (visualColumn < 0) throw new ArgumentOutOfRangeException(nameof(visualColumn));
+        if (value.IndexOf('\t') < 0) {
+            visualColumn = checked(visualColumn + TerminalTextWidth.Measure(value));
+            return value;
+        }
+
+        var expanded = new StringBuilder(value.Length + 8);
+        var start = 0;
+        for (var index = 0; index < value.Length; index++) {
+            if (value[index] != '\t') continue;
+            if (index > start) {
+                var preceding = value.Substring(start, index - start);
+                expanded.Append(preceding);
+                visualColumn = checked(visualColumn + TerminalTextWidth.Measure(preceding));
+            }
+            var spaces = 4 - visualColumn % 4;
+            expanded.Append(' ', spaces);
+            visualColumn = checked(visualColumn + spaces);
+            start = index + 1;
+        }
+        if (start < value.Length) {
+            var trailing = value.Substring(start);
+            expanded.Append(trailing);
+            visualColumn = checked(visualColumn + TerminalTextWidth.Measure(trailing));
+        }
+        return expanded.ToString();
     }
 
     private static double DrawSourceSegment(ImageComposition canvas, VisualStory story, string value, StorySyntaxKind kind, double x, double y, VisualStoryBounds bounds, double fontSize) {

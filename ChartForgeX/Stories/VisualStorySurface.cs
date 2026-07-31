@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Xml;
 using ChartForgeX.Raster;
 using ChartForgeX.Terminal;
 
@@ -29,7 +31,7 @@ public abstract class VisualStorySurface {
     public VisualStorySurfaceKind Kind { get; }
 
     /// <summary>Gets the text alternative included in transcripts and accessible output.</summary>
-    public string AccessibleText { get; }
+    public virtual string AccessibleText { get; }
 
     internal static string RequireText(string value, string name) {
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("A non-empty value is required.", name);
@@ -68,6 +70,8 @@ public sealed class VisualStorySourceSurface : VisualStorySurface {
 
 /// <summary>Displays a deterministic terminal story without executing its commands.</summary>
 public sealed class VisualStoryTerminalSurface : VisualStorySurface {
+    private readonly string _accessibleHeading;
+
     /// <summary>Initializes a terminal surface.</summary>
     public VisualStoryTerminalSurface(TerminalStory terminal, string? accessibleText = null)
         : base(
@@ -75,10 +79,16 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
             AccessibleTerminalText(terminal, accessibleText),
             preserveAccessibleWhitespace: true) {
         Terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
+        _accessibleHeading = string.IsNullOrWhiteSpace(accessibleText)
+            ? string.Empty
+            : RequireText(accessibleText!, nameof(accessibleText));
     }
 
     /// <summary>Gets the resolved terminal presentation.</summary>
     public TerminalStory Terminal { get; }
+
+    /// <summary>Gets an accessibility transcript derived from the current terminal state.</summary>
+    public override string AccessibleText => AccessibleTerminalText(Terminal, _accessibleHeading);
 
     private static string AccessibleTerminalText(TerminalStory terminal, string? heading) {
         if (terminal == null) throw new ArgumentNullException(nameof(terminal));
@@ -90,19 +100,21 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
 
 /// <summary>Displays a resolved raster artifact with an optional vector representation.</summary>
 public sealed class VisualStoryMediaSurface : VisualStorySurface {
+    private const string SvgNamespace = "http://www.w3.org/2000/svg";
+
     /// <summary>Initializes a raster artifact.</summary>
     public VisualStoryMediaSurface(byte[] rasterBytes, string accessibleText, string? svg = null)
         : base(VisualStorySurfaceKind.Media, accessibleText) {
         if (rasterBytes == null) throw new ArgumentNullException(nameof(rasterBytes));
         Raster = RasterImageDecoder.Decode(rasterBytes);
-        Svg = string.IsNullOrWhiteSpace(svg) ? string.Empty : svg!;
+        Svg = RequireSvg(svg);
     }
 
     /// <summary>Initializes an RGBA artifact.</summary>
     public VisualStoryMediaSurface(RgbaImage raster, string accessibleText, string? svg = null)
         : base(VisualStorySurfaceKind.Media, accessibleText) {
         Raster = raster;
-        Svg = string.IsNullOrWhiteSpace(svg) ? string.Empty : svg!;
+        Svg = RequireSvg(svg);
     }
 
     /// <summary>Gets the resolved raster representation used by PNG, GIF, and APNG output.</summary>
@@ -110,6 +122,29 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
 
     /// <summary>Gets an optional resolved SVG representation used by SVG output.</summary>
     public string Svg { get; }
+
+    private static string RequireSvg(string? svg) {
+        if (string.IsNullOrWhiteSpace(svg)) return string.Empty;
+        try {
+            var settings = new XmlReaderSettings {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null,
+                MaxCharactersInDocument = 64L * 1024 * 1024
+            };
+            using var text = new StringReader(svg);
+            using var reader = XmlReader.Create(text, settings);
+            reader.MoveToContent();
+            if (!string.Equals(reader.LocalName, "svg", StringComparison.Ordinal) ||
+                !string.Equals(reader.NamespaceURI, SvgNamespace, StringComparison.Ordinal)) {
+                throw new ArgumentException("The vector representation must be a valid SVG document.", nameof(svg));
+            }
+            while (reader.Read()) {
+            }
+            return svg!;
+        } catch (XmlException ex) {
+            throw new ArgumentException("The vector representation must be a valid SVG document.", nameof(svg), ex);
+        }
+    }
 }
 
 /// <summary>Displays explanatory prose, status, or a callout.</summary>

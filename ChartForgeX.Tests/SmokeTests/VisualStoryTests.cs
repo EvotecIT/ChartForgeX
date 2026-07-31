@@ -142,6 +142,21 @@ internal static partial class SmokeTests {
                terminalSurface.AccessibleText.Contains(accessibleTerminal.Prompt() + "Get-Widget", StringComparison.Ordinal) &&
                terminalSurface.AccessibleText.Contains("Widget is ready", StringComparison.Ordinal),
             "Terminal accessibility text should combine its optional heading with the deterministic command and output transcript.");
+        accessibleTerminal.Output("Mutation remains accessible");
+        Assert(terminalSurface.AccessibleText.Contains("Mutation remains accessible", StringComparison.Ordinal),
+            "Terminal accessibility text should reflect mutations visible in the retained terminal presentation.");
+
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Invalid vector",
+                "<not-svg/>"),
+            "Vector media should reject malformed or non-SVG replacements before suppressing the raster fallback.");
+
+        var tabColumn = 0;
+        Assert(PngVisualStoryRenderer.ExpandSourceTabs("\tvalue\t", ref tabColumn) == "    value   " &&
+               tabColumn == 12,
+            "Raster source layout should expand tabs to deterministic four-column stops.");
 
         var invalidXmlStory = VisualStory.Create("XML-safe transcript").WithSize(480, 320);
         invalidXmlStory.Scene("result", "Completed")
@@ -305,6 +320,31 @@ internal static partial class SmokeTests {
         denseStory.Outcome("ready", "Ready", "result");
         Assert(denseStory.ToPng().Length > 8,
             "Source rendering should remain bounded for the maximum supported syntax-span count.");
+
+        var truncatedTheme = VisualStoryTheme.PremiumDark();
+        truncatedTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);
+        var truncatedStory = VisualStory.Create("Visible truncation")
+            .WithSize(480, 320)
+            .WithTheme(truncatedTheme);
+        truncatedStory.Scene("result", "Completed")
+            .Panel(
+                "result",
+                new VisualStorySourceSurface(
+                    StorySourceText.Create(string.Join("\n", Enumerable.Repeat("x", 100)), "text")));
+        truncatedStory.Outcome("ready", "Ready", "result");
+        var truncatedPixels = ReadPngRgba(truncatedStory.ToPng(), out var truncatedWidth, out _);
+        var truncatedBounds = VisualStoryLayout.PanelContent(
+            truncatedStory.Scenes[0].Panels[0],
+            VisualStoryLayout.Panels(truncatedStory, truncatedStory.Scenes[0])[0]);
+        var truncationBounds = FindNearColorBounds(
+            truncatedPixels,
+            truncatedWidth,
+            255,
+            0,
+            128,
+            32);
+        Assert(truncationBounds.Right >= truncatedBounds.X + truncatedBounds.Width - 28,
+            "Vertically truncated source panels should draw a visible ellipsis on the final rendered line.");
     }
 
     private static void VisualStoryRasterLayoutStaysBoundedAtEveryDensity() {
