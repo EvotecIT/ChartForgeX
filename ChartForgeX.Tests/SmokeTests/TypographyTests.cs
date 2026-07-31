@@ -39,6 +39,15 @@ internal static partial class SmokeTests {
             trimming: TextTrimming.Ellipsis);
         Assert(dense.Trimmed && dense.Lines.Count == 8,
             "Bounded text layout should stop wrapping a large unbroken value after the visible line budget.");
+
+        var manyParagraphs = TextLayoutEngine.Layout(
+            string.Concat(Enumerable.Repeat("x\n", 1024 * 1024)),
+            72,
+            style,
+            maximumLines: 8,
+            trimming: TextTrimming.Ellipsis);
+        Assert(manyParagraphs.Trimmed && manyParagraphs.Lines.Count == 8,
+            "Bounded text layout should stop scanning a large newline-delimited value after the visible line budget.");
     }
 
     private static void TextStyleOverridesResolveWithoutASecondStyleBrain() {

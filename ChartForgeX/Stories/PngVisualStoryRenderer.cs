@@ -170,18 +170,30 @@ public sealed class PngVisualStoryRenderer {
     }
 
     private static void DrawSource(ImageComposition canvas, VisualStory story, VisualStorySourceSurface surface, VisualStoryBounds bounds) {
-        var lines = SourceLines(surface.Source.Text);
+        var minimumFontSize = 10d;
+        var maximumDensityLines = Math.Max(
+            1,
+            (int)Math.Ceiling((bounds.Height - 8) / (minimumFontSize * 1.45)));
+        var lines = new List<TextLineSlice>(maximumDensityLines + 1);
+        foreach (var line in TextLineScanner.Enumerate(surface.Source.Text)) {
+            lines.Add(line);
+            if (lines.Count > maximumDensityLines) break;
+        }
+        var hasAdditionalLines = lines.Count > maximumDensityLines;
+        if (hasAdditionalLines) lines.RemoveAt(lines.Count - 1);
         var spans = surface.Source.Spans;
         var spanIndex = 0;
         var lineCount = Math.Max(1, lines.Count);
-        var fontSize = Math.Max(10, Math.Min(18, (bounds.Height - 8) / (lineCount * 1.45)));
+        var fontSize = Math.Max(minimumFontSize, Math.Min(18, (bounds.Height - 8) / (lineCount * 1.45)));
         var lineHeight = fontSize * 1.45;
         var y = bounds.Y + 4;
         var maximumLines = Math.Max(1, (int)Math.Floor((bounds.Height - 4 + 0.1) / lineHeight));
         var visibleLines = Math.Min(lines.Count, maximumLines);
         for (var lineIndex = 0; lineIndex < visibleLines; lineIndex++) {
             var line = lines[lineIndex];
-            var verticallyTruncated = lineIndex == visibleLines - 1 && visibleLines < lines.Count;
+            var verticallyTruncated =
+                lineIndex == visibleLines - 1 &&
+                (hasAdditionalLines || visibleLines < lines.Count);
             var lineText = surface.Source.Text.Substring(line.Start, line.Length);
             var measuredColumn = 0;
             var expandedLine = ExpandSourceTabs(lineText, ref measuredColumn);
@@ -347,25 +359,4 @@ public sealed class PngVisualStoryRenderer {
         return output.ToString();
     }
 
-    private static List<SourceLine> SourceLines(string text) {
-        var lines = new List<SourceLine>();
-        var start = 0;
-        for (var index = 0; index < text.Length; index++) {
-            if (text[index] != '\r' && text[index] != '\n') continue;
-            lines.Add(new SourceLine(start, index - start));
-            if (text[index] == '\r' && index + 1 < text.Length && text[index + 1] == '\n') index++;
-            start = index + 1;
-        }
-        lines.Add(new SourceLine(start, text.Length - start));
-        return lines;
-    }
-
-    private readonly struct SourceLine {
-        public SourceLine(int start, int length) {
-            Start = start;
-            Length = length;
-        }
-        public int Start { get; }
-        public int Length { get; }
-    }
 }

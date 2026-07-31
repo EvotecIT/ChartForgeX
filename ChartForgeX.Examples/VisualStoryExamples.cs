@@ -14,20 +14,8 @@ internal static class VisualStoryExamples {
     }
 
     private static void WriteFiveLineChart(string output) {
-        const string source = """
-using ChartForgeX;
-var chart = Chart.Create().WithTitle("Weekly builds").WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri");
-chart.AddLine("Builds", new[] { 12d, 18d, 15d, 24d, 31d }.Select((y, x) => new ChartPoint(x + 1, y)));
-chart.SavePng("weekly-builds.png");
-Console.WriteLine("Saved weekly-builds.png");
-""";
-        var chart = Chart.Create()
-            .WithTitle("Weekly builds")
-            .WithSubtitle("A real outcome, not a console promise")
-            .WithTheme(ChartTheme.ReportDark())
-            .WithSize(900, 500)
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
-            .AddSmoothArea("Builds", new[] { 12d, 18d, 15d, 24d, 31d }.Select((y, x) => new ChartPoint(x + 1, y)));
+        var chart = FiveLineChartExample.Create();
+        chart.SavePng(Path.Combine(output, "weekly-builds.png"));
         var console = TerminalStory.Create()
             .WithTitle("dotnet run — five-line-chart")
             .WithDialect(TerminalDialect.CSharp)
@@ -39,12 +27,12 @@ Console.WriteLine("Saved weekly-builds.png");
             .WithDescription("Source, execution transcript, and the generated chart stay together.")
             .WithSize(1200, 675);
         story.Scene("source", "Start with five lines", 2.8)
-            .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(source, "csharp"), "C# source"));
+            .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(FiveLineChartExample.Source, "csharp"), "C# source"));
         story.Scene("run", "Run the example", 2.2, VisualStorySceneLayout.Split)
-            .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(source, "csharp"), "C# source"), weight: 1.2)
+            .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(FiveLineChartExample.Source, "csharp"), "C# source"), weight: 1.2)
             .Panel("console", new VisualStoryTerminalSurface(console, "dotnet run reports Saved weekly-builds.png"), "Console", weight: 0.8);
         story.Scene("result", "See what the code created", 3.2, VisualStorySceneLayout.Split)
-            .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(source, "csharp"), "C# source"), weight: 0.9)
+            .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(FiveLineChartExample.Source, "csharp"), "C# source"), weight: 0.9)
             .Panel("chart", new VisualStoryMediaSurface(chart.ToPng(), "Weekly builds chart rising from 12 on Monday to 31 on Friday.", chart.ToSvg()), "Generated chart", weight: 1.1);
         story.Outcome("chart-created", "weekly-builds.png is visible", "chart");
         WriteAll(story, output, "chart-in-five-lines-story");
@@ -99,5 +87,36 @@ Console.WriteLine("Saved weekly-builds.png");
         var animation = VisualStoryAnimationOptions.Create().WithFramesPerSecond(6).WithEndHold(1.5);
         story.SaveGif(Path.Combine(output, name + ".gif"), animation);
         story.SaveApng(Path.Combine(output, name + ".apng"), animation);
+    }
+}
+
+internal static class FiveLineChartExample {
+    internal static readonly string Source = ReadSource();
+
+    internal static Chart Create() {
+        var chart = Chart.Create()
+            .WithTitle("Weekly builds")
+            .WithSubtitle("A real outcome, not a console promise")
+            .WithTheme(ChartTheme.ReportDark())
+            .WithSize(900, 500)
+            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri");
+        chart.AddSmoothArea(
+            "Builds",
+            new[] {
+                new ChartPoint(1, 12),
+                new ChartPoint(2, 18),
+                new ChartPoint(3, 15),
+                new ChartPoint(4, 24),
+                new ChartPoint(5, 31)
+            });
+        return chart;
+    }
+
+    private static string ReadSource() {
+        using var stream = typeof(FiveLineChartExample).Assembly
+            .GetManifestResourceStream("ChartForgeX.Examples.FiveLineChart.cs")
+            ?? throw new InvalidOperationException("The compiled five-line chart snippet is missing.");
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 }

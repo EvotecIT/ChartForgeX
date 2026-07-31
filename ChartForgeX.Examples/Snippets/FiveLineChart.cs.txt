@@ -1,0 +1,5 @@
+using Chart = ChartForgeX.Core.Chart;
+using ChartPoint = ChartForgeX.Primitives.ChartPoint;
+var chart = Chart.Create().WithTitle("Weekly builds").WithSubtitle("A real outcome, not a console promise").WithTheme(ChartForgeX.Themes.ChartTheme.ReportDark()).WithSize(900, 500).WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri");
+chart.AddSmoothArea("Builds", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18), new ChartPoint(3, 15), new ChartPoint(4, 24), new ChartPoint(5, 31) });
+ChartForgeX.ChartExtensions.SavePng(chart, "weekly-builds.png");

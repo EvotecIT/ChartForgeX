@@ -577,6 +577,18 @@ internal static partial class SmokeTests {
         Assert(truncationBounds.Right >= truncatedBounds.X + truncatedBounds.Width - 28,
             "Vertically truncated source panels should draw a visible ellipsis on the final rendered line.");
 
+        var denseLinesStory = VisualStory.Create("Bounded source lines")
+            .WithSize(480, 320)
+            .WithTheme(truncatedTheme);
+        denseLinesStory.Scene("result", "Completed")
+            .Panel(
+                "result",
+                new VisualStorySourceSurface(
+                    StorySourceText.Create(string.Concat(Enumerable.Repeat("x\n", 1024 * 1024)), "text")));
+        denseLinesStory.Outcome("ready", "Ready", "result");
+        Assert(denseLinesStory.ToPng().Length > 200,
+            "Source rendering should retain only the visible prefix of a large newline-delimited value.");
+
         var horizontalTheme = VisualStoryTheme.PremiumDark();
         horizontalTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);
         horizontalTheme.Syntax.Keyword = ChartColor.FromRgb(0, 255, 0);

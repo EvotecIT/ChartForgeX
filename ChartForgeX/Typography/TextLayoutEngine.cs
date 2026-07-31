@@ -14,10 +14,13 @@ public static class TextLayoutEngine {
         if (style == null) throw new ArgumentNullException(nameof(style));
         var font = TypographyFontResolver.Resolve(style.Font);
         var lineHeight = ResolveLineHeight(style, font);
-        var lines = SplitParagraphs(text);
         var width = 0d;
-        for (var i = 0; i < lines.Count; i++) width = Math.Max(width, MeasureWidth(lines[i], style, font));
-        return new TextMetrics(width, Math.Max(1, lines.Count) * lineHeight, lineHeight);
+        var lineCount = 0;
+        foreach (var line in TextLineScanner.Enumerate(text)) {
+            width = Math.Max(width, MeasureWidth(line.Read(text), style, font));
+            lineCount++;
+        }
+        return new TextMetrics(width, Math.Max(1, lineCount) * lineHeight, lineHeight);
     }
 
     /// <summary>Wraps and measures text inside a fixed-width region.</summary>
@@ -32,12 +35,12 @@ public static class TextLayoutEngine {
         var font = TypographyFontResolver.Resolve(style.Font);
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;
-        foreach (var paragraph in SplitParagraphs(text)) {
+        foreach (var paragraphSlice in TextLineScanner.Enumerate(text)) {
             var remainingLines = maximumLines.HasValue
                 ? Math.Max(0, maximumLines.Value - resolved.Count)
                 : (int?)null;
             var paragraphLines = WrapParagraph(
-                paragraph,
+                paragraphSlice.Read(text),
                 maximumWidth,
                 style,
                 font,
@@ -194,8 +197,6 @@ public static class TextLayoutEngine {
         var result = candidate + ellipsis;
         return new TextLayoutLine(result, MeasureWidth(result, style, font));
     }
-
-    private static List<string> SplitParagraphs(string text) => new(text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'));
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 }
