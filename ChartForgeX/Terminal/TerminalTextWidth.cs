@@ -306,12 +306,14 @@ internal static class TerminalTextWidth {
             }
 
             var joinerLength = nextLength;
-            if (!PeekScalar(value, index + joinerLength, out next, out nextLength) ||
+            index += joinerLength;
+            previous = next;
+            previousIsPrepend = false;
+            if (!PeekScalar(value, index, out next, out nextLength) ||
                 !hasExtendedPictographic ||
                 !IsExtendedPictographic(next)) {
-                break;
+                continue;
             }
-            index += joinerLength;
             index += nextLength;
             previous = next;
             previousIsPrepend = IsPrepend(next);

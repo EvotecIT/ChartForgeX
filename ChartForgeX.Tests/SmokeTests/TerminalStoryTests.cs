@@ -261,11 +261,11 @@ internal static partial class SmokeTests {
         var fontlessFlagLayout = TerminalStoryLayout.Build(flagStory, value => TerminalPngTextPreserver.Preserve(value, null));
         Assert(TerminalStoryLayout.TextElementCount("🇵🇱") == 1 &&
                TerminalStoryLayout.TextElementCount("👩‍💻") == 1 &&
-               TerminalStoryLayout.TextElementCount("A\u200DB") == 3 &&
+               TerminalStoryLayout.TextElementCount("A\u200DB") == 2 &&
                TerminalStoryLayout.DisplayWidth("A\u200DB") == 2 &&
                fontlessFlagLayout.Lines.Count == 61 &&
                new PngTerminalStoryRenderer().Render(flagStory, null).Length > 8,
-            "Terminal grapheme segmentation should keep flag and emoji ZWJ sequences stable without collapsing ordinary joined glyphs.");
+            "Terminal grapheme segmentation should keep flags and emoji joins stable while attaching ordinary ZWJ controls to the preceding grapheme.");
         var devanagariConjunct = "\u0915\u094D\u0937";
         var devanagariZwjConjunct = "\u0915\u094D\u200D\u0937";
         var bengaliConjunct = "\u0995\u09CD\u09B7";

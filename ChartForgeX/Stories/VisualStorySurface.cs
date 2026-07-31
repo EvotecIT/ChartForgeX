@@ -281,8 +281,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         var normalized = DecodeCssEscapes(value);
         return normalized.IndexOf("animation", StringComparison.OrdinalIgnoreCase) >= 0 ||
                normalized.IndexOf("transition", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               normalized.IndexOf("@keyframes", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               normalized.IndexOf("@import", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               normalized.IndexOf('@') >= 0 ||
                normalized.IndexOf("behavior", StringComparison.OrdinalIgnoreCase) >= 0 ||
                ContainsUnsafeCssReferenceCore(normalized);
     }

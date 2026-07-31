@@ -80,6 +80,7 @@ public readonly struct StorySourceSpan {
 public sealed class StorySourceText {
     private readonly List<StorySourceSpan> _spans = new();
     private string _language = string.Empty;
+    private int _validatedBoundaryOffset;
 
     private StorySourceText(string text) {
         Text = text ?? throw new ArgumentNullException(nameof(text));
@@ -114,12 +115,14 @@ public sealed class StorySourceText {
         if (_spans.Count > 0 && span.Start < _spans[_spans.Count - 1].End) {
             throw new ArgumentException("Syntax spans must be ordered and cannot overlap.", nameof(span));
         }
-        if (!TerminalTextWidth.IsElementBoundary(Text, span.Start) ||
-            !TerminalTextWidth.IsElementBoundary(Text, span.End)) {
+        if (_spans.Count >= 4096) throw new InvalidOperationException("Source text supports at most 4096 syntax spans.");
+        var boundaryOffset = _validatedBoundaryOffset;
+        if (!AdvanceToBoundary(span.Start, ref boundaryOffset) ||
+            !AdvanceToBoundary(span.End, ref boundaryOffset)) {
             throw new ArgumentException("Syntax spans cannot split a Unicode text element.", nameof(span));
         }
-        if (_spans.Count >= 4096) throw new InvalidOperationException("Source text supports at most 4096 syntax spans.");
         _spans.Add(span);
+        _validatedBoundaryOffset = boundaryOffset;
         return this;
     }
 
@@ -134,13 +137,23 @@ public sealed class StorySourceText {
 
     internal void Validate() {
         var previousEnd = 0;
+        var boundaryOffset = 0;
         foreach (var span in _spans) {
             if (span.Start < previousEnd || span.End > Text.Length) throw new InvalidOperationException("Source syntax spans must be ordered, non-overlapping, and in range.");
-            if (!TerminalTextWidth.IsElementBoundary(Text, span.Start) ||
-                !TerminalTextWidth.IsElementBoundary(Text, span.End)) {
+            if (!AdvanceToBoundary(span.Start, ref boundaryOffset) ||
+                !AdvanceToBoundary(span.End, ref boundaryOffset)) {
                 throw new InvalidOperationException("Source syntax spans cannot split Unicode text elements.");
             }
             previousEnd = span.End;
         }
+    }
+
+    private bool AdvanceToBoundary(int targetOffset, ref int boundaryOffset) {
+        if (targetOffset < boundaryOffset) return false;
+        while (boundaryOffset < targetOffset) {
+            TerminalTextWidth.NextElement(Text, ref boundaryOffset);
+            if (boundaryOffset > targetOffset) return false;
+        }
+        return true;
     }
 }

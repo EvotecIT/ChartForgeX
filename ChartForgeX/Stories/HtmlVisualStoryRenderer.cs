@@ -47,9 +47,38 @@ public sealed class HtmlVisualStoryRenderer {
         return html.ToString();
     }
 
-    private static string Escape(string value) => value
-        .Replace("&", "&amp;")
-        .Replace("<", "&lt;")
-        .Replace(">", "&gt;")
-        .Replace("\"", "&quot;");
+    private static string Escape(string value) {
+        var escaped = new StringBuilder(value.Length);
+        for (var index = 0; index < value.Length; index++) {
+            var current = value[index];
+            if (char.IsHighSurrogate(current) &&
+                index + 1 < value.Length &&
+                char.IsLowSurrogate(value[index + 1])) {
+                escaped.Append(current).Append(value[++index]);
+                continue;
+            }
+            if (current == '\0' || char.IsSurrogate(current)) {
+                escaped.Append('\uFFFD');
+                continue;
+            }
+            switch (current) {
+                case '&':
+                    escaped.Append("&amp;");
+                    break;
+                case '<':
+                    escaped.Append("&lt;");
+                    break;
+                case '>':
+                    escaped.Append("&gt;");
+                    break;
+                case '"':
+                    escaped.Append("&quot;");
+                    break;
+                default:
+                    escaped.Append(current);
+                    break;
+            }
+        }
+        return escaped.ToString();
+    }
 }
