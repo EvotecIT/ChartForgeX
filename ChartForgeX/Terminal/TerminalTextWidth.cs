@@ -251,19 +251,31 @@ internal static class TerminalTextWidth {
 
     internal static string NextElement(string value, ref int index) {
         var start = index;
+        index = NextElementBoundary(value, index);
+        return value.Substring(start, index - start);
+    }
+
+    internal static int NextElementBoundary(string value, int index) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (index < 0 || index >= value.Length) {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
         var first = ReadScalar(value, ref index);
         if (first == '\r' && PeekScalar(value, index, out var next, out var nextLength) && next == '\n') {
             index += nextLength;
-            return value.Substring(start, index - start);
+            return index;
         }
 
         if (IsGraphemeControl(first)) {
-            return value.Substring(start, index - start);
+            return index;
         }
 
         if (IsRegionalIndicator(first) && PeekScalar(value, index, out next, out nextLength) && IsRegionalIndicator(next)) {
             index += nextLength;
-            return value.Substring(start, index - start);
+            return index;
         }
 
         var previous = first;
@@ -320,7 +332,7 @@ internal static class TerminalTextWidth {
             hasExtendedPictographic = true;
         }
 
-        return value.Substring(start, index - start);
+        return index;
     }
 
     internal static bool TryPreservedScalar(string value, int index, out int length, out int codePoint) {

@@ -183,6 +183,7 @@ public sealed class VisualStory {
         if (_scenes.Count == 0) throw new InvalidOperationException("Visual stories require at least one scene.");
         if (_outcomes.Count == 0) throw new InvalidOperationException("Visual stories must declare at least one completed outcome.");
         if (string.IsNullOrWhiteSpace(Theme.FontFamily) || string.IsNullOrWhiteSpace(Theme.MonospaceFontFamily)) throw new InvalidOperationException("Visual-story themes require font families.");
+        if (Theme.Syntax == null) throw new InvalidOperationException("Visual-story themes require a syntax palette.");
         foreach (var scene in _scenes) {
             scene.Validate();
             var bounds = VisualStoryLayout.Panels(this, scene);

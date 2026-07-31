@@ -11,6 +11,8 @@ namespace ChartForgeX.Stories;
 
 /// <summary>Renders the completed visual-story scene as a deterministic PNG.</summary>
 public sealed class PngVisualStoryRenderer {
+    private const int MaximumMaterializedSourceElementLength = 1024;
+
     /// <summary>Renders the completed story state to PNG bytes.</summary>
     public byte[] Render(VisualStory story) {
         if (story == null) throw new ArgumentNullException(nameof(story));
@@ -344,10 +346,15 @@ public sealed class PngVisualStoryRenderer {
         var end = checked(start + length);
         while (index < end) {
             var elementStart = index;
-            var element = TerminalTextWidth.NextElement(source, ref index);
-            if (index > end) {
+            var elementEnd = TerminalTextWidth.NextElementBoundary(source, index);
+            if (elementEnd > end) {
                 throw new ArgumentException("The source range must end at a complete text element.", nameof(length));
             }
+            if (elementEnd - elementStart > MaximumMaterializedSourceElementLength) {
+                break;
+            }
+            index = elementEnd;
+            var element = source.Substring(elementStart, elementEnd - elementStart);
 
             var rendered = element;
             var nextColumn = visualColumn;
