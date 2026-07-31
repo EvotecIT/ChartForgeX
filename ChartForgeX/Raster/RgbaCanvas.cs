@@ -25,14 +25,16 @@ internal sealed partial class RgbaCanvas {
 
     public RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont) : this(width, height, scale, outlineFont, 1) { }
 
-    public RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont, int outputScale) {
+    public RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont, int outputScale) : this(width, height, scale, outlineFont, outputScale, true) { }
+
+    internal RgbaCanvas(int width, int height, int scale, TrueTypeFont? outlineFont, int outputScale, bool useDefaultOutlineFont) {
         var allocation = RasterAllocationGuard.Calculate(width, height, scale, outputScale);
         Width = width;
         Height = height;
         _supersamplingScale = scale;
         _outputScale = outputScale;
         _scale = allocation.CombinedScale;
-        _outlineFont = outlineFont ?? DefaultOutlineFont;
+        _outlineFont = outlineFont ?? (useDefaultOutlineFont ? DefaultOutlineFont : null);
         _pixelWidth = allocation.PixelWidth;
         _pixelHeight = allocation.PixelHeight;
         Pixels = new byte[allocation.ByteCount];
@@ -277,10 +279,7 @@ internal sealed partial class RgbaCanvas {
     public static double MeasureTextTinyWidth(string text, int scale, TrueTypeFont? outlineFont) {
         var font = outlineFont ?? DefaultOutlineFont;
         if (font != null) return font.Measure(text, OutlineFontSize(scale));
-
-        var width = 0;
-        foreach (var ch in text) width += TinyFont.AdvanceFor(ch);
-        return width * Math.Max(1, scale);
+        return MeasureTinyFallbackWidth(text, scale);
     }
 
     public static double MeasureTextWidth(string text, double fontSize, TrueTypeFont? outlineFont) {
@@ -289,7 +288,18 @@ internal sealed partial class RgbaCanvas {
         return MeasureTextTinyWidth(text, FallbackScaleForFontSize(fontSize), null);
     }
 
-    internal double MeasureTextWidth(string text, double fontSize) => MeasureTextWidth(text, fontSize, _outlineFont);
+    internal double MeasureTextWidth(string text, double fontSize) {
+        if (_outlineFont != null) {
+            return _outlineFont.Measure(text, Math.Max(1, fontSize));
+        }
+        return MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
+    }
+
+    internal static double MeasureTextWidthWithFont(string text, double fontSize, TrueTypeFont? font) {
+        return font != null
+            ? font.Measure(text, Math.Max(1, fontSize))
+            : MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
+    }
 
     public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont) + EmphasisOffset(fontSize);
 
@@ -315,6 +325,12 @@ internal sealed partial class RgbaCanvas {
     private static double OutlineFontSize(int scale) => TinyFont.Height * Math.Max(1, scale) * 1.45;
     private static int FallbackScaleForFontSize(double fontSize) => Math.Max(1, (int)Math.Round(Math.Max(1, fontSize) / OutlineFontSize(1)));
     private static double EmphasisOffset(double fontSize) => Math.Max(0.24, Math.Min(0.58, fontSize * 0.025));
+
+    private static double MeasureTinyFallbackWidth(string text, int scale) {
+        var width = 0;
+        foreach (var ch in text) width += TinyFont.AdvanceFor(ch);
+        return width * Math.Max(1, scale);
+    }
 
     public byte[] ToOutputPixels() {
         if (_scale == 1) return Pixels;

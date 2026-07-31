@@ -103,6 +103,65 @@ var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 });
 ```
 
+## Terminal Presentations
+
+`TerminalStory` creates a deterministic console presentation from structured commands and output. It does not execute commands. That separation makes the same renderer suitable for authored product demos, documentation, release evidence, and transcripts captured by a caller-controlled script:
+
+```csharp
+using ChartForgeX.Terminal;
+
+var results = TerminalTable.Create()
+    .WithColumns("CHECK", "STATUS")
+    .AddRow("Restore", "PASS")
+    .AddRow("Tests", "PASS");
+
+var console = TerminalStory.Create()
+    .WithTitle(@"pwsh - C:\OpenSource")
+    .WithDialect(TerminalDialect.PowerShell)
+    .WithWorkingDirectory(@"C:\OpenSource")
+    .Command(@".\Invoke-Validation.ps1")
+    .Output("Running release validation...", TerminalTextTone.Muted)
+    .Table(results)
+    .Output("Ready", TerminalTextTone.Success);
+
+console.SaveSvg("validation.svg");
+console.SaveGif("validation.gif");
+```
+
+Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. SVG and HTML animate without JavaScript. GIF and APNG reuse the exact terminal timeline for portable chat, issue, and documentation embeds. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
+
+Use `TerminalStoryAnimationOptions` when a host needs a different frame rate, single-play output, a longer completed-state hold, a denser raster, or a different frame budget. The default 10 FPS, one-times-density GIF is intentionally suitable for Discord-style sharing without turning the export into a browser recording.
+
+## Script-Free Visual Stories
+
+`VisualMotionTimeline` turns any `VisualGrid` into a deterministic visual story without JavaScript. Assign stable target IDs when adding panels, then sequence restrained entrances or emphasis cues:
+
+```csharp
+using ChartForgeX.Motion;
+
+var motion = VisualMotionTimeline.Create()
+    .Reveal("title", durationSeconds: 0.65)
+    .Fade("subtitle", delaySeconds: 0.12, durationSeconds: 0.5)
+    .Cascade(new[] { "projects", "users", "releases" }, initialDelaySeconds: 0.28)
+    .Rise("portfolio", delaySeconds: 0.72);
+
+var story = VisualGrid.Create()
+    .WithTitle("Engineering Portfolio")
+    .WithSubtitle("A reusable story for profiles, releases, reports, or dashboards")
+    .WithColumns(3)
+    .Add("projects", projectsCard)
+    .Add("users", usersCard)
+    .Add("releases", releasesCard)
+    .Add("portfolio", portfolioTable, columnSpan: 3)
+    .WithMotion(motion);
+
+story.SaveSvg("portfolio.svg");
+story.SaveHtml("portfolio.html");
+story.SavePng("portfolio.png");
+```
+
+Motion applies to SVG and complete HTML-page output. PNG always renders the exact completed state. The generated CSS also exposes that completed state for `prefers-reduced-motion` and print, so motion stays decorative rather than becoming a content dependency.
+
 `WithAction(...)` is still static-renderer friendly. SVG/HTML outputs render safe relative, `http(s)`, and `mailto` action URLs when one is supplied; PNG keeps the same visual affordance without embedding a link.
 
 The mini bar and mini sparkline geometry is shared by the SVG and PNG visual-block renderers, so improvements to compact line/bar polish can be applied once instead of redoing each output format separately.

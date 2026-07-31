@@ -2,6 +2,23 @@
   "version": 1,
   "charts": [
     {
+      "name": "animated-engineering-portfolio-story",
+      "width": 838,
+      "height": 946,
+      "svg": {
+        "minVisualNodes": 43,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1585496,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "annotation-edge-dark",
       "width": 760,
       "height": 460,
@@ -1902,6 +1919,23 @@
         "minVisiblePixels": 1512000,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "powershell-console-story",
+      "width": 886,
+      "height": 376,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 666272,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 978,
         "maxEdgeInkPixels": 0
       }
     },

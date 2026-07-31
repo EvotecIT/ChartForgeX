@@ -166,8 +166,8 @@ internal sealed partial class TrueTypeFont {
         var scale = ScaleFor(fontSize);
         var width = 0.0;
         ushort? previous = null;
-        foreach (var ch in text) {
-            var glyph = MapGlyph(ch);
+        for (var index = 0; index < text.Length;) {
+            var glyph = MapGlyph(ReadCodePoint(text, ref index));
             if (previous.HasValue) width += Kerning(previous.Value, glyph) * scale;
             width += AdvanceWidth(glyph) * scale;
             previous = glyph;
@@ -185,8 +185,8 @@ internal sealed partial class TrueTypeFont {
         var baseline = y + _ascender * scale;
         var rendered = false;
         ushort? previous = null;
-        foreach (var ch in text) {
-            var glyph = MapGlyph(ch);
+        for (var index = 0; index < text.Length;) {
+            var glyph = MapGlyph(ReadCodePoint(text, ref index));
             if (previous.HasValue) cursor += Kerning(previous.Value, glyph) * scale;
             var contours = ReadGlyphContours(glyph, new FontTransform(scale, 0, 0, -scale, cursor, baseline), 0);
             if (contours.Count > 0) {
@@ -206,11 +206,18 @@ internal sealed partial class TrueTypeFont {
     internal int? CollectionIndex => _collectionIndex;
 
     private bool HasGlyphs(string value) {
-        foreach (var ch in value) {
-            if (!char.IsWhiteSpace(ch) && MapGlyph(ch) == 0) return false;
+        for (var index = 0; index < value.Length;) {
+            var codePoint = ReadCodePoint(value, ref index);
+            if (MapGlyph(codePoint) == 0) {
+                return false;
+            }
         }
 
         return true;
+    }
+
+    internal bool HasGlyph(int codePoint) {
+        return MapGlyph(codePoint) != 0;
     }
 
     private bool MatchesName(string? faceName) {
@@ -270,7 +277,7 @@ internal sealed partial class TrueTypeFont {
         return fontSize / Math.Max(1, _unitsPerEm);
     }
 
-    private ushort MapGlyph(char ch) {
+    private ushort MapGlyph(int codePoint) {
         var cmapOffset = _cmap;
         var subtableCount = ReadUInt16(_data, cmapOffset + 2);
         var best = 0;
@@ -292,11 +299,13 @@ internal sealed partial class TrueTypeFont {
 
         if (best == 0) return 0;
         var selectedFormat = ReadUInt16(_data, best);
-        return selectedFormat == 12 ? MapFormat12(best, ch) : MapFormat4(best, ch);
+        return selectedFormat == 12 ? MapFormat12(best, codePoint) : MapFormat4(best, codePoint);
     }
 
-    private ushort MapFormat4(int table, char ch) {
-        var code = ch;
+    private ushort MapFormat4(int table, int code) {
+        if (code > ushort.MaxValue) {
+            return 0;
+        }
         var segCount = ReadUInt16(_data, table + 6) / 2;
         var endCodes = table + 14;
         var startCodes = endCodes + segCount * 2 + 2;
@@ -320,8 +329,7 @@ internal sealed partial class TrueTypeFont {
         return 0;
     }
 
-    private ushort MapFormat12(int table, char ch) {
-        var code = ch;
+    private ushort MapFormat12(int table, int code) {
         var groups = ReadUInt32(_data, table + 12);
         var groupOffset = table + 16;
         for (var i = 0; i < groups; i++) {
@@ -333,6 +341,14 @@ internal sealed partial class TrueTypeFont {
         }
 
         return 0;
+    }
+
+    private static int ReadCodePoint(string value, ref int index) {
+        var first = value[index++];
+        if (!char.IsHighSurrogate(first) || index >= value.Length || !char.IsLowSurrogate(value[index])) {
+            return first;
+        }
+        return char.ConvertToUtf32(first, value[index++]);
     }
 
     private int AdvanceWidth(ushort glyph) {

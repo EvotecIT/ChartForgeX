@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using ChartForgeX.Core;
+using ChartForgeX.Motion;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
@@ -21,11 +22,18 @@ public sealed class SvgVisualGridRenderer {
     public string Render(VisualGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-visual-grid", idScope, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
-        var svg = RenderCore(grid, provisionalId);
-        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-visual-grid", idScope);
+        if (grid.Motion == null) {
+            var staticSvg = RenderCore(grid, provisionalId, provisionalId);
+            return SvgRenderedIdentity.Bind(staticSvg, provisionalId, "cfx-visual-grid", idScope);
+        }
+        var provisionalSvg = RenderCore(grid, provisionalId, provisionalId);
+        var finalId = SvgRenderedIdentity.CreateFinalId(provisionalSvg, "cfx-visual-grid", idScope);
+        var svg = RenderCore(grid, provisionalId, finalId);
+        return SvgRenderedIdentity.RebindGeneratedId(svg, provisionalId, finalId);
     }
 
-    private string RenderCore(VisualGrid grid, string id) {
+    private string RenderCore(VisualGrid grid, string id, string childScopeRoot) {
+        VisualGridMotion.Validate(grid);
         var layout = VisualGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
         var writer = new SvgMarkupWriter(4096);
@@ -41,16 +49,24 @@ public sealed class SvgVisualGridRenderer {
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision")
             .Attribute("style", "max-width:100%;height:auto;display:block")
+            .Attribute("data-cfx-motion", grid.Motion == null ? null : "timeline")
+            .Attribute("data-cfx-motion-duration", grid.Motion == null ? null : VisualMotionCss.Duration(grid.Motion).ToString("0.###", CultureInfo.InvariantCulture))
             .EndStartElement()
             .Line()
             .StartElement("title").Attribute("id", id + "-title").Text(grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title).EndElement()
             .Line()
-            .StartElement("desc").Attribute("id", id + "-desc").Text("Static visual grid containing charts and visual blocks.").EndElement()
+            .StartElement("desc").Attribute("id", id + "-desc").Text(grid.Motion == null ? "Static visual grid containing charts and visual blocks." : "Animated visual grid containing charts and visual blocks. Motion is decorative and has a static reduced-motion fallback.").EndElement()
             .Line();
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         writer.StartElement("defs").EndStartElement().Line();
         SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
         SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualGridSurface", background);
+        if (grid.Motion != null) {
+            writer.StartElement("style").EndStartElement()
+                .Raw(VisualMotionCss.Build("#" + id, grid.Motion, id))
+                .EndElement()
+                .Line();
+        }
         writer.EndElement().Line();
         if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", "url(#" + id + "-visualGridSurface)").EndEmptyElement().Line();
         if (grid.FrameVisible) {
@@ -87,15 +103,15 @@ public sealed class SvgVisualGridRenderer {
         }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
-            if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();
-            if (grid.Subtitle.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-subtitle").Attribute("x", grid.Padding + 2).Attribute("y", grid.Padding + theme.TitleFontSize + theme.SubtitleFontSize).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Text(VisualBlockRendering.FitText(grid.Subtitle, theme.SubtitleFontSize, headerWidth)).EndElement().Line();
+            if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("data-cfx-motion-target", grid.Motion == null ? null : VisualGridMotion.TitleTarget).Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();
+            if (grid.Subtitle.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-subtitle").Attribute("data-cfx-motion-target", grid.Motion == null ? null : VisualGridMotion.SubtitleTarget).Attribute("x", grid.Padding + 2).Attribute("y", grid.Padding + theme.TitleFontSize + theme.SubtitleFontSize).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Text(VisualBlockRendering.FitText(grid.Subtitle, theme.SubtitleFontSize, headerWidth)).EndElement().Line();
         }
 
         for (var i = 0; i < layout.Cells.Count; i++) {
             var cell = layout.Cells[i];
-            var childScope = id + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
+            var childScope = childScopeRoot + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
             var childSvg = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, childScope) : RenderChildBlock(cell.Item.Block!, childScope);
-            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualPanelFit.Stretch)).Line();
+            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualPanelFit.Stretch, cell.Item.MotionTargetId)).Line();
         }
 
         writer.EndElement().Line();
@@ -124,7 +140,7 @@ public sealed class SvgVisualGridRenderer {
         }
     }
 
-    private static string PositionChildSvg(string svg, double x, double y, double width, double height, bool stretch) {
+    private static string PositionChildSvg(string svg, double x, double y, double width, double height, bool stretch, string? motionTargetId) {
         var tagEnd = svg.IndexOf('>');
         if (tagEnd < 0) return svg;
         var open = svg.Substring(0, tagEnd);
@@ -133,6 +149,7 @@ public sealed class SvgVisualGridRenderer {
         open = SetSvgAttribute(open, "width", width.ToString(CultureInfo.InvariantCulture));
         open = SetSvgAttribute(open, "height", height.ToString(CultureInfo.InvariantCulture));
         open = SetSvgAttribute(open, "data-cfx-role", "visual-grid-panel");
+        if (motionTargetId != null) open = SetSvgAttribute(open, "data-cfx-motion-target", motionTargetId);
         if (stretch) open = SetSvgAttribute(open, "preserveAspectRatio", "none");
         return open + svg.Substring(tagEnd);
     }

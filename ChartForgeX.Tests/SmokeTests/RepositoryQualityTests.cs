@@ -465,8 +465,18 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "IncludeSymbols", "true"), "Package should include symbol package generation.");
         Assert(HasXmlProperty(libraryProject, "SymbolPackageFormat", "snupkg"), "Package symbols should use snupkg format.");
         var releaseNotes = GetXmlValue(libraryProject, "PackageReleaseNotes");
-        Assert(ContainsMetadataConcepts(releaseNotes, "LTTB", "min/max", "source-index"), "Package release notes should summarize the current explicit decimation and provenance contract.");
-        Assert(ContainsMetadataConcepts(releaseNotes, "line", "area", "scatter"), "Package release notes should name the dense-series families covered by the current release.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "motion", "named targets", "script-free"), "Package release notes should summarize the current visual-motion contract.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "PNG", "reduced-motion", "print"), "Package release notes should name the completed-state fallbacks covered by the current release.");
+        foreach (var dependentProject in new[] {
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Markup", "ChartForgeX.Markup.csproj"),
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Mermaid", "ChartForgeX.Mermaid.csproj"),
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Markup.Mermaid", "ChartForgeX.Markup.Mermaid.csproj")
+        }) {
+            var dependentReleaseNotes = GetXmlValue(dependentProject, "PackageReleaseNotes");
+            Assert(dependentReleaseNotes.Contains("1.2.0", StringComparison.Ordinal) &&
+                   !dependentReleaseNotes.Contains("1.1.1", StringComparison.Ordinal),
+                "Dependent package release notes should describe the synchronized 1.2.0 release lane: " + Path.GetRelativePath(FindRepositoryRoot(), dependentProject));
+        }
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "AGENTS.md")), "Repository should include agent guidance.");
