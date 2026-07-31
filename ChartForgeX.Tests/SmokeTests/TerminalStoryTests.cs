@@ -324,8 +324,13 @@ internal static partial class SmokeTests {
                TerminalPngTextPreserver.ClusterFallbackLabel(outlinePreservedFormatControls).Length == 0 &&
                TerminalStoryLayout.DisplayWidth("\u0600") == 1 &&
                TerminalStoryLayout.TextElementCount("\u0600\u0627") == 1 &&
+               TerminalStoryLayout.TextElementCount("\u0600\n") == 2 &&
+               TerminalStoryLayout.TextElementCount("\u0600\r") == 2 &&
                TerminalStoryLayout.DisplayWidth("\u0600\u0627") == 1,
             "Default-ignorable format controls should consume no columns or raster fallback labels without hiding visible prepended marks.");
+        var oversizedSourceRun = new string('x', 1_000_000);
+        Assert(TerminalTextWidth.FitContent(oversizedSourceRun, 3, static value => value.Length) == "xxx",
+            "Source fitting should stop at the visible width without preallocating the complete source run.");
         var oversizedFallback = string.Concat(Enumerable.Repeat(
             TerminalPngTextPreserver.EscapeStart + "[U+1F600]" + TerminalPngTextPreserver.EscapeEnd,
             64));

@@ -142,6 +142,8 @@ internal static partial class SmokeTests {
             () => joinedEmojiSource.AddSpan(0, 2, StorySyntaxKind.Type),
             "Syntax spans should not split emoji ZWJ sequences.");
         joinedEmojiSource.AddSpan(0, 5, StorySyntaxKind.Type);
+        StorySourceText.Create("\u0600\nvalue").AddSpan(0, 1, StorySyntaxKind.Keyword);
+        StorySourceText.Create("\u0600\rvalue").AddSpan(0, 1, StorySyntaxKind.Keyword);
 
         var whitespaceSource = StorySourceText.Create("  indented source  ", "text");
         var whitespaceSurface = new VisualStorySourceSurface(whitespaceSource);

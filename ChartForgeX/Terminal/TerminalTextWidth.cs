@@ -6,6 +6,8 @@ using System.Text;
 namespace ChartForgeX.Terminal;
 
 internal static class TerminalTextWidth {
+    private const int MaximumInitialFitCapacity = 256;
+
     public static int Measure(string value) {
         if (value == null) {
             throw new ArgumentNullException(nameof(value));
@@ -56,7 +58,7 @@ internal static class TerminalTextWidth {
             return "…";
         }
 
-        var output = new StringBuilder(value.Length);
+        var output = new StringBuilder(Math.Min(value.Length, MaximumInitialFitCapacity));
         var width = 0;
         for (var index = 0; index < value.Length;) {
             var element = NextElement(value, ref index);
@@ -91,7 +93,7 @@ internal static class TerminalTextWidth {
             return string.Empty;
         }
 
-        var output = new StringBuilder(value.Length);
+        var output = new StringBuilder(Math.Min(value.Length, MaximumInitialFitCapacity));
         for (var index = 0; index < value.Length;) {
             var element = NextElement(value, ref index);
             output.Append(element);
@@ -103,6 +105,31 @@ internal static class TerminalTextWidth {
         }
 
         output.Append(ellipsis);
+        return output.ToString();
+    }
+
+    internal static string FitContent(string value, double maximum, Func<string, double> measure) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (measure == null) {
+            throw new ArgumentNullException(nameof(measure));
+        }
+        if (maximum <= 0) {
+            return string.Empty;
+        }
+
+        var output = new StringBuilder(Math.Min(value.Length, MaximumInitialFitCapacity));
+        var usedWidth = 0d;
+        for (var index = 0; index < value.Length;) {
+            var element = NextElement(value, ref index);
+            var elementWidth = measure(element);
+            if (usedWidth + elementWidth > maximum) {
+                break;
+            }
+            output.Append(element);
+            usedWidth += elementWidth;
+        }
         return output.ToString();
     }
 
@@ -426,9 +453,7 @@ internal static class TerminalTextWidth {
     }
 
     private static bool IsGraphemeControl(int codePoint) {
-        return codePoint <= 0x0009 ||
-               codePoint >= 0x000B && codePoint <= 0x000C ||
-               codePoint >= 0x000E && codePoint <= 0x001F ||
+        return codePoint <= 0x001F ||
                codePoint >= 0x007F && codePoint <= 0x009F ||
                codePoint == 0x00AD ||
                codePoint == 0x061C ||

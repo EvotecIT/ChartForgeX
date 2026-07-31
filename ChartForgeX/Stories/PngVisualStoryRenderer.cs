@@ -347,16 +347,10 @@ public sealed class PngVisualStoryRenderer {
     }
 
     private static string FitSourceContent(string value, TextStyle style, double width) {
-        if (width <= 0) return string.Empty;
-        var output = new StringBuilder(value.Length);
-        var usedWidth = 0d;
-        foreach (var element in TerminalTextWidth.Elements(value)) {
-            var elementWidth = TextLayoutEngine.Measure(element, style).Width;
-            if (usedWidth + elementWidth > width) break;
-            output.Append(element);
-            usedWidth += elementWidth;
-        }
-        return output.ToString();
+        return TerminalTextWidth.FitContent(
+            value,
+            width,
+            element => TextLayoutEngine.Measure(element, style).Width);
     }
 
 }
