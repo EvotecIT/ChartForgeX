@@ -204,6 +204,36 @@ internal static partial class SmokeTests {
                 "Remote vector",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"https://example.invalid/image.png\"/></svg>"),
             "Vector media should reject external resource references so story output stays deterministic and self-contained.");
+        var animatedDataImage = ApngWriter.WriteRgba(
+            new[] {
+                new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }),
+                new RgbaImage(1, 1, new byte[] { 0, 0, 255, 255 })
+            },
+            10,
+            loop: true);
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Nested animated raster",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"data:image/png;base64," +
+                Convert.ToBase64String(animatedDataImage) +
+                "\"/></svg>"),
+            "Vector media should reject nested APNG data images that cannot follow the parent story timeline.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Nested GIF",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==\"/></svg>"),
+            "Vector media should reject GIF data images even when the supplied GIF has only one frame.");
+        var staticPng = PngWriter.WriteRgba(new RgbaImage(1, 1, new byte[] { 0, 255, 0, 255 }));
+        var staticDataImage = new VisualStoryMediaSurface(
+            new RgbaImage(1, 1, new byte[4]),
+            "Nested static raster",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"data:image/png;base64," +
+            Convert.ToBase64String(staticPng) +
+            "\"/></svg>");
+        Assert(staticDataImage.Svg.Contains("data:image/png;base64,", StringComparison.Ordinal),
+            "Vector media should retain valid static PNG data images.");
         var staticStyledVector = new VisualStoryMediaSurface(
             new RgbaImage(1, 1, new byte[4]),
             "Static styled vector",
@@ -410,6 +440,25 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => narrowText.ToPng(),
             "Text panels should reject positive but too-narrow content areas that cannot contain a rendered glyph.");
+
+        var narrowTerminal = VisualStory.Create("Narrow terminal").WithSize(480, 320);
+        var narrowTerminalScene = narrowTerminal.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
+        narrowTerminalScene.Panel(
+            "result",
+            new VisualStoryTextSurface("ready"),
+            weight: 10);
+        narrowTerminalScene.Panel(
+            "terminal",
+            new VisualStoryTerminalSurface(
+                TerminalStory.Create()
+                    .WithFinalPrompt(false)
+                    .Command("Get-Widget")
+                    .Output("ready")),
+            weight: 1.2);
+        narrowTerminal.Outcome("ready", "Terminal output is readable", "terminal");
+        AssertThrows<InvalidOperationException>(
+            () => narrowTerminal.ToPng(),
+            "Terminal panels should reject positive but unreadably narrow content areas.");
 
         var truncatedTheme = VisualStoryTheme.PremiumDark();
         truncatedTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);

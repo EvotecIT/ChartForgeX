@@ -251,13 +251,75 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
             return false;
         }
         if (reference.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) {
-            return !reference.StartsWith("data:image/png", StringComparison.OrdinalIgnoreCase) &&
-                   !reference.StartsWith("data:image/jpeg", StringComparison.OrdinalIgnoreCase) &&
-                   !reference.StartsWith("data:image/gif", StringComparison.OrdinalIgnoreCase) &&
-                   !reference.StartsWith("data:image/webp", StringComparison.OrdinalIgnoreCase) &&
-                   !reference.StartsWith("data:image/bmp", StringComparison.OrdinalIgnoreCase);
+            return !IsSafeStaticRasterDataUri(reference);
         }
         return true;
+    }
+
+    private static bool IsSafeStaticRasterDataUri(string reference) {
+        var comma = reference.IndexOf(',');
+        if (comma <= 5) return false;
+        var metadata = reference.Substring(5, comma - 5);
+        var tokens = metadata.Split(';');
+        var mediaType = tokens[0].Trim();
+        if (string.Equals(mediaType, "image/jpeg", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(mediaType, "image/bmp", StringComparison.OrdinalIgnoreCase)) {
+            return true;
+        }
+        if (!string.Equals(mediaType, "image/png", StringComparison.OrdinalIgnoreCase)) {
+            return false;
+        }
+        var base64 = false;
+        for (var index = 1; index < tokens.Length; index++) {
+            if (string.Equals(tokens[index].Trim(), "base64", StringComparison.OrdinalIgnoreCase)) {
+                base64 = true;
+                break;
+            }
+        }
+        if (!base64) return false;
+        try {
+            var bytes = Convert.FromBase64String(reference.Substring(comma + 1));
+            return PngReader.IsPng(bytes) && !ContainsPngAnimationControl(bytes);
+        } catch (FormatException) {
+            return false;
+        }
+    }
+
+    private static bool ContainsPngAnimationControl(byte[] bytes) {
+        var offset = 8;
+        var chunkIndex = 0;
+        var sawEnd = false;
+        while (offset + 12 <= bytes.Length) {
+            var length = ((uint)bytes[offset] << 24) |
+                         ((uint)bytes[offset + 1] << 16) |
+                         ((uint)bytes[offset + 2] << 8) |
+                         bytes[offset + 3];
+            if (length > int.MaxValue || length > bytes.Length - offset - 12) return true;
+            if (chunkIndex == 0 &&
+                !(bytes[offset + 4] == 'I' &&
+                  bytes[offset + 5] == 'H' &&
+                  bytes[offset + 6] == 'D' &&
+                  bytes[offset + 7] == 'R')) {
+                return true;
+            }
+            if (bytes[offset + 4] == 'a' &&
+                bytes[offset + 5] == 'c' &&
+                bytes[offset + 6] == 'T' &&
+                bytes[offset + 7] == 'L') {
+                return true;
+            }
+            if (bytes[offset + 4] == 'I' &&
+                bytes[offset + 5] == 'E' &&
+                bytes[offset + 6] == 'N' &&
+                bytes[offset + 7] == 'D') {
+                if (length != 0) return true;
+                sawEnd = true;
+            }
+            offset += (int)length + 12;
+            chunkIndex++;
+            if (sawEnd) break;
+        }
+        return !sawEnd || offset != bytes.Length;
     }
 }
 

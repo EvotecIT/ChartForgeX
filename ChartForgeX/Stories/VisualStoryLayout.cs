@@ -25,6 +25,8 @@ internal static class VisualStoryLayout {
     internal const double PanelTitleHeight = 30;
     internal const double MinimumSourceContentLength = 18.5;
     internal const double MinimumTextContentLength = 32;
+    internal const double MinimumTerminalContentWidth = 160;
+    internal const double MinimumTerminalContentHeight = 90;
 
     public static IReadOnlyList<VisualStoryBounds> Panels(VisualStory story, VisualStoryScene scene) {
         var available = new VisualStoryBounds(
@@ -79,6 +81,12 @@ internal static class VisualStoryLayout {
             throw new InvalidOperationException(
                 "Visual-story text panel '" + panel.Id +
                 "' is too small to render text without crossing its bounds. Increase the story size, reduce the panel count, rebalance panel weights, or use a different scene layout.");
+        }
+        if (panel.Surface.Kind == VisualStorySurfaceKind.Terminal &&
+            (content.Width < MinimumTerminalContentWidth || content.Height < MinimumTerminalContentHeight)) {
+            throw new InvalidOperationException(
+                "Visual-story terminal panel '" + panel.Id +
+                "' is too small to keep terminal chrome and text readable. Increase the story size, reduce the panel count, rebalance panel weights, or use a different scene layout.");
         }
         return content;
     }
