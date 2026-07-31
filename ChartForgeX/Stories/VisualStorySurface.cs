@@ -223,6 +223,9 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         }
         if (!reader.HasAttributes) return;
         while (reader.MoveToNextAttribute()) {
+            if (IsConditionalProcessingAttribute(reader.LocalName)) {
+                throw new ArgumentException("The vector representation must not contain locale- or capability-dependent conditional content.", "svg");
+            }
             if (string.Equals(reader.LocalName, "base", StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(reader.NamespaceURI, "http://www.w3.org/XML/1998/namespace", StringComparison.Ordinal)) {
                 throw new ArgumentException("The vector representation must not change the base URI.", "svg");
@@ -246,6 +249,11 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         }
         reader.MoveToElement();
     }
+
+    private static bool IsConditionalProcessingAttribute(string localName) =>
+        string.Equals(localName, "systemLanguage", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "requiredFeatures", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "requiredExtensions", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsPresentationIriAttribute(string localName) =>
         string.Equals(localName, "filter", StringComparison.OrdinalIgnoreCase) ||

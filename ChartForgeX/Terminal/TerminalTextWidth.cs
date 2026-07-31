@@ -249,11 +249,15 @@ internal static class TerminalTextWidth {
         return emojiPresentation ? Math.Max(2, width) : width;
     }
 
-    private static string NextElement(string value, ref int index) {
+    internal static string NextElement(string value, ref int index) {
         var start = index;
         var first = ReadScalar(value, ref index);
         if (first == '\r' && PeekScalar(value, index, out var next, out var nextLength) && next == '\n') {
             index += nextLength;
+            return value.Substring(start, index - start);
+        }
+
+        if (IsGraphemeControl(first)) {
             return value.Substring(start, index - start);
         }
 

@@ -18,6 +18,7 @@ internal static class AnimatedRasterMemoryBudget {
             case AnimatedRasterFormat.Gif:
                 return checked(
                     pixelCount * frameCount +
+                    pixelCount * 2 +
                     GifCompressedFrameUpperBound(pixelCount) * 2 +
                     1024L * 1024);
             case AnimatedRasterFormat.Apng:

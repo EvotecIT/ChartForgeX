@@ -194,12 +194,17 @@ public sealed class PngVisualStoryRenderer {
             var verticallyTruncated =
                 lineIndex == visibleLines - 1 &&
                 (hasAdditionalLines || visibleLines < lines.Count);
-            var lineText = surface.Source.Text.Substring(line.Start, line.Length);
             var measuredColumn = 0;
-            var expandedLine = ExpandSourceTabs(lineText, ref measuredColumn);
             var measurementStyle = SourceStyle(story, StorySyntaxKind.Plain, fontSize);
-            var horizontallyTruncated =
-                TextLayoutEngine.Measure(expandedLine, measurementStyle).Width > bounds.Width;
+            FitExpandedSourceContent(
+                surface.Source.Text,
+                line.Start,
+                line.Length,
+                ref measuredColumn,
+                measurementStyle,
+                bounds.Width,
+                out var measuredLength);
+            var horizontallyTruncated = measuredLength < line.Length;
             var truncated = verticallyTruncated || horizontallyTruncated;
             var truncationReserve = truncated
                 ? Math.Min(bounds.Width, SourceTruncationMarkerWidth(fontSize))
@@ -228,19 +233,26 @@ public sealed class PngVisualStoryRenderer {
                     }
                 }
                 if (segmentEnd <= cursor) break;
-                var value = surface.Source.Text.Substring(cursor, segmentEnd - cursor);
-                value = ExpandSourceTabs(value, ref visualColumn);
+                var style = SourceStyle(story, segmentKind, fontSize);
+                var segmentStart = cursor;
+                var value = FitExpandedSourceContent(
+                    surface.Source.Text,
+                    segmentStart,
+                    segmentEnd - segmentStart,
+                    ref visualColumn,
+                    style,
+                    lineBounds.X + lineBounds.Width - x,
+                    out var consumedLength);
+                if (consumedLength == 0) break;
                 x += DrawSourceSegment(
                     canvas,
-                    story,
                     value,
-                    segmentKind,
+                    style,
                     x,
                     y,
-                    lineBounds,
-                    fontSize,
-                    appendEllipsis: !truncated);
-                cursor = segmentEnd;
+                    lineBounds);
+                cursor = segmentStart + consumedLength;
+                if (cursor < segmentEnd) break;
             }
             if (truncated) {
                 DrawSourceTruncationMarker(
@@ -310,25 +322,67 @@ public sealed class PngVisualStoryRenderer {
         return expanded.ToString();
     }
 
+    private static string FitExpandedSourceContent(
+        string source,
+        int start,
+        int length,
+        ref int visualColumn,
+        TextStyle style,
+        double width,
+        out int consumedLength) {
+        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (start < 0 || start > source.Length) throw new ArgumentOutOfRangeException(nameof(start));
+        if (length < 0 || length > source.Length - start) throw new ArgumentOutOfRangeException(nameof(length));
+        if (visualColumn < 0) throw new ArgumentOutOfRangeException(nameof(visualColumn));
+        consumedLength = 0;
+        if (length == 0 || width <= 0) return string.Empty;
+
+        const int maximumInitialCapacity = 256;
+        var output = new StringBuilder(Math.Min(length, maximumInitialCapacity));
+        var usedWidth = 0d;
+        var index = start;
+        var end = checked(start + length);
+        while (index < end) {
+            var elementStart = index;
+            var element = TerminalTextWidth.NextElement(source, ref index);
+            if (index > end) {
+                throw new ArgumentException("The source range must end at a complete text element.", nameof(length));
+            }
+
+            var rendered = element;
+            var nextColumn = visualColumn;
+            if (element.Length == 1 && element[0] == '\t') {
+                var spaces = 4 - visualColumn % 4;
+                rendered = new string(' ', spaces);
+                nextColumn = checked(visualColumn + spaces);
+            } else {
+                nextColumn = checked(visualColumn + TerminalTextWidth.Measure(element));
+            }
+
+            var elementWidth = TextLayoutEngine.Measure(rendered, style).Width;
+            if (usedWidth + elementWidth > width) {
+                index = elementStart;
+                break;
+            }
+
+            output.Append(rendered);
+            usedWidth += elementWidth;
+            visualColumn = nextColumn;
+            consumedLength = index - start;
+        }
+
+        return output.ToString();
+    }
+
     private static double DrawSourceSegment(
         ImageComposition canvas,
-        VisualStory story,
         string value,
-        StorySyntaxKind kind,
+        TextStyle style,
         double x,
         double y,
-        VisualStoryBounds bounds,
-        double fontSize,
-        bool appendEllipsis = true) {
+        VisualStoryBounds bounds) {
         if (value.Length == 0 || x >= bounds.X + bounds.Width) return 0;
-        var style = SourceStyle(story, kind, fontSize);
         var measured = TextLayoutEngine.Measure(value, style).Width;
-        if (x + measured > bounds.X + bounds.Width) {
-            value = appendEllipsis
-                ? FitSource(value, style, bounds.X + bounds.Width - x)
-                : FitSourceContent(value, style, bounds.X + bounds.Width - x);
-            measured = TextLayoutEngine.Measure(value, style).Width;
-        }
         canvas.DrawText(x, y, Math.Max(1, bounds.X + bounds.Width - x), value, style, TextWrapMode.NoWrap, 1, TextTrimming.None);
         return measured;
     }
@@ -337,20 +391,6 @@ public sealed class PngVisualStoryRenderer {
         var style = TextStyle.Create(fontSize, story.Theme.Syntax.Resolve(kind));
         style.Font = FontSpec.FromFamily(story.Theme.MonospaceFontFamily);
         return style;
-    }
-
-    private static string FitSource(string value, TextStyle style, double width) {
-        return TerminalTextWidth.Fit(
-            value,
-            width,
-            candidate => TextLayoutEngine.Measure(candidate, style).Width);
-    }
-
-    private static string FitSourceContent(string value, TextStyle style, double width) {
-        return TerminalTextWidth.FitContent(
-            value,
-            width,
-            element => TextLayoutEngine.Measure(element, style).Width);
     }
 
 }
