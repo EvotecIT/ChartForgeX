@@ -43,8 +43,8 @@ public sealed class TerminalTheme {
     /// <summary>Gets or sets the CSS font-family stack.</summary>
     public string FontFamily { get; set; } = ChartFontStacks.Mono;
 
-    /// <summary>Creates the restrained dark theme used by Windows Terminal-style presentations.</summary>
-    public static TerminalTheme WindowsTerminal() => new();
+    /// <summary>Creates the restrained default dark terminal palette.</summary>
+    public static TerminalTheme Dark() => new();
 
     /// <summary>Creates a PowerShell-oriented dark theme.</summary>
     public static TerminalTheme PowerShell() => new() {

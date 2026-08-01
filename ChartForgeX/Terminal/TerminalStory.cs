@@ -94,7 +94,10 @@ public sealed class TerminalStory {
     public IReadOnlyList<TerminalStoryStep> Steps => _steps;
 
     /// <summary>Gets the terminal theme.</summary>
-    public TerminalTheme Theme { get; private set; } = TerminalTheme.WindowsTerminal();
+    public TerminalTheme Theme { get; private set; } = TerminalTheme.Dark();
+
+    /// <summary>Gets the visible terminal window chrome.</summary>
+    public TerminalWindowStyle WindowStyle { get; private set; } = TerminalWindowStyle.MacOS;
 
     /// <summary>Gets the title-bar text.</summary>
     public string Title { get; private set; } = "PowerShell";
@@ -160,6 +163,13 @@ public sealed class TerminalStory {
     /// <summary>Sets the terminal theme.</summary>
     public TerminalStory WithTheme(TerminalTheme theme) {
         Theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        return this;
+    }
+
+    /// <summary>Sets the visible terminal window chrome independently of colors and command syntax.</summary>
+    public TerminalStory WithWindowStyle(TerminalWindowStyle style) {
+        TerminalWindowChrome.Validate(style);
+        WindowStyle = style;
         return this;
     }
 

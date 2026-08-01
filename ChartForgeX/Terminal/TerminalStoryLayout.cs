@@ -6,23 +6,23 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Terminal;
 
 internal sealed class TerminalStoryLayout {
-    private const double HeaderHeight = 42;
     private const double HorizontalPadding = 28;
     private const double VerticalPadding = 24;
 
     public int Width { get; }
     public int Height { get; }
     public double ContentX => HorizontalPadding;
-    public double ContentTop => HeaderHeight + VerticalPadding;
-    public double HeaderHeightValue => HeaderHeight;
+    public double ContentTop => HeaderHeightValue + VerticalPadding;
+    public double HeaderHeightValue { get; }
     public double ColumnWidth { get; }
     public double DurationSeconds { get; }
     public IReadOnlyList<TerminalRenderedLine> Lines { get; }
     public IReadOnlyList<string> TranscriptLines { get; }
 
-    private TerminalStoryLayout(int width, int height, double columnWidth, double durationSeconds, IReadOnlyList<TerminalRenderedLine> lines, IReadOnlyList<string> transcriptLines) {
+    private TerminalStoryLayout(int width, int height, double headerHeight, double columnWidth, double durationSeconds, IReadOnlyList<TerminalRenderedLine> lines, IReadOnlyList<string> transcriptLines) {
         Width = width;
         Height = height;
+        HeaderHeightValue = headerHeight;
         ColumnWidth = columnWidth;
         DurationSeconds = durationSeconds;
         Lines = lines;
@@ -110,8 +110,9 @@ internal sealed class TerminalStoryLayout {
         }
 
         if (completion > 60) throw new InvalidOperationException("Terminal story animation must complete within 60 seconds.");
-        var height = (int)Math.Ceiling(HeaderHeight + VerticalPadding * 2 + lines.Count * story.LineHeight);
-        return new TerminalStoryLayout(story.Width, Math.Max(180, height), columnWidth, completion, lines, transcriptLines);
+        var headerHeight = TerminalWindowChrome.HeaderHeight(story.WindowStyle);
+        var height = (int)Math.Ceiling(headerHeight + VerticalPadding * 2 + lines.Count * story.LineHeight);
+        return new TerminalStoryLayout(story.Width, Math.Max(180, height), headerHeight, columnWidth, completion, lines, transcriptLines);
     }
 
     private static IEnumerable<string> SplitLines(string value) {
@@ -180,11 +181,7 @@ internal sealed class TerminalStoryLayout {
         return string.Join(separator, cells);
     }
 
-    internal static string FitTitle(string value, int width) {
-        var available = Math.Max(12, width - 180);
-        var maximum = Math.Max(1, available / 12);
-        return Fit(value, maximum);
-    }
+    internal static string FitTitle(string value, int width, TerminalWindowStyle style) => TerminalWindowChrome.FitTitle(value, width, style);
 
     internal static int TextElementCount(string value) {
         return TerminalTextWidth.ElementCount(value);

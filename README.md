@@ -330,6 +330,8 @@ var portfolio = TerminalTable.Create()
 var console = TerminalStory.Create()
     .WithTitle(@"pwsh - C:\OpenSource")
     .WithDialect(TerminalDialect.PowerShell)
+    .WithTheme(TerminalTheme.PowerShell())
+    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
     .WithWorkingDirectory(@"C:\OpenSource")
     .Command("Get-ActivePortfolio | Format-Table")
     .Table(portfolio)
@@ -344,7 +346,7 @@ console.SaveGif("console-demo.gif");
 console.SaveApng("console-demo.apng");
 ```
 
-The renderer models a presentation, not a shell. PowerShell, Bash, command prompt, Python, C#, and custom dialects control prompt styling while the caller owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
+The renderer models a presentation, not a shell. Dialects control prompt behavior, themes control the palette, and `TerminalWindowStyle` independently selects macOS, Windows Terminal, minimal, or chrome-free presentation. The caller still owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
 
 ### Generic visual stories
 

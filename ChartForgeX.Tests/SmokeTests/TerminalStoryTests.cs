@@ -30,6 +30,10 @@ internal static partial class SmokeTests {
         var svg = story.ToSvg("profile");
         var id = SvgDocument.Parse(svg).Root.GetAttribute("id")!;
         Assert(svg.Contains("data-cfx-terminal=\"PowerShell\"", StringComparison.Ordinal), "Terminal stories should expose their presentation dialect.");
+        Assert(svg.Contains("data-cfx-window-style=\"MacOS\"", StringComparison.Ordinal) &&
+               svg.Contains("data-cfx-role=\"terminal-macos-controls\"", StringComparison.Ordinal) &&
+               !svg.Contains("data-cfx-role=\"terminal-tab\"", StringComparison.Ordinal),
+            "Default terminal stories should use explicit macOS chrome instead of coupling platform controls to the color palette.");
         Assert(svg.Contains("data-cfx-role=\"terminal-command\"", StringComparison.Ordinal) && svg.Contains("PS C:\\OpenSource&gt; ", StringComparison.Ordinal), "PowerShell terminal stories should render authentic prompts and typed commands.");
         Assert(svg.Contains("OfficeIMO", StringComparison.Ordinal) && svg.Contains("0 critical findings", StringComparison.Ordinal), "Terminal stories should retain formatted table and semantic output content.");
         Assert(svg.Contains("Terminal transcript:", StringComparison.Ordinal) && svg.Contains("Get-EvotecPortfolio -Active", StringComparison.Ordinal), "Accessible terminal descriptions should expose the completed transcript.");
@@ -97,7 +101,7 @@ internal static partial class SmokeTests {
 
         var regularPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
         var emphasizedPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
-        var promptColor = TerminalTheme.WindowsTerminal().Accent;
+        var promptColor = TerminalTheme.Dark().Accent;
         TerminalPngTextPreserver.Draw(regularPromptCanvas, 0, 0, "PS> ", promptColor, 18);
         TerminalPngTextPreserver.DrawEmphasized(emphasizedPromptCanvas, 0, 0, "PS> ", promptColor, 18);
         Assert(TerminalPngTextPreserver.MeasureEmphasized("PS> ", emphasizedPromptCanvas, 18) >
@@ -126,7 +130,7 @@ internal static partial class SmokeTests {
                wideLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= 28),
             "Full-width and emoji transcript content should wrap by rendered display columns without clipping or data loss.");
 
-        var proportionalTheme = TerminalTheme.WindowsTerminal();
+        var proportionalTheme = TerminalTheme.Dark();
         proportionalTheme.FontFamily = "Arial, sans-serif";
         var proportionalText = new string('W', 20);
         var proportionalStory = TerminalStory.Create()
@@ -162,13 +166,70 @@ internal static partial class SmokeTests {
 
         var longTitle = "PowerShell terminal title that is deliberately much wider than the minimum terminal chrome";
         var longTitleStory = TerminalStory.Create().WithWidth(480).WithTitle(longTitle).Output("ready");
-        var fittedTitle = TerminalStoryLayout.FitTitle(longTitle, 480);
+        var fittedTitle = TerminalStoryLayout.FitTitle(longTitle, 480, TerminalWindowStyle.MacOS);
         var longTitleSvg = longTitleStory.ToSvg();
         Assert(fittedTitle.EndsWith("…", StringComparison.Ordinal) &&
                longTitleSvg.Contains(">" + fittedTitle + "</text>", StringComparison.Ordinal) &&
                longTitleSvg.Contains(">" + longTitle + "</title>", StringComparison.Ordinal),
             "Visible terminal titles should fit the chrome while retaining the full accessible title.");
         Assert(longTitleStory.ToPng().Length > 8, "PNG terminal titles should use the same fitted display text.");
+
+        var windowsStory = TerminalStory.Create()
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithTitle("Administrator: PowerShell")
+            .Command("Get-Process")
+            .Output("ready", TerminalTextTone.Success);
+        var windowsSvg = windowsStory.ToSvg();
+        Assert(windowsSvg.Contains("data-cfx-window-style=\"WindowsTerminal\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-tab\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-shell-icon\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-window-minimize\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-window-maximize\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-window-close\"", StringComparison.Ordinal) &&
+               !windowsSvg.Contains("data-cfx-role=\"terminal-macos-controls\"", StringComparison.Ordinal),
+            "Windows Terminal chrome should render a tab strip, shell icon, and native window controls without macOS traffic lights.");
+        SvgDocument.Parse(windowsSvg);
+        Assert(windowsStory.ToPng().Length > 8, "Windows Terminal chrome should render through the dependency-free raster path.");
+
+        var longWindowsTitle = new string('W', 80);
+        var defaultWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 886, TerminalWindowStyle.WindowsTerminal);
+        var maximumWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 1800, TerminalWindowStyle.WindowsTerminal);
+        Assert(defaultWidthWindowsTitle.EndsWith("…", StringComparison.Ordinal) &&
+               defaultWidthWindowsTitle == maximumWidthWindowsTitle &&
+               TerminalTextWidth.Measure(defaultWidthWindowsTitle) * TerminalWindowChrome.TitleFontSize <= TerminalWindowChrome.WindowsTitleAvailableWidth(886),
+            "Windows Terminal titles should fit the capped tab with the same conservative width policy used for proportional terminal text.");
+        var longWindowsTitleStory = TerminalStory.Create()
+            .WithWidth(1800)
+            .WithTheme(proportionalTheme)
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithTitle(longWindowsTitle)
+            .Output("ready");
+        var longWindowsTitleSvg = longWindowsTitleStory.ToSvg();
+        Assert(longWindowsTitleSvg.Contains(">" + maximumWidthWindowsTitle + "</text>", StringComparison.Ordinal) &&
+               longWindowsTitleSvg.Contains(">" + longWindowsTitle + "</title>", StringComparison.Ordinal),
+            "Windows Terminal rendering should keep the fitted tab title and the complete accessible title at maximum width.");
+        Assert(longWindowsTitleStory.ToPng().Length > 8, "Windows Terminal raster rendering should preserve the capped-tab title fit at maximum width.");
+
+        var minimalStory = TerminalStory.Create().WithWindowStyle(TerminalWindowStyle.Minimal).WithTitle("Portable shell").Output("ready");
+        var minimalSvg = minimalStory.ToSvg();
+        Assert(minimalSvg.Contains("data-cfx-window-style=\"Minimal\"", StringComparison.Ordinal) &&
+               minimalSvg.Contains("data-cfx-role=\"terminal-title\"", StringComparison.Ordinal) &&
+               !minimalSvg.Contains("data-cfx-role=\"terminal-macos-controls\"", StringComparison.Ordinal) &&
+               !minimalSvg.Contains("data-cfx-role=\"terminal-tab\"", StringComparison.Ordinal),
+            "Minimal chrome should retain a title without platform-specific controls.");
+
+        var chromeFreeStory = TerminalStory.Create().WithWindowStyle(TerminalWindowStyle.None).WithTitle("Accessible title").Output("ready");
+        var chromeFreeSvg = chromeFreeStory.ToSvg();
+        Assert(chromeFreeSvg.Contains("data-cfx-window-style=\"None\"", StringComparison.Ordinal) &&
+               !chromeFreeSvg.Contains("data-cfx-role=\"terminal-titlebar\"", StringComparison.Ordinal) &&
+               !chromeFreeSvg.Contains("data-cfx-role=\"terminal-title\"", StringComparison.Ordinal) &&
+               chromeFreeSvg.Contains(">Accessible title</title>", StringComparison.Ordinal),
+            "Chrome-free stories should remove visible title-bar controls while preserving the accessible title.");
+        Assert(TerminalStoryLayout.Build(windowsStory).HeaderHeightValue == 50 &&
+               TerminalStoryLayout.Build(story).HeaderHeightValue == 42 &&
+               TerminalStoryLayout.Build(minimalStory).HeaderHeightValue == 38 &&
+               TerminalStoryLayout.Build(chromeFreeStory).HeaderHeightValue == 0,
+            "Each window style should own its header geometry so transcript content starts below the selected chrome.");
 
         var timedLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithTiming(0, 42, 0).WithFinalPrompt(false).Output("ready"));
         Assert(Math.Abs(timedLayout.DurationSeconds - 0.22) < 0.001, "Terminal duration metadata should include the final output reveal.");
@@ -382,7 +443,7 @@ internal static partial class SmokeTests {
                widePromptCursor.GetAttribute("x") == null,
             "SVG terminal cursors should flow directly after full-width prompts instead of using a fixed coordinate.");
 
-        var proportionalPromptTheme = TerminalTheme.WindowsTerminal();
+        var proportionalPromptTheme = TerminalTheme.Dark();
         proportionalPromptTheme.FontFamily = "Arial, sans-serif";
         var proportionalPromptStory = TerminalStory.Create()
             .WithDialect(TerminalDialect.Custom, "WWWW ")
@@ -458,6 +519,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TerminalStory.Create().Command("one\u2029two"), "Commands should reject Unicode paragraph separators.");
         AssertThrows<ArgumentException>(() => TerminalTable.Create().WithColumns("One", "Two").AddRow("one"), "Terminal table rows should match their column count.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Progress("bad", 1.1), "Terminal progress values should stay within the unit interval.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithWindowStyle((TerminalWindowStyle)99), "Unknown terminal window styles should be rejected before mutation.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Transcript(Array.Empty<string>(), (TerminalTextTone)99), "Empty transcripts should still validate their semantic tone.");
         var throwingTranscriptStory = TerminalStory.Create().Output("existing");
         AssertThrows<InvalidOperationException>(() => throwingTranscriptStory.Transcript(ThrowingTranscript()), "Transcript enumeration failures should reject the complete batch.");

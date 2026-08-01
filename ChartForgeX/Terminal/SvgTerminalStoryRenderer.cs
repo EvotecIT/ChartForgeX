@@ -51,25 +51,8 @@ public sealed class SvgTerminalStoryRenderer {
             .EndElement().Line()
             .StartElement("style").EndStartElement().Raw(BuildCss(id)).EndElement().Line()
             .EndElement().Line()
-            .StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.PageBackground.ToCss()).EndEmptyElement().Line()
-            .StartElement("rect").Attribute("data-cfx-role", "terminal-frame").Attribute("x", 8).Attribute("y", 8).Attribute("width", layout.Width - 16).Attribute("height", layout.Height - 16).Attribute("rx", 14).Attribute("fill", theme.Background.ToCss()).Attribute("stroke", theme.Border.ToCss()).Attribute("stroke-width", 1.2).Attribute("filter", "url(#" + id + "-shadow)").EndEmptyElement().Line()
-            .StartElement("path").Attribute("data-cfx-role", "terminal-titlebar").Attribute("d", HeaderPath(layout.Width, layout.HeaderHeightValue)).Attribute("fill", theme.HeaderBackground.ToCss()).EndEmptyElement().Line()
-            .StartElement("line").Attribute("x1", 8).Attribute("y1", layout.HeaderHeightValue + 8).Attribute("x2", layout.Width - 8).Attribute("y2", layout.HeaderHeightValue + 8).Attribute("stroke", theme.Border.ToCss()).Attribute("stroke-width", 1).EndEmptyElement().Line();
-
-        WriteTrafficLight(writer, 29, 29, "#FF5F57");
-        WriteTrafficLight(writer, 49, 29, "#FEBC2E");
-        WriteTrafficLight(writer, 69, 29, "#28C840");
-        var visibleTitle = TerminalStoryLayout.FitTitle(story.Title, layout.Width);
-        writer.StartElement("text")
-            .Attribute("x", layout.Width / 2.0)
-            .Attribute("y", 33)
-            .Attribute("fill", theme.Muted.ToCss())
-            .Attribute("font-family", theme.FontFamily)
-            .Attribute("font-size", 12)
-            .Attribute("font-weight", 600)
-            .Attribute("text-anchor", "middle")
-            .Text(visibleTitle)
-            .EndElement().Line();
+            .StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.PageBackground.ToCss()).EndEmptyElement().Line();
+        SvgTerminalStoryChromeRenderer.Write(writer, story, layout, id + "-shadow");
 
         for (var index = 0; index < layout.Lines.Count; index++) {
             var line = layout.Lines[index];
@@ -173,14 +156,6 @@ public sealed class SvgTerminalStoryRenderer {
 
         description.Append("\nMotion is decorative; the complete transcript remains available when animation is unsupported, reduced, or printed.");
         return description.ToString();
-    }
-
-    private static string HeaderPath(int width, double headerHeight) {
-        return "M22 8H" + (width - 22).ToString(CultureInfo.InvariantCulture) + "A14 14 0 0 1 " + (width - 8).ToString(CultureInfo.InvariantCulture) + " 22V" + (headerHeight + 8).ToString(CultureInfo.InvariantCulture) + "H8V22A14 14 0 0 1 22 8Z";
-    }
-
-    private static void WriteTrafficLight(SvgMarkupWriter writer, double x, double y, string color) {
-        writer.StartElement("circle").Attribute("cx", x).Attribute("cy", y).Attribute("r", 5.5).Attribute("fill", color).Attribute("fill-opacity", 0.92).EndEmptyElement().Line();
     }
 
     internal static string ToneColor(TerminalTheme theme, TerminalTextTone tone) {

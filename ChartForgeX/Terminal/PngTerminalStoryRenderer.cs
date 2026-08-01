@@ -76,19 +76,7 @@ public sealed class PngTerminalStoryRenderer {
         var theme = story.Theme;
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, outlineFont, outputScale, useDefaultOutlineFont: false);
         canvas.Clear(theme.PageBackground);
-        canvas.FillRoundedRect(12, 18, layout.Width - 24, layout.Height - 24, 16, ChartColor.Black.WithOpacity(0.18));
-        canvas.FillRoundedRect(10, 14, layout.Width - 20, layout.Height - 20, 15, ChartColor.Black.WithOpacity(0.12));
-        canvas.FillRoundedRect(8, 8, layout.Width - 16, layout.Height - 16, 14, theme.Background);
-        canvas.StrokeRoundedRect(8, 8, layout.Width - 16, layout.Height - 16, 14, theme.Border, 1.2);
-        canvas.FillRoundedRect(8, 8, layout.Width - 16, layout.HeaderHeightValue, 14, theme.HeaderBackground);
-        canvas.FillRect(8, layout.HeaderHeightValue, layout.Width - 16, 8, theme.HeaderBackground);
-        canvas.DrawLine(8, layout.HeaderHeightValue + 8, layout.Width - 8, layout.HeaderHeightValue + 8, theme.Border, 1);
-        canvas.DrawCircle(29, 29, 5.5, ChartColor.FromHex("#FF5F57"));
-        canvas.DrawCircle(49, 29, 5.5, ChartColor.FromHex("#FEBC2E"));
-        canvas.DrawCircle(69, 29, 5.5, ChartColor.FromHex("#28C840"));
-        var visibleTitle = TerminalStoryLayout.FitTitle(TerminalPngTextPreserver.Preserve(story.Title, outlineFont), layout.Width);
-        var titleWidth = TerminalPngTextPreserver.Measure(visibleTitle, canvas, 12);
-        TerminalPngTextPreserver.Draw(canvas, (layout.Width - titleWidth) / 2, 19, visibleTitle, theme.Muted, 12);
+        PngTerminalStoryChromeRenderer.Draw(canvas, story, layout, outlineFont);
 
         for (var index = 0; index < layout.Lines.Count; index++) {
             var line = layout.Lines[index];
