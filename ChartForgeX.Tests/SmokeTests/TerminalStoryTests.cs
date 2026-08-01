@@ -232,6 +232,42 @@ internal static partial class SmokeTests {
                tabbedStory.ToGif(TerminalStoryAnimationOptions.Create().WithFramesPerSecond(4).WithMaximumFrames(80)).Length > 800,
             "Persistent tab stories should render through completed and animated raster paths.");
 
+        var pacedTabStory = TerminalStory.Create()
+            .WithInitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalTheme.Campbell(), TerminalTabIcon.PowerShell)
+            .WithTiming(0, 200, 0)
+            .WithTabHold(1.5)
+            .Command("dotnet build", 0.1)
+            .OpenTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu, transitionSeconds: 0.2)
+            .Output("ready", TerminalTextTone.Success);
+        var pacedTabLayout = TerminalStoryLayout.Build(pacedTabStory);
+        Assert(pacedTabStory.Tabs[0].Id == "PowerShell" && pacedTabStory.ActiveTabId == "Ubuntu",
+            "Callers should be able to name and style the initial persistent terminal tab.");
+        Assert(Math.Abs(pacedTabLayout.Transitions[0].StartSeconds - 1.6) < 0.0001,
+            "A tab switch should preserve the configured reading dwell after the active tab's final content completes.");
+
+        var slowStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Slow);
+        var normalStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Normal);
+        var fastStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Fast);
+        Assert(slowStory.CharactersPerSecond < normalStory.CharactersPerSecond &&
+               normalStory.CharactersPerSecond < fastStory.CharactersPerSecond &&
+               slowStory.TabHoldSeconds > normalStory.TabHoldSeconds &&
+               normalStory.TabHoldSeconds > fastStory.TabHoldSeconds,
+            "Playback speed presets should adjust typing and tab reading time in the expected direction.");
+
+        var declaredTabStory = TerminalStory.Create()
+            .WithInitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalTheme.Campbell(), TerminalTabIcon.PowerShell)
+            .WithTiming(0, 200, 0)
+            .WithTabHold(1)
+            .Command("ready", 0.1)
+            .DeclareTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu)
+            .SelectTab("Ubuntu", 0.2)
+            .SelectTab("PowerShell", 0.2);
+        var declaredTabLayout = TerminalStoryLayout.Build(declaredTabStory);
+        Assert(declaredTabStory.Steps.Count(step => step.Kind == TerminalStoryStepKind.DeclareTab) == 1 &&
+               declaredTabLayout.Transitions.Count == 2 &&
+               Math.Abs(declaredTabLayout.Transitions[1].StartSeconds - (declaredTabLayout.Transitions[0].StartSeconds + 1.2)) < 0.0001,
+            "Declared tabs should remain inactive until selected and every selected tab should retain its configured reading dwell.");
+
         var longWindowsTitle = new string('W', 80);
         var defaultWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 886, TerminalWindowStyle.WindowsTerminal);
         var maximumWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 1800, TerminalWindowStyle.WindowsTerminal);
@@ -589,6 +625,9 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => capacityTranscriptStory.Transcript(new[] { "line 120", "line 121" }), "Transcript batches should validate their complete step capacity before mutating the story.");
         Assert(capacityTranscriptStory.Steps.Count == 119, "A capacity-rejected transcript batch should leave the story unchanged.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithTiming(0, 1, 0), "Typing speed should remain within usable presentation bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithPlaybackSpeed((TerminalStoryPlaybackSpeed)99), "Unknown playback speed presets should be rejected before mutation.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithTabHold(11), "Tab reading dwell should remain within the bounded story timeline.");
+        AssertThrows<InvalidOperationException>(() => TerminalStory.Create().Command("ready").WithInitialTab("late", "Late", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()), "Initial tab identity should be configured before timeline authoring starts.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithFramesPerSecond(31), "Animated terminal frame rates should remain bounded.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithOutputScale(5), "Animated terminal output scale should remain bounded.");
     }

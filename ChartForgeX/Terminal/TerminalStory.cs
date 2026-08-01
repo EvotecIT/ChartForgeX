@@ -41,6 +41,18 @@ public enum TerminalTextTone {
 }
 
 /// <summary>
+/// Specifies a reusable terminal-story playback pace.
+/// </summary>
+public enum TerminalStoryPlaybackSpeed {
+    /// <summary>Leaves extra time for reading commands, output, and tab contents.</summary>
+    Slow,
+    /// <summary>Uses balanced presentation timing.</summary>
+    Normal,
+    /// <summary>Uses compact timing for short demonstrations.</summary>
+    Fast
+}
+
+/// <summary>
 /// Specifies one terminal story step.
 /// </summary>
 public enum TerminalStoryStepKind {
@@ -54,6 +66,8 @@ public enum TerminalStoryStepKind {
     Pause,
     /// <summary>A formatted table.</summary>
     Table,
+    /// <summary>Declares a persistent terminal tab without activating it.</summary>
+    DeclareTab,
     /// <summary>Declares and activates a persistent terminal tab.</summary>
     OpenTab,
     /// <summary>Activates a previously declared terminal tab.</summary>
@@ -164,6 +178,9 @@ public sealed class TerminalStory {
     /// <summary>Gets the delay between output lines.</summary>
     public double LineDelaySeconds { get; private set; } = 0.08;
 
+    /// <summary>Gets the minimum time completed tab content remains visible before the next tab switch.</summary>
+    public double TabHoldSeconds { get; private set; } = 1.2;
+
     /// <summary>Gets whether a final prompt and cursor are shown.</summary>
     public bool ShowFinalPrompt { get; private set; } = true;
 
@@ -239,6 +256,41 @@ public sealed class TerminalStory {
         return this;
     }
 
+    /// <summary>Applies a reusable playback pace for typing, output reveals, and tab reading time.</summary>
+    public TerminalStory WithPlaybackSpeed(TerminalStoryPlaybackSpeed speed) {
+        ValidateEnum(speed, nameof(speed));
+        switch (speed) {
+            case TerminalStoryPlaybackSpeed.Slow:
+                InitialDelaySeconds = 0.6;
+                CharactersPerSecond = 28;
+                LineDelaySeconds = 0.14;
+                TabHoldSeconds = 2;
+                break;
+            case TerminalStoryPlaybackSpeed.Normal:
+                InitialDelaySeconds = 0.35;
+                CharactersPerSecond = 42;
+                LineDelaySeconds = 0.08;
+                TabHoldSeconds = 1.2;
+                break;
+            case TerminalStoryPlaybackSpeed.Fast:
+                InitialDelaySeconds = 0.15;
+                CharactersPerSecond = 72;
+                LineDelaySeconds = 0.04;
+                TabHoldSeconds = 0.55;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(speed));
+        }
+        return this;
+    }
+
+    /// <summary>Sets the minimum reading time after new content appears and before the active tab changes.</summary>
+    public TerminalStory WithTabHold(double seconds) {
+        FiniteRange(seconds, 0, 10, nameof(seconds));
+        TabHoldSeconds = seconds;
+        return this;
+    }
+
     /// <summary>Configures whether the completed story shows a final prompt.</summary>
     public TerminalStory WithFinalPrompt(bool visible = true) {
         ShowFinalPrompt = visible;
@@ -301,6 +353,42 @@ public sealed class TerminalStory {
         return Add(new TerminalStoryStep(TerminalStoryStepKind.Table, string.Empty, TerminalTextTone.Default, 0, table, _activeTabId));
     }
 
+    /// <summary>Defines the initial persistent terminal tab before timeline authoring begins.</summary>
+    public TerminalStory WithInitialTab(
+        string id,
+        string title,
+        TerminalDialect dialect,
+        string workingDirectory,
+        TerminalTheme theme,
+        TerminalTabIcon icon = TerminalTabIcon.Terminal,
+        string? customPrompt = null) {
+        EnsureInitialConfiguration();
+        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt);
+        _tabs[0] = tab;
+        _tabsById.Clear();
+        _tabsById.Add(tab.Id, tab);
+        _activeTabId = tab.Id;
+        return this;
+    }
+
+    /// <summary>Declares a persistent terminal tab without changing the active tab.</summary>
+    public TerminalStory DeclareTab(
+        string id,
+        string title,
+        TerminalDialect dialect,
+        string workingDirectory,
+        TerminalTheme theme,
+        TerminalTabIcon icon = TerminalTabIcon.Terminal,
+        string? customPrompt = null) {
+        EnsureStepCapacity();
+        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt);
+        if (_tabsById.ContainsKey(tab.Id)) throw new ArgumentException("Terminal tab identifiers must be unique.", nameof(id));
+        if (_tabs.Count >= 8) throw new InvalidOperationException("Terminal stories support at most eight tabs.");
+        _tabs.Add(tab);
+        _tabsById.Add(tab.Id, tab);
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.DeclareTab, string.Empty, TerminalTextTone.Default, 0, null, tab.Id, tab));
+    }
+
     /// <summary>Declares and activates a persistent terminal tab.</summary>
     public TerminalStory OpenTab(
         string id,
@@ -313,21 +401,9 @@ public sealed class TerminalStory {
         double transitionSeconds = 0.2) {
         EnsureStepCapacity();
         var transitionDuration = TransitionDuration(transitionSeconds);
-        var normalizedId = TabId(id, nameof(id));
-        if (_tabsById.ContainsKey(normalizedId)) throw new ArgumentException("Terminal tab identifiers must be unique.", nameof(id));
+        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt);
+        if (_tabsById.ContainsKey(tab.Id)) throw new ArgumentException("Terminal tab identifiers must be unique.", nameof(id));
         if (_tabs.Count >= 8) throw new InvalidOperationException("Terminal stories support at most eight tabs.");
-        ValidateEnum(dialect, nameof(dialect));
-        ValidateEnum(icon, nameof(icon));
-        var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
-        if (dialect == TerminalDialect.Custom && normalizedPrompt.Length == 0) throw new ArgumentException("Custom terminal dialects require a prompt.", nameof(customPrompt));
-        var tab = new TerminalTab(
-            normalizedId,
-            OneLine(title, nameof(title), allowEmpty: false),
-            dialect,
-            OneLine(workingDirectory, nameof(workingDirectory), allowEmpty: false),
-            normalizedPrompt,
-            (theme ?? throw new ArgumentNullException(nameof(theme))).Copy(),
-            icon);
         _tabs.Add(tab);
         _tabsById.Add(tab.Id, tab);
         _activeTabId = tab.Id;
@@ -391,6 +467,29 @@ public sealed class TerminalStory {
         if (value == 0) return 0;
         FiniteRange(value, 0.05, 2, nameof(value));
         return value;
+    }
+
+    private static TerminalTab CreateTab(
+        string id,
+        string title,
+        TerminalDialect dialect,
+        string workingDirectory,
+        TerminalTheme theme,
+        TerminalTabIcon icon,
+        string? customPrompt) {
+        var normalizedId = TabId(id, nameof(id));
+        ValidateEnum(dialect, nameof(dialect));
+        ValidateEnum(icon, nameof(icon));
+        var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
+        if (dialect == TerminalDialect.Custom && normalizedPrompt.Length == 0) throw new ArgumentException("Custom terminal dialects require a prompt.", nameof(customPrompt));
+        return new TerminalTab(
+            normalizedId,
+            OneLine(title, nameof(title), allowEmpty: false),
+            dialect,
+            OneLine(workingDirectory, nameof(workingDirectory), allowEmpty: false),
+            normalizedPrompt,
+            (theme ?? throw new ArgumentNullException(nameof(theme))).Copy(),
+            icon);
     }
 
     private static string TabId(string value, string name) {

@@ -71,14 +71,24 @@ internal sealed class TerminalStoryLayout {
         var transcriptLines = new List<string>();
         var clock = story.InitialDelaySeconds;
         var activeTabId = story.Tabs[0].Id;
+        double? activeContentEndSeconds = null;
         foreach (var step in story.Steps) {
+            if (step.Kind == TerminalStoryStepKind.DeclareTab) {
+                openSecondsByTab[step.TabId] = clock;
+                transcriptLines.Add("[Tab added: " + story.GetTab(step.TabId).Title + "]");
+                continue;
+            }
             if (step.Kind == TerminalStoryStepKind.OpenTab || step.Kind == TerminalStoryStepKind.SelectTab) {
                 clock = Math.Max(clock, revealEndSecondsByTab[activeTabId]);
+                if (activeContentEndSeconds.HasValue) {
+                    clock = Math.Max(clock, activeContentEndSeconds.Value + story.TabHoldSeconds);
+                }
                 transcriptLines.Add("[Tab: " + story.GetTab(step.TabId).Title + "]");
                 if (step.Kind == TerminalStoryStepKind.OpenTab) openSecondsByTab[step.TabId] = clock;
                 transitions.Add(new TerminalTabTransition(activeTabId, step.TabId, clock, step.DurationSeconds));
                 activeTabId = step.TabId;
                 clock += step.DurationSeconds;
+                activeContentEndSeconds = clock;
                 continue;
             }
 
@@ -98,6 +108,7 @@ internal sealed class TerminalStoryLayout {
                         var promptLength = Math.Min(remainingPromptLength, wrappedCommandLine.Length);
                         var lineDuration = typingDuration * VisibleTextElementCount(wrappedCommandLine) / commandElements;
                         AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedCommandLine, TerminalTextTone.Default, true, promptLength, clock, lineDuration));
+                        activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + lineDuration);
                         remainingPromptLength -= promptLength;
                         clock += lineDuration + story.LineDelaySeconds;
                     }
@@ -108,6 +119,7 @@ internal sealed class TerminalStoryLayout {
                         foreach (var wrappedLine in Wrap(transform(outputLine), maxColumns)) {
                             AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedLine, step.Tone, false, 0, clock, 0.22));
                             revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
+                            activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + 0.22);
                             clock += story.LineDelaySeconds;
                         }
                     }
@@ -115,6 +127,7 @@ internal sealed class TerminalStoryLayout {
                 case TerminalStoryStepKind.Blank:
                     transcriptLines.Add("[" + tab.Title + "]");
                     AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, string.Empty, TerminalTextTone.Default, false, 0, clock, 0));
+                    activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock);
                     break;
                 case TerminalStoryStepKind.Pause:
                     clock += step.DurationSeconds;
@@ -124,6 +137,7 @@ internal sealed class TerminalStoryLayout {
                     foreach (var tableLine in FormatTable(step.Table!, maxColumns, tableTransform)) {
                         AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, tableLine.Text, tableLine.Tone, false, 0, clock, 0.22, true));
                         revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
+                        activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + 0.22);
                         clock += story.LineDelaySeconds;
                     }
                     break;
