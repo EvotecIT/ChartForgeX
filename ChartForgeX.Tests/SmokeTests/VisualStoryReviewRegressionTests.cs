@@ -26,6 +26,10 @@ internal static partial class SmokeTests {
         Assert(TerminalTextWidth.Elements(unmatchedJoiner).Count() == 2,
             "An unmatched pictographic ZWJ must reset GB11 state before a later ZWJ.");
         StorySourceText.Create(unmatchedJoiner).AddSpan(0, 5, StorySyntaxKind.Variable);
+        var bengaliExtendJoiner = "👩\u09BE‍💻";
+        Assert(TerminalTextWidth.Elements(bengaliExtendJoiner).Count() == 1,
+            "Spacing-combining characters with GCB=Extend should preserve extended-pictographic state through a ZWJ.");
+        StorySourceText.Create(bengaliExtendJoiner).AddSpan(0, bengaliExtendJoiner.Length, StorySyntaxKind.Variable);
         var longGrapheme = "x" + new string('\u0301', 65536);
         StorySourceText.Create(longGrapheme).AddSpan(0, longGrapheme.Length, StorySyntaxKind.Variable);
 
@@ -77,6 +81,18 @@ internal static partial class SmokeTests {
                 "Quoted CSS comment opener",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>.x{content:\"/*\";animation:p 1s infinite}@keyframes p{to{opacity:0}}</style><rect class=\"x\"/></svg>"),
             "CSS comment stripping should preserve quoted text and still detect following active declarations.");
+        var quotedAtSign = new VisualStoryMediaSurface(
+            new RgbaImage(1, 1, new byte[4]),
+            "Quoted at-sign",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>[data-email=\"a@b\"]{fill:red}</style><rect data-email=\"a@b\"/></svg>");
+        Assert(quotedAtSign.Svg.Length > 0,
+            "Static CSS should allow at-signs inside quoted selector values.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Escaped at-rule",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>\\40 media print{rect{fill:red}}</style><rect/></svg>"),
+            "Escaped CSS at-rules should remain blocked outside quoted values.");
 
         var boundedOutcomeStory = VisualStory.Create("Bounded outcome").WithSize(480, 320);
         boundedOutcomeStory.Scene("valid", "Completed")
@@ -209,15 +225,27 @@ internal static partial class SmokeTests {
         Assert(denseSource.Spans.Count == 4096,
             "Syntax-span boundary validation should advance linearly through the source instead of rescanning its prefix per span.");
 
-        var invalidScalarStory = VisualStory.Create("Broken\0\uD800 title").WithSize(480, 320);
+        var invalidScalarStory = VisualStory.Create("Broken\0\u0001\uD800\uFFFE title").WithSize(480, 320);
         invalidScalarStory.Scene("result", "Completed")
             .Panel("result", new VisualStoryTextSurface("Visible result"));
         invalidScalarStory.Outcome("ready", "Ready", "result");
         var invalidScalarHtml = invalidScalarStory.ToHtmlFragment();
         Assert(!invalidScalarHtml.Contains('\0') &&
+               !invalidScalarHtml.Contains('\u0001') &&
                !invalidScalarHtml.Contains('\uD800') &&
+               !invalidScalarHtml.Contains('\uFFFE') &&
                invalidScalarHtml.Contains('\uFFFD'),
-            "HTML story output should replace NUL and unpaired surrogate input with the Unicode replacement character.");
+            "HTML story output should replace XML-invalid controls, noncharacters, and unpaired surrogate input with the Unicode replacement character.");
+
+        var boundedTabStory = TerminalStory.Create();
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => boundedTabStory.WithTitle(new string('x', 257)),
+            "Initial terminal tab titles should be bounded before animated fitting.");
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => boundedTabStory.DeclareTab("long", new string('x', 257), TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()),
+            "Declared terminal tab titles should be bounded before animated fitting.");
+        Assert(boundedTabStory.Tabs.Count == 1,
+            "Rejected terminal tab titles should not mutate tab declarations.");
 
         var longTabbedStory = VisualStory.Create("Bounded tab expansion")
             .WithSize(480, 320);

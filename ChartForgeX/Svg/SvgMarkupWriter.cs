@@ -199,7 +199,7 @@ internal sealed class SvgMarkupWriter {
         }
     }
 
-    private static bool IsXmlCharacter(char ch) =>
+    internal static bool IsXmlCharacter(char ch) =>
         ch == '\t' ||
         ch == '\n' ||
         ch == '\r' ||

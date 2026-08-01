@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using ChartForgeX.Rendering;
+using ChartForgeX.Svg;
 
 namespace ChartForgeX.Stories;
 
@@ -57,7 +58,7 @@ public sealed class HtmlVisualStoryRenderer {
                 escaped.Append(current).Append(value[++index]);
                 continue;
             }
-            if (current == '\0' || char.IsSurrogate(current)) {
+            if (char.IsSurrogate(current) || !SvgMarkupWriter.IsXmlCharacter(current)) {
                 escaped.Append('\uFFFD');
                 continue;
             }

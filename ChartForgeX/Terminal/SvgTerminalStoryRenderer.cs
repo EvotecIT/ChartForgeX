@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using ChartForgeX.Raster;
 using ChartForgeX.Svg;
 using ChartForgeX.Themes;
 
@@ -97,7 +98,9 @@ public sealed class SvgTerminalStoryRenderer {
             .Attribute("x", layout.ContentX)
             .Attribute("y", y)
             .Attribute("fill", ToneColor(tab.Theme, line.Tone))
-            .Attribute("font-family", line.IsTable ? ChartFontStacks.Mono : tab.Theme.FontFamily)
+            .Attribute("font-family", line.IsTable && !TrueTypeFont.IsMonospaceFamily(tab.Theme.FontFamily)
+                ? ChartFontStacks.Mono
+                : tab.Theme.FontFamily)
             .Attribute("font-size", story.FontSize)
             .Attribute("style", style)
             .Attribute("xml:space", "preserve")

@@ -114,6 +114,7 @@ public sealed class TerminalStoryStep {
 /// Models a deterministic, script-free animated terminal presentation.
 /// </summary>
 public sealed class TerminalStory {
+    private const int MaximumTabTitleLength = 256;
     private const string DefaultTabId = "main";
     private readonly List<TerminalStoryStep> _steps = new();
     private readonly List<TerminalTab> _tabs = new();
@@ -193,7 +194,7 @@ public sealed class TerminalStory {
     /// <summary>Sets the terminal title.</summary>
     public TerminalStory WithTitle(string title) {
         EnsureInitialConfiguration();
-        InitialTab.Title = OneLine(title, nameof(title), allowEmpty: false);
+        InitialTab.Title = TabTitle(title, nameof(title));
         return this;
     }
 
@@ -483,7 +484,7 @@ public sealed class TerminalStory {
         if (dialect == TerminalDialect.Custom && normalizedPrompt.Length == 0) throw new ArgumentException("Custom terminal dialects require a prompt.", nameof(customPrompt));
         return new TerminalTab(
             normalizedId,
-            OneLine(title, nameof(title), allowEmpty: false),
+            TabTitle(title, nameof(title)),
             dialect,
             OneLine(workingDirectory, nameof(workingDirectory), allowEmpty: false),
             normalizedPrompt,
@@ -502,6 +503,14 @@ public sealed class TerminalStory {
                 character != '-' && character != '_') {
                 throw new ArgumentException("Terminal tab identifiers may contain only letters, numbers, hyphens, and underscores.", name);
             }
+        }
+        return normalized;
+    }
+
+    private static string TabTitle(string value, string name) {
+        var normalized = OneLine(value, name, allowEmpty: false);
+        if (normalized.Length > MaximumTabTitleLength) {
+            throw new ArgumentOutOfRangeException(name, "Terminal tab titles support at most " + MaximumTabTitleLength + " UTF-16 code units.");
         }
         return normalized;
     }

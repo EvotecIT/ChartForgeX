@@ -368,11 +368,68 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         string.Equals(localName, "foreignObject", StringComparison.OrdinalIgnoreCase);
 
     private static bool ContainsActiveCss(string value) {
-        var normalized = DecodeCssEscapes(StripCssComments(value));
-        return normalized.IndexOf('@') >= 0 ||
+        var withoutComments = StripCssComments(value);
+        var normalized = DecodeCssEscapes(withoutComments);
+        return ContainsCssAtRule(withoutComments) ||
                ContainsActiveCssProperty(normalized) ||
                ContainsUnsafeCssReferenceCore(normalized) ||
                ContainsSystemColorIdentifier(normalized);
+    }
+
+    private static bool ContainsCssAtRule(string value) {
+        var quote = '\0';
+        for (var index = 0; index < value.Length; index++) {
+            var current = value[index];
+            if (current == '\\') {
+                if (quote == '\0' && TryDecodeCssEscape(value, ref index, out var decoded)) {
+                    if (decoded == '@') return true;
+                    continue;
+                }
+                SkipCssEscape(value, ref index);
+                continue;
+            }
+            if (quote != '\0') {
+                if (current == quote) quote = '\0';
+                continue;
+            }
+            if (current == '\'' || current == '"') {
+                quote = current;
+                continue;
+            }
+            if (current == '@') return true;
+        }
+        return false;
+    }
+
+    private static bool TryDecodeCssEscape(string value, ref int index, out char decoded) {
+        decoded = '\0';
+        var cursor = index + 1;
+        var scalar = 0;
+        var digits = 0;
+        while (cursor < value.Length && digits < 6) {
+            var hex = HexValue(value[cursor]);
+            if (hex < 0) break;
+            scalar = checked(scalar * 16 + hex);
+            cursor++;
+            digits++;
+        }
+        if (digits == 0 || scalar > char.MaxValue) return false;
+        index = cursor - 1;
+        if (cursor < value.Length && char.IsWhiteSpace(value[cursor])) index++;
+        decoded = (char)scalar;
+        return true;
+    }
+
+    private static void SkipCssEscape(string value, ref int index) {
+        var cursor = index + 1;
+        var digits = 0;
+        while (cursor < value.Length && digits < 6 && HexValue(value[cursor]) >= 0) {
+            cursor++;
+            digits++;
+        }
+        if (digits == 0 && cursor < value.Length) cursor++;
+        if (digits > 0 && cursor < value.Length && char.IsWhiteSpace(value[cursor])) cursor++;
+        index = cursor - 1;
     }
 
     private static bool ContainsActiveCssProperty(string value) {

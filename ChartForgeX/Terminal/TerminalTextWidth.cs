@@ -280,12 +280,13 @@ internal static class TerminalTextWidth {
         var hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(first);
         var hasIndicLinker = false;
         while (PeekScalar(value, index, out next, out nextLength)) {
-            var category = UnicodeCategoryFor(next);
             var isIndicExtend = hasIndicConjunct && TerminalIndicConjunctBreak.IsExtend(next);
             var isIndicLinker = hasIndicConjunct && TerminalIndicConjunctBreak.IsLinker(next);
+            var isGraphemeExtend = TerminalIndicConjunctBreak.IsGraphemeExtend(next);
             var consumedThroughPrepend = previousIsPrepend && !IsGraphemeControl(next);
             if (consumedThroughPrepend ||
-                IsExtend(next, category) ||
+                isGraphemeExtend ||
+                IsGraphemeSpacingMark(next) ||
                 IsHangulContinuation(previous, next) ||
                 isIndicExtend) {
                 index += nextLength;
@@ -296,7 +297,7 @@ internal static class TerminalTextWidth {
                     hasIndicLinker = false;
                 } else {
                     regionalIndicatorCount = 0;
-                    if (category == UnicodeCategory.SpacingCombiningMark) {
+                    if (!isGraphemeExtend && IsGraphemeSpacingMark(next)) {
                         hasExtendedPictographic = false;
                     }
                     if (hasIndicConjunct) {
@@ -433,20 +434,13 @@ internal static class TerminalTextWidth {
         return true;
     }
 
-    private static bool IsExtend(int codePoint, UnicodeCategory category) {
-        return category == UnicodeCategory.NonSpacingMark ||
-               category == UnicodeCategory.SpacingCombiningMark ||
-               category == UnicodeCategory.EnclosingMark ||
-               codePoint == 0x200C ||
-               codePoint >= 0xFE00 && codePoint <= 0xFE0F ||
-               codePoint >= 0xE0100 && codePoint <= 0xE01EF ||
-               codePoint >= 0xE0020 && codePoint <= 0xE007F ||
-               codePoint >= 0x1F3FB && codePoint <= 0x1F3FF;
-    }
+    private static bool IsGraphemeSpacingMark(int codePoint) =>
+        UnicodeCategoryFor(codePoint) == UnicodeCategory.SpacingCombiningMark &&
+        !TerminalIndicConjunctBreak.IsGraphemeExtend(codePoint);
 
     internal static bool IsZeroWidthScalar(int codePoint) {
         return codePoint == 0x200D ||
-               IsExtend(codePoint, UnicodeCategoryFor(codePoint)) ||
+               TerminalIndicConjunctBreak.IsGraphemeExtend(codePoint) ||
                IsDefaultIgnorableFormatScalar(codePoint);
     }
 

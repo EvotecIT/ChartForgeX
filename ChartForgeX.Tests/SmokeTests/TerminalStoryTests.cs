@@ -583,6 +583,18 @@ internal static partial class SmokeTests {
                proportionalTableStory.ToPng().Length > 8,
             "Terminal tables should use stable monospace geometry even when surrounding terminal text uses a proportional font.");
 
+        var explicitMonoTableTheme = TerminalTheme.Dark();
+        explicitMonoTableTheme.FontFamily = "'Courier New', monospace";
+        var explicitMonoTableSvg = SvgDocument.Parse(TerminalStory.Create()
+            .WithTheme(explicitMonoTableTheme)
+            .WithFinalPrompt(false)
+            .Table(TerminalTable.Create().WithColumns("State").AddRow("ready"))
+            .ToSvg());
+        Assert(explicitMonoTableSvg.Root.FindByTag("text")
+                .Where(element => element.GetAttribute("data-cfx-role") == "terminal-output")
+                .All(element => element.GetAttribute("font-family") == explicitMonoTableTheme.FontFamily),
+            "SVG tables should preserve an explicitly configured monospace family used by raster output.");
+
         var oversizedCapture = string.Join("\n", Enumerable.Repeat("captured", 121));
         AssertThrows<InvalidOperationException>(
             () => TerminalStoryLayout.Build(TerminalStory.Create().WithFinalPrompt(false).Output(oversizedCapture)),
