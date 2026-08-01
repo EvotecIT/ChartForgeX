@@ -111,6 +111,12 @@ internal static partial class SmokeTests {
                 () => new VisualStoryMediaSurface(new RgbaImage(1, 1, new byte[4]), "System color", environmentPaint),
                 "Vector media should reject environment-dependent color schemes and escaped system colors.");
         }
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "External CSS image",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\" style=\"background-image:im/**/age-set('https://example.invalid/a.png' 1x)\"><rect/></svg>"),
+            "Vector media should reject CSS image-source functions, including string-valued external references after comment normalization.");
 
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
@@ -124,6 +130,34 @@ internal static partial class SmokeTests {
             "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"100\"><rect width=\"200\" height=\"100\"/></svg>");
         Assert(matchingVector.Svg.Length > 0,
             "Vector media should accept explicit intrinsic dimensions with the raster aspect ratio.");
+
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => new VisualStoryTextSurface(new string('x', 1024 * 1024 + 1)),
+            "Text surfaces should reject payloads that exceed their bounded raster-layout contract.");
+
+        foreach (var separator in new[] { '\r', '\n', '\u000B', '\u000C', '\u0085', '\u2028', '\u2029' }) {
+            AssertThrows<ArgumentException>(
+                () => VisualStory.Create("before" + separator + "after"),
+                "Single-line story fields should reject every semantic Unicode line separator.");
+        }
+
+        var revealStory = TerminalStory.Create()
+            .WithTiming(0, 200, 0)
+            .WithFinalPrompt(false)
+            .Output("ready")
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu(), transitionSeconds: 0)
+            .Table(TerminalTable.Create().WithColumns("State").AddRow("complete"))
+            .SelectTab("main", transitionSeconds: 0);
+        var revealLayout = TerminalStoryLayout.Build(revealStory);
+        var mainRevealEnd = revealLayout.Lines
+            .Where(line => line.TabId == "main")
+            .Max(line => line.StartSeconds + line.DurationSeconds);
+        var ubuntuRevealEnd = revealLayout.Lines
+            .Where(line => line.TabId == "ubuntu")
+            .Max(line => line.StartSeconds + line.DurationSeconds);
+        Assert(revealLayout.Transitions[0].StartSeconds >= mainRevealEnd &&
+               revealLayout.Transitions[1].StartSeconds >= ubuntuRevealEnd,
+            "Tab switches should wait for output and table reveals even when line and transition delays are zero.");
 
         var denseSource = StorySourceText.Create(new string('x', 1024 * 1024) + new string('y', 4096));
         for (var index = 0; index < 4096; index++) {

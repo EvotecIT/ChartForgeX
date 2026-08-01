@@ -66,12 +66,14 @@ internal sealed class TerminalStoryLayout {
         var lines = new List<TerminalRenderedLine>();
         var linesByTab = story.Tabs.ToDictionary(tab => tab.Id, _ => new List<TerminalRenderedLine>(), StringComparer.OrdinalIgnoreCase);
         var openSecondsByTab = story.Tabs.ToDictionary(tab => tab.Id, _ => 0d, StringComparer.OrdinalIgnoreCase);
+        var revealEndSecondsByTab = story.Tabs.ToDictionary(tab => tab.Id, _ => 0d, StringComparer.OrdinalIgnoreCase);
         var transitions = new List<TerminalTabTransition>();
         var transcriptLines = new List<string>();
         var clock = story.InitialDelaySeconds;
         var activeTabId = story.Tabs[0].Id;
         foreach (var step in story.Steps) {
             if (step.Kind == TerminalStoryStepKind.OpenTab || step.Kind == TerminalStoryStepKind.SelectTab) {
+                clock = Math.Max(clock, revealEndSecondsByTab[activeTabId]);
                 transcriptLines.Add("[Tab: " + story.GetTab(step.TabId).Title + "]");
                 if (step.Kind == TerminalStoryStepKind.OpenTab) openSecondsByTab[step.TabId] = clock;
                 transitions.Add(new TerminalTabTransition(activeTabId, step.TabId, clock, step.DurationSeconds));
@@ -105,6 +107,7 @@ internal sealed class TerminalStoryLayout {
                         transcriptLines.Add("[" + tab.Title + "] " + outputLine);
                         foreach (var wrappedLine in Wrap(transform(outputLine), maxColumns)) {
                             AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedLine, step.Tone, false, 0, clock, 0.22));
+                            revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
                             clock += story.LineDelaySeconds;
                         }
                     }
@@ -120,6 +123,7 @@ internal sealed class TerminalStoryLayout {
                     AddTableTranscript(transcriptLines, step.Table!, tab.Title);
                     foreach (var tableLine in FormatTable(step.Table!, maxColumns, tableTransform)) {
                         AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, tableLine.Text, tableLine.Tone, false, 0, clock, 0.22, true));
+                        revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
                         clock += story.LineDelaySeconds;
                     }
                     break;

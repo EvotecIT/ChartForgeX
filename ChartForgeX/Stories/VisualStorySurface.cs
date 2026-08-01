@@ -42,11 +42,21 @@ public abstract class VisualStorySurface {
 
     internal static string RequireSingleLineText(string value, string name) {
         var normalized = RequireText(value, name);
-        if (normalized.IndexOfAny(new[] { '\r', '\n' }) >= 0) {
+        foreach (var character in normalized) {
+            if (!IsSemanticLineSeparator(character)) continue;
             throw new ArgumentException("A single-line value is required.", name);
         }
         return normalized;
     }
+
+    private static bool IsSemanticLineSeparator(char value) =>
+        value == '\r' ||
+        value == '\n' ||
+        value == '\u000B' ||
+        value == '\u000C' ||
+        value == '\u0085' ||
+        value == '\u2028' ||
+        value == '\u2029';
 
     internal static string OptionalSingleLineText(string value, string name) {
         if (value == null) throw new ArgumentNullException(name);
@@ -127,6 +137,10 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
 /// <summary>Displays a resolved raster artifact with an optional vector representation.</summary>
 public sealed class VisualStoryMediaSurface : VisualStorySurface {
     private const string SvgNamespace = "http://www.w3.org/2000/svg";
+    private static readonly string[] UnsafeCssResourceFunctions = {
+        "image", "image-set", "-webkit-image-set", "cross-fade", "-webkit-cross-fade",
+        "element", "-moz-element", "paint", "src"
+    };
     private static readonly string[] SystemColorIdentifiers = {
         "AccentColor", "AccentColorText", "ActiveText", "ButtonBorder", "ButtonFace", "ButtonText",
         "Canvas", "CanvasText", "Field", "FieldText", "GrayText", "Highlight", "HighlightText",
@@ -338,9 +352,9 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         string.Equals(localName, "foreignObject", StringComparison.OrdinalIgnoreCase);
 
     private static bool ContainsActiveCss(string value) {
-        var normalized = DecodeCssEscapes(value);
+        var normalized = StripCssComments(DecodeCssEscapes(value));
         return normalized.IndexOf('@') >= 0 ||
-               ContainsActiveCssProperty(StripCssComments(normalized)) ||
+               ContainsActiveCssProperty(normalized) ||
                ContainsUnsafeCssReferenceCore(normalized) ||
                ContainsSystemColorIdentifier(normalized);
     }
@@ -445,9 +459,12 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
     }
 
     private static bool ContainsUnsafeCssReference(string value) =>
-        ContainsUnsafeCssReferenceCore(DecodeCssEscapes(value));
+        ContainsUnsafeCssReferenceCore(StripCssComments(DecodeCssEscapes(value)));
 
     private static bool ContainsUnsafeCssReferenceCore(string value) {
+        foreach (var function in UnsafeCssResourceFunctions) {
+            if (ContainsCssFunction(value, function)) return true;
+        }
         var cursor = 0;
         while (cursor < value.Length) {
             var start = value.IndexOf("url(", cursor, StringComparison.OrdinalIgnoreCase);
@@ -460,6 +477,19 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 .Trim('\'', '"');
             if (!target.StartsWith("#", StringComparison.Ordinal)) return true;
             cursor = end + 1;
+        }
+        return false;
+    }
+
+    private static bool ContainsCssFunction(string value, string function) {
+        var cursor = 0;
+        while (cursor < value.Length) {
+            var start = value.IndexOf(function, cursor, StringComparison.OrdinalIgnoreCase);
+            if (start < 0) return false;
+            var end = start + function.Length;
+            var startsAtIdentifierBoundary = start == 0 || !IsCssIdentifierCharacter(value[start - 1]);
+            if (startsAtIdentifierBoundary && end < value.Length && value[end] == '(') return true;
+            cursor = end;
         }
         return false;
     }
@@ -596,10 +626,12 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
 
 /// <summary>Displays explanatory prose, status, or a callout.</summary>
 public sealed class VisualStoryTextSurface : VisualStorySurface {
+    private const int MaximumTextCharacters = 1024 * 1024;
+
     /// <summary>Initializes a text surface.</summary>
     public VisualStoryTextSurface(string text, bool emphasized = false)
-        : base(VisualStorySurfaceKind.Text, text) {
-        Text = text.Trim();
+        : base(VisualStorySurfaceKind.Text, RequireBoundedText(text)) {
+        Text = AccessibleText;
         Emphasized = emphasized;
     }
 
@@ -608,4 +640,14 @@ public sealed class VisualStoryTextSurface : VisualStorySurface {
 
     /// <summary>Gets whether the text should receive stronger visual emphasis.</summary>
     public bool Emphasized { get; }
+
+    private static string RequireBoundedText(string text) {
+        if (text == null) throw new ArgumentNullException(nameof(text));
+        if (text.Length > MaximumTextCharacters) {
+            throw new ArgumentOutOfRangeException(
+                nameof(text),
+                "Visual-story text surfaces support at most " + MaximumTextCharacters + " UTF-16 characters.");
+        }
+        return text;
+    }
 }
