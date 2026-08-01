@@ -10,7 +10,10 @@ internal readonly struct SvgRasterViewBox {
     public readonly double Height;
 
     public SvgRasterViewBox(double x, double y, double width, double height) {
-        if (width <= 0 || height <= 0) throw new ArgumentOutOfRangeException(nameof(width), "SVG viewBox width and height must be positive.");
+        if (double.IsNaN(x) || double.IsInfinity(x)) throw new ArgumentOutOfRangeException(nameof(x), "SVG viewBox coordinates must be finite.");
+        if (double.IsNaN(y) || double.IsInfinity(y)) throw new ArgumentOutOfRangeException(nameof(y), "SVG viewBox coordinates must be finite.");
+        if (double.IsNaN(width) || double.IsInfinity(width) || width <= 0) throw new ArgumentOutOfRangeException(nameof(width), "SVG viewBox width must be finite and positive.");
+        if (double.IsNaN(height) || double.IsInfinity(height) || height <= 0) throw new ArgumentOutOfRangeException(nameof(height), "SVG viewBox height must be finite and positive.");
         X = x;
         Y = y;
         Width = width;

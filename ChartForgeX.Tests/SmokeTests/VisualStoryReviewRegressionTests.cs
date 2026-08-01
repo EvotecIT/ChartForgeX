@@ -149,6 +149,14 @@ internal static partial class SmokeTests {
                 "Mismatched vector",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 9\"><rect width=\"16\" height=\"9\"/></svg>"),
             "Raster and vector media representations should reject incompatible intrinsic aspect ratios.");
+        foreach (var nonFiniteViewBox in new[] { "NaN 0 1 1", "0 Infinity 1 1", "0 0 NaN 1", "0 0 1 Infinity" }) {
+            AssertThrows<ArgumentException>(
+                () => new VisualStoryMediaSurface(
+                    new RgbaImage(100, 100, new byte[100 * 100 * 4]),
+                    "Non-finite vector",
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"100\" viewBox=\"" + nonFiniteViewBox + "\"><rect width=\"1\" height=\"1\"/></svg>"),
+                "Raster and vector media representations should reject non-finite view-box coordinates and dimensions.");
+        }
         var matchingVector = new VisualStoryMediaSurface(
             new RgbaImage(100, 50, new byte[100 * 50 * 4]),
             "Matching vector",
