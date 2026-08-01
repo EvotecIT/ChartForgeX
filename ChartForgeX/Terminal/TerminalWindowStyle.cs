@@ -46,7 +46,7 @@ internal static class TerminalWindowChrome {
         Validate(style);
         if (style == TerminalWindowStyle.None) return string.Empty;
         if (style == TerminalWindowStyle.WindowsTerminal) {
-            var maximumWindowsColumns = Math.Max(1, (int)Math.Floor(WindowsTitleAvailableWidth(width) / WindowsTitleColumnWidth));
+            var maximumWindowsColumns = Math.Max(1, (int)Math.Floor(WindowsTitleAvailableWidth(width, 1) / WindowsTitleColumnWidth));
             return TerminalTextWidth.Fit(value, maximumWindowsColumns);
         }
 
@@ -56,22 +56,35 @@ internal static class TerminalWindowChrome {
         return TerminalTextWidth.Fit(value, maximum);
     }
 
-    internal static double WindowsTabWidth(int width) {
-        return Math.Min(360, Math.Max(220, width - 230));
+    internal static double WindowsTabWidth(int width, int tabCount) {
+        if (tabCount < 1 || tabCount > 8) throw new ArgumentOutOfRangeException(nameof(tabCount));
+        var available = Math.Max(96, width - 230);
+        return Math.Min(300, Math.Max(72, available / tabCount));
     }
 
-    internal static double WindowsTabRight(int width) {
-        return WindowsTabLeft + WindowsTabWidth(width);
+    internal static double WindowsTabX(int width, int tabCount, int tabIndex) {
+        if (tabIndex < 0 || tabIndex >= tabCount) throw new ArgumentOutOfRangeException(nameof(tabIndex));
+        return WindowsTabLeft + WindowsTabWidth(width, tabCount) * tabIndex;
     }
 
-    internal static double WindowsTabCloseX(int width) {
-        return WindowsTabRight(width) - WindowsTabCloseOffset;
+    internal static double WindowsTabRight(int width, int tabCount) {
+        return WindowsTabLeft + WindowsTabWidth(width, tabCount) * tabCount;
     }
 
-    internal static double WindowsTitleAvailableWidth(int width) {
-        return Math.Max(
-            WindowsTitleColumnWidth,
-            WindowsTabCloseX(width) - WindowsTabCloseRadius - WindowsTitleControlGap - WindowsTitleX);
+    internal static double WindowsTabCloseX(int width, int tabCount, int tabIndex) {
+        return WindowsTabX(width, tabCount, tabIndex) + WindowsTabWidth(width, tabCount) - WindowsTabCloseOffset;
+    }
+
+    internal static double WindowsTitleAvailableWidth(int width, int tabCount) {
+        return Math.Max(WindowsTitleColumnWidth, WindowsTabWidth(width, tabCount) - 72);
+    }
+
+    internal static double WindowsTitleAvailableWidth(int width) => WindowsTitleAvailableWidth(width, 1);
+
+    internal static string FitTabTitle(string value, int width, int tabCount) {
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        var maximumColumns = Math.Max(1, (int)Math.Floor(WindowsTitleAvailableWidth(width, tabCount) / WindowsTitleColumnWidth));
+        return TerminalTextWidth.Fit(value, maximumColumns);
     }
 
     internal static void Validate(TerminalWindowStyle style) {

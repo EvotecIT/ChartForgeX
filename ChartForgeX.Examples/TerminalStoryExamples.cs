@@ -48,5 +48,24 @@ internal static class TerminalStoryExamples {
             .WithEndHold(1.4);
         fiveLineDemo.SaveGif(Path.Combine(output, "chart-in-five-lines-console-story.gif"), animation);
         fiveLineDemo.SaveApng(Path.Combine(output, "chart-in-five-lines-console-story.apng"), animation);
+
+        var multiShell = TerminalStory.Create()
+            .WithTitle("PowerShell")
+            .WithDialect(TerminalDialect.PowerShell)
+            .WithWorkingDirectory(@"C:\OpenSource")
+            .WithTheme(TerminalTheme.Campbell())
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithWidth(1100)
+            .Command("Get-Module ImagePlayground")
+            .Output("ImagePlayground  3.2.0", TerminalTextTone.Success)
+            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalTheme.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell)
+            .Command("$PSVersionTable.PSVersion")
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu)
+            .Command("dotnet test")
+            .Output("Passed! Failed: 0", TerminalTextTone.Success)
+            .SelectTab("main")
+            .Output("All environments are ready.", TerminalTextTone.Success);
+        multiShell.SaveSvg(Path.Combine(output, "multi-shell-console-story.svg"));
+        multiShell.SaveGif(Path.Combine(output, "multi-shell-console-story.gif"), animation);
     }
 }

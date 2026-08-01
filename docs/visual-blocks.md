@@ -134,6 +134,8 @@ Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom 
 
 Use `TerminalStoryAnimationOptions` when a host needs a different frame rate, single-play output, a longer completed-state hold, a denser raster, or a different frame budget. The default 10 FPS, one-times-density GIF is intentionally suitable for Discord-style sharing without turning the export into a browser recording.
 
+Use `OpenTab` and `SelectTab` for a multi-shell walkthrough. Tabs preserve their own transcript buffers, prompts, directories, semantic icons, and palettes. The initial session is named `main`; static and reduced-motion output show the completed active tab, while accessible transcript text includes every session.
+
 ## Generic source-to-result stories
 
 Use `VisualStory` when the presentation contains more than a terminal transcript. Each scene contains named source, terminal, media, or text panels, while each declared outcome points at the panel that proves the promised result. The last scene must contain every outcome panel. This makes “code creates a chart,” “request returns this response,” and “filter produces this image” enforceable story contracts instead of captions that can drift from the rendered demo.

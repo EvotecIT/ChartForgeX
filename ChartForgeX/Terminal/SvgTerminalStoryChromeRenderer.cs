@@ -5,7 +5,7 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.Terminal;
 
 internal static class SvgTerminalStoryChromeRenderer {
-    internal static void Write(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout, string shadowId) {
+    internal static void Write(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout, string shadowId, string id) {
         if (writer == null) throw new ArgumentNullException(nameof(writer));
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (layout == null) throw new ArgumentNullException(nameof(layout));
@@ -28,7 +28,7 @@ internal static class SvgTerminalStoryChromeRenderer {
                     WriteWindowsTerminal(writer, story, layout);
                     break;
                 case TerminalWindowStyle.Minimal:
-                    WriteTitle(writer, story, layout, 28, 31, "start");
+                    WriteActiveTitles(writer, story, layout, 28, 31, "start");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(story.WindowStyle));
@@ -44,18 +44,35 @@ internal static class SvgTerminalStoryChromeRenderer {
         WriteCircle(writer, 49, 29, "#FEBC2E");
         WriteCircle(writer, 69, 29, "#28C840");
         writer.EndElement().Line();
-        WriteTitle(writer, story, layout, layout.Width / 2.0, 33, "middle");
+        WriteActiveTitles(writer, story, layout, layout.Width / 2.0, 33, "middle");
     }
 
     private static void WriteWindowsTerminal(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout) {
         var theme = story.Theme;
-        var tabWidth = TerminalWindowChrome.WindowsTabWidth(layout.Width);
-        var tabRight = TerminalWindowChrome.WindowsTabRight(layout.Width);
-        writer.StartElement("rect").Attribute("data-cfx-role", "terminal-tab").Attribute("x", TerminalWindowChrome.WindowsTabLeft).Attribute("y", 13).Attribute("width", tabWidth).Attribute("height", 37).Attribute("rx", 9).Attribute("fill", theme.Background.ToCss()).EndEmptyElement().Line()
-            .StartElement("rect").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("x", 28).Attribute("y", 22).Attribute("width", 18).Attribute("height", 18).Attribute("rx", 3).Attribute("fill", theme.Accent.ToCss()).EndEmptyElement().Line()
-            .StartElement("path").Attribute("d", "M32 27l4 4-4 4M37.5 35h5").Attribute("fill", "none").Attribute("stroke", theme.Background.ToCss()).Attribute("stroke-width", 1.7).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
-        WriteTitle(writer, story, layout, TerminalWindowChrome.WindowsTitleX, 37, "start");
-        WriteCross(writer, TerminalWindowChrome.WindowsTabCloseX(layout.Width), 31, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted.ToCss(), "terminal-tab-close");
+        var tabCount = layout.Tabs.Count;
+        var tabWidth = TerminalWindowChrome.WindowsTabWidth(layout.Width, tabCount);
+        var tabRight = TerminalWindowChrome.WindowsTabRight(layout.Width, tabCount);
+        for (var index = 0; index < tabCount; index++) {
+            var tab = layout.Tabs[index].Tab;
+            var tabX = TerminalWindowChrome.WindowsTabX(layout.Width, tabCount, index);
+            var finalClass = string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? " cfx-terminal-tab-final" : string.Empty;
+            writer.StartElement("g").Attribute("data-cfx-role", "terminal-tab").Attribute("data-cfx-tab", tab.Id).Attribute("class", "cfx-terminal-tab-presence-" + index).Attribute("opacity", 1).EndStartElement().Line()
+                .StartElement("rect").Attribute("x", tabX).Attribute("y", 13).Attribute("width", tabWidth).Attribute("height", 37).Attribute("rx", 9).Attribute("fill", theme.HeaderBackground.ToCss()).EndEmptyElement().Line()
+                .StartElement("rect").Attribute("data-cfx-role", "terminal-tab-active").Attribute("class", "cfx-terminal-tab-active cfx-terminal-tab-state-" + index + finalClass).Attribute("opacity", string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0).Attribute("x", tabX).Attribute("y", 13).Attribute("width", tabWidth).Attribute("height", 37).Attribute("rx", 9).Attribute("fill", tab.Theme.Background.ToCss()).EndEmptyElement().Line();
+            WriteTabIcon(writer, tab, tabX + 12, 22);
+            writer.StartElement("text")
+                .Attribute("data-cfx-role", "terminal-tab-title")
+                .Attribute("x", tabX + 40)
+                .Attribute("y", 37)
+                .Attribute("fill", theme.Text.ToCss())
+                .Attribute("font-family", theme.FontFamily)
+                .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
+                .Attribute("font-weight", 600)
+                .Text(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount))
+                .EndElement().Line();
+            WriteCross(writer, TerminalWindowChrome.WindowsTabCloseX(layout.Width, tabCount, index), 31, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted.ToCss(), "terminal-tab-close");
+            writer.EndElement().Line();
+        }
         WritePlus(writer, tabRight + 25, 31, theme.Muted.ToCss());
         writer.StartElement("path").Attribute("data-cfx-role", "terminal-tab-menu").Attribute("d", "M" + (tabRight + 52).ToString(CultureInfo.InvariantCulture) + " 28l4 4 4-4").Attribute("fill", "none").Attribute("stroke", theme.Muted.ToCss()).Attribute("stroke-width", 1.5).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
 
@@ -65,19 +82,37 @@ internal static class SvgTerminalStoryChromeRenderer {
         WriteCross(writer, layout.Width - 25, controlY, 6, theme.Text.ToCss(), "terminal-window-close");
     }
 
-    private static void WriteTitle(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout, double x, double y, string anchor) {
-        var visibleTitle = TerminalStoryLayout.FitTitle(story.Title, layout.Width, story.WindowStyle);
-        writer.StartElement("text")
-            .Attribute("data-cfx-role", "terminal-title")
-            .Attribute("x", x)
-            .Attribute("y", y)
-            .Attribute("fill", story.Theme.Muted.ToCss())
-            .Attribute("font-family", story.Theme.FontFamily)
-            .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
-            .Attribute("font-weight", 600)
-            .Attribute("text-anchor", anchor)
-            .Text(visibleTitle)
-            .EndElement().Line();
+    private static void WriteActiveTitles(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout, double x, double y, string anchor) {
+        for (var index = 0; index < layout.Tabs.Count; index++) {
+            var tab = layout.Tabs[index].Tab;
+            var finalClass = string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? " cfx-terminal-tab-final" : string.Empty;
+            writer.StartElement("text")
+                .Attribute("data-cfx-role", "terminal-title")
+                .Attribute("data-cfx-tab", tab.Id)
+                .Attribute("class", "cfx-terminal-tab-active cfx-terminal-tab-state-" + index + finalClass)
+                .Attribute("opacity", string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                .Attribute("x", x)
+                .Attribute("y", y)
+                .Attribute("fill", story.Theme.Muted.ToCss())
+                .Attribute("font-family", story.Theme.FontFamily)
+                .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
+                .Attribute("font-weight", 600)
+                .Attribute("text-anchor", anchor)
+                .Text(TerminalStoryLayout.FitTitle(tab.Title, layout.Width, story.WindowStyle))
+                .EndElement().Line();
+        }
+    }
+
+    private static void WriteTabIcon(SvgMarkupWriter writer, TerminalTab tab, double x, double y) {
+        if (tab.Icon == TerminalTabIcon.None) return;
+        if (tab.Icon == TerminalTabIcon.Ubuntu) {
+            writer.StartElement("circle").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 9).Attribute("fill", tab.Theme.Accent.ToCss()).EndEmptyElement().Line()
+                .StartElement("circle").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 3).Attribute("fill", "none").Attribute("stroke", tab.Theme.Background.ToCss()).Attribute("stroke-width", 1.6).EndEmptyElement().Line();
+            return;
+        }
+
+        writer.StartElement("rect").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("x", x).Attribute("y", y).Attribute("width", 18).Attribute("height", 18).Attribute("rx", 3).Attribute("fill", tab.Theme.Accent.ToCss()).EndEmptyElement().Line()
+            .StartElement("path").Attribute("d", "M" + (x + 4).ToString(CultureInfo.InvariantCulture) + " " + (y + 5).ToString(CultureInfo.InvariantCulture) + "l4 4-4 4M" + (x + 9.5).ToString(CultureInfo.InvariantCulture) + " " + (y + 13).ToString(CultureInfo.InvariantCulture) + "h5").Attribute("fill", "none").Attribute("stroke", tab.Theme.Background.ToCss()).Attribute("stroke-width", 1.7).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
     }
 
     private static string HeaderPath(int width, double headerHeight, double radius) {

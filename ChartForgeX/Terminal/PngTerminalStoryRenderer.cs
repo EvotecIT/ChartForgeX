@@ -76,31 +76,36 @@ public sealed class PngTerminalStoryRenderer {
         var theme = story.Theme;
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, outlineFont, outputScale, useDefaultOutlineFont: false);
         canvas.Clear(theme.PageBackground);
-        PngTerminalStoryChromeRenderer.Draw(canvas, story, layout, outlineFont);
+        PngTerminalStoryChromeRenderer.Draw(canvas, story, layout, outlineFont, elapsedSeconds);
+        canvas.FillRect(9, layout.HeaderHeightValue + 9, layout.Width - 18, layout.Height - layout.HeaderHeightValue - 18, layout.TabBackground(elapsedSeconds));
 
-        for (var index = 0; index < layout.Lines.Count; index++) {
-            var line = layout.Lines[index];
-            var state = VisibleState(line, elapsedSeconds);
-            if (!state.Visible) continue;
-            var y = layout.ContentTop + index * story.LineHeight + state.TranslateY;
-            var visibleText = line.IsCommand && elapsedSeconds.HasValue ? VisibleCommand(line, state.Progress) : line.Text;
-            if (line.IsCommand) {
-                var promptLength = Math.Min(line.PromptLength, visibleText.Length);
-                var prompt = visibleText.Substring(0, promptLength);
-                var command = visibleText.Substring(promptLength);
-                var promptWidth = TerminalPngTextPreserver.MeasureEmphasized(prompt, canvas, story.FontSize);
-                TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, theme.Accent, story.FontSize);
-                TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, theme.Text, story.FontSize);
-            } else {
-                TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(theme, line.Tone), state.Opacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
-            }
+        foreach (var renderedTab in layout.Tabs) {
+            var tab = renderedTab.Tab;
+            var tabOpacity = layout.TabOpacity(tab.Id, elapsedSeconds);
+            if (tabOpacity <= 0) continue;
+            foreach (var line in renderedTab.Lines) {
+                var state = VisibleState(line, elapsedSeconds);
+                if (!state.Visible) continue;
+                var y = layout.ContentTop + line.RowIndex * story.LineHeight + state.TranslateY;
+                var visibleText = line.IsCommand && elapsedSeconds.HasValue ? VisibleCommand(line, state.Progress) : line.Text;
+                if (line.IsCommand) {
+                    var promptLength = Math.Min(line.PromptLength, visibleText.Length);
+                    var prompt = visibleText.Substring(0, promptLength);
+                    var command = visibleText.Substring(promptLength);
+                    var promptWidth = TerminalPngTextPreserver.MeasureEmphasized(prompt, canvas, story.FontSize);
+                    TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, WithOpacity(tab.Theme.Accent, tabOpacity), story.FontSize);
+                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, WithOpacity(tab.Theme.Text, tabOpacity), story.FontSize);
+                } else {
+                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(tab.Theme, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
+                }
 
-            if (story.ShowFinalPrompt && index == layout.Lines.Count - 1 && CursorVisible(layout, line, elapsedSeconds)) {
-                var visibleWidth = line.IsCommand
-                    ? TerminalPngTextPreserver.MeasureEmphasized(visibleText, canvas, story.FontSize)
-                    : TerminalPngTextPreserver.Measure(visibleText, canvas, story.FontSize);
-                var cursorX = layout.ContentX + visibleWidth + 2;
-                canvas.FillRoundedRect(cursorX, y + 2, Math.Max(7, story.FontSize * 0.55), story.FontSize + 2, 1, theme.Cursor);
+                if (line.IsFinalPrompt && CursorVisible(layout, line, elapsedSeconds)) {
+                    var visibleWidth = line.IsCommand
+                        ? TerminalPngTextPreserver.MeasureEmphasized(visibleText, canvas, story.FontSize)
+                        : TerminalPngTextPreserver.Measure(visibleText, canvas, story.FontSize);
+                    var cursorX = layout.ContentX + visibleWidth + 2;
+                    canvas.FillRoundedRect(cursorX, y + 2, Math.Max(7, story.FontSize * 0.55), story.FontSize + 2, 1, WithOpacity(tab.Theme.Cursor, tabOpacity));
+                }
             }
         }
 

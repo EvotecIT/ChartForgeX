@@ -191,6 +191,47 @@ internal static partial class SmokeTests {
         SvgDocument.Parse(windowsSvg);
         Assert(windowsStory.ToPng().Length > 8, "Windows Terminal chrome should render through the dependency-free raster path.");
 
+        var tabbedStory = TerminalStory.Create()
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithTitle("PowerShell")
+            .WithTheme(TerminalTheme.Campbell())
+            .WithWorkingDirectory(@"C:\Work")
+            .Command("Get-ChildItem", 0.1)
+            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalTheme.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell, transitionSeconds: 0.1)
+            .Command("$PSVersionTable.PSVersion", 0.1)
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu, transitionSeconds: 0.1)
+            .Command("dotnet test", 0.1)
+            .SelectTab("main", 0.1)
+            .Output("Back in PowerShell", TerminalTextTone.Success);
+        var tabbedLayout = TerminalStoryLayout.Build(tabbedStory);
+        var tabbedSvg = tabbedStory.ToSvg("tabs");
+        Assert(tabbedStory.Tabs.Count == 3 && tabbedStory.ActiveTabId == "main" &&
+               tabbedStory.Steps.Count(step => step.Kind == TerminalStoryStepKind.OpenTab) == 2 &&
+               tabbedStory.Steps.Count(step => step.Kind == TerminalStoryStepKind.SelectTab) == 1,
+            "Terminal stories should model declared tabs and selections as first-class timeline steps.");
+        Assert(tabbedLayout.Tabs[0].Lines.Count == 3 &&
+               tabbedLayout.Tabs[1].Lines.Count == 1 &&
+               tabbedLayout.Tabs[2].Lines.Count == 1 &&
+               tabbedLayout.FinalTabId == "main",
+            "Each terminal tab should preserve its own buffer while the final prompt belongs to the completed active tab.");
+        Assert(tabbedSvg.Contains("data-cfx-tab=\"windows-powershell\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("data-cfx-tab=\"ubuntu\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("#300A24", StringComparison.OrdinalIgnoreCase) &&
+               tabbedSvg.Contains("cfx-terminal-tab-final", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("[Ubuntu] ~/src $ dotnet test", StringComparison.Ordinal) &&
+               !tabbedSvg.Contains("cfx-terminal-seed-", StringComparison.Ordinal),
+            "SVG terminal stories should render tab identities, independent palettes, final reduced-motion state, and a complete multi-tab transcript.");
+        Assert(tabbedLayout.TabOpacity("main", null) == 1 &&
+               tabbedLayout.TabOpacity("ubuntu", null) == 0 &&
+               tabbedLayout.TabOpacity("windows-powershell", tabbedLayout.Transitions[0].StartSeconds + 0.05) > 0 &&
+               !tabbedLayout.TabVisible("ubuntu", tabbedLayout.Transitions[0].StartSeconds) &&
+               tabbedLayout.TabVisible("ubuntu", null),
+            "Static and animated tab selection should resolve deterministic active-session opacity.");
+        SvgDocument.Parse(tabbedSvg);
+        Assert(tabbedStory.ToPng().Length > 8 &&
+               tabbedStory.ToGif(TerminalStoryAnimationOptions.Create().WithFramesPerSecond(4).WithMaximumFrames(80)).Length > 800,
+            "Persistent tab stories should render through completed and animated raster paths.");
+
         var longWindowsTitle = new string('W', 80);
         var defaultWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 886, TerminalWindowStyle.WindowsTerminal);
         var maximumWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 1800, TerminalWindowStyle.WindowsTerminal);
@@ -520,6 +561,23 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TerminalTable.Create().WithColumns("One", "Two").AddRow("one"), "Terminal table rows should match their column count.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Progress("bad", 1.1), "Terminal progress values should stay within the unit interval.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithWindowStyle((TerminalWindowStyle)99), "Unknown terminal window styles should be rejected before mutation.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().Output("ready").OpenTab("bad id", "Bad", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()), "Terminal tab identifiers should remain safe deterministic keys.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().OpenTab("tools", "Tools", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()).OpenTab("TOOLS", "Duplicate", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()), "Terminal tab identifiers should be unique without case ambiguity.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().Output("ready").SelectTab("missing"), "Tab switching should reject undeclared sessions.");
+        var atomicTabStory = TerminalStory.Create().Output("ready");
+        AssertThrows<ArgumentOutOfRangeException>(() => atomicTabStory.OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu(), transitionSeconds: 3), "Invalid tab transitions should be rejected before mutating story tabs.");
+        Assert(atomicTabStory.Tabs.Count == 1 && atomicTabStory.ActiveTabId == "main", "Rejected tab steps should leave tab declarations and active state unchanged.");
+        AssertThrows<InvalidOperationException>(
+            () => TerminalStory.Create()
+                .WithWidth(480)
+                .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+                .OpenTab("one", "One", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu())
+                .OpenTab("two", "Two", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu())
+                .OpenTab("three", "Three", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu())
+                .Output("ready")
+                .ToSvg(),
+            "Windows Terminal stories should reject tab strips that cannot preserve a readable minimum tab width.");
+        AssertThrows<InvalidOperationException>(() => TerminalStory.Create().Output("ready").WithTitle("Too late"), "Initial tab configuration should be frozen after timeline authoring starts.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Transcript(Array.Empty<string>(), (TerminalTextTone)99), "Empty transcripts should still validate their semantic tone.");
         var throwingTranscriptStory = TerminalStory.Create().Output("existing");
         AssertThrows<InvalidOperationException>(() => throwingTranscriptStory.Transcript(ThrowingTranscript()), "Transcript enumeration failures should reject the complete batch.");

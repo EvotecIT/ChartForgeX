@@ -346,7 +346,23 @@ console.SaveGif("console-demo.gif");
 console.SaveApng("console-demo.apng");
 ```
 
-The renderer models a presentation, not a shell. Dialects control prompt behavior, themes control the palette, and `TerminalWindowStyle` independently selects macOS, Windows Terminal, minimal, or chrome-free presentation. The caller still owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
+Tabs are persistent terminal sessions with independent buffers, prompts, working directories, icons, and palettes:
+
+```csharp
+var multiShell = TerminalStory.Create()
+    .WithTitle("PowerShell")
+    .WithTheme(TerminalTheme.Campbell())
+    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+    .Command("Get-Module ImagePlayground")
+    .OpenTab("legacy", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalTheme.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell)
+    .Command("$PSVersionTable.PSVersion")
+    .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu)
+    .Command("dotnet test")
+    .SelectTab("main")
+    .Output("All environments are ready.", TerminalTextTone.Success);
+```
+
+The renderer models a presentation, not a shell. Dialects control prompt behavior, themes control palettes, and `TerminalWindowStyle` independently selects macOS, Windows Terminal, minimal, or chrome-free presentation. The caller still owns any real process execution. SVG and HTML use script-free command typing, output reveals, tab transitions, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed active tab while accessibility text retains every tab transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
 
 ### Generic visual stories
 

@@ -49,23 +49,43 @@ public sealed class SvgTerminalStoryRenderer {
             .StartElement("filter").Attribute("id", id + "-shadow").Attribute("x", "-15%").Attribute("y", "-15%").Attribute("width", "130%").Attribute("height", "140%").EndStartElement()
             .StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 12).Attribute("stdDeviation", 18).Attribute("flood-color", "#000").Attribute("flood-opacity", 0.28).EndEmptyElement()
             .EndElement().Line()
-            .StartElement("style").EndStartElement().Raw(BuildCss(id)).EndElement().Line()
+            .StartElement("style").EndStartElement().Raw(BuildCss(id, layout)).EndElement().Line()
             .EndElement().Line()
             .StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.PageBackground.ToCss()).EndEmptyElement().Line();
-        SvgTerminalStoryChromeRenderer.Write(writer, story, layout, id + "-shadow");
+        SvgTerminalStoryChromeRenderer.Write(writer, story, layout, id + "-shadow", id);
+        writer.StartElement("rect")
+            .Attribute("data-cfx-role", "terminal-tab-background")
+            .Attribute("class", "cfx-terminal-tab-background")
+            .Attribute("x", 9)
+            .Attribute("y", layout.HeaderHeightValue + 9)
+            .Attribute("width", layout.Width - 18)
+            .Attribute("height", layout.Height - layout.HeaderHeightValue - 18)
+            .Attribute("fill", layout.TabBackground(null).ToCss())
+            .EndEmptyElement().Line();
 
-        for (var index = 0; index < layout.Lines.Count; index++) {
-            var line = layout.Lines[index];
-            var y = layout.ContentTop + index * story.LineHeight + story.FontSize;
-            WriteLine(writer, story, layout, id, line, index, y);
+        for (var tabIndex = 0; tabIndex < layout.Tabs.Count; tabIndex++) {
+            var renderedTab = layout.Tabs[tabIndex];
+            var tab = renderedTab.Tab;
+            var finalClass = string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? " cfx-terminal-tab-final" : string.Empty;
+            writer.StartElement("g")
+                .Attribute("data-cfx-role", "terminal-tab-panel")
+                .Attribute("data-cfx-tab", tab.Id)
+                .Attribute("class", "cfx-terminal-tab-panel cfx-terminal-tab-state-" + tabIndex + finalClass)
+                .Attribute("opacity", string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                .EndStartElement().Line();
+            foreach (var line in renderedTab.Lines) {
+                var y = layout.ContentTop + line.RowIndex * story.LineHeight + story.FontSize;
+                WriteLine(writer, story, layout, id, tab, line, y);
+            }
+            writer.EndElement().Line();
         }
 
         writer.EndElement().Line();
         return writer.Build().Replace("\r\n", "\n");
     }
 
-    private static void WriteLine(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout, string id, TerminalRenderedLine line, int index, double y) {
-        var isFinalPrompt = story.ShowFinalPrompt && index == layout.Lines.Count - 1;
+    private static void WriteLine(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout, string id, TerminalTab tab, TerminalRenderedLine line, double y) {
+        var isFinalPrompt = line.IsFinalPrompt;
         var isTypedCommand = line.IsCommand && !isFinalPrompt;
         var cssClass = isTypedCommand ? "cfx-terminal-line cfx-terminal-type" : "cfx-terminal-line cfx-terminal-appear";
         var style = "--cfx-start:" + line.StartSeconds.ToString("0.###", CultureInfo.InvariantCulture) +
@@ -75,19 +95,19 @@ public sealed class SvgTerminalStoryRenderer {
             .Attribute("class", cssClass)
             .Attribute("x", layout.ContentX)
             .Attribute("y", y)
-            .Attribute("fill", ToneColor(story.Theme, line.Tone))
-            .Attribute("font-family", line.IsTable ? ChartFontStacks.Mono : story.Theme.FontFamily)
+            .Attribute("fill", ToneColor(tab.Theme, line.Tone))
+            .Attribute("font-family", line.IsTable ? ChartFontStacks.Mono : tab.Theme.FontFamily)
             .Attribute("font-size", story.FontSize)
             .Attribute("style", style)
             .Attribute("xml:space", "preserve")
             .EndStartElement();
         if (isTypedCommand) {
-            WriteTypedCommand(writer, story, line);
+            WriteTypedCommand(writer, tab, line);
         } else if (line.IsCommand) {
             var prompt = line.Text.Substring(0, line.PromptLength);
             var command = line.Text.Substring(line.PromptLength);
-            writer.StartElement("tspan").Attribute("fill", story.Theme.Accent.ToCss()).Attribute("font-weight", "650").Text(prompt).EndElement();
-            if (command.Length > 0) writer.StartElement("tspan").Attribute("fill", story.Theme.Text.ToCss()).Text(command).EndElement();
+            writer.StartElement("tspan").Attribute("fill", tab.Theme.Accent.ToCss()).Attribute("font-weight", "650").Text(prompt).EndElement();
+            if (command.Length > 0) writer.StartElement("tspan").Attribute("fill", tab.Theme.Text.ToCss()).Text(command).EndElement();
         } else {
             writer.Text(line.Text);
         }
@@ -97,7 +117,7 @@ public sealed class SvgTerminalStoryRenderer {
                 .Attribute("data-cfx-role", "terminal-cursor")
                 .Attribute("class", "cfx-terminal-cursor")
                 .Attribute("dx", 2)
-                .Attribute("fill", story.Theme.Cursor.ToCss())
+                .Attribute("fill", tab.Theme.Cursor.ToCss())
                 .Attribute("font-family", "monospace")
                 .Attribute("font-weight", 400)
                 .Attribute("style", "--cfx-start:" + line.StartSeconds.ToString("0.###", CultureInfo.InvariantCulture) + "s")
@@ -108,25 +128,25 @@ public sealed class SvgTerminalStoryRenderer {
         writer.EndElement().Line();
     }
 
-    private static void WriteTypedCommand(SvgMarkupWriter writer, TerminalStory story, TerminalRenderedLine line) {
+    private static void WriteTypedCommand(SvgMarkupWriter writer, TerminalTab tab, TerminalRenderedLine line) {
         var promptLength = Math.Min(line.PromptLength, line.Text.Length);
         var promptElements = TerminalTextWidth.VisibleElements(line.Text.Substring(0, promptLength)).ToArray();
         var commandElements = TerminalTextWidth.VisibleElements(line.Text.Substring(promptLength)).ToArray();
         var elementCount = Math.Max(1, promptElements.Length + commandElements.Length);
         var elementIndex = 0;
         foreach (var element in promptElements) {
-            WriteTypedElement(writer, story, line, element, true, elementIndex++, elementCount);
+            WriteTypedElement(writer, tab, line, element, true, elementIndex++, elementCount);
         }
         foreach (var element in commandElements) {
-            WriteTypedElement(writer, story, line, element, false, elementIndex++, elementCount);
+            WriteTypedElement(writer, tab, line, element, false, elementIndex++, elementCount);
         }
     }
 
-    private static void WriteTypedElement(SvgMarkupWriter writer, TerminalStory story, TerminalRenderedLine line, string element, bool isPrompt, int elementIndex, int elementCount) {
+    private static void WriteTypedElement(SvgMarkupWriter writer, TerminalTab tab, TerminalRenderedLine line, string element, bool isPrompt, int elementIndex, int elementCount) {
         var revealSeconds = line.StartSeconds + line.DurationSeconds * (elementIndex + 1) / elementCount;
         writer.StartElement("tspan")
             .Attribute("class", "cfx-terminal-glyph")
-            .Attribute("fill", isPrompt ? story.Theme.Accent.ToCss() : story.Theme.Text.ToCss());
+            .Attribute("fill", isPrompt ? tab.Theme.Accent.ToCss() : tab.Theme.Text.ToCss());
         if (isPrompt) {
             writer.Attribute("font-weight", "650");
         }
@@ -135,7 +155,7 @@ public sealed class SvgTerminalStoryRenderer {
             .EndElement();
     }
 
-    private static string BuildCss(string id) {
+    private static string BuildCss(string id, TerminalStoryLayout layout) {
         var css = new StringBuilder();
         css.Append("@keyframes ").Append(id).Append("-motion-appear{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}");
         css.Append("@keyframes ").Append(id).Append("-motion-glyph{0%{opacity:0}100%{opacity:1}}");
@@ -143,9 +163,86 @@ public sealed class SvgTerminalStoryRenderer {
         css.Append("#").Append(id).Append(" .cfx-terminal-appear{animation:").Append(id).Append("-motion-appear var(--cfx-duration) ease-out var(--cfx-start) both}");
         css.Append("#").Append(id).Append(" .cfx-terminal-glyph{animation:").Append(id).Append("-motion-glyph 0s linear var(--cfx-glyph-start) both}");
         css.Append("#").Append(id).Append(" .cfx-terminal-cursor{animation:").Append(id).Append("-motion-cursor 1s steps(1,end) var(--cfx-start) infinite both}");
-        css.Append("@media (prefers-reduced-motion:reduce){#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-glyph,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
-        css.Append("@media print{#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-glyph,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}}");
+        AppendTabCss(css, id, layout);
+        AppendBackgroundCss(css, id, layout);
+        css.Append("@media (prefers-reduced-motion:reduce){#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-glyph,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}#").Append(id).Append(" .cfx-terminal-tab-panel,#").Append(id).Append(" .cfx-terminal-tab-active{opacity:0;animation:none}#").Append(id).Append(" [class*=cfx-terminal-tab-presence-],#").Append(id).Append(" .cfx-terminal-tab-final{opacity:1;animation:none}#").Append(id).Append(" .cfx-terminal-tab-background{animation:none}}");
+        css.Append("@media print{#").Append(id).Append(" .cfx-terminal-line,#").Append(id).Append(" .cfx-terminal-glyph,#").Append(id).Append(" .cfx-terminal-cursor{opacity:1;clip-path:none;transform:none;animation:none}#").Append(id).Append(" .cfx-terminal-tab-panel,#").Append(id).Append(" .cfx-terminal-tab-active{opacity:0;animation:none}#").Append(id).Append(" [class*=cfx-terminal-tab-presence-],#").Append(id).Append(" .cfx-terminal-tab-final{opacity:1;animation:none}#").Append(id).Append(" .cfx-terminal-tab-background{animation:none}}");
         return css.ToString();
+    }
+
+    private static void AppendTabCss(StringBuilder css, string id, TerminalStoryLayout layout) {
+        for (var index = 0; index < layout.Tabs.Count; index++) {
+            var tabId = layout.Tabs[index].Tab.Id;
+            var animationName = id + "-motion-tab-state-" + index;
+            css.Append("@keyframes ").Append(animationName).Append('{');
+            AppendTabKeyframe(css, layout, tabId, 0);
+            foreach (var transition in layout.Transitions) {
+                AppendTabKeyframe(css, layout, tabId, transition.StartSeconds);
+                var transitionEnd = transition.StartSeconds + Math.Max(0.0001, transition.DurationSeconds);
+                AppendTabKeyframe(css, layout, tabId, transitionEnd);
+            }
+            AppendTabKeyframe(css, layout, tabId, layout.DurationSeconds);
+            css.Append('}');
+            css.Append('#').Append(id).Append(" .cfx-terminal-tab-state-").Append(index)
+                .Append("{animation:").Append(animationName).Append(' ')
+                .Append(Math.Max(0.001, layout.DurationSeconds).ToString("0.######", CultureInfo.InvariantCulture))
+                .Append("s linear 0s both}");
+            AppendTabPresenceCss(css, id, layout, index);
+        }
+    }
+
+    private static void AppendTabPresenceCss(StringBuilder css, string id, TerminalStoryLayout layout, int index) {
+        var renderedTab = layout.Tabs[index];
+        var animationName = id + "-motion-tab-presence-" + index;
+        css.Append("@keyframes ").Append(animationName).Append('{');
+        if (renderedTab.OpenSeconds <= 0) {
+            css.Append("0%,100%{opacity:1}");
+        } else {
+            css.Append("0%{opacity:0}");
+            AppendPresenceKeyframe(css, layout, renderedTab.OpenSeconds, 0);
+            AppendPresenceKeyframe(css, layout, renderedTab.OpenSeconds + 0.1, 1);
+            css.Append("100%{opacity:1}");
+        }
+        css.Append('}');
+        css.Append('#').Append(id).Append(" .cfx-terminal-tab-presence-").Append(index)
+            .Append("{animation:").Append(animationName).Append(' ')
+            .Append(Math.Max(0.001, layout.DurationSeconds).ToString("0.######", CultureInfo.InvariantCulture))
+            .Append("s linear 0s both}");
+    }
+
+    private static void AppendPresenceKeyframe(StringBuilder css, TerminalStoryLayout layout, double seconds, int opacity) {
+        var boundedSeconds = Math.Max(0, Math.Min(layout.DurationSeconds, seconds));
+        var percentage = layout.DurationSeconds <= 0 ? 100 : boundedSeconds / layout.DurationSeconds * 100;
+        css.Append(percentage.ToString("0.######", CultureInfo.InvariantCulture)).Append("%{opacity:").Append(opacity).Append("}");
+    }
+
+    private static void AppendTabKeyframe(StringBuilder css, TerminalStoryLayout layout, string tabId, double seconds) {
+        var boundedSeconds = Math.Max(0, Math.Min(layout.DurationSeconds, seconds));
+        var percentage = layout.DurationSeconds <= 0 ? 100 : boundedSeconds / layout.DurationSeconds * 100;
+        css.Append(percentage.ToString("0.######", CultureInfo.InvariantCulture)).Append("%{opacity:")
+            .Append(layout.TabOpacity(tabId, boundedSeconds).ToString("0.######", CultureInfo.InvariantCulture)).Append("}");
+    }
+
+    private static void AppendBackgroundCss(StringBuilder css, string id, TerminalStoryLayout layout) {
+        var animationName = id + "-motion-tab-background";
+        css.Append("@keyframes ").Append(animationName).Append('{');
+        AppendBackgroundKeyframe(css, layout, 0);
+        foreach (var transition in layout.Transitions) {
+            AppendBackgroundKeyframe(css, layout, transition.StartSeconds);
+            AppendBackgroundKeyframe(css, layout, transition.StartSeconds + Math.Max(0.0001, transition.DurationSeconds));
+        }
+        AppendBackgroundKeyframe(css, layout, layout.DurationSeconds);
+        css.Append('}');
+        css.Append('#').Append(id).Append(" .cfx-terminal-tab-background{animation:").Append(animationName).Append(' ')
+            .Append(Math.Max(0.001, layout.DurationSeconds).ToString("0.######", CultureInfo.InvariantCulture))
+            .Append("s linear 0s both}");
+    }
+
+    private static void AppendBackgroundKeyframe(StringBuilder css, TerminalStoryLayout layout, double seconds) {
+        var boundedSeconds = Math.Max(0, Math.Min(layout.DurationSeconds, seconds));
+        var percentage = layout.DurationSeconds <= 0 ? 100 : boundedSeconds / layout.DurationSeconds * 100;
+        css.Append(percentage.ToString("0.######", CultureInfo.InvariantCulture)).Append("%{fill:")
+            .Append(layout.TabBackground(boundedSeconds).ToCss()).Append("}");
     }
 
     private static string AccessibleDescription(TerminalStoryLayout layout) {
