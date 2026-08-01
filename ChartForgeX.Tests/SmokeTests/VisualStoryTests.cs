@@ -193,31 +193,31 @@ internal static partial class SmokeTests {
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Animated vector",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><animate attributeName=\"opacity\" values=\"0;1\"/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><animate attributeName=\"opacity\" values=\"0;1\"/></svg>"),
             "Vector media should reject SMIL animation that cannot follow the parent story timeline.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Stylesheet instruction",
-                "<?xml-stylesheet href=\"data:text/css,rect%7Bfill:red%7D\"?><svg xmlns=\"http://www.w3.org/2000/svg\"><rect/></svg>"),
+                "<?xml-stylesheet href=\"data:text/css,rect%7Bfill:red%7D\"?><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><rect/></svg>"),
             "Vector media should reject processing instructions that could load active styling before the SVG root.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Styled vector",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@keyframes pulse{to{opacity:0}}</style><rect/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>@keyframes pulse{to{opacity:0}}</style><rect/></svg>"),
             "Vector media should reject CSS animation that cannot follow reduced-motion and print rules.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Escaped external stylesheet",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@\\69 mport \"https://example.invalid/a.css\";</style><rect/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>@\\69 mport \"https://example.invalid/a.css\";</style><rect/></svg>"),
             "Vector media should decode CSS escapes before screening active or external styles.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Split external stylesheet",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@im<![CDATA[port \"https://example.invalid/a.css\";]]></style><rect/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>@im<![CDATA[port \"https://example.invalid/a.css\";]]></style><rect/></svg>"),
             "Vector media should screen the complete style element even when XML splits CSS across text and CDATA nodes.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
@@ -228,25 +228,25 @@ internal static partial class SmokeTests {
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Scripted vector",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\"><rect/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\" onload=\"alert(1)\"><rect/></svg>"),
             "Vector media should reject event handlers before embedding SVG content.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Remote vector",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"https://example.invalid/image.png\"/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><image href=\"https://example.invalid/image.png\"/></svg>"),
             "Vector media should reject external resource references so story output stays deterministic and self-contained.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "External base vector",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\" xml:base=\"https://example.invalid/media.svg\"><use href=\"#shape\"/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\" xml:base=\"https://example.invalid/media.svg\"><use href=\"#shape\"/></svg>"),
             "Vector media should reject xml:base attributes that can turn fragment references into external resources.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Remote presentation resource",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect filter=\"url(https://example.invalid/filter.svg#f)\"/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><rect filter=\"url(https://example.invalid/filter.svg#f)\"/></svg>"),
             "Vector media should reject external functional IRIs in SVG presentation attributes.");
         var animatedDataImage = ApngWriter.WriteRgba(
             new[] {
@@ -259,7 +259,7 @@ internal static partial class SmokeTests {
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Nested animated raster",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"data:image/png;base64," +
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><image href=\"data:image/png;base64," +
                 Convert.ToBase64String(animatedDataImage) +
                 "\"/></svg>"),
             "Vector media should reject nested APNG data images that cannot follow the parent story timeline.");
@@ -267,13 +267,13 @@ internal static partial class SmokeTests {
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Nested GIF",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==\"/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><image href=\"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==\"/></svg>"),
             "Vector media should reject GIF data images even when the supplied GIF has only one frame.");
         var staticPng = PngWriter.WriteRgba(new RgbaImage(1, 1, new byte[] { 0, 255, 0, 255 }));
         var staticDataImage = new VisualStoryMediaSurface(
             new RgbaImage(1, 1, new byte[4]),
             "Nested static raster",
-            "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"data:image/png;base64," +
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><image href=\"data:image/png;base64," +
             Convert.ToBase64String(staticPng) +
             "\"/></svg>");
         Assert(staticDataImage.Svg.Contains("data:image/png;base64,", StringComparison.Ordinal),
@@ -281,7 +281,7 @@ internal static partial class SmokeTests {
         var staticStyledVector = new VisualStoryMediaSurface(
             new RgbaImage(1, 1, new byte[4]),
             "Static styled vector",
-            "<svg xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"g\"><stop offset=\"0\"/></linearGradient></defs><style>.shape{fill:url(#g)}</style><rect class=\"shape\" stroke=\"url(#g)\"/></svg>");
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><defs><linearGradient id=\"g\"><stop offset=\"0\"/></linearGradient></defs><style>.shape{fill:url(#g)}</style><rect class=\"shape\" stroke=\"url(#g)\"/></svg>");
         Assert(staticStyledVector.Svg.Contains("fill:url(#g)", StringComparison.Ordinal) &&
                staticStyledVector.Svg.Contains("stroke=\"url(#g)\"", StringComparison.Ordinal),
             "Vector media should retain static CSS and local presentation fragment resources exactly.");

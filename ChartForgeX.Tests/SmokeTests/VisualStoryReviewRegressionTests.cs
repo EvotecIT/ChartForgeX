@@ -18,13 +18,16 @@ internal static partial class SmokeTests {
         Assert(TerminalTextWidth.Elements("\u0600👩‍💻").Count() == 1 &&
                TerminalTextWidth.Measure("\u0600👩‍💻") == 2,
             "Extended pictographic sequences should remain joined after a Prepend scalar.");
+        Assert(TerminalTextWidth.Elements("🇦\u0301🇧").Count() == 2,
+            "An Extend scalar should reset regional-indicator pairing before the next indicator.");
+        StorySourceText.Create("🇦\u0301🇧").AddSpan(0, 3, StorySyntaxKind.Variable);
 
         foreach (var conditionalAttribute in new[] { "systemLanguage=\"pl\"", "requiredFeatures=\"feature\"", "requiredExtensions=\"extension\"" }) {
             AssertThrows<ArgumentException>(
                 () => new VisualStoryMediaSurface(
                     new RgbaImage(1, 1, new byte[4]),
                     "Conditional vector",
-                    "<svg xmlns=\"http://www.w3.org/2000/svg\"><switch " + conditionalAttribute + "><rect width=\"1\" height=\"1\"/></switch></svg>"),
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><switch " + conditionalAttribute + "><rect width=\"1\" height=\"1\"/></switch></svg>"),
                 "Vector media should reject locale- or capability-dependent SVG conditional content.");
         }
         foreach (var conditionalCss in new[] { "@media (prefers-color-scheme:dark){rect{fill:black}}", "@supports (display:grid){rect{fill:black}}" }) {
@@ -32,25 +35,25 @@ internal static partial class SmokeTests {
                 () => new VisualStoryMediaSurface(
                     new RgbaImage(1, 1, new byte[4]),
                     "Conditional vector",
-                    "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>" + conditionalCss + "</style><rect width=\"1\" height=\"1\"/></svg>"),
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>" + conditionalCss + "</style><rect width=\"1\" height=\"1\"/></svg>"),
                 "Vector media should reject environment-dependent CSS at-rules.");
         }
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Conditional vector",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style media=\"(prefers-color-scheme: dark)\">rect{fill:black}</style><rect width=\"1\" height=\"1\"/></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style media=\"(prefers-color-scheme: dark)\">rect{fill:black}</style><rect width=\"1\" height=\"1\"/></svg>"),
             "Vector media should reject environment-dependent style media attributes.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
                 "Nested style vector",
-                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@im<style/>port \"https://example.invalid/x.css\";</style></svg>"),
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>@im<style/>port \"https://example.invalid/x.css\";</style></svg>"),
             "Vector media should reject nested style elements instead of losing the outer stylesheet buffer.");
         var staticCssIdentifiers = new VisualStoryMediaSurface(
             new RgbaImage(1, 1, new byte[4]),
             "Static CSS identifiers",
-            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.animation-status,.transition-note,.behavior-label{fill:red}</style><rect class=\"animation-status\" width=\"1\" height=\"1\"/></svg>");
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>.animation-status,.transition-note,.behavior-label{fill:red}</style><rect class=\"animation-status\" width=\"1\" height=\"1\"/></svg>");
         Assert(staticCssIdentifiers.Svg.Length > 0,
             "Static SVG class names containing active-property words should remain valid.");
         foreach (var activeProperty in new[] { "animation-name:spin", "transition:fill 1s", "-webkit-animation:spin 1s", "anim/**/ation:spin 1s" }) {
@@ -58,7 +61,7 @@ internal static partial class SmokeTests {
                 () => new VisualStoryMediaSurface(
                     new RgbaImage(1, 1, new byte[4]),
                     "Active CSS property",
-                    "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>rect{" + activeProperty + "}</style><rect width=\"1\" height=\"1\"/></svg>"),
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>rect{" + activeProperty + "}</style><rect width=\"1\" height=\"1\"/></svg>"),
                 "Vector media should reject active CSS properties after token and comment normalization.");
         }
 
@@ -94,6 +97,33 @@ internal static partial class SmokeTests {
             () => joinedText.AddSpan(0, 1, StorySyntaxKind.Variable),
             "Syntax spans should keep a ZWJ attached to the preceding grapheme even outside emoji sequences.");
         joinedText.AddSpan(0, 2, StorySyntaxKind.Variable);
+        var nonJoiningText = StorySourceText.Create("a\u200Cb");
+        AssertThrows<ArgumentException>(
+            () => nonJoiningText.AddSpan(0, 1, StorySyntaxKind.Variable),
+            "Syntax spans should keep a ZWNJ attached to the preceding grapheme.");
+        nonJoiningText.AddSpan(0, 2, StorySyntaxKind.Variable);
+
+        foreach (var environmentPaint in new[] {
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\" color-scheme=\"light dark\"><rect fill=\"CanvasText\"/></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>rect{fill:Can\\76 asText}</style><rect/></svg>"
+        }) {
+            AssertThrows<ArgumentException>(
+                () => new VisualStoryMediaSurface(new RgbaImage(1, 1, new byte[4]), "System color", environmentPaint),
+                "Vector media should reject environment-dependent color schemes and escaped system colors.");
+        }
+
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(100, 100, new byte[100 * 100 * 4]),
+                "Mismatched vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 9\"><rect width=\"16\" height=\"9\"/></svg>"),
+            "Raster and vector media representations should reject incompatible intrinsic aspect ratios.");
+        var matchingVector = new VisualStoryMediaSurface(
+            new RgbaImage(100, 50, new byte[100 * 50 * 4]),
+            "Matching vector",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"100\"><rect width=\"200\" height=\"100\"/></svg>");
+        Assert(matchingVector.Svg.Length > 0,
+            "Vector media should accept explicit intrinsic dimensions with the raster aspect ratio.");
 
         var denseSource = StorySourceText.Create(new string('x', 1024 * 1024) + new string('y', 4096));
         for (var index = 0; index < 4096; index++) {

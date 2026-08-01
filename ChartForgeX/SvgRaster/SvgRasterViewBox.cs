@@ -30,8 +30,23 @@ internal readonly struct SvgRasterViewBox {
         return new SvgRasterViewBox(0, 0, parsedWidth, parsedHeight);
     }
 
+    public static bool TryFromDimensions(string? width, string? height, out SvgRasterViewBox viewBox) {
+        if (!TryParseLength(width, out var parsedWidth) ||
+            !TryParseLength(height, out var parsedHeight)) {
+            viewBox = default;
+            return false;
+        }
+        viewBox = new SvgRasterViewBox(0, 0, parsedWidth, parsedHeight);
+        return true;
+    }
+
     private static double ParseLength(string? value, double fallback) {
-        if (string.IsNullOrWhiteSpace(value)) return fallback;
+        return TryParseLength(value, out var parsed) ? parsed : fallback;
+    }
+
+    private static bool TryParseLength(string? value, out double parsed) {
+        parsed = 0;
+        if (string.IsNullOrWhiteSpace(value)) return false;
         var trimmed = value!.Trim();
         var multiplier = 1d;
         if (trimmed.EndsWith("px", StringComparison.OrdinalIgnoreCase)) trimmed = trimmed.Substring(0, trimmed.Length - 2);
@@ -41,8 +56,12 @@ internal readonly struct SvgRasterViewBox {
         else if (trimmed.EndsWith("cm", StringComparison.OrdinalIgnoreCase)) { trimmed = trimmed.Substring(0, trimmed.Length - 2); multiplier = 96d / 2.54d; }
         else if (trimmed.EndsWith("mm", StringComparison.OrdinalIgnoreCase)) { trimmed = trimmed.Substring(0, trimmed.Length - 2); multiplier = 96d / 25.4d; }
         else if (trimmed.EndsWith("q", StringComparison.OrdinalIgnoreCase)) { trimmed = trimmed.Substring(0, trimmed.Length - 1); multiplier = 96d / 101.6d; }
-        if (!double.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) || parsed <= 0) return fallback;
-        return parsed * multiplier;
+        if (!double.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out var scalar) ||
+            scalar <= 0 ||
+            double.IsNaN(scalar) ||
+            double.IsInfinity(scalar)) return false;
+        parsed = scalar * multiplier;
+        return !double.IsNaN(parsed) && !double.IsInfinity(parsed) && parsed > 0;
     }
 
     private static double ParseNumber(string value) =>

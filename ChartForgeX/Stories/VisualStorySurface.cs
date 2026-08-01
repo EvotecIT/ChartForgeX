@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using ChartForgeX.Raster;
+using ChartForgeX.SvgRaster;
 using ChartForgeX.Terminal;
 
 namespace ChartForgeX.Stories;
@@ -126,20 +127,29 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
 /// <summary>Displays a resolved raster artifact with an optional vector representation.</summary>
 public sealed class VisualStoryMediaSurface : VisualStorySurface {
     private const string SvgNamespace = "http://www.w3.org/2000/svg";
+    private static readonly string[] SystemColorIdentifiers = {
+        "AccentColor", "AccentColorText", "ActiveText", "ButtonBorder", "ButtonFace", "ButtonText",
+        "Canvas", "CanvasText", "Field", "FieldText", "GrayText", "Highlight", "HighlightText",
+        "LinkText", "Mark", "MarkText", "SelectedItem", "SelectedItemText", "VisitedText",
+        "ActiveBorder", "ActiveCaption", "AppWorkspace", "Background", "ButtonHighlight", "ButtonShadow",
+        "CaptionText", "InactiveBorder", "InactiveCaption", "InactiveCaptionText", "InfoBackground", "InfoText",
+        "Menu", "MenuText", "Scrollbar", "ThreeDDarkShadow", "ThreeDFace", "ThreeDHighlight",
+        "ThreeDLightShadow", "ThreeDShadow", "Window", "WindowFrame", "WindowText"
+    };
 
-    /// <summary>Initializes a raster artifact.</summary>
+    /// <summary>Initializes a raster artifact with an optional static SVG representation that has the same intrinsic aspect ratio.</summary>
     public VisualStoryMediaSurface(byte[] rasterBytes, string accessibleText, string? svg = null)
         : base(VisualStorySurfaceKind.Media, accessibleText) {
         if (rasterBytes == null) throw new ArgumentNullException(nameof(rasterBytes));
         Raster = RasterImageDecoder.Decode(rasterBytes);
-        Svg = RequireSvg(svg);
+        Svg = RequireSvg(svg, Raster.Width, Raster.Height);
     }
 
-    /// <summary>Initializes an RGBA artifact.</summary>
+    /// <summary>Initializes an RGBA artifact with an optional static SVG representation that has the same intrinsic aspect ratio.</summary>
     public VisualStoryMediaSurface(RgbaImage raster, string accessibleText, string? svg = null)
         : base(VisualStorySurfaceKind.Media, accessibleText) {
         Raster = RequireRaster(raster);
-        Svg = RequireSvg(svg);
+        Svg = RequireSvg(svg, Raster.Width, Raster.Height);
     }
 
     /// <summary>Gets the resolved raster representation used by PNG, GIF, and APNG output.</summary>
@@ -160,7 +170,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         return raster;
     }
 
-    private static string RequireSvg(string? svg) {
+    private static string RequireSvg(string? svg, int rasterWidth, int rasterHeight) {
         if (string.IsNullOrWhiteSpace(svg)) return string.Empty;
         try {
             var settings = new XmlReaderSettings {
@@ -184,6 +194,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 !string.Equals(reader.NamespaceURI, SvgNamespace, StringComparison.Ordinal)) {
                 throw new ArgumentException("The vector representation must be a valid SVG document.", nameof(svg));
             }
+            ValidateCompatibleAspectRatio(reader, rasterWidth, rasterHeight);
             StringBuilder? styleText = null;
             ValidateSvgNode(reader);
             while (reader.Read()) {
@@ -254,8 +265,40 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 ContainsUnsafeCssReference(reader.Value)) {
                 throw new ArgumentException("The vector representation must not contain external presentation resources.", "svg");
             }
+            if (string.Equals(reader.LocalName, "color-scheme", StringComparison.OrdinalIgnoreCase) ||
+                IsPresentationPaintAttribute(reader.LocalName) && ContainsSystemColorIdentifier(reader.Value)) {
+                throw new ArgumentException("The vector representation must not depend on viewer system colors or color schemes.", "svg");
+            }
         }
         reader.MoveToElement();
+    }
+
+    private static void ValidateCompatibleAspectRatio(XmlReader reader, int rasterWidth, int rasterHeight) {
+        SvgRasterViewBox viewport;
+        var viewBox = reader.GetAttribute("viewBox");
+        try {
+            if (!string.IsNullOrWhiteSpace(viewBox)) {
+                viewport = SvgRasterViewBox.Parse(viewBox);
+            } else if (!SvgRasterViewBox.TryFromDimensions(
+                           reader.GetAttribute("width"),
+                           reader.GetAttribute("height"),
+                           out viewport)) {
+                throw new ArgumentException(
+                    "The vector representation must declare a viewBox or positive intrinsic width and height.",
+                    "svg");
+            }
+        } catch (Exception ex) when (ex is FormatException || ex is OverflowException || ex is ArgumentOutOfRangeException) {
+            throw new ArgumentException("The vector representation must declare a valid intrinsic viewport.", "svg", ex);
+        }
+
+        var rasterAspect = (double)rasterWidth / rasterHeight;
+        var vectorAspect = viewport.Width / viewport.Height;
+        var tolerance = Math.Max(0.000001, rasterAspect * 0.001);
+        if (Math.Abs(rasterAspect - vectorAspect) > tolerance) {
+            throw new ArgumentException(
+                "The raster and vector representations must use the same intrinsic aspect ratio.",
+                "svg");
+        }
     }
 
     private static bool IsConditionalProcessingAttribute(string localName) =>
@@ -276,6 +319,15 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         string.Equals(localName, "cursor", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(localName, "color-profile", StringComparison.OrdinalIgnoreCase);
 
+    private static bool IsPresentationPaintAttribute(string localName) =>
+        string.Equals(localName, "color", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "fill", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "stroke", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "flood-color", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "lighting-color", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "stop-color", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "text-decoration-color", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsActiveSvgElement(string localName) =>
         string.Equals(localName, "script", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(localName, "animate", StringComparison.OrdinalIgnoreCase) ||
@@ -289,7 +341,8 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         var normalized = DecodeCssEscapes(value);
         return normalized.IndexOf('@') >= 0 ||
                ContainsActiveCssProperty(StripCssComments(normalized)) ||
-               ContainsUnsafeCssReferenceCore(normalized);
+               ContainsUnsafeCssReferenceCore(normalized) ||
+               ContainsSystemColorIdentifier(normalized);
     }
 
     private static bool ContainsActiveCssProperty(string value) {
@@ -344,7 +397,32 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                property.StartsWith("animation-", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(property, "transition", StringComparison.OrdinalIgnoreCase) ||
                property.StartsWith("transition-", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(property, "behavior", StringComparison.OrdinalIgnoreCase);
+               string.Equals(property, "behavior", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(property, "color-scheme", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool ContainsSystemColorIdentifier(string value) {
+        var normalized = StripCssComments(DecodeCssEscapes(value));
+        for (var index = 0; index < normalized.Length;) {
+            if (!IsCssIdentifierCharacter(normalized[index])) {
+                index++;
+                continue;
+            }
+            var start = index;
+            while (index < normalized.Length && IsCssIdentifierCharacter(normalized[index])) index++;
+            if (IsSystemColorIdentifier(normalized.Substring(start, index - start))) return true;
+        }
+        return false;
+    }
+
+    private static bool IsCssIdentifierCharacter(char value) =>
+        char.IsLetterOrDigit(value) || value == '-' || value == '_';
+
+    private static bool IsSystemColorIdentifier(string value) {
+        foreach (var identifier in SystemColorIdentifiers) {
+            if (string.Equals(value, identifier, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
     }
 
     private static string StripCssComments(string value) {

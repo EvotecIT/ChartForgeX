@@ -295,9 +295,7 @@ internal static class TerminalTextWidth {
                     hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(next);
                     hasIndicLinker = false;
                 } else {
-                    if (!IsExtend(next, category)) {
-                        regionalIndicatorCount = 0;
-                    }
+                    regionalIndicatorCount = 0;
                     if (hasIndicConjunct) {
                         if (isIndicLinker) {
                             hasIndicLinker = true;
@@ -435,6 +433,7 @@ internal static class TerminalTextWidth {
         return category == UnicodeCategory.NonSpacingMark ||
                category == UnicodeCategory.SpacingCombiningMark ||
                category == UnicodeCategory.EnclosingMark ||
+               codePoint == 0x200C ||
                codePoint >= 0xFE00 && codePoint <= 0xFE0F ||
                codePoint >= 0xE0100 && codePoint <= 0xE01EF ||
                codePoint >= 0xE0020 && codePoint <= 0xE007F ||
