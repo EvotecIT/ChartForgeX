@@ -18,7 +18,7 @@ public enum VisualStorySceneLayout {
 public sealed class VisualStoryPanel {
     internal VisualStoryPanel(string id, string title, VisualStorySurface surface, double weight) {
         Id = VisualStorySurface.RequireText(id, nameof(id));
-        Title = VisualStorySurface.OptionalSingleLineText(title, nameof(title));
+        Title = VisualStorySurface.OptionalHeading(title, nameof(title));
         Surface = surface ?? throw new ArgumentNullException(nameof(surface));
         if (double.IsNaN(weight) || double.IsInfinity(weight) || weight <= 0 || weight > 10) throw new ArgumentOutOfRangeException(nameof(weight));
         Weight = weight;
@@ -43,7 +43,7 @@ public sealed class VisualStoryScene {
 
     internal VisualStoryScene(string id, string title, double durationSeconds, VisualStorySceneLayout layout) {
         Id = VisualStorySurface.RequireText(id, nameof(id));
-        Title = VisualStorySurface.RequireSingleLineText(title, nameof(title));
+        Title = VisualStorySurface.RequireHeading(title, nameof(title));
         if (double.IsNaN(durationSeconds) || double.IsInfinity(durationSeconds) || durationSeconds < 0.25 || durationSeconds > 60) throw new ArgumentOutOfRangeException(nameof(durationSeconds));
         if (!Enum.IsDefined(typeof(VisualStorySceneLayout), layout)) throw new ArgumentOutOfRangeException(nameof(layout));
         DurationSeconds = durationSeconds;
@@ -113,7 +113,7 @@ public sealed class VisualStory {
     private readonly List<VisualStoryOutcome> _outcomes = new();
 
     private VisualStory(string title) {
-        Title = VisualStorySurface.RequireSingleLineText(title, nameof(title));
+        Title = VisualStorySurface.RequireHeading(title, nameof(title));
     }
 
     /// <summary>Gets the story title.</summary>

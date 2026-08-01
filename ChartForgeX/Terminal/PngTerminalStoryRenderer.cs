@@ -30,23 +30,23 @@ public sealed class PngTerminalStoryRenderer {
         double targetWidth,
         double targetHeight,
         int outputScale) {
-        if (story == null) throw new ArgumentNullException(nameof(story));
-        if (targetWidth <= 0) throw new ArgumentOutOfRangeException(nameof(targetWidth));
-        if (targetHeight <= 0) throw new ArgumentOutOfRangeException(nameof(targetHeight));
-        if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
-        var theme = story.Theme;
-        var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
-        var tableFont = ResolveTableFont(theme, outlineFont);
-        string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
-        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
-        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
-        var fittedScale = Math.Min(targetWidth / layout.Width, targetHeight / layout.Height);
-        var requiredScale = Math.Ceiling(outputScale * fittedScale);
-        if (requiredScale > int.MaxValue) {
-            throw new InvalidOperationException("The fitted terminal render scale exceeds the supported raster range.");
-        }
-        var renderScale = Math.Max(1, (int)requiredScale);
+        ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
+        var layout = BuildFittedLayout(story, out var outlineFont, out var tableFont);
+        var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
         return RenderImage(story, layout, outlineFont, tableFont, renderScale, null);
+    }
+
+    internal static long EstimateFittedWorkingBytes(
+        TerminalStory story,
+        double targetWidth,
+        double targetHeight,
+        int outputScale) {
+        ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
+        var layout = BuildFittedLayout(story, out _, out _);
+        var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
+        var supersampled = RasterAllocationGuard.Calculate(layout.Width, layout.Height, 2, renderScale).ByteCount;
+        var output = checked((long)layout.Width * renderScale * layout.Height * renderScale * 4);
+        return checked(supersampled + output);
     }
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
@@ -116,6 +116,45 @@ public sealed class PngTerminalStoryRenderer {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
         if (outlineFont == null || TrueTypeFont.IsMonospaceFamily(theme.FontFamily)) return outlineFont;
         return TrueTypeFont.TryLoadForFamily(ChartFontStacks.Mono, out _);
+    }
+
+    private static TerminalStoryLayout BuildFittedLayout(
+        TerminalStory story,
+        out TrueTypeFont? outlineFont,
+        out TrueTypeFont? tableFont) {
+        var theme = story.Theme;
+        var resolvedOutlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
+        var resolvedTableFont = ResolveTableFont(theme, resolvedOutlineFont);
+        string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, resolvedOutlineFont);
+        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, resolvedTableFont);
+        var layout = TerminalStoryLayout.Build(story, PreserveText, resolvedOutlineFont, PreserveTableText);
+        outlineFont = resolvedOutlineFont;
+        tableFont = resolvedTableFont;
+        return layout;
+    }
+
+    private static int FittedRenderScale(
+        TerminalStoryLayout layout,
+        double targetWidth,
+        double targetHeight,
+        int outputScale) {
+        var fittedScale = Math.Min(targetWidth / layout.Width, targetHeight / layout.Height);
+        var requiredScale = Math.Ceiling(outputScale * fittedScale);
+        if (requiredScale > int.MaxValue) {
+            throw new InvalidOperationException("The fitted terminal render scale exceeds the supported raster range.");
+        }
+        return Math.Max(1, (int)requiredScale);
+    }
+
+    private static void ValidateFittedArguments(
+        TerminalStory story,
+        double targetWidth,
+        double targetHeight,
+        int outputScale) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        if (targetWidth <= 0) throw new ArgumentOutOfRangeException(nameof(targetWidth));
+        if (targetHeight <= 0) throw new ArgumentOutOfRangeException(nameof(targetHeight));
+        if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
     }
 
     private static VisibleLineState VisibleState(TerminalRenderedLine line, double? elapsedSeconds) {

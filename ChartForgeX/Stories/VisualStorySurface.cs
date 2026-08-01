@@ -22,6 +22,8 @@ public enum VisualStorySurfaceKind {
 
 /// <summary>Base class for resolved visual-story surfaces.</summary>
 public abstract class VisualStorySurface {
+    internal const int MaximumHeadingLength = 512;
+
     private protected VisualStorySurface(VisualStorySurfaceKind kind, string accessibleText, bool preserveAccessibleWhitespace = false) {
         Kind = kind;
         AccessibleText = preserveAccessibleWhitespace
@@ -49,6 +51,14 @@ public abstract class VisualStorySurface {
         return normalized;
     }
 
+    internal static string RequireHeading(string value, string name) {
+        var normalized = RequireSingleLineText(value, name);
+        if (normalized.Length > MaximumHeadingLength) {
+            throw new ArgumentOutOfRangeException(name, "Visual-story headings support at most " + MaximumHeadingLength + " UTF-16 code units.");
+        }
+        return normalized;
+    }
+
     private static bool IsSemanticLineSeparator(char value) =>
         value == '\r' ||
         value == '\n' ||
@@ -62,6 +72,12 @@ public abstract class VisualStorySurface {
         if (value == null) throw new ArgumentNullException(name);
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
         return RequireSingleLineText(value, name);
+    }
+
+    internal static string OptionalHeading(string value, string name) {
+        if (value == null) throw new ArgumentNullException(name);
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        return RequireHeading(value, name);
     }
 
     internal static string RequireContent(string value, string name) {
@@ -352,7 +368,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         string.Equals(localName, "foreignObject", StringComparison.OrdinalIgnoreCase);
 
     private static bool ContainsActiveCss(string value) {
-        var normalized = StripCssComments(DecodeCssEscapes(value));
+        var normalized = DecodeCssEscapes(StripCssComments(value));
         return normalized.IndexOf('@') >= 0 ||
                ContainsActiveCssProperty(normalized) ||
                ContainsUnsafeCssReferenceCore(normalized) ||
@@ -416,7 +432,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
     }
 
     private static bool ContainsSystemColorIdentifier(string value) {
-        var normalized = StripCssComments(DecodeCssEscapes(value));
+        var normalized = DecodeCssEscapes(StripCssComments(value));
         for (var index = 0; index < normalized.Length;) {
             if (!IsCssIdentifierCharacter(normalized[index])) {
                 index++;
@@ -444,7 +460,22 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
             return value;
         }
         var output = new StringBuilder(value.Length);
+        var quote = '\0';
         for (var index = 0; index < value.Length; index++) {
+            if (quote != '\0') {
+                output.Append(value[index]);
+                if (value[index] == '\\' && index + 1 < value.Length) {
+                    output.Append(value[++index]);
+                } else if (value[index] == quote) {
+                    quote = '\0';
+                }
+                continue;
+            }
+            if (value[index] == '\'' || value[index] == '"') {
+                quote = value[index];
+                output.Append(value[index]);
+                continue;
+            }
             if (value[index] == '/' && index + 1 < value.Length && value[index + 1] == '*') {
                 var end = value.IndexOf("*/", index + 2, StringComparison.Ordinal);
                 if (end < 0) {
@@ -459,7 +490,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
     }
 
     private static bool ContainsUnsafeCssReference(string value) =>
-        ContainsUnsafeCssReferenceCore(StripCssComments(DecodeCssEscapes(value)));
+        ContainsUnsafeCssReferenceCore(DecodeCssEscapes(StripCssComments(value)));
 
     private static bool ContainsUnsafeCssReferenceCore(string value) {
         foreach (var function in UnsafeCssResourceFunctions) {

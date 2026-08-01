@@ -177,9 +177,13 @@ public sealed class SvgTerminalStoryRenderer {
             css.Append("@keyframes ").Append(animationName).Append('{');
             AppendTabKeyframe(css, layout, tabId, 0);
             foreach (var transition in layout.Transitions) {
-                AppendTabKeyframe(css, layout, tabId, transition.StartSeconds);
-                var transitionEnd = transition.StartSeconds + Math.Max(0.0001, transition.DurationSeconds);
-                AppendTabKeyframe(css, layout, tabId, transitionEnd);
+                if (transition.DurationSeconds <= 0) {
+                    AppendTabKeyframe(css, layout, tabId, ImmediatelyBefore(layout, transition.StartSeconds));
+                    AppendTabKeyframe(css, layout, tabId, transition.StartSeconds);
+                } else {
+                    AppendTabKeyframe(css, layout, tabId, transition.StartSeconds);
+                    AppendTabKeyframe(css, layout, tabId, transition.StartSeconds + transition.DurationSeconds);
+                }
             }
             AppendTabKeyframe(css, layout, tabId, layout.DurationSeconds);
             css.Append('}');
@@ -228,8 +232,13 @@ public sealed class SvgTerminalStoryRenderer {
         css.Append("@keyframes ").Append(animationName).Append('{');
         AppendBackgroundKeyframe(css, layout, 0);
         foreach (var transition in layout.Transitions) {
-            AppendBackgroundKeyframe(css, layout, transition.StartSeconds);
-            AppendBackgroundKeyframe(css, layout, transition.StartSeconds + Math.Max(0.0001, transition.DurationSeconds));
+            if (transition.DurationSeconds <= 0) {
+                AppendBackgroundKeyframe(css, layout, ImmediatelyBefore(layout, transition.StartSeconds));
+                AppendBackgroundKeyframe(css, layout, transition.StartSeconds);
+            } else {
+                AppendBackgroundKeyframe(css, layout, transition.StartSeconds);
+                AppendBackgroundKeyframe(css, layout, transition.StartSeconds + transition.DurationSeconds);
+            }
         }
         AppendBackgroundKeyframe(css, layout, layout.DurationSeconds);
         css.Append('}');
@@ -243,6 +252,12 @@ public sealed class SvgTerminalStoryRenderer {
         var percentage = layout.DurationSeconds <= 0 ? 100 : boundedSeconds / layout.DurationSeconds * 100;
         css.Append(percentage.ToString("0.######", CultureInfo.InvariantCulture)).Append("%{fill:")
             .Append(layout.TabBackground(boundedSeconds).ToCss()).Append("}");
+    }
+
+    private static double ImmediatelyBefore(TerminalStoryLayout layout, double seconds) {
+        if (seconds <= 0) return 0;
+        var epsilon = Math.Max(0.000001, layout.DurationSeconds * 0.00000002);
+        return Math.Max(0, seconds - epsilon);
     }
 
     private static string AccessibleDescription(TerminalStoryLayout layout) {

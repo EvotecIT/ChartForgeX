@@ -151,7 +151,7 @@ public sealed class StorySourceText {
     private bool AdvanceToBoundary(int targetOffset, ref int boundaryOffset) {
         if (targetOffset < boundaryOffset) return false;
         while (boundaryOffset < targetOffset) {
-            TerminalTextWidth.NextElement(Text, ref boundaryOffset);
+            boundaryOffset = TerminalTextWidth.NextElementBoundary(Text, boundaryOffset);
             if (boundaryOffset > targetOffset) return false;
         }
         return true;

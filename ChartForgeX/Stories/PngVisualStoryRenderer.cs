@@ -44,6 +44,26 @@ public sealed class PngVisualStoryRenderer {
         return canvas.ToImage();
     }
 
+    internal static long MaximumFittedTerminalWorkingBytes(VisualStory story, int outputScale) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        var maximum = 0L;
+        foreach (var scene in story.Scenes) {
+            var bounds = VisualStoryLayout.Panels(story, scene);
+            for (var index = 0; index < scene.Panels.Count; index++) {
+                if (!(scene.Panels[index].Surface is VisualStoryTerminalSurface terminal)) continue;
+                var content = VisualStoryLayout.PanelContent(scene.Panels[index], bounds[index]);
+                maximum = Math.Max(
+                    maximum,
+                    Terminal.PngTerminalStoryRenderer.EstimateFittedWorkingBytes(
+                        terminal.Terminal,
+                        content.Width,
+                        content.Height,
+                        outputScale));
+            }
+        }
+        return maximum;
+    }
+
     private static void DrawHeaderText(
         ImageComposition canvas,
         VisualStory story,

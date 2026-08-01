@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -21,6 +22,12 @@ internal static partial class SmokeTests {
         Assert(TerminalTextWidth.Elements("🇦\u0301🇧").Count() == 2,
             "An Extend scalar should reset regional-indicator pairing before the next indicator.");
         StorySourceText.Create("🇦\u0301🇧").AddSpan(0, 3, StorySyntaxKind.Variable);
+        var unmatchedJoiner = "👩‍\u0301‍💻";
+        Assert(TerminalTextWidth.Elements(unmatchedJoiner).Count() == 2,
+            "An unmatched pictographic ZWJ must reset GB11 state before a later ZWJ.");
+        StorySourceText.Create(unmatchedJoiner).AddSpan(0, 5, StorySyntaxKind.Variable);
+        var longGrapheme = "x" + new string('\u0301', 65536);
+        StorySourceText.Create(longGrapheme).AddSpan(0, longGrapheme.Length, StorySyntaxKind.Variable);
 
         foreach (var conditionalAttribute in new[] { "systemLanguage=\"pl\"", "requiredFeatures=\"feature\"", "requiredExtensions=\"extension\"" }) {
             AssertThrows<ArgumentException>(
@@ -64,6 +71,12 @@ internal static partial class SmokeTests {
                     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>rect{" + activeProperty + "}</style><rect width=\"1\" height=\"1\"/></svg>"),
                 "Vector media should reject active CSS properties after token and comment normalization.");
         }
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Quoted CSS comment opener",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>.x{content:\"/*\";animation:p 1s infinite}@keyframes p{to{opacity:0}}</style><rect class=\"x\"/></svg>"),
+            "CSS comment stripping should preserve quoted text and still detect following active declarations.");
 
         var boundedOutcomeStory = VisualStory.Create("Bounded outcome").WithSize(480, 320);
         boundedOutcomeStory.Scene("valid", "Completed")
@@ -71,6 +84,18 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(
             () => boundedOutcomeStory.Outcome("oversized", new string('x', 513), "valid"),
             "Outcome labels should be bounded before raster renderers aggregate badge text.");
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => VisualStory.Create(new string('x', VisualStorySurface.MaximumHeadingLength + 1)),
+            "Story headings should be bounded before raster measurement.");
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => VisualStory.Create("Bounded heading").Scene("scene", new string('x', VisualStorySurface.MaximumHeadingLength + 1)),
+            "Scene headings should be bounded before raster measurement.");
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => VisualStory.Create("Bounded heading").Scene("scene", "Scene").Panel(
+                "panel",
+                new VisualStoryTextSurface("ready"),
+                new string('x', VisualStorySurface.MaximumHeadingLength + 1)),
+            "Panel headings should be bounded before raster measurement.");
 
         var endpointScenes = VisualStory.Create("Endpoint scenes").WithSize(480, 320);
         endpointScenes.Scene("first", "First", 0.25)
@@ -158,6 +183,15 @@ internal static partial class SmokeTests {
         Assert(revealLayout.Transitions[0].StartSeconds >= mainRevealEnd &&
                revealLayout.Transitions[1].StartSeconds >= ubuntuRevealEnd,
             "Tab switches should wait for output and table reveals even when line and transition delays are zero.");
+        var zeroTransitionSvg = revealStory.ToSvg();
+        var firstTransition = revealLayout.Transitions[0];
+        var epsilon = Math.Max(0.000001, revealLayout.DurationSeconds * 0.00000002);
+        var beforePercentage = Math.Max(0, firstTransition.StartSeconds - epsilon) / revealLayout.DurationSeconds * 100;
+        var startPercentage = firstTransition.StartSeconds / revealLayout.DurationSeconds * 100;
+        var beforeToken = beforePercentage.ToString("0.######", CultureInfo.InvariantCulture) + "%{opacity:1}";
+        var startToken = startPercentage.ToString("0.######", CultureInfo.InvariantCulture) + "%{opacity:0}";
+        Assert(zeroTransitionSvg.Contains(beforeToken + startToken, StringComparison.Ordinal),
+            "Zero-duration SVG tab switches should retain the old state immediately before the scheduled instant and jump at the instant.");
 
         var denseSource = StorySourceText.Create(new string('x', 1024 * 1024) + new string('y', 4096));
         for (var index = 0; index < 4096; index++) {
@@ -196,5 +230,26 @@ internal static partial class SmokeTests {
             AnimatedRasterFormat.Gif);
         Assert(oneFrameGifBudget >= gifPixelCount * 3,
             "GIF memory estimates should reserve the retained frame plus simultaneous previous/current optimization arrays.");
+
+        var tallTerminal = TerminalStory.Create()
+            .WithWidth(1800)
+            .WithTypography(24, 40)
+            .WithTiming(0, 200, 0)
+            .WithFinalPrompt(false);
+        for (var index = 0; index < 120; index++) {
+            tallTerminal.Output("line " + index.ToString(CultureInfo.InvariantCulture));
+        }
+        var nestedTerminalStory = VisualStory.Create("Nested terminal budget").WithSize(1400, 788);
+        nestedTerminalStory.Scene("result", "Completed", 0.25)
+            .Panel("result", new VisualStoryTerminalSurface(tallTerminal));
+        nestedTerminalStory.Outcome("ready", "Ready", "result");
+        AssertThrows<InvalidOperationException>(
+            () => nestedTerminalStory.ToGif(
+                VisualStoryAnimationOptions.Create()
+                    .WithFramesPerSecond(4)
+                    .WithEndHold(0)
+                    .WithOutputScale(2)
+                    .WithMaximumFrames(2)),
+            "Animated-story memory gates should include fitted terminal supersampling and output buffers before rendering scenes.");
     }
 }

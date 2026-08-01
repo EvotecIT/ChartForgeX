@@ -27,11 +27,13 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var outputHeight = checked((long)story.Height * animation.OutputScale);
         var frameBytes = checked(outputWidth * outputHeight * 4);
         var retainedScenes = checked(frameBytes * story.Scenes.Count);
+        var fittedTerminalWorkingBytes = PngVisualStoryRenderer.MaximumFittedTerminalWorkingBytes(story, animation.OutputScale);
         var retained = format == AnimatedRasterFormat.Apng
             ? checked(
                 retainedScenes +
                 frameBytes * 2 +
-                AnimatedRasterMemoryBudget.ApngWorkingBytes(outputWidth, outputHeight))
+                AnimatedRasterMemoryBudget.ApngWorkingBytes(outputWidth, outputHeight) +
+                fittedTerminalWorkingBytes)
             : checked(
                 frameBytes * frameCount +
                 retainedScenes +
@@ -39,9 +41,10 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
                     outputWidth,
                     outputHeight,
                     frameCount,
-                    format));
+                    format) +
+                fittedTerminalWorkingBytes);
         if (retained > AnimatedRasterMemoryBudget.MaximumRetainedBytes) {
-            throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames, cached scenes, and encoder buffers. Lower the size, scale, frame rate, duration, or scene count.");
+            throw new InvalidOperationException("Animated visual story would retain " + retained + " bytes of sampled frames, cached scenes, fitted terminal buffers, and encoder buffers. Lower the size, scale, frame rate, duration, or scene count.");
         }
         var maximumEncodedBytes = format == AnimatedRasterFormat.Apng
             ? AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retained)

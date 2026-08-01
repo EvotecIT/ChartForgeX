@@ -336,6 +336,7 @@ internal static class TerminalTextWidth {
             if (!PeekScalar(value, index, out next, out nextLength) ||
                 !hasExtendedPictographic ||
                 !IsExtendedPictographic(next)) {
+                hasExtendedPictographic = false;
                 continue;
             }
             index += nextLength;
