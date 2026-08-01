@@ -19,10 +19,7 @@ public sealed class PngTerminalStoryRenderer {
     internal byte[] Render(TerminalStory story, int outputScale) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
-        var theme = story.Theme;
-        var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
-        var tableFont = ResolveTableFont(theme, outlineFont);
-        return Render(story, outlineFont, tableFont, outputScale);
+        return Render(story, TerminalTabRasterFonts.Resolve(story), outputScale);
     }
 
     internal RgbaImage RenderFitted(
@@ -31,9 +28,9 @@ public sealed class PngTerminalStoryRenderer {
         double targetHeight,
         int outputScale) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
-        var layout = BuildFittedLayout(story, out var outlineFont, out var tableFont);
+        var layout = BuildFittedLayout(story, out var fonts);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
-        return RenderImage(story, layout, outlineFont, tableFont, renderScale, null);
+        return RenderImage(story, layout, fonts, renderScale, null);
     }
 
     internal static long EstimateFittedWorkingBytes(
@@ -42,7 +39,7 @@ public sealed class PngTerminalStoryRenderer {
         double targetHeight,
         int outputScale) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
-        var layout = BuildFittedLayout(story, out _, out _);
+        var layout = BuildFittedLayout(story, out _);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
         var supersampled = RasterAllocationGuard.Calculate(layout.Width, layout.Height, 2, renderScale).ByteCount;
         var output = checked((long)layout.Width * renderScale * layout.Height * renderScale * 4);
@@ -51,36 +48,35 @@ public sealed class PngTerminalStoryRenderer {
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
         if (story == null) throw new ArgumentNullException(nameof(story));
-        var tableFont = ResolveTableFont(story.Theme, outlineFont);
-        return Render(story, outlineFont, tableFont, story.PngOutputScale);
+        return Render(story, TerminalTabRasterFonts.WithOutline(story, outlineFont), story.PngOutputScale);
     }
 
-    private static byte[] Render(TerminalStory story, TrueTypeFont? outlineFont, TrueTypeFont? tableFont, int outputScale) {
+    private static byte[] Render(TerminalStory story, TerminalTabRasterFonts fonts, int outputScale) {
         if (story == null) throw new ArgumentNullException(nameof(story));
-        string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
-        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
-        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
-        var image = RenderImage(story, layout, outlineFont, tableFont, outputScale, null);
+        var layout = BuildLayout(story, fonts);
+        var image = RenderImage(story, layout, fonts, outputScale, null);
         return PngWriter.WriteRgba(image.Width, image.Height, image.Pixels);
     }
 
     internal RgbaImage RenderImage(TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, int outputScale, double? elapsedSeconds) {
         if (story == null) throw new ArgumentNullException(nameof(story));
-        var tableFont = ResolveTableFont(story.Theme, outlineFont);
-        return RenderImage(story, layout, outlineFont, tableFont, outputScale, elapsedSeconds);
+        return RenderImage(story, layout, TerminalTabRasterFonts.WithOutline(story, outlineFont), outputScale, elapsedSeconds);
     }
 
-    internal static RgbaImage RenderImage(TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, TrueTypeFont? tableFont, int outputScale, double? elapsedSeconds) {
+    internal static RgbaImage RenderImage(TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, int outputScale, double? elapsedSeconds) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (layout == null) throw new ArgumentNullException(nameof(layout));
+        if (fonts == null) throw new ArgumentNullException(nameof(fonts));
         var theme = story.Theme;
-        var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, outlineFont, outputScale, useDefaultOutlineFont: false);
+        var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, fonts.InitialOutline(story), outputScale, useDefaultOutlineFont: false);
         canvas.Clear(theme.PageBackground);
-        PngTerminalStoryChromeRenderer.Draw(canvas, story, layout, outlineFont, elapsedSeconds);
+        PngTerminalStoryChromeRenderer.Draw(canvas, story, layout, fonts, elapsedSeconds);
         canvas.FillRect(9, layout.HeaderHeightValue + 9, layout.Width - 18, layout.Height - layout.HeaderHeightValue - 18, layout.TabBackground(elapsedSeconds));
 
         foreach (var renderedTab in layout.Tabs) {
             var tab = renderedTab.Tab;
+            var outlineFont = fonts.Outline(tab);
+            var tableFont = fonts.Table(tab);
             var tabOpacity = layout.TabOpacity(tab.Id, elapsedSeconds);
             if (tabOpacity <= 0) continue;
             foreach (var line in renderedTab.Lines) {
@@ -92,17 +88,17 @@ public sealed class PngTerminalStoryRenderer {
                     var promptLength = Math.Min(line.PromptLength, visibleText.Length);
                     var prompt = visibleText.Substring(0, promptLength);
                     var command = visibleText.Substring(promptLength);
-                    var promptWidth = TerminalPngTextPreserver.MeasureEmphasized(prompt, canvas, story.FontSize);
-                    TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, WithOpacity(tab.Theme.Accent, tabOpacity), story.FontSize);
-                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, WithOpacity(tab.Theme.Text, tabOpacity), story.FontSize);
+                    var promptWidth = TerminalPngTextPreserver.MeasureEmphasized(prompt, canvas, story.FontSize, outlineFont);
+                    TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, WithOpacity(tab.Theme.Accent, tabOpacity), story.FontSize, outlineFont);
+                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, WithOpacity(tab.Theme.Text, tabOpacity), story.FontSize, outlineFont);
                 } else {
                     TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(tab.Theme, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
                 }
 
                 if (line.IsFinalPrompt && CursorVisible(layout, line, elapsedSeconds)) {
                     var visibleWidth = line.IsCommand
-                        ? TerminalPngTextPreserver.MeasureEmphasized(visibleText, canvas, story.FontSize)
-                        : TerminalPngTextPreserver.Measure(visibleText, canvas, story.FontSize);
+                        ? TerminalPngTextPreserver.MeasureEmphasized(visibleText, canvas, story.FontSize, outlineFont)
+                        : TerminalPngTextPreserver.Measure(visibleText, canvas, story.FontSize, outlineFont);
                     var cursorX = layout.ContentX + visibleWidth + 2;
                     canvas.FillRoundedRect(cursorX, y + 2, Math.Max(7, story.FontSize * 0.55), story.FontSize + 2, 1, WithOpacity(tab.Theme.Cursor, tabOpacity));
                 }
@@ -118,19 +114,19 @@ public sealed class PngTerminalStoryRenderer {
         return TrueTypeFont.TryLoadForFamily(ChartFontStacks.Mono, out _);
     }
 
-    private static TerminalStoryLayout BuildFittedLayout(
-        TerminalStory story,
-        out TrueTypeFont? outlineFont,
-        out TrueTypeFont? tableFont) {
-        var theme = story.Theme;
-        var resolvedOutlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
-        var resolvedTableFont = ResolveTableFont(theme, resolvedOutlineFont);
-        string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, resolvedOutlineFont);
-        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, resolvedTableFont);
-        var layout = TerminalStoryLayout.Build(story, PreserveText, resolvedOutlineFont, PreserveTableText);
-        outlineFont = resolvedOutlineFont;
-        tableFont = resolvedTableFont;
-        return layout;
+    private static TerminalStoryLayout BuildFittedLayout(TerminalStory story, out TerminalTabRasterFonts fonts) {
+        fonts = TerminalTabRasterFonts.Resolve(story);
+        return BuildLayout(story, fonts);
+    }
+
+    internal static TerminalStoryLayout BuildLayout(TerminalStory story, TerminalTabRasterFonts fonts) {
+        if (story == null) throw new ArgumentNullException(nameof(story));
+        if (fonts == null) throw new ArgumentNullException(nameof(fonts));
+        return TerminalStoryLayout.Build(
+            story,
+            (tab, value) => TerminalPngTextPreserver.Preserve(value, fonts.Outline(tab)),
+            tab => fonts.Outline(tab),
+            (tab, value) => TerminalPngTextPreserver.Preserve(value, fonts.Table(tab)));
     }
 
     private static int FittedRenderScale(

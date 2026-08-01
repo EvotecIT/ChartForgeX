@@ -70,6 +70,7 @@ public sealed class SvgTerminalStoryRenderer {
             writer.StartElement("g")
                 .Attribute("data-cfx-role", "terminal-tab-panel")
                 .Attribute("data-cfx-tab", tab.Id)
+                .Attribute("data-cfx-terminal", tab.Dialect.ToString())
                 .Attribute("class", "cfx-terminal-tab-panel cfx-terminal-tab-state-" + tabIndex + finalClass)
                 .Attribute("opacity", string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                 .EndStartElement().Line();

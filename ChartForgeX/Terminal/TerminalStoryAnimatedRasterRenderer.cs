@@ -8,12 +8,8 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
     public byte[] Render(TerminalStory story, TerminalStoryAnimationOptions? options, AnimatedRasterFormat format) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var animation = options ?? TerminalStoryAnimationOptions.Create();
-        var theme = story.Theme;
-        var outlineFont = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault();
-        var tableFont = PngTerminalStoryRenderer.ResolveTableFont(theme, outlineFont);
-        string PreserveText(string value) => TerminalPngTextPreserver.Preserve(value, outlineFont);
-        string PreserveTableText(string value) => TerminalPngTextPreserver.Preserve(value, tableFont);
-        var layout = TerminalStoryLayout.Build(story, PreserveText, outlineFont, PreserveTableText);
+        var fonts = TerminalTabRasterFonts.Resolve(story);
+        var layout = PngTerminalStoryRenderer.BuildLayout(story, fonts);
         var delayCentiseconds = QuantizedDelayCentiseconds(animation.FramesPerSecond);
         var totalSeconds = layout.DurationSeconds + animation.EndHoldSeconds;
         var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delayCentiseconds) + 1);
@@ -62,8 +58,7 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
                 index => PngTerminalStoryRenderer.RenderImage(
                     story,
                     layout,
-                    outlineFont,
-                    tableFont,
+                    fonts,
                     animation.OutputScale,
                     index * delayCentiseconds / 100d));
         }
@@ -71,7 +66,7 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
         var images = new List<RgbaImage>(frameCount);
         for (var index = 0; index < frameCount; index++) {
             var elapsed = index * delayCentiseconds / 100d;
-            images.Add(PngTerminalStoryRenderer.RenderImage(story, layout, outlineFont, tableFont, animation.OutputScale, elapsed));
+            images.Add(PngTerminalStoryRenderer.RenderImage(story, layout, fonts, animation.OutputScale, elapsed));
         }
 
         var frames = AnimatedRasterFrames.Create(images, delayCentiseconds, animation.Loop, format.GetDisplayName());

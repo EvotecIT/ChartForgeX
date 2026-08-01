@@ -439,7 +439,6 @@ public sealed class TerminalStory {
         if (_steps.Count > 120) throw new InvalidOperationException("Terminal stories support at most 120 steps.");
         foreach (var tab in _tabs) {
             if (string.IsNullOrWhiteSpace(tab.Theme.FontFamily)) throw new InvalidOperationException("Terminal tab themes require a font family.");
-            if (!string.Equals(tab.Theme.FontFamily, Theme.FontFamily, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("All tabs in a terminal story must use the same font family.");
             if (tab.Dialect == TerminalDialect.Custom && tab.CustomPrompt.Length == 0) throw new InvalidOperationException("Custom terminal dialects require a prompt.");
         }
         if (WindowStyle == TerminalWindowStyle.WindowsTerminal && _tabs.Count * 72 > Width - 230) {

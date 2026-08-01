@@ -5,7 +5,7 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Terminal;
 
 internal static class PngTerminalStoryChromeRenderer {
-    internal static void Draw(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, double? elapsedSeconds) {
+    internal static void Draw(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (layout == null) throw new ArgumentNullException(nameof(layout));
@@ -22,27 +22,27 @@ internal static class PngTerminalStoryChromeRenderer {
         canvas.DrawLine(8, layout.HeaderHeightValue + 8, layout.Width - 8, layout.HeaderHeightValue + 8, theme.Border, 1);
         switch (story.WindowStyle) {
             case TerminalWindowStyle.MacOS:
-                DrawMacOS(canvas, story, layout, outlineFont, elapsedSeconds);
+                DrawMacOS(canvas, story, layout, fonts, elapsedSeconds);
                 break;
             case TerminalWindowStyle.WindowsTerminal:
-                DrawWindowsTerminal(canvas, story, layout, outlineFont, elapsedSeconds);
+                DrawWindowsTerminal(canvas, story, layout, fonts, elapsedSeconds);
                 break;
             case TerminalWindowStyle.Minimal:
-                DrawActiveTitles(canvas, story, layout, outlineFont, elapsedSeconds, 28, 19, false);
+                DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, 28, 19, false);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(story.WindowStyle));
         }
     }
 
-    private static void DrawMacOS(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, double? elapsedSeconds) {
+    private static void DrawMacOS(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds) {
         canvas.DrawCircle(29, 29, 5.5, ChartColor.FromHex("#FF5F57"));
         canvas.DrawCircle(49, 29, 5.5, ChartColor.FromHex("#FEBC2E"));
         canvas.DrawCircle(69, 29, 5.5, ChartColor.FromHex("#28C840"));
-        DrawActiveTitles(canvas, story, layout, outlineFont, elapsedSeconds, layout.Width / 2d, 19, true);
+        DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, layout.Width / 2d, 19, true);
     }
 
-    private static void DrawWindowsTerminal(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, double? elapsedSeconds) {
+    private static void DrawWindowsTerminal(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds) {
         var theme = story.Theme;
         var tabCount = layout.Tabs.Count;
         var tabWidth = TerminalWindowChrome.WindowsTabWidth(layout.Width, tabCount);
@@ -52,11 +52,12 @@ internal static class PngTerminalStoryChromeRenderer {
             if (!layout.TabVisible(tab.Id, elapsedSeconds)) continue;
             var tabX = TerminalWindowChrome.WindowsTabX(layout.Width, tabCount, index);
             var tabOpacity = layout.TabOpacity(tab.Id, elapsedSeconds);
+            var tabFont = fonts.Outline(tab);
             canvas.FillRoundedRect(tabX, 13, tabWidth, 37, 9, theme.HeaderBackground);
             if (tabOpacity > 0) canvas.FillRoundedRect(tabX, 13, tabWidth, 37, 9, WithOpacity(tab.Theme.Background, tabOpacity));
             DrawTabIcon(canvas, tab, tabX + 12, 22);
-            var title = TerminalPngTextPreserver.Preserve(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount), outlineFont);
-            TerminalPngTextPreserver.Draw(canvas, tabX + 40, 23, title, theme.Text, TerminalWindowChrome.TitleFontSize);
+            var title = TerminalPngTextPreserver.Preserve(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount), tabFont);
+            TerminalPngTextPreserver.Draw(canvas, tabX + 40, 23, title, theme.Text, TerminalWindowChrome.TitleFontSize, tabFont);
             DrawCross(canvas, TerminalWindowChrome.WindowsTabCloseX(layout.Width, tabCount, index), 31, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted);
         }
         DrawPlus(canvas, tabRight + 25, 31, theme.Muted);
@@ -67,17 +68,18 @@ internal static class PngTerminalStoryChromeRenderer {
         DrawCross(canvas, layout.Width - 25, 31, 6, theme.Text);
     }
 
-    private static void DrawActiveTitles(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TrueTypeFont? outlineFont, double? elapsedSeconds, double x, double y, bool centered) {
+    private static void DrawActiveTitles(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds, double x, double y, bool centered) {
         foreach (var renderedTab in layout.Tabs) {
             var tabOpacity = layout.TabOpacity(renderedTab.Tab.Id, elapsedSeconds);
             if (tabOpacity <= 0) continue;
-            var title = TerminalStoryLayout.FitTitle(TerminalPngTextPreserver.Preserve(renderedTab.Tab.Title, outlineFont), layout.Width, story.WindowStyle);
+            var tabFont = fonts.Outline(renderedTab.Tab);
+            var title = TerminalStoryLayout.FitTitle(TerminalPngTextPreserver.Preserve(renderedTab.Tab.Title, tabFont), layout.Width, story.WindowStyle);
             var titleX = x;
             if (centered) {
-                var width = TerminalPngTextPreserver.Measure(title, canvas, TerminalWindowChrome.TitleFontSize);
+                var width = TerminalPngTextPreserver.Measure(title, canvas, TerminalWindowChrome.TitleFontSize, tabFont);
                 titleX -= width / 2;
             }
-            TerminalPngTextPreserver.Draw(canvas, titleX, y, title, WithOpacity(story.Theme.Muted, tabOpacity), TerminalWindowChrome.TitleFontSize);
+            TerminalPngTextPreserver.Draw(canvas, titleX, y, title, WithOpacity(story.Theme.Muted, tabOpacity), TerminalWindowChrome.TitleFontSize, tabFont);
         }
     }
 

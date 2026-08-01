@@ -296,6 +296,9 @@ internal static class TerminalTextWidth {
                     hasIndicLinker = false;
                 } else {
                     regionalIndicatorCount = 0;
+                    if (category == UnicodeCategory.SpacingCombiningMark) {
+                        hasExtendedPictographic = false;
+                    }
                     if (hasIndicConjunct) {
                         if (isIndicLinker) {
                             hasIndicLinker = true;

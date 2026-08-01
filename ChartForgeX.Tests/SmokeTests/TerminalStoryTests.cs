@@ -191,15 +191,19 @@ internal static partial class SmokeTests {
         SvgDocument.Parse(windowsSvg);
         Assert(windowsStory.ToPng().Length > 8, "Windows Terminal chrome should render through the dependency-free raster path.");
 
+        var windowsPowerShellTabTheme = TerminalTheme.WindowsPowerShell();
+        windowsPowerShellTabTheme.FontFamily = "'Segoe UI', sans-serif";
+        var ubuntuTabTheme = TerminalTheme.Ubuntu();
+        ubuntuTabTheme.FontFamily = "'Courier New', monospace";
         var tabbedStory = TerminalStory.Create()
             .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
             .WithTitle("PowerShell")
             .WithTheme(TerminalTheme.Campbell())
             .WithWorkingDirectory(@"C:\Work")
             .Command("Get-ChildItem", 0.1)
-            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalTheme.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell, transitionSeconds: 0.1)
+            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", windowsPowerShellTabTheme, TerminalTabIcon.WindowsPowerShell, transitionSeconds: 0.1)
             .Command("$PSVersionTable.PSVersion", 0.1)
-            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu, transitionSeconds: 0.1)
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", ubuntuTabTheme, TerminalTabIcon.Ubuntu, transitionSeconds: 0.1)
             .Command("dotnet test", 0.1)
             .SelectTab("main", 0.1)
             .Output("Back in PowerShell", TerminalTextTone.Success);
@@ -216,11 +220,40 @@ internal static partial class SmokeTests {
             "Each terminal tab should preserve its own buffer while the final prompt belongs to the completed active tab.");
         Assert(tabbedSvg.Contains("data-cfx-tab=\"windows-powershell\"", StringComparison.Ordinal) &&
                tabbedSvg.Contains("data-cfx-tab=\"ubuntu\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("data-cfx-tab=\"windows-powershell\" data-cfx-terminal=\"PowerShell\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("data-cfx-tab=\"ubuntu\" data-cfx-terminal=\"Bash\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("font-family=\"'Segoe UI', sans-serif\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("font-family=\"'Courier New', monospace\"", StringComparison.Ordinal) &&
                tabbedSvg.Contains("#300A24", StringComparison.OrdinalIgnoreCase) &&
                tabbedSvg.Contains("cfx-terminal-tab-final", StringComparison.Ordinal) &&
                tabbedSvg.Contains("[Ubuntu] ~/src $ dotnet test", StringComparison.Ordinal) &&
                !tabbedSvg.Contains("cfx-terminal-seed-", StringComparison.Ordinal),
             "SVG terminal stories should render tab identities, independent palettes, final reduced-motion state, and a complete multi-tab transcript.");
+        var transformedTabIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        TerminalStoryLayout.Build(
+            tabbedStory,
+            (tab, value) => {
+                transformedTabIds.Add(tab.Id);
+                return value;
+            },
+            _ => null,
+            (tab, value) => {
+                transformedTabIds.Add(tab.Id);
+                return value;
+            });
+        Assert(transformedTabIds.SetEquals(new[] { "main", "windows-powershell", "ubuntu" }),
+            "Raster layout transformations should receive each owning tab so mixed-font stories preserve and measure text with the correct session font.");
+        var perTabWrappingStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithFinalPrompt(false)
+            .WithInitialTab("proportional", "Proportional", TerminalDialect.Custom, "/src", proportionalTheme, TerminalTabIcon.None, "> ")
+            .Command(new string('x', 25), 0.1)
+            .OpenTab("mono", "Mono", TerminalDialect.Custom, "/src", ubuntuTabTheme, TerminalTabIcon.None, "> ", transitionSeconds: 0.1)
+            .Command(new string('x', 25), 0.1);
+        var perTabWrappingLayout = TerminalStoryLayout.Build(perTabWrappingStory);
+        Assert(perTabWrappingLayout.Tabs[0].Lines.Count == 2 && perTabWrappingLayout.Tabs[1].Lines.Count == 1,
+            "Each terminal tab should wrap text against its own font metrics instead of inheriting the initial tab's column capacity.");
         Assert(tabbedLayout.TabOpacity("main", null) == 1 &&
                tabbedLayout.TabOpacity("ubuntu", null) == 0 &&
                tabbedLayout.TabOpacity("windows-powershell", tabbedLayout.Transitions[0].StartSeconds + 0.05) > 0 &&
@@ -399,6 +432,7 @@ internal static partial class SmokeTests {
         var fontlessFlagLayout = TerminalStoryLayout.Build(flagStory, value => TerminalPngTextPreserver.Preserve(value, null));
         Assert(TerminalStoryLayout.TextElementCount("🇵🇱") == 1 &&
                TerminalStoryLayout.TextElementCount("👩‍💻") == 1 &&
+               TerminalStoryLayout.TextElementCount("👩\u0903\u200D💻") == 2 &&
                TerminalStoryLayout.TextElementCount("A\u200DB") == 2 &&
                TerminalStoryLayout.DisplayWidth("A\u200DB") == 2 &&
                fontlessFlagLayout.Lines.Count == 61 &&
