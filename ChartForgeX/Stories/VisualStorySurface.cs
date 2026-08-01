@@ -222,9 +222,14 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
             throw new ArgumentException("The vector representation must be static and cannot contain scripts, animation, or foreign content.", "svg");
         }
         if (!reader.HasAttributes) return;
+        var isStyleElement = string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase);
         while (reader.MoveToNextAttribute()) {
             if (IsConditionalProcessingAttribute(reader.LocalName)) {
                 throw new ArgumentException("The vector representation must not contain locale- or capability-dependent conditional content.", "svg");
+            }
+            if (isStyleElement &&
+                string.Equals(reader.LocalName, "media", StringComparison.OrdinalIgnoreCase)) {
+                throw new ArgumentException("The vector representation must not contain environment-dependent stylesheets.", "svg");
             }
             if (string.Equals(reader.LocalName, "base", StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(reader.NamespaceURI, "http://www.w3.org/XML/1998/namespace", StringComparison.Ordinal)) {

@@ -12,6 +12,9 @@ internal static partial class SmokeTests {
         StorySourceText.Create("\n\u0301value").AddSpan(0, 1, StorySyntaxKind.Keyword);
         Assert(TerminalTextWidth.Elements("\n\u0301").Count() == 2,
             "Grapheme controls should break before following combining marks.");
+        Assert(TerminalTextWidth.Elements("\u0600🇦🇧").Count() == 1 &&
+               TerminalTextWidth.Measure("\u0600🇦🇧") == 2,
+            "Regional indicators should remain paired after a Prepend scalar.");
 
         foreach (var conditionalAttribute in new[] { "systemLanguage=\"pl\"", "requiredFeatures=\"feature\"", "requiredExtensions=\"extension\"" }) {
             AssertThrows<ArgumentException>(
@@ -29,6 +32,12 @@ internal static partial class SmokeTests {
                     "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>" + conditionalCss + "</style><rect width=\"1\" height=\"1\"/></svg>"),
                 "Vector media should reject environment-dependent CSS at-rules.");
         }
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Conditional vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style media=\"(prefers-color-scheme: dark)\">rect{fill:black}</style><rect width=\"1\" height=\"1\"/></svg>"),
+            "Vector media should reject environment-dependent style media attributes.");
 
         var joinedText = StorySourceText.Create("a\u200Db");
         AssertThrows<ArgumentException>(

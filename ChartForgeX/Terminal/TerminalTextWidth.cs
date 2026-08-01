@@ -273,13 +273,9 @@ internal static class TerminalTextWidth {
             return index;
         }
 
-        if (IsRegionalIndicator(first) && PeekScalar(value, index, out next, out nextLength) && IsRegionalIndicator(next)) {
-            index += nextLength;
-            return index;
-        }
-
         var previous = first;
         var previousIsPrepend = IsPrepend(first);
+        var regionalIndicatorCount = IsRegionalIndicator(first) ? 1 : 0;
         var hasExtendedPictographic = IsExtendedPictographic(first);
         var hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(first);
         var hasIndicLinker = false;
@@ -287,11 +283,17 @@ internal static class TerminalTextWidth {
             var category = UnicodeCategoryFor(next);
             var isIndicExtend = hasIndicConjunct && TerminalIndicConjunctBreak.IsExtend(next);
             var isIndicLinker = hasIndicConjunct && TerminalIndicConjunctBreak.IsLinker(next);
-            if (previousIsPrepend && !IsGraphemeControl(next) ||
+            var consumedThroughPrepend = previousIsPrepend && !IsGraphemeControl(next);
+            if (consumedThroughPrepend ||
                 IsExtend(next, category) ||
                 IsHangulContinuation(previous, next) ||
                 isIndicExtend) {
                 index += nextLength;
+                if (consumedThroughPrepend) {
+                    regionalIndicatorCount = IsRegionalIndicator(next) ? 1 : 0;
+                } else if (!IsExtend(next, category)) {
+                    regionalIndicatorCount = 0;
+                }
                 if (hasIndicConjunct) {
                     if (isIndicLinker) {
                         hasIndicLinker = true;
@@ -302,6 +304,13 @@ internal static class TerminalTextWidth {
                 }
                 previous = next;
                 previousIsPrepend = IsPrepend(next);
+                continue;
+            }
+            if (IsRegionalIndicator(next) && regionalIndicatorCount % 2 == 1) {
+                index += nextLength;
+                regionalIndicatorCount++;
+                previous = next;
+                previousIsPrepend = false;
                 continue;
             }
             if (hasIndicConjunct &&
