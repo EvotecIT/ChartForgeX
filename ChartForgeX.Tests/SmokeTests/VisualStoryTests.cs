@@ -170,7 +170,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => headingStory.Outcome("invalid", "First line\nSecond line", "valid"),
             "Outcome labels should reject line breaks because renderers present them as one-line badges.");
-
         var accessibleTerminal = TerminalStory.Create()
             .WithFinalPrompt(false)
             .Command("Get-Widget")
@@ -470,20 +469,6 @@ internal static partial class SmokeTests {
                     .WithFramesPerSecond(2)
                     .WithEndHold(0)),
             "Raster visual stories should reject scenes sampled only at effectively invisible transition opacity.");
-
-        var endpointScenes = VisualStory.Create("Endpoint scenes").WithSize(480, 320);
-        endpointScenes.Scene("first", "First", 0.25)
-            .Panel("first-result", new VisualStoryTextSurface("first"));
-        endpointScenes.Scene("last", "Last", 0.25)
-            .Panel("last-result", new VisualStoryTextSurface("last"));
-        endpointScenes.Outcome("ready", "Ready", "last-result");
-        var endpointGif = endpointScenes.ToGif(
-            VisualStoryAnimationOptions.Create()
-                .WithFramesPerSecond(2)
-                .WithEndHold(0)
-                .WithMaximumFrames(2));
-        Assert(endpointGif.Length > 8,
-            "Raster visual stories should allow short first and last scenes sampled at timeline endpoints.");
 
         var singleShortScene = VisualStory.Create("One short scene").WithSize(480, 320);
         singleShortScene.Scene("only", "Only", 0.25)

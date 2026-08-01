@@ -89,6 +89,9 @@ public sealed class VisualStoryOutcome {
     internal VisualStoryOutcome(string id, string label, string panelId) {
         Id = VisualStorySurface.RequireText(id, nameof(id));
         Label = VisualStorySurface.RequireSingleLineText(label, nameof(label));
+        if (Label.Length > 512) {
+            throw new ArgumentOutOfRangeException(nameof(label), "Outcome labels support at most 512 UTF-16 code units.");
+        }
         PanelId = VisualStorySurface.RequireText(panelId, nameof(panelId));
     }
 

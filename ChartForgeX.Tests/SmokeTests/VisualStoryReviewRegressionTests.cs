@@ -41,6 +41,53 @@ internal static partial class SmokeTests {
                 "Conditional vector",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\"><style media=\"(prefers-color-scheme: dark)\">rect{fill:black}</style><rect width=\"1\" height=\"1\"/></svg>"),
             "Vector media should reject environment-dependent style media attributes.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
+                "Nested style vector",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@im<style/>port \"https://example.invalid/x.css\";</style></svg>"),
+            "Vector media should reject nested style elements instead of losing the outer stylesheet buffer.");
+        var staticCssIdentifiers = new VisualStoryMediaSurface(
+            new RgbaImage(1, 1, new byte[4]),
+            "Static CSS identifiers",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.animation-status,.transition-note,.behavior-label{fill:red}</style><rect class=\"animation-status\" width=\"1\" height=\"1\"/></svg>");
+        Assert(staticCssIdentifiers.Svg.Length > 0,
+            "Static SVG class names containing active-property words should remain valid.");
+        foreach (var activeProperty in new[] { "animation-name:spin", "transition:fill 1s", "-webkit-animation:spin 1s", "anim/**/ation:spin 1s" }) {
+            AssertThrows<ArgumentException>(
+                () => new VisualStoryMediaSurface(
+                    new RgbaImage(1, 1, new byte[4]),
+                    "Active CSS property",
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>rect{" + activeProperty + "}</style><rect width=\"1\" height=\"1\"/></svg>"),
+                "Vector media should reject active CSS properties after token and comment normalization.");
+        }
+
+        var boundedOutcomeStory = VisualStory.Create("Bounded outcome").WithSize(480, 320);
+        boundedOutcomeStory.Scene("valid", "Completed")
+            .Panel("valid", new VisualStoryTextSurface("ready"));
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => boundedOutcomeStory.Outcome("oversized", new string('x', 513), "valid"),
+            "Outcome labels should be bounded before raster renderers aggregate badge text.");
+
+        var endpointScenes = VisualStory.Create("Endpoint scenes").WithSize(480, 320);
+        endpointScenes.Scene("first", "First", 0.25)
+            .Panel("first-result", new VisualStoryTextSurface("first"));
+        endpointScenes.Scene("last", "Last", 0.25)
+            .Panel("last-result", new VisualStoryTextSurface("last"));
+        endpointScenes.Outcome("ready", "Ready", "last-result");
+        AssertThrows<InvalidOperationException>(
+            () => endpointScenes.ToGif(
+                VisualStoryAnimationOptions.Create()
+                    .WithFramesPerSecond(2)
+                    .WithEndHold(0)
+                    .WithMaximumFrames(2)),
+            "Raster stories should reject endpoint sampling when residual timing makes the completed scene effectively invisible.");
+        Assert(endpointScenes.ToGif(
+                VisualStoryAnimationOptions.Create()
+                    .WithFramesPerSecond(4)
+                    .WithEndHold(0)
+                    .WithMaximumFrames(2)).Length > 8,
+            "Raster stories should retain short endpoint scenes when both receive their requested visible duration.");
 
         var joinedText = StorySourceText.Create("a\u200Db");
         AssertThrows<ArgumentException>(

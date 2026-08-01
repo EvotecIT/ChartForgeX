@@ -22,7 +22,7 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         if (frameCount > animation.MaximumFrames) {
             throw new InvalidOperationException("Animated visual story requires " + frameCount + " frames. Lower the frame rate or duration, or increase the frame budget.");
         }
-        EnsureEverySceneIsVisible(story, frameCount, delay, animation.TransitionSeconds);
+        EnsureEverySceneIsVisible(story, frameCount, delay, finalDelay, animation.TransitionSeconds);
         var outputWidth = checked((long)story.Width * animation.OutputScale);
         var outputHeight = checked((long)story.Height * animation.OutputScale);
         var frameBytes = checked(outputWidth * outputHeight * 4);
@@ -133,10 +133,12 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         return Math.Min(story.DurationSeconds, index * delay / 100d);
     }
 
-    private static void EnsureEverySceneIsVisible(VisualStory story, int frameCount, int delay, double transitionSeconds) {
+    private static void EnsureEverySceneIsVisible(VisualStory story, int frameCount, int delay, int finalDelay, double transitionSeconds) {
         const double minimumVisibleOpacity = 0.5;
         var visibleOpacity = new double[story.Scenes.Count];
+        var visibleCentiseconds = new double[story.Scenes.Count];
         for (var index = 0; index < frameCount; index++) {
+            var frameDelay = index == frameCount - 1 ? finalDelay : delay;
             var elapsed = SampleElapsed(story, index, frameCount, delay);
             var sceneIndex = VisualStoryTimeline.FindScene(story, elapsed, out var timing);
             var remaining = timing.End - elapsed;
@@ -145,15 +147,24 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
                 var progress = Math.Max(0, Math.Min(1, 1 - remaining / transition));
                 visibleOpacity[sceneIndex] = Math.Max(visibleOpacity[sceneIndex], 1 - progress);
                 visibleOpacity[sceneIndex + 1] = Math.Max(visibleOpacity[sceneIndex + 1], progress);
+                visibleCentiseconds[sceneIndex] += frameDelay * (1 - progress);
+                visibleCentiseconds[sceneIndex + 1] += frameDelay * progress;
             } else {
                 visibleOpacity[sceneIndex] = 1;
+                visibleCentiseconds[sceneIndex] += frameDelay;
             }
         }
         for (var index = 0; index < visibleOpacity.Length; index++) {
-            if (visibleOpacity[index] >= minimumVisibleOpacity) continue;
+            var requiredCentiseconds = Math.Max(
+                1,
+                Math.Min(delay, (int)Math.Round(story.Scenes[index].DurationSeconds * 100, MidpointRounding.AwayFromZero)));
+            if (visibleOpacity[index] >= minimumVisibleOpacity &&
+                visibleCentiseconds[index] >= requiredCentiseconds) {
+                continue;
+            }
             throw new InvalidOperationException(
                 "Animated visual story frame timing cannot sample scene '" + story.Scenes[index].Id +
-                "' at a visible opacity. Increase the frame rate, shorten the transition, or lengthen the scene.");
+                "' for a meaningful visible duration. Increase the frame rate, shorten the transition, or lengthen the scene.");
         }
     }
 

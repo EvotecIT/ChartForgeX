@@ -193,6 +193,9 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 ValidateSvgNode(reader);
                 if (reader.NodeType == XmlNodeType.Element &&
                     string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
+                    if (styleText != null) {
+                        throw new ArgumentException("The vector representation must not contain nested style elements.", nameof(svg));
+                    }
                     styleText = reader.IsEmptyElement ? null : new StringBuilder();
                 } else if (styleText != null &&
                            (reader.NodeType == XmlNodeType.Text ||
@@ -284,11 +287,83 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
 
     private static bool ContainsActiveCss(string value) {
         var normalized = DecodeCssEscapes(value);
-        return normalized.IndexOf("animation", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               normalized.IndexOf("transition", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               normalized.IndexOf('@') >= 0 ||
-               normalized.IndexOf("behavior", StringComparison.OrdinalIgnoreCase) >= 0 ||
+        return normalized.IndexOf('@') >= 0 ||
+               ContainsActiveCssProperty(StripCssComments(normalized)) ||
                ContainsUnsafeCssReferenceCore(normalized);
+    }
+
+    private static bool ContainsActiveCssProperty(string value) {
+        var segmentStart = 0;
+        var quote = '\0';
+        for (var index = 0; index < value.Length; index++) {
+            var current = value[index];
+            if (quote != '\0') {
+                if (current == '\\') {
+                    index++;
+                } else if (current == quote) {
+                    quote = '\0';
+                }
+                continue;
+            }
+            if (current == '\'' || current == '"') {
+                quote = current;
+                continue;
+            }
+            if (current == '{' || current == ';') {
+                segmentStart = index + 1;
+                continue;
+            }
+            if (current != ':') {
+                continue;
+            }
+            var property = value.Substring(segmentStart, index - segmentStart).Trim();
+            if (IsActiveCssPropertyName(property)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool IsActiveCssPropertyName(string property) {
+        if (property.Length == 0 || property.StartsWith("--", StringComparison.Ordinal)) {
+            return false;
+        }
+        for (var index = 0; index < property.Length; index++) {
+            var character = property[index];
+            if (!char.IsLetterOrDigit(character) && character != '-') {
+                return false;
+            }
+        }
+        foreach (var prefix in new[] { "-webkit-", "-moz-", "-ms-", "-o-" }) {
+            if (property.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) {
+                property = property.Substring(prefix.Length);
+                break;
+            }
+        }
+        return string.Equals(property, "animation", StringComparison.OrdinalIgnoreCase) ||
+               property.StartsWith("animation-", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(property, "transition", StringComparison.OrdinalIgnoreCase) ||
+               property.StartsWith("transition-", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(property, "behavior", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string StripCssComments(string value) {
+        if (value.IndexOf("/*", StringComparison.Ordinal) < 0) {
+            return value;
+        }
+        var output = new StringBuilder(value.Length);
+        for (var index = 0; index < value.Length; index++) {
+            if (value[index] == '/' && index + 1 < value.Length && value[index + 1] == '*') {
+                var end = value.IndexOf("*/", index + 2, StringComparison.Ordinal);
+                if (end < 0) {
+                    break;
+                }
+                index = end + 1;
+                continue;
+            }
+            output.Append(value[index]);
+        }
+        return output.ToString();
     }
 
     private static bool ContainsUnsafeCssReference(string value) =>
