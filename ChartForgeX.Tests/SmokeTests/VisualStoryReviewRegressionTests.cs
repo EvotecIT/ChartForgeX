@@ -15,6 +15,9 @@ internal static partial class SmokeTests {
         Assert(TerminalTextWidth.Elements("\u0600🇦🇧").Count() == 1 &&
                TerminalTextWidth.Measure("\u0600🇦🇧") == 2,
             "Regional indicators should remain paired after a Prepend scalar.");
+        Assert(TerminalTextWidth.Elements("\u0600👩‍💻").Count() == 1 &&
+               TerminalTextWidth.Measure("\u0600👩‍💻") == 2,
+            "Extended pictographic sequences should remain joined after a Prepend scalar.");
 
         foreach (var conditionalAttribute in new[] { "systemLanguage=\"pl\"", "requiredFeatures=\"feature\"", "requiredExtensions=\"extension\"" }) {
             AssertThrows<ArgumentException>(

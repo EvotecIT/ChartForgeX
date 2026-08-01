@@ -291,15 +291,20 @@ internal static class TerminalTextWidth {
                 index += nextLength;
                 if (consumedThroughPrepend) {
                     regionalIndicatorCount = IsRegionalIndicator(next) ? 1 : 0;
-                } else if (!IsExtend(next, category)) {
-                    regionalIndicatorCount = 0;
-                }
-                if (hasIndicConjunct) {
-                    if (isIndicLinker) {
-                        hasIndicLinker = true;
-                    } else if (!isIndicExtend) {
-                        hasIndicConjunct = false;
-                        hasIndicLinker = false;
+                    hasExtendedPictographic = IsExtendedPictographic(next);
+                    hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(next);
+                    hasIndicLinker = false;
+                } else {
+                    if (!IsExtend(next, category)) {
+                        regionalIndicatorCount = 0;
+                    }
+                    if (hasIndicConjunct) {
+                        if (isIndicLinker) {
+                            hasIndicLinker = true;
+                        } else if (!isIndicExtend) {
+                            hasIndicConjunct = false;
+                            hasIndicLinker = false;
+                        }
                     }
                 }
                 previous = next;
