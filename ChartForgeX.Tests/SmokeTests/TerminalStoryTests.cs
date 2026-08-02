@@ -287,6 +287,9 @@ internal static partial class SmokeTests {
             "Callers should be able to name and style the initial persistent terminal tab.");
         Assert(Math.Abs(pacedTabLayout.Transitions[0].StartSeconds - 1.6) < 0.0001,
             "A tab switch should preserve the configured reading dwell after the active tab's final content completes.");
+        Assert(!pacedTabLayout.TabVisible("Ubuntu", pacedTabLayout.Transitions[0].StartSeconds - 0.001) &&
+               pacedTabLayout.TabVisible("Ubuntu", pacedTabLayout.Transitions[0].StartSeconds),
+            "Opening a tab should reveal it atomically with its activation instead of exposing it during the previous tab's reading dwell.");
 
         var slowStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Slow);
         var normalStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Normal);
@@ -310,6 +313,10 @@ internal static partial class SmokeTests {
                declaredTabLayout.Transitions.Count == 2 &&
                Math.Abs(declaredTabLayout.Transitions[1].StartSeconds - (declaredTabLayout.Transitions[0].StartSeconds + 1.2)) < 0.0001,
             "Declared tabs should remain inactive until selected and every selected tab should retain its configured reading dwell.");
+        Assert(!declaredTabLayout.TabVisible("Ubuntu", 0.099) &&
+               declaredTabLayout.TabVisible("Ubuntu", 0.1) &&
+               declaredTabLayout.Transitions[0].StartSeconds > 0.1,
+            "Background declarations should expose the tab when authored while leaving activation to an explicit later selection.");
 
         var longWindowsTitle = new string('W', 80);
         var defaultWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 886, TerminalWindowStyle.WindowsTerminal);
