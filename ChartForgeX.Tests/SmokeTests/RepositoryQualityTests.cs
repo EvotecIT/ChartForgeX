@@ -473,9 +473,9 @@ internal static partial class SmokeTests {
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Markup.Mermaid", "ChartForgeX.Markup.Mermaid.csproj")
         }) {
             var dependentReleaseNotes = GetXmlValue(dependentProject, "PackageReleaseNotes");
-            Assert(dependentReleaseNotes.Contains("1.2.0", StringComparison.Ordinal) &&
-                   !dependentReleaseNotes.Contains("1.1.1", StringComparison.Ordinal),
-                "Dependent package release notes should describe the synchronized 1.2.0 release lane: " + Path.GetRelativePath(FindRepositoryRoot(), dependentProject));
+            Assert(dependentReleaseNotes.Contains("1.3.0", StringComparison.Ordinal) &&
+                   !dependentReleaseNotes.Contains("1.2.0", StringComparison.Ordinal),
+                "Dependent package release notes should describe the synchronized 1.3.0 release lane: " + Path.GetRelativePath(FindRepositoryRoot(), dependentProject));
         }
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");

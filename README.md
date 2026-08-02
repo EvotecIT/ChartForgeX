@@ -330,6 +330,8 @@ var portfolio = TerminalTable.Create()
 var console = TerminalStory.Create()
     .WithTitle(@"pwsh - C:\OpenSource")
     .WithDialect(TerminalDialect.PowerShell)
+    .WithTheme(TerminalTheme.PowerShell())
+    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
     .WithWorkingDirectory(@"C:\OpenSource")
     .Command("Get-ActivePortfolio | Format-Table")
     .Table(portfolio)
@@ -344,7 +346,48 @@ console.SaveGif("console-demo.gif");
 console.SaveApng("console-demo.apng");
 ```
 
-The renderer models a presentation, not a shell. PowerShell, Bash, command prompt, Python, C#, and custom dialects control prompt styling while the caller owns any real process execution. SVG and HTML use script-free command typing, output reveals, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
+Tabs are persistent terminal sessions with independent buffers, prompts, working directories, icons, and palettes:
+
+```csharp
+var multiShell = TerminalStory.Create()
+    .WithInitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\", TerminalTheme.Campbell(), TerminalTabIcon.PowerShell)
+    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+    .WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Slow)
+    .Command("Get-Module ImagePlayground")
+    .DeclareTab("legacy", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalTheme.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell)
+    .SelectTab("legacy")
+    .Command("$PSVersionTable.PSVersion")
+    .DeclareTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu)
+    .SelectTab("ubuntu")
+    .Command("dotnet test")
+    .SelectTab("PowerShell")
+    .Output("All environments are ready.", TerminalTextTone.Success);
+```
+
+The renderer models a presentation, not a shell. Dialects control prompt behavior, themes control palettes, and `TerminalWindowStyle` independently selects macOS, Windows Terminal, minimal, or chrome-free presentation. The caller still owns any real process execution. `WithPlaybackSpeed(Slow|Normal|Fast)` coordinates typing, output cadence, and tab reading time; `WithTiming` and `WithTabHold` provide exact independent overrides. `DeclareTab` adds a persistent session and `SelectTab` performs the visible switch, while `OpenTab` remains the compact declare-and-switch operation. SVG and HTML use script-free command typing, output reveals, tab transitions, and a cursor; GIF and APNG sample that same timeline into portable animated frames; PNG, print, and reduced-motion rendering show the completed active tab while accessibility text retains every tab transcript. Animated raster export defaults to a one-times-density, 10 FPS, looping presentation with a bounded 240-frame budget; `TerminalStoryAnimationOptions` controls frame rate, looping, end hold, density, and the explicit frame budget.
+
+### Generic visual stories
+
+`VisualStory` presents resolved source, terminal, text, image, or SVG surfaces as a sequence of scenes. It is deliberately not tied to charts: API request/response demos, image before/after walkthroughs, deployment evidence, tutorials, and product tours use the same contract. Every story declares one or more outcomes, and rendering fails unless the completed scene still contains each outcome panel. A demo that promises a chart therefore has to show the chart, not merely print a filename.
+
+```csharp
+var story = VisualStory.Create("A chart in five lines")
+    .WithDescription("Source and the real rendered result.")
+    .WithSize(1100, 620);
+
+story.Scene("write", "Write the code")
+    .Panel("source", new VisualStorySourceSurface(source));
+story.Scene("result", "See the chart", 1.5, VisualStorySceneLayout.Split)
+    .Panel("source", new VisualStorySourceSurface(source))
+    .Panel("chart", new VisualStoryMediaSurface(chartPng, "Weekly builds chart"));
+story.Outcome("chart-visible", "The weekly builds chart is visible.", "chart");
+
+story.SaveSvg("chart-story.svg");
+story.SavePng("chart-story.png");
+story.SaveGif("chart-story.gif");
+```
+
+ChartForgeX never executes the displayed source and has no parser dependencies. Optional hosts tokenize source through `IStorySourceTokenizer` and map parser-specific tokens to exact renderer-neutral `StorySourceSpan` ranges. Plain source remains valid when no adapter is supplied. This keeps the core dependency-free and lets PowerShell, Tree-sitter, Roslyn, or another host own the dependency appropriate to its environment.
 
 Turn a grid into a script-free visual story by assigning stable target IDs and a reusable motion timeline:
 

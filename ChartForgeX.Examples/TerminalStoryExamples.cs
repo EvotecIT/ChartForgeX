@@ -15,6 +15,7 @@ internal static class TerminalStoryExamples {
             .WithDialect(TerminalDialect.PowerShell)
             .WithWorkingDirectory(@"C:\OpenSource")
             .WithTheme(TerminalTheme.PowerShell())
+            .WithWindowStyle(TerminalWindowStyle.MacOS)
             .WithPngOutputScale((int)pngOutputScale)
             .Command("Get-ActivePortfolio | Format-Table")
             .Table(portfolio)
@@ -33,7 +34,8 @@ internal static class TerminalStoryExamples {
             .WithTitle("dotnet run - ChartForgeX")
             .WithDialect(TerminalDialect.CSharp)
             .WithWorkingDirectory(@"C:\Charts")
-            .WithTheme(TerminalTheme.WindowsTerminal())
+            .WithTheme(TerminalTheme.Dark())
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
             .WithWidth(1000)
             .Command("using ChartForgeX; using ChartForgeX.Core; using System.Linq;", 0.65)
             .Command("var chart = Chart.Create().WithTitle(\"Weekly builds\");", 0.65)
@@ -46,5 +48,24 @@ internal static class TerminalStoryExamples {
             .WithEndHold(1.4);
         fiveLineDemo.SaveGif(Path.Combine(output, "chart-in-five-lines-console-story.gif"), animation);
         fiveLineDemo.SaveApng(Path.Combine(output, "chart-in-five-lines-console-story.apng"), animation);
+
+        var multiShell = TerminalStory.Create()
+            .WithTitle("PowerShell")
+            .WithDialect(TerminalDialect.PowerShell)
+            .WithWorkingDirectory(@"C:\OpenSource")
+            .WithTheme(TerminalTheme.Campbell())
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithWidth(1100)
+            .Command("Get-Module ImagePlayground")
+            .Output("ImagePlayground  3.2.0", TerminalTextTone.Success)
+            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalTheme.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell)
+            .Command("$PSVersionTable.PSVersion")
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu)
+            .Command("dotnet test")
+            .Output("Passed! Failed: 0", TerminalTextTone.Success)
+            .SelectTab("main")
+            .Output("All environments are ready.", TerminalTextTone.Success);
+        multiShell.SaveSvg(Path.Combine(output, "multi-shell-console-story.svg"));
+        multiShell.SaveGif(Path.Combine(output, "multi-shell-console-story.gif"), animation);
     }
 }

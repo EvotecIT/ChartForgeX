@@ -32,6 +32,12 @@ public sealed class ImageComposition {
         return new ImageComposition(canvas);
     }
 
+    internal static ImageComposition CreateScaled(int width, int height, ChartColor background, int outputScale) {
+        var canvas = new RgbaCanvas(width, height, 1, null, outputScale);
+        canvas.Clear(background);
+        return new ImageComposition(canvas);
+    }
+
     /// <summary>Creates a transparent composition.</summary>
     public static ImageComposition CreateTransparent(int width, int height) => Create(width, height, ChartColor.Transparent);
 

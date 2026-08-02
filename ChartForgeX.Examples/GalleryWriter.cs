@@ -574,6 +574,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
                 CountOccurrences(svg, "<line") +
                 CountOccurrences(svg, "<polygon") +
                 CountOccurrences(svg, "<polyline") +
+                CountOccurrences(svg, "<image") +
                 CountOccurrences(svg, "<text");
             var textNodes = CountOccurrences(svg, "<text");
             var premiumStrokeNodes = CountClassToken(svg, "cfx-premium-stroke");

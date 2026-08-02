@@ -167,6 +167,24 @@ internal sealed class SvgMarkupWriter {
     private static void AppendEscapedText(StringBuilder builder, string value, bool escapeQuotes) {
         for (var i = 0; i < value.Length; i++) {
             var ch = value[i];
+            if (char.IsHighSurrogate(ch)) {
+                if (i + 1 < value.Length && char.IsLowSurrogate(value[i + 1])) {
+                    var next = value[i + 1];
+                    if (IsMarkupScalar(char.ConvertToUtf32(ch, next))) {
+                        builder.Append(ch).Append(next);
+                    } else {
+                        builder.Append('\uFFFD');
+                    }
+                    i++;
+                } else {
+                    builder.Append('\uFFFD');
+                }
+                continue;
+            }
+            if (!IsMarkupScalar(ch)) {
+                builder.Append('\uFFFD');
+                continue;
+            }
             switch (ch) {
                 case '&':
                     builder.Append("&amp;");
@@ -186,6 +204,18 @@ internal sealed class SvgMarkupWriter {
             }
         }
     }
+
+    internal static bool IsMarkupScalar(int scalar) =>
+        scalar == '\t' ||
+        scalar == '\n' ||
+        scalar == '\r' ||
+        scalar >= 0x20 &&
+        scalar <= 0x10FFFF &&
+        !(scalar >= 0xD800 && scalar <= 0xDFFF) &&
+        !(scalar >= 0x7F && scalar <= 0x9F) &&
+        !(scalar >= 0xFDD0 && scalar <= 0xFDEF) &&
+        (scalar & 0xFFFF) != 0xFFFE &&
+        (scalar & 0xFFFF) != 0xFFFF;
 
     private void EnsurePendingStartTag() {
         if (_pendingElement == null) {

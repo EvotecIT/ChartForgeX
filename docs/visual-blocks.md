@@ -118,6 +118,8 @@ var results = TerminalTable.Create()
 var console = TerminalStory.Create()
     .WithTitle(@"pwsh - C:\OpenSource")
     .WithDialect(TerminalDialect.PowerShell)
+    .WithTheme(TerminalTheme.PowerShell())
+    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
     .WithWorkingDirectory(@"C:\OpenSource")
     .Command(@".\Invoke-Validation.ps1")
     .Output("Running release validation...", TerminalTextTone.Muted)
@@ -128,9 +130,17 @@ console.SaveSvg("validation.svg");
 console.SaveGif("validation.gif");
 ```
 
-Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. SVG and HTML animate without JavaScript. GIF and APNG reuse the exact terminal timeline for portable chat, issue, and documentation embeds. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
+Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. Dialect, palette, and window chrome are independent: a PowerShell prompt can use any theme with macOS, Windows Terminal, minimal, or no title-bar chrome. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. `WithPlaybackSpeed` applies a coherent Slow, Normal, or Fast pace, while `WithTiming` and `WithTabHold` independently tune code typing and the minimum reading time before a tab switch. SVG and HTML animate without JavaScript. GIF and APNG reuse the exact terminal timeline for portable chat, issue, and documentation embeds. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
 
 Use `TerminalStoryAnimationOptions` when a host needs a different frame rate, single-play output, a longer completed-state hold, a denser raster, or a different frame budget. The default 10 FPS, one-times-density GIF is intentionally suitable for Discord-style sharing without turning the export into a browser recording.
+
+Use `WithInitialTab`, `DeclareTab`, and `SelectTab` for an explicit multi-shell walkthrough. `OpenTab` is the shorter declare-and-select operation. Tabs preserve their own transcript buffers, prompts, directories, semantic icons, and palettes. The default initial session is named `main`; static and reduced-motion output show the completed active tab, while accessible transcript text includes every session.
+
+## Generic source-to-result stories
+
+Use `VisualStory` when the presentation contains more than a terminal transcript. Each scene contains named source, terminal, media, or text panels, while each declared outcome points at the panel that proves the promised result. The last scene must contain every outcome panel. This makes “code creates a chart,” “request returns this response,” and “filter produces this image” enforceable story contracts instead of captions that can drift from the rendered demo.
+
+The core accepts exact `StorySourceText` plus optional renderer-neutral syntax spans. It does not execute source or depend on PowerShell, Roslyn, Tree-sitter, or regex coloring. Hosts can implement `IStorySourceTokenizer`; production tooling can execute an explicitly trusted producer before it hands ChartForgeX the resolved artifacts.
 
 ## Script-Free Visual Stories
 

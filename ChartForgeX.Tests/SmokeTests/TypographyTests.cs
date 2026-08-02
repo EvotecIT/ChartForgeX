@@ -30,6 +30,24 @@ internal static partial class SmokeTests {
         Assert(layout.Lines.Count == 2, "Text layout should honor the requested maximum line count.");
         Assert(layout.Lines[1].Text.EndsWith("…", StringComparison.Ordinal), "Trimmed text should end with an ellipsis.");
         Assert(layout.Lines[1].Width <= 72.001, "Ellipsized text should fit the requested width.");
+
+        var dense = TextLayoutEngine.Layout(
+            new string('x', 1024 * 1024),
+            72,
+            style,
+            maximumLines: 8,
+            trimming: TextTrimming.Ellipsis);
+        Assert(dense.Trimmed && dense.Lines.Count == 8,
+            "Bounded text layout should stop wrapping a large unbroken value after the visible line budget.");
+
+        var manyParagraphs = TextLayoutEngine.Layout(
+            string.Concat(Enumerable.Repeat("x\n", 1024 * 1024)),
+            72,
+            style,
+            maximumLines: 8,
+            trimming: TextTrimming.Ellipsis);
+        Assert(manyParagraphs.Trimmed && manyParagraphs.Lines.Count == 8,
+            "Bounded text layout should stop scanning a large newline-delimited value after the visible line budget.");
     }
 
     private static void TextStyleOverridesResolveWithoutASecondStyleBrain() {

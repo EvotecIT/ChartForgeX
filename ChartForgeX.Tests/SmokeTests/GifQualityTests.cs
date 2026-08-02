@@ -128,8 +128,9 @@ internal static partial class SmokeTests {
             if (gif[offset] == 0x21 && gif[offset + 1] == 0xF9) {
                 if (gif[offset + 2] != 4) throw new InvalidOperationException("Unexpected GIF graphics control block length.");
                 var packed = gif[offset + 3];
+                var delayCentiseconds = gif[offset + 4] | gif[offset + 5] << 8;
                 var transparentColorIndex = (packed & 0x01) == 0 ? -1 : gif[offset + 6];
-                controls.Add(new GifGraphicsControl(packed, transparentColorIndex));
+                controls.Add(new GifGraphicsControl(packed, delayCentiseconds, transparentColorIndex));
                 offset += 8;
                 continue;
             }
@@ -320,12 +321,14 @@ internal static partial class SmokeTests {
     }
 
     private readonly struct GifGraphicsControl {
-        public GifGraphicsControl(byte packed, int transparentColorIndex) {
+        public GifGraphicsControl(byte packed, int delayCentiseconds, int transparentColorIndex) {
             Packed = packed;
+            DelayCentiseconds = delayCentiseconds;
             TransparentColorIndex = transparentColorIndex;
         }
 
         public readonly byte Packed;
+        public readonly int DelayCentiseconds;
         public readonly int TransparentColorIndex;
     }
 

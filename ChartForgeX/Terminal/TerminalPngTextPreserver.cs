@@ -49,10 +49,21 @@ internal static class TerminalPngTextPreserver {
         return MeasureCore(value, canvas, fontSize, null);
     }
 
+    public static double Measure(string value, RgbaCanvas canvas, double fontSize, TrueTypeFont? font) {
+        return MeasureCore(value, canvas, fontSize, font);
+    }
+
     public static double MeasureEmphasized(string value, RgbaCanvas canvas, double fontSize) {
         var width = MeasureCore(value, canvas, fontSize, null);
         if (value.Length == 0) return width;
         var emphasisOffset = canvas.MeasureTextEmphasizedWidth("M", fontSize) - canvas.MeasureTextWidth("M", fontSize);
+        return width + Math.Max(0, emphasisOffset);
+    }
+
+    public static double MeasureEmphasized(string value, RgbaCanvas canvas, double fontSize, TrueTypeFont? font) {
+        var width = MeasureCore(value, canvas, fontSize, font);
+        if (value.Length == 0) return width;
+        var emphasisOffset = RgbaCanvas.MeasureTextEmphasizedWidth("M", fontSize, font) - RgbaCanvas.MeasureTextWidthWithFont("M", fontSize, font);
         return width + Math.Max(0, emphasisOffset);
     }
 
@@ -78,6 +89,10 @@ internal static class TerminalPngTextPreserver {
 
     public static void DrawEmphasized(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize) {
         Draw(canvas, x, y, value, color, fontSize, true, null, true);
+    }
+
+    public static void DrawEmphasized(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize, TrueTypeFont? font) {
+        Draw(canvas, x, y, value, color, fontSize, true, font, false);
     }
 
     private static void Draw(RgbaCanvas canvas, double x, double y, string value, ChartColor color, double fontSize, bool emphasized, TrueTypeFont? font, bool useCanvasFont) {

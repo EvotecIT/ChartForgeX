@@ -36,6 +36,23 @@
       }
     },
     {
+      "name": "api-request-response-story",
+      "width": 960,
+      "height": 540,
+      "svg": {
+        "minVisualNodes": 2,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 259200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 652,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "audience-pictorial-candy",
       "width": 860,
       "height": 500,
@@ -83,6 +100,23 @@
         "minVisiblePixels": 1224760,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "chart-in-five-lines-story",
+      "width": 1200,
+      "height": 675,
+      "svg": {
+        "minVisualNodes": 2,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 405000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1854,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1409,6 +1443,23 @@
         "minVisiblePixels": 620800,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "image-before-after-story",
+      "width": 960,
+      "height": 540,
+      "svg": {
+        "minVisualNodes": 2,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 259200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 747,
         "maxEdgeInkPixels": 0
       }
     },

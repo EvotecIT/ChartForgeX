@@ -6,6 +6,8 @@ using System.Text;
 namespace ChartForgeX.Terminal;
 
 internal static class TerminalTextWidth {
+    private const int MaximumInitialFitCapacity = 256;
+
     public static int Measure(string value) {
         if (value == null) {
             throw new ArgumentNullException(nameof(value));
@@ -56,7 +58,7 @@ internal static class TerminalTextWidth {
             return "…";
         }
 
-        var output = new StringBuilder(value.Length);
+        var output = new StringBuilder(Math.Min(value.Length, MaximumInitialFitCapacity));
         var width = 0;
         for (var index = 0; index < value.Length;) {
             var element = NextElement(value, ref index);
@@ -91,7 +93,7 @@ internal static class TerminalTextWidth {
             return string.Empty;
         }
 
-        var output = new StringBuilder(value.Length);
+        var output = new StringBuilder(Math.Min(value.Length, MaximumInitialFitCapacity));
         for (var index = 0; index < value.Length;) {
             var element = NextElement(value, ref index);
             output.Append(element);
@@ -103,6 +105,31 @@ internal static class TerminalTextWidth {
         }
 
         output.Append(ellipsis);
+        return output.ToString();
+    }
+
+    internal static string FitContent(string value, double maximum, Func<string, double> measure) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (measure == null) {
+            throw new ArgumentNullException(nameof(measure));
+        }
+        if (maximum <= 0) {
+            return string.Empty;
+        }
+
+        var output = new StringBuilder(Math.Min(value.Length, MaximumInitialFitCapacity));
+        var usedWidth = 0d;
+        for (var index = 0; index < value.Length;) {
+            var element = NextElement(value, ref index);
+            var elementWidth = measure(element);
+            if (usedWidth + elementWidth > maximum) {
+                break;
+            }
+            output.Append(element);
+            usedWidth += elementWidth;
+        }
         return output.ToString();
     }
 
@@ -145,6 +172,28 @@ internal static class TerminalTextWidth {
         for (var index = 0; index < value.Length;) {
             yield return NextElement(value, ref index);
         }
+    }
+
+    internal static bool IsElementBoundary(string value, int offset) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (offset < 0 || offset > value.Length) {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
+        if (offset == 0 || offset == value.Length) {
+            return true;
+        }
+        for (var index = 0; index < value.Length;) {
+            NextElement(value, ref index);
+            if (index == offset) {
+                return true;
+            }
+            if (index > offset) {
+                return false;
+            }
+        }
+        return false;
     }
 
     internal static IEnumerable<string> VisibleElements(string value) {
@@ -200,38 +249,75 @@ internal static class TerminalTextWidth {
         return emojiPresentation ? Math.Max(2, width) : width;
     }
 
-    private static string NextElement(string value, ref int index) {
+    internal static string NextElement(string value, ref int index) {
         var start = index;
+        index = NextElementBoundary(value, index);
+        return value.Substring(start, index - start);
+    }
+
+    internal static int NextElementBoundary(string value, int index) {
+        if (value == null) {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (index < 0 || index >= value.Length) {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
         var first = ReadScalar(value, ref index);
         if (first == '\r' && PeekScalar(value, index, out var next, out var nextLength) && next == '\n') {
             index += nextLength;
-            return value.Substring(start, index - start);
+            return index;
         }
 
-        if (IsRegionalIndicator(first) && PeekScalar(value, index, out next, out nextLength) && IsRegionalIndicator(next)) {
-            index += nextLength;
-            return value.Substring(start, index - start);
+        if (IsGraphemeControl(first)) {
+            return index;
         }
 
         var previous = first;
+        var previousIsPrepend = IsPrepend(first);
+        var regionalIndicatorCount = IsRegionalIndicator(first) ? 1 : 0;
         var hasExtendedPictographic = IsExtendedPictographic(first);
         var hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(first);
         var hasIndicLinker = false;
         while (PeekScalar(value, index, out next, out nextLength)) {
-            var category = UnicodeCategoryFor(next);
             var isIndicExtend = hasIndicConjunct && TerminalIndicConjunctBreak.IsExtend(next);
             var isIndicLinker = hasIndicConjunct && TerminalIndicConjunctBreak.IsLinker(next);
-            if (IsExtend(next, category) || IsHangulContinuation(previous, next) || isIndicExtend) {
+            var isGraphemeExtend = TerminalIndicConjunctBreak.IsGraphemeExtend(next);
+            var consumedThroughPrepend = previousIsPrepend && !IsGraphemeControl(next);
+            if (consumedThroughPrepend ||
+                isGraphemeExtend ||
+                IsGraphemeSpacingMark(next) ||
+                IsHangulContinuation(previous, next) ||
+                isIndicExtend) {
                 index += nextLength;
-                if (hasIndicConjunct) {
-                    if (isIndicLinker) {
-                        hasIndicLinker = true;
-                    } else if (!isIndicExtend) {
-                        hasIndicConjunct = false;
-                        hasIndicLinker = false;
+                if (consumedThroughPrepend) {
+                    regionalIndicatorCount = IsRegionalIndicator(next) ? 1 : 0;
+                    hasExtendedPictographic = IsExtendedPictographic(next);
+                    hasIndicConjunct = TerminalIndicConjunctBreak.IsConsonant(next);
+                    hasIndicLinker = false;
+                } else {
+                    regionalIndicatorCount = 0;
+                    if (!isGraphemeExtend && IsGraphemeSpacingMark(next)) {
+                        hasExtendedPictographic = false;
+                    }
+                    if (hasIndicConjunct) {
+                        if (isIndicLinker) {
+                            hasIndicLinker = true;
+                        } else if (!isIndicExtend) {
+                            hasIndicConjunct = false;
+                            hasIndicLinker = false;
+                        }
                     }
                 }
                 previous = next;
+                previousIsPrepend = IsPrepend(next);
+                continue;
+            }
+            if (IsRegionalIndicator(next) && regionalIndicatorCount % 2 == 1) {
+                index += nextLength;
+                regionalIndicatorCount++;
+                previous = next;
+                previousIsPrepend = false;
                 continue;
             }
             if (hasIndicConjunct &&
@@ -239,6 +325,7 @@ internal static class TerminalTextWidth {
                 TerminalIndicConjunctBreak.IsConsonant(next)) {
                 index += nextLength;
                 previous = next;
+                previousIsPrepend = IsPrepend(next);
                 hasIndicLinker = false;
                 continue;
             }
@@ -247,18 +334,22 @@ internal static class TerminalTextWidth {
             }
 
             var joinerLength = nextLength;
-            if (!PeekScalar(value, index + joinerLength, out next, out nextLength) ||
+            index += joinerLength;
+            previous = next;
+            previousIsPrepend = false;
+            if (!PeekScalar(value, index, out next, out nextLength) ||
                 !hasExtendedPictographic ||
                 !IsExtendedPictographic(next)) {
-                break;
+                hasExtendedPictographic = false;
+                continue;
             }
-            index += joinerLength;
             index += nextLength;
             previous = next;
+            previousIsPrepend = IsPrepend(next);
             hasExtendedPictographic = true;
         }
 
-        return value.Substring(start, index - start);
+        return index;
     }
 
     internal static bool TryPreservedScalar(string value, int index, out int length, out int codePoint) {
@@ -343,19 +434,13 @@ internal static class TerminalTextWidth {
         return true;
     }
 
-    private static bool IsExtend(int codePoint, UnicodeCategory category) {
-        return category == UnicodeCategory.NonSpacingMark ||
-               category == UnicodeCategory.SpacingCombiningMark ||
-               category == UnicodeCategory.EnclosingMark ||
-               codePoint >= 0xFE00 && codePoint <= 0xFE0F ||
-               codePoint >= 0xE0100 && codePoint <= 0xE01EF ||
-               codePoint >= 0xE0020 && codePoint <= 0xE007F ||
-               codePoint >= 0x1F3FB && codePoint <= 0x1F3FF;
-    }
+    private static bool IsGraphemeSpacingMark(int codePoint) =>
+        UnicodeCategoryFor(codePoint) == UnicodeCategory.SpacingCombiningMark &&
+        !TerminalIndicConjunctBreak.IsGraphemeExtend(codePoint);
 
     internal static bool IsZeroWidthScalar(int codePoint) {
         return codePoint == 0x200D ||
-               IsExtend(codePoint, UnicodeCategoryFor(codePoint)) ||
+               TerminalIndicConjunctBreak.IsGraphemeExtend(codePoint) ||
                IsDefaultIgnorableFormatScalar(codePoint);
     }
 
@@ -376,6 +461,44 @@ internal static class TerminalTextWidth {
 
     private static bool IsRegionalIndicator(int codePoint) {
         return codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF;
+    }
+
+    private static bool IsPrepend(int codePoint) {
+        return codePoint >= 0x0600 && codePoint <= 0x0605 ||
+               codePoint == 0x06DD ||
+               codePoint == 0x070F ||
+               codePoint >= 0x0890 && codePoint <= 0x0891 ||
+               codePoint == 0x08E2 ||
+               codePoint == 0x0D4E ||
+               codePoint == 0x110BD ||
+               codePoint == 0x110CD ||
+               codePoint >= 0x111C2 && codePoint <= 0x111C3 ||
+               codePoint == 0x113D1 ||
+               codePoint == 0x1193F ||
+               codePoint == 0x11941 ||
+               codePoint >= 0x11A84 && codePoint <= 0x11A89 ||
+               codePoint == 0x11D46 ||
+               codePoint == 0x11F02;
+    }
+
+    private static bool IsGraphemeControl(int codePoint) {
+        return codePoint <= 0x001F ||
+               codePoint >= 0x007F && codePoint <= 0x009F ||
+               codePoint == 0x00AD ||
+               codePoint == 0x061C ||
+               codePoint == 0x180E ||
+               codePoint == 0x200B ||
+               codePoint >= 0x200E && codePoint <= 0x200F ||
+               codePoint >= 0x2028 && codePoint <= 0x202E ||
+               codePoint >= 0x2060 && codePoint <= 0x206F ||
+               codePoint == 0xFEFF ||
+               codePoint >= 0xFFF0 && codePoint <= 0xFFFB ||
+               codePoint >= 0x13430 && codePoint <= 0x1343F ||
+               codePoint >= 0x1BCA0 && codePoint <= 0x1BCA3 ||
+               codePoint >= 0x1D173 && codePoint <= 0x1D17A ||
+               codePoint >= 0xE0000 && codePoint <= 0xE001F ||
+               codePoint >= 0xE0080 && codePoint <= 0xE00FF ||
+               codePoint >= 0xE01F0 && codePoint <= 0xE0FFF;
     }
 
     private static bool IsExtendedPictographic(int codePoint) {

@@ -9,7 +9,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Examples.Snippets\ChartForgeX.Examples.Snippets.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
     <ProjectReference Include="..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Snippets\FiveLineChart.cs.txt" LogicalName="ChartForgeX.Examples.FiveLineChart.cs" WithCulture="false" />
   </ItemGroup>
 </Project>

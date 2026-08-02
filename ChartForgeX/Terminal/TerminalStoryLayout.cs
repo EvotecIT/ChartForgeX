@@ -1,31 +1,48 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 
 namespace ChartForgeX.Terminal;
 
 internal sealed class TerminalStoryLayout {
-    private const double HeaderHeight = 42;
     private const double HorizontalPadding = 28;
     private const double VerticalPadding = 24;
 
     public int Width { get; }
     public int Height { get; }
     public double ContentX => HorizontalPadding;
-    public double ContentTop => HeaderHeight + VerticalPadding;
-    public double HeaderHeightValue => HeaderHeight;
+    public double ContentTop => HeaderHeightValue + VerticalPadding;
+    public double HeaderHeightValue { get; }
     public double ColumnWidth { get; }
     public double DurationSeconds { get; }
     public IReadOnlyList<TerminalRenderedLine> Lines { get; }
+    public IReadOnlyList<TerminalRenderedTab> Tabs { get; }
+    public IReadOnlyList<TerminalTabTransition> Transitions { get; }
+    public string FinalTabId { get; }
     public IReadOnlyList<string> TranscriptLines { get; }
 
-    private TerminalStoryLayout(int width, int height, double columnWidth, double durationSeconds, IReadOnlyList<TerminalRenderedLine> lines, IReadOnlyList<string> transcriptLines) {
+    private TerminalStoryLayout(
+        int width,
+        int height,
+        double headerHeight,
+        double columnWidth,
+        double durationSeconds,
+        IReadOnlyList<TerminalRenderedLine> lines,
+        IReadOnlyList<TerminalRenderedTab> tabs,
+        IReadOnlyList<TerminalTabTransition> transitions,
+        string finalTabId,
+        IReadOnlyList<string> transcriptLines) {
         Width = width;
         Height = height;
+        HeaderHeightValue = headerHeight;
         ColumnWidth = columnWidth;
         DurationSeconds = durationSeconds;
         Lines = lines;
+        Tabs = tabs;
+        Transitions = transitions;
+        FinalTabId = finalTabId;
         TranscriptLines = transcriptLines;
     }
 
@@ -40,54 +57,106 @@ internal sealed class TerminalStoryLayout {
     }
 
     internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText, TrueTypeFont? outlineFont, Func<string, string>? transformTableText) {
+        return Build(
+            story,
+            transformText == null ? null : (_, value) => transformText(value),
+            _ => outlineFont,
+            transformTableText == null ? null : (_, value) => transformTableText(value));
+    }
+
+    internal static TerminalStoryLayout Build(
+        TerminalStory story,
+        Func<TerminalTab, string, string>? transformText,
+        Func<TerminalTab, TrueTypeFont?>? outlineFont,
+        Func<TerminalTab, string, string>? transformTableText) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         story.Validate();
-        var transform = transformText ?? Identity;
-        var tableTransform = transformTableText ?? transform;
-        var columnWidth = MeasureColumnWidth(story, outlineFont);
-        var maxColumns = Math.Max(1, (int)Math.Floor((story.Width - HorizontalPadding * 2) / columnWidth));
+        string Transform(TerminalTab tab, string value) => transformText == null ? value : transformText(tab, value);
+        string TransformTable(TerminalTab tab, string value) => transformTableText == null ? Transform(tab, value) : transformTableText(tab, value);
+        var columnWidths = story.Tabs.ToDictionary(
+            tab => tab.Id,
+            tab => MeasureColumnWidth(tab, story.FontSize, outlineFont == null ? null : outlineFont(tab)),
+            StringComparer.OrdinalIgnoreCase);
+        var maxColumnsByTab = columnWidths.ToDictionary(
+            item => item.Key,
+            item => Math.Max(1, (int)Math.Floor((story.Width - HorizontalPadding * 2) / item.Value)),
+            StringComparer.OrdinalIgnoreCase);
+        var columnWidth = columnWidths[story.Tabs[0].Id];
         var lines = new List<TerminalRenderedLine>();
+        var linesByTab = story.Tabs.ToDictionary(tab => tab.Id, _ => new List<TerminalRenderedLine>(), StringComparer.OrdinalIgnoreCase);
+        var openSecondsByTab = story.Tabs.ToDictionary(tab => tab.Id, _ => 0d, StringComparer.OrdinalIgnoreCase);
+        var revealEndSecondsByTab = story.Tabs.ToDictionary(tab => tab.Id, _ => 0d, StringComparer.OrdinalIgnoreCase);
+        var transitions = new List<TerminalTabTransition>();
         var transcriptLines = new List<string>();
         var clock = story.InitialDelaySeconds;
+        var activeTabId = story.Tabs[0].Id;
+        double? activeContentEndSeconds = null;
         foreach (var step in story.Steps) {
+            if (step.Kind == TerminalStoryStepKind.DeclareTab) {
+                openSecondsByTab[step.TabId] = clock;
+                transcriptLines.Add("[Tab added: " + story.GetTab(step.TabId).Title + "]");
+                continue;
+            }
+            if (step.Kind == TerminalStoryStepKind.OpenTab || step.Kind == TerminalStoryStepKind.SelectTab) {
+                clock = Math.Max(clock, revealEndSecondsByTab[activeTabId]);
+                if (activeContentEndSeconds.HasValue) {
+                    clock = Math.Max(clock, activeContentEndSeconds.Value + story.TabHoldSeconds);
+                }
+                transcriptLines.Add("[Tab: " + story.GetTab(step.TabId).Title + "]");
+                if (step.Kind == TerminalStoryStepKind.OpenTab) openSecondsByTab[step.TabId] = clock;
+                transitions.Add(new TerminalTabTransition(activeTabId, step.TabId, clock, step.DurationSeconds));
+                activeTabId = step.TabId;
+                clock += step.DurationSeconds;
+                activeContentEndSeconds = clock;
+                continue;
+            }
+
+            var tab = story.GetTab(step.TabId);
+            var tabLines = linesByTab[tab.Id];
             switch (step.Kind) {
                 case TerminalStoryStepKind.Command:
-                    transcriptLines.Add(story.Prompt() + step.Text);
-                    var prompt = transform(story.Prompt());
-                    var commandText = prompt + transform(step.Text);
+                    transcriptLines.Add("[" + tab.Title + "] " + tab.Prompt() + step.Text);
+                    var prompt = Transform(tab, tab.Prompt());
+                    var commandText = prompt + Transform(tab, step.Text);
                     var typingDuration = step.DurationSeconds > 0
                         ? step.DurationSeconds
                         : Math.Max(0.35, Math.Min(4.5, VisibleTextElementCount(step.Text) / story.CharactersPerSecond));
                     var commandElements = Math.Max(1, VisibleTextElementCount(commandText));
                     var remainingPromptLength = prompt.Length;
-                    foreach (var wrappedCommandLine in Wrap(commandText, maxColumns)) {
+                    foreach (var wrappedCommandLine in Wrap(commandText, maxColumnsByTab[tab.Id])) {
                         var promptLength = Math.Min(remainingPromptLength, wrappedCommandLine.Length);
                         var lineDuration = typingDuration * VisibleTextElementCount(wrappedCommandLine) / commandElements;
-                        AddLine(lines, new TerminalRenderedLine(wrappedCommandLine, TerminalTextTone.Default, true, promptLength, clock, lineDuration));
+                        AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedCommandLine, TerminalTextTone.Default, true, promptLength, clock, lineDuration));
+                        activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + lineDuration);
                         remainingPromptLength -= promptLength;
                         clock += lineDuration + story.LineDelaySeconds;
                     }
                     break;
                 case TerminalStoryStepKind.Output:
                     foreach (var outputLine in SplitLines(step.Text)) {
-                        transcriptLines.Add(outputLine);
-                        foreach (var wrappedLine in Wrap(transform(outputLine), maxColumns)) {
-                            AddLine(lines, new TerminalRenderedLine(wrappedLine, step.Tone, false, 0, clock, 0.22));
+                        transcriptLines.Add("[" + tab.Title + "] " + outputLine);
+                        foreach (var wrappedLine in Wrap(Transform(tab, outputLine), maxColumnsByTab[tab.Id])) {
+                            AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedLine, step.Tone, false, 0, clock, 0.22));
+                            revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
+                            activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + 0.22);
                             clock += story.LineDelaySeconds;
                         }
                     }
                     break;
                 case TerminalStoryStepKind.Blank:
-                    transcriptLines.Add(string.Empty);
-                    AddLine(lines, new TerminalRenderedLine(string.Empty, TerminalTextTone.Default, false, 0, clock, 0));
+                    transcriptLines.Add("[" + tab.Title + "]");
+                    AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, string.Empty, TerminalTextTone.Default, false, 0, clock, 0));
+                    activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock);
                     break;
                 case TerminalStoryStepKind.Pause:
                     clock += step.DurationSeconds;
                     break;
                 case TerminalStoryStepKind.Table:
-                    AddTableTranscript(transcriptLines, step.Table!);
-                    foreach (var tableLine in FormatTable(step.Table!, maxColumns, tableTransform)) {
-                        AddLine(lines, new TerminalRenderedLine(tableLine.Text, tableLine.Tone, false, 0, clock, 0.22, true));
+                    AddTableTranscript(transcriptLines, step.Table!, tab.Title);
+                    foreach (var tableLine in FormatTable(step.Table!, maxColumnsByTab[tab.Id], value => TransformTable(tab, value))) {
+                        AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, tableLine.Text, tableLine.Tone, false, 0, clock, 0.22, true));
+                        revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
+                        activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + 0.22);
                         clock += story.LineDelaySeconds;
                     }
                     break;
@@ -97,9 +166,13 @@ internal sealed class TerminalStoryLayout {
         }
 
         if (story.ShowFinalPrompt) {
-            transcriptLines.Add(story.Prompt());
-            foreach (var promptLine in Wrap(transform(story.Prompt()), maxColumns)) {
-                AddLine(lines, new TerminalRenderedLine(promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0));
+            var finalTab = story.GetTab(activeTabId);
+            var finalTabLines = linesByTab[activeTabId];
+            transcriptLines.Add("[" + finalTab.Title + "] " + finalTab.Prompt());
+            var promptLines = Wrap(Transform(finalTab, finalTab.Prompt()), maxColumnsByTab[finalTab.Id]).ToArray();
+            for (var index = 0; index < promptLines.Length; index++) {
+                var promptLine = promptLines[index];
+                AddLine(lines, finalTabLines, new TerminalRenderedLine(finalTab.Id, finalTabLines.Count, promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0, isFinalPrompt: index == promptLines.Length - 1));
             }
             clock += 0.08;
         }
@@ -110,8 +183,70 @@ internal sealed class TerminalStoryLayout {
         }
 
         if (completion > 60) throw new InvalidOperationException("Terminal story animation must complete within 60 seconds.");
-        var height = (int)Math.Ceiling(HeaderHeight + VerticalPadding * 2 + lines.Count * story.LineHeight);
-        return new TerminalStoryLayout(story.Width, Math.Max(180, height), columnWidth, completion, lines, transcriptLines);
+        var renderedTabs = story.Tabs
+            .Select(tab => new TerminalRenderedTab(tab, linesByTab[tab.Id], openSecondsByTab[tab.Id]))
+            .ToArray();
+        var maximumLineCount = renderedTabs.Max(tab => tab.Lines.Count);
+        var headerHeight = TerminalWindowChrome.HeaderHeight(story.WindowStyle);
+        var height = (int)Math.Ceiling(headerHeight + VerticalPadding * 2 + maximumLineCount * story.LineHeight);
+        return new TerminalStoryLayout(story.Width, Math.Max(180, height), headerHeight, columnWidth, completion, lines, renderedTabs, transitions, activeTabId, transcriptLines);
+    }
+
+    internal double TabOpacity(string tabId, double? elapsedSeconds) {
+        if (!elapsedSeconds.HasValue) {
+            return string.Equals(tabId, FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+        }
+
+        var activeTabId = Tabs[0].Tab.Id;
+        var elapsed = elapsedSeconds.Value;
+        foreach (var transition in Transitions) {
+            if (elapsed < transition.StartSeconds) {
+                break;
+            }
+
+            var transitionEnd = transition.StartSeconds + transition.DurationSeconds;
+            if (transition.DurationSeconds > 0 && elapsed < transitionEnd) {
+                var progress = Math.Max(0, Math.Min(1, (elapsed - transition.StartSeconds) / transition.DurationSeconds));
+                if (string.Equals(tabId, transition.FromTabId, StringComparison.OrdinalIgnoreCase)) return 1 - progress;
+                if (string.Equals(tabId, transition.ToTabId, StringComparison.OrdinalIgnoreCase)) return progress;
+                return 0;
+            }
+
+            activeTabId = transition.ToTabId;
+        }
+
+        return string.Equals(tabId, activeTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+    }
+
+    internal ChartColor TabBackground(double? elapsedSeconds) {
+        double red = 0;
+        double green = 0;
+        double blue = 0;
+        double alpha = 0;
+        double weight = 0;
+        foreach (var renderedTab in Tabs) {
+            var opacity = TabOpacity(renderedTab.Tab.Id, elapsedSeconds);
+            if (opacity <= 0) continue;
+            var color = renderedTab.Tab.Theme.Background;
+            red += color.R * opacity;
+            green += color.G * opacity;
+            blue += color.B * opacity;
+            alpha += color.A * opacity;
+            weight += opacity;
+        }
+
+        if (weight <= 0) return Tabs[0].Tab.Theme.Background;
+        return new ChartColor(
+            (byte)Math.Round(red / weight),
+            (byte)Math.Round(green / weight),
+            (byte)Math.Round(blue / weight),
+            (byte)Math.Round(alpha / weight));
+    }
+
+    internal bool TabVisible(string tabId, double? elapsedSeconds) {
+        if (!elapsedSeconds.HasValue) return true;
+        var tab = Tabs.First(item => string.Equals(item.Tab.Id, tabId, StringComparison.OrdinalIgnoreCase));
+        return elapsedSeconds.Value >= tab.OpenSeconds;
     }
 
     private static IEnumerable<string> SplitLines(string value) {
@@ -162,10 +297,10 @@ internal sealed class TerminalStoryLayout {
         return output;
     }
 
-    private static void AddTableTranscript(ICollection<string> transcriptLines, TerminalTable table) {
-        transcriptLines.Add(string.Join(" | ", table.Columns));
+    private static void AddTableTranscript(ICollection<string> transcriptLines, TerminalTable table, string tabTitle) {
+        transcriptLines.Add("[" + tabTitle + "] " + string.Join(" | ", table.Columns));
         foreach (var row in table.Rows) {
-            transcriptLines.Add(string.Join(" | ", row));
+            transcriptLines.Add("[" + tabTitle + "] " + string.Join(" | ", row));
         }
     }
 
@@ -180,11 +315,7 @@ internal sealed class TerminalStoryLayout {
         return string.Join(separator, cells);
     }
 
-    internal static string FitTitle(string value, int width) {
-        var available = Math.Max(12, width - 180);
-        var maximum = Math.Max(1, available / 12);
-        return Fit(value, maximum);
-    }
+    internal static string FitTitle(string value, int width, TerminalWindowStyle style) => TerminalWindowChrome.FitTitle(value, width, style);
 
     internal static int TextElementCount(string value) {
         return TerminalTextWidth.ElementCount(value);
@@ -202,21 +333,20 @@ internal sealed class TerminalStoryLayout {
 
     private static IEnumerable<string> Wrap(string value, int maximum) => TerminalTextWidth.Wrap(value, maximum);
 
-    private static void AddLine(ICollection<TerminalRenderedLine> lines, TerminalRenderedLine line) {
+    private static void AddLine(ICollection<TerminalRenderedLine> lines, ICollection<TerminalRenderedLine> tabLines, TerminalRenderedLine line) {
         if (lines.Count >= 120) throw new InvalidOperationException("Terminal story content expands beyond the 120-line rendering limit.");
         lines.Add(line);
+        tabLines.Add(line);
     }
 
-    private static string Identity(string value) => value;
-
-    private static double MeasureColumnWidth(TerminalStory story, TrueTypeFont? outlineFont) {
-        var factor = TrueTypeFont.IsMonospaceFamily(story.Theme.FontFamily) ? 0.61 : 1.0;
+    private static double MeasureColumnWidth(TerminalTab tab, double fontSize, TrueTypeFont? outlineFont) {
+        var factor = TrueTypeFont.IsMonospaceFamily(tab.Theme.FontFamily) ? 0.61 : 1.0;
         if (outlineFont != null) {
             factor = Math.Max(factor, outlineFont.Measure("W", 1));
             factor = Math.Max(factor, outlineFont.Measure("M", 1));
             factor = Math.Max(factor, outlineFont.Measure("@", 1));
         }
-        return story.FontSize * factor;
+        return fontSize * factor;
     }
 
     private readonly struct TableRenderedLine {
@@ -231,6 +361,8 @@ internal sealed class TerminalStoryLayout {
 }
 
 internal sealed class TerminalRenderedLine {
+    public string TabId { get; }
+    public int RowIndex { get; }
     public string Text { get; }
     public TerminalTextTone Tone { get; }
     public bool IsCommand { get; }
@@ -238,8 +370,11 @@ internal sealed class TerminalRenderedLine {
     public double StartSeconds { get; }
     public double DurationSeconds { get; }
     public bool IsTable { get; }
+    public bool IsFinalPrompt { get; }
 
-    public TerminalRenderedLine(string text, TerminalTextTone tone, bool isCommand, int promptLength, double startSeconds, double durationSeconds, bool isTable = false) {
+    public TerminalRenderedLine(string tabId, int rowIndex, string text, TerminalTextTone tone, bool isCommand, int promptLength, double startSeconds, double durationSeconds, bool isTable = false, bool isFinalPrompt = false) {
+        TabId = tabId;
+        RowIndex = rowIndex;
         Text = text;
         Tone = tone;
         IsCommand = isCommand;
@@ -247,5 +382,32 @@ internal sealed class TerminalRenderedLine {
         StartSeconds = startSeconds;
         DurationSeconds = durationSeconds;
         IsTable = isTable;
+        IsFinalPrompt = isFinalPrompt;
+    }
+}
+
+internal sealed class TerminalRenderedTab {
+    public TerminalTab Tab { get; }
+    public IReadOnlyList<TerminalRenderedLine> Lines { get; }
+    public double OpenSeconds { get; }
+
+    public TerminalRenderedTab(TerminalTab tab, IReadOnlyList<TerminalRenderedLine> lines, double openSeconds) {
+        Tab = tab ?? throw new ArgumentNullException(nameof(tab));
+        Lines = lines ?? throw new ArgumentNullException(nameof(lines));
+        OpenSeconds = openSeconds;
+    }
+}
+
+internal readonly struct TerminalTabTransition {
+    public string FromTabId { get; }
+    public string ToTabId { get; }
+    public double StartSeconds { get; }
+    public double DurationSeconds { get; }
+
+    public TerminalTabTransition(string fromTabId, string toTabId, double startSeconds, double durationSeconds) {
+        FromTabId = fromTabId;
+        ToTabId = toTabId;
+        StartSeconds = startSeconds;
+        DurationSeconds = durationSeconds;
     }
 }

@@ -30,6 +30,10 @@ internal static partial class SmokeTests {
         var svg = story.ToSvg("profile");
         var id = SvgDocument.Parse(svg).Root.GetAttribute("id")!;
         Assert(svg.Contains("data-cfx-terminal=\"PowerShell\"", StringComparison.Ordinal), "Terminal stories should expose their presentation dialect.");
+        Assert(svg.Contains("data-cfx-window-style=\"MacOS\"", StringComparison.Ordinal) &&
+               svg.Contains("data-cfx-role=\"terminal-macos-controls\"", StringComparison.Ordinal) &&
+               !svg.Contains("data-cfx-role=\"terminal-tab\"", StringComparison.Ordinal),
+            "Default terminal stories should use explicit macOS chrome instead of coupling platform controls to the color palette.");
         Assert(svg.Contains("data-cfx-role=\"terminal-command\"", StringComparison.Ordinal) && svg.Contains("PS C:\\OpenSource&gt; ", StringComparison.Ordinal), "PowerShell terminal stories should render authentic prompts and typed commands.");
         Assert(svg.Contains("OfficeIMO", StringComparison.Ordinal) && svg.Contains("0 critical findings", StringComparison.Ordinal), "Terminal stories should retain formatted table and semantic output content.");
         Assert(svg.Contains("Terminal transcript:", StringComparison.Ordinal) && svg.Contains("Get-EvotecPortfolio -Active", StringComparison.Ordinal), "Accessible terminal descriptions should expose the completed transcript.");
@@ -97,7 +101,7 @@ internal static partial class SmokeTests {
 
         var regularPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
         var emphasizedPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
-        var promptColor = TerminalTheme.WindowsTerminal().Accent;
+        var promptColor = TerminalTheme.Dark().Accent;
         TerminalPngTextPreserver.Draw(regularPromptCanvas, 0, 0, "PS> ", promptColor, 18);
         TerminalPngTextPreserver.DrawEmphasized(emphasizedPromptCanvas, 0, 0, "PS> ", promptColor, 18);
         Assert(TerminalPngTextPreserver.MeasureEmphasized("PS> ", emphasizedPromptCanvas, 18) >
@@ -126,7 +130,7 @@ internal static partial class SmokeTests {
                wideLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= 28),
             "Full-width and emoji transcript content should wrap by rendered display columns without clipping or data loss.");
 
-        var proportionalTheme = TerminalTheme.WindowsTerminal();
+        var proportionalTheme = TerminalTheme.Dark();
         proportionalTheme.FontFamily = "Arial, sans-serif";
         var proportionalText = new string('W', 20);
         var proportionalStory = TerminalStory.Create()
@@ -162,13 +166,197 @@ internal static partial class SmokeTests {
 
         var longTitle = "PowerShell terminal title that is deliberately much wider than the minimum terminal chrome";
         var longTitleStory = TerminalStory.Create().WithWidth(480).WithTitle(longTitle).Output("ready");
-        var fittedTitle = TerminalStoryLayout.FitTitle(longTitle, 480);
+        var fittedTitle = TerminalStoryLayout.FitTitle(longTitle, 480, TerminalWindowStyle.MacOS);
         var longTitleSvg = longTitleStory.ToSvg();
         Assert(fittedTitle.EndsWith("…", StringComparison.Ordinal) &&
                longTitleSvg.Contains(">" + fittedTitle + "</text>", StringComparison.Ordinal) &&
                longTitleSvg.Contains(">" + longTitle + "</title>", StringComparison.Ordinal),
             "Visible terminal titles should fit the chrome while retaining the full accessible title.");
         Assert(longTitleStory.ToPng().Length > 8, "PNG terminal titles should use the same fitted display text.");
+
+        var windowsStory = TerminalStory.Create()
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithTitle("Administrator: PowerShell")
+            .Command("Get-Process")
+            .Output("ready", TerminalTextTone.Success);
+        var windowsSvg = windowsStory.ToSvg();
+        Assert(windowsSvg.Contains("data-cfx-window-style=\"WindowsTerminal\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-tab\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-shell-icon\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-window-minimize\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-window-maximize\"", StringComparison.Ordinal) &&
+               windowsSvg.Contains("data-cfx-role=\"terminal-window-close\"", StringComparison.Ordinal) &&
+               !windowsSvg.Contains("data-cfx-role=\"terminal-macos-controls\"", StringComparison.Ordinal),
+            "Windows Terminal chrome should render a tab strip, shell icon, and native window controls without macOS traffic lights.");
+        SvgDocument.Parse(windowsSvg);
+        Assert(windowsStory.ToPng().Length > 8, "Windows Terminal chrome should render through the dependency-free raster path.");
+
+        var windowsPowerShellTabTheme = TerminalTheme.WindowsPowerShell();
+        windowsPowerShellTabTheme.FontFamily = "'Segoe UI', sans-serif";
+        var ubuntuTabTheme = TerminalTheme.Ubuntu();
+        ubuntuTabTheme.FontFamily = "'Courier New', monospace";
+        var tabbedStory = TerminalStory.Create()
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithTitle("PowerShell")
+            .WithTheme(TerminalTheme.Campbell())
+            .WithWorkingDirectory(@"C:\Work")
+            .Command("Get-ChildItem", 0.1)
+            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", windowsPowerShellTabTheme, TerminalTabIcon.WindowsPowerShell, transitionSeconds: 0.1)
+            .Command("$PSVersionTable.PSVersion", 0.1)
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", ubuntuTabTheme, TerminalTabIcon.Ubuntu, transitionSeconds: 0.1)
+            .Command("dotnet test", 0.1)
+            .SelectTab("main", 0.1)
+            .Output("Back in PowerShell", TerminalTextTone.Success);
+        var tabbedLayout = TerminalStoryLayout.Build(tabbedStory);
+        var tabbedSvg = tabbedStory.ToSvg("tabs");
+        Assert(tabbedStory.Tabs.Count == 3 && tabbedStory.ActiveTabId == "main" &&
+               tabbedStory.Steps.Count(step => step.Kind == TerminalStoryStepKind.OpenTab) == 2 &&
+               tabbedStory.Steps.Count(step => step.Kind == TerminalStoryStepKind.SelectTab) == 1,
+            "Terminal stories should model declared tabs and selections as first-class timeline steps.");
+        Assert(tabbedLayout.Tabs[0].Lines.Count == 3 &&
+               tabbedLayout.Tabs[1].Lines.Count == 1 &&
+               tabbedLayout.Tabs[2].Lines.Count == 1 &&
+               tabbedLayout.FinalTabId == "main",
+            "Each terminal tab should preserve its own buffer while the final prompt belongs to the completed active tab.");
+        var wrappedFinalPromptLayout = TerminalStoryLayout.Build(
+            TerminalStory.Create()
+                .WithWidth(480)
+                .WithWorkingDirectory(@"C:\" + new string('x', 120))
+                .Output("ready"));
+        var wrappedFinalPromptLines = wrappedFinalPromptLayout.Tabs[0].Lines;
+        Assert(wrappedFinalPromptLines.Count > 1 &&
+               wrappedFinalPromptLines.Count(line => line.IsFinalPrompt) == 1 &&
+               wrappedFinalPromptLines[wrappedFinalPromptLines.Count - 1].IsFinalPrompt,
+            "A wrapped final prompt should place the blinking cursor only on its final visual line.");
+        Assert(tabbedSvg.Contains("data-cfx-tab=\"windows-powershell\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("data-cfx-tab=\"ubuntu\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("data-cfx-tab=\"windows-powershell\" data-cfx-terminal=\"PowerShell\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("data-cfx-tab=\"ubuntu\" data-cfx-terminal=\"Bash\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("font-family=\"'Segoe UI', sans-serif\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("font-family=\"'Courier New', monospace\"", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("#300A24", StringComparison.OrdinalIgnoreCase) &&
+               tabbedSvg.Contains("cfx-terminal-tab-final", StringComparison.Ordinal) &&
+               tabbedSvg.Contains("[Ubuntu] ~/src $ dotnet test", StringComparison.Ordinal) &&
+               !tabbedSvg.Contains("cfx-terminal-seed-", StringComparison.Ordinal),
+            "SVG terminal stories should render tab identities, independent palettes, final reduced-motion state, and a complete multi-tab transcript.");
+        var transformedTabIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        TerminalStoryLayout.Build(
+            tabbedStory,
+            (tab, value) => {
+                transformedTabIds.Add(tab.Id);
+                return value;
+            },
+            _ => null,
+            (tab, value) => {
+                transformedTabIds.Add(tab.Id);
+                return value;
+            });
+        Assert(transformedTabIds.SetEquals(new[] { "main", "windows-powershell", "ubuntu" }),
+            "Raster layout transformations should receive each owning tab so mixed-font stories preserve and measure text with the correct session font.");
+        var perTabWrappingStory = TerminalStory.Create()
+            .WithWidth(480)
+            .WithTypography(24, 30)
+            .WithFinalPrompt(false)
+            .WithInitialTab("proportional", "Proportional", TerminalDialect.Custom, "/src", proportionalTheme, TerminalTabIcon.None, "> ")
+            .Command(new string('x', 25), 0.1)
+            .OpenTab("mono", "Mono", TerminalDialect.Custom, "/src", ubuntuTabTheme, TerminalTabIcon.None, "> ", transitionSeconds: 0.1)
+            .Command(new string('x', 25), 0.1);
+        var perTabWrappingLayout = TerminalStoryLayout.Build(perTabWrappingStory);
+        Assert(perTabWrappingLayout.Tabs[0].Lines.Count == 2 && perTabWrappingLayout.Tabs[1].Lines.Count == 1,
+            "Each terminal tab should wrap text against its own font metrics instead of inheriting the initial tab's column capacity.");
+        Assert(tabbedLayout.TabOpacity("main", null) == 1 &&
+               tabbedLayout.TabOpacity("ubuntu", null) == 0 &&
+               tabbedLayout.TabOpacity("windows-powershell", tabbedLayout.Transitions[0].StartSeconds + 0.05) > 0 &&
+               !tabbedLayout.TabVisible("ubuntu", tabbedLayout.Transitions[0].StartSeconds) &&
+               tabbedLayout.TabVisible("ubuntu", null),
+            "Static and animated tab selection should resolve deterministic active-session opacity.");
+        SvgDocument.Parse(tabbedSvg);
+        Assert(tabbedStory.ToPng().Length > 8 &&
+               tabbedStory.ToGif(TerminalStoryAnimationOptions.Create().WithFramesPerSecond(4).WithMaximumFrames(80)).Length > 800,
+            "Persistent tab stories should render through completed and animated raster paths.");
+
+        var pacedTabStory = TerminalStory.Create()
+            .WithInitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalTheme.Campbell(), TerminalTabIcon.PowerShell)
+            .WithTiming(0, 200, 0)
+            .WithTabHold(1.5)
+            .Command("dotnet build", 0.1)
+            .OpenTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu, transitionSeconds: 0.2)
+            .Output("ready", TerminalTextTone.Success);
+        var pacedTabLayout = TerminalStoryLayout.Build(pacedTabStory);
+        Assert(pacedTabStory.Tabs[0].Id == "PowerShell" && pacedTabStory.ActiveTabId == "Ubuntu",
+            "Callers should be able to name and style the initial persistent terminal tab.");
+        Assert(Math.Abs(pacedTabLayout.Transitions[0].StartSeconds - 1.6) < 0.0001,
+            "A tab switch should preserve the configured reading dwell after the active tab's final content completes.");
+        Assert(!pacedTabLayout.TabVisible("Ubuntu", pacedTabLayout.Transitions[0].StartSeconds - 0.001) &&
+               pacedTabLayout.TabVisible("Ubuntu", pacedTabLayout.Transitions[0].StartSeconds),
+            "Opening a tab should reveal it atomically with its activation instead of exposing it during the previous tab's reading dwell.");
+
+        var slowStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Slow);
+        var normalStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Normal);
+        var fastStory = TerminalStory.Create().WithPlaybackSpeed(TerminalStoryPlaybackSpeed.Fast);
+        Assert(slowStory.CharactersPerSecond < normalStory.CharactersPerSecond &&
+               normalStory.CharactersPerSecond < fastStory.CharactersPerSecond &&
+               slowStory.TabHoldSeconds > normalStory.TabHoldSeconds &&
+               normalStory.TabHoldSeconds > fastStory.TabHoldSeconds,
+            "Playback speed presets should adjust typing and tab reading time in the expected direction.");
+
+        var declaredTabStory = TerminalStory.Create()
+            .WithInitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalTheme.Campbell(), TerminalTabIcon.PowerShell)
+            .WithTiming(0, 200, 0)
+            .WithTabHold(1)
+            .Command("ready", 0.1)
+            .DeclareTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu)
+            .SelectTab("Ubuntu", 0.2)
+            .SelectTab("PowerShell", 0.2);
+        var declaredTabLayout = TerminalStoryLayout.Build(declaredTabStory);
+        Assert(declaredTabStory.Steps.Count(step => step.Kind == TerminalStoryStepKind.DeclareTab) == 1 &&
+               declaredTabLayout.Transitions.Count == 2 &&
+               Math.Abs(declaredTabLayout.Transitions[1].StartSeconds - (declaredTabLayout.Transitions[0].StartSeconds + 1.2)) < 0.0001,
+            "Declared tabs should remain inactive until selected and every selected tab should retain its configured reading dwell.");
+        Assert(!declaredTabLayout.TabVisible("Ubuntu", 0.099) &&
+               declaredTabLayout.TabVisible("Ubuntu", 0.1) &&
+               declaredTabLayout.Transitions[0].StartSeconds > 0.1,
+            "Background declarations should expose the tab when authored while leaving activation to an explicit later selection.");
+
+        var longWindowsTitle = new string('W', 80);
+        var defaultWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 886, TerminalWindowStyle.WindowsTerminal);
+        var maximumWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 1800, TerminalWindowStyle.WindowsTerminal);
+        Assert(defaultWidthWindowsTitle.EndsWith("…", StringComparison.Ordinal) &&
+               defaultWidthWindowsTitle == maximumWidthWindowsTitle &&
+               TerminalTextWidth.Measure(defaultWidthWindowsTitle) * TerminalWindowChrome.TitleFontSize <= TerminalWindowChrome.WindowsTitleAvailableWidth(886),
+            "Windows Terminal titles should fit the capped tab with the same conservative width policy used for proportional terminal text.");
+        var longWindowsTitleStory = TerminalStory.Create()
+            .WithWidth(1800)
+            .WithTheme(proportionalTheme)
+            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .WithTitle(longWindowsTitle)
+            .Output("ready");
+        var longWindowsTitleSvg = longWindowsTitleStory.ToSvg();
+        Assert(longWindowsTitleSvg.Contains(">" + maximumWidthWindowsTitle + "</text>", StringComparison.Ordinal) &&
+               longWindowsTitleSvg.Contains(">" + longWindowsTitle + "</title>", StringComparison.Ordinal),
+            "Windows Terminal rendering should keep the fitted tab title and the complete accessible title at maximum width.");
+        Assert(longWindowsTitleStory.ToPng().Length > 8, "Windows Terminal raster rendering should preserve the capped-tab title fit at maximum width.");
+
+        var minimalStory = TerminalStory.Create().WithWindowStyle(TerminalWindowStyle.Minimal).WithTitle("Portable shell").Output("ready");
+        var minimalSvg = minimalStory.ToSvg();
+        Assert(minimalSvg.Contains("data-cfx-window-style=\"Minimal\"", StringComparison.Ordinal) &&
+               minimalSvg.Contains("data-cfx-role=\"terminal-title\"", StringComparison.Ordinal) &&
+               !minimalSvg.Contains("data-cfx-role=\"terminal-macos-controls\"", StringComparison.Ordinal) &&
+               !minimalSvg.Contains("data-cfx-role=\"terminal-tab\"", StringComparison.Ordinal),
+            "Minimal chrome should retain a title without platform-specific controls.");
+
+        var chromeFreeStory = TerminalStory.Create().WithWindowStyle(TerminalWindowStyle.None).WithTitle("Accessible title").Output("ready");
+        var chromeFreeSvg = chromeFreeStory.ToSvg();
+        Assert(chromeFreeSvg.Contains("data-cfx-window-style=\"None\"", StringComparison.Ordinal) &&
+               !chromeFreeSvg.Contains("data-cfx-role=\"terminal-titlebar\"", StringComparison.Ordinal) &&
+               !chromeFreeSvg.Contains("data-cfx-role=\"terminal-title\"", StringComparison.Ordinal) &&
+               chromeFreeSvg.Contains(">Accessible title</title>", StringComparison.Ordinal),
+            "Chrome-free stories should remove visible title-bar controls while preserving the accessible title.");
+        Assert(TerminalStoryLayout.Build(windowsStory).HeaderHeightValue == 50 &&
+               TerminalStoryLayout.Build(story).HeaderHeightValue == 42 &&
+               TerminalStoryLayout.Build(minimalStory).HeaderHeightValue == 38 &&
+               TerminalStoryLayout.Build(chromeFreeStory).HeaderHeightValue == 0,
+            "Each window style should own its header geometry so transcript content starts below the selected chrome.");
 
         var timedLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithTiming(0, 42, 0).WithFinalPrompt(false).Output("ready"));
         Assert(Math.Abs(timedLayout.DurationSeconds - 0.22) < 0.001, "Terminal duration metadata should include the final output reveal.");
@@ -261,11 +449,12 @@ internal static partial class SmokeTests {
         var fontlessFlagLayout = TerminalStoryLayout.Build(flagStory, value => TerminalPngTextPreserver.Preserve(value, null));
         Assert(TerminalStoryLayout.TextElementCount("🇵🇱") == 1 &&
                TerminalStoryLayout.TextElementCount("👩‍💻") == 1 &&
-               TerminalStoryLayout.TextElementCount("A\u200DB") == 3 &&
+               TerminalStoryLayout.TextElementCount("👩\u0903\u200D💻") == 2 &&
+               TerminalStoryLayout.TextElementCount("A\u200DB") == 2 &&
                TerminalStoryLayout.DisplayWidth("A\u200DB") == 2 &&
                fontlessFlagLayout.Lines.Count == 61 &&
                new PngTerminalStoryRenderer().Render(flagStory, null).Length > 8,
-            "Terminal grapheme segmentation should keep flag and emoji ZWJ sequences stable without collapsing ordinary joined glyphs.");
+            "Terminal grapheme segmentation should keep flags and emoji joins stable while attaching ordinary ZWJ controls to the preceding grapheme.");
         var devanagariConjunct = "\u0915\u094D\u0937";
         var devanagariZwjConjunct = "\u0915\u094D\u200D\u0937";
         var bengaliConjunct = "\u0995\u09CD\u09B7";
@@ -322,8 +511,15 @@ internal static partial class SmokeTests {
                TerminalStoryLayout.DisplayWidth(outlinePreservedFormatControls) == 0 &&
                TerminalPngTextPreserver.ClusterFallbackLabel(preservedFormatControls).Length == 0 &&
                TerminalPngTextPreserver.ClusterFallbackLabel(outlinePreservedFormatControls).Length == 0 &&
-               TerminalStoryLayout.DisplayWidth("\u0600") == 1,
+               TerminalStoryLayout.DisplayWidth("\u0600") == 1 &&
+               TerminalStoryLayout.TextElementCount("\u0600\u0627") == 1 &&
+               TerminalStoryLayout.TextElementCount("\u0600\n") == 2 &&
+               TerminalStoryLayout.TextElementCount("\u0600\r") == 2 &&
+               TerminalStoryLayout.DisplayWidth("\u0600\u0627") == 1,
             "Default-ignorable format controls should consume no columns or raster fallback labels without hiding visible prepended marks.");
+        var oversizedSourceRun = new string('x', 1_000_000);
+        Assert(TerminalTextWidth.FitContent(oversizedSourceRun, 3, static value => value.Length) == "xxx",
+            "Source fitting should stop at the visible width without preallocating the complete source run.");
         var oversizedFallback = string.Concat(Enumerable.Repeat(
             TerminalPngTextPreserver.EscapeStart + "[U+1F600]" + TerminalPngTextPreserver.EscapeEnd,
             64));
@@ -375,7 +571,7 @@ internal static partial class SmokeTests {
                widePromptCursor.GetAttribute("x") == null,
             "SVG terminal cursors should flow directly after full-width prompts instead of using a fixed coordinate.");
 
-        var proportionalPromptTheme = TerminalTheme.WindowsTerminal();
+        var proportionalPromptTheme = TerminalTheme.Dark();
         proportionalPromptTheme.FontFamily = "Arial, sans-serif";
         var proportionalPromptStory = TerminalStory.Create()
             .WithDialect(TerminalDialect.Custom, "WWWW ")
@@ -403,6 +599,18 @@ internal static partial class SmokeTests {
                tableText.All(element => element.GetAttribute("font-family") == ChartFontStacks.Mono) &&
                proportionalTableStory.ToPng().Length > 8,
             "Terminal tables should use stable monospace geometry even when surrounding terminal text uses a proportional font.");
+
+        var explicitMonoTableTheme = TerminalTheme.Dark();
+        explicitMonoTableTheme.FontFamily = "'Courier New', monospace";
+        var explicitMonoTableSvg = SvgDocument.Parse(TerminalStory.Create()
+            .WithTheme(explicitMonoTableTheme)
+            .WithFinalPrompt(false)
+            .Table(TerminalTable.Create().WithColumns("State").AddRow("ready"))
+            .ToSvg());
+        Assert(explicitMonoTableSvg.Root.FindByTag("text")
+                .Where(element => element.GetAttribute("data-cfx-role") == "terminal-output")
+                .All(element => element.GetAttribute("font-family") == explicitMonoTableTheme.FontFamily),
+            "SVG tables should preserve an explicitly configured monospace family used by raster output.");
 
         var oversizedCapture = string.Join("\n", Enumerable.Repeat("captured", 121));
         AssertThrows<InvalidOperationException>(
@@ -451,6 +659,24 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TerminalStory.Create().Command("one\u2029two"), "Commands should reject Unicode paragraph separators.");
         AssertThrows<ArgumentException>(() => TerminalTable.Create().WithColumns("One", "Two").AddRow("one"), "Terminal table rows should match their column count.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Progress("bad", 1.1), "Terminal progress values should stay within the unit interval.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithWindowStyle((TerminalWindowStyle)99), "Unknown terminal window styles should be rejected before mutation.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().Output("ready").OpenTab("bad id", "Bad", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()), "Terminal tab identifiers should remain safe deterministic keys.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().OpenTab("tools", "Tools", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()).OpenTab("TOOLS", "Duplicate", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()), "Terminal tab identifiers should be unique without case ambiguity.");
+        AssertThrows<ArgumentException>(() => TerminalStory.Create().Output("ready").SelectTab("missing"), "Tab switching should reject undeclared sessions.");
+        var atomicTabStory = TerminalStory.Create().Output("ready");
+        AssertThrows<ArgumentOutOfRangeException>(() => atomicTabStory.OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu(), transitionSeconds: 3), "Invalid tab transitions should be rejected before mutating story tabs.");
+        Assert(atomicTabStory.Tabs.Count == 1 && atomicTabStory.ActiveTabId == "main", "Rejected tab steps should leave tab declarations and active state unchanged.");
+        AssertThrows<InvalidOperationException>(
+            () => TerminalStory.Create()
+                .WithWidth(480)
+                .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+                .OpenTab("one", "One", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu())
+                .OpenTab("two", "Two", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu())
+                .OpenTab("three", "Three", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu())
+                .Output("ready")
+                .ToSvg(),
+            "Windows Terminal stories should reject tab strips that cannot preserve a readable minimum tab width.");
+        AssertThrows<InvalidOperationException>(() => TerminalStory.Create().Output("ready").WithTitle("Too late"), "Initial tab configuration should be frozen after timeline authoring starts.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Transcript(Array.Empty<string>(), (TerminalTextTone)99), "Empty transcripts should still validate their semantic tone.");
         var throwingTranscriptStory = TerminalStory.Create().Output("existing");
         AssertThrows<InvalidOperationException>(() => throwingTranscriptStory.Transcript(ThrowingTranscript()), "Transcript enumeration failures should reject the complete batch.");
@@ -462,6 +688,9 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => capacityTranscriptStory.Transcript(new[] { "line 120", "line 121" }), "Transcript batches should validate their complete step capacity before mutating the story.");
         Assert(capacityTranscriptStory.Steps.Count == 119, "A capacity-rejected transcript batch should leave the story unchanged.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithTiming(0, 1, 0), "Typing speed should remain within usable presentation bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithPlaybackSpeed((TerminalStoryPlaybackSpeed)99), "Unknown playback speed presets should be rejected before mutation.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().WithTabHold(11), "Tab reading dwell should remain within the bounded story timeline.");
+        AssertThrows<InvalidOperationException>(() => TerminalStory.Create().Command("ready").WithInitialTab("late", "Late", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()), "Initial tab identity should be configured before timeline authoring starts.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithFramesPerSecond(31), "Animated terminal frame rates should remain bounded.");
         AssertThrows<ArgumentOutOfRangeException>(() => TerminalStoryAnimationOptions.Create().WithOutputScale(5), "Animated terminal output scale should remain bounded.");
     }

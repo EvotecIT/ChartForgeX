@@ -6,6 +6,11 @@ internal static class TerminalIndicConjunctBreak {
     public static bool IsExtend(int codePoint) => Contains(ExtendRanges, codePoint);
     public static bool IsLinker(int codePoint) => Contains(LinkerRanges, codePoint);
 
+    /// <summary>Returns whether the scalar has Grapheme_Cluster_Break=Extend in Unicode 17.0.</summary>
+    public static bool IsGraphemeExtend(int codePoint) =>
+        codePoint == 0x200C ||
+        codePoint != 0x200D && (IsExtend(codePoint) || IsLinker(codePoint));
+
     private static bool Contains(int[] ranges, int codePoint) {
         var low = 0;
         var high = ranges.Length / 2 - 1;

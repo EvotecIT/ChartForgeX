@@ -34,7 +34,9 @@ internal static class GifWriter {
         WritePalette(stream, palette);
         if (animation.Loop) WriteLoopExtension(stream);
         var indexedFrames = GifFrameOptimizer.BuildFrames(animation.Frames, palette);
-        foreach (var frame in indexedFrames) WriteFrame(stream, frame, animation.DelayCentiseconds, palette);
+        for (var index = 0; index < indexedFrames.Count; index++) {
+            WriteFrame(stream, indexedFrames[index], animation.DelayForFrame(index), palette);
+        }
         stream.WriteByte(0x3B);
     }
 

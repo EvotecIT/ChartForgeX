@@ -23,6 +23,17 @@ internal static partial class SmokeTests {
         Assert(frames[1].BlendOp == 0, "Cropped APNG frames should use source blending so alpha changes replace previous pixels.");
         Assert(frames[0].DelayNumerator == 10, "APNG frame controls should preserve the shared animated raster frame delay.");
         AssertThrows<ArgumentException>(() => ApngWriter.WriteRgba(new[] { first, SolidFrame(8, 16, 12, 18, 24) }, 10, loop: false), "APNG export should reject mismatched animated raster frame dimensions.");
+
+        using var bounded = new BoundedChunkStream(4);
+        bounded.Write(new byte[] { 1, 2, 3, 4 }, 0, 4);
+        var boundedBytes = bounded.ToArray();
+        Assert(boundedBytes.Length == 4 &&
+               boundedBytes[0] == 1 &&
+               boundedBytes[3] == 4,
+            "Bounded animation output should materialize its exact retained bytes.");
+        AssertThrows<InvalidOperationException>(
+            () => bounded.WriteByte(5),
+            "Bounded animation output should reject growth before exceeding its configured memory contract.");
     }
 
     private static ApngFrameControl[] ReadApngFrameControls(byte[] png) {
