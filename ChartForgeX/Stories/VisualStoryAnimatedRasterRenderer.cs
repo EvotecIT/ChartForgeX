@@ -70,13 +70,13 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
                 animation.Loop,
                 maximumEncodedBytes,
                 index => {
-                    var elapsed = SampleElapsed(story, index, frameCount, delay);
+                    var elapsed = SampleElapsed(story, index, delay);
                     return RenderFrame(story, scenes, elapsed, animation);
                 });
         }
         var frames = new List<RgbaImage>(frameCount);
         for (var index = 0; index < frameCount; index++) {
-            var elapsed = SampleElapsed(story, index, frameCount, delay);
+            var elapsed = SampleElapsed(story, index, delay);
             frames.Add(RenderFrame(story, scenes, elapsed, animation));
         }
         var retainedFrames = AnimatedRasterFrames.Create(
@@ -131,8 +131,7 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         return new RgbaImage(current.Width, current.Height, pixels);
     }
 
-    private static double SampleElapsed(VisualStory story, int index, int frameCount, int delay) {
-        if (index == frameCount - 1) return story.DurationSeconds;
+    private static double SampleElapsed(VisualStory story, int index, int delay) {
         return Math.Min(story.DurationSeconds, index * delay / 100d);
     }
 
@@ -142,7 +141,7 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         var visibleCentiseconds = new double[story.Scenes.Count];
         for (var index = 0; index < frameCount; index++) {
             var frameDelay = index == frameCount - 1 ? finalDelay : delay;
-            var elapsed = SampleElapsed(story, index, frameCount, delay);
+            var elapsed = SampleElapsed(story, index, delay);
             var sceneIndex = VisualStoryTimeline.FindScene(story, elapsed, out var timing);
             var remaining = timing.End - elapsed;
             var transition = Math.Min(transitionSeconds, story.Scenes[sceneIndex].DurationSeconds);

@@ -218,6 +218,16 @@ internal static partial class SmokeTests {
                tabbedLayout.Tabs[2].Lines.Count == 1 &&
                tabbedLayout.FinalTabId == "main",
             "Each terminal tab should preserve its own buffer while the final prompt belongs to the completed active tab.");
+        var wrappedFinalPromptLayout = TerminalStoryLayout.Build(
+            TerminalStory.Create()
+                .WithWidth(480)
+                .WithWorkingDirectory(@"C:\" + new string('x', 120))
+                .Output("ready"));
+        var wrappedFinalPromptLines = wrappedFinalPromptLayout.Tabs[0].Lines;
+        Assert(wrappedFinalPromptLines.Count > 1 &&
+               wrappedFinalPromptLines.Count(line => line.IsFinalPrompt) == 1 &&
+               wrappedFinalPromptLines[wrappedFinalPromptLines.Count - 1].IsFinalPrompt,
+            "A wrapped final prompt should place the blinking cursor only on its final visual line.");
         Assert(tabbedSvg.Contains("data-cfx-tab=\"windows-powershell\"", StringComparison.Ordinal) &&
                tabbedSvg.Contains("data-cfx-tab=\"ubuntu\"", StringComparison.Ordinal) &&
                tabbedSvg.Contains("data-cfx-tab=\"windows-powershell\" data-cfx-terminal=\"PowerShell\"", StringComparison.Ordinal) &&

@@ -96,6 +96,12 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
+                "Escaped quote before resource",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>.x{content:" + "\"\\\"\"" + ";filter:url(https://example.invalid/f.svg#x)}</style><rect class=\"x\"/></svg>"),
+            "CSS escape decoding should preserve string boundaries and reject a following external resource reference.");
+        AssertThrows<ArgumentException>(
+            () => new VisualStoryMediaSurface(
+                new RgbaImage(1, 1, new byte[4]),
                 "Escaped at-rule",
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>\\40 media print{rect{fill:red}}</style><rect/></svg>"),
             "Escaped CSS at-rules should remain blocked outside quoted values.");
@@ -119,6 +125,27 @@ internal static partial class SmokeTests {
                 new string('x', VisualStorySurface.MaximumHeadingLength + 1)),
             "Panel headings should be bounded before raster measurement.");
 
+        foreach (var invalidIdentifier in new[] { "item\u0001", "item\u0002", "item\tid", "item\nid", "item\uD800" }) {
+            AssertThrows<ArgumentException>(
+                () => VisualStory.Create("Stable identifiers").Scene(invalidIdentifier, "Scene"),
+                "Scene identifiers should reject values that cannot round-trip through emitted SVG attributes.");
+        }
+        var stableIdentifiers = VisualStory.Create("Stable identifiers").WithSize(480, 320);
+        var stableScene = stableIdentifiers.Scene("scene-😀", "Scene");
+        AssertThrows<ArgumentException>(
+            () => stableScene.Panel("panel\u0001", new VisualStoryTextSurface("ready")),
+            "Panel identifiers should use the same stable markup policy as scene identifiers.");
+        stableScene.Panel("panel-😀", new VisualStoryTextSurface("ready"));
+        AssertThrows<ArgumentException>(
+            () => stableIdentifiers.Outcome("outcome\u0002", "Ready", "panel-😀"),
+            "Outcome identifiers should use the same stable markup policy as scene identifiers.");
+        AssertThrows<ArgumentException>(
+            () => stableIdentifiers.Outcome("ready", "Ready", "panel\u0001"),
+            "Outcome panel references should use the same stable markup policy as panel identifiers.");
+        stableIdentifiers.Outcome("outcome-😀", "Ready", "panel-😀");
+        Assert(stableIdentifiers.ToSvg().Contains("data-cfx-scene=\"scene-😀\"", StringComparison.Ordinal),
+            "Valid supplementary scalar identifiers should round-trip through SVG output unchanged.");
+
         var endpointScenes = VisualStory.Create("Endpoint scenes").WithSize(480, 320);
         endpointScenes.Scene("first", "First", 0.25)
             .Panel("first-result", new VisualStoryTextSurface("first"));
@@ -138,6 +165,23 @@ internal static partial class SmokeTests {
                     .WithEndHold(0)
                     .WithMaximumFrames(2)).Length > 8,
             "Raster stories should retain short endpoint scenes when both receive their requested visible duration.");
+        var unrepresentableBoundary = VisualStory.Create("Unrepresentable boundary").WithSize(480, 320);
+        unrepresentableBoundary.Scene("first", "First", 0.75)
+            .Panel("result", new VisualStoryTextSurface("first"));
+        unrepresentableBoundary.Scene("last", "Last", 0.25)
+            .Panel("result", new VisualStoryTextSurface("last"));
+        unrepresentableBoundary.Outcome("ready", "Ready", "result");
+        var unrepresentableOptions = VisualStoryAnimationOptions.Create()
+            .WithFramesPerSecond(2)
+            .WithTransition(0)
+            .WithEndHold(0)
+            .WithMaximumFrames(2);
+        AssertThrows<InvalidOperationException>(
+            () => unrepresentableBoundary.ToGif(unrepresentableOptions),
+            "GIF stories should reject a frame grid that would display the final scene before its declared boundary.");
+        AssertThrows<InvalidOperationException>(
+            () => unrepresentableBoundary.ToApng(unrepresentableOptions),
+            "APNG stories should reject the same unrepresentable scene boundary as GIF output.");
 
         var joinedText = StorySourceText.Create("a\u200Db");
         AssertThrows<ArgumentException>(

@@ -169,8 +169,10 @@ internal sealed class TerminalStoryLayout {
             var finalTab = story.GetTab(activeTabId);
             var finalTabLines = linesByTab[activeTabId];
             transcriptLines.Add("[" + finalTab.Title + "] " + finalTab.Prompt());
-            foreach (var promptLine in Wrap(Transform(finalTab, finalTab.Prompt()), maxColumnsByTab[finalTab.Id])) {
-                AddLine(lines, finalTabLines, new TerminalRenderedLine(finalTab.Id, finalTabLines.Count, promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0, isFinalPrompt: true));
+            var promptLines = Wrap(Transform(finalTab, finalTab.Prompt()), maxColumnsByTab[finalTab.Id]).ToArray();
+            for (var index = 0; index < promptLines.Length; index++) {
+                var promptLine = promptLines[index];
+                AddLine(lines, finalTabLines, new TerminalRenderedLine(finalTab.Id, finalTabLines.Count, promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0, isFinalPrompt: index == promptLines.Length - 1));
             }
             clock += 0.08;
         }
