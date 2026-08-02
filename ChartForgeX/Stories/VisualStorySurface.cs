@@ -490,7 +490,21 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
 
     private static bool ContainsSystemColorIdentifier(string value) {
         var normalized = DecodeCssEscapes(StripCssComments(value));
+        var quote = '\0';
         for (var index = 0; index < normalized.Length;) {
+            if (quote != '\0') {
+                if (normalized[index] == '\\' && index + 1 < normalized.Length) {
+                    index += 2;
+                } else {
+                    if (normalized[index] == quote) quote = '\0';
+                    index++;
+                }
+                continue;
+            }
+            if (normalized[index] == '\'' || normalized[index] == '"') {
+                quote = normalized[index++];
+                continue;
+            }
             if (!IsCssIdentifierCharacter(normalized[index])) {
                 index++;
                 continue;
@@ -555,10 +569,10 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         }
         var cursor = 0;
         while (cursor < value.Length) {
-            var start = value.IndexOf("url(", cursor, StringComparison.OrdinalIgnoreCase);
+            var start = FindCssFunction(value, "url", cursor);
             if (start < 0) return false;
             var contentStart = start + 4;
-            var end = value.IndexOf(')', contentStart);
+            var end = FindCssFunctionEnd(value, contentStart);
             if (end < 0) return true;
             var target = value.Substring(contentStart, end - contentStart)
                 .Trim()
@@ -569,17 +583,59 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
         return false;
     }
 
-    private static bool ContainsCssFunction(string value, string function) {
-        var cursor = 0;
-        while (cursor < value.Length) {
-            var start = value.IndexOf(function, cursor, StringComparison.OrdinalIgnoreCase);
-            if (start < 0) return false;
-            var end = start + function.Length;
-            var startsAtIdentifierBoundary = start == 0 || !IsCssIdentifierCharacter(value[start - 1]);
-            if (startsAtIdentifierBoundary && end < value.Length && value[end] == '(') return true;
-            cursor = end;
+    private static bool ContainsCssFunction(string value, string function) =>
+        FindCssFunction(value, function, 0) >= 0;
+
+    private static int FindCssFunction(string value, string function, int cursor) {
+        var quote = '\0';
+        for (var index = cursor; index < value.Length; index++) {
+            var current = value[index];
+            if (quote != '\0') {
+                if (current == '\\' && index + 1 < value.Length) {
+                    index++;
+                } else if (current == quote) {
+                    quote = '\0';
+                }
+                continue;
+            }
+            if (current == '\'' || current == '"') {
+                quote = current;
+                continue;
+            }
+            if (current == '\\' && index + 1 < value.Length) {
+                index++;
+                continue;
+            }
+            if (index + function.Length >= value.Length ||
+                string.Compare(value, index, function, 0, function.Length, StringComparison.OrdinalIgnoreCase) != 0) {
+                continue;
+            }
+            var end = index + function.Length;
+            var startsAtIdentifierBoundary = index == 0 || !IsCssIdentifierCharacter(value[index - 1]);
+            if (startsAtIdentifierBoundary && value[end] == '(') return index;
         }
-        return false;
+        return -1;
+    }
+
+    private static int FindCssFunctionEnd(string value, int contentStart) {
+        var quote = '\0';
+        for (var index = contentStart; index < value.Length; index++) {
+            var current = value[index];
+            if (quote != '\0') {
+                if (current == '\\' && index + 1 < value.Length) {
+                    index++;
+                } else if (current == quote) {
+                    quote = '\0';
+                }
+                continue;
+            }
+            if (current == '\'' || current == '"') {
+                quote = current;
+            } else if (current == ')') {
+                return index;
+            }
+        }
+        return -1;
     }
 
     private static string DecodeCssEscapes(string value) {

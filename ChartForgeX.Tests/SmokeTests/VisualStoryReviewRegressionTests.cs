@@ -87,6 +87,12 @@ internal static partial class SmokeTests {
             "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>[data-email=\"a@b\"]{fill:red}</style><rect data-email=\"a@b\"/></svg>");
         Assert(quotedAtSign.Svg.Length > 0,
             "Static CSS should allow at-signs inside quoted selector values.");
+        var quotedResourceText = new VisualStoryMediaSurface(
+            new RgbaImage(1, 1, new byte[4]),
+            "Quoted resource-like text",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>[data-label=\"url(external) image-set(remote) CanvasText\"]{fill:red}</style><rect data-label=\"url(external) image-set(remote) CanvasText\"/></svg>");
+        Assert(quotedResourceText.Svg.Length > 0,
+            "Static CSS should allow resource-like functions and system-color words inside quoted selector values.");
         AssertThrows<ArgumentException>(
             () => new VisualStoryMediaSurface(
                 new RgbaImage(1, 1, new byte[4]),
@@ -208,6 +214,14 @@ internal static partial class SmokeTests {
                revealLayout.Transitions[1].StartSeconds >= ubuntuRevealEnd,
             "Tab switches should wait for output and table reveals even when line and transition delays are zero.");
         var zeroTransitionSvg = revealStory.ToSvg();
+        var ubuntuTab = revealLayout.Tabs.Single(tab => tab.Tab.Id == "ubuntu");
+        var tabEpsilon = Math.Max(0.000001, revealLayout.DurationSeconds * 0.00000002);
+        var tabBeforePercentage = Math.Max(0, ubuntuTab.OpenSeconds - tabEpsilon) / revealLayout.DurationSeconds * 100;
+        var tabOpenPercentage = ubuntuTab.OpenSeconds / revealLayout.DurationSeconds * 100;
+        var tabBeforeToken = tabBeforePercentage.ToString("0.######", CultureInfo.InvariantCulture) + "%{opacity:0}";
+        var tabOpenToken = tabOpenPercentage.ToString("0.######", CultureInfo.InvariantCulture) + "%{opacity:1}";
+        Assert(zeroTransitionSvg.Contains(tabBeforeToken + tabOpenToken, StringComparison.Ordinal),
+            "SVG tabs should become visible at the same scheduled instant as raster tabs without an SVG-only fade.");
         var firstTransition = revealLayout.Transitions[0];
         var epsilon = Math.Max(0.000001, revealLayout.DurationSeconds * 0.00000002);
         var beforePercentage = Math.Max(0, firstTransition.StartSeconds - epsilon) / revealLayout.DurationSeconds * 100;
@@ -225,17 +239,22 @@ internal static partial class SmokeTests {
         Assert(denseSource.Spans.Count == 4096,
             "Syntax-span boundary validation should advance linearly through the source instead of rescanning its prefix per span.");
 
-        var invalidScalarStory = VisualStory.Create("Broken\0\u0001\uD800\uFFFE title").WithSize(480, 320);
+        var invalidScalarStory = VisualStory.Create("Broken\0\u0001\u007F\u0080\uDC00\uD800\uFDD0\uFFFE" + char.ConvertFromUtf32(0x1FFFE) + " title").WithSize(480, 320);
         invalidScalarStory.Scene("result", "Completed")
             .Panel("result", new VisualStoryTextSurface("Visible result"));
         invalidScalarStory.Outcome("ready", "Ready", "result");
         var invalidScalarHtml = invalidScalarStory.ToHtmlFragment();
         Assert(!invalidScalarHtml.Contains('\0') &&
                !invalidScalarHtml.Contains('\u0001') &&
+               !invalidScalarHtml.Contains('\u007F') &&
+               !invalidScalarHtml.Contains('\u0080') &&
                !invalidScalarHtml.Contains('\uD800') &&
+               !invalidScalarHtml.Contains('\uDC00') &&
+               !invalidScalarHtml.Contains('\uFDD0') &&
                !invalidScalarHtml.Contains('\uFFFE') &&
+               !invalidScalarHtml.Contains(char.ConvertFromUtf32(0x1FFFE), StringComparison.Ordinal) &&
                invalidScalarHtml.Contains('\uFFFD'),
-            "HTML story output should replace XML-invalid controls, noncharacters, and unpaired surrogate input with the Unicode replacement character.");
+            "HTML story output should replace C0/C1 controls, noncharacters, and unpaired surrogate input with the Unicode replacement character.");
 
         var boundedTabStory = TerminalStory.Create();
         AssertThrows<ArgumentOutOfRangeException>(

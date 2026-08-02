@@ -207,8 +207,8 @@ public sealed class SvgTerminalStoryRenderer {
             css.Append("0%,100%{opacity:1}");
         } else {
             css.Append("0%{opacity:0}");
-            AppendPresenceKeyframe(css, layout, renderedTab.OpenSeconds, 0);
-            AppendPresenceKeyframe(css, layout, renderedTab.OpenSeconds + 0.1, 1);
+            AppendPresenceKeyframe(css, layout, ImmediatelyBefore(layout, renderedTab.OpenSeconds), 0);
+            AppendPresenceKeyframe(css, layout, renderedTab.OpenSeconds, 1);
             css.Append("100%{opacity:1}");
         }
         css.Append('}');

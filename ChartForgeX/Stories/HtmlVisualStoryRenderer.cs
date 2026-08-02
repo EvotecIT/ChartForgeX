@@ -55,10 +55,16 @@ public sealed class HtmlVisualStoryRenderer {
             if (char.IsHighSurrogate(current) &&
                 index + 1 < value.Length &&
                 char.IsLowSurrogate(value[index + 1])) {
-                escaped.Append(current).Append(value[++index]);
+                var next = value[index + 1];
+                if (SvgMarkupWriter.IsMarkupScalar(char.ConvertToUtf32(current, next))) {
+                    escaped.Append(current).Append(next);
+                } else {
+                    escaped.Append('\uFFFD');
+                }
+                index++;
                 continue;
             }
-            if (char.IsSurrogate(current) || !SvgMarkupWriter.IsXmlCharacter(current)) {
+            if (!SvgMarkupWriter.IsMarkupScalar(current)) {
                 escaped.Append('\uFFFD');
                 continue;
             }
