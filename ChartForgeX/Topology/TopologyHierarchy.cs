@@ -61,7 +61,7 @@ public sealed class TopologyHierarchyItem {
     /// <summary>Gets or sets the layout policy applied to this item and its descendant subtree. Null inherits the parent policy.</summary>
     public TopologyHierarchyLayoutPolicy? LayoutPolicy { get; set; }
 
-    /// <summary>Gets arbitrary item metadata copied to the generated node.</summary>
+    /// <summary>Gets arbitrary item metadata copied to the generated node. Builder-owned hierarchy and layer keys remain authoritative.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 
     /// <summary>Adds metadata and returns the same item.</summary>
@@ -161,7 +161,7 @@ public sealed class TopologyTeamMember {
     /// <summary>Gets or sets the layout policy applied to this member and its descendant subtree. Null inherits the manager policy.</summary>
     public TopologyHierarchyLayoutPolicy? LayoutPolicy { get; set; }
 
-    /// <summary>Gets arbitrary member metadata copied to the generated person node.</summary>
+    /// <summary>Gets arbitrary member metadata copied to the generated person node. Builder-owned hierarchy and layer keys remain authoritative.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 }
 
@@ -237,12 +237,13 @@ public static class TopologyHierarchyExtensions {
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.BackgroundColor = item.BackgroundColor;
             if (options.NodeDisplayMode.HasValue) node.DisplayMode = options.NodeDisplayMode.Value;
+            foreach (var pair in item.Metadata) node.Metadata[pair.Key] = pair.Value;
             node.Metadata["layer"] = levels[item.Id].ToString(CultureInfo.InvariantCulture);
             node.Metadata["hierarchy.level"] = node.Metadata["layer"];
             node.Metadata["hierarchy.context"] = primaryIds.Contains(item.Id) ? "primary" : "ancestor";
             node.Metadata["hierarchy.layoutPolicy"] = layoutPolicies[item.Id].ToString();
             if (!string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["hierarchy.parentId"] = item.ParentId!;
-            foreach (var pair in item.Metadata) node.Metadata[pair.Key] = pair.Value;
+            else node.Metadata.Remove("hierarchy.parentId");
         }
 
         foreach (var item in visible) {

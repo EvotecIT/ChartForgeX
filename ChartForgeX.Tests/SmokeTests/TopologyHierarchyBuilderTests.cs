@@ -44,6 +44,34 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-node-background-color=\"#DCFCE7\"", StringComparison.Ordinal), "Hierarchy background colors should reach rendered SVG metadata.");
     }
 
+    private static void TopologyHierarchyBuilderKeepsOwnedMetadataAuthoritative() {
+        var root = new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team, LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact };
+        root.Metadata["layer"] = "99";
+        root.Metadata["hierarchy.level"] = "99";
+        root.Metadata["hierarchy.context"] = "caller";
+        root.Metadata["hierarchy.layoutPolicy"] = TopologyHierarchyLayoutPolicy.Standard.ToString();
+        root.Metadata["hierarchy.parentId"] = "invented";
+        root.Metadata["custom"] = "preserved";
+        var child = new TopologyHierarchyItem("child", "Child", "root") { Kind = TopologyNodeKind.Person };
+        child.Metadata["layer"] = "88";
+        child.Metadata["hierarchy.level"] = "88";
+        child.Metadata["hierarchy.context"] = "caller";
+        child.Metadata["hierarchy.layoutPolicy"] = TopologyHierarchyLayoutPolicy.Vertical.ToString();
+        child.Metadata["hierarchy.parentId"] = "invented";
+
+        var chart = TopologyChart.Create().AddHierarchy(new[] { root, child });
+        var rootNode = chart.Nodes.Single(node => node.Id == "root");
+        var childNode = chart.Nodes.Single(node => node.Id == "child");
+
+        Assert(rootNode.Metadata["layer"] == "0" && rootNode.Metadata["hierarchy.level"] == "0", "Hierarchy builders should own resolved root layer metadata.");
+        Assert(rootNode.Metadata["hierarchy.context"] == "primary" && rootNode.Metadata["hierarchy.layoutPolicy"] == TopologyHierarchyLayoutPolicy.Compact.ToString(), "Hierarchy builders should own root context and typed layout policy metadata.");
+        Assert(!rootNode.Metadata.ContainsKey("hierarchy.parentId"), "Hierarchy builders should remove caller-invented parent metadata from roots.");
+        Assert(rootNode.Metadata["custom"] == "preserved", "Hierarchy builders should preserve non-reserved caller metadata.");
+        Assert(childNode.Metadata["layer"] == "1" && childNode.Metadata["hierarchy.level"] == "1", "Hierarchy builders should own resolved child layer metadata.");
+        Assert(childNode.Metadata["hierarchy.context"] == "primary" && childNode.Metadata["hierarchy.layoutPolicy"] == TopologyHierarchyLayoutPolicy.Compact.ToString(), "Inherited typed policy should override contradictory caller metadata.");
+        Assert(childNode.Metadata["hierarchy.parentId"] == "root", "The typed parent relationship should override contradictory caller metadata.");
+    }
+
     private static void TopologyLayeredLayoutWrapsCrowdedLevels() {
         var items = new List<TopologyHierarchyItem> { new("root", "Root") { Kind = TopologyNodeKind.Team, IconId = "team" } };
         for (var i = 0; i < 18; i++) items.Add(new TopologyHierarchyItem("member-" + i.ToString("00", CultureInfo.InvariantCulture), "Member " + i.ToString("00", CultureInfo.InvariantCulture), "root") { Kind = TopologyNodeKind.Person, IconId = "person" });
@@ -132,6 +160,7 @@ internal static partial class SmokeTests {
             Assert(children.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() > 1, "Compact hierarchy branches should retain multiple rows for " + direction + ".");
             Assert(children.Select(node => node.Metadata["layout.column"]).Distinct(StringComparer.Ordinal).Count() > 1, "Compact hierarchy branches should retain multiple columns for " + direction + ".");
             Assert(!AnyOverlap(prepared.Nodes), "Hierarchy policies should not overlap nodes for " + direction + ".");
+            AssertHierarchyRoutesAvoidNodes(prepared, "Compact hierarchy routes should avoid node cards for " + direction + ".");
             Assert(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }).Contains("data-layout-direction=\"" + direction + "\"", StringComparison.Ordinal), "Hierarchy policies should render direction metadata for " + direction + ".");
         }
     }
@@ -279,6 +308,16 @@ internal static partial class SmokeTests {
         }
 
         return false;
+    }
+
+    private static void AssertHierarchyRoutesAvoidNodes(TopologyChart chart, string message) {
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var diagnostics = chart.Edges
+            .Where(edge => edge.Metadata.TryGetValue("hierarchy.relationship", out var relationship) && relationship == "parent-child")
+            .Select(edge => new { edge.Id, Diagnostics = TopologyRenderPrimitives.EdgeRouteDiagnostics(chart, edge, nodes) })
+            .ToList();
+        var hits = diagnostics.Where(item => item.Diagnostics.ObstacleHits > 0).Select(item => item.Id + "=" + item.Diagnostics.ObstacleHits).ToList();
+        Assert(hits.Count == 0, message + " Hits: " + string.Join(", ", hits));
     }
 
     private static double CenterX(TopologyNode node) => node.X + node.Width / 2;

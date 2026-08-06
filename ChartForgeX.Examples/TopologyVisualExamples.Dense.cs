@@ -29,7 +29,7 @@ internal static partial class TopologyVisualExamples {
         return TopologyChart.Create()
             .WithId("visual-nested-user-hierarchy" + suffix)
             .WithTitle("Nested User Hierarchy" + DirectionTitleSuffix(direction))
-            .WithSubtitle("Parent-child directory hierarchy with wrapped user rows and tiered bus routes.")
+            .WithSubtitle("Parent-child directory hierarchy with wrapped user rows and obstacle-checked exterior trunks.")
             .WithViewport(horizontal ? 1540 : 1320, horizontal ? 760 : 920, 28)
             .WithLegend(TopologyLegend.Default()
                 .AddNodeKind("Namespace", TopologyNodeKind.Namespace, symbol: "DOM")
